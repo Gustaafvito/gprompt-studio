@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gprompt-studio"
+version = "1.0.0"
+description = "Suite profesional de ingeniería de prompts para IA generativa (imagen, vídeo, audio)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Gustaafvito" },
+]
+keywords = ["ai", "prompt-engineering", "image-generation", "video-generation", "llm", "stable-diffusion"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: X11 Applications",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: MacOS X",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "customtkinter>=5.2.0",
+    "Pillow>=10.0.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pyperclip>=1.8.0",
+    "google-genai>=0.1.0",
+    "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+tooltips = ["CTkToolTip>=0.8"]
+vision = ["mss>=9.0", "imageio[ffmpeg]>=2.30", "numpy>=1.24"]
+claude = ["anthropic>=0.18"]
+secure-keys = ["keyring>=24.0"]
+notifications = ["plyer>=2.1"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.1",
+    "mypy>=1.5",
+]
+all = [
+    "CTkToolTip>=0.8",
+    "mss>=9.0",
+    "imageio[ffmpeg]>=2.30",
+    "numpy>=1.24",
+    "anthropic>=0.18",
+    "keyring>=24.0",
+    "plyer>=2.1",
+]
+
+[project.scripts]
+gprompt-studio = "main:main"
+
+[project.urls]
+Homepage = "https://github.com/Gustaafvito/gprompt-studio"
+Issues = "https://github.com/Gustaafvito/gprompt-studio/issues"
+Documentation = "https://github.com/Gustaafvito/gprompt-studio/blob/main/README.md"
+
+[tool.setuptools]
+py-modules = [
+    "main", "app", "api_clients", "workers", "persistence", "prompts",
+    "config", "windows", "state", "exceptions", "gtypes", "logging_utils",
+]
+
+[tool.setuptools.packages.find]
+include = ["modules*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

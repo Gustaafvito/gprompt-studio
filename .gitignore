@@ -1,0 +1,40 @@
+# Secretos
+.env
+keys.json
+*.key
+
+# Datos del usuario
+preferencias.json
+preferences.json
+historial.json
+favoritos.json
+estrellas.json
+personajes.json
+plantillas.json
+loras.json
+borrador.txt
+_last_autobackup.txt
+
+# Logs y backups
+logs/
+*.log
+backups/
+auto-*.zip
+*.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# IDEs y SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
