@@ -920,6 +920,22 @@ class CoreMixin:
     # ══════════════════════════════════════════════════════════════
 
     def construir_modelo_info(self):
+        # Cacheo simple: si no cambió la config, devolver cache
+        clave_cache = (
+            self.modo_var.get(),
+            self.modelo_imagen_valido() if self.modo_var.get() == "imagen" else "",
+            self.modelo_video_valido() if self.modo_var.get() == "video" else "",
+            self.combo_modelo_audio.get() if self.modo_var.get() == "audio" and hasattr(self, 'combo_modelo_audio') else "",
+            self.ratio_actual(),
+            self.personaje_activo(),
+            self.lora_activo(),
+            self.destino_var.get(),
+        )
+
+        # Si no ha cambiado, devolver cache
+        if hasattr(self, '_cache_modelo_info') and getattr(self, '_cache_modelo_clave', None) == clave_cache:
+            return self._cache_modelo_info
+
         info = ""
         modo = self.modo_var.get()
         if modo == "video": info = f" Motor: {self.modelo_video_valido()}. Duración: {self.duracion_var.get()}."
@@ -948,6 +964,9 @@ class CoreMixin:
             id_a = self.idioma_audio_var.get() if hasattr(self, 'idioma_audio_var') else ""
             if id_a and id_a != "— Idioma —": info += f" Idioma letra: {id_a}."
 
+        # Guardar en cache
+        self._cache_modelo_info = info
+        self._cache_modelo_clave = clave_cache
         return info
 
     def _construir_peticion(self, idea, modo_letra):
@@ -2345,13 +2364,26 @@ class CoreMixin:
             widget.bind("<Control-d>",            lambda e: self._cmd_duplicar_a_historial())
             # ── TANDA 5: Atajos nuevos ──
             widget.bind("<Control-s>",            lambda e: (self._guardar_favorito(), "break")[1])
-            widget.bind("<Control-Shift-S>",      lambda e: (self._guardar_estrella(), "break")[1])
+            widget.bind("<Control-Shift-S>",      lambda e: self._atajo_guardar_estrella())
             # Alt+1/2/3: cambiar modo
             widget.bind("<Alt-Key-1>",            lambda e: self._cmd_cambiar_modo("imagen"))
             widget.bind("<Alt-Key-2>",            lambda e: self._cmd_cambiar_modo("video"))
             widget.bind("<Alt-Key-3>",            lambda e: self._cmd_cambiar_modo("audio"))
+            # Nuevos atajos (MEJORA #14) - con return "break" para evitar duplicados
+            widget.bind("<Control-Shift-P>",      lambda e: (self.cmd_previsualizar(), "break")[1])
+            widget.bind("<Control-e>",            lambda e: (self._cmd_exportar_rapido(), "break")[1])
+            widget.bind("<Control-f>",            lambda e: self._atajo_buscar_global())
+            widget.bind("<Control-l>",            lambda e: (self._cmd_abrir_loras(), "break")[1])
+            widget.bind("<Control-p>",            lambda e: (self._cmd_grupo_personajes(), "break")[1])
+            widget.bind("<Control-t>",            lambda e: (self._abrir_tutorial(), "break")[1])
+            widget.bind("<Control-Shift-N>",      lambda e: (self._cmd_negative_builder(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.bind("<Control-v>", self._pegar_inteligente_clipboard)
+        # Ctrl+? = mostrar atajos
+        self.bind("<Control-question>", lambda e: self._cmd_mostrar_atajos())
+        # F11 y Escape para pantalla completa
+        self.bind("<F11>", lambda e: self._toggle_fullscreen())
+        self.bind("<Escape>", lambda e: self._cerrar_popup_activo())
 
     def _cmd_cambiar_modo(self, modo_destino):
         """Cambia el modo (imagen/video/audio) por atajo Alt+1/2/3."""
@@ -2363,3 +2395,358 @@ class CoreMixin:
             self.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
         except Exception: pass
         return "break"
+
+    def _cmd_exportar_rapido(self):
+        """Atajo Ctrl+E - Exportar rápidamente el prompt actual."""
+        if hasattr(self, '_exportar'):
+            self._exportar()
+        elif hasattr(self, 'cmd_exportar'):
+            self.cmd_exportar()
+        else:
+            self.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
+        return "break"
+
+    def _atajo_guardar_estrella(self):
+        """Atajo Ctrl+Shift+S - Guardar como estrella."""
+        try:
+            if hasattr(self, '_guardar_estrella'):
+                self._guardar_estrella()
+            else:
+                self.set_estado("⚠️ Función no disponible", "#e74c3c")
+        except Exception as e:
+            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+        return "break"
+
+    def _cmd_buscar_global(self):
+        """Atajo Ctrl+F - Buscar en historial, favoritos, estrellas."""
+        try:
+            self._abrir_busqueda_global()
+        except Exception as e:
+            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+        return "break"
+
+    def _atajo_buscar_global(self):
+        """Helper para Ctrl+F con manejo de errores."""
+        try:
+            self._cmd_buscar_global()
+        except Exception as e:
+            self.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
+        return "break"
+
+    def _toggle_fullscreen(self):
+        """F11 - Alternar pantalla completa."""
+        if hasattr(self, '_toggle_fullscreen_principal'):
+            self._toggle_fullscreen_principal()
+        else:
+            current = self.attributes('-fullscreen')
+            self.attributes('-fullscreen', not current)
+        return "break"
+
+    def _cerrar_popup_activo(self):
+        """Escape - Cerrar popup activo (Toplevel más reciente)."""
+        try:
+            # Buscar popups abiertos
+            popups = [w for w in self.winfo_children() if isinstance(w, ctk.CTkToplevel)]
+            if popups:
+                popups[-1].destroy()
+                return "break"
+        except Exception:
+            pass
+        # Si hay ventana de pantalla completa, salir
+        if self.attributes('-fullscreen'):
+            self.attributes('-fullscreen', False)
+            return "break"
+        return "break"
+
+    def _cmd_abrir_loras(self):
+        """Atajo Ctrl+L - Abrir gestión de LoRAs."""
+        from windows import abrir_loras
+        try:
+            abrir_loras(self)
+        except Exception as e:
+            self.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
+        return "break"
+
+    def _cmd_mostrar_atajos(self):
+        """Ctrl+? - Muestra ventana con todos los atajos de teclado."""
+        from config import get_theme_colors
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("⌨️ Atajos de teclado")
+        vent.geometry("600x550")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(vent, text="Usa estos atajos para trabajar más rápido", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+
+        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=15, pady=5)
+
+        atajos = [
+            ("Generación", [
+                ("Ctrl+Enter", "Generar prompt"),
+                ("Ctrl+Shift+Enter", "Generar variaciones (x3)"),
+                ("Alt+Enter", "Generación rápida"),
+                ("Ctrl+I", "Generar ideas"),
+            ]),
+            ("Edición", [
+                ("Ctrl+S", "Guardar como favorito"),
+                ("Ctrl+Shift+S", "Guardar como estrella"),
+                ("Ctrl+D", "Duplicar al historial"),
+                ("Ctrl+Shift+P", "Previsualizar (Pollinations)"),
+            ]),
+            ("Portapapeles", [
+                ("Ctrl+1", "Copiar positive"),
+                ("Ctrl+2", "Copiar negative"),
+                ("Ctrl+Shift+A", "Analizar imagen (Vision)"),
+                ("Ctrl+V", "Pegar inteligente"),
+            ]),
+            ("Navegación", [
+                ("Alt+1", "Modo imagen"),
+                ("Alt+2", "Modo vídeo"),
+                ("Alt+3", "Modo audio"),
+                ("Ctrl+R", "Idea aleatoria del historial"),
+            ]),
+            ("Herramientas", [
+                ("Ctrl+E", "Exportar rápido"),
+                ("Ctrl+F", "Búsqueda global"),
+                ("Ctrl+L", "Abrir LoRAs"),
+                ("Ctrl+P", "Grupo de personajes"),
+                ("Ctrl+Shift+N", "Constructor de negative"),
+            ]),
+            ("Ayuda", [
+                ("Ctrl+?", "Mostrar esta ayuda"),
+            ]),
+        ]
+
+        for categoria, lista in atajos:
+            frame_cat = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
+            frame_cat.pack(fill="x", pady=4)
+            ctk.CTkLabel(frame_cat, text=categoria, font=ctk.CTkFont(size=11, weight="bold"),
+                         text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 4))
+            for tecla, accion in lista:
+                row = ctk.CTkFrame(frame_cat, fg_color="transparent")
+                row.pack(fill="x", padx=10, pady=1)
+                ctk.CTkLabel(row, text=tecla, font=ctk.CTkFont(size=10, weight="bold"),
+                             width=140, anchor="w", text_color="#3498db").pack(side="left")
+                ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=10),
+                             anchor="w", text_color=c["panel_text"]).pack(side="left")
+
+        ctk.CTkButton(vent, text="Cerrar", width=120, height=30, command=vent.destroy).pack(pady=12)
+        return "break"
+
+    def _abrir_busqueda_global(self):
+        """Abre ventana de búsqueda global en historial, favoritos, estrellas."""
+        from config import get_theme_colors
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("🔍 Búsqueda global")
+        vent.geometry("550x450")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="🔍 Búsqueda global", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+        ctk.CTkLabel(vent, text="Busca en historial, favoritos y estrellas", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        ent_buscar = ctk.CTkEntry(vent, placeholder_text="Escribe para buscar...", width=480, height=32)
+        ent_buscar.pack(pady=5)
+
+        resultados_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        resultados_frame.pack(fill="both", expand=True, padx=15, pady=5)
+
+        def _buscar(*args):
+            termino = ent_buscar.get().strip().lower()
+            for w in resultados_frame.winfo_children(): w.destroy()
+
+            if not termino:
+                ctk.CTkLabel(resultados_frame, text="Escribe algo para buscar", text_color=c["muted_text"]).pack(pady=20)
+                return
+
+            resultados = []
+
+            # Buscar en historial
+            for item in (self.store.historial or [])[:50]:
+                if isinstance(item, dict):
+                    contenido = item.get("contenido", "")
+                    if termino in contenido.lower():
+                        resultados.append(("📋 Historial", contenido[:100]))
+
+            # Buscar en favoritos
+            for item in (self.store.favoritos or []):
+                if isinstance(item, dict):
+                    contenido = item.get("contenido", "")
+                    if termino in contenido.lower():
+                        resultados.append(("⭐ Favorito", contenido[:100]))
+
+            # Buscar en estrellas
+            for item in (self.store.estrellas or []):
+                if isinstance(item, dict):
+                    contenido = item.get("contenido", "")
+                    if termino in contenido.lower():
+                        resultados.append(("🌟 Estrella", contenido[:100]))
+
+            if not resultados:
+                ctk.CTkLabel(resultados_frame, text="No se encontraron resultados", text_color=c["muted_text"]).pack(pady=20)
+                return
+
+            for tipo, texto in resultados[:20]:
+                card = ctk.CTkFrame(resultados_frame, fg_color=c["fg_frame"], corner_radius=4)
+                card.pack(fill="x", pady=2)
+                color = {"📋": "#3498db", "⭐": "#f39c12", "🌟": "#9b59b6"}.get(tipo[:2], "#888")
+                ctk.CTkLabel(card, text=tipo, font=ctk.CTkFont(size=9, weight="bold"),
+                             text_color=color, width=60, anchor="w").pack(side="left", padx=6, pady=4)
+                ctk.CTkLabel(card, text=texto + "..." if len(texto) > 90 else texto,
+                             font=ctk.CTkFont(size=9), text_color=c["muted_text"],
+                             anchor="w").pack(side="left", padx=4, fill="x", expand=True)
+
+        ent_buscar.bind("<KeyRelease>", _buscar)
+        _buscar()
+
+        ctk.CTkButton(vent, text="Cerrar", width=100, height=28, command=vent.destroy).pack(pady=8)
+
+    def _abrir_tutorial(self):
+        """Tutorial interactivo completo con navegación por pasos."""
+        from config import get_theme_colors
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        pasos = [
+            ("🎯 1. IDEA — El punto de partida",
+             "Escribe tu idea en el campo superior. Puede ser simple ('un gato') o detallada ('un gato persa dorado durmiendo en un sofá de terciopelo azul con luz cálida de atardecer').\n\n💡 Cuanto más específica, mejor el resultado. Incluye: sujeto, acción, entorno, estilo."),
+            ("📱 2. MODO — Imagen, Vídeo o Audio",
+             "Cambia con Alt+1 (Imagen), Alt+2 (Vídeo), Alt+3 (Audio) o el selector superior.\n\n• Imagen: fotos, ilustraciones, arte\n• Vídeo: clips, animaciones, motion graphics\n• Audio: canciones, música, efectos\n\nCada modo tiene modelos específicos y ajustes distintos."),
+            ("🤖 3. MODELO — El motor de generación",
+             "Selecciona el modelo desde el desplegable. Los más populares:\n\n• FLUX — excelente para cualquier cosa, rápido\n• Midjourney — estilo artístico, colores vibrantes\n• Kling / Seedance — para vídeo realista\n• Suno — para música y audio\n• Stable Diffusion — control total, técnico\n\nCada modelo tiene 'personalidad' diferente. Experimenta."),
+            ("🌐 4. PLATAFORMA — A dónde subirás",
+             "Elige la plataforma destino: SeaArt, Tensor.Art, ComfyUI, Kling, Suno, etc.\n\nEsto adapta el formato del prompt: algunas usan tags con pesos, otras lenguaje natural. La plataforma también afecta qué modelos están disponibles."),
+            ("🎨 5. ESTILOS — La estética visual",
+             "Marca 1-3 estilos que quieras aplicar. Opciones:\n\n• Fotografía Realista • Cine • Animé/Manga\n• Arte Digital • Concept Art • Ilustración\n• Vintage • Cyberpunk • Fantasy • Horror\n\n💡 Combinar más de 3 puede generar resultados inesperados. Menos es más."),
+            ("⚙️ 6. RATIO — Proporción de la imagen",
+             "Elige formato según用途:\n\n• 1:1 — Cuadrado (Instagram posts)\n• 16:9 — Horizontal (YouTube, web)\n• 9:16 — Vertical (Stories, Reels, TikTok)\n• 4:3 — Clásico (fotografía)\n• 21:9 — Ultra wide (cinemático)\n\nEl ratio afecta composición y enfoque. Un 9:16 focus en primer plano; 16:9 permite más contexto."),
+            ("👤 7. PERSONAJE — Personajes recurrentes",
+             "Si generas el mismo personaje frecuentemente, guardalo aquí.\n\nDefine: nombre, descripción física, rasgos distintivos, ropa habitual.\n\nCuando actives un personaje, su descripción se añade automáticamente al prompt.ideal para series, cómics, historias."),
+            ("🔗 8. LoRA — Modelos adicionales",
+             "Los LoRAs son pequeños modelos que añaden estilos o sujetos específicos.\n\nActívalos desde el panel LoRA. Algunos populares:\n• Estilos artísticos (anime, watercolor)\n• Efectos (glow, glitch)\n• Sujetos específicos (personajes, objetos)\n\n💡 Cada LoRA consume parte del 'presupuesto' del prompt."),
+            ("🛡️ 9. NEGATIVE — Lo que NO quieres",
+             "El negative prompt dice lo que NO debe aparecer en la imagen.\n\nNegatives típicos: low quality, blurry, distorted, ugly, deformed, watermark, text.\n\nUsa '🛡 Generar negative óptimo' para uno automático según tu modelo."),
+            ("✨ 10. GENERAR — Crear el prompt",
+             "Presiona Ctrl+Enter o el botón '✨ Generar'.\n\nEl LLM toma tu idea + configuración y crea un prompt optimizado.\n\nOpciones:\n• Ctrl+Enter = Generar completo (8-15s)\n• Alt+Enter = Quick Generate (3-6s, menos elaborado)"),
+            ("🔁 11. REFINAR — Mejora el resultado",
+             "Si el resultado no te gusta, usa Refinar:\n\n• Refinar estándar — mejora general\n• Refinar más cinematográfico — encuadre épico, cámara dramámatica\n• Refinar más detalle facial — ojos, piel, texturas\n• Refinar mejor iluminación — luces, sombras, atmósfera\n• Refinar simplificar — elimina redundancias\n\n💡 Prueba primero Refinar antes de regenerar desde cero."),
+            ("📊 12. SCORING — Análisis y mejora automática",
+             "El scoring analiza tu prompt y propone mejoras automáticas.\n\nUsa '📊 Scoring auto' en macros para aplicar directamente, o el scoring normal para ver la comparativa.\n\nEl scoring detecta: calidad técnica, balance, coherencia, detalle."),
+            ("⭐ 13. GUARDAR — Favoritos y Estrellas",
+             "Guarda lo que te gusta para reutilizarlo:\n\n• Ctrl+S = Favorito (acceso rápido)\n• Ctrl+Shift+S = Estrella (destacado premium)\n\nLos favoritos aparecen en el panel lateral. Las estrellas son tus mejores trabajos."),
+            ("📑 14. PLANTILLAS — Estructuras probadas",
+             "34 plantillas con estructuras profesionales. Acceso: Menú Plantillas.\n\nCategorías: Retratos, Paisajes, Cine, Moda, Anime, Producto, Arquitectura, Gaming, Arte, Foto.\n\n💡 Reemplaza las variables {sujeto}, {lugar}, {hora_dia}, etc. con tus datos."),
+            ("🧪 15. MACROS — Automatización",
+             "Crea secuencias que se ejecutan automáticamente:\n\n1. Guarda tus acciones favoritas como macro\n2. Añade pasos: Generar → Refinar → Scoring → Guardar\n3. Ejecuta todo en un click\n\nUsa las macros predefinidas o crea las tuyas. Ideal para flujos repetitivos."),
+            ("💎 16. SEEDS — Configuraciones rápidas",
+             "Guarda configuraciones: modelo + plataforma + ratio + estilos.\n\nUsa cuando tienes una combinación que funciona bien y quieres recuperarla rápido.\n\nDiferencia con plantillas: Seeds guardan solo config, plantillas guardan el setup completo."),
+            ("🎬 17. A/B TESTING — Compara variantes",
+             "Genera 4 versiones con variaciones diferentes:\n\n• Cambia solo estilo → compara aesthetics\n• Cambia solo iluminación → compara mood\n• Cambia ratio → compara composición\n• Combina cambios → encuentra lo optimal\n\nSelecciona 1-2 dimensiones a variar. Las 4 opciones se muestran en grid para comparar."),
+            ("🎥 18. GRABAR SESIÓN — Tutoriales y回忆",
+             "Activa desde el botón 🎬 en la barra.\n\nRegistra: prompts, clics, errores, flujos completos.\n\nLuego puedes:\n• Exportar como tutorial paso a paso\n• Revisar qué hiciste mal\n• Crear documentación de tu proceso\n\nOpciones de grabación: solo app, pantalla completa, o solo texto."),
+            ("📈 19. VERSIONES — Historial de cambios",
+             "Cada vez que generas/refinas, se guarda una versión (hasta 30).\n\nAccede desde '📜 Versiones prompt' en el menú.\n\nútil para:\n• Comparar versiones anteriores\n• Recuperar una que era mejor\n• Ver la evolución de tu prompt"),
+            ("🔍 20. BUSCAR — Encuentra lo que necesitas",
+             "Ctrl+F abre búsqueda global en:\n\n• Historial — todos los prompts生成ados\n• Favoritos — tus guardados rápidos\n• Estrellas — tus mejores trabajos\n\nBusca por palabras clave en el contenido."),
+            ("⌨️ 21. ATAJOS DE TECLADO — Trabaja más rápido",
+             "Los más útiles:\n\n• Ctrl+Enter — Generar prompt\n• Ctrl+S — Guardar favorito\n• Ctrl+Shift+S — Guardar estrella\n• Ctrl+I — Ideas creativas\n• Ctrl+F — Búsqueda global\n• Ctrl+T — Este tutorial\n• Ctrl+L — Abrir LoRAs\n• Ctrl+P — Grupo personajes\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Previsualizar\n• F11 — Pantalla completa\n• Alt+1/2/3 — Cambiar modo"),
+            ("📤 22. EXPORTAR — Comparte tu trabajo",
+             "Desde el menú Exportar, puedes:\n\n• Copiar al portapapeles\n• Guardar como .txt / .json\n• Exportar para CLI (ComfyUI, A1111)\n• Exportar proyecto completo\n\nEl formato depende del destino: tags, natural, JSON."),
+            ("🎛️ 23. AJUSTES EXTRAS — Configuración avanzada",
+             "En el panel de ajustes extras:\n\n• Weight (1-30) — Intensidad del LoRA\n• Seed — Reproducibilidad\n• Repeats — Repetir elementos\n• CFG Scale — Fidelidad al prompt\n• Steps — Calidad vs velocidad\n\n💡 Estos afectan significativamente el resultado. Experimenta con cuidado."),
+            ("📊 24. ESTADÍSTICAS — Tu uso de la app",
+             "Accede desde '📈 Estadísticas' en Análisis.\n\nMuestra:\n• Prompts generados\n• Modelos más usados\n• Estilos favoritos\n• Tiempo de uso\n• Logros desbloqueados\n\nútil para entender tu flujo y optimizarlo."),
+            ("🧬 25. ADN VISUAL — Análisis de imagen",
+             "Carga una imagen y extrae su 'ADN': sujeto, iluminación, estilo, cámara, composición.\n\nLuego puedes:\n• Convertir a prompt estructurado\n• Mantener algunos elementos (ej: estilo) y cambiar otros\n• Guardar el ADN para reutilizar\n\n Potente para análisis y variaciones controladas."),
+            ("💡 26. CONSEJOS FINALES",
+             "1. Sé específico en la idea — 'gato' vs 'gato persa dorado durmiendo'\n2. Limita estilos a 2-3 — más genera caos\n3. Usa negativos — evita lo que no quieres\n4. Prueba variaciones — A/B testing es tu amigo\n5. Guarda lo bueno — favoritos y estrellas\n6. Iteración > Regenerar — refina antes de empezar de nuevo\n7. Experimenta — los mejores prompts vienen de pruebas\n\n🎓 ¡Con práctica dominarás todas las herramientas. Mucho éxito!"),
+        ]
+
+        idx_actual = {"valor": 0}
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("📖 Tutorial - G-Prompt Studio")
+        vent.geometry("650x480")
+        vent.transient(self)
+
+        total_pasos = len(pasos)
+
+        ctk.CTkLabel(vent, text="📖 Tutorial completo de G-Prompt Studio",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 5))
+
+        # Progress bar
+        progress = ctk.CTkProgressBar(vent, width=450, height=10)
+        progress.pack(pady=(0, 8))
+        progress.set(1 / total_pasos)
+
+        # Indicador de paso
+        lbl_paso = ctk.CTkLabel(vent, text="Paso 1/26", font=ctk.CTkFont(size=12), text_color=c["muted_text"])
+        lbl_paso.pack(pady=(0, 8))
+
+        # Contenido del paso
+        contenido_frame = ctk.CTkScrollableFrame(vent, fg_color=c["fg_frame"], corner_radius=8)
+        contenido_frame.pack(fill="both", expand=True, padx=15, pady=10)
+
+        lbl_titulo = ctk.CTkLabel(contenido_frame, text="", font=ctk.CTkFont(size=13, weight="bold"),
+                                  text_color=c["hdr_text"])
+        lbl_titulo.pack(anchor="w", pady=(0, 8), padx=10)
+
+        lbl_desc = ctk.CTkLabel(contenido_frame, text="", font=ctk.CTkFont(size=11),
+                               text_color=c["muted_text"], wraplength=570, justify="left")
+        lbl_desc.pack(anchor="w", padx=10)
+
+        def actualizar_paso():
+            i = idx_actual["valor"]
+            titulo, desc = pasos[i]
+            lbl_titulo.configure(text=titulo)
+            lbl_desc.configure(text=desc)
+            lbl_paso.configure(text=f"Paso {i+1}/{total_pasos} ({int((i+1)/total_pasos*100)}%)")
+            progress.set((i + 1) / total_pasos)
+
+            btn_ant.configure(state="normal" if i > 0 else "disabled")
+            btn_sig.configure(state="normal" if i < total_pasos - 1 else "disabled")
+
+        def siguiente():
+            if idx_actual["valor"] < total_pasos - 1:
+                idx_actual["valor"] += 1
+                actualizar_paso()
+
+        def anterior():
+            if idx_actual["valor"] > 0:
+                idx_actual["valor"] -= 1
+                actualizar_paso()
+
+        def ir_inicio():
+            idx_actual["valor"] = 0
+            actualizar_paso()
+
+        def ir_final():
+            idx_actual["valor"] = total_pasos - 1
+            actualizar_paso()
+
+        # Botones de navegación
+        nav_frame = ctk.CTkFrame(vent, fg_color="transparent")
+        nav_frame.pack(pady=(12, 15))
+
+        btn_inicio = ctk.CTkButton(nav_frame, text="⏮️ Inicio", width=70, height=30, command=ir_inicio)
+        btn_inicio.pack(side="left", padx=3)
+
+        btn_ant = ctk.CTkButton(nav_frame, text="◀ Anterior", width=100, height=30, command=anterior)
+        btn_ant.pack(side="left", padx=5)
+
+        btn_sig = ctk.CTkButton(nav_frame, text="Siguiente ▶", width=100, height=30, command=siguiente)
+        btn_sig.pack(side="left", padx=5)
+
+        btn_final = ctk.CTkButton(nav_frame, text="Fin ⏭️", width=70, height=30, command=ir_final)
+        btn_final.pack(side="left", padx=3)
+
+        ctk.CTkButton(vent, text="¡Vamos a probar!", width=180, height=32, fg_color="#1a7a3c",
+                      command=vent.destroy).pack(pady=(8, 12))
+
+        actualizar_paso()

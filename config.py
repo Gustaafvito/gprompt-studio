@@ -25,14 +25,14 @@ ARCHIVOS = {
 
 # ── Modelos Ollama Vision ─────────────────────────────────────────
 MODELOS_OLLAMA_VISION = [
-    "llava:latest", "llava:13b", "moondream:latest",
-    "minicpm-v:latest", "llama3.2-vision:latest",
+    "llama3.2-vision:latest", "qwen2.5vl:latest",
+    "llava:latest", "moondream:latest",
 ]
 
 # ── Modelos Gemini Vision ─────────────────────────────────────────
 MODELOS_GEMINI_CANDIDATOS = [
-    "gemini-2.0-flash-lite", "gemini-2.0-flash",
-    "gemini-2.5-flash-preview-05-20", "gemini-2.5-pro-preview-05-06",
+    "gemini-2.5-flash", "gemini-2.0-flash",
+    "gemini-1.5-flash", "gemini-2.0-flash-lite",
 ]
 
 # ── Modelos OpenRouter Vision ─────────────────────────────────────
@@ -41,6 +41,63 @@ MODELOS_OPENROUTER_VISION = [
     "qwen/qwen2.5-vl-72b-instruct:free",
     "google/gemma-3-27b-it:free",
 ]
+
+# ── ADN Visual Schema ────────────────────────────────────────────
+ADN_SCHEMA = {
+    "sujeto": {
+        "tipo": str, "genero": str, "edad_aprox": str, "etnia": str,
+        "cabello": str, "ojos": str, "ropa": dict, "pose": str, "expresion": str
+    },
+    "escena": {
+        "ubicacion": str, "interior_exterior": str, "elementos": list, "profundidad": str
+    },
+    "iluminacion": {
+        "tipo": str, "direccion": str, "intensidad": str, "hora_dia": str,
+        "color_temperatura": str, "fuentes": list
+    },
+    "camara": {
+        "encuadre": str, "angulo": str, "lente_simulada": str,
+        "profundidad_campo": str, "distorsion": str
+    },
+    "estilo": {
+        "estetica": str, "epoca": str, "tecnica": str, "paleta_dominante": list
+    },
+    "composicion": {
+        "regla": str, "lineas_guia": str, "equilibrio": str
+    },
+    "atmosfera": {
+        "estado_animo": str, "energia": str
+    },
+    "tecnico": {
+        "grano": str, "contraste": str, "saturacion": str, "postproceso": str
+    }
+}
+
+# ── Conversión ADN por plataforma ─────────────────────────────────
+ADN_A_PLATAFORMA = {
+    "midjourney": {
+        "sujeto": "{tipo}, {ropa}, {pose}, {expresion}",
+        "estilo": "--style {estetica} --ar 16:9",
+        "iluminacion": "--lighting {tipo}",
+        "camara": "--{angulo} --{encuadre}"
+    },
+    "stable_diffusion": {
+        "sujeto": "1person, {ropa}, {pose}",
+        "estilo": "{estetica}, {tecnica}",
+        "iluminacion": "{tipo} lighting",
+        "tags": "{paleta_dominante}"
+    },
+    "dalle": {
+        "sujeto": "{tipo} wearing {ropa}, {pose}",
+        "estilo": "{estetica} style, {tecnica}",
+        "atm": "{estado_animo} mood"
+    },
+    "flux": {
+        "sujeto": "portrait of {tipo}, {ropa}, {pose}",
+        "estilo": "{estetica}, detailed, high quality",
+        "escena": "{ubicacion}, {iluminacion}"
+    }
+}
 
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE VÍDEO

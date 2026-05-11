@@ -8,6 +8,7 @@ import pyperclip
 import customtkinter as ctk
 import tkinter as tk
 import tkinter.filedialog as filedialog
+import tkinter.simpledialog as simpledialog
 from PIL import Image
 from pathlib import Path
 from config import PUBLIC_VERSION, PRESET_COLORES, BIBLIOTECA_EJEMPLOS, DESTINOS, get_theme_colors
@@ -199,6 +200,9 @@ class DataMgmtMixin:
 
     def _agregar_img_historial(self, pil_img, nombre):
         """Añade una imagen al historial visual de recientes."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
         # Evitar duplicados por nombre
         for h in self._img_history:
             if h[2] == nombre:

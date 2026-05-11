@@ -7,10 +7,11 @@ import datetime
 import random
 import pyperclip
 from collections import Counter
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import customtkinter as ctk
 import tkinter as tk
-from config import MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT, get_image_model_specs, get_model_specs, get_audio_model_specs, get_theme_colors
+from config import MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT, get_image_model_specs, get_model_specs, get_audio_model_specs
+from config import get_theme_colors as _get_tc
 from workers import limpiar_marcadores
 from typing import TYPE_CHECKING
 
@@ -172,7 +173,7 @@ class ToolsWorkflowMixin:
     def _cmd_cargar_setup(self):
         """Abre ventana con la lista de setups guardados para elegir uno."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         prefs = self.store.cargar_preferencias()
         setups = prefs.get("setups", {}) or {}
         if not setups:
@@ -246,7 +247,7 @@ class ToolsWorkflowMixin:
     def _cmd_cron_prompts(self):
         """Genera N variantes del prompt actual espaciadas en el tiempo."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
@@ -447,7 +448,7 @@ class ToolsWorkflowMixin:
     def _cmd_versiones_prompt(self):
         """Muestra el historial de versiones del prompt actual (rollback)."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         if not hasattr(self, '_versiones_prompt') or not self._versiones_prompt:
             return self.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
 
@@ -496,7 +497,7 @@ class ToolsWorkflowMixin:
     def _abrir_macros(self):
         """Macros: secuencias de acciones automatizadas."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         prefs = self.store.cargar_preferencias()
         macros = prefs.get("macros", [])
 
@@ -510,20 +511,28 @@ class ToolsWorkflowMixin:
         ctk.CTkLabel(vent, text="Combina acciones (ej: Generar → Refinar cinematográfico → Guardar estrella)",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-        # Acciones disponibles para construir macros
+        # Acciones disponibles para construir macros (solo automáticas)
         acciones_disponibles = {
             "✨ Generar prompt": "generar",
+            "⚡ Generar idea directa": "idea_auto",
+            "🔄 Generar 1 variación": "variacion_auto",
+            "🛡 Generar negative óptimo": "negative_optimo",
+            "🚫 Negative builder": "negative_builder",
+            "🎨 Previsualizar": "previsualizar",
             "🔁 Refinar (estándar)": "refinar",
             "🎬 Refinar más cinematográfico": "refinar_cinematografico",
             "👤 Refinar más detalle facial": "refinar_facial",
             "💡 Refinar mejor iluminación": "refinar_iluminacion",
+            "🎯 Refinar mejorado": "refinar_mejorado",
             "✂️ Refinar simplificar": "refinar_simplificar",
-            "🛡 Generar negative óptimo": "negative_optimo",
-            "📊 Hacer scoring": "scoring",
-            "⭐ Guardar como Favorito": "guardar_favorito",
-            "🌟 Guardar como Estrella": "guardar_estrella",
+            "📊 Scoring auto": "scoring_auto",
+            "🎨 Sugerir estilos": "sugerir_estilos",
+            "⭐ Guardar Favorito": "guardar_favorito",
+            "🌟 Guardar Estrella": "guardar_estrella",
+            "🧹 Limpiar salida": "limpiar",
+            "📋 Copiar negative": "copiar_neg",
+            "📋 Copiar positive": "copiar_pos",
             "🇪🇸 Traducir al español": "traducir",
-            "💾 Exportar .txt": "exportar",
         }
 
         # Form crear nueva macro
@@ -636,6 +645,10 @@ class ToolsWorkflowMixin:
             try:
                 if accion_id == "generar":
                     self.cmd_prompt()
+                elif accion_id == "idea_auto":
+                    self._cmd_idea_auto_en_macro()
+                elif accion_id == "variacion_auto":
+                    self._cmd_variacion_auto_en_macro()
                 elif accion_id == "refinar":
                     self.cmd_refinar()
                 elif accion_id == "refinar_cinematografico":
@@ -646,29 +659,124 @@ class ToolsWorkflowMixin:
                     self._refinar_con_instruccion("iluminación más profesional, luces volumétricas, ambiente atmosférico, dirección de luz definida")
                 elif accion_id == "refinar_simplificar":
                     self._refinar_con_instruccion("más simple y conciso. Elimina redundancias, tags innecesarios.")
+                elif accion_id == "refinar_mejorado":
+                    self._refinar_con_instruccion("mejorar calidad general, añadir más detalle, optimizar estructura del prompt")
                 elif accion_id == "negative_optimo":
                     self._cmd_negative_optimo()
-                elif accion_id == "scoring":
-                    self._cmd_scoring()
+                elif accion_id == "negative_builder":
+                    self._cmd_negative_builder()
+                elif accion_id == "scoring_auto":
+                    self._cmd_scoring_auto_en_macro()
+                elif accion_id == "sugerir_estilos":
+                    self._cmd_sugerir_estilos()
                 elif accion_id == "guardar_favorito":
                     self._guardar_favorito()
                 elif accion_id == "guardar_estrella":
                     self._guardar_estrella()
                 elif accion_id == "traducir":
                     self._traducir_salida()
-                elif accion_id == "exportar":
-                    self._exportar()
+                elif accion_id == "copiar_pos":
+                    self._copiar("positivo")
+                elif accion_id == "copiar_neg":
+                    self._copiar("negativo")
+                elif accion_id == "limpiar":
+                    self.actualizar_salida("")
+                elif accion_id == "previsualizar":
+                    self.cmd_previsualizar()
+                    self.after(18000, lambda: _ejecutar_paso(idx + 1))
+                    return
             except Exception as e:
-                self.set_estado(f"⚠️ Paso falló: {e}", "#e67e22")
-            # Siguiente paso después de delay (las acciones tardan)
-            self.after(3000, lambda: _ejecutar_paso(idx + 1))
+                self.set_estado(f"⚠️ Paso falló: {e}", "#e74c3c")
+            self.after(6000, lambda: _ejecutar_paso(idx + 1))
 
         _ejecutar_paso(0)
+
+    def _cmd_scoring_auto_en_macro(self):
+        """Scoring automático sin abrir ventana - aplica el mejor prompt directamente."""
+        actual = self.txt_salida.get("1.0", "end").strip()
+        if not actual or len(actual) < 20:
+            return self.set_estado("⚠️ Genera un prompt primero para scoring.", "#e67e22")
+
+        # Guardar versión antes de modificar (por seguridad)
+        try:
+            if not hasattr(self, '_versiones_prompt'):
+                self._versiones_prompt = []
+            if not (self._versiones_prompt and self._versiones_prompt[-1]["texto"] == actual):
+                self._versiones_prompt.append({
+                    "texto": actual,
+                    "etiqueta": f"v{len(self._versiones_prompt) + 1} (pre-scoring)",
+                    "timestamp": datetime.datetime.now().isoformat(),
+                })
+                if len(self._versiones_prompt) > 30:
+                    self._versiones_prompt = self._versiones_prompt[-30:]
+        except Exception:
+            pass  # No bloquear si falla el guardado de versión
+
+        peticion = (
+            f"Analiza este prompt y mejora la versión automáticamente.\n\n"
+            f"PROMPT:\n{actual}\n\n"
+            f"Responde SOLO con el prompt mejorado, en el mismo formato (tags o natural)."
+        )
+
+        def _worker():
+            try:
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = limpiar_marcadores(resp)
+                self.after(0, lambda: self.actualizar_salida(resp))
+                self.after(0, lambda: self.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
+            except Exception as e:
+                self.after(0, lambda: self.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _cmd_idea_auto_en_macro(self):
+        """Genera 1 idea directamente sin popup - para macros."""
+        idea = self.txt_idea.get("1.0", "end").strip()
+        tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
+        estilos = self.estilos_texto()
+        peticion = f"Genera UNA sola idea para {tipo}. Estilos: {estilos}"
+        if idea:
+            peticion += f" Tema: {idea}"
+        peticion += "\nResponde SOLO con la idea, sin numeración ni explicaciones."
+
+        def _worker():
+            try:
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=200, modelo_llm=self.llm_var.get())
+                resp = limpiar_marcadores(resp).strip()
+                self.after(0, lambda: self.txt_idea.insert("1.0", resp + "\n\n"))
+                self.after(0, lambda: self.set_estado("💡 Idea generada (macro)", "#2ecc71"))
+            except Exception as e:
+                self.after(0, lambda: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _cmd_variacion_auto_en_macro(self):
+        """Genera 1 variación directamente sin popup - para macros."""
+        actual = self.txt_salida.get("1.0", "end").strip()
+        if not actual or len(actual) < 20:
+            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+
+        peticion = (
+            f"Crea una variación de este prompt manteniendo la esencia pero cambiando estilo/enfoque:\n\n"
+            f"{actual}\n\n"
+            f"Responde SOLO con el nuevo prompt variado, en el mismo formato."
+        )
+
+        def _worker():
+            try:
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500, modelo_llm=self.llm_var.get())
+                resp = limpiar_marcadores(resp)
+                self.after(0, lambda: self.actualizar_salida(resp))
+                self.after(0, lambda: self.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
+            except Exception as e:
+                self.after(0, lambda: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_proyectos(self):
         """Sistema de proyectos con setup propio: organiza prompts y guarda configuración por proyecto."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         prefs = self.store.cargar_preferencias()
         # ── Migración automática: strings → dicts ──
         proyectos_raw = prefs.get("proyectos", [])
@@ -893,10 +1001,11 @@ class ToolsWorkflowMixin:
         except ImportError:
             return False
 
-    def _sesion_video_iniciar(self):
-        """Arranca la grabación de vídeo en thread separado. Devuelve True si pudo iniciar."""
+    def _sesion_video_iniciar(self, solo_app=False):
+        """Arranca la grabación de vídeo en thread separado. solo_app=True captura solo la ventana."""
         if not self._sesion_video_disponible():
             return False
+        self._sesion_solo_app = solo_app
         try:
             import mss
             import imageio
@@ -914,7 +1023,7 @@ class ToolsWorkflowMixin:
                 codec="libx264",
                 quality=7,
                 pixelformat="yuv420p",
-                macro_block_size=1,  # permite cualquier resolución
+                macro_block_size=1,
             )
             self._sesion_video_running = True
             self._sesion_video_thread = threading.Thread(
@@ -934,13 +1043,44 @@ class ToolsWorkflowMixin:
             import mss
             import time
             import numpy as np
+
+            solo_app = getattr(self, '_sesion_solo_app', False)
+
             with mss.mss() as sct:
-                # Pantalla principal (monitor 1, 0 es "all monitors combined")
-                monitor = sct.monitors[1] if len(sct.monitors) > 1 else sct.monitors[0]
                 interval = 0.2  # 5 FPS
                 next_t = time.time()
                 while self._sesion_video_running:
-                    img = sct.grab(monitor)
+                    if solo_app:
+                        # Capturar solo la región de la ventana de la app
+                        try:
+                            # Obtener posición y tamaño de la ventana
+                            x = self.winfo_x()
+                            y = self.winfo_y()
+                            w = self.winfo_width()
+                            h = self.winfo_height()
+
+                            # Ajustar a múltiplo de 2 (H.264 requiere dimensiones pares)
+                            w = w if w % 2 == 0 else w - 1
+                            h = h if h % 2 == 0 else h - 1
+
+                            # Capturar región
+                            monitor = {"left": x, "top": y, "width": w, "height": h}
+                            img = sct.grab(monitor)
+                        except Exception:
+                            # Si falla, capturar toda la pantalla
+                            monitor = sct.monitors[1] if len(sct.monitors) > 1 else sct.monitors[0]
+                            # Ajustar también
+                            monitor = dict(monitor)
+                            if monitor["width"] % 2 != 0:
+                                monitor["width"] -= 1
+                            if monitor["height"] % 2 != 0:
+                                monitor["height"] -= 1
+                            img = sct.grab(monitor)
+                    else:
+                        # Capturar toda la pantalla
+                        monitor = sct.monitors[1] if len(sct.monitors) > 1 else sct.monitors[0]
+                        img = sct.grab(monitor)
+
                     # Convertir BGRA → RGB
                     frame = np.array(img)[:, :, [2, 1, 0]]  # BGRA→RGB
                     try:
@@ -953,7 +1093,7 @@ class ToolsWorkflowMixin:
                     if delta > 0:
                         time.sleep(delta)
                     else:
-                        next_t = time.time()  # nos hemos retrasado, resetear
+                        next_t = time.time()
         except Exception as e:
             self.after(0, lambda: self.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
 
@@ -978,24 +1118,68 @@ class ToolsWorkflowMixin:
         """Inicia / detiene la grabación de sesión (con o sin vídeo según preferencia)."""
         self._sesion_init()
         if not self._sesion_grabando:
-            # Iniciar
-            self._sesion_eventos = []
-            self._sesion_grabando = True
-            self._sesion_inicio = datetime.datetime.now()
-            self._sesion_log("🔴 GRABACIÓN INICIADA")
-            # Si está activado el vídeo en preferencias, intentar iniciar
+            # Preguntar tipo de grabación de vídeo
+            tipo_grabacion = "app"  # default
             if getattr(self, '_sesion_grabar_video', False):
                 if self._sesion_video_disponible():
-                    if self._sesion_video_iniciar():
-                        self._sesion_log("🎥 Grabación de vídeo activada (pantalla completa, 5 FPS)")
-                        self.set_estado("🔴 Grabando sesión + 🎥 vídeo... Click 🎬 para parar", "#e74c3c")
-                    else:
-                        self.set_estado("🔴 Grabando solo texto (vídeo no pudo iniciar). Click 🎬 para parar", "#e67e22")
+                    # Ventana de selección
+                    sel = ctk.CTkToplevel(self)
+                    sel.title("🎬 Tipo de grabación")
+                    sel.geometry("350x180")
+                    sel.transient(self)
+                    sel.grab_set()
+
+                    ctk.CTkLabel(sel, text="¿Qué quieres grabar en vídeo?", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
+                    ctk.CTkLabel(sel, text="(La grabación de texto siempre está activa)", font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 15))
+
+                    def _iniciar(tipo):
+                        self._sesion_tipo_video = tipo
+                        sel.destroy()
+                        self._iniciar_grabacion(tipo)
+
+                    ctk.CTkButton(sel, text="📱 Solo ventana de la app", width=250, height=35, fg_color="#1a6a3a",
+                                  command=lambda: _iniciar("app")).pack(pady=5)
+                    ctk.CTkButton(sel, text="🖥️ Toda la pantalla", width=250, height=35, fg_color="#1a4a7a",
+                                  command=lambda: _iniciar("pantalla")).pack(pady=5)
+                    ctk.CTkButton(sel, text="❌ Sin vídeo (solo texto)", width=250, height=30, fg_color="#5a1a1a",
+                                  command=lambda: _iniciar("nada")).pack(pady=5)
+                    return
                 else:
-                    self._sesion_log("⚠️ Vídeo desactivado: instala 'mss' e 'imageio[ffmpeg]'")
-                    self.set_estado("🔴 Grabando solo texto · Para vídeo: pip install mss imageio[ffmpeg]", "#e67e22")
+                    self._sesion_log("⚠️ Vídeo no disponible: instala 'mss' e 'imageio[ffmpeg]'")
+
+            # Sin vídeo o no disponible
+            self._iniciar_grabacion("nada")
+        else:
+            # Parar
+            self._sesion_log("⏹ GRABACIÓN DETENIDA")
+            self._sesion_grabando = False
+            video_path = None
+            if self._sesion_video_running or self._sesion_video_writer:
+                self.set_estado("⏹ Cerrando vídeo...")
+                video_path = self._sesion_video_detener()
+            self._cmd_sesion_exportar(video_path=video_path)
+
+    def _iniciar_grabacion(self, tipo_video):
+        """Inicia la grabación con el tipo de vídeo especificado."""
+        self._sesion_eventos = []
+        self._sesion_grabando = True
+        self._sesion_inicio = datetime.datetime.now()
+        self._sesion_log("🔴 GRABACIÓN INICIADA")
+
+        if tipo_video == "nada":
+            self.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
+        elif tipo_video == "app":
+            if self._sesion_video_iniciar(solo_app=True):
+                self._sesion_log("🎥 Grabación de vídeo (solo app, 5 FPS)")
+                self.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
             else:
-                self.set_estado("🔴 Grabando sesión... Click 🎬 para parar", "#e74c3c")
+                self.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+        elif tipo_video == "pantalla":
+            if self._sesion_video_iniciar(solo_app=False):
+                self._sesion_log("🎥 Grabación de vídeo (pantalla completa, 5 FPS)")
+                self.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
+            else:
+                self.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
         else:
             # Parar
             self._sesion_log("⏹ GRABACIÓN DETENIDA")
@@ -1012,7 +1196,7 @@ class ToolsWorkflowMixin:
         """Abre ventana con el log de la sesión y opciones de exportación.
         Si video_path está dado, también muestra info del MP4 y botón para abrirlo."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         self._sesion_init()
         if not self._sesion_eventos:
             self.set_estado("⚠️ No hay eventos grabados", "#e67e22")
@@ -1153,7 +1337,7 @@ class ToolsWorkflowMixin:
     def _cmd_sesion_modo_tutorial(self):
         """Modo Tutorial: convierte el log en un guion paso a paso para tutoriales de YouTube."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         if not self._sesion_eventos:
             self.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
@@ -1323,7 +1507,7 @@ class ToolsWorkflowMixin:
     def _cmd_ab_testing(self):
         """A/B testing 2x2: configura dimensiones a variar y genera 4 variantes."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
             self.set_estado("⚠️ Escribe una idea primero", "#e67e22")
@@ -1349,9 +1533,25 @@ class ToolsWorkflowMixin:
         dim_vars = {}
         scroll = ctk.CTkScrollableFrame(cfg, fg_color="transparent", height=300)
         scroll.pack(fill="both", expand=True, padx=20, pady=5)
+
+        # Contador y función para actualizar estado
+        lbl_contador = ctk.CTkLabel(cfg, text="Seleccionadas: 0 (máx 2)",
+                                    font=ctk.CTkFont(size=10), text_color="#888")
+        lbl_contador.pack(pady=(0, 5))
+
+        def _actualizar_checkboxes():
+            total = sum(1 for v in dim_vars.values() if v.get())
+            lbl_contador.configure(text=f"Seleccionadas: {total} (máx 2)")
+            # Deshabilitar los no seleccionados si hay 2
+            for nombre, var in dim_vars.items():
+                if total >= 2 and not var.get():
+                    dim_vars[nombre].set(False)
+                    # Aquí no，我们可以 deshabilitar el checkbox pero mejoramos el mensaje
+
         for nombre, valores in self.AB_DIMENSIONES.items():
             var = ctk.BooleanVar(value=False)
             dim_vars[nombre] = var
+            var.trace_add("write", lambda *a: _actualizar_checkboxes())
             row = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
             row.pack(fill="x", pady=2)
             ctk.CTkCheckBox(row, text=f"  {nombre}", variable=var,
@@ -1382,9 +1582,10 @@ class ToolsWorkflowMixin:
                       command=cfg.destroy).pack(side="right", padx=4)
 
     def _ab_lanzar(self, idea_base, dimensiones):
-        """Genera las 4 combinaciones y las muestra en grid 2x2."""
+        """Genera las 4 combinaciones con el LLM y las muestra en grid 2x2."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
+
         # Combinar valores de las dimensiones seleccionadas
         if len(dimensiones) == 1:
             valores = self.AB_DIMENSIONES[dimensiones[0]]
@@ -1398,71 +1599,103 @@ class ToolsWorkflowMixin:
                 for b in v2:
                     combos.append([(d1, a), (d2, b)])
 
-        # Ventana resultados 2x2
+        # Obtener specs del modelo actual
+        specs = self.get_current_model_specs() or {}
+        max_chars = specs.get("max_chars", 1500)
+        has_neg = specs.get("has_negative", True)
+        is_natural = specs.get("is_natural", False)
+        fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
+        neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "No generes NEGATIVE."
+
+        self.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
+        self.toggle_botones(False)
+
+        def _generar():
+            prompts_generados = []
+            for idx, combo in enumerate(combos[:4]):
+                if isinstance(combo, tuple):
+                    dim_name, dim_val = combo
+                    variacion = f"Cambia {dim_name} a: {dim_val}"
+                    etiqueta = f"{dim_name}: {dim_val}"
+                else:
+                    cambios = ", ".join(f"{d}: {v}" for d, v in combo)
+                    variacion = f"Cambia: {cambios}"
+                    etiqueta = "  ·  ".join(f"{d}: {v}" for d, v in combo)
+
+                peticion = (
+                    f"Genera un prompt profesional para esta idea:\n\n"
+                    f"IDEA ORIGINAL: {idea_base}\n"
+                    f"VARIACIÓN APLICAR: {variacion}\n\n"
+                    f"REGLAS:\n"
+                    f"- Mantén la idea original pero aplica la variación especificada\n"
+                    f"- Formato: {fmt}\n"
+                    f"- Añade estilos y calidad profesional\n"
+                    f"- Límite: {max_chars} caracteres\n"
+                    f"- {neg_str}\n\n"
+                    f"Estilos activos: {self.estilos_texto()}\n\n"
+                    f"Responde SOLO con el prompt."
+                )
+
+                try:
+                    resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500, modelo_llm=self.llm_var.get())
+                    resp = limpiar_marcadores(resp)
+                    if not has_neg:
+                        import re
+                        resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp, flags=re.DOTALL | re.IGNORECASE).strip()
+                    prompts_generados.append((etiqueta, resp))
+                except Exception as e:
+                    prompts_generados.append((etiqueta, f"❌ Error: {e}"))
+
+            self.after(0, lambda: self._mostrar_ab_grid(idea_base, dimensiones, prompts_generados, is_lt, c))
+
+        threading.Thread(target=_generar, daemon=True).start()
+
+    def _mostrar_ab_grid(self, idea_base, dimensiones, prompts_generados, is_lt, c):
+        """Muestra la grid de resultados."""
         v = ctk.CTkToplevel(self)
         v.title(f"🧪 A/B Testing — {' + '.join(dimensiones)}")
         v.geometry("1100x720")
         v.transient(self)
 
-        ctk.CTkLabel(v, text=f"🧪 4 variantes generadas a partir de: {idea_base[:80]}{'…' if len(idea_base) > 80 else ''}",
+        ctk.CTkLabel(v, text=f"🧪 4 variantes de: {idea_base[:60]}{'…' if len(idea_base) > 60 else ''}",
                      font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=f"Variando: {' + '.join(dimensiones)}",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 10))
 
         grid = ctk.CTkFrame(v, fg_color="transparent")
         grid.pack(fill="both", expand=True, padx=10, pady=5)
         grid.grid_columnconfigure((0, 1), weight=1)
         grid.grid_rowconfigure((0, 1), weight=1)
 
-        # Generar los prompts (sin LLM, son micro-variaciones aplicadas localmente)
-        prompts_generados = []
-        for combo in combos[:4]:
-            if isinstance(combo, tuple):
-                # Una sola dimensión
-                etiqueta = f"{combo[0]}: {combo[1]}"
-                prompt = f"{idea_base}, {combo[1]}"
-            else:
-                # Dos dimensiones
-                etiqueta = "  ·  ".join(f"{d}: {val}" for d, val in combo)
-                addons = ", ".join(val for _, val in combo)
-                prompt = f"{idea_base}, {addons}"
-            prompts_generados.append((etiqueta, prompt))
-
-        # Pintar 2x2
         positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        for idx, ((etiqueta, prompt), (r, c)) in enumerate(zip(prompts_generados, positions)):
+        for idx, ((etiqueta, prompt), (r, col)) in enumerate(zip(prompts_generados, positions)):
             cell = ctk.CTkFrame(grid, fg_color=c["fg_dark"], corner_radius=8)
-            cell.grid(row=r, column=c, padx=5, pady=5, sticky="nsew")
-            # Header con etiqueta
-            ctk.CTkLabel(cell, text=f"📌 Variante {idx + 1}",
-                         font=ctk.CTkFont(size=11, weight="bold"),
+            cell.grid(row=r, column=col, padx=5, pady=5, sticky="nsew")
+            ctk.CTkLabel(cell, text=f"📌 Variante {idx + 1}", font=ctk.CTkFont(size=11, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(8, 0))
-            ctk.CTkLabel(cell, text=etiqueta,
-                         font=ctk.CTkFont(size=9, slant="italic"),
-                         text_color="#888", wraplength=440,
-                         justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
-            # Prompt textbox
-            txt = ctk.CTkTextbox(cell, wrap="word", height=180,
-                                  font=ctk.CTkFont(family="Consolas", size=10))
+            ctk.CTkLabel(cell, text=etiqueta, font=ctk.CTkFont(size=9, slant="italic"),
+                         text_color="#888", wraplength=440, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
+            txt = ctk.CTkTextbox(cell, wrap="word", height=180, font=ctk.CTkFont(family="Consolas", size=10))
             txt.pack(fill="both", expand=True, padx=10, pady=(0, 5))
             txt.insert("1.0", prompt)
 
-            # Botón usar
             def _usar(p=prompt):
                 self.actualizar_salida(p)
-                v.destroy()
-                self.set_estado("🧪 Variante seleccionada", "#2ecc71")
-            ctk.CTkButton(cell, text="✅ Usar este", height=28,
-                          fg_color="#1a8a3c", hover_color="#127a30",
-                          command=_usar).pack(fill="x", padx=10, pady=(0, 8))
+                self.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
+                # No cerramos la ventana para poder ver las otras opciones
 
-        ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy,
-                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(pady=(5, 12))
+            btn = ctk.CTkButton(cell, text="✅ Usar este", height=28, fg_color="#1a8a3c", hover_color="#127a30",
+                          command=_usar)
+            btn.pack(fill="x", padx=10, pady=(0, 8))
+
+        ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy, fg_color=c["fg_dark"]).pack(pady=(5, 12))
+        self.set_estado("🧪 Elige la variante que más te guste", "#3498db")
+        self.toggle_botones(True)
 
     def _cmd_comparar_modelos(self):
         """Genera el prompt actual adaptado a 3 modelos a elegir por el usuario."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
@@ -1542,7 +1775,7 @@ class ToolsWorkflowMixin:
     def _abrir_ventana_comparacion(self, idea, modo, modelos_compare):
         """Ventana donde se muestran los 3 prompts generados."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
+        c = _get_tc(is_lt)
         vent = ctk.CTkToplevel(self)
         vent.title("🆚 Comparativa de modelos")
         vent.geometry("750x600")

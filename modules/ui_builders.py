@@ -207,6 +207,7 @@ class UIBuildersMixin:
                 ("🔍  Crítica historial", self._cmd_critica_historial),
                 ("📈  Estadísticas", self._abrir_estadisticas),
                 ("📖  Modo educativo", self._cmd_modo_educativo),
+                ("📚  Tutorial completo", self._abrir_tutorial),
             ]),
             ("🛠 Herramientas", "#c97a2e", [
                 ("🧬  ADN visual", self._cmd_anclaje_visual),
@@ -217,11 +218,12 @@ class UIBuildersMixin:
                 ("🎨  Paleta colores", self._cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
+                ("🧬  Biblioteca ADN", self._cmd_ver_biblioteca_adn),
                 ("🧪  Fórmulas", self._abrir_formulas),
                 ("📑  Plantillas", self._cmd_plantillas_populares),
-                ("💎  Seeds favoritos", self._abrir_seeds_favoritos),
-                ("⚡  Snippet expansion", self._cmd_gestionar_snippets),
                 ("✂️  Snippets", self._abrir_snippets),
+                ("⚡  Snippet expansion", self._cmd_gestionar_snippets),
+                ("💎  Seeds favoritos", self._abrir_seeds_favoritos),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
                 ("🧪  A/B Testing", self._cmd_ab_testing),
@@ -234,6 +236,7 @@ class UIBuildersMixin:
                 ("📜  Versiones prompt", self._cmd_versiones_prompt),
             ]),
             ("🎨 UI", "#7a7a8a", [
+                ("⌨️  Atajos teclado", self._cmd_mostrar_atajos),
                 ("⚙️  Ajustes", self.cmd_preferencias),
                 ("📚  Biblioteca", self._abrir_biblioteca),
                 ("🌗  Cambiar tema", self._cmd_toggle_tema),
@@ -1178,6 +1181,7 @@ class UIBuildersMixin:
             # GRUPO: Análisis de imagen (azul oscuro)
             ("👁 Analizar",       100, "#1e3a8a", self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
             ("🎯 Img→Prompt",     110, "#1e3a8a", self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
+            ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,      "Análisis JSON estructurado"),
             ("🔍 Análisis Inv",   115, "#1e3a5f", self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
         ]
 

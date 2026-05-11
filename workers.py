@@ -6,6 +6,12 @@ Refactor v1.0:
 - Logging estructurado en errores.
 - VisionChain con timeout configurable.
 """
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 import io
 import re
 import time
@@ -20,6 +26,8 @@ from config import (
     MAX_HIST_IA, MODELOS_GEMINI_CANDIDATOS, MODELOS_OLLAMA_VISION,
     MODELOS_OPENROUTER_VISION,
 )
+# v1.0.9 — System prompt único para ADN Visual (fuente: prompts.py)
+from prompts import VISION_SYSTEM_PROMPT
 
 if TYPE_CHECKING:
     from api_clients import APIClients
@@ -114,26 +122,40 @@ class DeepSeekWorker:
         antiguas que pasaban modelo_llm=... ya no fallan; el parámetro
         se ignora silenciosamente porque el provider activo se obtiene
         siempre desde self.clients.get_active_provider().
+
+        v1.0.8: añadido retry automático con backoff exponencial (3 intentos).
         """
+        import time
+
         self.historial.append({"role": "user", "content": peticion})
 
-        try:
-            provider = self._get_provider()
-            texto = provider.completar(self.historial, temperature=temperature, max_tokens=max_tokens)
+        # Retry con backoff exponencial (3 intentos)
+        max_reintentos = 3
+        delay_base = 1.0  # segundos
 
-            self.historial.append({"role": "assistant", "content": texto})
+        for intento in range(max_reintentos):
+            try:
+                provider = self._get_provider()
+                texto = provider.completar(self.historial, temperature=temperature, max_tokens=max_tokens)
 
-            # Truncar historial si crece demasiado (mantener system prompt)
-            if len(self.historial) > MAX_HIST_IA:
-                self.historial[1:] = self.historial[-(MAX_HIST_IA - 1):]
-            return texto
+                self.historial.append({"role": "assistant", "content": texto})
 
-        except Exception as e:
-            logger.error(f"DeepSeekWorker.generar() falló: {e}")
-            # Eliminar la petición fallida del historial
-            if self.historial and self.historial[-1]["role"] == "user":
-                self.historial.pop()
-            raise
+                # Truncar historial si crece demasiado (mantener system prompt)
+                if len(self.historial) > MAX_HIST_IA:
+                    self.historial[1:] = self.historial[-(MAX_HIST_IA - 1):]
+                return texto
+
+            except Exception as e:
+                if intento < max_reintentos - 1:
+                    delay = delay_base * (2 ** intento)  # 1s, 2s, 4s
+                    logger.warning(f"DeepSeekWorker.generar() intento {intento+1} falló: {e}. Reintentando en {delay}s...")
+                    time.sleep(delay)
+                else:
+                    logger.error(f"DeepSeekWorker.generar() falló después de {max_reintentos} intentos: {e}")
+                    # Eliminar la petición fallida del historial
+                    if self.historial and self.historial[-1]["role"] == "user":
+                        self.historial.pop()
+                    raise
 
     def generar_batch(self, system_content: str, peticion: str, **kwargs) -> str:
         """Generación batch sin historial (one-shot). v1.0.5: **kwargs para retrocompat."""
@@ -254,6 +276,81 @@ class VisionChain:
             "Escribe SOLO la descripción, sin etiquetas ni explicaciones."
         )
 
+    # ═══════════════════════════════════════════════════════════════════
+    # ADN VISUAL — Análisis estructurado JSON
+    # ═══════════════════════════════════════════════════════════════════
+
+    # v1.0.9 — VISION_SYSTEM_PROMPT vive en prompts.py (única fuente de verdad).
+    # Aquí solo está la lógica de la cadena de fallback (Gemini → Ollama → OpenRouter).
+
+    def analizar_adn(
+        self,
+        imagen_pil,
+        on_status: Optional[Callable[[str], None]] = None
+    ) -> tuple[dict, str]:
+        """
+        Analiza imagen y devuelve ADN estructurado en JSON.
+        Returns: (adn_dict, motor_usado)
+        """
+        ultimo_error = None
+
+        for nombre, fn in self.proveedores:
+            if on_status:
+                on_status(f"🧬 Extrayendo ADN con {nombre}...")
+            try:
+                desc, motor = fn(imagen_pil, VISION_SYSTEM_PROMPT)
+                if desc and len(desc) >= 10:
+                    # Parsear JSON
+                    import json
+                    import re
+                    # Limpiar wrappers comunes
+                    cleaned = desc.strip()
+                    
+                    # Intentar parsear, si falla por JSON incompleto o múltiples JSONs, intentar arreglar
+                    try:
+                        adn = json.loads(cleaned)
+                    except json.JSONDecodeError as je:
+                        error_msg = str(je)
+                        partial = cleaned
+                        
+                        # Si hay "Extra data" significa que hay más de un JSON - tomar solo el primero
+                        if "Extra data" in error_msg:
+                            # Encontrar el primer JSON completo
+                            try:
+                                adn = json.loads(partial[:je.pos])
+                            except:
+                                # Si falla, buscar primer { y intentar cerrar correctamente
+                                match = re.search(r"[\[{]", partial)
+                                if match:
+                                    partial = partial[match.start():]
+                                    open_braces = partial.count("{") - partial.count("}")
+                                    open_brackets = partial.count("[") - partial.count("]")
+                                    partial += "}" * max(0, open_braces)
+                                    partial += "]" * max(0, open_brackets)
+                                    adn = json.loads(partial)
+                        
+                        # Si es "Unterminated string" o similar, intentar completar el JSON
+                        elif "Unterminated" in error_msg or "expecting" in error_msg:
+                            open_braces = partial.count("{") - partial.count("}")
+                            open_brackets = partial.count("[") - partial.count("]")
+                            partial += "}" * max(0, open_braces)
+                            partial += "]" * max(0, open_brackets)
+                            adn = json.loads(partial)
+                        else:
+                            raise je
+                    
+                    return adn, motor
+            except Exception as e:
+                ultimo_error = e
+                logger.warning(f"VisionChain ADN[{nombre}] falló: {e}")
+                if "429" not in str(e).lower() and nombre == "Gemini":
+                    raise
+                continue
+
+        if ultimo_error:
+            raise ultimo_error
+        raise RuntimeError("Sin proveedores de visión disponibles.")
+
     # ── Gemini ────────────────────────────────────────────────────
 
     def _modelos_gemini_disponibles(self) -> list[str]:
@@ -269,20 +366,28 @@ class VisionChain:
         buf = io.BytesIO()
         imagen_pil.save(buf, format="JPEG", quality=90)
         img_bytes = buf.getvalue()
+        
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("No hay API key de Gemini configurada.")
+        
+        import google.genai as genai
+        client = genai.Client(api_key=api_key)
+        
         modelos = self._modelos_gemini_disponibles()
         ultimo_error = None
 
         for modelo in modelos:
             for intento in range(2):
                 try:
-                    r = self.clients.gemini.models.generate_content(
+                    r = client.models.generate_content(
                         model=modelo,
                         contents=[
                             genai_types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
                             genai_types.Part.from_text(text=prompt_v),
                         ],
                         config=genai_types.GenerateContentConfig(
-                            temperature=0.1, max_output_tokens=250
+                            temperature=0, max_output_tokens=32000
                         ),
                     )
                     desc = r.text.strip().strip("'\"\n ")
@@ -337,7 +442,7 @@ class VisionChain:
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
                         {"type": "text", "text": prompt_v},
                     ]}],
-                    max_tokens=250, temperature=0.1, timeout=60,
+                    max_tokens=1500, temperature=0, timeout=90,
                 )
                 desc = res.choices[0].message.content.strip().strip("'\"\n ")
                 if desc and len(desc) >= 5:

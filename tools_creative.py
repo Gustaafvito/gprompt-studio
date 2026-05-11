@@ -2,11 +2,11 @@
 import os
 import re
 import json
+import logging
 import threading
 import datetime
 import random
 import webbrowser
-import logging
 import pyperclip
 from PIL import Image
 from collections import Counter
@@ -14,12 +14,12 @@ import customtkinter as ctk
 import tkinter as tk
 from config import MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT, get_image_model_specs, get_model_specs, get_audio_model_specs, get_theme_colors, ADN_A_PLATAFORMA
 from workers import limpiar_marcadores
-
-logger = logging.getLogger(__name__)
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
+
+logger = logging.getLogger(__name__)
 
 class ToolsCreativeMixin:
     """Mixin containing all creative tool methods."""
@@ -475,110 +475,6 @@ class ToolsCreativeMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _cmd_ver_biblioteca_adn(self):
-        """Muestra la biblioteca de ADNs guardados."""
-        prefs = self.store.cargar_preferencias()
-        adns = prefs.get("adns_guardados", [])
-        
-        if not adns:
-            return self.set_estado("⚠️ No hay ADNs guardados.", "#e67e22")
-        
-        vent = ctk.CTkToplevel(self)
-        vent.title("📚 Biblioteca de ADNs")
-        vent.geometry("700x500")
-        vent.transient(self)
-        
-        is_light = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_light)
-        
-        # Header
-        hdr = ctk.CTkFrame(vent, fg_color=c["fg_dark"])
-        hdr.pack(fill="x", padx=10, pady=10)
-        ctk.CTkLabel(hdr, text="🧬 ADNs Guardados", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
-        ctk.CTkLabel(hdr, text=f"{len(adns)} guardado(s)", text_color=c["muted_text"]).pack(side="right", padx=10)
-        
-        # Scroll frame para la lista
-        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, padx=10, pady=5)
-        
-        for idx, item in enumerate(adns):
-            nombre = item.get("nombre", f"ADN {idx+1}")
-            fecha = item.get("fecha", "")
-            motor = item.get("motor", "")
-            adn_data = item.get("adn", {})
-            
-            # Obtener info del sujeto y estilo
-            sujeto = adn_data.get("sujeto", {})
-            if isinstance(sujeto, list):
-                sujeto = sujeto[0] if sujeto else {}
-            tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
-            
-            estilo = adn_data.get("estilo", {})
-            estetica = ""
-            if isinstance(estilo, dict):
-                estetica = estilo.get("estetica", "")
-            
-            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
-            card.pack(fill="x", pady=5)
-            
-            info_frame = ctk.CTkFrame(card, fg_color="transparent")
-            info_frame.pack(fill="x", padx=10, pady=8)
-            
-            ctk.CTkLabel(info_frame, text=nombre, font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-            ctk.CTkLabel(info_frame, text=f"{tipo} • {estetica}", text_color=c["muted_text"], font=ctk.CTkFont(size=11)).pack(anchor="w")
-            ctk.CTkLabel(info_frame, text=f"{fecha} • {motor}", text_color=c["muted_text"], font=ctk.CTkFont(size=10)).pack(anchor="w")
-            
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(fill="x", padx=10, pady=(0, 8))
-            
-            def _cargar(idx=idx, item=item):
-                # Mostrar el ADN en una ventana de solo lectura
-                ver = ctk.CTkToplevel(self)
-                ver.title(f"📋 {item.get('nombre', 'ADN')}")
-                ver.geometry("600x500")
-                ver.transient(self)
-                
-                import json
-                json_str = json.dumps(item.get("adn", {}), indent=2, ensure_ascii=False)
-                
-                txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(family="Consolas", size=11), wrap="none")
-                txt.pack(fill="both", expand=True, padx=10, pady=10)
-                txt.insert("1.0", json_str)
-                txt.configure(state="disabled")
-                
-                # Botón usar en idea
-                def _usar_en_idea():
-                    prompt = ", ".join([
-                        item["adn"].get("sujeto", {}).get("tipo", ""),
-                        item["adn"].get("estilo", {}).get("estetica", ""),
-                        item["adn"].get("iluminacion", {}).get("tipo", ""),
-                        item["adn"].get("escena", {}).get("ubicacion", "")
-                    ])
-                    self.txt_idea.delete("1.0", "end")
-                    self.txt_idea.insert("1.0", prompt)
-                    ver.destroy()
-                    self.set_estado(f"🧬 '{nombre}' cargado en idea", "#2ecc71")
-                
-                btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
-                btn_frame2.pack(pady=(0, 10))
-                ctk.CTkButton(btn_frame2, text="🎯 Usar en idea", command=_usar_en_idea).pack(side="left", padx=5)
-                ctk.CTkButton(btn_frame2, text="Cerrar", command=ver.destroy).pack(side="left", padx=5)
-            
-            def _borrar(idx=idx):
-                from tkinter import messagebox
-                if messagebox.askyesno("🗑 Eliminar", f"¿Borrar '{nombre}'?"):
-                    prefs = self.store.cargar_preferencias()
-                    prefs["adns_guardados"].pop(idx)
-                    self.store.guardar_preferencias(prefs)
-                    vent.destroy()
-                    self.set_estado(f"🧬 '{nombre}' eliminado", "#e67e22")
-            
-            ctk.CTkButton(btn_frame, text="👁 Ver", width=70, height=25, command=_cargar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="🗑", width=40, height=25, fg_color="#c0392b", hover_color="#e74c3c", command=_borrar).pack(side="right", padx=2)
-        
-        # Cerrar
-        ctk.CTkButton(vent, text="Cerrar", command=vent.destroy).pack(pady=10)
-
     def _cmd_adn_visual(self):
         """Extrae ADN visual JSON estructurado de la imagen cargada."""
         if not hasattr(self, 'imagen_cargada') or not self.imagen_cargada:
@@ -721,41 +617,64 @@ class ToolsCreativeMixin:
                             self.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
 
                     def _guardar_adn():
+                        # v1.0.9 — Pedir nombre con sugerencia inteligente del ADN
                         from tkinter import simpledialog
-                        
-                        # Cargar ADNs primero para poder usar len(adns)
+
+                        # Generar sugerencia: estilo + sujeto + iluminación
+                        sugerencia_partes = []
+                        try:
+                            est = adn.get("estilo", {})
+                            if est.get("estetica"):
+                                sugerencia_partes.append(est["estetica"])
+
+                            suj = adn.get("sujeto", {})
+                            if isinstance(suj, list):
+                                suj = suj[0] if suj else {}
+                            if suj.get("tipo"):
+                                sugerencia_partes.append(suj["tipo"])
+
+                            ilu = adn.get("iluminacion", {})
+                            if ilu.get("hora_dia"):
+                                sugerencia_partes.append(ilu["hora_dia"])
+                        except Exception:
+                            pass
+
+                        sugerencia = " ".join(sugerencia_partes).strip()[:60] or "Nuevo ADN"
+
+                        nombre = simpledialog.askstring(
+                            "💾 Guardar ADN",
+                            "Nombre para este ADN visual:\n(útil para reconocerlo después)",
+                            initialvalue=sugerencia,
+                            parent=vent
+                        )
+
+                        if nombre is None:
+                            return  # Usuario canceló
+                        nombre = nombre.strip()
+                        if not nombre:
+                            self.set_estado("⚠️ Guardado cancelado: nombre vacío", "#e67e22")
+                            return
+
                         prefs = self.store.cargar_preferencias()
                         adns = prefs.get("adns_guardados", [])
-                        
-                        # Generar sugerencia de nombre basada en el ADN
-                        sujeto = adn.get("sujeto", {})
-                        estilo = adn.get("estilo", {})
-                        estetica = estilo.get("estetica", "") if isinstance(estilo, dict) else ""
-                        tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
-                        
-                        sugerencia = f"ADN {estetica[:20] if estetica else 'visual'} {len(adns)+1}"
-                        
-                        nombre = simpledialog.askstring("💾 Guardar ADN", "Nombre para el ADN:", initialvalue=sugerencia)
-                        if not nombre:
-                            return
-                        
-                        # Verificar duplicados
-                        nombres_exist = [a.get("nombre", "") for a in adns]
-                        if nombre in nombres_exist:
-                            idx = 2
-                            while f"{nombre} ({idx})" in nombres_exist:
-                                idx += 1
-                            nombre = f"{nombre} ({idx})"
-                        
+
+                        # Comprobar duplicado
+                        nombres_existentes = {a.get("nombre", "").lower() for a in adns}
+                        if nombre.lower() in nombres_existentes:
+                            sufijo = 2
+                            while f"{nombre} ({sufijo})".lower() in nombres_existentes:
+                                sufijo += 1
+                            nombre = f"{nombre} ({sufijo})"
+
                         adns.append({
                             "nombre": nombre,
                             "adn": adn,
-                            "motor": motor,
-                            "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
+                            "fecha": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            "motor_origen": motor,
                         })
                         prefs["adns_guardados"] = adns
                         self.store.guardar_preferencias(prefs)
-                        self.set_estado(f"🧬 ADN '{nombre}' guardado", "#2ecc71")
+                        self.set_estado(f"🧬 ADN guardado como «{nombre}»", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="📋 Copiar JSON", width=110, height=30,
                                   command=_copiar_json).pack(side="left", padx=4)
@@ -772,59 +691,65 @@ class ToolsCreativeMixin:
                     lbl_plat.pack(side="left", padx=(0, 5))
 
                     def _convertir_plataforma(plataforma):
+                        # v1.0.9 — logging en lugar de except pass silencioso.
+                        # También cambiado destino: ahora va a txt_idea (no
+                        # txt_salida) para no sobreescribir el prompt actual
+                        # del usuario sin pedir confirmación.
                         partes = []
-                        fallos = []
+                        fallos = []  # secciones que no pudieron convertirse
                         plantilla = ADN_A_PLATAFORMA.get(plataforma, {})
+                        if not plantilla:
+                            logger.warning(f"ADN→plataforma: '{plataforma}' sin plantilla en ADN_A_PLATAFORMA")
+                            self.set_estado(f"⚠️ Plataforma '{plataforma}' sin definir", "#e67e22")
+                            return
 
-                        # Sujeto
+                        # SUJETO
                         sujeto = adn.get("sujeto", {})
                         if isinstance(sujeto, list):
                             sujeto = sujeto[0] if sujeto else {}
                         if plantilla.get("sujeto"):
                             try:
-                                ropa_val = ""
-                                ropa = sujeto.get("ropa", {})
+                                ropa_str = ""
+                                ropa = sujeto.get("ropa", "")
                                 if isinstance(ropa, dict):
-                                    ropa_val = ropa.get("prenda", "")
+                                    ropa_str = ropa.get("prenda", "")
+                                    if ropa.get("color"):
+                                        ropa_str = f"{ropa_str} {ropa['color']}".strip()
                                 elif isinstance(ropa, str):
-                                    ropa_val = ropa
+                                    ropa_str = ropa
                                 partes.append(plantilla["sujeto"].format(
                                     tipo=sujeto.get("tipo", ""),
-                                    ropa=ropa_val,
+                                    ropa=ropa_str,
                                     pose=sujeto.get("pose", ""),
                                     expresion=sujeto.get("expresion", "")
                                 ))
                             except Exception as e:
-                                logger.warning(f"Conversión {plataforma} sujeto falló: {e}")
+                                logger.warning(f"ADN→{plataforma} sujeto: {e}")
                                 fallos.append("sujeto")
 
-                        # Estilo
+                        # ESTILO
                         estilo = adn.get("estilo", {})
                         if plantilla.get("estilo") and estilo:
                             try:
-                                paleta_str = ""
-                                paleta = estilo.get("paleta_dominante", [])
-                                if isinstance(paleta, list):
-                                    paleta_str = ", ".join(paleta[:3])
                                 partes.append(plantilla["estilo"].format(
                                     estetica=estilo.get("estetica", ""),
                                     tecnica=estilo.get("tecnica", ""),
-                                    paleta=paleta_str
+                                    paleta=", ".join(estilo.get("paleta_dominante", [])[:3])
                                 ))
                             except Exception as e:
-                                logger.warning(f"Conversión {plataforma} estilo falló: {e}")
+                                logger.warning(f"ADN→{plataforma} estilo: {e}")
                                 fallos.append("estilo")
 
-                        # Iluminación
+                        # ILUMINACIÓN
                         ilu = adn.get("iluminacion", {})
                         if plantilla.get("iluminacion") and ilu:
                             try:
                                 partes.append(plantilla["iluminacion"].format(tipo=ilu.get("tipo", "")))
                             except Exception as e:
-                                logger.warning(f"Conversión {plataforma} iluminacion falló: {e}")
+                                logger.warning(f"ADN→{plataforma} iluminacion: {e}")
                                 fallos.append("iluminacion")
 
-                        # Cámara
+                        # CÁMARA
                         if plantilla.get("camara"):
                             cam = adn.get("camara", {})
                             if cam:
@@ -834,10 +759,10 @@ class ToolsCreativeMixin:
                                         encuadre=cam.get("encuadre", "")
                                     ))
                                 except Exception as e:
-                                    logger.warning(f"Conversión {plataforma} camara falló: {e}")
+                                    logger.warning(f"ADN→{plataforma} camara: {e}")
                                     fallos.append("camara")
 
-                        # Escena
+                        # ESCENA
                         if plantilla.get("escena"):
                             esc = adn.get("escena", {})
                             try:
@@ -846,31 +771,44 @@ class ToolsCreativeMixin:
                                     iluminacion=ilu.get("tipo", "")
                                 ))
                             except Exception as e:
-                                logger.warning(f"Conversión {plataforma} escena falló: {e}")
+                                logger.warning(f"ADN→{plataforma} escena: {e}")
                                 fallos.append("escena")
 
-                        # Atmósfera
+                        # ATMÓSFERA
                         if plantilla.get("atm"):
                             atmos = adn.get("atmosfera", {})
                             try:
                                 partes.append(plantilla["atm"].format(estado_animo=atmos.get("estado_animo", "")))
                             except Exception as e:
-                                logger.warning(f"Conversión {plataforma} atmosfera falló: {e}")
+                                logger.warning(f"ADN→{plataforma} atmosfera: {e}")
                                 fallos.append("atmosfera")
 
                         prompt = ", ".join([p for p in partes if p])
                         if prompt:
-                            # Poner en idea (txt_idea) para proteger el prompt actual en txt_salida
-                            self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", prompt)
+                            # v1.0.9 — Va a txt_idea, NO sobreescribe txt_salida sin permiso.
+                            # El usuario luego pulsa "Generar" para producir el prompt final.
+                            try:
+                                self.txt_idea.delete("1.0", "end")
+                                self.txt_idea.insert("1.0", prompt)
+                            except Exception as e:
+                                logger.error(f"ADN→{plataforma} txt_idea: {e}")
+                                self.set_estado(f"⚠️ Error volcando a idea: {e}", "#e74c3c")
+                                return
                             vent.destroy()
-                            
                             if fallos:
-                                self.set_estado(f"🧬 {plataforma} - parcial (falló: {', '.join(fallos)})", "#f39c12")
+                                self.set_estado(
+                                    f"🧬 {plataforma} → idea (parcial, falló: {', '.join(fallos)})",
+                                    "#f39c12"
+                                )
                             else:
-                                self.set_estado(f"🧬 {plataforma} en idea", "#2ecc71")
+                                self.set_estado(f"🧬 {plataforma} → idea, pulsa Generar", "#2ecc71")
                         else:
-                            self.set_estado(f"❌ Conversión {plataforma} falló completamente", "#e74c3c")
+                            # Si NADA se pudo convertir, es señal de ADN pobre o plantilla rota
+                            self.set_estado(
+                                f"⚠️ Conversión {plataforma} vacía. ADN sin datos útiles.",
+                                "#e74c3c"
+                            )
+                            logger.warning(f"ADN→{plataforma}: prompt vacío tras {len(fallos)} fallos. ADN keys: {list(adn.keys())}")
 
                     for plat in ["midjourney", "stable_diffusion", "dalle", "flux"]:
                         ctk.CTkButton(plat_frame, text=plat.replace("_", " ").upper(), width=80, height=24,

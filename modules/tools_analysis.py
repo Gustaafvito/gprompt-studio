@@ -535,11 +535,18 @@ class ToolsAnalysisMixin:
 
     def _guardar_seed_favorito(self):
         """Guarda la configuración actual como seed favorito."""
+        from tkinter import simpledialog
         prefs = self.store.cargar_preferencias()
         seeds = prefs.get("seeds_favoritos", [])
+
+        # Pedir nombre
+        nombre = simpledialog.askstring("💎 Guardar Seed", "Nombre para este seed:", parent=self)
+        if not nombre:
+            return
+
         seed = {
-            "nombre": f"Seed {len(seeds)+1}",
-            "estilos": self.estilos_seleccionados(),
+            "nombre": nombre,
+            "estilos": list(self.estilos_seleccionados()),
             "plataforma": self.plataforma_var.get() if hasattr(self, 'plataforma_var') else "",
             "modelo_img": self.modelo_img_var.get() if hasattr(self, 'modelo_img_var') else "",
             "modelo_vid": self.modelo_vid_var.get() if hasattr(self, 'modelo_vid_var') else "",
@@ -548,10 +555,15 @@ class ToolsAnalysisMixin:
         seeds.append(seed)
         prefs["seeds_favoritos"] = seeds
         self.store.guardar_preferencias(prefs)
-        self.set_estado("💎 Seed guardado", "#2ecc71")
+        self.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
 
     def _abrir_seeds_favoritos(self):
         """Ventana con seeds favoritos para aplicar."""
+        from tkinter import messagebox
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        from config import get_theme_colors
+        c = get_theme_colors(is_lt)
+
         prefs = self.store.cargar_preferencias()
         seeds = prefs.get("seeds_favoritos", [])
         if not seeds:
@@ -559,49 +571,91 @@ class ToolsAnalysisMixin:
 
         vent = ctk.CTkToplevel(self)
         vent.title("💎 Seeds favoritos")
-        vent.geometry("500x400")
+        vent.geometry("550x450")
         vent.transient(self)
 
         ctk.CTkLabel(vent, text="💎 Seeds favoritos", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+        ctk.CTkLabel(vent, text="Guarda tu configuración y recupérala rápido", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
         for i, seed in enumerate(seeds):
-            card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=8)
-            card.pack(fill="x", pady=3)
-            ctk.CTkLabel(card, text=seed.get("nombre", "?"), font=ctk.CTkFont(size=11, weight="bold"),
-                         text_color="#aaccee").pack(anchor="w", padx=10, pady=(6, 2))
-            ctk.CTkLabel(card, text=f"Modelo: {seed.get('modelo_img') or seed.get('modelo_vid', '?')} | "
-                                    f"Estilos: {', '.join(seed.get('estilos', [])[:3]) or 'Ninguno'}",
-                         font=ctk.CTkFont(size=9), text_color="#888888").pack(anchor="w", padx=10, pady=(0, 4))
+            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
+            card.pack(fill="x", pady=4, padx=2)
+            ctk.CTkLabel(card, text=f"💎 {seed.get('nombre', '?')}", font=ctk.CTkFont(size=12, weight="bold"),
+                         text_color=c["hdr_text"]).pack(anchor="w", padx=12, pady=(8, 2))
+
+            modelo = seed.get('modelo_img') or seed.get('modelo_vid') or '?'
+            ratio = seed.get('ratio') or ''
+            plataforma = seed.get('plataforma') or ''
+            estilos = ', '.join(seed.get('estilos', [])[:4]) or 'Sin estilos'
+
+            info = f"📱 {modelo}" + (f" | 📐 {ratio}" if ratio else "") + (f" | 🌐 {plataforma}" if plataforma else "")
+            ctk.CTkLabel(card, text=info, font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(anchor="w", padx=12)
+            ctk.CTkLabel(card, text=f"🎨 {estilos}", font=ctk.CTkFont(size=9), text_color=c["muted_text"]).pack(anchor="w", padx=12, pady=(2, 6))
+
+            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+            btn_frame.pack(anchor="e", padx=10, pady=(0, 6))
+
             def _aplicar(s=seed):
                 self._aplicar_seed(s)
                 vent.destroy()
+
             def _borrar(idx=i):
-                seeds_actuales = prefs.get("seeds_favoritos", [])
-                if 0 <= idx < len(seeds_actuales):
-                    seeds_actuales.pop(idx)
-                    prefs["seeds_favoritos"] = seeds_actuales
-                    self.store.guardar_preferencias(prefs)
-                    self._abrir_seeds_favoritos()
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(anchor="e", padx=8, pady=(0, 4))
-            ctk.CTkButton(btn_frame, text="✅ Aplicar", width=80, height=22, fg_color="#1a7a3c",
-                          font=ctk.CTkFont(size=9), command=_aplicar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="🗑", width=24, height=22, fg_color="#c0392b",
-                          font=ctk.CTkFont(size=9), command=_borrar).pack(side="left", padx=2)
+                if messagebox.askyesno("Borrar Seed", f"¿Borrar el seed '{seed.get('nombre', '?')}'?"):
+                    seeds_actuales = prefs.get("seeds_favoritos", [])
+                    if 0 <= idx < len(seeds_actuales):
+                        seeds_actuales.pop(idx)
+                        prefs["seeds_favoritos"] = seeds_actuales
+                        self.store.guardar_preferencias(prefs)
+                    vent.destroy()
+
+            ctk.CTkButton(btn_frame, text="✅ Aplicar", width=90, height=26, fg_color="#1a7a3c",
+                          font=ctk.CTkFont(size=10), command=_aplicar).pack(side="left", padx=3)
+            ctk.CTkButton(btn_frame, text="🗑 Borrar", width=80, height=26, fg_color="#8b2020",
+                          font=ctk.CTkFont(size=10), command=_borrar).pack(side="left", padx=3)
+
+        ctk.CTkButton(vent, text="➕ Crear nuevo seed", width=180, height=28, fg_color="#1a5a8a",
+                      command=self._guardar_seed_favorito).pack(pady=(5, 12))
 
     def _aplicar_seed(self, seed):
         """Aplica una configuración guardada como seed."""
+        # Cargar plataforma
         if seed.get("plataforma") and hasattr(self, 'plataforma_var'):
-            self.plataforma_var.set(seed["plataforma"])
+            valores_plat = self.plataforma_var.cget("values") or []
+            if seed["plataforma"] in valores_plat:
+                self.plataforma_var.set(seed["plataforma"])
+
+        # Cargar modelo imagen
         if seed.get("modelo_img") and hasattr(self, 'modelo_img_var'):
-            self.modelo_img_var.set(seed["modelo_img"])
+            valores_modelo = self.modelo_img_var.cget("values") or []
+            if seed["modelo_img"] in valores_modelo:
+                self.modelo_img_var.set(seed["modelo_img"])
+                if hasattr(self, '_on_modelo_imagen_cambio'):
+                    try: self._on_modelo_imagen_cambio()
+                    except: pass
+            else:
+                self.set_estado(f"⚠️ Modelo '{seed['modelo_img']}' no disponible", "#e67e22")
+                return
+
+        # Cargar modelo video
         if seed.get("modelo_vid") and hasattr(self, 'modelo_vid_var'):
-            self.modelo_vid_var.set(seed["modelo_vid"])
+            valores_vid = self.modelo_vid_var.cget("values") or []
+            if seed["modelo_vid"] in valores_vid:
+                self.modelo_vid_var.set(seed["modelo_vid"])
+
+        # Cargar ratio
         if seed.get("ratio") and hasattr(self, 'ratio_var'):
-            self.ratio_var.set(seed["ratio"])
+            valores_ratio = self.ratio_var.cget("values") or []
+            if seed["ratio"] in valores_ratio:
+                self.ratio_var.set(seed["ratio"])
+
+        # Cargar estilos
+        if seed.get("estilos") and hasattr(self, 'estilo_checks'):
+            for nombre, var in self.estilo_checks.items():
+                var.set(nombre in seed["estilos"])
+
         self.set_estado(f"💎 Seed '{seed.get('nombre', '?')}' aplicado", "#2ecc71")
 
     def _autocompletar_tags(self, event=None):

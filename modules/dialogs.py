@@ -1663,23 +1663,47 @@ class DialogsMixin:
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
         atajos = [
+            ("Alt+1", "Modo imagen"),
+            ("Alt+2", "Modo vídeo"),
+            ("Alt+3", "Modo audio"),
+            ("Ctrl+?", "Mostrar todos los atajos"),
+            ("Ctrl+D", "Duplicar al historial"),
+            ("Ctrl+E", "Exportar rápido"),
             ("Ctrl+Enter", "Generar prompt"),
-            ("Alt+Enter", "Quick generate ⚡"),
-            ("Ctrl+Shift+Enter", "Variaciones x3"),
+            ("Ctrl+F", "Búsqueda global"),
             ("Ctrl+I", "Ideas creativas"),
+            ("Ctrl+L", "Abrir LoRAs"),
+            ("Ctrl+P", "Grupo personajes"),
+            ("Ctrl+S", "Guardar favorito"),
+            ("Ctrl+T", "Abrir tutorial"),
+            ("Ctrl+Shift+Enter", "Variaciones x3"),
+            ("Ctrl+Shift+N", "Negative builder"),
+            ("Ctrl+Shift+P", "Previsualizar"),
+            ("Ctrl+Shift+S", "Guardar estrella"),
+            ("Alt+Enter", "Quick generate ⚡"),
             ("Escape", "Cerrar popup"),
             ("F11", "Pantalla completa"),
         ]
-        for combo, accion in atajos:
-            row = ctk.CTkFrame(atajos_frame, fg_color="transparent")
-            row.pack(fill="x", padx=12, pady=1)
+        atajos_grid = ctk.CTkFrame(atajos_frame, fg_color="transparent")
+        atajos_grid.pack(fill="x", padx=8, pady=(4, 8))
+
+        # Dividir en dos columnas
+        col1 = ctk.CTkFrame(atajos_grid, fg_color="transparent")
+        col1.pack(side="left", fill="both", expand=True, padx=(4, 2))
+        col2 = ctk.CTkFrame(atajos_grid, fg_color="transparent")
+        col2.pack(side="left", fill="both", expand=True, padx=(2, 4))
+
+        for i, (combo, accion) in enumerate(atajos):
+            col = col1 if i % 2 == 0 else col2
+            row = ctk.CTkFrame(col, fg_color="transparent")
+            row.pack(fill="x", pady=1)
             ctk.CTkLabel(row, text=combo,
                          font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
                          fg_color=card_bg_alt, corner_radius=4,
-                         text_color=accent_blue, width=110, anchor="center").pack(side="left", padx=(0, 8))
-            ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=10),
+                         text_color=accent_blue, width=90, anchor="center").pack(side="left", padx=(0, 6))
+            ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=9),
                          fg_color="transparent", text_color=text_secondary,
-                         anchor="w").pack(side="left")
+                         anchor="w").pack(side="left", fill="x", expand=True)
         ctk.CTkLabel(atajos_frame, text="", fg_color="transparent").pack(pady=2)
 
         # ═══════════════════════════════════════════════════════
@@ -1763,7 +1787,7 @@ class DialogsMixin:
             ("🔄 Variaciones", self.cmd_variaciones, "#7c3aed", "Crea variantes del prompt"),
             ("📝 Refinar", getattr(self, "cmd_refinar", self.cmd_prompt),
              "#db2777", "Mejora el prompt actual"),
-            ("🎭 Moodboard", self._cmd_companero_moodboard, "#e84393", "Inspírate con moodboards"),
+            ("📦 Batch", self.cmd_batch, "#e84393", "Genera múltiples prompts"),
         ]
 
         quick_grid = ctk.CTkFrame(main, fg_color="transparent")
