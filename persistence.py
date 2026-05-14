@@ -3,16 +3,21 @@ G-Prompt Studio v1.0 — Persistencia de datos.
 DataStore centraliza toda la lectura/escritura de JSON con escrituras atómicas.
 """
 import json
+import logging
 import os
+import pathlib
 import tempfile
 from config import ARCHIVOS
 from logging_utils import log_operation
+
+logger = logging.getLogger("gprompt")
 
 
 class DataStore:
     """Almacén centralizado con escrituras atómicas (temp + os.replace)."""
 
     def __init__(self):
+        self._archivos_corruptos: list = []
         self.historial: list = self._cargar("historial")
         self.favoritos: list = self._cargar("favoritos")
         self.personajes: list = self._cargar("personajes")
@@ -20,8 +25,16 @@ class DataStore:
         self.loras: list = self._cargar("loras")
         self.estrellas: list = self._cargar("estrellas")
 
+        if self._archivos_corruptos:
+            logger.warning(f"Archivos corruptos detectados: {[x[0] for x in self._archivos_corruptos]}")
+
+        # Migraciones de plataforma (rebrand/deprecaciones)
+        self._migrar_plataformas()
+
         if not self.plantillas:
             self._crear_plantillas_ejemplo()
+
+        self._crear_formulas_ejemplo()
 
     # ── Lectura / Escritura atómica ───────────────────────────────
 
@@ -31,7 +44,14 @@ class DataStore:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except (json.JSONDecodeError, Exception):
+            except json.JSONDecodeError as e:
+                logger.warning(f"{nombre}.json corrupto (línea {e.lineno}), renombrando a .corrupt")
+                corrupt_path = path.with_suffix(".json.corrupt")
+                path.rename(corrupt_path)
+                self._archivos_corruptos.append((nombre, str(corrupt_path)))
+                return []
+            except OSError as e:
+                logger.error(f"No se pudo leer {nombre}.json: {e}")
                 return []
         return []
 
@@ -213,6 +233,84 @@ class DataStore:
                 return {}
         return {}
 
+    def _migrar_plataformas(self):
+        """
+        Migraciones automáticas de plataforma al arrancar.
+
+        Reglas actuales:
+        - Freepik AI → Magnific (rebrand oficial abril 2026)
+        - Tomoviee.ai → redirigido según el modo del item:
+            • modo "imagen"  → Magnific
+            • modo "video"   → Kling AI
+            • desconocido    → Magnific (fallback)
+
+        NO toca 'Freepik community' (es un destino de publicación, no la plataforma).
+        Solo escribe a disco lo que cambió. Idempotente (correr varias veces no rompe).
+        """
+        MAP_DIRECTO = {
+            "Freepik AI": "Magnific",
+        }
+        # Tomoviee: requiere lookup del modo
+        TOMOVIEE_FALLBACK_POR_MODO = {
+            "imagen": "Magnific",
+            "video":  "Kling AI",
+            "audio":  "Magnific",  # nunca debería pasar pero por si acaso
+        }
+
+        def _resolver_nueva_plataforma(item: dict) -> str | None:
+            """Devuelve el valor nuevo si el item necesita migrar, o None si no."""
+            valor = item.get("plataforma")
+            if valor in MAP_DIRECTO:
+                return MAP_DIRECTO[valor]
+            if valor == "Tomoviee.ai":
+                modo = item.get("modo", "imagen")
+                return TOMOVIEE_FALLBACK_POR_MODO.get(modo, "Magnific")
+            return None
+
+        def _migrar_lista(lista: list) -> bool:
+            modificada = False
+            for item in lista:
+                if not isinstance(item, dict):
+                    continue
+                nueva = _resolver_nueva_plataforma(item)
+                if nueva is not None:
+                    item["plataforma"] = nueva
+                    modificada = True
+            return modificada
+
+        cambios = []
+        for nombre in ("historial", "favoritos", "plantillas", "estrellas"):
+            lista = getattr(self, nombre, [])
+            if _migrar_lista(lista):
+                self._guardar(nombre)
+                cambios.append(nombre)
+
+        # Preferencias y fórmulas guardadas
+        prefs = self.cargar_preferencias()
+        prefs_modificadas = False
+        valor_pref = prefs.get("plataforma")
+        if valor_pref in MAP_DIRECTO:
+            prefs["plataforma"] = MAP_DIRECTO[valor_pref]
+            prefs_modificadas = True
+        elif valor_pref == "Tomoviee.ai":
+            # En preferencias no hay "modo" claro — usamos Magnific como fallback
+            prefs["plataforma"] = "Magnific"
+            prefs_modificadas = True
+        # Fórmulas guardadas dentro de preferencias
+        for formula in prefs.get("formulas", []):
+            if not isinstance(formula, dict):
+                continue
+            nueva = _resolver_nueva_plataforma(formula)
+            if nueva is not None:
+                formula["plataforma"] = nueva
+                prefs_modificadas = True
+        if prefs_modificadas:
+            self.guardar_preferencias(prefs)
+            cambios.append("preferencias")
+
+        if cambios:
+            logger.info(f"Migración de plataformas aplicada en: {', '.join(cambios)}")
+
     def _crear_plantillas_ejemplo(self):
         """Crea plantillas de ejemplo para nuevos usuarios."""
         ejemplos = [
@@ -224,3 +322,21 @@ class DataStore:
         ]
         self.plantillas = ejemplos
         self._guardar("plantillas")
+
+    def _crear_formulas_ejemplo(self):
+        """Crea fórmulas de ejemplo para nuevos usuarios."""
+        prefs = self.cargar_preferencias()
+        formulas_existentes = prefs.get("formulas", [])
+        # Verificar si ya existe la fórmula "Animal Emergente"
+        existe = any(f.get("nombre") == "🐾 Animal Emergente" for f in formulas_existentes)
+        if existe:
+            return
+        formulas_ejemplo = {
+                "nombre": "🐾 Animal Emergente",
+                "positive": "{animal} powerfully breaking through a dark matte surface barrier, head is a hybrid of animal texture seamlessly integrated with geometric crystal fragments, polished chrome plates and iridized glass, intricate internal patterns, eyes intensely glowing with electric bioluminescent energy, jagged violent break with debris flying, pulsating bioluminescent filaments (electric blue, gold, purple) revealed within fracture, scattered geometric crystal and metal shards floating, dramatic directional spotlight from top combined with powerful internal light, dark infinite matte void, high-resolution photorealistic 3D conceptual art render, 8k, masterpiece",
+                "negative": "blurry, low quality, distorted, deformed, ugly, watermark, text",
+                "fecha": "2026-05-12"
+            }
+        formulas_existentes.append(formulas_ejemplo)
+        prefs["formulas"] = formulas_existentes
+        self.guardar_preferencias(prefs)

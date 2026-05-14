@@ -9,10 +9,13 @@ v1.0:
 import os
 import re
 import json
+import logging
 import threading
 import datetime
 import random
 import pyperclip
+
+logger = logging.getLogger("gprompt")
 import tkinter as tk
 import customtkinter as ctk
 from config import (
@@ -295,7 +298,8 @@ class CoreMixin:
             info = LLM_PROVIDERS.get(pid, {})
             self.set_estado(f"🧠 Cerebro: {info.get('name', pid)}", "#2ecc71")
             try: self._sesion_log(f"🧠 Cambió cerebro → {pid}")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             # v1.0: actualizar indicador visual del botón 🔑
             try:
                 if hasattr(self, "_actualizar_indicador_proveedor"):
@@ -594,13 +598,15 @@ class CoreMixin:
                 self.set_estado(f"⚠️ Tema light no compatible con theme.json actual ({e})", "#e67e22")
                 nuevo = "dark"
             try: self._sesion_log(f"🌗 Cambió tema → {nuevo}")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             # Persistir en preferencias
             try:
                 prefs = self.store.cargar_preferencias()
                 prefs["tema"] = nuevo
                 self.store.guardar_preferencias(prefs)
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             # Aplicar colores adaptativos sin destruir layout
             try:
                 self._apply_theme_colors()
@@ -655,7 +661,8 @@ class CoreMixin:
     def _copiar(self, tipo):
         try:
             try: self._sesion_log(f"📋 Copió: {tipo}")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             tiene_neg = self._debe_mostrar_negatives()
             if tipo == "positivo":
                 r = self.extraer_positive()
@@ -1011,7 +1018,8 @@ class CoreMixin:
             return
         modo = self.modo_var.get()
         try: self._sesion_log(f"🎛 Cambió modo → {modo.upper()}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.lbl_img_model_info.pack_forget()
 
         # Limpiar resultado y memoria — los prompts del modo anterior no aplican
@@ -1086,7 +1094,8 @@ class CoreMixin:
         modo = self.modo_var.get()
         plat = self.plataforma_var.get()
         try: self._sesion_log(f"🌐 Cambió plataforma → {plat}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         if modo == "audio":
             motores = MOTORES_AUDIO.get(plat, [])
@@ -1146,7 +1155,8 @@ class CoreMixin:
     def _on_motor_cambio(self, motor_name=None):
         if not motor_name: motor_name = self.combo_modelo_video.get()
         try: self._sesion_log(f"🎬 Cambió modelo vídeo → {motor_name}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         specs = get_model_specs(motor_name)
 
         if specs:
@@ -1169,13 +1179,16 @@ class CoreMixin:
         if not modelo_name: modelo_name = self.combo_modelo_imagen.get()
         # Mejora 14: log sesión
         try: self._sesion_log(f"🎨 Cambió modelo imagen → {modelo_name}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         # Refrescar aviso de compatibilidad LoRA
         try: self._actualizar_lora_trigger_visible()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         # Refrescar validador Flux/SD3.5 (puede haber prompt previo con pesos)
         try: self._actualizar_tokens()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         if self.modo_var.get() != "imagen":
             self.lbl_img_model_info.pack_forget()
             return
@@ -1245,12 +1258,14 @@ class CoreMixin:
         # Recomendador LoRAs al FINAL (con delay 500ms para que no lo sobrescriba consejo contextual)
         try:
             self.after(500, lambda: self._recomendar_loras_para_modelo(modelo_name))
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     def _on_motor_audio_cambio(self, motor_name=None):
         if not motor_name: motor_name = self.combo_modelo_audio.get()
         try: self._sesion_log(f"🎵 Cambió modelo audio → {motor_name}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         if es_separador(motor_name):
             self.lbl_img_model_info.pack_forget()
             return
@@ -1324,23 +1339,28 @@ class CoreMixin:
 
         if modo == "audio":
             try: self.frame_pers_lora.pack_forget()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         else:
             try: self.frame_pers_lora.pack(fill="x", pady=(2, 1), before=self.frame_plantilla_brief)
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         # Imagen ref: visible en imagen y vídeo, oculto en audio
         if hasattr(self, 'frame_imgref_inner'):
             if modo != "audio":
                 try: self.frame_imgref_inner.pack(fill="x", pady=(1, 2))
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             else:
                 try: self.frame_imgref_inner.pack_forget()
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
 
         # Frame placeholder externo siempre oculto (legacy)
         try: self.frame_img_ref.pack_forget()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     def _debe_mostrar_negatives(self):
         modo = self.modo_var.get()
@@ -1725,7 +1745,8 @@ class CoreMixin:
                       self.combo_modelo_video.get() if self.modo_var.get() == "video" else
                       self.combo_modelo_audio.get())
             self._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.set_estado("⏳ Compilando prompt...", "#f39c12")
         self.toggle_botones(False)
         threading.Thread(target=self._worker_prompt_traduccion, args=(idea,), daemon=True).start()
@@ -1759,7 +1780,8 @@ class CoreMixin:
                       self.combo_modelo_video.get() if self.modo_var.get() == "video" else
                       self.combo_modelo_audio.get())
             self._sesion_log(f"⚡ Quick: idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.set_estado("⚡ Quick generate...", "#d97706")
         self.toggle_botones(False)
         threading.Thread(target=self._worker_prompt_quick, args=(idea,), daemon=True).start()
@@ -1837,7 +1859,8 @@ class CoreMixin:
                 self.set_estado("⚡ Quick listo", "#2ecc71")
                 self.toggle_botones(True)
                 try: self._sonar_completado()
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             self.after(0, _aplicar)
         except Exception as e:
             self.after(0, lambda: self.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
@@ -1879,7 +1902,8 @@ class CoreMixin:
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
         self._ocultar_ideas()
         try: self._sesion_log("🎯 Img→Prompt: generó prompt desde imagen")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.toggle_botones(False)
         threading.Thread(target=self._worker_imagen_a_prompt, daemon=True).start()
 
@@ -1952,7 +1976,8 @@ class CoreMixin:
         if not texto or len(texto) < 20:
             return self.set_estado("⚠️ Genera un prompt de imagen primero.", "#e67e22")
         try: self._sesion_log("🔄 Convirtió prompt imagen → vídeo")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         pos = self.extraer_positive() or texto
         self.set_estado("🔄 Convirtiendo prompt de imagen a vídeo...", "#f39c12")
@@ -2078,7 +2103,8 @@ class CoreMixin:
         if not texto or len(texto) < 20:
             return self.set_estado("⚠️ Genera un prompt primero para iterar.", "#e67e22")
         try: self._sesion_log("🔂 Iterar: abrió ventana de variación 1 elemento")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         # Ventana selección elemento a variar
         sel = ctk.CTkToplevel(self)
@@ -2159,7 +2185,8 @@ class CoreMixin:
         self._ocultar_ideas()
         idea, pers, lora, modo = self.txt_idea.get("1.0", "end").strip(), self.personaje_activo(), self.lora_activo(), self.modo_var.get()
         try: self._sesion_log("🔁 Refinó prompt")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         # Detectar formato del prompt original para mantenerlo
         es_tag_based = not self.is_natural_mode()
@@ -2197,7 +2224,8 @@ class CoreMixin:
 
     def cmd_batch(self):
         try: self._sesion_log("📦 Abrió Batch (generación masiva)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         abrir_batch(self)
 
     def cmd_reset(self):
@@ -2236,7 +2264,8 @@ class CoreMixin:
         self.reiniciar_memoria()
         self.set_estado("🔄 Sistema reseteado.", "#3498db")
         try: self._sesion_log("🗑 Reset completo del sistema")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     # ══════════════════════════════════════════════════════════════
     # CHAT COPILOTO NARRADOR
@@ -2247,7 +2276,8 @@ class CoreMixin:
         if not texto_actual or len(texto_actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero para poder usar el Copiloto.", "#e67e22")
         try: self._sesion_log("💬 Abrió Copiloto de prompt")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         vent_copiloto = ctk.CTkToplevel(self)
         vent_copiloto.title("💬 Copiloto de Prompt")
@@ -2393,7 +2423,8 @@ class CoreMixin:
             self._on_modo_cambio()
             etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
             self.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         return "break"
 
     def _cmd_exportar_rapido(self):

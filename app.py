@@ -412,7 +412,8 @@ class ArquitectoApp(
         win.geometry("440x230")
         win.transient(self)
         try: win.grab_set()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         ctk.CTkLabel(win, text="👋 ¡Hola!",
                      font=ctk.CTkFont(size=22, weight="bold")).pack(pady=(20, 4))
@@ -702,7 +703,8 @@ class ArquitectoApp(
             if hasattr(self, "show_toast"):
                 msg = "📺 Pantalla completa (F11/Esc para salir)" if not actual else "↩️ Salida pantalla completa"
                 try: self.show_toast(msg, "#3b82f6", 1500)
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
         except Exception:
             pass
         return "break"
@@ -839,7 +841,8 @@ class ArquitectoApp(
         if actual and (not self._regen_stack or self._regen_stack[-1] != actual):
             self._regen_push(actual)
         try: self._sesion_log("🔄 Regeneró prompt (misma idea)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         # Llamar a la generación normal
         self.cmd_prompt()
 
@@ -1159,6 +1162,7 @@ class ArquitectoApp(
              "(blurry:1.4), (low detail:1.4), (inconsistent style:1.3), (broken composition:1.3), (messy:1.3), (bad:1.3), (ugly:1.3)"),
         ]
 
+        plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
         vent = ctk.CTkToplevel(self)
         vent.title("📑 Plantillas de prompt")
         vent.geometry("700x600")
@@ -1170,7 +1174,7 @@ class ArquitectoApp(
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=5)
 
-        for nombre, pos, neg in plantillas:
+        for nombre, pos, neg in plantillas_sorted:
             card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
             card.pack(fill="x", pady=4)
             ctk.CTkLabel(card, text=nombre, font=ctk.CTkFont(size=12, weight="bold"),
@@ -1476,7 +1480,8 @@ class ArquitectoApp(
             _nombre_actual = _prefs_existentes.get("nombre", "")
             if _nombre_actual:
                 self.entry_nombre_pref.insert(0, _nombre_actual)
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.entry_nombre_pref.pack(anchor="w", padx=20)
 
         ctk.CTkLabel(tab_gen, text="🧠 Cerebro por defecto al iniciar:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
@@ -1592,7 +1597,8 @@ class ArquitectoApp(
         if self.modo_var.get() == "audio":
             return self.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
         try: self._sesion_log("🎨 Previsualizó (boceto rápido)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
         self.toggle_botones(False)

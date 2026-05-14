@@ -28,7 +28,8 @@ class ToolsCreativeMixin:
         """Genera una idea aleatoria interesante para inspirarse."""
         modo = self.modo_var.get()
         try: self._sesion_log("🎲 Sorpréndeme: pidió idea aleatoria")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.set_estado("🎲 Pensando algo creativo...", "#f39c12")
         self.toggle_botones(False)
 
@@ -62,7 +63,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
         try: self._sesion_log("⚡ Pulse: generó 3 versiones (conservador/equilibrado/creativo)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("⚡ Pulse: generando 3 versiones (conservadora → creativa)...", "#f39c12")
         self.toggle_botones(False)
@@ -182,7 +184,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 10:
             return self.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
         try: self._sesion_log("🤖 Sugerir modelo: analizó idea")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🤖 Analizando idea para sugerir modelo...", "#f39c12")
 
@@ -400,7 +403,8 @@ class ToolsCreativeMixin:
             self.set_estado("⚠️ Necesitas un prompt en el resultado para comparar.", "#e67e22")
             return
         try: self._sesion_log("🔍 Análisis inverso: comparó imagen con prompt actual")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🔍 Análisis inverso: comparando imagen y prompt...", "#f39c12")
         self.toggle_botones(False)
@@ -611,18 +615,82 @@ class ToolsCreativeMixin:
                     ctk.CTkLabel(vent, text=f"Analizado con: {motor}",
                                  font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-                    # Mostrar JSON formateado
-                    json_str = json.dumps(adn, indent=2, ensure_ascii=False)
+                    # Categorías bloqueables
+                    categorias = [
+                        ("sujeto", "👤 Sujeto"),
+                        ("escena", "🌅 Escena"),
+                        ("iluminacion", "💡 Iluminación"),
+                        ("camara", "📷 Cámara"),
+                        ("estilo", "🎨 Estilo"),
+                        ("composicion", "📐 Composición"),
+                        ("atmosfera", "🌫️ Atmósfera"),
+                        ("tecnico", "⚙️ Técnico"),
+                    ]
 
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(family="Consolas", size=10), wrap="none")
-                    txt.pack(fill="both", expand=True, padx=15, pady=5)
-                    txt.insert("1.0", json_str)
+                    # Diccionario de bloqueos (inicial todo desbloqueado)
+                    bloqueos = {}
+
+                    scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+                    scroll.pack(fill="both", expand=True, padx=10, pady=5)
+
+                    for cat_key, cat_nombre in categorias:
+                        datos = adn.get(cat_key, {})
+                        if not datos:
+                            continue
+
+                        # Frame de la categoría
+                        cat_frame = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
+                        cat_frame.pack(fill="x", pady=4, padx=5)
+
+                        # Header con candado
+                        hdr = ctk.CTkFrame(cat_frame, fg_color="transparent")
+                        hdr.pack(fill="x", padx=8, pady=(6, 0))
+
+                        # Estado de bloqueo
+                        bloqueos[cat_key] = {"bloqueado": False, "label": None}
+
+                        def _toggle_bloqueo(key=cat_key):
+                            bloqueos[key]["bloqueado"] = not bloqueos[key]["bloqueado"]
+                            icono = "🔒" if bloqueos[key]["bloqueado"] else "🔓"
+                            color = "#c0392b" if bloqueos[key]["bloqueado"] else "#27ae60"
+                            btn_lock.configure(text=icono, fg_color=color)
+                            estado = "🔒 BLOQUEADO" if bloqueos[key]["bloqueado"] else "🔓 DESBLOQUEADO"
+                            bloqueos[key]["label"].configure(text=estado, text_color=color)
+
+                        btn_lock = ctk.CTkButton(hdr, text="🔓", width=30, height=22,
+                                                 fg_color="#27ae60", hover_color="#2ecc71",
+                                                 command=_toggle_bloqueo)
+                        btn_lock.pack(side="left", padx=(0, 5))
+
+                        # Etiqueta de estado
+                        estado_lbl = ctk.CTkLabel(hdr, text="🔓 DESBLOQUEADO", text_color="#27ae60", font=ctk.CTkFont(size=9))
+                        estado_lbl.pack(side="left", padx=(2, 0))
+                        bloqueos[cat_key]["label"] = estado_lbl
+
+                        ctk.CTkLabel(hdr, text=cat_nombre, font=ctk.CTkFont(weight="bold")).pack(side="left")
+
+                        # Contenido de la categoría
+                        if isinstance(datos, dict):
+                            for k, v in datos.items():
+                                if v:
+                                    txt = f"  {k}: {v}"
+                                    ctk.CTkLabel(cat_frame, text=txt, font=ctk.CTkFont(size=10),
+text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=12, pady=1)
+                        elif isinstance(datos, list) and datos:
+                            for item in datos[:5]:
+                                ctk.CTkLabel(cat_frame, text=f"  • {item}", font=ctk.CTkFont(size=10),
+                                            text_color=c["text"], anchor="w").pack(anchor="w", padx=12, pady=1)
+                        elif isinstance(datos, str) and datos:
+                            ctk.CTkLabel(cat_frame, text=f"  {datos}", font=ctk.CTkFont(size=10),
+                                        text_color=c["text"], anchor="w").pack(anchor="w", padx=12, pady=1)
 
                     # Botones de acción
                     btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_frame.pack(pady=10)
 
                     def _copiar_json():
+                        import json
+                        json_str = json.dumps(adn, indent=2, ensure_ascii=False)
                         import pyperclip
                         pyperclip.copy(json_str)
                         self.set_estado("🧬 JSON copiado", "#2ecc71")
@@ -631,75 +699,81 @@ class ToolsCreativeMixin:
                         # Convertir ADN a prompt detallado
                         partes = []
 
-                        # SUJETO - descripción completa
-                        sujeto = adn.get("sujeto", {})
-                        if isinstance(sujeto, list):
-                            sujeto = sujeto[0] if sujeto else {}
-                        if sujeto:
-                            if sujeto.get("tipo"):
-                                partes.append(sujeto.get("tipo"))
-                            if sujeto.get("cabello"):
-                                partes.append(f"cabello {sujeto.get('cabello')}")
-                            if sujeto.get("ojos"):
-                                partes.append(f"ojos {sujeto.get('ojos')}")
-                            if sujeto.get("ropa"):
-                                ropa = sujeto["ropa"]
-                                if isinstance(ropa, dict):
-                                    pr = ropa.get("prenda", "")
-                                    col = ropa.get("color", "")
-                                    if pr:
-                                        partes.append(f"{pr} {col}".strip())
-                                elif isinstance(ropa, str):
-                                    partes.append(ropa)
-                            if sujeto.get("pose"):
-                                partes.append(f"pose: {sujeto.get('pose')}")
-                            if sujeto.get("expresion"):
-                                partes.append(f"expresión: {sujeto.get('expresion')}")
+                        # SUJETO - solo si no está bloqueado
+                        if not bloqueos.get("sujeto", {}).get("bloqueado", False):
+                            sujeto = adn.get("sujeto", {})
+                            if isinstance(sujeto, list):
+                                sujeto = sujeto[0] if sujeto else {}
+                            if sujeto:
+                                if sujeto.get("tipo"):
+                                    partes.append(sujeto.get("tipo"))
+                                if sujeto.get("cabello"):
+                                    partes.append(f"cabello {sujeto.get('cabello')}")
+                                if sujeto.get("ojos"):
+                                    partes.append(f"ojos {sujeto.get('ojos')}")
+                                if sujeto.get("ropa"):
+                                    ropa = sujeto["ropa"]
+                                    if isinstance(ropa, dict):
+                                        pr = ropa.get("prenda", "")
+                                        col = ropa.get("color", "")
+                                        if pr:
+                                            partes.append(f"{pr} {col}".strip())
+                                    elif isinstance(ropa, str):
+                                        partes.append(ropa)
+                                if sujeto.get("pose"):
+                                    partes.append(f"pose: {sujeto.get('pose')}")
+                                if sujeto.get("expresion"):
+                                    partes.append(f"expresión: {sujeto.get('expresion')}")
 
-                        # ESCENA
-                        escena = adn.get("escena", {})
-                        if escena.get("ubicacion"):
-                            partes.append(escena.get("ubicacion"))
-                        if escena.get("interior_exterior"):
-                            partes.append(escena.get("interior_exterior"))
-                        if escena.get("elementos"):
-                            if isinstance(escena["elementos"], list):
-                                partes.append(", ".join(escena["elementos"][:5]))
+                        # ESCENA - solo si no está bloqueado
+                        if not bloqueos.get("escena", {}).get("bloqueado", False):
+                            escena = adn.get("escena", {})
+                            if escena.get("ubicacion"):
+                                partes.append(escena.get("ubicacion"))
+                            if escena.get("interior_exterior"):
+                                partes.append(escena.get("interior_exterior"))
+                            if escena.get("elementos"):
+                                if isinstance(escena["elementos"], list):
+                                    partes.append(", ".join(escena["elementos"][:5]))
 
-                        # ILUMINACIÓN
-                        ilu = adn.get("iluminacion", {})
-                        if ilu.get("tipo"):
-                            partes.append(f"iluminación {ilu.get('tipo')}")
-                        if ilu.get("hora_dia"):
-                            partes.append(ilu.get("hora_dia"))
-                        if ilu.get("color_temperatura"):
-                            partes.append(f"temperatura de color: {ilu.get('color_temperatura')}")
+                        # ILUMINACIÓN - solo si no está bloqueado
+                        if not bloqueos.get("iluminacion", {}).get("bloqueado", False):
+                            ilu = adn.get("iluminacion", {})
+                            if ilu.get("tipo"):
+                                partes.append(f"iluminación {ilu.get('tipo')}")
+                            if ilu.get("hora_dia"):
+                                partes.append(ilu.get("hora_dia"))
+                            if ilu.get("color_temperatura"):
+                                partes.append(f"temperatura de color: {ilu.get('color_temperatura')}")
 
-                        # CÁMARA
-                        cam = adn.get("camara", {})
-                        if cam.get("encuadre"):
-                            partes.append(cam.get("encuadre"))
-                        if cam.get("angulo"):
-                            partes.append(f"ángulo de cámara: {cam.get('angulo')}")
-                        if cam.get("lente_simulada"):
-                            partes.append(cam.get("lente_simulada"))
-                        if cam.get("profundidad_campo"):
-                            partes.append(f"profundidad de campo: {cam.get('profundidad_campo')}")
+                        # CÁMARA - solo si no está bloqueado
+                        if not bloqueos.get("camara", {}).get("bloqueado", False):
+                            cam = adn.get("camara", {})
+                            if cam.get("encuadre"):
+                                partes.append(cam.get("encuadre"))
+                            if cam.get("angulo"):
+                                partes.append(f"ángulo de cámara: {cam.get('angulo')}")
+                            if cam.get("lente_simulada"):
+                                partes.append(cam.get("lente_simulada"))
+                            if cam.get("profundidad_campo"):
+                                partes.append(f"profundidad de campo: {cam.get('profundidad_campo')}")
 
-                        # ESTILO
-                        estilo = adn.get("estilo", {})
-                        if estilo.get("estetica"):
-                            partes.append(estilo.get("estetica"))
-                        if estilo.get("tecnica"):
-                            partes.append(estilo.get("tecnica"))
-                        if estilo.get("paleta_dominante"):
-                            if isinstance(estilo["paleta_dominante"], list):
-                                partes.extend(estilo["paleta_dominante"][:5])
+                        # ESTILO - solo si no está bloqueado
+                        if not bloqueos.get("estilo", {}).get("bloqueado", False):
+                            estilo = adn.get("estilo", {})
+                            if estilo.get("estetica"):
+                                partes.append(estilo.get("estetica"))
+                            if estilo.get("tecnica"):
+                                partes.append(estilo.get("tecnica"))
+                            if estilo.get("paleta_dominante"):
+                                if isinstance(estilo["paleta_dominante"], list):
+                                    partes.extend(estilo["paleta_dominante"][:5])
 
-                        # ATMOSFERA
-                        atmos = adn.get("atmosfera", {})
-                        if atmos.get("estado_animo"):
-                            partes.append(f"mood: {atmos.get('estado_animo')}")
+                        # ATMOSFERA - solo si no está bloqueado
+                        if not bloqueos.get("atmosfera", {}).get("bloqueado", False):
+                            atmos = adn.get("atmosfera", {})
+                            if atmos.get("estado_animo"):
+                                partes.append(f"mood: {atmos.get('estado_animo')}")
 
                         # TÉCNICO
                         tecnico = adn.get("tecnico", {})
@@ -712,11 +786,30 @@ class ToolsCreativeMixin:
 
                         prompt = ", ".join(partes)
                         if prompt:
-                            # Poner en txt_idea para poder generar desde ahí
+                            # Añadir al prompt existente en lugar de reemplazar
+                            existente = self.txt_idea.get("1.0", "end").strip()
+                            if existente:
+                                nuevo = f"{existente}\n\n{prompt}"
+                            else:
+                                nuevo = prompt
+                            
                             self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", prompt)
+                            self.txt_idea.insert("1.0", nuevo)
                             vent.destroy()
-                            self.set_estado("🧬 ADN en idea - pulsa Generar", "#2ecc71")
+                            
+                            # Mostrar qué categorías se incluyeron
+                            cats_incluidas = []
+                            cats_excluidas = []
+                            for cat in ["sujeto", "escena", "iluminacion", "camara", "estilo", "atmosfera", "composicion", "tecnico"]:
+                                if bloqueos.get(cat, {}).get("bloqueado", False):
+                                    cats_excluidas.append(cat)
+                                else:
+                                    cats_incluidas.append(cat)
+                            
+                            if cats_excluidas:
+                                self.set_estado(f"🧬Idea (bloqueados: {', '.join(cats_excluidas)})", "#2ecc71")
+                            else:
+                                self.set_estado("🧬 ADN en idea - pulsa Generar", "#2ecc71")
                         else:
                             self.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
 
@@ -803,13 +896,13 @@ class ToolsCreativeMixin:
                         if plantilla.get("estilo") and estilo:
                             try:
                                 paleta_str = ""
-                                paleta = estilo.get("paleta_dominante", [])
+                                paleta = estilo.get("paleta_exacta_5colores", [])
                                 if isinstance(paleta, list):
                                     paleta_str = ", ".join(paleta[:3])
                                 partes.append(plantilla["estilo"].format(
-                                    estetica=estilo.get("estetica", ""),
-                                    tecnica=estilo.get("tecnica", ""),
-                                    paleta=paleta_str
+                                    estetica_exacta=estilo.get("estetica_exacta", ""),
+                                    tecnica_precisa=estilo.get("tecnica_precisa", ""),
+                                    paleta_exacta_5colores=paleta_str
                                 ))
                             except Exception as e:
                                 logger.warning(f"Conversión {plataforma} estilo falló: {e}")
@@ -819,7 +912,7 @@ class ToolsCreativeMixin:
                         ilu = adn.get("iluminacion", {})
                         if plantilla.get("iluminacion") and ilu:
                             try:
-                                partes.append(plantilla["iluminacion"].format(tipo=ilu.get("tipo", "")))
+                                partes.append(plantilla["iluminacion"].format(tipo_exacto=ilu.get("tipo_exacto", "")))
                             except Exception as e:
                                 logger.warning(f"Conversión {plataforma} iluminacion falló: {e}")
                                 fallos.append("iluminacion")
@@ -830,8 +923,8 @@ class ToolsCreativeMixin:
                             if cam:
                                 try:
                                     partes.append(plantilla["camara"].format(
-                                        angulo=cam.get("angulo", ""),
-                                        encuadre=cam.get("encuadre", "")
+                                        angulo_exacto=cam.get("angulo_exacto", ""),
+                                        encuadre_exacto=cam.get("encuadre_exacto", "")
                                     ))
                                 except Exception as e:
                                     logger.warning(f"Conversión {plataforma} camara falló: {e}")
@@ -842,8 +935,8 @@ class ToolsCreativeMixin:
                             esc = adn.get("escena", {})
                             try:
                                 partes.append(plantilla["escena"].format(
-                                    ubicacion=esc.get("ubicacion", ""),
-                                    iluminacion=ilu.get("tipo", "")
+                                    ubicacion_exacta=esc.get("ubicacion_exacta", ""),
+                                    tipo_exacto=ilu.get("tipo_exacto", "")
                                 ))
                             except Exception as e:
                                 logger.warning(f"Conversión {plataforma} escena falló: {e}")
@@ -853,22 +946,33 @@ class ToolsCreativeMixin:
                         if plantilla.get("atm"):
                             atmos = adn.get("atmosfera", {})
                             try:
-                                partes.append(plantilla["atm"].format(estado_animo=atmos.get("estado_animo", "")))
+                                partes.append(plantilla["atm"].format(estado_animo_exacto=atmos.get("estado_animo_exacto", "")))
                             except Exception as e:
                                 logger.warning(f"Conversión {plataforma} atmosfera falló: {e}")
                                 fallos.append("atmosfera")
 
                         prompt = ", ".join([p for p in partes if p])
                         if prompt:
-                            # Poner en idea (txt_idea) para proteger el prompt actual en txt_salida
+                            # Añadir al prompt existente en lugar de reemplazar
+                            existente = self.txt_idea.get("1.0", "end").strip()
+                            if existente:
+                                nuevo = f"{existente}\n\n{prompt}"
+                            else:
+                                nuevo = prompt
+                            
                             self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", prompt)
+                            self.txt_idea.insert("1.0", nuevo)
                             vent.destroy()
                             
-                            if fallos:
-                                self.set_estado(f"🧬 {plataforma} - parcial (falló: {', '.join(fallos)})", "#f39c12")
+                            # Mostrar bloqueos
+                            cats_bloqueadas = [cat for cat in bloqueos if bloqueos.get(cat, {}).get("bloqueado", False)]
+                            if cats_bloqueadas:
+                                msg = f"🧬 {plataforma} (bloqueados: {', '.join(cats_bloqueadas[:3])}{'...' if len(cats_bloqueadas) > 3 else ''})"
+                            elif fallos:
+                                msg = f"🧬 {plataforma} - parcial (falló: {', '.join(fallos)})"
                             else:
-                                self.set_estado(f"🧬 {plataforma} en idea", "#2ecc71")
+                                msg = f"🧬 {plataforma} en idea"
+                            self.set_estado(msg, "#f39c12" if fallos else "#2ecc71")
                         else:
                             self.set_estado(f"❌ Conversión {plataforma} falló completamente", "#e74c3c")
 
@@ -897,7 +1001,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
         try: self._sesion_log("🎨 Sugerir estilos: pidió sugerencia automática")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         modo = self.modo_var.get()
         if modo == "imagen":
@@ -1382,7 +1487,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
         try: self._sesion_log("🎨 Mood: generó 6 prompts (mismo mood, distintos sujetos)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🎨 Generando moodboard de 6 prompts...", "#f39c12")
         self.toggle_botones(False)
@@ -1434,7 +1540,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena base.", "#e67e22")
         try: self._sesion_log("🎬 Story: generó 3 shots Wide/Medium/Close-Up")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🎬 Generando secuencia cinematográfica (Wide/Medium/Close)...", "#f39c12")
         self.toggle_botones(False)
@@ -1478,7 +1585,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
         try: self._sesion_log("📽 Board: generó storyboard 4 shots (apertura/mid/climax/cierre)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("📽 Generando storyboard de 4 shots...", "#f39c12")
         self.toggle_botones(False)
@@ -1522,7 +1630,8 @@ class ToolsCreativeMixin:
         if not actual or len(actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
         try: self._sesion_log("🌀 Walk: random walk de 5 derivaciones evolutivas")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🌀 Random walk: derivando 5 veces...", "#f39c12")
         self.toggle_botones(False)

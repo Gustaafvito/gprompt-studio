@@ -24,7 +24,21 @@ if TYPE_CHECKING:
 
 class DataMgmtMixin:
     """Mixin containing all data management methods."""
-    
+
+    SNIPPETS_DEFAULT = {
+        "realism": "photorealistic, realistic, 8k, detailed, high quality",
+        "cinema": "cinematic lighting, dramatic, volumetric, film grain",
+        "photo": "professional photography, studio lighting, sharp focus, dslr",
+        "anime": "anime style, cel shading, manga, vibrant colors",
+        "art": "digital art, concept art, illustration, highly detailed",
+        "portrait": "portrait, detailed eyes, realistic skin, depth of field",
+        "landscape": "landscape, wide angle, atmospheric, epic, nature",
+        "cyber": "cyberpunk, neon lights, rgb, city nightscape, futuristic",
+        "fantasy": "fantasy, magical, epic, mythical, enchanted",
+        "vintage": "vintage, film grain, analog, retro, nostalgic",
+        "emergent": "{animal} powerfully breaking through a dark matte surface barrier, head is a hybrid of animal texture seamlessly integrated with geometric crystal fragments, polished chrome plates and iridized glass, intricate internal patterns, eyes intensely glowing with electric bioluminescent energy, jagged violent break with debris flying, pulsating bioluminescent filaments (electric blue, gold, purple) revealed within fracture, scattered geometric crystal and metal shards floating, dramatic directional spotlight from top combined with powerful internal light, dark infinite matte void, high-resolution photorealistic 3D conceptual art render, 8k, masterpiece",
+    }
+
     def _auto_guardar_borrador(self):
         """Guarda el borrador actual cada 30 segundos."""
         try:
@@ -124,7 +138,8 @@ class DataMgmtMixin:
         p = self.store.obtener_plantilla(nombre)
         if not p: return
         try: self._sesion_log(f"📐 Cargó plantilla: {nombre}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         modo = p.get("modo", "imagen")
         if modo != self.modo_var.get():
             self.modo_var.set(modo)
@@ -274,7 +289,8 @@ class DataMgmtMixin:
             self.txt_idea.insert(inicio, expansion)
             self.set_estado(f"✨ Snippet expandido: ;{palabra}", "#2ecc71")
             try: self._sesion_log(f"✨ Expandió snippet: ;{palabra}")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         except Exception:
             pass
 
@@ -283,11 +299,11 @@ class DataMgmtMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         v = ctk.CTkToplevel(self)
-        v.title("✂️ Gestor de snippets")
+        v.title("⚡ Expansión rápida")
         v.geometry("680x620")
         v.transient(self)
 
-        ctk.CTkLabel(v, text="✂️ Snippets de expansión rápida",
+        ctk.CTkLabel(v, text="⚡ Snippets de expansión rápida",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text="Escribe ';palabra' + Espacio en la idea y se expande automáticamente.",
                      font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 4))
@@ -417,7 +433,8 @@ class DataMgmtMixin:
             self.store._guardar("historial")
             self.set_estado("📋 Duplicado al historial · Ctrl+D", "#2ecc71")
             try: self._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         except Exception as e:
             self.set_estado(f"⚠️ Error al duplicar: {e}", "#e74c3c")
         return "break"
@@ -605,11 +622,10 @@ class DataMgmtMixin:
         snippets = prefs.get("snippets", [])
 
         vent = ctk.CTkToplevel(self)
-        vent.title("✂️ Snippets reutilizables")
-        vent.geometry("550x550")
+        vent.title("🏷️ Snippets reutilizables")
+        vent.geometry("620x550")
         vent.transient(self)
-
-        ctk.CTkLabel(vent, text="✂️ Snippets reutilizables", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Frases cortas que añades al final del POSITIVE con un click",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -635,7 +651,7 @@ class DataMgmtMixin:
             for i, s in enumerate(actual):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=2)
-                ctk.CTkLabel(card, text=f"  ✂️ {s.get('nombre', '?')}",
+                ctk.CTkLabel(card, text=f"  🏷️ {s.get('nombre', '?')}",
                              font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
                 ctk.CTkLabel(card, text=f"  {s.get('tags', '')[:120]}",
                              font=ctk.CTkFont(size=10), text_color=c["muted_text"],
@@ -685,11 +701,10 @@ class DataMgmtMixin:
         formulas = prefs.get("formulas", [])
 
         vent = ctk.CTkToplevel(self)
-        vent.title("🧪 Fórmulas guardadas")
-        vent.geometry("600x550")
+        vent.title("📐 Fórmulas guardadas")
+        vent.geometry("680x550")
         vent.transient(self)
-
-        ctk.CTkLabel(vent, text="🧪 Fórmulas guardadas", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text="📐 Fórmulas guardadas", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Combinaciones de tags listas para aplicar (más completas que snippets)",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -700,7 +715,7 @@ class DataMgmtMixin:
             if not pos:
                 self.set_estado("⚠️ No hay POSITIVE para guardar como fórmula.", "#e67e22")
                 return
-            nombre = simpledialog.askstring("🧪 Nueva fórmula", "Nombre para esta fórmula:", parent=vent)
+            nombre = simpledialog.askstring("📐 Nueva fórmula", "Nombre para esta fórmula:", parent=vent)
             if not nombre: return
             actual = prefs.get("formulas", [])
             actual.append({
@@ -712,7 +727,7 @@ class DataMgmtMixin:
             prefs["formulas"] = actual
             self.store.guardar_preferencias(prefs)
             refrescar()
-            self.set_estado(f"🧪 Fórmula '{nombre}' guardada", "#2ecc71")
+            self.set_estado(f"📐 Fórmula '{nombre}' guardada", "#2ecc71")
 
         ctk.CTkButton(vent, text="💾 Guardar POSITIVE actual como fórmula", width=300, height=28,
                       fg_color="#1a7a3c", hover_color="#145e2d",
@@ -731,7 +746,7 @@ class DataMgmtMixin:
             for i, f in enumerate(actual):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=3)
-                ctk.CTkLabel(card, text=f"  🧪 {f.get('nombre', '?')}  ·  {f.get('fecha', '')}",
+                ctk.CTkLabel(card, text=f"  📐 {f.get('nombre', '?')}  ·  {f.get('fecha', '')}",
                              font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
                 preview = f.get("positive", "")[:200]
                 ctk.CTkLabel(card, text=f"  POS: {preview}{'...' if len(f.get('positive','')) > 200 else ''}",
@@ -745,7 +760,7 @@ class DataMgmtMixin:
                         txt += f"\nNEGATIVE PROMPT: {form.get('negative')}"
                     self.actualizar_salida(txt)
                     vent.destroy()
-                    self.set_estado(f"🧪 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
+                    self.set_estado(f"📐 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
                 def _borrar(idx=i):
                     actual2 = prefs.get("formulas", [])
                     if idx < len(actual2):
@@ -841,7 +856,8 @@ class DataMgmtMixin:
             self.combo_lora.set("— Sin LoRA —")
         # Refrescar trigger visible y aviso de compatibilidad
         try: self._actualizar_lora_trigger_visible()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     def actualizar_combo_plantillas(self):
         nombres = self.store.nombres_plantillas()
@@ -878,8 +894,10 @@ class DataMgmtMixin:
                                 prefs2 = self.store.cargar_preferencias()
                                 prefs2["tema"] = "dark"
                                 self.store.guardar_preferencias(prefs2)
-                            except Exception: pass
-                        except Exception: pass
+                            except Exception as e:
+                                logger.debug(f"[silent] {e}")
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
                     # ── FIX v1.0.8 ──────────────────────────────────────
                     # Tras cambiar el modo de apariencia, los labels que se
                     # construyeron con el tema "dark" inicial mantienen sus
@@ -894,7 +912,8 @@ class DataMgmtMixin:
                         pass
                 try:
                     self.after(200, _aplicar_tema_diferido)
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
 
             # Sonido
             self._sonido_activo = prefs.get("sonido", False)
@@ -1009,7 +1028,8 @@ class DataMgmtMixin:
                 foco = self.focus_get()
                 if foco is not None and hasattr(self, "txt_idea") and foco == self.txt_idea._textbox:
                     return None  # dejar que tk lo maneje normalmente
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             # Comprobar si el clipboard tiene texto que parece un prompt formado
             try:
                 texto_clip = pyperclip.paste()
@@ -1028,7 +1048,8 @@ class DataMgmtMixin:
                 self.actualizar_salida(texto_clip)
                 self.set_estado("📥 Prompt pegado en Resultado (detectado por marcadores)", "#2ecc71")
                 try: self._sesion_log("📥 Pegó prompt completo desde portapapeles")
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
                 return "break"
             # Si no es prompt completo, intentar imagen
             return self._pegar_imagen_clipboard(event)

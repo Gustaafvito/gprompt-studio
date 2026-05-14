@@ -249,8 +249,8 @@ class ToolsAnalysisMixin:
             ("💎 Seeds guardados", str(len(seeds))),
             ("🧑 Personajes", str(len(self.store.personajes or []))),
             ("🔗 LoRAs", str(len(self.store.loras or []))),
-            ("✂️ Snippets", str(len(prefs.get("snippets", [])))),
-            ("🧪 Fórmulas", str(len(prefs.get("formulas", [])))),
+            ("🏷️ Snippets", str(len(prefs.get("snippets", [])))),
+            ("📐 Fórmulas", str(len(prefs.get("formulas", [])))),
             ("📑 Plantillas", str(len(prefs.get("plantillas", [])))),
         ]
 
@@ -621,42 +621,60 @@ class ToolsAnalysisMixin:
 
     def _aplicar_seed(self, seed):
         """Aplica una configuración guardada como seed."""
-        # Cargar plataforma
-        if seed.get("plataforma") and hasattr(self, 'plataforma_var'):
-            valores_plat = self.plataforma_var.cget("values") or []
+        mensajes = []
+        aplicado = False
+
+        # Cargar plataforma PRIMERO (esto recarga los modelos disponibles para esa plataforma)
+        if seed.get("plataforma") and hasattr(self, 'combo_plataforma'):
+            valores_plat = list(self.combo_plataforma.cget("values") or [])
             if seed["plataforma"] in valores_plat:
                 self.plataforma_var.set(seed["plataforma"])
+                if hasattr(self, '_on_plataforma_cambio'):
+                    try: self._on_plataforma_cambio()
+                    except: pass
+                aplicado = True
 
-        # Cargar modelo imagen
-        if seed.get("modelo_img") and hasattr(self, 'modelo_img_var'):
-            valores_modelo = self.modelo_img_var.cget("values") or []
+        # Ahora que la plataforma está puesta, cargar el modelo de imagen
+        if seed.get("modelo_img") and hasattr(self, 'combo_modelo_imagen'):
+            valores_modelo = list(self.combo_modelo_imagen.cget("values") or [])
             if seed["modelo_img"] in valores_modelo:
                 self.modelo_img_var.set(seed["modelo_img"])
                 if hasattr(self, '_on_modelo_imagen_cambio'):
                     try: self._on_modelo_imagen_cambio()
                     except: pass
-            else:
-                self.set_estado(f"⚠️ Modelo '{seed['modelo_img']}' no disponible", "#e67e22")
-                return
+                aplicado = True
+            elif seed["modelo_img"]:
+                mensajes.append(f"Modelo '{seed['modelo_img']}' no disponible")
 
         # Cargar modelo video
-        if seed.get("modelo_vid") and hasattr(self, 'modelo_vid_var'):
-            valores_vid = self.modelo_vid_var.cget("values") or []
+        if seed.get("modelo_vid") and hasattr(self, 'combo_modelo_vid'):
+            valores_vid = list(self.combo_modelo_vid.cget("values") or [])
             if seed["modelo_vid"] in valores_vid:
                 self.modelo_vid_var.set(seed["modelo_vid"])
+                aplicado = True
 
         # Cargar ratio
-        if seed.get("ratio") and hasattr(self, 'ratio_var'):
-            valores_ratio = self.ratio_var.cget("values") or []
+        if seed.get("ratio") and hasattr(self, 'combo_ratio'):
+            valores_ratio = list(self.combo_ratio.cget("values") or [])
             if seed["ratio"] in valores_ratio:
                 self.ratio_var.set(seed["ratio"])
+                aplicado = True
+            elif seed["ratio"]:
+                mensajes.append(f"Ratio '{seed['ratio']}' no disponible")
 
         # Cargar estilos
         if seed.get("estilos") and hasattr(self, 'estilo_checks'):
             for nombre, var in self.estilo_checks.items():
                 var.set(nombre in seed["estilos"])
+            aplicado = True
 
-        self.set_estado(f"💎 Seed '{seed.get('nombre', '?')}' aplicado", "#2ecc71")
+        if aplicado:
+            nombre = seed.get('nombre', '?')
+            self.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
+            if mensajes:
+                self.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
+        else:
+            self.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
 
     def _autocompletar_tags(self, event=None):
         """Auto-completar tags mientras escribe."""
@@ -681,11 +699,11 @@ class ToolsAnalysisMixin:
         atajos = prefs.get("atajos_tags", [])
 
         vent = ctk.CTkToplevel(self)
-        vent.title("✂️ Atajos de tags")
+        vent.title("🏷️ Atajos de tags")
         vent.geometry("600x450")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="✂️ Atajos de tags (snippets)", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text="🏷️ Atajos de tags (snippets)", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Atajos rápidos para insertar tags comunes",
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
 

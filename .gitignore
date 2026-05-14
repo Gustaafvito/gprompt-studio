@@ -38,3 +38,9 @@ venv/
 .DS_Store
 Thumbs.db
 desktop.ini
+# Archivos temporales de trabajo
+*_temp.py
+*.tmp
+*.corrupt
+__pycache__/
+modules/__pycache__/

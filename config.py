@@ -5,7 +5,7 @@ Modelos, estilos, ratios, presets de negativos, colores UI.
 from pathlib import Path
 
 # ── Versión ───────────────────────────────────────────────────────
-VERSION = "1.0.5"
+VERSION = "1.0.9"
 PUBLIC_VERSION = "1.0"
 APP_TITLE = f"🧠 G-Prompt Studio v{PUBLIC_VERSION}"
 
@@ -46,56 +46,73 @@ MODELOS_OPENROUTER_VISION = [
 ADN_SCHEMA = {
     "sujeto": {
         "tipo": str, "genero": str, "edad_aprox": str, "etnia": str,
-        "cabello": str, "ojos": str, "ropa": dict, "pose": str, "expresion": str
+        "cabello": dict, "ojos": dict, "ropa": dict, "pose": dict, "expresion": dict,
+        "piel_tono": str, "cicatrices_marcas": str
     },
     "escena": {
-        "ubicacion": str, "interior_exterior": str, "elementos": list, "profundidad": str
+        "ubicacion_exacta": str, "interior_exterior": str, "ambiente": str,
+        "elementos_principales": list, "elementos_secundarios": list,
+        "objetos_en_escena": list, "profundidad_z": str, "espacio_negativo": str
     },
     "iluminacion": {
-        "tipo": str, "direccion": str, "intensidad": str, "hora_dia": str,
-        "color_temperatura": str, "fuentes": list
+        "tipo_exacto": str, "direccion_precisa": str, "intensidad_exacta": str,
+        "hora_dia_exacta": str, "color_temperatura_kelvin": str,
+        "fuentes_luminosas": list, "sombras_dureza": str, "reflejos_superficies": str,
+        "luz_ambiental_porcentaje": str
     },
     "camara": {
-        "encuadre": str, "angulo": str, "lente_simulada": str,
-        "profundidad_campo": str, "distorsion": str
+        "encuadre_exacto": str, "angulo_exacto": str, "distancia_focal_mm": str,
+        "apertura_f": str, "profundidad_campo_exacta": str, "distorsion_lente": str,
+        "movimiento_camara": str, "estabilidad": str
     },
     "estilo": {
-        "estetica": str, "epoca": str, "tecnica": str, "paleta_dominante": list
+        "estetica_exacta": str, "movimiento_artistico": str, "epoca_referenciada": str,
+        "tecnica_precisa": str, "paleta_exacta_5colores": list,
+        "texturas_visibles": list, "finish_superficial": str
     },
     "composicion": {
-        "regla": str, "lineas_guia": str, "equilibrio": str
+        "regla_exacta": str, "punto_foco_exacto": str, "lineas_principales": list,
+        "lineas_secundarias": list, "equilibrio_visual": str,
+        "peso_visual": str, "espacio_activo": str
     },
     "atmosfera": {
-        "estado_animo": str, "energia": str
+        "estado_animo_exacto": str, "energia_exacta": str,
+        "temperatura_emocional": str, "elementos_ambientales": list,
+        "densidad_atmosferica": str
     },
     "tecnico": {
-        "grano": str, "contraste": str, "saturacion": str, "postproceso": str
+        "grano_exacto": str, "contraste_exacto": str, "saturacion_exacta": str,
+        "rango_dinamico": str, "postprocesos_exactos": list,
+        "efectos_visibles": list, "calidad_render": str
     }
 }
 
 # ── Conversión ADN por plataforma ─────────────────────────────────
+# IMPORTANTE: los placeholders {clave} deben coincidir exactamente con las
+# claves que produce VISION_SYSTEM_PROMPT y que tools_creative.py pasa al .format().
+# Si cambias un placeholder aquí, actualiza también tools_creative._convertir_plataforma.
 ADN_A_PLATAFORMA = {
     "midjourney": {
         "sujeto": "{tipo}, {ropa}, {pose}, {expresion}",
-        "estilo": "--style {estetica} --ar 16:9",
-        "iluminacion": "--lighting {tipo}",
-        "camara": "--{angulo} --{encuadre}"
+        "estilo": "--style {estetica_exacta} --ar 16:9",
+        "iluminacion": "--lighting {tipo_exacto}",
+        "camara": "--{angulo_exacto} --{encuadre_exacto}"
     },
     "stable_diffusion": {
         "sujeto": "1person, {ropa}, {pose}",
-        "estilo": "{estetica}, {tecnica}",
-        "iluminacion": "{tipo} lighting",
-        "tags": "{paleta_dominante}"
+        "estilo": "{estetica_exacta}, {tecnica_precisa}",
+        "iluminacion": "{tipo_exacto} lighting",
+        "tags": "{paleta_exacta_5colores}"
     },
     "dalle": {
         "sujeto": "{tipo} wearing {ropa}, {pose}",
-        "estilo": "{estetica} style, {tecnica}",
-        "atm": "{estado_animo} mood"
+        "estilo": "{estetica_exacta} style, {tecnica_precisa}",
+        "atm": "{estado_animo_exacto} mood"
     },
     "flux": {
         "sujeto": "portrait of {tipo}, {ropa}, {pose}",
-        "estilo": "{estetica}, detailed, high quality",
-        "escena": "{ubicacion}, {iluminacion}"
+        "estilo": "{estetica_exacta}, detailed, high quality",
+        "escena": "{ubicacion_exacta}, {tipo_exacto}"
     }
 }
 
@@ -236,8 +253,8 @@ MODELOS_AUDIO_FLAT  = _lista_plana(GRUPOS_AUDIO)
 # Cada plataforma muestra SÓLO los modelos disponibles en ella
 # ══════════════════════════════════════════════════════════════════
 
-# Modelos exclusivos de Freepik AI
-GRUPOS_FREEPIK_IMAGEN = [
+# Modelos exclusivos de Magnific (anteriormente Freepik AI, rebrand abril 2026)
+GRUPOS_MAGNIFIC_IMAGEN = [
     ("── Auto / Sugerido ──", [
         "Auto (Sugerencias)",
     ]),
@@ -278,7 +295,7 @@ GRUPOS_FREEPIK_IMAGEN = [
         "Recraft V4 Pro",
         "Recraft V4",
     ])),
-    ("── Otros Freepik ──", sorted([
+    ("── Otros Magnific ──", sorted([
         "Z-Image",
         "Qwen",
         "Grok",
@@ -286,7 +303,7 @@ GRUPOS_FREEPIK_IMAGEN = [
         "Classic Fast",
     ])),
 ]
-MODELOS_FREEPIK_IMAGEN_FLAT = _lista_plana(GRUPOS_FREEPIK_IMAGEN)
+MODELOS_MAGNIFIC_IMAGEN_FLAT = _lista_plana(GRUPOS_MAGNIFIC_IMAGEN)
 
 # Modelos exclusivos de DALL-E (ChatGPT)
 GRUPOS_DALLE_IMAGEN = [
@@ -319,7 +336,7 @@ MODELOS_POR_PLATAFORMA_IMAGEN = {
     "Midjourney":                  MODELOS_MIDJOURNEY_IMAGEN_FLAT,
     "DALL-E (ChatGPT)":            MODELOS_DALLE_IMAGEN_FLAT,
     "Ideogram / Recraft":          MODELOS_IDEOGRAM_IMAGEN_FLAT,
-    "Freepik AI":                  MODELOS_FREEPIK_IMAGEN_FLAT,
+    "Magnific":                    MODELOS_MAGNIFIC_IMAGEN_FLAT,
 }
 
 # Mapeo plataforma -> lista de modelos (para vídeo)
@@ -514,8 +531,7 @@ PLATAFORMAS_IMAGEN = {
     "Midjourney":                  "natural",
     "DALL-E (ChatGPT)":            "natural",
     "Ideogram / Recraft":          "natural",
-    "Freepik AI":                  "natural",
-    "Tomoviee.ai":                 "natural",
+    "Magnific":                    "natural",
 }
 
 PLATAFORMAS_VIDEO = {
@@ -526,7 +542,6 @@ PLATAFORMAS_VIDEO = {
     "Runway Gen":       "natural",
     "Pixverse.ai":      "natural",
     "Sora / Veo":       "natural",
-    "Tomoviee.ai":      "natural",
 }
 
 PLATAFORMAS_AUDIO = {
@@ -564,7 +579,6 @@ MOTORES_VIDEO = {
     "Runway Gen": [],
     "Pixverse.ai": [],
     "Sora / Veo": ["Sora2 Video", "Veo 3.1"],
-    "Tomoviee.ai": ["Tomoviee.ai"],
 }
 
 MOTORES_AUDIO = {
@@ -591,14 +605,13 @@ TOKEN_LIMITS = {
     "Google Imagen": 75,
     "Fooocus": 75,
     "Focusss": 75,
-    "Freepik AI": 75,
+    "Magnific": 75,
     "SeaArt Video": 200,
     "Pika / Luma": 60,
     "Kling AI": 75,
     "Runway Gen": 75,
     "Pixverse.ai": 75,
     "Sora / Veo": 75,
-    "Tomoviee.ai": 300,
     "Suno": 500,
     "SeaArt Audio": 400,
 }
@@ -804,20 +817,6 @@ MODEL_SPECS = {
         "prompt_formula": "Subject + action + camera + style. Prompts concisos y directos.",
         "prompt_ejemplo": "A person walking through a foggy forest path, mysterious atmosphere, cinematic lighting, 1080p.",
         "limitaciones": "Sin audio, sin prompt negativo. Solo 2 ratios. Máx 8s. Modelo nuevo con pocos usos.",
-    },
-    "Tomoviee.ai": {
-        "nota": 4.4,
-        "has_negative": False,
-        "has_audio": True,
-        "audio_desc": "Auto BGM, Text-to-Music, Text-to-SFX, Text-to-Voice con emoción integrados",
-        "duraciones": ["5s"],
-        "ratios": ["9:16", "16:9", "1:1", "4:3", "3:4"],
-        "max_chars": 1200,
-        "modos_gen": ["Standard 720P", "HD 1080P"],
-        "best_for": "Plataforma Wondershare ToMoviee 2.5 Pro. Motor físico real (gravedad, fluidos, colisiones). Control cinematográfico de cámara (dolly/pan/tilt/orbital). Excelente para storytelling corto de 5s tipo reels/shorts. Text-to-Video, Image-to-Video con frames inicio/fin. Genera audio propio (música, SFX, voz).",
-        "prompt_formula": "Text-to-Video: 'Subject + Motion + Scene + Lighting + Camera direction'. Image-to-Video: 'Subject + Motion' (más simple, la imagen ya establece la escena). Usa lenguaje simple y conciso. Movimientos que respeten física real.",
-        "prompt_ejemplo": "Text-to-Video: 'A Chinese girl in emerald dress sits centered on giant floating lotus leaf, pale green hue, soft morning light, camera slow dolly in'. Image-to-Video: 'Girl in Vermeer painting suddenly turns head, lifting wireless headset to her ear with right hand'.",
-        "limitaciones": "Solo 5s por clip (usar Video Extender para más). Prompts simples (evitar lenguaje complejo). Sin prompt negativo. Sensible a la lógica física — evitar 'pelota rebotando en gravedad cero'. Cambios drásticos respecto a imagen de referencia pueden forzar cortes abruptos.",
     },
 }
 
@@ -1446,24 +1445,24 @@ MODEL_SPECS_IMAGEN = {
     },
 
     # ══════════════════════════════════════════════════════════════
-    # FREEPIK AI — TODOS LOS MODELOS DISPONIBLES (Marzo 2026)
+    # MAGNIFIC (antes Freepik AI) — TODOS LOS MODELOS DISPONIBLES (Marzo 2026)
     # ══════════════════════════════════════════════════════════════
     "Auto (Sugerencias)": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
         "max_chars": 4000, "modos_gen": ["Auto"],
-        "best_for": "Modo automático de Freepik. Selecciona el mejor modelo según tu prompt y referencias. ~10s de generación. Ideal cuando no sabes qué modelo elegir.",
-        "prompt_formula": "Lenguaje natural muy descriptivo. Freepik decide internamente qué modelo usar según contenido.",
+        "best_for": "Modo automático de Magnific. Selecciona el mejor modelo según tu prompt y referencias. ~10s de generación. Ideal cuando no sabes qué modelo elegir.",
+        "prompt_formula": "Lenguaje natural muy descriptivo. Magnific decide internamente qué modelo usar según contenido.",
         "prompt_ejemplo": "A cinematic portrait of a young woman with auburn hair against a soft blurred forest background, golden hour lighting",
         "limitaciones": "No tienes control sobre qué modelo se usa internamente.",
     },
 
-    # ── OpenAI GPT (en Freepik) ────────────────────────
+    # ── OpenAI GPT (en Magnific) ────────────────────────
     "GPT 2": {
         "nota": 4.9, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2", "4:3", "3:4"],
         "max_chars": 5000, "modos_gen": ["Standard", "Quality"],
-        "best_for": "GPT Image 2 en Freepik (Destacado/Nuevo). Salida 2K-4K. ~1m 27s de generación. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
+        "best_for": "GPT Image 2 en Magnific (Destacado/Nuevo). Salida 2K-4K. ~1m 27s de generación. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
         "prompt_formula": "Lenguaje natural muy estructurado. Estructura: scene → subject → key details → constraints + intended use. Lenguaje fotográfico (lens, lighting, framing) y texturas reales.",
         "prompt_ejemplo": "Photorealistic candid photo of an elderly fisherman on his boat at dawn. Weathered skin with visible pores, sun texture. Adjusting nets, dog nearby. 35mm film aesthetic, 50mm lens, soft coastal daylight, shallow DOF.",
         "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Soporta referencias.",
@@ -1472,7 +1471,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
         "max_chars": 4000, "modos_gen": ["High"],
-        "best_for": "GPT Image 1.5 alta calidad en Freepik. ~59s. Buena edición de imagen, preserva detalles, branding consistente.",
+        "best_for": "GPT Image 1.5 alta calidad en Magnific. ~59s. Buena edición de imagen, preserva detalles, branding consistente.",
         "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'.",
         "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are",
         "limitaciones": "Sin negative prompt ni pesos.",
@@ -1510,7 +1509,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.8, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2", "4:3", "3:4"],
         "max_chars": 4000, "modos_gen": ["Max"],
-        "best_for": "Flux 2 Max en Freepik. Salida 2K. ~38s. Máxima calidad de la familia Flux 2. Ideal para hero shots, branding crítico.",
+        "best_for": "Flux 2 Max en Magnific. Salida 2K. ~38s. Máxima calidad de la familia Flux 2. Ideal para hero shots, branding crítico.",
         "prompt_formula": "Lenguaje natural muy descriptivo y específico. Flux 2 entiende prompts complejos con múltiples sujetos y relaciones espaciales.",
         "prompt_ejemplo": "A high-end fashion editorial photograph of a model standing in a brutalist concrete corridor, dramatic side lighting from a single skylight, wearing a sculptural black dress, photorealistic, magazine quality",
         "limitaciones": "Sin negative ni pesos. Más lento que Pro.",
@@ -1602,7 +1601,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
         "max_chars": 3000, "modos_gen": ["Fluid"],
-        "best_for": "Mystic 2.5 Fluid. ~24s. 80 créditos. Hiperrealismo de Freepik basado en Flux + Magnific. 2K nativo. El mejor para retratos, expresiones faciales.",
+        "best_for": "Mystic 2.5 Fluid. ~24s. 80 créditos. Hiperrealismo nativo de Magnific basado en Flux + tecnología de upscaling Magnific. 2K nativo. El mejor para retratos, expresiones faciales.",
         "prompt_formula": "Lenguaje natural muy descriptivo. Soporta texto en imagen con comillas.",
         "prompt_ejemplo": "A young woman with long brown hair wearing a yellow dress against a patterned background, natural skin texture, individual hair strands, soft daylight, 2K resolution",
         "limitaciones": "Costoso (80 créditos). Para diseño con texto, otros como Ideogram funcionan mejor.",
@@ -1695,12 +1694,12 @@ MODEL_SPECS_IMAGEN = {
         "limitaciones": "No fotorrealismo.",
     },
 
-    # ── Otros Freepik ────────────────────────────────
+    # ── Otros Magnific ────────────────────────────────
     "Z-Image": {
         "nota": 4.4, "has_negative": False, "is_natural": False, "no_weights": True,
         "ratios": ["1:1", "16:9", "9:16"],
         "max_chars": 1500, "modos_gen": ["Turbo"],
-        "best_for": "Z-Image en Freepik. ⚡ ~8s. Modelo Turbo: tags limpios sin pesos ni negative. Latencia mínima.",
+        "best_for": "Z-Image en Magnific. ⚡ ~8s. Modelo Turbo: tags limpios sin pesos ni negative. Latencia mínima.",
         "prompt_formula": "Tags limpios separados por comas SIN pesos numéricos.",
         "prompt_ejemplo": "close-up portrait, silver hair, blue eyes, detailed skin, soft studio lighting, 8K, masterpiece",
         "limitaciones": "Sin negative ni pesos. Para alta calidad usar Mystic/Flux.",
@@ -1709,7 +1708,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.3, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
         "max_chars": 3000, "modos_gen": ["Standard"],
-        "best_for": "Qwen Image en Freepik. ~12s. Buena calidad general, soporta referencias. De Alibaba/Aliyun.",
+        "best_for": "Qwen Image en Magnific. ~12s. Buena calidad general, soporta referencias. De Alibaba/Aliyun.",
         "prompt_formula": "Lenguaje natural descriptivo.",
         "prompt_ejemplo": "A modern minimalist living room with large windows, natural light, scandinavian design",
         "limitaciones": "Sin negative.",
@@ -1718,7 +1717,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.2, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
         "max_chars": 3000, "modos_gen": ["Standard"],
-        "best_for": "Grok Imagine en Freepik. ~11s. Modelo de xAI. Buena para arte conceptual y escenas creativas.",
+        "best_for": "Grok Imagine en Magnific. ~11s. Modelo de xAI. Buena para arte conceptual y escenas creativas.",
         "prompt_formula": "Lenguaje natural creativo. Le va bien lo absurdo y la fantasía.",
         "prompt_ejemplo": "A surreal scene of giant mushrooms in a crystal forest, dreamy ethereal lighting, fantasy art style",
         "limitaciones": "Sin negative ni pesos.",
@@ -1727,7 +1726,7 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.0, "has_negative": True, "is_natural": False,
         "ratios": ["1:1", "16:9", "9:16"],
         "max_chars": 2000, "modos_gen": ["Classic"],
-        "best_for": "Modelo Classic de Freepik. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo SD tradicional. Ideal cuando quieres control con negatives.",
+        "best_for": "Modelo Classic de Magnific. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo SD tradicional. Ideal cuando quieres control con negatives.",
         "prompt_formula": "Tags con pesos estilo Stable Diffusion. (tag:1.2). Soporta negative.",
         "prompt_ejemplo": "(beautiful portrait:1.3), 1girl, detailed face, soft lighting, professional photography, 8K",
         "limitaciones": "Calidad inferior a modelos modernos pero soporta negative.",
@@ -1872,12 +1871,6 @@ PROMPT_TEMPLATES = {
         "modelos": ["Kling 3.0", "Kling 3.0 Omni", "SeaArt Ultra Pro", "Sora2 Video", "Wan 2.6"],
         "positive_base": "{duracion}. {encuadre_camara}, {sujeto} {accion}, {entorno}, {iluminacion}, {movimiento_camara}, {atmosfera}. Audio: {audio_desc}.",
         "negative_base": "worst quality, static shot, no movement, blurry, low resolution, deformed, morphing, flickering",
-    },
-    # ── Tomoviee.ai (prompts simples 5s) ──────────────────────
-    "video_tomoviee": {
-        "modelos": ["Tomoviee.ai"],
-        "positive_base": "{sujeto} {motion_simple}, {escena}, {iluminacion}, camera {direccion_camara}",
-        "negative_base": "",
     },
 }
 
@@ -2088,22 +2081,30 @@ def get_theme_colors(is_light: bool) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════
-# BIBLIOTECA DE PROMPTS DE EJEMPLO
+# BIBLIOTECA DE PROMPTS DE EJEMPLO (ordenados alfabéticamente por título)
+# Muestras para nuevo usuarios — Lanzamiento v1.0.9
 # ══════════════════════════════════════════════════════════════════
 BIBLIOTECA_EJEMPLOS = [
     {
-        "titulo": "Retrato cyberpunk con reflejos neon",
-        "modo": "imagen",
-        "modelo": "Z Image Turbo",
-        "prompt": "POSITIVE PROMPT: (close-up portrait:1.3), 1girl, cyberpunk city reflection in eyes, (neon lights:1.4), wet skin, rain drops on face, (chromatic aberration:1.2), dark alley background, purple and teal color palette, (cinematic lighting:1.3), sharp focus, 8K, masterpiece, highly detailed\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed",
-        "estilos": ["Cyberpunk / Neon", "Retrato"],
+        "titulo": "Caída cazarecompensas",
+        "modo": "video",
+        "modelo": "Seedance 2.0",
+        "prompt": "POSITIVE PROMPT: Shot 1 (The Dive - 0s to 5s): Extreme high-angle over-the-shoulder vertical tracking shot, camera locked to the subject's perspective as it plummets. A futuristic bounty hunter in sleek, matte black high-tech armor adorned with glowing cyan circuit lines freefalls face-first down the sheer, reflective glass facade of a colossal megacity skyscraper. The sense of acceleration is visceral, with the camera's motion blur rendering the deep background into a breathtaking vortex of light. A dense forest of towering neon skyscrapers, holographic billboards in Japanese and Chinese scripts, and sleek flying vehicles blur into vibrant streaks of neon pink, magenta, and electric cyan. Torrential rain, backlit by the city's omnipresent glow, streaks upwards against the lens in hypnotic patterns, creating dynamic light trails and realistic water droplets on the virtual camera. 8k resolution, vertical 9:16 composition.\n\nShot 2 (The Catch - 5s to 10s): Rapid transition from a shaky, immersive POV to a dynamic low-angle hero shot. Still in violent freefall, the hunter executes a sharp, athletic mid-air twist to face the camera directly, their polished visor reflecting a kaleidoscope of the chaotic neon storm rushing past. From directly above, a sleek, predatory black carbon-fiber hover-bike with an aggressive angular design and pulsating blue intake vents dives into frame with perfect timing, matching the descent velocity. The hunter's gloved hands grab the handlebars with a forceful, definitive clunk. Instantly, the bike's powerful rear thrusters ignite with a concentrated, blinding burst of brilliant cerulean blue plasma energy, firing a jetwash directly at the camera lens, causing a stunning chromatic lens flare and a dramatic light wash over the frame. The vehicle then pulls up with immense, crushing G-force, banking hard into a steep turn and accelerating away from the camera, diving like a predator into the chaotic, rain-soaked neon labyrinth of the city's lower levels.\n\nAudio: A driving, intense synthwave score with a deep, pounding bassline and rapid, precise electronic percussion. Layered sound design includes the roaring, distorted wind of terminal velocity, the high-pitched scream of the freefall, and the distorted Doppler whoosh of passing vehicles. The catch moment is punctuated by a powerful, metallic CLUNK of connection, followed immediately by a deep, sub-bass THRUM and crackle of the thrusters igniting. This transitions into the sustained, powerful roar of the bike's engines and the whip-crack sonic boom of breaking the fall.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cartoon, anime, watermark, text, extra limbs, slow motion, static scene",
+        "estilos": ["Cyberpunk / Neon", "Acción"],
     },
     {
-        "titulo": "Póster cinematográfico combate MMA",
+        "titulo": "Chica espejo (Seedance)",
+        "modo": "video",
+        "modelo": "Seedance 2.0",
+        "prompt": "POSITIVE PROMPT: 9:16 ratio. Universal Template & Character: A young woman with an exhausted expression and messy hair, in a dark, moody bathroom, consistent outfit throughout. Shot 1 (Establishing): Medium shot, she washes her face at a sink under flickering cold fluorescent light, slow push-in camera in dim light. Shot 2 (Emotion): Close-up, she looks up, makes intense eye contact with her mirror reflection, takes a deep breath, turns, and walks out of frame, static camera with stable focus. Shot 3 (Horror): Medium shot, camera fixed on the mirror; the physical room is empty, but her reflection remains, slowly breaking into a creepy, sinister smile. Cinematic lighting, dark premium tone, psychological thriller vibe, 4K ultra HD, rich details, clear stable features, no distortion. [style consistency] [scene extension] [motion reference: slow push-in, static, fixed]. Duration: 10 seconds.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cheerful mood, bright colors, cartoon, anime, watermark, text, extra limbs, fast motion, inconsistent outfit, reflection error, happy expression, clean hair, well-lit room, mirror without reflection, sudden cut",
+        "estilos": ["Cinematográfico", "Terror Psicológico"],
+    },
+    {
+        "titulo": "Henshin - Jinete Enmascarado",
         "modo": "imagen",
-        "modelo": "SeaArt GPT Image 2",
-        "prompt": "POSITIVE PROMPT: Un dramático diseño de póster cinematográfico para una pelea clandestina de artes marciales mixtas, formato vertical 9:16. Filmado con una lente gran angular de 24 mm a f/1.8, la perspectiva de ángulo bajo extremo crea una marcada distorsión de ojo de pez que exagera la imponente y heroica estatura de los luchadores, mientras que el fondo se convierte en un bokeh cremoso de tenues siluetas de la multitud y pantallas de teléfonos brillantes dispersas. A la izquierda, un fornido y poderoso hombre con la cabeza rapada, una espesa barba y elaborados tatuajes geométricos en índigo profundo que envuelven su brazo, aprieta la mandíbula, una vena palpita en su sien, su piel aceitunada está cubierta de sudor. Viste pantalones cortos de lucha de satén carmesí. Frente a él, un luchador alto y delgado con cabello oscuro recogido en un moño apretado entrecierra los ojos, los labios apretados en una fina línea de fría determinación, su piel pálida brillando bajo la luz. Viste pantalones cortos de satén gris carbón. Ambos están sin camisa, con guantes de MMA, de pie frente a frente en un tenso enfrentamiento. Un único foco de estadio atraviesa la oscuridad, proyectando un cálido resplandor ámbar que crea un halo dorado alrededor de sus músculos venosos y altamente detallados, mientras que frías sombras azul oscuro se acumulan alrededor de sus pies. El fondo se disuelve en profundas sombras con tenues siluetas de una multitud, salpicadas por algunas pantallas de teléfonos brillantes. Toda la imagen está tratada con una textura de cómic retro cruda, patrones de puntos de semitono irregulares y toscos que recuerdan a los cómics underground de los años 70, con un ligero efecto de desajuste en los canales cian y magenta, y un sutil grano de película, que evoca un póster coleccionable de alta calidad. Calidad de obra maestra, resolución 8k, textura de piel hiperdetallada con poros y gotas de sudor visibles, iluminación cinematográfica, audacia de novela gráfica, composición premiada, claroscuro dramático.\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed, bad anatomy",
-        "estilos": ["Cinematográfico", "Póster"],
+        "modelo": "Z Image Turbo",
+        "prompt": "POSITIVE PROMPT: (obra maestra, mejor calidad:1.2), ultra detallada, 1 niño, solo, héroe jinete enmascarado, intrincada armadura de insectos mechas, visera brillante, pose dinámica de henshin, enorme explosión de fuego en segundo plano, brillante cinturón de transformación, escombros voladores, chispas que vuelan, toma de acción dinámica, estilo tokusatsu, contraste dramático, iluminación cinematográfica, 8k\nNEGATIVE PROMPT: (peor calidad, baja calidad:1.4), mala anatomía, armadura deformada, extremidades faltantes, texto, firma, marca de agua",
+        "estilos": ["Tokusatsu", "Acción"],
     },
     {
         "titulo": "Hoja táctica NEON APOCALYPSE",
@@ -2120,34 +2121,6 @@ BIBLIOTECA_EJEMPLOS = [
         "estilos": ["Producto", "Infografía"],
     },
     {
-        "titulo": "Henshin - Jinete Enmascarado",
-        "modo": "imagen",
-        "modelo": "Z Image Turbo",
-        "prompt": "POSITIVE PROMPT: (obra maestra, mejor calidad:1.2), ultra detallada, 1 niño, solo, héroe jinete enmascarado, intrincada armadura de insectos mechas, visera brillante, pose dinámica de henshin, enorme explosión de fuego en segundo plano, brillante cinturón de transformación, escombros voladores, chispas que vuelan, toma de acción dinámica, estilo tokusatsu, contraste dramático, iluminación cinematográfica, 8k\nNEGATIVE PROMPT: (peor calidad, baja calidad:1.4), mala anatomía, armadura deformada, extremidades faltantes, texto, firma, marca de agua",
-        "estilos": ["Tokusatsu", "Acción"],
-    },
-    {
-        "titulo": "Steampunk Wonderland infografía",
-        "modo": "imagen",
-        "modelo": "Z Image Turbo",
-        "prompt": "POSITIVE PROMPT: (composición infográfica vertical 16:9:1.3), (diseño de tríptico: título de la pancarta superior, ilustración principal central, paneles de información inferiores:1.3), (primer plano: setas de latón gigantes con rejillas de ventilación de vapor brillantes:1.4), (punto medio: dirigible de tetera flotante con casco de cobre:1.3), (fondo: silueta de castillo de relojería contra el cielo de cobre:1.4), (tipografía victoriana dorada: País de las maravillas steampunk en estilo art nouveau:1.4), (detalles mecánicos intrincados: engranajes, remaches, manómetros:1.3), (texturas de pátina de cobre oxidado:1.3), (reflejos de latón pulido:1.2), (patrones de filigrana victoriana grabados en metal:1.4), (condensación de vapor en superficies de latón:1.2), (pintura digital mate:1.3), (bordes ornamentales de estilo art nouveau:1.3), (atmósfera onírica surrealista:1.2), (islas flotantes en el fondo:1.1), (estructuras geométricas imposibles:1.1), (iluminación lateral dramática de las rejillas de ventilación de vapor:1.3), (mezcla de luz cálida ámbar con sombras frías verdeazuladas:1.2), (rayos de dios volumétricos a través de partículas de vapor:1.4), (luz de borde en bordes de latón:1.3), (ámbar, verdete y paleta de colores dorados:1.2), (mariposas de relojería brillantes:1.2), (planetario a vapor en el fondo:1.3), (ultra detallado:1.3), 8k, obra maestra\nNEGATIVE PROMPT: (worst quality, low quality, lowres:1.4), (anime, cartoon, 3d render:1.3), (text, watermark, signature:1.3), (deformed, distorted, asymmetric:1.2), (blurry, jpeg artifacts:1.2), (oversaturated colors:1.3), (plastic texture:1.3), (depth of field error:1.2), (chromatic aberration:1.2), (grainy noise:1.2), (flat lighting:1.3), (underexposed shadows:1.2), (blown out highlights:1.2), (motion blur:1.2)",
-        "estilos": ["Steampunk", "Infografía"],
-    },
-    {
-        "titulo": "Chica espejo (Seedance)",
-        "modo": "video",
-        "modelo": "Seedance 2.0",
-        "prompt": "POSITIVE PROMPT: 9:16 ratio. Universal Template & Character: A young woman with an exhausted expression and messy hair, in a dark, moody bathroom, consistent outfit throughout. Shot 1 (Establishing): Medium shot, she washes her face at a sink under flickering cold fluorescent light, slow push-in camera in dim light. Shot 2 (Emotion): Close-up, she looks up, makes intense eye contact with her mirror reflection, takes a deep breath, turns, and walks out of frame, static camera with stable focus. Shot 3 (Horror): Medium shot, camera fixed on the mirror; the physical room is empty, but her reflection remains, slowly breaking into a creepy, sinister smile. Cinematic lighting, dark premium tone, psychological thriller vibe, 4K ultra HD, rich details, clear stable features, no distortion. [style consistency] [scene extension] [motion reference: slow push-in, static, fixed]. Duration: 10 seconds.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cheerful mood, bright colors, cartoon, anime, watermark, text, extra limbs, fast motion, inconsistent outfit, reflection error, happy expression, clean hair, well-lit room, mirror without reflection, sudden cut",
-        "estilos": ["Cinematográfico", "Terror Psicológico"],
-    },
-    {
-        "titulo": "Caída cazarecompensas",
-        "modo": "video",
-        "modelo": "Seedance 2.0",
-        "prompt": "POSITIVE PROMPT: Shot 1 (The Dive - 0s to 5s): Extreme high-angle over-the-shoulder vertical tracking shot, camera locked to the subject's perspective as it plummets. A futuristic bounty hunter in sleek, matte black high-tech armor adorned with glowing cyan circuit lines freefalls face-first down the sheer, reflective glass facade of a colossal megacity skyscraper. The sense of acceleration is visceral, with the camera's motion blur rendering the deep background into a breathtaking vortex of light. A dense forest of towering neon skyscrapers, holographic billboards in Japanese and Chinese scripts, and sleek flying vehicles blur into vibrant streaks of neon pink, magenta, and electric cyan. Torrential rain, backlit by the city's omnipresent glow, streaks upwards against the lens in hypnotic patterns, creating dynamic light trails and realistic water droplets on the virtual camera. 8k resolution, vertical 9:16 composition.\n\nShot 2 (The Catch - 5s to 10s): Rapid transition from a shaky, immersive POV to a dynamic low-angle hero shot. Still in violent freefall, the hunter executes a sharp, athletic mid-air twist to face the camera directly, their polished visor reflecting a kaleidoscope of the chaotic neon storm rushing past. From directly above, a sleek, predatory black carbon-fiber hover-bike with an aggressive angular design and pulsating blue intake vents dives into frame with perfect timing, matching the descent velocity. The hunter's gloved hands grab the handlebars with a forceful, definitive clunk. Instantly, the bike's powerful rear thrusters ignite with a concentrated, blinding burst of brilliant cerulean blue plasma energy, firing a jetwash directly at the camera lens, causing a stunning chromatic lens flare and a dramatic light wash over the frame. The vehicle then pulls up with immense, crushing G-force, banking hard into a steep turn and accelerating away from the camera, diving like a predator into the chaotic, rain-soaked neon labyrinth of the city's lower levels.\n\nAudio: A driving, intense synthwave score with a deep, pounding bassline and rapid, precise electronic percussion. Layered sound design includes the roaring, distorted wind of terminal velocity, the high-pitched scream of the freefall, and the distorted Doppler whoosh of passing vehicles. The catch moment is punctuated by a powerful, metallic CLUNK of connection, followed immediately by a deep, sub-bass THRUM and crackle of the thrusters igniting. This transitions into the sustained, powerful roar of the bike's engines and the whip-crack sonic boom of breaking the fall.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cartoon, anime, watermark, text, extra limbs, slow motion, static scene",
-        "estilos": ["Cyberpunk / Neon", "Acción"],
-    },
-    {
         "titulo": "Persecución cazarecompensas",
         "modo": "video",
         "modelo": "Seedance 2.0",
@@ -2155,10 +2128,31 @@ BIBLIOTECA_EJEMPLOS = [
         "estilos": ["Cyberpunk / Neon", "Acción"],
     },
     {
+        "titulo": "Póster cinematográfico combate MMA",
+        "modo": "imagen",
+        "modelo": "SeaArt GPT Image 2",
+        "prompt": "POSITIVE PROMPT: Un dramático diseño de póster cinematográfico para una pelea clandestina de artes marciales mixtas, formato vertical 9:16. Filmado con una lente gran angular de 24 mm a f/1.8, la perspectiva de ángulo bajo extremo crea una marcada distorsión de ojo de pez que exagera la imponente y heroica estatura de los luchadores, mientras que el fondo se convierte en un bokeh cremoso de tenues siluetas de la multitud y pantallas de teléfonos brillantes dispersas. A la izquierda, un fornido y poderoso hombre con la cabeza rapada, una espesa barba y elaborados tatuajes geométricos en índigo profundo que envuelven su brazo, aprieta la mandíbula, una vena palpita en su sien, su piel aceitunada está cubierta de sudor. Viste pantalones cortos de lucha de satén carmesí. Frente a él, un luchador alto y delgado con cabello oscuro recogido en un moño apretado entrecierra los ojos, los labios apretados en una fina línea de fría determinación, su piel pálida brillando bajo la luz. Viste pantalones cortos de satén gris carbón. Ambos están sin camisa, con guantes de MMA, de pie frente a frente en un tenso enfrentamiento. Un único foco de estadio atraviesa la oscuridad, proyectando un cálido resplandor ámbar que crea un halo dorado alrededor de sus músculos venosos y altamente detallados, mientras que frías sombras azul oscuro se acumulan alrededor de sus pies. El fondo se disuelve en profundas sombras con tenues siluetas de una multitud, salpicadas por algunas pantallas de teléfonos brillantes. Toda la imagen está tratada con una textura de cómic retro cruda, patrones de puntos de semitono irregulares y toscos que recuerdan a los cómics underground de los años 70, con un ligero efecto de desajuste en los canales cian y magenta, y un sutil grano de película, que evoca un póster coleccionable de alta calidad. Calidad de obra maestra, resolución 8k, textura de piel hiperdetallada con poros y gotas de sudor visibles, iluminación cinematográfica, audacia de novela gráfica, composición которая, claroscuro dramático.\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed, bad anatomy",
+        "estilos": ["Cinematográfico", "Póster"],
+    },
+    {
         "titulo": "Pop electrónico melancólico",
         "modo": "audio",
         "modelo": "Suno v5",
         "prompt": "ESTILO: Synthpop, Electropop, Melancholic, Dreamy, Reverb-heavy vocals, Atmospheric pads, 80s inspired, Minor key\n\n[Intro]\nFloating synth pads, slow build\n\n[Verse 1]\nLost in neon corridors of memory\nEvery echo sounds like your goodbye\nDigital tears on a pixel screen\nWe were electric, now just a dream\n\n[Chorus]\nFading signals in the night\nWe were stars that lost their light\nFading signals, can't rewind\nLeaving frequencies behind",
         "estilos": ["Pop", "Electrónica"],
+    },
+    {
+        "titulo": "Retrato cyberpunk con reflejos neon",
+        "modo": "imagen",
+        "modelo": "Z Image Turbo",
+        "prompt": "POSITIVE PROMPT: (close-up portrait:1.3), 1girl, cyberpunk city reflection in eyes, (neon lights:1.4), wet skin, rain drops on face, (chromatic aberration:1.2), dark alley background, purple and teal color palette, (cinematic lighting:1.3), sharp focus, 8K, masterpiece, highly detailed\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed",
+        "estilos": ["Cyberpunk / Neon", "Retrato"],
+    },
+    {
+        "titulo": "Steampunk Wonderland infografía",
+        "modo": "imagen",
+        "modelo": "Z Image Turbo",
+        "prompt": "POSITIVE PROMPT: (composición infográfica vertical 16:9:1.3), (diseño de tríptico: título de la pancarta superior, ilustración principal central, paneles de información inferiores:1.3), (primer plano: setas de latón gigantes con rejillas de ventilación de vapor brillantes:1.4), (punto medio: dirigible de tetera flotante con casco de cobre:1.3), (fondo: silueta de castillo de relojería contra el cielo de cobre:1.4), (tipografía victoriana dorada: País de las maravillas steampunk en estilo art nouveau:1.4), (detalles mecánicos intrincados: engranajes, remaches, manómetros:1.3), (texturas de pátina de cobre oxidado:1.3), (reflejos de latón pulido:1.2), (patrones de filigrana victoriana grabados en metal:1.4), (condensación de vapor en superficies de latón:1.2), (pintura digital mate:1.3), (bordes ornamentales de estilo art nouveau:1.3), (atmósfera onírica surrealista:1.2), (islas flotantes en el fondo:1.1), (estructuras geométricas imposibles:1.1), (iluminación lateral dramática de las rejillas de ventilación de vapor:1.3), (mezcla de luz cálida ámbar con sombras frías verdeazuladas:1.2), (rayos de dios volumétricos a través de partículas de vapor:1.4), (luz de borde en bordes de latón:1.3), (ámbar, verdete y paleta de colores dorados:1.2), (mariposas de relojería brillantes:1.2), (planetario a vapor en el fondo:1.3), (ultra detallado:1.3), 8k, obra maestra\nNEGATIVE PROMPT: (worst quality, low quality, lowres:1.4), (anime, cartoon, 3d render:1.3), (text, watermark, signature:1.3), (deformed, distorted, asymmetric:1.2), (blurry, jpeg artifacts:1.2), (oversaturated colors:1.3), (plastic texture:1.3), (depth of field error:1.2), (chromatic aberration:1.2), (grainy noise:1.2), (flat lighting:1.3), (underexposed shadows:1.2), (blown out highlights:1.2), (motion blur:1.2)",
+        "estilos": ["Steampunk", "Infografía"],
     },
 ]

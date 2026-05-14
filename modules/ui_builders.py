@@ -158,7 +158,8 @@ class UIBuildersMixin:
                 pid_activo = self.clients.provider_activo_id if hasattr(self.clients, 'provider_activo_id') else "deepseek"
                 label_inicial = LLM_PROVIDERS.get(pid_activo, {}).get("label", lista_llms[0])
                 self.llm_var.set(label_inicial)
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         except Exception:
             # Fallback al sistema antiguo si falla algo
             lista_llms = ["DeepSeek V3", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
@@ -219,21 +220,21 @@ class UIBuildersMixin:
             ]),
             ("📝 Plantillas", "#2ea866", [
                 ("🧬  Biblioteca ADN", self._cmd_ver_biblioteca_adn),
-                ("🧪  Fórmulas", self._abrir_formulas),
-                ("📑  Plantillas", self._cmd_plantillas_populares),
-                ("✂️  Snippets", self._abrir_snippets),
-                ("⚡  Snippet expansion", self._cmd_gestionar_snippets),
+                ("📐  Fórmulas", self._abrir_formulas),
+                ("📋  Plantillas", self._cmd_plantillas_populares),
+                ("🏷 Añadir tags (al prompt)", self._abrir_snippets),
+                ("⚡  Expansión rápida (en idea)", self._cmd_gestionar_snippets),
                 ("💎  Seeds favoritos", self._abrir_seeds_favoritos),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
-                ("🧪  A/B Testing", self._cmd_ab_testing),
+                ("🆚  A/B Testing", self._cmd_ab_testing),
                 ("🔎  Búsqueda global", self._cmd_busqueda_global),
-                ("⏲  Cron prompts", self._cmd_cron_prompts),
-                ("🎬  Grabar sesión", self._cmd_sesion_grabar_toggle),
+                ("⏰  Cron prompts", self._cmd_cron_prompts),
+                ("🎙 Grabar sesión", self._cmd_sesion_grabar_toggle),
                 ("👥  Grupo personajes", self._cmd_grupo_personajes),
-                ("⚡  Macros", self._abrir_macros),
-                ("🏷  Proyectos", self._cmd_proyectos),
-                ("📜  Versiones prompt", self._cmd_versiones_prompt),
+                ("🔄  Macros", self._abrir_macros),
+                ("📁  Proyectos", self._cmd_proyectos),
+                ("📑  Versiones prompt", self._cmd_versiones_prompt),
             ]),
             ("🎨 UI", "#7a7a8a", [
                 ("⌨️  Atajos teclado", self._cmd_mostrar_atajos),
@@ -1145,7 +1146,8 @@ class UIBuildersMixin:
                 # Refrescar visual del switch
                 if hasattr(self, "_sw_trad_callback"):
                     try: self._sw_trad_callback()
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.switch_traduccion_var.get() else "desactivado"
                 self.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
@@ -1170,8 +1172,6 @@ class UIBuildersMixin:
             ("🎲",                40,  "#3a6a4a", self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
             # GRUPO: Generar (verde fuerte = acción principal)
             ("✨ Generar",         110, "#1a8a3c", self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
-            # ⚡ Quick Generate — versión rápida sin traducción ni refinamientos · Alt+Enter
-            ("⚡ Quick",           80,  "#d97706", self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
             # ── MEJORA 3: Regenerar + flechas para navegar entre regeneraciones ──
             ("🔄",                40,  "#1a8a3c", self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
             ("←",                30,  "#1a5a3c", self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
@@ -1181,8 +1181,9 @@ class UIBuildersMixin:
             # GRUPO: Análisis de imagen (azul oscuro)
             ("👁 Analizar",       100, "#1e3a8a", self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
             ("🎯 Img→Prompt",     110, "#1e3a8a", self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
-            ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,      "Análisis JSON estructurado"),
             ("🔍 Análisis Inv",   115, "#1e3a5f", self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
+            # GRUPO: ADN Visual (morado - único)
+            ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,      "Análisis JSON estructurado"),
         ]
 
         # ═══ FILA 2: Edición y herramientas (naranja-violeta) ═══
@@ -1193,16 +1194,17 @@ class UIBuildersMixin:
             ("💬 Copiloto",        95, "#7c3aed", self.cmd_copiloto,           "Chat para editar"),
             # GRUPO: Outputs masivos (azul-gris)
             ("📦 Batch",           80, "#475569", self.cmd_batch,              "Generación masiva"),
-            ("🎨 Preview",         90, "#475569", self.cmd_previsualizar,      "Boceto rápido"),
+            ("👁️ Preview",        90, "#475569", self.cmd_previsualizar,      "Boceto rápido"),
             # GRUPO: Conversiones (cyan)
-            ("🔄 →Vídeo",          85, "#0891b2", self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
+            ("🎬 →Vídeo",          85, "#0891b2", self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
             ("🆚 Compar",          80, "#0891b2", self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
             # GRUPO: Variaciones rápidas (naranja)
             ("🔂 Iterar",          80, "#d97706", self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
+            ("🚀 Quick",           80, "#d97706", self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
             ("⚡ Pulse",           75, "#d97706", self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
             ("🤖 Sugerir",         85, "#d97706", self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             # GRUPO: Multi-prompt creativo (rosa-fucsia)
-            ("🎨 Mood",            70, "#be185d", self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
+            ("🎭 Mood",            70, "#be185d", self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
             ("🎬 Story",           70, "#be185d", self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
             ("📽 Board",           70, "#be185d", self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
             ("🌀 Walk",            70, "#be185d", self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
@@ -1439,7 +1441,8 @@ class UIBuildersMixin:
                     pyperclip.copy(sel)
                     self.txt_idea.delete("sel.first", "sel.last")
                     self.set_estado("✂️ Cortado al portapapeles", "#3498db")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         def _copiar_sel():
             try:
@@ -1451,7 +1454,8 @@ class UIBuildersMixin:
                 if sel:
                     pyperclip.copy(sel)
                     self.set_estado("📋 Copiado al portapapeles", "#3498db")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         def _pegar():
             try:
@@ -1461,14 +1465,16 @@ class UIBuildersMixin:
                         self.txt_idea.delete("sel.first", "sel.last")
                     self.txt_idea.insert("insert", texto)
                     self._actualizar_barra_chars()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         def _seleccionar_todo():
             try:
                 self.txt_idea.tag_add("sel", "1.0", "end")
                 self.txt_idea.mark_set("insert", "1.0")
                 self.txt_idea.see("insert")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         def _limpiar():
             self.txt_idea.delete("1.0", "end")
@@ -1582,7 +1588,8 @@ class UIBuildersMixin:
             self.combo_lora.set("— Sin LoRA —")
         # Refrescar trigger visible y aviso de compatibilidad
         try: self._actualizar_lora_trigger_visible()
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     def actualizar_combo_plantillas(self):
         nombres = self.store.nombres_plantillas()
@@ -1687,7 +1694,8 @@ class UIBuildersMixin:
             actual = self.combo_lora.get()
             if actual and actual != "— Sin LoRA —":
                 return
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         # Filtrar LoRAs con familia compatible con el nuevo modelo
         compatibles = []

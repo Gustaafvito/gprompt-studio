@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import logging
 import threading
 import datetime
 import pyperclip
@@ -9,6 +10,9 @@ import customtkinter as ctk
 import tkinter as tk
 from typing import TYPE_CHECKING
 from config import get_theme_colors
+from logging_utils import silent
+
+logger = logging.getLogger("gprompt")
 
 # CTkToolTip es opcional — si no está instalado usamos un stub
 try:
@@ -90,7 +94,8 @@ class DialogsMixin:
                     try:
                         import webbrowser
                         webbrowser.open(url)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
                 return _abrir
             ctk.CTkButton(fila, text="🌐 Obtener key", width=110, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
@@ -281,12 +286,14 @@ class DialogsMixin:
         """Actualiza el textbox de salida."""
         if hasattr(self, 'txt_salida'):
             try: self._guardar_version_prompt()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
             self.txt_salida.delete("1.0", "end")
             self.txt_salida.insert("1.0", texto)
             self._colorear_resultado()
             try: self._actualizar_tokens()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
     def _colorear_resultado(self):
         """Colorea las etiquetas POSITIVE/NEGATIVE en el resultado."""
@@ -558,7 +565,8 @@ class DialogsMixin:
             # Limpiar resultados anteriores
             for w in results_box.winfo_children():
                 try: w.destroy()
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             if not q:
                 results_box.pack_forget()
                 return
@@ -573,7 +581,8 @@ class DialogsMixin:
                         resultados.append(("📋 Historial", preview, h.get("contenido", "")))
                         if len(resultados) >= 8:
                             break
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             try:
                 for f in (self.store.favoritos or []):
@@ -583,7 +592,8 @@ class DialogsMixin:
                         resultados.append(("⭐ Favorito", preview, f.get("contenido", "")))
                         if len(resultados) >= 16:
                             break
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             try:
                 for e in (self.store.estrellas or []):
@@ -593,28 +603,32 @@ class DialogsMixin:
                         resultados.append(("🌟 Estrella", preview, e.get("contenido", "")))
                         if len(resultados) >= 24:
                             break
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             try:
                 for p in (self.store.personajes or []):
                     if q in (p.get("nombre", "") or "").lower() or q in (p.get("descripcion", "") or "").lower():
                         preview = f"{p.get('nombre', '')} — {p.get('descripcion', '')[:60]}"
                         resultados.append(("🧑 Personaje", preview, p.get("descripcion", "")))
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             try:
                 for pl in (self.store.plantillas or []):
                     if q in (pl.get("nombre", "") or "").lower():
                         preview = f"{pl.get('nombre', '')}"
                         resultados.append(("📐 Plantilla", preview, pl.get("nombre", "")))
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             try:
                 for lo in (self.store.loras or []):
                     if q in (lo.get("nombre", "") or "").lower() or q in (lo.get("trigger", "") or "").lower():
                         preview = f"{lo.get('nombre', '')} → {lo.get('trigger', '')}"
                         resultados.append(("🔗 LoRA", preview, lo.get("trigger", "")))
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             # Mostrar resultados
             results_box.pack(fill="x", padx=12, pady=(0, 10))
@@ -652,7 +666,8 @@ class DialogsMixin:
                         else:
                             self.txt_idea.delete("1.0", "end")
                             self.txt_idea.insert("1.0", c)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
                     self.set_estado("✅ Cargado desde búsqueda", accent_green)
                     v.destroy()
                 ctk.CTkButton(row, text="Cargar", width=60, height=22,
@@ -672,7 +687,8 @@ class DialogsMixin:
         def _on_typing(_evt=None):
             if _search_after_id[0]:
                 try: v.after_cancel(_search_after_id[0])
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             _search_after_id[0] = v.after(300, _buscar_inline)
         search_entry.bind("<KeyRelease>", _on_typing)
         search_entry.bind("<Return>", _buscar_inline)
@@ -1229,7 +1245,8 @@ class DialogsMixin:
             try:
                 win.lift()
                 win.focus_force()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             ctk.CTkLabel(win, text=f"🏆 Logros — {n_desbloq} de {n_total} desbloqueados",
                          font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 4))
@@ -1241,7 +1258,8 @@ class DialogsMixin:
                                          progress_color=accent_amber)
                 pb.set(pct_total)
                 pb.pack(pady=(0, 10))
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             ctk.CTkLabel(win, text=f"{int(pct_total * 100)}% completado",
                          font=ctk.CTkFont(size=10),
@@ -1465,8 +1483,10 @@ class DialogsMixin:
                     self.modo_var.set(modo)
                     if hasattr(self, "_on_modo_cambio"):
                         try: self._on_modo_cambio()
-                        except Exception: pass
-            except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
             # Tras el cambio de modo, los combos podrían recrearse — usamos
             # un pequeño delay antes de aplicar lo demás.
@@ -1479,24 +1499,29 @@ class DialogsMixin:
                                 self.combo_modelo_imagen.set(modelo)
                                 if hasattr(self, "_on_modelo_imagen_cambio"):
                                     try: self._on_modelo_imagen_cambio()
-                                    except Exception: pass
+                                    except Exception as e:
+                                        logger.debug(f"[silent] {e}")
                             elif modo == "video" and hasattr(self, "combo_modelo_video"):
                                 self.combo_modelo_video.set(modelo)
                                 if hasattr(self, "_on_motor_cambio"):
                                     try: self._on_motor_cambio()
-                                    except Exception: pass
+                                    except Exception as e:
+                                        logger.debug(f"[silent] {e}")
                             elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
                                 self.combo_modelo_audio.set(modelo)
                                 if hasattr(self, "_on_motor_audio_cambio"):
                                     try: self._on_motor_audio_cambio()
-                                    except Exception: pass
-                        except Exception: pass
+                                    except Exception as e:
+                                        logger.debug(f"[silent] {e}")
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
 
                     # 3. Cambiar ratio si es relevante (ignora None para audio)
                     if ratio and hasattr(self, "ratio_var"):
                         try:
                             self.ratio_var.set(ratio)
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
 
                     # 4. Marcar estilo (buscar match en estilo_checks)
                     if estilo_match and hasattr(self, "estilo_checks"):
@@ -1504,7 +1529,8 @@ class DialogsMixin:
                         try:
                             for n_chk, v_chk in self.estilo_checks.items():
                                 v_chk.set(False)
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
                         # Buscar match
                         try:
                             match_lower = estilo_match.lower()
@@ -1513,7 +1539,8 @@ class DialogsMixin:
                                         nombre_chk.lower() in match_lower):
                                     var_chk.set(True)
                                     break
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
 
                     # 5. Configurar campos de audio si aplica
                     if modo == "audio":
@@ -1522,7 +1549,8 @@ class DialogsMixin:
                                 self.emocion_var.set(audio_emocion)
                                 if hasattr(self, "_on_audio_filtro_cambio"):
                                     try: self._on_audio_filtro_cambio()
-                                    except Exception: pass
+                                    except Exception as e:
+                                        logger.debug(f"[silent] {e}")
                             if audio_voz and hasattr(self, "voz_var"):
                                 self.voz_var.set(audio_voz)
                             if audio_idioma and hasattr(self, "idioma_audio_var"):
@@ -1531,8 +1559,10 @@ class DialogsMixin:
                             if audio_voz and "instrumental" in audio_voz.lower():
                                 if hasattr(self, "switch_instrumental_var"):
                                     try: self.switch_instrumental_var.set(True)
-                                    except Exception: pass
-                        except Exception: pass
+                                    except Exception as e:
+                                        logger.debug(f"[silent] {e}")
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
 
                     # 6. Cargar idea
                     if idea:
@@ -1540,8 +1570,10 @@ class DialogsMixin:
                             self.txt_idea.delete("1.0", "end")
                             self.txt_idea.insert("1.0", idea)
                             self.txt_idea.focus_set()
-                        except Exception: pass
-                except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
 
             # Aplicar en cascada con un delay tras el cambio de modo
             self.after(150, _continuar)
@@ -1800,7 +1832,8 @@ class DialogsMixin:
                 def _h():
                     v.destroy()
                     try: c()
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
                 return _h
             card = ctk.CTkButton(quick_grid, text=f"{label}\n{tip}", width=200, height=56,
                                   fg_color=card_bg, hover_color="#e5e7eb" if is_light else "#1f2937",
@@ -1820,12 +1853,12 @@ class DialogsMixin:
         herramientas = [
             ("🎯 Scoring", self._cmd_scoring),
             ("📊 Estadísticas", self._abrir_estadisticas),
-            ("🧪 Fórmulas", self._abrir_formulas),
-            ("✂️ Snippets", self._abrir_snippets),
-            ("📑 Plantillas", self._cmd_plantillas_populares),
+            ("📐 Fórmulas", self._abrir_formulas),
+            ("🏷️ Añadir tags", self._abrir_snippets),
+            ("📋 Plantillas", self._cmd_plantillas_populares),
             ("💎 Seeds", self._abrir_seeds_favoritos),
-            ("⚡ Macros", self._abrir_macros),
-            ("🏷 Proyectos", self._cmd_proyectos),
+            ("🔄 Macros", self._abrir_macros),
+            ("📁 Proyectos", self._cmd_proyectos),
         ]
 
         tools_frame = ctk.CTkFrame(main, fg_color="transparent")
@@ -1839,7 +1872,8 @@ class DialogsMixin:
                 def _h():
                     v.destroy()
                     try: c()
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
                 return _h
             card = ctk.CTkButton(tools_frame, text=label, width=160, height=38,
                                   fg_color=card_bg, hover_color="#e5e7eb" if is_light else "#1f2937",

@@ -29,13 +29,15 @@ class ToolsWorkflowMixin:
                 for nombre, var in self.estilo_checks.items():
                     try:
                         if var.get(): estilos_sel.append(nombre)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             negatives_sel = []
             if hasattr(self, "preset_vars"):
                 for nombre, var in self.preset_vars.items():
                     try:
                         if var.get(): negatives_sel.append(nombre)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             modelo = ""
             modo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
             if modo == "imagen" and hasattr(self, "combo_modelo_imagen"):
@@ -65,20 +67,23 @@ class ToolsWorkflowMixin:
         """Aplica un setup guardado a la UI actual."""
         if not setup or not isinstance(setup, dict): return
         try: self._sesion_log(f"🔄 Aplicó setup ({setup.get('modo', '?')} · {setup.get('plataforma', '—')} · {setup.get('modelo', '—')})")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         try:
             # Modo primero (cambia paneles disponibles)
             if setup.get("modo") and hasattr(self, "modo_var"):
                 self.modo_var.set(setup["modo"])
                 if hasattr(self, "_on_modo_cambio"):
                     try: self._on_modo_cambio()
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             # Plataforma
             if setup.get("plataforma") and hasattr(self, "plataforma_var"):
                 self.plataforma_var.set(setup["plataforma"])
                 if hasattr(self, "_on_plataforma_cambio"):
                     try: self._on_plataforma_cambio()
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             # Modelo (según modo)
             modo = setup.get("modo", "imagen")
             modelo = setup.get("modelo", "")
@@ -87,56 +92,68 @@ class ToolsWorkflowMixin:
                     self.combo_modelo_imagen.set(modelo)
                     if hasattr(self, "_on_modelo_imagen_cambio"):
                         try: self._on_modelo_imagen_cambio()
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
                 elif modo == "video" and hasattr(self, "combo_modelo_video"):
                     self.combo_modelo_video.set(modelo)
                     if hasattr(self, "_on_motor_cambio"):
                         try: self._on_motor_cambio()
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
                 elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
                     self.combo_modelo_audio.set(modelo)
                     if hasattr(self, "_on_motor_audio_cambio"):
                         try: self._on_motor_audio_cambio()
-                        except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
             # Ratio, destino
             for key, attr in [("ratio", "ratio_var"), ("destino", "destino_var")]:
                 v = setup.get(key)
                 if v and hasattr(self, attr):
                     try: getattr(self, attr).set(v)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             # Personaje y LoRA (son combos directos)
             if setup.get("personaje") and hasattr(self, "combo_personaje"):
                 try: self.combo_personaje.set(setup["personaje"])
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             if setup.get("lora") and hasattr(self, "combo_lora"):
                 try: self.combo_lora.set(setup["lora"])
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             if "nsfw" in setup and hasattr(self, "switch_nsfw_var"):
                 try: self.switch_nsfw_var.set(bool(setup["nsfw"]))
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             if "auto_trad" in setup and hasattr(self, "switch_traduccion_var"):
                 try:
                     self.switch_traduccion_var.set(bool(setup["auto_trad"]))
                     if hasattr(self, "_sw_trad_callback"):
                         try: self._sw_trad_callback()
-                        except Exception: pass
-                except Exception: pass
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
             # Estilos
             estilos_sel = set(setup.get("estilos", []))
             if hasattr(self, "estilo_checks"):
                 for nombre, var in self.estilo_checks.items():
                     try: var.set(nombre in estilos_sel)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             # Negatives
             negatives_sel = set(setup.get("negatives", []))
             if hasattr(self, "preset_vars"):
                 for nombre, var in self.preset_vars.items():
                     try: var.set(nombre in negatives_sel)
-                    except Exception: pass
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
             # Refrescar negative textbox
             if hasattr(self, "_rebuild_negative_text"):
                 try: self._rebuild_negative_text()
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
         except Exception as e:
             self.set_estado(f"⚠️ Error aplicando setup: {e}", "#e74c3c")
 
@@ -168,7 +185,8 @@ class ToolsWorkflowMixin:
         self.store.guardar_preferencias(prefs)
         self.set_estado(f"💾 Setup '{nombre}' guardado", "#2ecc71")
         try: self._sesion_log(f"💾 Guardó setup: {nombre}")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
     def _cmd_cargar_setup(self):
         """Abre ventana con la lista de setups guardados para elegir uno."""
@@ -1103,11 +1121,13 @@ class ToolsWorkflowMixin:
         # Esperar al thread (max 1.5s)
         if self._sesion_video_thread:
             try: self._sesion_video_thread.join(timeout=1.5)
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         # Cerrar writer
         if self._sesion_video_writer:
             try: self._sesion_video_writer.close()
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
         path = self._sesion_video_path
         self._sesion_video_writer = None
         self._sesion_video_path = None
@@ -1402,7 +1422,8 @@ class ToolsWorkflowMixin:
             try:
                 pyperclip.copy(guion)
                 self.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
-            except Exception: pass
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
 
         ctk.CTkButton(btn_row, text="📄 Exportar .md", width=130,
                       fg_color="#1e5f3a", hover_color="#16492d",
@@ -1513,7 +1534,8 @@ class ToolsWorkflowMixin:
             self.set_estado("⚠️ Escribe una idea primero", "#e67e22")
             return
         try: self._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         # Ventana de configuración
         cfg = ctk.CTkToplevel(self)
@@ -1700,7 +1722,8 @@ class ToolsWorkflowMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
         try: self._sesion_log("🆚 Comparar: abrió comparador de modelos")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         modo = self.modo_var.get()
 
@@ -1710,7 +1733,7 @@ class ToolsWorkflowMixin:
             sugeridos = ["Z Image Turbo", "FLUX.1 [dev]", "Nano Banana Pro Image"]
         elif modo == "video":
             modelos_disponibles = [m for m in MODELOS_VIDEO_FLAT if not m.startswith("──")]
-            sugeridos = ["Kling 3.0", "Seedance 2.0", "Tomoviee.ai"]
+            sugeridos = ["Kling 3.0", "Seedance 2.0", "Veo 3.1"]
         else:
             modelos_disponibles = [m for m in MODELOS_AUDIO_FLAT if not m.startswith("──")]
             sugeridos = ["Suno v5", "Suno v4.5", "Minimax Music 2.5"]

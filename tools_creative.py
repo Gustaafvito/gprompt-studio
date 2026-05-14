@@ -28,7 +28,8 @@ class ToolsCreativeMixin:
         """Genera una idea aleatoria interesante para inspirarse."""
         modo = self.modo_var.get()
         try: self._sesion_log("🎲 Sorpréndeme: pidió idea aleatoria")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
         self.set_estado("🎲 Pensando algo creativo...", "#f39c12")
         self.toggle_botones(False)
 
@@ -62,7 +63,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
         try: self._sesion_log("⚡ Pulse: generó 3 versiones (conservador/equilibrado/creativo)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("⚡ Pulse: generando 3 versiones (conservadora → creativa)...", "#f39c12")
         self.toggle_botones(False)
@@ -182,7 +184,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 10:
             return self.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
         try: self._sesion_log("🤖 Sugerir modelo: analizó idea")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🤖 Analizando idea para sugerir modelo...", "#f39c12")
 
@@ -400,7 +403,8 @@ class ToolsCreativeMixin:
             self.set_estado("⚠️ Necesitas un prompt en el resultado para comparar.", "#e67e22")
             return
         try: self._sesion_log("🔍 Análisis inverso: comparó imagen con prompt actual")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🔍 Análisis inverso: comparando imagen y prompt...", "#f39c12")
         self.toggle_botones(False)
@@ -835,7 +839,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
         try: self._sesion_log("🎨 Sugerir estilos: pidió sugerencia automática")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         modo = self.modo_var.get()
         if modo == "imagen":
@@ -1320,7 +1325,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
         try: self._sesion_log("🎨 Mood: generó 6 prompts (mismo mood, distintos sujetos)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🎨 Generando moodboard de 6 prompts...", "#f39c12")
         self.toggle_botones(False)
@@ -1372,7 +1378,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena base.", "#e67e22")
         try: self._sesion_log("🎬 Story: generó 3 shots Wide/Medium/Close-Up")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🎬 Generando secuencia cinematográfica (Wide/Medium/Close)...", "#f39c12")
         self.toggle_botones(False)
@@ -1416,7 +1423,8 @@ class ToolsCreativeMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
         try: self._sesion_log("📽 Board: generó storyboard 4 shots (apertura/mid/climax/cierre)")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("📽 Generando storyboard de 4 shots...", "#f39c12")
         self.toggle_botones(False)
@@ -1460,7 +1468,8 @@ class ToolsCreativeMixin:
         if not actual or len(actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
         try: self._sesion_log("🌀 Walk: random walk de 5 derivaciones evolutivas")
-        except Exception: pass
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
 
         self.set_estado("🌀 Random walk: derivando 5 veces...", "#f39c12")
         self.toggle_botones(False)
