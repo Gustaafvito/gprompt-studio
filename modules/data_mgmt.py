@@ -776,51 +776,253 @@ class DataMgmtMixin:
         refrescar()
 
     def _abrir_biblioteca(self):
-        """Ventana con prompts de ejemplo probados."""
+        """Ventana con prompts de ejemplo probados.
+
+        Mejoras v1.0.9b:
+          - Búsqueda en tiempo real por título, modelo, tags y estilos.
+          - Filtros adicionales por plataforma y dificultad.
+          - Badges visuales (dificultad coloreada, plataforma, tags).
+          - Contador "Mostrando X de Y".
+          - Botón "⭐ Favorito" para guardar el ejemplo en favoritos.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = ctk.CTkToplevel(self)
         vent.title("📚 Biblioteca de Prompts de Ejemplo")
-        vent.geometry("700x600")
+        vent.geometry("820x680")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="📚 Prompts de ejemplo probados", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 5))
-        ctk.CTkLabel(vent, text="Selecciona uno para cargarlo en el resultado", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+        # ── Encabezado ───────────────────────────────────────────────
+        ctk.CTkLabel(
+            vent, text="📚 Prompts de ejemplo probados",
+            font=ctk.CTkFont(size=16, weight="bold")
+        ).pack(pady=(10, 2))
+        lbl_subtitulo = ctk.CTkLabel(
+            vent, text="Filtra, busca y carga uno en el resultado",
+            font=ctk.CTkFont(size=10), text_color=c["muted_text"]
+        )
+        lbl_subtitulo.pack(pady=(0, 6))
 
-        # Filtro por modo
-        filtro_frame = ctk.CTkFrame(vent, fg_color="transparent")
-        filtro_frame.pack(fill="x", padx=15, pady=3)
-        filtro_var = ctk.StringVar(value="todos")
+        # ── Estado de filtros ────────────────────────────────────────
+        filtro_modo_var = ctk.StringVar(value="todos")
+        filtro_plat_var = ctk.StringVar(value="todas")
+        filtro_dif_var = ctk.StringVar(value="todas")
+        busqueda_var = ctk.StringVar(value="")
 
+        # ── Fila 1: Búsqueda ─────────────────────────────────────────
+        fila_busqueda = ctk.CTkFrame(vent, fg_color="transparent")
+        fila_busqueda.pack(fill="x", padx=15, pady=(2, 4))
+        ctk.CTkLabel(
+            fila_busqueda, text="🔍", font=ctk.CTkFont(size=14)
+        ).pack(side="left", padx=(0, 4))
+        entry_busqueda = ctk.CTkEntry(
+            fila_busqueda, textvariable=busqueda_var,
+            placeholder_text="Buscar por título, modelo, tags o estilos…",
+            height=26, font=ctk.CTkFont(size=11)
+        )
+        entry_busqueda.pack(side="left", fill="x", expand=True)
+
+        # ── Fila 2: Filtros de modo (botones rápidos) ───────────────
+        fila_modos = ctk.CTkFrame(vent, fg_color="transparent")
+        fila_modos.pack(fill="x", padx=15, pady=(2, 2))
+        ctk.CTkLabel(
+            fila_modos, text="Modo:", font=ctk.CTkFont(size=10, weight="bold"),
+            text_color=c["muted_text"], width=55, anchor="w"
+        ).pack(side="left")
+        btns_modo = []  # para poder cambiar su color visualmente
+
+        def _set_modo(val):
+            filtro_modo_var.set(val)
+            for b, v in btns_modo:
+                b.configure(fg_color=c["fg_frame"] if v == val else c["fg_dark"])
+            refrescar()
+
+        for txt, val in [("Todos", "todos"), ("🖼 Imagen", "imagen"),
+                         ("🎬 Vídeo", "video"), ("🎵 Audio", "audio")]:
+            b = ctk.CTkButton(
+                fila_modos, text=txt, width=78, height=24,
+                fg_color=c["fg_frame"] if val == "todos" else c["fg_dark"],
+                hover_color="#2a2a3a", font=ctk.CTkFont(size=10),
+                command=lambda v=val: _set_modo(v)
+            )
+            b.pack(side="left", padx=2)
+            btns_modo.append((b, val))
+
+        # ── Fila 3: Filtros de plataforma + dificultad (combos) ──────
+        fila_combos = ctk.CTkFrame(vent, fg_color="transparent")
+        fila_combos.pack(fill="x", padx=15, pady=(4, 2))
+
+        # Construir lista dinámica de plataformas presentes en la biblioteca
+        plataformas_presentes = ["todas"] + sorted({
+            ej.get("plataforma", "") for ej in BIBLIOTECA_EJEMPLOS if ej.get("plataforma")
+        })
+
+        ctk.CTkLabel(
+            fila_combos, text="Plataforma:", font=ctk.CTkFont(size=10, weight="bold"),
+            text_color=c["muted_text"], width=80, anchor="w"
+        ).pack(side="left")
+        combo_plat = ctk.CTkComboBox(
+            fila_combos, values=plataformas_presentes, variable=filtro_plat_var,
+            width=200, height=24, font=ctk.CTkFont(size=10),
+            command=lambda _: refrescar()
+        )
+        combo_plat.pack(side="left", padx=(0, 12))
+
+        ctk.CTkLabel(
+            fila_combos, text="Dificultad:", font=ctk.CTkFont(size=10, weight="bold"),
+            text_color=c["muted_text"], width=72, anchor="w"
+        ).pack(side="left")
+        combo_dif = ctk.CTkComboBox(
+            fila_combos, values=["todas", "principiante", "medio", "avanzado"],
+            variable=filtro_dif_var, width=130, height=24,
+            font=ctk.CTkFont(size=10),
+            command=lambda _: refrescar()
+        )
+        combo_dif.pack(side="left")
+
+        # Botón "Limpiar filtros"
+        def _limpiar():
+            busqueda_var.set("")
+            filtro_plat_var.set("todas")
+            filtro_dif_var.set("todas")
+            _set_modo("todos")
+
+        ctk.CTkButton(
+            fila_combos, text="✖ Limpiar", width=80, height=24,
+            fg_color=c["fg_dark"], hover_color="#2a2a3a",
+            font=ctk.CTkFont(size=10), command=_limpiar
+        ).pack(side="right")
+
+        # ── Contador "Mostrando X de Y" ──────────────────────────────
+        lbl_contador = ctk.CTkLabel(
+            vent, text="", font=ctk.CTkFont(size=10),
+            text_color=c["muted_text"], anchor="w"
+        )
+        lbl_contador.pack(fill="x", padx=15, pady=(6, 2))
+
+        # ── Lista scrollable de cards ────────────────────────────────
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
-        def refrescar(modo_filtro="todos"):
+        # ── Colores por dificultad (para badges) ─────────────────────
+        DIF_COLORS = {
+            "principiante": ("#2ecc71", "#FFFFFF"),  # verde
+            "medio":        ("#f39c12", "#FFFFFF"),  # naranja
+            "avanzado":     ("#e74c3c", "#FFFFFF"),  # rojo
+        }
+
+        def _filtrar():
+            """Aplica los filtros activos y devuelve la lista resultante."""
+            modo_f = filtro_modo_var.get()
+            plat_f = filtro_plat_var.get()
+            dif_f = filtro_dif_var.get()
+            q = busqueda_var.get().strip().lower()
+
+            resultado = []
+            for ej in BIBLIOTECA_EJEMPLOS:
+                if modo_f != "todos" and ej.get("modo") != modo_f:
+                    continue
+                if plat_f != "todas" and ej.get("plataforma") != plat_f:
+                    continue
+                if dif_f != "todas" and ej.get("dificultad") != dif_f:
+                    continue
+                if q:
+                    # Busca en título, modelo, tags y estilos
+                    haystack = " ".join([
+                        ej.get("titulo", ""),
+                        ej.get("modelo", ""),
+                        " ".join(ej.get("tags", []) or []),
+                        " ".join(ej.get("estilos", []) or []),
+                    ]).lower()
+                    if q not in haystack:
+                        continue
+                resultado.append(ej)
+            return resultado
+
+        def refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            ejemplos = BIBLIOTECA_EJEMPLOS
-            if modo_filtro != "todos":
-                ejemplos = [e for e in ejemplos if e["modo"] == modo_filtro]
+
+            ejemplos = _filtrar()
+            total_biblioteca = len(BIBLIOTECA_EJEMPLOS)
+            lbl_contador.configure(
+                text=f"Mostrando {len(ejemplos)} de {total_biblioteca} ejemplos"
+            )
+
+            if not ejemplos:
+                ctk.CTkLabel(
+                    scroll, text="🔎  Ningún ejemplo coincide con los filtros.",
+                    font=ctk.CTkFont(size=12), text_color=c["muted_text"]
+                ).pack(pady=30)
+                return
 
             for ej in ejemplos:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
                 card.pack(fill="x", pady=3, padx=3)
 
-                hdr = ctk.CTkFrame(card, fg_color=c["fg_dark"], corner_radius=6, height=28)
+                # Header con título + modelo
+                hdr = ctk.CTkFrame(card, fg_color=c["fg_dark"], corner_radius=6, height=30)
                 hdr.pack(fill="x", padx=5, pady=(5, 2))
                 hdr.pack_propagate(False)
 
-                modo_emoji = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(ej["modo"], "")
-                ctk.CTkLabel(hdr, text=f"  {modo_emoji} {ej['titulo']}  ·  {ej['modelo']}  ·  {', '.join(ej.get('estilos', []))}",
-                             font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(side="left")
+                modo_emoji = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(ej.get("modo", ""), "")
+                ctk.CTkLabel(
+                    hdr,
+                    text=f"  {modo_emoji} {ej.get('titulo', '(sin título)')}  ·  {ej.get('modelo', '')}",
+                    font=ctk.CTkFont(size=11, weight="bold"),
+                    text_color=c["hdr_text"]
+                ).pack(side="left")
+
+                # Fila de badges (dificultad + plataforma + estilos)
+                fila_badges = ctk.CTkFrame(card, fg_color="transparent")
+                fila_badges.pack(fill="x", padx=8, pady=(2, 2))
+
+                dif = ej.get("dificultad", "")
+                if dif in DIF_COLORS:
+                    bg, fg = DIF_COLORS[dif]
+                    ctk.CTkLabel(
+                        fila_badges, text=f" {dif.upper()} ",
+                        font=ctk.CTkFont(size=9, weight="bold"),
+                        fg_color=bg, text_color=fg, corner_radius=4
+                    ).pack(side="left", padx=(0, 4))
+
+                plat = ej.get("plataforma", "")
+                if plat:
+                    ctk.CTkLabel(
+                        fila_badges, text=f" {plat} ",
+                        font=ctk.CTkFont(size=9),
+                        fg_color=c["fg_dark"], text_color=c["muted_text"],
+                        corner_radius=4
+                    ).pack(side="left", padx=(0, 4))
+
+                estilos = ej.get("estilos", [])
+                if estilos:
+                    ctk.CTkLabel(
+                        fila_badges, text=f"{', '.join(estilos)}",
+                        font=ctk.CTkFont(size=9, slant="italic"),
+                        text_color=c["muted_text"]
+                    ).pack(side="left", padx=(4, 0))
+
+                # Tags (si existen, segunda línea)
+                tags = ej.get("tags", [])
+                if tags:
+                    ctk.CTkLabel(
+                        card, text="🏷  " + " · ".join(tags),
+                        font=ctk.CTkFont(size=9), text_color=c["muted_text"],
+                        anchor="w"
+                    ).pack(fill="x", padx=10, pady=(0, 2))
 
                 # Preview del prompt
                 preview = ej["prompt"][:150] + "..." if len(ej["prompt"]) > 150 else ej["prompt"]
-                ctk.CTkLabel(card, text=preview, font=ctk.CTkFont(size=10), text_color=c["muted_text"],
-                             wraplength=650, justify="left", anchor="w").pack(fill="x", padx=10, pady=(2, 4))
+                ctk.CTkLabel(
+                    card, text=preview,
+                    font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                    wraplength=760, justify="left", anchor="w"
+                ).pack(fill="x", padx=10, pady=(2, 4))
 
+                # Botones de acción
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
-                btn_row.pack(fill="x", padx=5, pady=(0, 5))
+                btn_row.pack(fill="x", padx=5, pady=(0, 6))
 
                 def _usar(e=ej):
                     self.actualizar_salida(e["prompt"])
@@ -831,16 +1033,53 @@ class DataMgmtMixin:
                     pyperclip.copy(e["prompt"])
                     self.set_estado(f"📋 Ejemplo copiado: {e['titulo']}", "#2ecc71")
 
-                ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=22, fg_color="#1a7a3c", hover_color="#145e2d",
-                              font=ctk.CTkFont(size=10), command=_usar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="📋 Copiar", width=60, height=22, fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
-                              font=ctk.CTkFont(size=10), command=_copiar).pack(side="left", padx=2)
+                def _favorito(e=ej):
+                    """Guarda el ejemplo en favoritos del usuario."""
+                    try:
+                        self.store.agregar_favorito({
+                            "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            "modo":       e.get("modo", "imagen"),
+                            "plataforma": e.get("plataforma", ""),
+                            "estilos":    ", ".join(e.get("estilos", [])),
+                            "ratio":      "",
+                            "nsfw":       False,
+                            "personaje":  "",
+                            "lora":       "",
+                            "destino":    "— Personal —",
+                            "brief":      False,
+                            "contenido":  e["prompt"],
+                            "origen":     f"Biblioteca: {e.get('titulo', '')}",
+                        })
+                        self.set_estado(
+                            f"⭐ Guardado en favoritos: {e['titulo']}", "#f1c40f"
+                        )
+                    except Exception as err:
+                        import logging
+                        logging.getLogger("gprompt").warning(
+                            f"No se pudo guardar favorito: {err}"
+                        )
+                        self.set_estado("⚠️ Error al guardar favorito", "#e67e22")
 
-        for txt, val in [("Todos", "todos"), ("Imagen", "imagen"), ("Vídeo", "video"), ("Audio", "audio")]:
-            ctk.CTkButton(filtro_frame, text=txt, width=70, height=24, fg_color=c["fg_dark"] if val != "todos" else c["fg_frame"],
-                          hover_color="#2a2a3a", font=ctk.CTkFont(size=10),
-                          command=lambda v=val: refrescar(v)).pack(side="left", padx=2)
+                ctk.CTkButton(
+                    btn_row, text="✅ Usar", width=68, height=22,
+                    fg_color="#1a7a3c", hover_color="#145e2d",
+                    font=ctk.CTkFont(size=10), command=_usar
+                ).pack(side="left", padx=2)
+                ctk.CTkButton(
+                    btn_row, text="📋 Copiar", width=68, height=22,
+                    fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                    font=ctk.CTkFont(size=10), command=_copiar
+                ).pack(side="left", padx=2)
+                ctk.CTkButton(
+                    btn_row, text="⭐ Favorito", width=78, height=22,
+                    fg_color="#b8860b", hover_color="#8b6508",
+                    font=ctk.CTkFont(size=10), command=_favorito
+                ).pack(side="left", padx=2)
 
+        # Reactividad: cualquier cambio en la búsqueda refresca al instante
+        busqueda_var.trace_add("write", lambda *_: refrescar())
+
+        # Render inicial
         refrescar()
 
     def actualizar_combo_personajes(self):
