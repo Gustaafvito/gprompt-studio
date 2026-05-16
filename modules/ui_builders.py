@@ -190,7 +190,22 @@ class UIBuildersMixin:
                       "text_color": hdr_text}
 
         # GRUPOS: (label, color_borde, items[(label, command)])
+        # Headers ordenados alfabéticamente (Análisis → Backup → Datos → Herramientas → Plantillas → UI → Workflow).
+        # Items dentro de cada menú también ordenados alfabéticamente (ignorando el emoji inicial).
+        # NOTA: ADN Visual y Análisis Inverso NO se duplican aquí: ya están como botones grandes en la barra del medio.
         grupos_menus = [
+            ("📊 Análisis", "#8e4ab0", [
+                ("🚀  Auto-mejora", self._cmd_automejora_periodica),
+                ("📝  Crítica historial", self._cmd_critica_historial),
+                ("📈  Estadísticas", self._abrir_estadisticas),
+                ("📖  Modo educativo", self._cmd_modo_educativo),
+                ("📚  Tutorial completo", self._abrir_tutorial),
+            ]),
+            ("💾 Backup", "#a04545", [
+                ("💼  Backup completo", self._cmd_backup_completo),
+                ("📊  Exportar CSV", self._cmd_exportar_csv),
+                ("📂  Restaurar backup", self._cmd_restore_completo),
+            ]),
             ("📁 Datos", "#3d7a9c", [
                 ("🌟  Estrellas", lambda: abrir_lista(self, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
                 ("⭐  Favoritos", lambda: abrir_lista(self, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
@@ -198,33 +213,29 @@ class UIBuildersMixin:
                 ("🔗  LoRAs", lambda: abrir_loras(self)),
                 ("🧑  Personajes", lambda: abrir_personajes(self)),
             ]),
-            ("💾 Backup", "#a04545", [
-                ("💼  Backup completo", self._cmd_backup_completo),
-                ("📊  Exportar CSV", self._cmd_exportar_csv),
-                ("📂  Restaurar backup", self._cmd_restore_completo),
-            ]),
-            ("📊 Análisis", "#8e4ab0", [
-                ("🚀  Auto-mejora", self._cmd_automejora_periodica),
-                ("🔍  Crítica historial", self._cmd_critica_historial),
-                ("📈  Estadísticas", self._abrir_estadisticas),
-                ("📖  Modo educativo", self._cmd_modo_educativo),
-                ("📚  Tutorial completo", self._abrir_tutorial),
-            ]),
             ("🛠 Herramientas", "#c97a2e", [
-                ("🧬  ADN visual", self._cmd_anclaje_visual),
+                ("🔒  Anclaje rasgos (consistencia)", self._cmd_anclaje_visual),
+                ("🎭  Detectar estilo (3 imágenes)", self._cmd_companero_moodboard),
                 ("📤  Export CLI", self._cmd_export_cli),
-                ("🎭  Moodboard", self._cmd_companero_moodboard),
                 ("💼  Modo Cliente", self._cmd_modo_cliente),
                 ("🧰  Negative builder", self._cmd_negative_builder),
                 ("🎨  Paleta colores", self._cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
+                ("🏷 Añadir tags (al prompt)", self._abrir_snippets),
                 ("🧬  Biblioteca ADN", self._cmd_ver_biblioteca_adn),
+                ("⚡  Expansión rápida (en idea)", self._cmd_gestionar_snippets),
                 ("📐  Fórmulas", self._abrir_formulas),
                 ("📋  Plantillas", self._cmd_plantillas_populares),
-                ("🏷 Añadir tags (al prompt)", self._abrir_snippets),
-                ("⚡  Expansión rápida (en idea)", self._cmd_gestionar_snippets),
                 ("💎  Seeds favoritos", self._abrir_seeds_favoritos),
+            ]),
+            ("🎨 UI", "#7a7a8a", [
+                ("⚙️  Ajustes", self.cmd_preferencias),
+                ("⌨️  Atajos teclado", self._cmd_mostrar_atajos),
+                ("📚  Biblioteca", self._abrir_biblioteca),
+                ("🌗  Cambiar tema", self._cmd_toggle_tema),
+                ("🏠  Dashboard", self._cmd_dashboard),
+                ("🎯  Modo Focus", self._cmd_modo_focus),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
                 ("🆚  A/B Testing", self._cmd_ab_testing),
@@ -235,14 +246,6 @@ class UIBuildersMixin:
                 ("🔄  Macros", self._abrir_macros),
                 ("📁  Proyectos", self._cmd_proyectos),
                 ("📑  Versiones prompt", self._cmd_versiones_prompt),
-            ]),
-            ("🎨 UI", "#7a7a8a", [
-                ("⌨️  Atajos teclado", self._cmd_mostrar_atajos),
-                ("⚙️  Ajustes", self.cmd_preferencias),
-                ("📚  Biblioteca", self._abrir_biblioteca),
-                ("🌗  Cambiar tema", self._cmd_toggle_tema),
-                ("🏠  Dashboard", self._cmd_dashboard),
-                ("🎯  Modo Focus", self._cmd_modo_focus),
             ]),
         ]
 
@@ -323,15 +326,19 @@ class UIBuildersMixin:
                 new_popup.focus_set()
             return _toggle
 
+        # Frame para menus — alineado a la derecha del header
+        frame_menus = ctk.CTkFrame(inner, fg_color="transparent")
+        frame_menus.pack(side="right", padx=(16, 0))
+
         for label_grupo, color_borde, items in grupos_menus:
-            btn = ctk.CTkButton(inner, text=label_grupo, width=120, height=28,
+            btn = ctk.CTkButton(frame_menus, text=label_grupo, width=120, height=28,
                                 fg_color=btn_bg, hover_color=btn_hover,
                                 border_color=color_borde, border_width=2,
                                 corner_radius=6, font=ctk.CTkFont(size=11, weight="bold"),
                                 text_color=color_borde,
                                 command=_make_toggle(label_grupo, items, color_borde),
                                 anchor="w")
-            btn.pack(side="right", padx=2)
+            btn.pack(side="left", padx=2)
 
             self._header_menus.append((btn, label_grupo, color_borde, items))
             self._header_btns.append(btn)
@@ -1218,9 +1225,11 @@ class UIBuildersMixin:
             CTkToolTip(btn, delay=0.5, message=tooltip)
             self.action_btns.append(btn)
 
-        # Índices: [0]Ideas, [1]🎲, [2]Generar, [3]⚡Quick, [4]🔄, [5]←, [6]→, [7]📊, [8]Variaciones, [9]Analizar, [10]Img→Prompt, [11]Análisis Inv
-        self.btn_vision = self.action_btns[9]
-        self.btn_img_prompt = self.action_btns[10]
+        # Índices reales de botones_r1:
+        # [0]💡 Ideas, [1]🎲, [2]✨ Generar, [3]🔄 Regenerar, [4]←, [5]→, [6]📊 Diff,
+        # [7]🔀 Variaciones, [8]👁 Analizar, [9]🎯 Img→Prompt, [10]🔍 Análisis Inv, [11]🧬 ADN Visual
+        self.btn_vision = self.action_btns[8]
+        self.btn_img_prompt = self.action_btns[9]
 
         row2 = ctk.CTkFrame(outer, fg_color="transparent")
         row2.pack(fill="x")
