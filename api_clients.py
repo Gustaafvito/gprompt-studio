@@ -23,16 +23,18 @@ except ImportError:
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # Buscar .env tanto en cwd como en la carpeta del proyecto (donde está este archivo).
+    # Sin esto, lanzar la app desde otra carpeta (p.ej. doble clic en main.py) ignora el .env.
+    _proj_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv()                # .env de cwd (si existe)
+    load_dotenv(_proj_env, override=False)  # .env del proyecto (no pisa lo ya cargado)
 except ImportError:
     pass
 
 logger = logging.getLogger(__name__)
 
 
-# ══════════════════════════════════════════════════════════════
 # REGISTRO DE PROVEEDORES
-# ══════════════════════════════════════════════════════════════
 
 LLM_PROVIDERS = {
     "claude": {
@@ -176,9 +178,7 @@ LLM_PROVIDERS = {
 }
 
 
-# ══════════════════════════════════════════════════════════════
 # INTERFAZ BASE
-# ══════════════════════════════════════════════════════════════
 
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
@@ -194,10 +194,6 @@ class BaseLLMProvider:
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
         raise NotImplementedError
 
-
-# ══════════════════════════════════════════════════════════════
-# IMPLEMENTACIONES
-# ══════════════════════════════════════════════════════════════
 
 class OpenAICompatibleProvider(BaseLLMProvider):
     """Para todos los proveedores OpenAI-compatible."""
@@ -261,11 +257,25 @@ class GeminiProvider(BaseLLMProvider):
             self._cliente = google_genai.Client(api_key=api_key)
 
     def disponible(self) -> bool:
-        return GEMINI_DISPONIBLE and bool(self.api_key) and self._cliente is not None
+        return GEMINI_DISPONIBLE and bool(self.api_key)
 
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
-        if not self._cliente:
-            raise Exception("Gemini no configurado (sin api key o sin google-genai instalado)")
+        if not self.api_key:
+            raise Exception("Gemini no configurado (sin api key)")
+        if not GEMINI_DISPONIBLE:
+            raise Exception("google-genai no instalado")
+
+        # Crear cliente fresco en cada llamada con la key explícita.
+        # Esto evita que cambios en el entorno o re-imports envejezcan el cliente.
+        cliente = google_genai.Client(api_key=self.api_key)
+
+        # Debug: log de la key efectiva (enmascarada)
+        try:
+            _k = self.api_key
+            _masked = f"{_k[:6]}...{_k[-4:]}" if len(_k) > 12 else "(corta)"
+            logger.debug(f"GeminiProvider.completar → key {_masked} (len={len(_k)})")
+        except Exception:
+            pass
 
         modelo = model or self.model or "gemini-2.5-flash"
 
@@ -291,13 +301,13 @@ class GeminiProvider(BaseLLMProvider):
         )
 
         if history:
-            response = self._cliente.models.generate_content(
+            response = cliente.models.generate_content(
                 model=modelo,
                 contents=last_user_text,
                 config=config,
             )
         else:
-            response = self._cliente.models.generate_content(
+            response = cliente.models.generate_content(
                 model=modelo,
                 contents=last_user_text,
                 config=config,
@@ -345,9 +355,7 @@ class ClaudeProvider(BaseLLMProvider):
         return res.content[0].text
 
 
-# ══════════════════════════════════════════════════════════════
 # FACTORY
-# ══════════════════════════════════════════════════════════════
 
 def get_provider(provider_id: str, api_key: str, model: str | None = None) -> BaseLLMProvider:
     """Devuelve una instancia del proveedor configurado."""
@@ -370,9 +378,7 @@ def get_provider(provider_id: str, api_key: str, model: str | None = None) -> Ba
         raise ValueError(f"Tipo de proveedor desconocido: {tipo}")
 
 
-# ══════════════════════════════════════════════════════════════
 # ALMACENAMIENTO DE API KEYS (keyring + fallback .env)
-# ══════════════════════════════════════════════════════════════
 
 KEYRING_SERVICE = "GPromptStudio"
 
@@ -390,37 +396,75 @@ def guardar_api_key(provider_id: str, api_key: str) -> bool:
         return _guardar_keys_fallback(provider_id, api_key)
 
 
+def _key_valida(valor: str) -> bool:
+    """Una key es válida si tiene >= 8 caracteres y no es un placeholder vacío."""
+    if not valor:
+        return False
+    val = valor.strip()
+    if len(val) < 8:
+        return False
+    # Descartar placeholders comunes
+    placeholders = {"none", "null", "tu_key_aqui", "your_key_here", "xxx", "..."}
+    if val.lower() in placeholders:
+        return False
+    return True
+
+
+# Mapa de variables de entorno (compartido, no se redefine en cada llamada)
+ENV_VAR_POR_PROVIDER = {
+    "deepseek": "DEEPSEEK_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+    "groq": "GROQ_API_KEY",
+    "claude": "ANTHROPIC_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "xai": "XAI_API_KEY",
+    "fireworks": "FIREWORKS_API_KEY",
+    "github_models": "GITHUB_TOKEN",
+    "lm_studio": "",  # local, no necesita key
+    "perplexity": "PERPLEXITY_API_KEY",
+    "togetherai": "TOGETHER_API_KEY",
+}
+
+
 def cargar_api_key(provider_id: str) -> str:
-    """Recupera la API key del proveedor."""
+    """Recupera la API key del proveedor con 3 fallbacks robustos:
+    1. Sistema operativo (keyring) — almacenamiento seguro
+    2. Fichero keys.json en ~/.arquitecto_prompts/
+    3. Variable de entorno (cargada del .env del proyecto)
+
+    Si una fuente devuelve un valor inválido (vacío, placeholder, demasiado corto),
+    se pasa silenciosamente a la siguiente. Esto evita el bug en el que un keyring
+    con entrada vacía rompía el fallback al .env.
+    """
+    # 1) keyring del SO
     try:
         import keyring
         valor = keyring.get_password(KEYRING_SERVICE, f"api_key_{provider_id}")
-        if valor:
-            return valor
-    except Exception:
-        pass
+        if _key_valida(valor):
+            logger.debug(f"Key '{provider_id}' encontrada en keyring del SO")
+            return valor.strip()
+    except Exception as e:
+        logger.debug(f"keyring fallback para {provider_id}: {e}")
 
+    # 2) keys.json local
     try:
         val = _cargar_keys_fallback(provider_id)
-        if val:
-            return val
-    except Exception:
-        pass
+        if _key_valida(val):
+            logger.debug(f"Key '{provider_id}' encontrada en keys.json")
+            return val.strip()
+    except Exception as e:
+        logger.debug(f"keys.json fallback para {provider_id}: {e}")
 
-    var_env = {
-        "deepseek": "DEEPSEEK_API_KEY",
-        "openrouter": "OPENROUTER_API_KEY",
-        "groq": "GROQ_API_KEY", "claude": "ANTHROPIC_API_KEY",
-        "gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY",
-        "mistral": "MISTRAL_API_KEY", "xai": "XAI_API_KEY",
-        "fireworks": "FIREWORKS_API_KEY",
-        "github_models": "GITHUB_TOKEN",
-        "lm_studio": "",
-        "perplexity": "PERPLEXITY_API_KEY",
-        "togetherai": "TOGETHER_API_KEY",
-    }.get(provider_id, "")
+    # 3) variable de entorno (.env)
+    var_env = ENV_VAR_POR_PROVIDER.get(provider_id, "")
     if var_env:
-        return os.getenv(var_env, "")
+        valor_env = os.getenv(var_env, "")
+        if _key_valida(valor_env):
+            logger.debug(f"Key '{provider_id}' encontrada en variable de entorno {var_env}")
+            return valor_env.strip()
+
     return ""
 
 
@@ -438,7 +482,9 @@ def borrar_api_key(provider_id: str):
 
 
 def _ruta_keys_fallback() -> str:
-    ruta = os.path.join(os.path.expanduser("~"), ".gpromptstudio", "keys.json")
+    # Todo en ~/.arquitecto_prompts/ — carpeta única.
+    from config import ARCHIVOS
+    ruta = str(ARCHIVOS["keys"])
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     return ruta
 
@@ -488,9 +534,7 @@ def _borrar_keys_fallback(provider_id: str):
     _escribir_dict_fallback(d)
 
 
-# ══════════════════════════════════════════════════════════════
 # CONTENEDOR PRINCIPAL
-# ══════════════════════════════════════════════════════════════
 
 class APIClients:
     """Contenedor de proveedores LLM + Vision."""
@@ -500,8 +544,22 @@ class APIClients:
         self.vision_provider_id = vision_provider or "gemini"
 
         self.api_keys: dict[str, str] = {}
+        configurados = []
         for pid in LLM_PROVIDERS.keys():
-            self.api_keys[pid] = cargar_api_key(pid)
+            key = cargar_api_key(pid)
+            self.api_keys[pid] = key
+            if key:
+                configurados.append(pid)
+        if configurados:
+            logger.info(f"API keys cargadas para: {', '.join(configurados)}")
+        else:
+            logger.warning("No se encontraron API keys para ningún proveedor.")
+
+        # Log de diagnóstico para Gemini (key enmascarada por seguridad)
+        gkey = self.api_keys.get("gemini", "")
+        if gkey:
+            masked = f"{gkey[:6]}...{gkey[-4:]}" if len(gkey) > 12 else "(corta)"
+            logger.info(f"Gemini key cargada: {masked} (longitud: {len(gkey)})")
 
         self.providers: dict[str, BaseLLMProvider | None] = {}
         for pid, info in LLM_PROVIDERS.items():
@@ -546,7 +604,8 @@ class APIClients:
 
     def _cargar_provider_default(self) -> str:
         try:
-            ruta = os.path.join(os.path.expanduser("~"), ".gpromptstudio", "active_provider.txt")
+            from config import ARCHIVOS
+            ruta = str(ARCHIVOS["active_provider"])
             if os.path.exists(ruta):
                 with open(ruta, "r", encoding="utf-8") as f:
                     pid = f.read().strip()
@@ -561,9 +620,9 @@ class APIClients:
             return False
         self.provider_activo_id = provider_id
         try:
-            base = os.path.join(os.path.expanduser("~"), ".gpromptstudio")
-            os.makedirs(base, exist_ok=True)
-            ruta = os.path.join(base, "active_provider.txt")
+            from config import ARCHIVOS, CARPETA_APP
+            os.makedirs(str(CARPETA_APP), exist_ok=True)
+            ruta = str(ARCHIVOS["active_provider"])
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(provider_id)
         except Exception:

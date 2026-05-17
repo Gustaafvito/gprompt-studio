@@ -9,9 +9,7 @@ Filosofía de los system prompts:
 - MODO BRIEF PUBLICITARIO cuando el destino es un concurso (Anthum).
 """
 
-# ══════════════════════════════════════════════════════════════════
 # REGLAS COMUNES DE METICULOSIDAD (se reusan en varios prompts)
-# ══════════════════════════════════════════════════════════════════
 
 REGLAS_METICULOSIDAD_VISUAL = """
 METICULOSIDAD OBLIGATORIA — describe SIEMPRE estas 7 capas visuales:
@@ -49,9 +47,7 @@ APROVECHA EL BUDGET del modelo (REGLA ESTRICTA - nunca superes el límite):
 Más budget = más descripción meticulosa, más capas visuales, más narrativa. No te quedes corto, pero NUNCA te pases del límite.
 """
 
-# ══════════════════════════════════════════════════════════════════
 # IMAGEN SD (tags + pesos + negatives): SeaArt, ComfyUI, Illustrious
-# ══════════════════════════════════════════════════════════════════
 
 SYSTEM_IMAGEN_SFW = """
 Eres un algoritmo experto en prompts para generadores de imágenes IA basados en Stable Diffusion (SeaArt, ComfyUI, A1111, Forge, Illustrious, NiwaStyle).
@@ -149,9 +145,7 @@ POSITIVE PROMPT: [tags NSFW en inglés, ordenados]
 NEGATIVE PROMPT: [base + específicos]
 """
 
-# ══════════════════════════════════════════════════════════════════
 # IMAGEN NATURAL LANGUAGE (Midjourney, DALL-E, Z Image Turbo, Ideogram)
-# ══════════════════════════════════════════════════════════════════
 
 SYSTEM_NATURAL_SFW = """
 Eres un experto en prompts para generadores de imágenes IA de lenguaje natural (Midjourney, DALL-E, Ideogram, Z Image Turbo, Adobe Firefly, Google Imagen, Leonardo, Fooocus, Magnific).
@@ -289,9 +283,7 @@ FORMATO — texto plano, nunca markdown:
 PROMPT: [descripción fluida en inglés, 60-120 palabras]
 """
 
-# ══════════════════════════════════════════════════════════════════
 # VÍDEO SD (SeaArt Video, ComfyUI Video)
-# ══════════════════════════════════════════════════════════════════
 
 SYSTEM_VIDEO = """
 Eres un experto en prompts de vídeo para IA (Kling, Seedance, Nano Banana, Sora, Veo, Wan, SeaArt Video).
@@ -507,9 +499,7 @@ FORMATO — texto plano, nunca markdown:
 PROMPT: [descripción fluida del vídeo en inglés, 80-150 palabras]
 """
 
-# ══════════════════════════════════════════════════════════════════
 # AUDIO (NUEVO) — Suno y SeaArt Audio
-# ══════════════════════════════════════════════════════════════════
 
 SYSTEM_AUDIO_SUNO = """
 Eres un experto en prompts para Suno AI (v4, v4.5, v5). Suno genera canciones completas con vocales a partir de dos campos: ESTILO y LETRA.
@@ -622,10 +612,8 @@ FILTROS:
 - Modo: [Vocal o Instrumental, solo MusicGo]
 """
 
-# ══════════════════════════════════════════════════════════════════
 # MODIFICADOR: MODO BRIEF PUBLICITARIO (NUEVO)
 # Se concatena al system prompt cuando Destino = Anthum u otra marca
-# ══════════════════════════════════════════════════════════════════
 
 BRIEF_MODIFIER = """
 
@@ -646,23 +634,16 @@ Este prompt es para un ANUNCIO, NO arte libre. Aplica estas reglas ADICIONALES s
 El resto de reglas de meticulosidad y formato siguen aplicando. El brief publicitario es una CAPA ADICIONAL, no un reemplazo.
 """
 
-# ══════════════════════════════════════════════════════════════════
 # NEGATIVOS BASE
-# ══════════════════════════════════════════════════════════════════
 
 NEGATIVE_BASE_SFW   = "worst quality, low quality, lowres, blurry, jpeg artifacts"
 NEGATIVE_BASE_NSFW  = "worst quality, low quality, lowres, blurry, censored, mosaic"
 NEGATIVE_BASE_VIDEO = "worst quality, static shot, no movement, blurry, low resolution"
 
-# ═══════════════════════════════════════════════════════════════════
 # SYSTEM PROMPTS PARA VISIÓN (ADN Visual)
-# ═══════════════════════════════════════════════════════════════════
 
-# ═══════════════════════════════════════════════════════════════════
 # SYSTEM PROMPT PARA VISIÓN (ADN Visual)
 # Única fuente de verdad — usado desde workers.py vía import.
-# v1.0.9 — Añadido EJEMPLO concreto para reducir variabilidad entre LLMs
-# ═══════════════════════════════════════════════════════════════════
 
 VISION_SYSTEM_PROMPT = """
 Eres un experto en ANÁLISIS VISUAL DETALLADO para prompt engineering.

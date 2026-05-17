@@ -1071,7 +1071,11 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_anclaje_visual(self):
-        """ADN visual: extrae rasgos detallados de imagen ref y los guarda como anclaje inmutable."""
+        """ADN visual: extrae rasgos detallados de imagen ref y los guarda como anclaje inmutable.
+
+        v1.1: progreso visual, preview imagen, guardar en biblioteca ADN,
+        mostrar rasgos activos, barra de estado.
+        """
         if not self.imagen_cargada:
             self.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
             return
@@ -1079,13 +1083,54 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         self.set_estado("🧬 Extrayendo ADN visual (rasgos exactos)...", "#f39c12")
         self.toggle_botones(False)
 
-        def _worker():
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("🧬 ADN visual — Extracción")
+        vent.geometry("720x580")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="🧬 Extracción de ADN visual",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+        ctk.CTkLabel(vent, text="Analizando imagen de referencia para extraer rasgos inmutables",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
+
+        # Preview de la imagen cargada
+        prev_frame = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=8)
+        prev_frame.pack(fill="x", padx=15, pady=(0, 6))
+        ctk.CTkLabel(prev_frame, text="🖼 Imagen de referencia",
+                     font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
+        img_preview = ctk.CTkLabel(prev_frame, text="")
+        img_preview.pack(padx=10, pady=(0, 4))
+        try:
+            from PIL import Image as _PIL
+            img_copy = self.imagen_cargada.copy()
+            img_copy.thumbnail((160, 120))
+            img_tk = ctk.CTkImage(img_copy, size=(img_copy.width, img_copy.height))
+            img_preview.configure(image=img_tk)
+        except Exception:
+            pass
+
+        # Estado / progreso
+        lbl_estado = ctk.CTkLabel(vent, text="⏳ Iniciando extracción...",
+                                   font=ctk.CTkFont(size=11), text_color="#f39c12")
+        lbl_estado.pack(anchor="w", padx=15, pady=(0, 4))
+        prog_bar = ctk.CTkProgressBar(vent, height=8)
+        prog_bar.pack(fill="x", padx=15, pady=(0, 8))
+        prog_bar.set(0)
+
+        def _actualizar_progreso(pct, msg):
+            prog_bar.set(pct)
+            lbl_estado.configure(text=msg, text_color="#f39c12")
+
+        def _trabajar():
             try:
-                # 1. Describir la imagen con vision
-                def on_status(msg): self.after(0, lambda: self.set_estado(msg, "#f39c12"))
+                self.after(0, lambda: _actualizar_progreso(0.1, "🔍 Describiendo imagen..."))
+                def on_status(msg): self.after(0, lambda m=msg: _actualizar_progreso(0.2, m))
                 desc, motor = self.vision.describir(self.imagen_cargada, "imagen", on_status)
 
-                # 2. Extraer ADN específico
+                self.after(0, lambda: _actualizar_progreso(0.5, "🧬 Extrayendo rasgos visuales..."))
                 peticion = (
                     f"De esta descripción visual de una imagen, EXTRAE el ADN visual: rasgos físicos EXACTOS y constantes que deben mantenerse en cualquier variante futura.\n\n"
                     f"DESCRIPCIÓN VISUAL:\n{desc}\n\n"
@@ -1099,41 +1144,55 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 )
                 adn = self.deepseek.generar(peticion, temperature=0.2, max_tokens=800, modelo_llm=self.llm_var.get())
                 adn = limpiar_marcadores(adn).strip()
-
-                # Guardar ADN en el atributo
                 self._anclaje_visual = adn
+                self.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
 
                 def _mostrar():
-                    is_lt = ctk.get_appearance_mode().lower() == "light"
-                    c = get_theme_colors(is_lt)
-                    vent = ctk.CTkToplevel(self)
-                    vent.title("🧬 ADN visual extraído")
-                    vent.geometry("700x500")
-                    vent.transient(self)
-                    ctk.CTkLabel(vent, text="🧬 ADN visual — Rasgos inmutables", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    ctk.CTkLabel(vent, text=f"Vision: {motor}  ·  Estos rasgos se mantendrán en TODAS las variantes futuras",
+                    prog_bar.pack_forget()
+                    lbl_estado.pack_forget()
+                    prev_frame.pack_forget()
+
+                    vent2 = ctk.CTkToplevel(self)
+                    vent2.title("🧬 ADN visual extraído")
+                    vent2.geometry("700x500")
+                    vent2.transient(self)
+                    ctk.CTkLabel(vent2, text="🧬 ADN visual — Rasgos inmutables",
+                                 font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                    estado_activo = "🟢 ACTIVO" if self._anclaje_visual else "⚪ Inactivo"
+                    ctk.CTkLabel(vent2, text=f"Vision: {motor}  ·  Estado: {estado_activo}",
                                   font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word", height=350)
+                    txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word", height=320)
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", adn)
 
-                    btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
+                    btn_frame = ctk.CTkFrame(vent2, fg_color="transparent")
                     btn_frame.pack(pady=10)
 
                     def _guardar_editado():
                         self._anclaje_visual = txt.get("1.0", "end").strip()
-                        vent.destroy()
+                        vent2.destroy()
                         self.set_estado("🧬 ADN visual guardado y activo en próximas generaciones", "#2ecc71")
 
                     def _desactivar():
                         self._anclaje_visual = None
-                        vent.destroy()
+                        vent2.destroy()
                         self.set_estado("🧬 ADN visual desactivado")
 
-                    ctk.CTkButton(btn_frame, text="✅ Guardar y activar", width=160, height=30, fg_color="#1a7a3c",
+                    def _guardar_biblioteca():
+                        nombre = f"ADN {len(getattr(self.store, 'adns', []) or []) + 1}"
+                        adn_data = {"nombre": nombre, "adn": adn, "fecha": str(_dt.datetime.now())[:16]}
+                        if not hasattr(self.store, "adns"):
+                            self.store.adns = []
+                        self.store.adns.append(adn_data)
+                        self.store.guardar()
+                        self.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
+
+                    ctk.CTkButton(btn_frame, text="✅ Guardar y activar", width=150, height=30, fg_color="#1a7a3c",
                                   command=_guardar_editado).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="🚫 Desactivar ADN", width=140, height=30, fg_color="#5a1a1a",
+                    ctk.CTkButton(btn_frame, text="💾 Guardar en biblioteca", width=160, height=30, fg_color="#4a1a6a",
+                                  command=_guardar_biblioteca).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_frame, text="🚫 Desactivar", width=100, height=30, fg_color="#5a1a1a",
                                   command=_desactivar).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="📋 Copiar", width=80, height=30,
                                   command=lambda: pyperclip.copy(adn)).pack(side="left", padx=4)
@@ -1142,10 +1201,14 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     self.set_estado("🧬 ADN visual extraído — guarda para activarlo", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
+                self.after(0, lambda: prog_bar.pack_forget())
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      text_color="#ffffff", command=lambda: threading.Thread(target=_trabajar, daemon=True).start()
+                      ).pack(pady=8)
 
     def _cmd_variar_con_anclaje(self):
         """Genera variantes manteniendo el ADN visual como rasgos fijos."""
@@ -1321,8 +1384,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
     def _cmd_negative_builder(self):
         """Constructor visual de NEGATIVE PROMPT con checkboxes temáticos.
 
-        v1.0.8: ampliado de 22 a 36 items en 6 categorías.
-        Añadidos botones rápidos: Básicos, Retrato, Calidad máxima, Limpiar.
+        v1.1: búsqueda/filtrar, guardar preset, mostrar activos, tabs por categoría.
         """
         if not self._debe_mostrar_negatives():
             return self.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
@@ -1331,16 +1393,25 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         c = get_theme_colors(is_lt)
         vent = ctk.CTkToplevel(self)
         vent.title("🧰 Constructor de NEGATIVE")
-        vent.geometry("600x680")
+        vent.geometry("700x720")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="🧰 Constructor de NEGATIVE", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Marca lo que quieras EVITAR en tu imagen",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+        ctk.CTkLabel(vent, text="🧰 Constructor de NEGATIVE", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+        lbl_activos = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=9), text_color="#2ecc71")
+        lbl_activos.pack(pady=(0, 4))
 
-        # Categorías de negative — v1.0.8: 36 items en 6 categorías
+        # Búsqueda
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=15, pady=(0, 4))
+        search_entry = ctk.CTkEntry(search_row, placeholder_text="🔍 Busca un elemento...",
+                                      height=28, font=ctk.CTkFont(size=11))
+        search_entry.pack(fill="x")
+
+        tabs = ctk.CTkTabview(vent, height=460)
+        tabs.pack(fill="both", expand=True, padx=12, pady=(0, 4))
+
         categorias = {
-            "🔥 Anatomía / Personas": [
+            "🔥 Anatomía": [
                 ("Manos malas", "(bad hands:1.4), (deformed hands:1.3), (extra fingers:1.4), missing fingers, fused fingers"),
                 ("Cara mal", "(deformed face:1.3), (asymmetric face:1.2), bad anatomy, ugly face"),
                 ("Ojos raros", "(crossed eyes:1.3), (dead eyes:1.2), unaligned eyes, lazy eye"),
@@ -1350,7 +1421,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 ("Pies malos", "(bad feet:1.3), deformed toes, fused toes, missing legs"),
                 ("Proporciones malas", "(bad proportions:1.3), gigantic head, tiny body, long neck"),
             ],
-            "📷 Calidad técnica": [
+            "📷 Calidad": [
                 ("Baja calidad", "(low quality:1.4), (worst quality:1.4), lowres, blurry, jpeg artifacts"),
                 ("Pixelado", "(pixelated:1.3), aliasing, compression artifacts"),
                 ("Sobreexpuesto", "(overexposed:1.3), washed out colors, blown highlights"),
@@ -1360,14 +1431,14 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 ("Color saturado mal", "oversaturated, neon vomit, ugly color cast"),
                 ("Tinte amarillo", "(yellow tint:1.2), color cast, white balance off"),
             ],
-            "📝 Texto y marcas": [
+            "📝 Texto": [
                 ("Texto / letras", "(text:1.4), (watermark:1.4), letters, words, signature"),
                 ("Logos / firmas", "logo, brand, copyright, username, artist signature"),
                 ("Marca de agua", "(watermark:1.5), stamps, labels"),
                 ("Bordes / frame", "(border:1.3), frame, picture frame, vignette"),
                 ("Caption / subtítulo", "caption, subtitle, dialog text, speech bubble"),
             ],
-            "🎨 Estilo no deseado": [
+            "🎨 Estilo": [
                 ("Sin anime", "(anime:1.3), (cartoon:1.3), (illustration:1.3), unrealistic"),
                 ("Sin foto", "(photorealistic:1.3), (photograph:1.3), realistic skin"),
                 ("Sin 3D", "(3d render:1.3), CGI, plastic look, video game graphics"),
@@ -1383,7 +1454,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 ("Plano centrado", "centered subject, plain background, dead center"),
                 ("Fondo desordenado", "cluttered background, busy background, distracting"),
             ],
-            "✨ Realismo extra": [
+            "✨ Realismo": [
                 ("Piel plástica", "(plastic skin:1.3), waxy skin, smooth skin, doll-like"),
                 ("Sin uncanny", "(uncanny valley:1.3), creepy, soulless"),
                 ("Sin filtro IG", "(instagram filter:1.2), heavy makeup, beauty filter"),
@@ -1392,32 +1463,57 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         }
 
         check_vars = {}
-        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, padx=12, pady=5)
 
-        for categoria, items in categorias.items():
-            ctk.CTkLabel(scroll, text=categoria, font=ctk.CTkFont(size=11, weight="bold"),
-                         text_color=c["hdr_text"]).pack(anchor="w", pady=(8, 2))
-            for nombre, tags in items:
-                v = ctk.BooleanVar()
-                cb = ctk.CTkCheckBox(scroll, text=nombre, variable=v, font=ctk.CTkFont(size=10))
-                cb.pack(anchor="w", padx=20, pady=1)
-                check_vars[nombre] = (v, tags)
-
-        # Contador inferior
-        lbl_count = ctk.CTkLabel(vent, text="0 items seleccionados", font=ctk.CTkFont(size=10),
-                                 text_color=c["muted_text"])
-        lbl_count.pack(pady=(2, 0))
-
-        def _actualizar_contador():
+        def _actualizar_lbl():
             n = sum(1 for (v, _) in check_vars.values() if v.get())
-            lbl_count.configure(text=f"{n} items seleccionados")
-        for (v, _) in check_vars.values():
-            v.trace_add("write", lambda *a: _actualizar_contador())
+            activos = [nom for nom, (v, _) in check_vars.items() if v.get()]
+            lbl_activos.configure(text=f"✅ {n} activos: {', '.join(activos[:5])}{'...' if len(activos) > 5 else ''}")
 
-        # Botones rápidos (presets)
+        def _mostrar_categoria(tab_frame, categoria, items, filtro=""):
+            for w in tab_frame.winfo_children():
+                w.destroy()
+            filtro = filtro.lower()
+            for nombre, tags in items:
+                if filtro and filtro not in nombre.lower() and filtro not in tags.lower():
+                    continue
+                v = ctk.BooleanVar()
+                cb = ctk.CTkCheckBox(tab_frame, text=nombre, variable=v,
+                                     font=ctk.CTkFont(size=10),
+                                     onvalue=True, offvalue=False)
+                cb.pack(anchor="w", padx=16, pady=1)
+                check_vars[nombre] = (v, tags)
+                v.trace_add("write", lambda *a: _actualizar_lbl())
+
+        for cat_nombre, cat_items in categorias.items():
+            tab = tabs.add(cat_nombre)
+            _mostrar_categoria(tab, cat_nombre, cat_items)
+
+        def _filtrar(e):
+            filtro = search_entry.get()
+            for cat_nombre, cat_items in categorias.items():
+                try:
+                    tab = tabs._tab_dict[cat_nombre]
+                except Exception:
+                    continue
+                for w in tab.winfo_children():
+                    w.destroy()
+                for nombre, tags in cat_items:
+                    if filtro and filtro not in nombre.lower() and filtro not in tags.lower():
+                        continue
+                    v = ctk.BooleanVar() if nombre not in check_vars else check_vars[nombre][0]
+                    if nombre not in check_vars:
+                        check_vars[nombre] = (v, tags)
+                    cb = ctk.CTkCheckBox(tab, text=nombre, variable=v,
+                                         font=ctk.CTkFont(size=10),
+                                         onvalue=True, offvalue=False)
+                    cb.pack(anchor="w", padx=16, pady=1)
+                    v.trace_add("write", lambda *a: _actualizar_lbl())
+
+        search_entry.bind("<KeyRelease>", _filtrar)
+
+        # Presets + guardar/guardados
         preset_row = ctk.CTkFrame(vent, fg_color="transparent")
-        preset_row.pack(pady=(4, 2))
+        preset_row.pack(pady=(2, 0))
 
         def _marcar(nombres, exclusivo=False):
             if exclusivo:
@@ -1426,60 +1522,90 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 if nombre in check_vars:
                     check_vars[nombre][0].set(True)
 
+        def _guardar_preset():
+            activos = [nom for nom, (v, _) in check_vars.items() if v.get()]
+            if not activos:
+                return self.set_estado("⚠️ Marca elementos antes de guardar preset.", "#e67e22")
+            if not hasattr(self, "_negative_presets"):
+                self._negative_presets = []
+            nombre_preset = f"Preset {len(self._negative_presets) + 1}"
+            self._negative_presets.append({"nombre": nombre_preset, "items": activos})
+            self.set_estado(f"💾 Preset '{nombre_preset}' guardado ({len(activos)} items)", "#2ecc71")
+            _actualizar_lbl()
+
+        def _mostrar_presets():
+            if not hasattr(self, "_negative_presets") or not self._negative_presets:
+                return
+            win = ctk.CTkToplevel(vent)
+            win.title("💾 Presets de NEGATIVE")
+            win.geometry("400x350")
+            win.transient(vent)
+            ctk.CTkLabel(win, text="💾 Presets guardados", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(10, 4))
+            scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
+            scroll.pack(fill="both", expand=True, padx=15, pady=5)
+            for preset in self._negative_presets:
+                row = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
+                row.pack(fill="x", pady=3)
+                hdr = ctk.CTkFrame(row, fg_color="transparent")
+                hdr.pack(fill="x", padx=10, pady=(5, 0))
+                ctk.CTkLabel(hdr, text=f"📁 {preset['nombre']} ({len(preset['items'])} items)",
+                             font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+                ctk.CTkButton(hdr, text="Aplicar", width=70, height=22, fg_color="#1a7a3c",
+                              command=lambda p=preset: (_marcar(p["items"]), win.destroy(), _actualizar_lbl())
+                              ).pack(side="right")
+                ctk.CTkLabel(row, text=f"{', '.join(preset['items'][:8])}{'...' if len(preset['items']) > 8 else ''}",
+                             font=ctk.CTkFont(size=9), text_color="#888888", wraplength=340
+                             ).pack(anchor="w", padx=10, pady=(0, 5))
+
         ctk.CTkButton(preset_row, text="✓ Básicos", width=85, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Manos malas", "Baja calidad", "Texto / letras", "Marca de agua"])
-                      ).pack(side="left", padx=3)
+                      ).pack(side="left", padx=2)
         ctk.CTkButton(preset_row, text="👤 Retrato", width=85, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Manos malas", "Cara mal", "Ojos raros", "Boca / dientes",
                                                 "Proporciones malas", "Piel plástica", "Baja calidad",
                                                 "Texto / letras", "Marca de agua"])
-                      ).pack(side="left", padx=3)
-        ctk.CTkButton(preset_row, text="🏆 Calidad máx", width=110, height=24, fg_color="#1a4a5a",
+                      ).pack(side="left", padx=2)
+        ctk.CTkButton(preset_row, text="🏆 Calidad", width=100, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Baja calidad", "Pixelado", "Ruido", "Desenfoque",
-                                                "Tinte amarillo", "Sobreexpuesto", "Subexpuesto",
-                                                "Texto / letras", "Marca de agua", "Logos / firmas"])
-                      ).pack(side="left", padx=3)
-        ctk.CTkButton(preset_row, text="🧹 Limpiar", width=80, height=24, fg_color="#5a3a1a",
-                      command=lambda: [v.set(False) for (v, _) in check_vars.values()]
-                      ).pack(side="left", padx=3)
+                                                "Tinte amarillo", "Texto / letras", "Marca de agua", "Logos / firmas"])
+                      ).pack(side="left", padx=2)
+        ctk.CTkButton(preset_row, text="🧹 Limpiar", width=75, height=24, fg_color="#5a3a1a",
+                      command=lambda: [_v.set(False) for (_v, _) in check_vars.values()]
+                      ).pack(side="left", padx=2)
+        ctk.CTkButton(preset_row, text="💾 Guardar", width=90, height=24, fg_color="#4a1a6a",
+                      command=_guardar_preset).pack(side="left", padx=2)
+        ctk.CTkButton(preset_row, text="📂 Presets", width=80, height=24, fg_color="#1a4a5a",
+                      command=_mostrar_presets).pack(side="left", padx=2)
 
-        # Botones aplicar
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
-        btn_row.pack(pady=8)
+        btn_row.pack(pady=6)
 
         def _aplicar():
-            tags_seleccionados = []
-            for nombre, (v, tags) in check_vars.items():
-                if v.get():
-                    tags_seleccionados.append(tags)
-            if not tags_seleccionados:
-                self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
-                return
-            negative_completo = ", ".join(tags_seleccionados)
-            # Aplicar al prompt actual
+            tags_sel = [tags for (_, (v, tags)) in check_vars.items() if v.get()]
+            if not tags_sel:
+                return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+            negativo = ", ".join(tags_sel)
             pos = self.extraer_positive()
             if pos:
-                nuevo = f"POSITIVE PROMPT: {pos}\nNEGATIVE PROMPT: {negative_completo}"
-                self.actualizar_salida(nuevo)
-                self.set_estado(f"🧰 NEGATIVE construido con {len(tags_seleccionados)} items", "#2ecc71")
+                self.actualizar_salida(f"POSITIVE PROMPT: {pos}\nNEGATIVE PROMPT: {negativo}")
+                self.set_estado(f"🧰 NEGATIVE construido ({len(tags_sel)} items)", "#2ecc71")
             else:
-                pyperclip.copy(negative_completo)
-                self.set_estado(f"🧰 NEGATIVE copiado al portapapeles ({len(tags_seleccionados)} items)", "#2ecc71")
+                pyperclip.copy(negativo)
+                self.set_estado(f"🧰 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
 
-        def _solo_copiar():
-            tags_seleccionados = [tags for nombre, (v, tags) in check_vars.items() if v.get()]
-            if not tags_seleccionados:
-                self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
-                return
-            pyperclip.copy(", ".join(tags_seleccionados))
-            self.set_estado(f"📋 NEGATIVE copiado ({len(tags_seleccionados)} items)", "#2ecc71")
+        def _copiar():
+            tags_sel = [tags for (_, (v, tags)) in check_vars.items() if v.get()]
+            if not tags_sel:
+                return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+            pyperclip.copy(", ".join(tags_sel))
+            self.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
 
         ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=30, fg_color="#1a7a3c",
                       command=_aplicar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text="📋 Solo copiar", width=130, height=30, fg_color="#475569",
-                      command=_solo_copiar).pack(side="left", padx=4)
+                      command=_copiar).pack(side="left", padx=4)
 
     def _cmd_moodboard(self):
         """Genera 6 prompts complementarios con mismo mood pero distintos sujetos."""
@@ -1668,7 +1794,11 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_color_palette(self):
-        """Extrae paleta de 5 colores hex de la imagen cargada."""
+        """Extrae paleta de colores de la imagen cargada.
+
+        v1.1: copia color individual, genera complementarios/analogos,
+        guarda paleta, muestra valores RGB/HSL.
+        """
         if not self.imagen_cargada:
             return self.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
 
@@ -1678,49 +1808,167 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             try:
                 from PIL import Image
                 from collections import Counter
+                import math
 
                 img = self.imagen_cargada.copy()
                 img.thumbnail((200, 200))
                 img = img.convert("RGB")
 
-                # Quantizar a 5 colores principales
-                quantized = img.quantize(colors=5)
-                palette = quantized.getpalette()[:15]
-                colores_hex = []
-                for i in range(0, 15, 3):
-                    r, g, b = palette[i], palette[i+1], palette[i+2]
-                    colores_hex.append(f"#{r:02X}{g:02X}{b:02X}")
+                quantized = img.quantize(colors=8)
+                palette_raw = quantized.getpalette()[:24]
+                colores_raw = []
+                for i in range(0, 24, 3):
+                    r, g, b = palette_raw[i], palette_raw[i+1], palette_raw[i+2]
+                    colores_raw.append((r, g, b))
 
-                # Generar tags descriptivos
-                tags_color = ", ".join([f"color {c}" for c in colores_hex])
+                def rgb_to_hex(r, g, b):
+                    return f"#{r:02X}{g:02X}{b:02X}"
+
+                def rgb_to_hsl(r, g, b):
+                    r, g, b = r/255.0, g/255.0, b/255.0
+                    mx, mn = max(r, g, b), min(r, g, b)
+                    l = (mx + mn) / 2
+                    if mx == mn:
+                        h = s = 0
+                    else:
+                        d = mx - mn
+                        s = d / (2 - mx - mn) if l > 0.5 else d / (mx + mn)
+                        if mx == r: h = (g - b) / d + (6 if g < b else 0)
+                        elif mx == g: h = (b - r) / d + 2
+                        else: h = (r - g) / d + 4
+                        h /= 6
+                    return f"HSL({int(h*360)}, {int(s*100)}%, {int(l*100)}%)"
+
+                def complementary(r, g, b):
+                    return f"#{255-r:02X}{255-g:02X}{255-b:02X}"
+
+                def analog_colors(r, g, b):
+                    h = max(r, g, b) / 255.0
+                    s = (max(r, g, b) - min(r, g, b)) / 255.0
+                    adj = 30
+                    results = []
+                    for offset in [-2, -1, 1, 2]:
+                        h2 = (h + offset * adj / 360) % 1.0
+                        val = int(h2 * 255)
+                        if offset == -2:
+                            results.append(f"#{min(r+30,255):02X}{min(g+10,255):02X}{min(b+30,255):02X}")
+                        elif offset == -1:
+                            results.append(f"#{max(r-20,0):02X}{max(g-10,0):02X}{max(b-20,0):02X}")
+                        elif offset == 1:
+                            results.append(f"#{max(r-30,0):02X}{min(g+20,255):02X}{max(b-10,0):02X}")
+                        else:
+                            results.append(f"#{min(r+10,255):02X}{max(g-20,0):02X}{min(b+30,255):02X}")
+                    return results
 
                 def _mostrar():
                     vent = ctk.CTkToplevel(self)
                     vent.title("🎨 Paleta de colores extraída")
-                    vent.geometry("500x400")
+                    vent.geometry("580x600")
                     vent.transient(self)
-                    ctk.CTkLabel(vent, text="🎨 Paleta extraída de la imagen", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
+                    ctk.CTkLabel(vent, text="🎨 Paleta extraída de la imagen",
+                                 font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 4))
+                    ctk.CTkLabel(vent, text="Haz clic en un color para copiarlo. Añade al prompt para aplicar la paleta.",
+                                 font=ctk.CTkFont(size=9), text_color="#888888").pack(pady=(0, 8))
 
-                    # Mostrar swatches
+                    # Colores principales
                     sw_frame = ctk.CTkFrame(vent, fg_color="transparent")
-                    sw_frame.pack(pady=10)
-                    for hex_c in colores_hex:
-                        col = ctk.CTkFrame(sw_frame, fg_color=hex_c, width=60, height=60, corner_radius=8)
-                        col.pack(side="left", padx=5)
-                        ctk.CTkLabel(sw_frame, text=hex_c, font=ctk.CTkFont(size=9)).pack_forget()
+                    sw_frame.pack(pady=4)
+                    hex_codes = []
+                    for i, (r, g, b) in enumerate(colores_raw[:5]):
+                        hex_c = rgb_to_hex(r, g, b)
+                        hex_codes.append(hex_c)
+                        col_f = ctk.CTkFrame(sw_frame, fg_color=hex_c, width=80, height=80, corner_radius=10,
+                                              border_color="#3a3a4a", border_width=1)
+                        col_f.pack(side="left", padx=5)
+                        col_f.pack_propagate(False)
 
-                    # Hex codes
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(family="Consolas", size=11), height=80)
-                    txt.pack(fill="x", padx=15, pady=10)
-                    txt.insert("1.0", ", ".join(colores_hex))
+                        def _copy_color(h=hex_c):
+                            pyperclip.copy(h)
+                            self.set_estado(f"📋 {h} copiado", "#2ecc71")
+
+                        def _on_enter(e, f, orig):
+                            f.configure(border_color="#ffffff", border_width=2)
+
+                        def _on_leave(e, f, orig):
+                            f.configure(border_color="#3a3a4a", border_width=1)
+
+                        col_f.bind("<Button-1>", lambda e, h=hex_c: _copy_color(h))
+                        col_f.bind("<Enter>", lambda e, f=col_f, o=hex_c: _on_enter(e, f, o))
+                        col_f.bind("<Leave>", lambda e, f=col_f, o=hex_c: _on_leave(e, f, o))
+
+                        lbl = ctk.CTkLabel(col_f, text=hex_c, font=ctk.CTkFont(size=7),
+                                            text_color="white" if (r+g+b)/3 < 128 else "black",
+                                            fg_color="transparent")
+                        lbl.place(relx=0.5, rely=1.0, anchor="s", y=-2)
+
+                    # Tabla de valores
+                    val_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
+                    val_frame.pack(fill="x", padx=15, pady=4)
+                    ctk.CTkLabel(val_frame, text="Valores detallados", font=ctk.CTkFont(size=11, weight="bold")
+                                 ).pack(anchor="w", padx=10, pady=(6, 2))
+                    for i, (r, g, b) in enumerate(colores_raw[:5]):
+                        hex_c = rgb_to_hex(r, g, b)
+                        row = ctk.CTkFrame(val_frame, fg_color="transparent")
+                        row.pack(fill="x", padx=10, pady=1)
+                        sw_small = ctk.CTkFrame(row, fg_color=hex_c, width=24, height=24, corner_radius=4)
+                        sw_small.pack(side="left", padx=(0, 6))
+                        sw_small.pack_propagate(False)
+                        ctk.CTkLabel(row, text=f"#{i+1}", font=ctk.CTkFont(size=9, weight="bold"),
+                                     width=30).pack(side="left")
+                        ctk.CTkLabel(row, text=hex_c, font=ctk.CTkFont(family="Consolas", size=10),
+                                     text_color="#aaccee").pack(side="left", padx=(0, 4))
+
+                        def _cp(h):
+                            return lambda: pyperclip.copy(h)
+                        ctk.CTkButton(row, text=hex_c, width=90, height=20, fg_color="#1a4a5a",
+                                      font=ctk.CTkFont(size=9), command=_cp(hex_c)).pack(side="left", padx=1)
+                        ctk.CTkLabel(row, text=f"RGB({r},{g},{b})", font=ctk.CTkFont(size=9),
+                                     text_color="#888888").pack(side="left", padx=(4, 0))
+                        ctk.CTkLabel(row, text=rgb_to_hsl(r, g, b), font=ctk.CTkFont(size=8),
+                                     text_color="#666666").pack(side="left", padx=(4, 0))
+                        comp = complementary(r, g, b)
+                        ctk.CTkLabel(row, text=f"Comp: {comp}", font=ctk.CTkFont(size=8),
+                                     text_color="#f59e0b").pack(side="left", padx=(4, 0))
+
+                    # Complementarios del primer color
+                    r0, g0, b0 = colores_raw[0]
+                    analogo = analog_colors(r0, g0, b0)
+                    comp_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
+                    comp_frame.pack(fill="x", padx=15, pady=4)
+                    ctk.CTkLabel(comp_frame, text="Colores complementarios y análogos",
+                                 font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
+                    analogs_row = ctk.CTkFrame(comp_frame, fg_color="transparent")
+                    analogs_row.pack(padx=10, pady=(0, 6))
+                    comp_c = complementary(r0, g0, b0)
+                    for lab, col in [("Complementario", comp_c)] + list(zip(["A-1", "A-2", "A+1", "A+2"], analogo)):
+                        f2 = ctk.CTkFrame(analogs_row, fg_color=col, width=50, height=40, corner_radius=6)
+                        f2.pack(side="left", padx=3)
+                        f2.pack_propagate(False)
+                        ctk.CTkLabel(f2, text=lab, font=ctk.CTkFont(size=8),
+                                     text_color="white" if sum(int(col[i*2+1:i*2+3], 16) for i in range(3))/3 < 128 else "black",
+                                     fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
+                        f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.set_estado(f"📋 {h} copiado", "#2ecc71")))
 
                     btn_row = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_row.pack(pady=10)
+                    hex_str = ", ".join(hex_codes)
+
+                    def _guardar_paleta():
+                        if not hasattr(self.store, "paletas"):
+                            self.store.paletas = []
+                        paleta = {"nombre": f"Paleta {len(self.store.paletas)+1}", "hex": hex_codes,
+                                  "timestamp": str(_dt.datetime.now())[:10]}
+                        self.store.paletas.append(paleta)
+                        self.store.guardar()
+                        self.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
+
                     ctk.CTkButton(btn_row, text="📋 Copiar HEX", width=120, height=28,
-                                  command=lambda: pyperclip.copy(", ".join(colores_hex))).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="✅ Añadir al prompt", width=160, height=28, fg_color="#1a7a3c",
-                                  command=lambda: (self._aplicar_atajo_tags(f"color palette: {', '.join(colores_hex)}"),
+                                  command=lambda: pyperclip.copy(hex_str)).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="🎨 Añadir al prompt", width=140, height=28, fg_color="#1a7a3c",
+                                  command=lambda: (self._aplicar_atajo_tags(f"color palette: {hex_str}"),
                                                     vent.destroy())).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="💾 Guardar paleta", width=130, height=28, fg_color="#4a1a6a",
+                                  command=_guardar_paleta).pack(side="left", padx=4)
 
                     self.set_estado("🎨 Paleta extraída", "#2ecc71")
                 self.after(0, _mostrar)
@@ -1828,7 +2076,6 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         self.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
         self.toggle_botones(False)
 
-        # Saber si el modelo soporta negative
         specs = self.get_current_model_specs()
         has_neg = specs.get("has_negative", True) if specs else True
         is_natural = specs.get("is_natural", False) if specs else False
@@ -1858,14 +2105,11 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000, modelo_llm=self.llm_var.get())
                 resp = limpiar_marcadores(resp)
 
-                # Parsear con parser robusto
                 bloques = self._parsear_bloques_numerados(resp)
 
-                # Limpiar cada bloque: quitar líneas tipo "Enfoque: ..." antes del POSITIVE
                 bloques_limpios = []
                 import re
                 for b in bloques:
-                    # Buscar desde POSITIVE PROMPT hacia adelante
                     m = re.search(r'(POSITIVE\s+PROMPT\s*:.*?)(?=\Z|===)', b, re.DOTALL | re.IGNORECASE)
                     if m:
                         bloques_limpios.append(m.group(1).strip())
@@ -1876,7 +2120,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     bloques_limpios = bloques
 
                 def _mostrar():
-                    self._abrir_comparador(bloques_limpios[:5])
+                    self._abrir_comparador_propuestas(bloques_limpios[:5], brief)
                     self.set_estado(f"💼 {len(bloques_limpios)} propuestas profesionales generadas", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
@@ -1887,79 +2131,315 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    def _abrir_comparador_propuestas(self, propuestas, brief=""):
+        """Muestra propuestas como cards interactivos con vista previa y copiar."""
+        import re as _re
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("💼 Propuestas profesionales")
+        vent.geometry("900x720")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text=f"💼 {len(propuestas)} Propuestas para tu brief",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+        ctk.CTkLabel(vent, text=f"Brief: {brief[:120]}{'...' if len(brief) > 120 else ''}",
+                     font=ctk.CTkFont(size=9), text_color=c["muted_text"], wraplength=840
+                     ).pack(pady=(0, 8))
+
+        cards_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        cards_frame.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+
+        emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
+        col_colors = ["#1a7a3c", "#1a4a7a", "#7a1a4a", "#7a4a1a", "#1a5a7a"]
+
+        def _extraer_nombre(prop):
+            m = _re.search(r'PROPUESTA\s+(\d+)', prop[:200], _re.IGNORECASE)
+            if m:
+                return f"Propuesta {m.group(1)}"
+            return "Propuesta sin nombre"
+
+        def _extraer_positivo(prop):
+            m = _re.search(r'POSITIVE\s+PROMPT\s*:\s*(.+?)(?=\Z|NEGATIVE)', prop, _re.DOTALL | _re.IGNORECASE)
+            return m.group(1).strip() if m else prop
+
+        def _extraer_negativo(prop):
+            m = _re.search(r'NEGATIVE\s+PROMPT\s*:\s*(.+?)(?=\Z)', prop, _re.DOTALL | _re.IGNORECASE)
+            return m.group(1).strip() if m else ""
+
+        for idx, prop in enumerate(propuestas):
+            nombre = _extraer_nombre(prop)
+            positivo = _extraer_positivo(prop)
+            negativo = _extraer_negativo(prop)
+            preview = positivo[:150].replace("\n", " ") + ("..." if len(positivo) > 150 else "")
+
+            card = ctk.CTkFrame(cards_frame, fg_color="#111820", corner_radius=10,
+                                border_color=col_colors[idx % len(col_colors)], border_width=1)
+            card.pack(fill="x", pady=6, padx=4)
+
+            hdr = ctk.CTkFrame(card, fg_color="transparent")
+            hdr.pack(fill="x", padx=12, pady=(8, 4))
+            ctk.CTkLabel(hdr, text=f"{emojis[idx]} {nombre}", font=ctk.CTkFont(size=13, weight="bold"),
+                         text_color=col_colors[idx % len(col_colors)]).pack(side="left")
+
+            desc_row = ctk.CTkFrame(card, fg_color="transparent")
+            desc_row.pack(fill="x", padx=12, pady=(0, 4))
+            ctk.CTkLabel(desc_row, text=preview, font=ctk.CTkFont(size=10),
+                         text_color="#888888", wraplength=820, anchor="w"
+                         ).pack(anchor="w")
+
+            if negativo:
+                neg_preview = negativo[:100].replace("\n", " ")
+                ctk.CTkLabel(desc_row, text=f"🔴 NEG: {neg_preview}...",
+                             font=ctk.CTkFont(size=9), text_color="#ef4444",
+                             anchor="w").pack(anchor="w", pady=(2, 0))
+
+            btn_row = ctk.CTkFrame(card, fg_color="transparent")
+            btn_row.pack(fill="x", padx=12, pady=(0, 8))
+
+            def _usar(p=positivo, n=negativo, nom=nombre):
+                completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
+                self.actualizar_salida(completo)
+                self.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
+                vent.destroy()
+
+            def _copiar(p=positivo, n=negativo, nom=nombre):
+                completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
+                pyperclip.copy(completo)
+                self.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
+
+            def _guardar_prop(nom=nombre, p=positivo, neg=negativo, idx=idx):
+                if not hasattr(self.store, "propuestas"):
+                    self.store.propuestas = []
+                self.store.propuestas.append({
+                    "nombre": nom,
+                    "positive": p,
+                    "negative": neg,
+                    "brief": brief,
+                    "fecha": str(_dt.datetime.now())[:16]
+                })
+                self.store.guardar()
+                self.set_estado(f"💾 Propuesta '{nom}' guardada", "#2ecc71")
+
+            ctk.CTkButton(btn_row, text="✅ Usar propuesta", width=150, height=30, fg_color="#1a7a3c",
+                          font=ctk.CTkFont(size=10, weight="bold"), command=_usar
+                          ).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="📋 Copiar", width=100, height=30, fg_color="#1a4a5a",
+                          font=ctk.CTkFont(size=10), command=_copiar
+                          ).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="💾 Guardar", width=100, height=30, fg_color="#4a1a6a",
+                          font=ctk.CTkFont(size=10), command=_guardar_prop
+                          ).pack(side="left", padx=2)
+            ctk.CTkLabel(btn_row, text=f"   {len(positivo)} chars",
+                         font=ctk.CTkFont(size=9), text_color="#666666").pack(side="left", padx=(4, 0))
+
+        ctk.CTkButton(vent, text="Cerrar", width=140, height=30, fg_color="#475569",
+                      command=vent.destroy).pack(pady=(0, 8))
+
     def _cmd_companero_moodboard(self):
-        """Sube 3 imágenes y la IA detecta el estilo común."""
+        """Sube imágenes y la IA detecta el estilo común.
+        
+        v1.1: usa imagen cargada, barra de progreso, preview thumbnails,
+        guarda estilo detectado y permite añadir más imágenes.
+        """
         from tkinter import filedialog
-        archivos = filedialog.askopenfilenames(
-            title="Selecciona 2-5 imágenes con estilo similar",
-            filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
-        )
-        if not archivos or len(archivos) < 2:
-            return self.set_estado("⚠️ Selecciona al menos 2 imágenes.", "#e67e22")
 
-        self.set_estado(f"🎭 Analizando {len(archivos)} imágenes para extraer estilo común...", "#f39c12")
-        self.toggle_botones(False)
+        archivos_seleccionados = []
+        progreso_state = {"n": 0, "total": 1}
 
-        def _worker():
-            try:
-                from PIL import Image
-                descripciones = []
-                for i, ruta in enumerate(archivos[:5]):
-                    img = Image.open(ruta)
-                    self.after(0, lambda i=i: self.set_estado(f"🎭 Analizando imagen {i+1}/{min(len(archivos), 5)}...", "#f39c12"))
-                    desc, _ = self.vision.describir(img, "imagen", lambda m: None)
-                    descripciones.append(desc)
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
 
-                # Extraer estilo común
-                peticion = (
-                    f"Has analizado {len(descripciones)} imágenes. Extrae el ESTILO COMÚN entre ellas.\n\n"
-                    + "\n---\n".join([f"IMAGEN {i+1}:\n{d}" for i, d in enumerate(descripciones)])
-                    + "\n\nRESPONDE EN ESPAÑOL con este formato:\n\n"
-                    + "🎨 ESTILO DETECTADO: [nombre del estilo común]\n\n"
-                    + "📐 ELEMENTOS COMUNES:\n   - [3-5 elementos compartidos]\n\n"
-                    + "🎨 PALETA: [colores predominantes]\n\n"
-                    + "💡 ILUMINACIÓN: [tipo de luz común]\n\n"
-                    + "🎬 PROMPT TEMPLATE EN INGLÉS (para generar imágenes en este mismo estilo):\n[prompt completo en formato POSITIVE PROMPT: ...]"
-                )
-                resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=2000, modelo_llm=self.llm_var.get())
-                resp = limpiar_marcadores(resp)
+        vent = ctk.CTkToplevel(self)
+        vent.title("🎭 Moodboard — Estilo común")
+        vent.geometry("720x680")
+        vent.transient(self)
 
-                def _mostrar():
-                    vent = ctk.CTkToplevel(self)
-                    vent.title("🎭 Estilo común detectado")
-                    vent.geometry("700x600")
-                    vent.transient(self)
-                    ctk.CTkLabel(vent, text=f"🎭 Análisis de {len(descripciones)} imágenes",
-                                 font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
+        ctk.CTkLabel(vent, text="🎭 Moodboard — Detecta el estilo común de tus imágenes",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text="Añade imágenes con estilo similar (mínimo 2). Usa la imagen ya cargada como referencia.",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
 
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
-                    txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
-                    txt.insert("1.0", resp)
-                    txt.configure(state="disabled")
+        # ── Imagen ya cargada ──
+        if self.imagen_cargada:
+            frame_ref = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
+            frame_ref.pack(fill="x", padx=15, pady=(0, 6))
+            hdr_ref = ctk.CTkFrame(frame_ref, fg_color="transparent")
+            hdr_ref.pack(fill="x", padx=10, pady=(6, 2))
+            ctk.CTkLabel(hdr_ref, text="🖼 Imagen de referencia ya cargada",
+                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+            ctk.CTkLabel(hdr_ref, text="Se usará automáticamente",
+                          font=ctk.CTkFont(size=9), text_color="#2ecc71").pack(side="left", padx=(6, 0))
+            preview_lbl = ctk.CTkLabel(frame_ref, text="")
+            preview_lbl.pack(padx=10, pady=(0, 4))
 
-                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
-                    btn_row.pack(pady=10)
+        # ── Selector de archivos adicionales ──
+        frame_arch = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
+        frame_arch.pack(fill="x", padx=15, pady=(0, 6))
 
-                    def _aplicar_template():
-                        # Extraer el PROMPT TEMPLATE
-                        import re
-                        m = re.search(r'PROMPT\s+TEMPLATE[^:]*:\s*(.+?)(?=\Z)', resp, re.DOTALL | re.IGNORECASE)
-                        if m:
-                            template = m.group(1).strip()
-                            self.actualizar_salida(template)
-                            vent.destroy()
-                            self.set_estado("🎭 Template aplicado al resultado", "#2ecc71")
+        archivos_state = {"rutas": list(archivos_seleccionados)}
 
-                    ctk.CTkButton(btn_row, text="✅ Usar template", width=140, height=28, fg_color="#1a7a3c",
-                                  command=_aplicar_template).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="📋 Copiar análisis", width=140, height=28,
-                                  command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
+        lbl_count = ctk.CTkLabel(frame_arch, text="0 imágenes seleccionadas",
+                                 font=ctk.CTkFont(size=10), text_color=c["muted_text"])
+        lbl_count.pack(anchor="w", padx=10, pady=(6, 2))
 
-                    self.toggle_botones(True)
-                    self.set_estado("🎭 Estilo común detectado", "#2ecc71")
-                self.after(0, _mostrar)
-            except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+        thumbs_area = ctk.CTkFrame(frame_arch, fg_color="transparent")
+        thumbs_area.pack(fill="x", padx=10, pady=(0, 4))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        def _actualizar_thumbs():
+            for w in thumbs_area.winfo_children():
+                w.destroy()
+            lbl_count.configure(text=f"{len(archivos_state['rutas'])} imágenes seleccionadas")
+            for ruta in archivos_state["rutas"][:8]:
+                try:
+                    from PIL import Image as _PIL
+                    thumb = _PIL.Image.open(ruta).copy()
+                    thumb.thumbnail((60, 60))
+                    img_tk = ctk.CTkImage(thumb, size=(60, 60))
+                    lbl = ctk.CTkLabel(thumbs_area, image=img_tk, text="")
+                    lbl.pack(side="left", padx=2)
+                except Exception:
+                    pass
+
+        def _anadir_mas():
+            nuevas = filedialog.askopenfilenames(
+                title="Selecciona más imágenes",
+                filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
+            )
+            if nuevas:
+                archivos_state["rutas"].extend(nuevas)
+                _actualizar_thumbs()
+
+        def _limpiar():
+            archivos_state["rutas"] = []
+            _actualizar_thumbs()
+
+        btn_row = ctk.CTkFrame(frame_arch, fg_color="transparent")
+        btn_row.pack(fill="x", padx=10, pady=(0, 6))
+        ctk.CTkButton(btn_row, text="➕ Añadir imágenes", width=140, height=26, fg_color="#1a4a5a",
+                      command=_anadir_mas).pack(side="left", padx=2)
+        ctk.CTkButton(btn_row, text="🗑 Limpiar", width=100, height=26,
+                      command=_limpiar).pack(side="left", padx=2)
+
+        # ── Barra de progreso ──
+        progress_frame = ctk.CTkFrame(vent, fg_color="transparent")
+        progress_frame.pack(fill="x", padx=15, pady=(0, 4))
+        lbl_prog = ctk.CTkLabel(progress_frame, text="", font=ctk.CTkFont(size=10),
+                                 text_color=c["muted_text"])
+        lbl_prog.pack(anchor="w")
+        progress_bar = ctk.CTkProgressBar(progress_frame, height=8)
+        progress_bar.pack(fill="x", pady=(2, 0))
+        progress_bar.set(0)
+        progress_bar.pack_forget()
+        lbl_prog.pack_forget()
+
+        def _ejecutar_moodboard():
+            # Construir lista de imágenes
+            todas_imagenes = []
+            if self.imagen_cargada:
+                todas_imagenes.append(self.imagen_cargada)
+            if archivos_state["rutas"]:
+                try:
+                    from PIL import Image as _PIL2
+                    for ruta in archivos_state["rutas"][:5]:
+                        todas_imagenes.append(_PIL2.open(ruta))
+                except Exception:
+                    pass
+
+            total_imgs = len(todas_imagenes)
+            if total_imgs < 2:
+                return self.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
+
+            self.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
+            self.toggle_botones(False)
+            lbl_prog.pack(anchor="w")
+            progress_bar.pack(fill="x", pady=(2, 0))
+            lbl_prog.configure(text=f"Analizando imagen 1/{total_imgs}...")
+            progress_bar.set(0)
+
+            def _trabajar():
+                try:
+                    descripciones = []
+                    for i, img in enumerate(todas_imagenes):
+                        progreso_state["n"] = i + 1
+                        self.after(0, lambda n=i+1, t=total_imgs:
+                                   (lbl_prog.configure(text=f"Analizando imagen {n}/{t}..."),
+                                    progress_bar.set(n / t)))
+                        desc, _ = self.vision.describir(img, "imagen", lambda m: None)
+                        descripciones.append(desc)
+
+                    self.after(0, lambda: lbl_prog.configure(text="Extrayendo estilo común..."))
+                    peticion = (
+                        f"Has analizado {len(descripciones)} imágenes con estilo similar. "
+                        f"Extrae el ESTILO COMÚN entre ellas.\n\n"
+                        + "\n---\n".join([f"IMAGEN {i+1}:\n{d}" for i, d in enumerate(descripciones)])
+                        + "\n\nRESPONDE EN ESPAÑOL con este formato:\n\n"
+                        + "🎨 ESTILO DETECTADO: [nombre del estilo común]\n\n"
+                        + "📐 ELEMENTOS COMUNES:\n   - [3-5 elementos compartidos]\n\n"
+                        + "🎨 PALETA: [colores predominantes]\n\n"
+                        + "💡 ILUMINACIÓN: [tipo de luz común]\n\n"
+                        + "🎬 PROMPT TEMPLATE EN INGLÉS (para generar imágenes en este mismo estilo):\n[prompt completo]"
+                    )
+                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=2000,
+                                                  modelo_llm=self.llm_var.get())
+                    resp = limpiar_marcadores(resp)
+
+                    def _mostrar():
+                        lbl_prog.pack_forget()
+                        progress_bar.pack_forget()
+                        vent2 = ctk.CTkToplevel(self)
+                        vent2.title("🎭 Estilo común detectado")
+                        vent2.geometry("720x650")
+                        vent2.transient(self)
+                        ctk.CTkLabel(vent2, text=f"🎭 Estilo detectado en {len(descripciones)} imágenes",
+                                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
+
+                        txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word")
+                        txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
+                        txt.insert("1.0", resp)
+                        txt.configure(state="disabled")
+
+                        btn_row2 = ctk.CTkFrame(vent2, fg_color="transparent")
+                        btn_row2.pack(pady=10)
+
+                        def _aplicar_template():
+                            import re
+                            m = re.search(r'PROMPT\s+TEMPLATE[^:]*:\s*(.+?)(?=\Z)', resp, re.DOTALL | re.IGNORECASE)
+                            if m:
+                                template = m.group(1).strip()
+                                self.actualizar_salida(template)
+                                vent2.destroy()
+                                self.set_estado("🎭 Template aplicado", "#2ecc71")
+
+                        def _guardar_estilo():
+                            nombre = f"Estilo Moodboard {len(self.store.personajes or []) + 1}"
+                            estilo_guardado = {"nombre": nombre, "descripcion": resp}
+                            if not hasattr(self.store, "estilos_guardados"):
+                                self.store.estilos_guardados = []
+                            self.store.estilos_guardados.append(estilo_guardado)
+                            self.store.guardar()
+                            self.set_estado(f"💾 Estilo '{nombre}' guardado", "#2ecc71")
+
+                        ctk.CTkButton(btn_row2, text="✅ Aplicar template", width=140, height=28,
+                                      fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
+                        ctk.CTkButton(btn_row2, text="💾 Guardar estilo", width=140, height=28, fg_color="#4a1a6a",
+                                      command=_guardar_estilo).pack(side="left", padx=4)
+                        ctk.CTkButton(btn_row2, text="📋 Copiar análisis", width=140, height=28,
+                                      command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
+
+                        self.toggle_botones(True)
+                        self.set_estado("🎭 Estilo común detectado", "#2ecc71")
+                    self.after(0, _mostrar)
+                except Exception as e:
+                    self.after(0, lambda: lbl_prog.pack_forget())
+                    self.after(0, lambda: progress_bar.pack_forget())
+                    self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                    self.after(0, lambda: self.toggle_botones(True))
+
+            threading.Thread(target=_trabajar, daemon=True).start()
+
+        ctk.CTkButton(vent, text="🎭 Analizar estilo común", width=240, height=38,
+                      fg_color="#a64aa6", hover_color="#7a2a7a",
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      text_color="#ffffff", command=_ejecutar_moodboard).pack(pady=8)

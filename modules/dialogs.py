@@ -507,9 +507,7 @@ class DialogsMixin:
         main = ctk.CTkScrollableFrame(v, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=20, pady=15)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 21 — Saludo personalizado por hora del día
-        # ═══════════════════════════════════════════════════════
         hora = _dt.datetime.now().hour
         if 5 <= hora < 12:
             saludo = "🌅 Buenos días"
@@ -520,7 +518,6 @@ class DialogsMixin:
         else:
             saludo = "🌙 De madrugada"
 
-        # v1.0.8 — Leer nombre del usuario desde preferences.json
         nombre_user = "Creador"
         try:
             prefs_user = self.store.cargar_preferencias() or {}
@@ -539,11 +536,8 @@ class DialogsMixin:
                      font=ctk.CTkFont(size=11),
                      text_color=text_secondary, fg_color="transparent").pack(anchor="w", pady=(0, 12))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 23 — Búsqueda global inline (resultados en el dashboard)
-        # v1.0.8: la búsqueda muestra resultados aquí mismo, sin abrir
         # otra ventana.
-        # ═══════════════════════════════════════════════════════
         search_frame = ctk.CTkFrame(main, fg_color=card_bg, corner_radius=10,
                                      border_color=card_border, border_width=1)
         search_frame.pack(fill="x", pady=(0, 10))
@@ -698,9 +692,7 @@ class DialogsMixin:
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_buscar_inline).pack(side="left")
 
-        # ═══════════════════════════════════════════════════════
         # Datos comunes
-        # ═══════════════════════════════════════════════════════
         favoritos = self.store.favoritos or []
         estrellas = self.store.estrellas or []
         historial = self.store.historial or []
@@ -708,9 +700,7 @@ class DialogsMixin:
         loras = self.store.loras or []
         plantillas = self.store.plantillas or []
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 18 — LAYOUT EN 2 COLUMNAS (con grid)
-        # ═══════════════════════════════════════════════════════
         twocol = ctk.CTkFrame(main, fg_color="transparent")
         twocol.pack(fill="both", expand=True)
         twocol.grid_columnconfigure(0, weight=3)  # izq más ancha
@@ -720,9 +710,7 @@ class DialogsMixin:
         col_der = ctk.CTkFrame(twocol, fg_color="transparent")
         col_der.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
 
-        # ═══════════════════════════════════════════════════════
         # COLUMNA IZQUIERDA — Stats / Actividad / Continuar
-        # ═══════════════════════════════════════════════════════
 
         # ─── Stats cards (5 contadores grandes) ───────────────
         stats = [
@@ -747,9 +735,7 @@ class DialogsMixin:
         for ci in range(len(stats)):
             stats_frame.grid_columnconfigure(ci, weight=1)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 1 — Gráfico de actividad últimos 7 días
-        # ═══════════════════════════════════════════════════════
         chart_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                     border_color=card_border, border_width=1)
         chart_frame.pack(fill="x", pady=(0, 10))
@@ -775,7 +761,6 @@ class DialogsMixin:
                 continue
 
         max_val = max(conteo_dias) if conteo_dias and max(conteo_dias) > 0 else 1
-        # v1.0.8 — gráfico más compacto: altura 80px (antes 130) y barras más finas
         chart_inner = ctk.CTkFrame(chart_frame, fg_color="transparent", height=85)
         chart_inner.pack(fill="x", padx=14, pady=(2, 6))
         chart_inner.pack_propagate(False)
@@ -813,10 +798,8 @@ class DialogsMixin:
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=text_secondary).pack(anchor="w", padx=14, pady=(0, 6))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 2 — Modelo más usado (top 3)
         # FEATURE 3 — Plataforma favorita (porcentajes)
-        # ═══════════════════════════════════════════════════════
         models_platforms_frame = ctk.CTkFrame(col_izq, fg_color="transparent")
         models_platforms_frame.pack(fill="x", pady=(0, 10))
         models_platforms_frame.grid_columnconfigure(0, weight=1)
@@ -890,9 +873,7 @@ class DialogsMixin:
                          fg_color="transparent", text_color=text_muted).pack(padx=12, pady=(0, 10))
         ctk.CTkLabel(plat_card, text="", fg_color="transparent").pack(pady=2)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 6 — Última sesión + FEATURE 5 — Tokens estimados
-        # ═══════════════════════════════════════════════════════
         info_sesion = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                     border_color=card_border, border_width=1)
         info_sesion.pack(fill="x", pady=(0, 10))
@@ -944,9 +925,7 @@ class DialogsMixin:
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_amber).grid(row=1, column=1, sticky="w", pady=(0, 4))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 7 — Continuar trabajando + FEATURE 8 — Plantilla más usada
-        # ═══════════════════════════════════════════════════════
         continuar_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                         border_color=card_border, border_width=1)
         continuar_frame.pack(fill="x", pady=(0, 10))
@@ -1014,9 +993,7 @@ class DialogsMixin:
                           text_color="#ffffff",
                           command=_aplicar_plantilla).pack(fill="x", pady=(4, 2))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 13 — Galería de prompts estrella (top 3)
-        # ═══════════════════════════════════════════════════════
         if estrellas:
             estr_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                        border_color=card_border, border_width=1)
@@ -1061,9 +1038,7 @@ class DialogsMixin:
                              anchor="w", justify="left").pack(fill="x", padx=10, pady=(0, 6))
             ctk.CTkLabel(estr_frame, text="", fg_color="transparent").pack(pady=2)
 
-        # ═══════════════════════════════════════════════════════
         # COLUMNA DERECHA — LLM, avisos, retos, herramientas
-        # ═══════════════════════════════════════════════════════
 
         # FEATURE 10 — Estado del LLM activo
         llm_card = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
@@ -1108,9 +1083,7 @@ class DialogsMixin:
                           fg_color=accent_purple, hover_color="#6d28d9",
                           font=ctk.CTkFont(size=9), command=_abrir_keys).pack(side="right")
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 22 — Bloque de Avisos
-        # ═══════════════════════════════════════════════════════
         avisos = []
         if not disponible:
             avisos.append(("⚠️", "Sin LLM configurado", accent_red))
@@ -1123,8 +1096,8 @@ class DialogsMixin:
 
         # Backup
         try:
-            from config import CARPETA_APP
-            marker = CARPETA_APP / "_last_autobackup.txt"
+            from config import ARCHIVOS
+            marker = ARCHIVOS["autobackup_marker"]
             if marker.exists():
                 last_bk = _dt.datetime.fromtimestamp(marker.stat().st_mtime)
                 dias_bk = (_dt.datetime.now() - last_bk).days
@@ -1152,10 +1125,7 @@ class DialogsMixin:
                              anchor="w", justify="left").pack(side="left", fill="x", expand=True)
             ctk.CTkLabel(avisos_frame, text="", fg_color="transparent").pack(pady=2)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 24 — Logros / Medallas
-        # v1.0.8 — Sistema completo con 20 logros y ventana "Ver todos"
-        # ═══════════════════════════════════════════════════════
 
         # Definición completa de logros: (emoji, nombre, descripción, condición lambda → bool, valor_actual_y_objetivo)
         TODOS_LOS_LOGROS = [
@@ -1349,12 +1319,9 @@ class DialogsMixin:
                              fg_color="transparent", text_color=accent_green).pack(side="right")
         ctk.CTkLabel(logros_frame, text="", fg_color="transparent").pack(pady=2)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 12 — Reto del día + FEATURE 11 — Estilo del día
-        # v1.0.8 — Cada reto y estilo lleva ahora: modo, modelo, estilo,
         # ratio sugerido e idea precargada. Al aceptar, configura TODO el
         # UI para empezar a trabajar inmediatamente.
-        # ═══════════════════════════════════════════════════════
 
         # Cada reto: (descripción visible, modo, modelo, ratio, estilo_match, idea_a_cargar,
         #              [audio_emocion, audio_voz, audio_idioma]) — los 3 últimos solo si modo=audio
@@ -1659,9 +1626,7 @@ class DialogsMixin:
                       text_color="#ffffff",
                       command=_probar_estilo).pack(fill="x", padx=12, pady=(0, 10))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 14 — Mood Aleatorio
-        # ═══════════════════════════════════════════════════════
         def _mood_aleatorio():
             try:
                 from config import ESTILOS_IMAGEN
@@ -1684,10 +1649,7 @@ class DialogsMixin:
                       text_color="#ffffff",
                       command=_mood_aleatorio).pack(fill="x", pady=(0, 10))
 
-        # ═══════════════════════════════════════════════════════
         # FEATURE 9 — Atajos de teclado
-        # v1.0.8 — movido a columna izquierda para aprovechar espacio
-        # ═══════════════════════════════════════════════════════
         atajos_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                      border_color=card_border, border_width=1)
         atajos_frame.pack(fill="x", pady=(0, 10))
@@ -1698,49 +1660,60 @@ class DialogsMixin:
             ("Alt+1", "Modo imagen"),
             ("Alt+2", "Modo vídeo"),
             ("Alt+3", "Modo audio"),
-            ("Ctrl+?", "Mostrar todos los atajos"),
+            ("Alt+Enter", "Quick generate"),
+            ("Ctrl+1", "Copiar POSITIVE"),
+            ("Ctrl+2", "Copiar NEGATIVE"),
             ("Ctrl+D", "Duplicar al historial"),
             ("Ctrl+E", "Exportar rápido"),
             ("Ctrl+Enter", "Generar prompt"),
             ("Ctrl+F", "Búsqueda global"),
+            ("Ctrl+H", "Modo Focus"),
             ("Ctrl+I", "Ideas creativas"),
             ("Ctrl+L", "Abrir LoRAs"),
             ("Ctrl+P", "Grupo personajes"),
+            ("Ctrl+R", "Idea aleatoria"),
             ("Ctrl+S", "Guardar favorito"),
-            ("Ctrl+T", "Abrir tutorial"),
+            ("Ctrl+Shift+A", "Analizar imagen"),
             ("Ctrl+Shift+Enter", "Variaciones x3"),
+            ("Ctrl+Shift+L", "Cambiar tema"),
             ("Ctrl+Shift+N", "Negative builder"),
             ("Ctrl+Shift+P", "Previsualizar"),
             ("Ctrl+Shift+S", "Guardar estrella"),
-            ("Alt+Enter", "Quick generate ⚡"),
+            ("Ctrl+Shift+T", "Traducir idea"),
+            ("Ctrl+T", "Abrir tutorial"),
+            ("Ctrl+V", "Pegar inteligente"),
+            ("Ctrl+?", "Mostrar todos"),
             ("Escape", "Cerrar popup"),
             ("F11", "Pantalla completa"),
-        ]
-        atajos_grid = ctk.CTkFrame(atajos_frame, fg_color="transparent")
-        atajos_grid.pack(fill="x", padx=8, pady=(4, 8))
+]
+        # 3 columnas para atajos
+        atajos_cols = ctk.CTkFrame(atajos_frame, fg_color="transparent")
+        atajos_cols.pack(fill="x", padx=6, pady=(2, 6))
+        atajos_cols.grid_columnconfigure(0, weight=1)
+        atajos_cols.grid_columnconfigure(1, weight=1)
+        atajos_cols.grid_columnconfigure(2, weight=1)
 
-        # Dividir en dos columnas
-        col1 = ctk.CTkFrame(atajos_grid, fg_color="transparent")
-        col1.pack(side="left", fill="both", expand=True, padx=(4, 2))
-        col2 = ctk.CTkFrame(atajos_grid, fg_color="transparent")
-        col2.pack(side="left", fill="both", expand=True, padx=(2, 4))
+        # Dividir atajos en 3 grupos (9, 9, 10)
+        n = len(atajos)
+        tercio = (n + 2) // 3
+        grupos_atajos = [atajos[i*tercio:(i+1)*tercio] for i in range(3)]
 
-        for i, (combo, accion) in enumerate(atajos):
-            col = col1 if i % 2 == 0 else col2
-            row = ctk.CTkFrame(col, fg_color="transparent")
-            row.pack(fill="x", pady=1)
-            ctk.CTkLabel(row, text=combo,
-                         font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
-                         fg_color=card_bg_alt, corner_radius=4,
-                         text_color=accent_blue, width=90, anchor="center").pack(side="left", padx=(0, 6))
-            ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=9),
-                         fg_color="transparent", text_color=text_secondary,
-                         anchor="w").pack(side="left", fill="x", expand=True)
+        for grupo in grupos_atajos:
+            col_frame = ctk.CTkFrame(atajos_cols, fg_color="transparent")
+            col_frame.pack(side="left", fill="both", expand=True, padx=4)
+            for combo, accion in grupo:
+                row = ctk.CTkFrame(col_frame, fg_color="transparent")
+                row.pack(fill="x", pady=0)
+                ctk.CTkLabel(row, text=combo,
+                             font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
+                             fg_color=card_bg_alt, corner_radius=3,
+                             text_color=accent_blue, width=88, anchor="center").pack(side="left", padx=(0, 5))
+                ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=9),
+                             fg_color="transparent", text_color=text_secondary,
+                             anchor="w").pack(side="left", fill="x", expand=True)
         ctk.CTkLabel(atajos_frame, text="", fg_color="transparent").pack(pady=2)
 
-        # ═══════════════════════════════════════════════════════
         # FEATURES 15, 16, 17 — Mantenimiento
-        # ═══════════════════════════════════════════════════════
         mant_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                    border_color=card_border, border_width=1)
         mant_frame.pack(fill="x", pady=(0, 10))
@@ -1753,6 +1726,7 @@ class DialogsMixin:
             from config import CARPETA_APP
             base = CARPETA_APP
             total_bytes = 0
+            # Solo archivos en la raíz de la carpeta (excluye logs/ y backups/)
             for f in base.iterdir():
                 try:
                     if f.is_file():
@@ -1791,9 +1765,9 @@ class DialogsMixin:
         def _backup_ahora():
             try:
                 import time as _t
-                from pathlib import Path
-                base = Path.home() / ".gpromptstudio"
-                marker = base / "_last_autobackup.txt"
+                from config import CARPETA_APP, ARCHIVOS
+                base = CARPETA_APP
+                marker = ARCHIVOS["autobackup_marker"]
                 self._crear_backup_automatico(base, marker, _t.time())
                 self.set_estado("💾 Backup hecho", accent_green)
             except Exception as ex:
@@ -1802,11 +1776,36 @@ class DialogsMixin:
                       height=28, fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=9, weight="bold"),
                       text_color="#ffffff",
-                      command=_backup_ahora).pack(fill="x", padx=12, pady=(2, 10))
+                      command=_backup_ahora).pack(fill="x", padx=12, pady=(2, 8))
 
-        # ═══════════════════════════════════════════════════════
+        # ── TIP DEL DÍA (card separado, debajo de mantenimiento) ──
+        tips = [
+            "Usa pesos como (masterpiece:1.3) para enfatizar.",
+            "Negative: empieza con 'ugly, blurry, deformed'.",
+            "Añade 'shot on 35mm' para fotos realistas.",
+            "Especifica la hora: 'golden hour', 'blue hour'.",
+            "Incluye material: 'silk', 'chrome', 'weathered wood'.",
+            "Usa 'depth of field, f/1.4' para fondos cremosos.",
+            "Prueba composiciones diagonales para dinamismo.",
+            "Añade 'volumetric lighting' para rayos de luz.",
+            "Usa 'rule of thirds' para mejor composición.",
+            "Incluye 'color grading, teal and orange'.",
+        ]
+        day_idx = _dt.datetime.now().day
+        tip = tips[day_idx % len(tips)]
+
+        tip_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
+                                 border_color=accent_amber, border_width=2)
+        tip_frame.pack(fill="x", pady=(0, 10))
+        ctk.CTkLabel(tip_frame, text="💡 Tip del día",
+                     font=ctk.CTkFont(size=11, weight="bold"),
+                     fg_color="transparent", text_color=accent_amber).pack(anchor="w", padx=12, pady=(10, 4))
+        ctk.CTkLabel(tip_frame, text=tip,
+                     font=ctk.CTkFont(size=10, slant="italic"),
+                     fg_color="transparent", text_color=text_primary,
+                     wraplength=280, justify="left").pack(fill="x", padx=12, pady=(0, 10))
+
         # ACCIONES RÁPIDAS — Bloque inferior, ancho completo
-        # ═══════════════════════════════════════════════════════
         ctk.CTkLabel(main, text="✨ Acciones rápidas",
                      font=ctk.CTkFont(size=14, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
@@ -1843,9 +1842,7 @@ class DialogsMixin:
                                   command=_make_handler(), compound="top")
             card.grid(row=row, column=col, padx=4, pady=4, sticky="nsew")
 
-        # ═══════════════════════════════════════════════════════
         # HERRAMIENTAS — Bloque inferior
-        # ═══════════════════════════════════════════════════════
         ctk.CTkLabel(main, text="🛠 Herramientas",
                      font=ctk.CTkFont(size=14, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
@@ -1882,54 +1879,6 @@ class DialogsMixin:
                                   text_color=text_primary,
                                   command=_make_handler())
             card.grid(row=row, column=col, padx=4, pady=4, sticky="nsew")
-
-        # ═══════════════════════════════════════════════════════
-        # TIP DEL DÍA (bloque al final, full width)
-        # ═══════════════════════════════════════════════════════
-        tips = [
-            "Usa pesos como (masterpiece:1.3) para enfatizar calidad.",
-            "Negative prompt: empieza con 'ugly, blurry, deformed' como base.",
-            "Añade 'shot on 35mm' para fotos realistas.",
-            "Especifica la hora: 'golden hour', 'blue hour', 'midnight'.",
-            "Incluye material: 'silk dress', 'chrome finish', 'weathered wood'.",
-            "Usa 'depth of field, f/1.4' para fondos cremosos.",
-            "Reto: genera el mismo prompt en 2 modelos distintos.",
-            "Prueba composiciones diagonales para dinamismo.",
-            "Añade 'volumetric lighting' para rayos de luz visibles.",
-            "Usa 'rule of thirds, off-center subject' para mejor composición.",
-            "Especifica la cámara: 'Sony A7III, 85mm lens'.",
-            "Reto: genera un prompt sin usar 'beautiful' ni 'stunning'.",
-            "Añade 'atmospheric fog' para profundidad en escenas.",
-            "Prueba 'tilt-shift photography' para efecto miniatura.",
-            "Incluye 'color grading, teal and orange' para look cinematográfico.",
-        ]
-        tip = tips[day_idx % len(tips)]
-        tip_frame = ctk.CTkFrame(main, fg_color=card_bg, corner_radius=10,
-                                  border_color=accent_amber, border_width=1)
-        tip_frame.pack(fill="x", pady=(8, 4))
-        header_tip = ctk.CTkFrame(tip_frame, fg_color="transparent")
-        header_tip.pack(fill="x", padx=14, pady=(8, 2))
-        ctk.CTkLabel(header_tip, text="💡 Tip del día", font=ctk.CTkFont(size=12, weight="bold"),
-                     fg_color="transparent", text_color=accent_amber).pack(side="left")
-
-        def _copiar_tip():
-            try:
-                import pyperclip
-                pyperclip.copy(tip)
-            except Exception:
-                try:
-                    self.clipboard_clear()
-                    self.clipboard_append(tip)
-                except Exception:
-                    pass
-            self.set_estado("📋 Tip copiado", accent_green)
-        ctk.CTkButton(header_tip, text="📋", width=28, height=22,
-                      fg_color="transparent", hover_color=card_border,
-                      text_color=text_secondary, font=ctk.CTkFont(size=10),
-                      command=_copiar_tip).pack(side="right")
-        ctk.CTkLabel(tip_frame, text=f'   {tip}', font=ctk.CTkFont(size=10, slant="italic"),
-                     fg_color="transparent", text_color=text_secondary,
-                     wraplength=860, anchor="w", justify="left").pack(fill="x", padx=14, pady=(0, 8))
 
         # Botón cerrar al final
         ctk.CTkButton(main, text="🚪 Cerrar Dashboard", width=180, height=34,

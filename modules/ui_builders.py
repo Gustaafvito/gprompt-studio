@@ -89,7 +89,6 @@ def _get_real_is_light() -> bool:
 
 try:
     from CTkToolTip import CTkToolTip
-    # v1.0.8 — el monkey-patch para mensajes None vive en main.py
     # (se aplica al inicio para que cualquier importador lo aproveche).
 except ImportError:
     class CTkToolTip:
@@ -401,7 +400,6 @@ class UIBuildersMixin:
         sw_style = {
             "font": ctk.CTkFont(size=11, weight="bold"),
             "height": 26, "width": 50, "corner_radius": 13,
-            # v1.0.8 — bolita oscura en light, clara en dark
             "button_color": "#374151" if is_light else "#ffffff",
             "button_hover_color": "#1f2937" if is_light else "#f3f4f6",
             "border_width": 2,
@@ -454,12 +452,10 @@ class UIBuildersMixin:
         self._on_modo_cambio()
 
     def _build_video_panel(self):
-        # v1.0.2 — text_color en labels
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
         lbl_color = c["panel_text"]
 
-        # v1.0.8: fg_color explícito para que _apply_theme_colors pueda repintarlo
         self.frame_video = ctk.CTkFrame(self, height=42, fg_color=c["panel_bg"])
         self.frame_video.pack_propagate(False)
 
@@ -498,7 +494,6 @@ class UIBuildersMixin:
         c = get_theme_colors(is_light)
         lbl_color = c["panel_text"]
 
-        # v1.0.8: fg_color explícito para que _apply_theme_colors pueda repintarlo
         self.frame_audio = ctk.CTkFrame(self, fg_color=c["panel_bg"])
 
         # Fila 1: Modelo + Destino + Instrumental
@@ -569,7 +564,6 @@ class UIBuildersMixin:
         self.combo_idioma_audio.pack(side="left", padx=(0, 5))
 
     def _build_modelo_imagen_panel(self):
-        # v1.0.2 — colores adaptativos para los labels "Modelo / Ratio / Destino"
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
         lbl_color = c["panel_label"]
@@ -686,7 +680,6 @@ class UIBuildersMixin:
         self.reiniciar_memoria()
 
     def _build_tabs_centrales(self):
-        # v1.0.4: forzar fg_color del tabview según tema porque CustomTkinter
         # no lo pinta bien en modo light si lo dejamos sin especificar
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
@@ -735,7 +728,6 @@ class UIBuildersMixin:
             text_color=c["muted_text"], font=ctk.CTkFont(size=12, slant="italic"))
 
     def _build_ajustes_extra(self, parent):
-        # v1.0.2 — colores adaptativos
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
         tab_bg = c["panel_bg"]
@@ -859,12 +851,10 @@ class UIBuildersMixin:
         self._MAX_IMG_HISTORY = 6
 
     def _build_estilos(self, parent):
-        # v1.0.2 — colores explícitos según tema para garantizar contraste
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
         tab_bg = c["panel_bg"]
 
-        # v1.0.8: guardar como self.* para que _apply_theme_colors pueda repintarlo
         self._frame_estilos_header = ctk.CTkFrame(parent, fg_color=tab_bg)
         self._frame_estilos_header.pack(fill="x", padx=5, pady=(0, 2))
         header_estilos = self._frame_estilos_header  # alias para legibilidad
@@ -897,7 +887,6 @@ class UIBuildersMixin:
         btn_limpiar_est.pack(side="right", padx=(0, 5))
         CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
 
-        # v1.0.2 — fg_color EXPLÍCITO en lugar de "transparent" para evitar
         # que en modo light termine pintando blanco-sobre-blanco.
         self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"])
         self.frame_checks.pack(fill="both", expand=True, padx=5, pady=2)
@@ -941,12 +930,10 @@ class UIBuildersMixin:
                 self.lbl_estilos_sel.configure(text=f"✦ {' + '.join(sel)}")
 
     def _build_negative(self, parent):
-        # v1.0.2 — colores adaptativos
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
         tab_bg = c["panel_bg"]
 
-        # v1.0.8: guardar como self.* para que _apply_theme_colors pueda repintarlos
         self._frame_neg_header = ctk.CTkFrame(parent, fg_color=tab_bg)
         self._frame_neg_header.pack(fill="x", pady=(0, 2))
         hdr = self._frame_neg_header  # alias
@@ -1505,7 +1492,6 @@ class UIBuildersMixin:
             menu.grab_release()
 
     def _construir_checkboxes(self, lista):
-        # v1.0.2 — colores explícitos según tema
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
 
@@ -1524,7 +1510,6 @@ class UIBuildersMixin:
                                  command=self._on_estilo_cambio,
                                  font=ctk.CTkFont(size=10),
                                  checkbox_width=16, checkbox_height=16,
-                                 # v1.0.2 — colores explícitos
                                  text_color=c["chk_text"],
                                  hover_color=c["accent_text"],
                                  border_color=c["chk_border"],

@@ -383,6 +383,14 @@ class DataMgmtMixin:
             preview = expansion[:60] + ("…" if len(expansion) > 60 else "")
             ctk.CTkLabel(row, text=preview, font=ctk.CTkFont(size=10),
                          text_color=c["muted_text"], anchor="w").pack(side="left", fill="x", expand=True)
+
+            # Botón Copiar — disponible en TODOS los snippets (custom y predefinidos)
+            def _copiar(e=expansion, t=trigger):
+                pyperclip.copy(e)
+                self.set_estado(f"📋 Snippet ;{t} copiado al portapapeles", "#2ecc71")
+            ctk.CTkButton(row, text="📋", width=30, height=24, fg_color=c["fg_frame"],
+                          hover_color=c["fg_dark_hover"], command=_copiar).pack(side="right", padx=2, pady=4)
+
             if custom:
                 def _editar(t=trigger, e=expansion):
                     ent_trigger.delete(0, "end"); ent_trigger.insert(0, t)
@@ -1225,7 +1233,6 @@ class DataMgmtMixin:
             pass
 
     def _guardar_preferencias(self):
-        # v1.0.8 — Fusionar con prefs existentes para no perder claves
         # como `nombre` que no se gestionan en este método.
         try:
             prefs = self.store.cargar_preferencias() or {}

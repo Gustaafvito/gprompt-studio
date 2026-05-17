@@ -27,17 +27,41 @@ class ToolsAnalysisMixin:
         if self._modo_educativo_activo:
             vent = ctk.CTkToplevel(self)
             vent.title("📖 Modo educativo — Glosario")
-            vent.geometry("750x600")
+            vent.geometry("800x680")
             vent.transient(self)
             ctk.CTkLabel(vent, text="📖 Glosario de términos AI",
                          font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-            ctk.CTkLabel(vent, text="Aprende qué significa cada término de prompts AI",
-                         font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
+            ctk.CTkLabel(vent, text="Aprende qué significa cada término — busca para filtrar",
+                         font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 6))
+
+            search_frame = ctk.CTkFrame(vent, fg_color="transparent")
+            search_frame.pack(fill="x", padx=15, pady=(0, 4))
+            search_entry = ctk.CTkEntry(search_frame, placeholder_text="🔍 Busca un término...",
+                                        height=30, font=ctk.CTkFont(size=11))
+            search_entry.pack(fill="x")
 
             scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
+            def _mostrar_glosario(filtro=""):
+                for w in scroll.winfo_children():
+                    w.destroy()
+                filtro = filtro.lower()
+                for titulo, desc in glosario:
+                    if filtro and filtro not in titulo.lower() and filtro not in desc.lower():
+                        continue
+                    card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=8)
+                    card.pack(fill="x", pady=3)
+                    ctk.CTkLabel(card, text=titulo, font=ctk.CTkFont(size=11, weight="bold"),
+                                 text_color="#aaccee").pack(anchor="w", padx=12, pady=(6, 2))
+                    ctk.CTkLabel(card, text=desc, font=ctk.CTkFont(size=10),
+                                 text_color="#888888", wraplength=730, anchor="w",
+                                 justify="left").pack(fill="x", padx=12, pady=(0, 6))
+
+            search_entry.bind("<KeyRelease>", lambda e: _mostrar_glosario(search_entry.get()))
+
             glosario = [
+                # ── Básicos ────────────────────────────────
                 ("📐 ¿Qué es un PROMPT?",
                  "El prompt es la descripción en texto que le das al modelo IA para que genere una imagen, vídeo o audio. Cuanto más específico, mejor resultado."),
                 ("🟢 POSITIVE PROMPT",
@@ -46,6 +70,8 @@ class ToolsAnalysisMixin:
                  "Lo que NO quieres: artefactos, texto, deformaciones, estilo equivocado. Solo algunos modelos lo soportan."),
                 ("🏷 TAGS vs LENGUAJE NATURAL",
                  "Tags = palabras clave separadas por comas (estilo Stable Diffusion). Natural = frases descriptivas (estilo Midjourney/GPT)."),
+
+                # ── Pesos y parámetros ─────────────────────
                 ("⚖️ PESOS NUMÉRICOS — (tag:1.2)",
                  "Aumentan la importancia de un tag. (tag:1.5) refuerza, (tag:0.7) reduce. Solo en modelos Stable Diffusion."),
                 ("🎯 CFG (Classifier-Free Guidance)",
@@ -55,19 +81,81 @@ class ToolsAnalysisMixin:
                 ("🌐 LENGUAJE NATURAL",
                  "Modelos como Midjourney, GPT Image, FLUX entienden frases completas. NO uses tags ni pesos numéricos en estos."),
                 ("📐 RATIO / ASPECT RATIO",
-                 "Proporción de la imagen. 1:1 = cuadrado (Instagram), 16:9 = horizontal (YouTube), 9:16 = vertical (TikTok/Stories)."),
+                 "Proporción de la imagen. 1:1 = cuadrado, 16:9 = horizontal, 9:16 = vertical, 2:3 = retrato, 21:9 = cine."),
                 ("🎨 SAMPLER",
                  "Algoritmo que decide cómo el modelo va creando la imagen. Euler = rápido, DPM++ = balanceado, Karras = alta calidad."),
                 ("🔢 STEPS / PASOS",
                  "Cuántas iteraciones hace el modelo. Más pasos = más detalle pero más lento. Turbo: 4-8, Estándar: 20-30, HQ: 50+."),
                 ("🌱 SEED / SEMILLA",
-                 "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar."),
+                 "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar y comparar."),
+                ("🎯 TRIGGER WORDS",
+                 "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt."),
                 ("✨ MASTERPIECE / 8K / DETAILED",
                  "Tags 'mágicos' que mejoran calidad en SD. Cuidado: usarlos demasiado los degrada. 1-2 al final del prompt es suficiente."),
                 ("👤 LORA",
                  "Modelo pequeño que se 'enchufa' al modelo principal para añadir un estilo, personaje o concepto específico."),
-                ("🎯 TRIGGER WORDS",
-                 "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt."),
+
+                # ── Calidad y estilos ───────────────────────
+                ("📸 DEPTH OF FIELD / BOKEH",
+                 "Efecto de enfoque selectivo: sujeto nítido, fondo difuminado. Tags: 'depth of field', 'bokeh', 'f/1.4', 'background blur'."),
+                ("💡 LIGHTING / ILUMINACIÓN",
+                 "Tipo de luz en la escena. 'Golden hour', 'blue hour', 'rim lighting', 'volumetric lighting', 'neon glow', 'soft diffused'."),
+                ("🎬 SHOT / PLANO",
+                 "Tipo de encuadre: 'wide shot', 'close-up', 'medium shot', 'extreme close-up', 'aerial view', 'dutch angle'."),
+                ("🖼️ ESTILOS ARTÍSTICOS",
+                 "'Cyberpunk', 'Art Nouveau', 'Art Deco', 'Baroque', 'Impressionist', 'Photorealistic', 'Anime', 'Synthwave', 'Solarpunk'."),
+                ("🔲 CLIP SKIP",
+                 "Parámetro que controla hasta qué capa de red neuronal se usa. 1 = todo, 2 = menos detalle (más artístico). En Anime: 2, Realismo: 1."),
+                ("🧬 GUIDANCE SCALE / GUIDANCE",
+                 "Similar al CFG pero en modelos FLUX. Controla adherencia al prompt. Valores típicos: 1-3 (turbo), 3.5-7.5 (estándar)."),
+
+                # ── Herramientas de G-Prompt Studio ──────────
+                ("📊 SCORING",
+                 "Evalúa la calidad de tu prompt en 4 categorías (25 pts c/u): Claridad del sujeto, Detalle de estilo, Composición y cámara, Calidad y atmósfera. Verde ≥80%, amarillo 50-79%, rojo <50%. Sugiere mejoras automáticamente."),
+                ("🧬 ADN VISUAL",
+                 "Extrae la 'huella genética' de una imagen en JSON estructurado: sujeto, escena, iluminación, cámara, estilo, composición, atmósfera, datos técnicos. Sirve para replicar el estilo en otras imágenes."),
+                ("🔍 ANÁLISIS INVERSO",
+                 "Compara una imagen cargada con tu prompt actual. Muestra: % de coincidencia, elementos que coinciden, elementos que faltan en tu prompt, elementos extra que no pediste. Ideal para mejorar prompts."),
+                ("⚡ QUICK GENERATE",
+                 "Generación ultra-rápida usando modelos turbo. Ideal para iterar ideas sin esperar. Solo funciona con modelos marcados como 'Turbo' en la config."),
+                ("🔄 VARIACIONES",
+                 "Genera 3 variantes del prompt actual: una más concisa, una más descriptiva, una con enfoque diferente. Útil para explorar direcciones creativas."),
+                ("🎯 AUTO-MEJORAR",
+                 "Revisa tus últimos 10 prompts del historial y para cada uno sugiere: qué está bien, qué mejorar, versión mejorada. Te ayuda a identificar patrones de mejora."),
+                ("📋 CRÍTICA DE HISTORIAL",
+                 "El LLM analiza tus últimos 30 prompts y te cuenta: qué tipo de contenido generas, qué modelos/plataformas prefieres, qué estilos usas más, qué podrías explorar más."),
+                ("💎 SEMILLAS / SEEDS FAVORITOS",
+                 "Guarda seeds que te gustaron para reutilizarlas. Al aplicar una seed, se cargan automáticamente: modelo, plataforma, sampler, steps, CFG, clip skip y resol. Ideales para mantener coherencia visual en una serie."),
+                ("📐 PLANTILLAS",
+                 "Estructuras predefinidas de prompts con variables (sujeto, entorno, estilo). Permiten generar prompts completos rellenando solo lo que cambia. Las hay por modo (imagen/vídeo/audio) y por estilo."),
+                ("🔄 MACROS",
+                 "Atajos que insertan bloques de texto predefinidos. Ej:插入 un negative preset, una fórmula de iluminación, una estructura de cámara. Se usan con botones rápidos o atajos de teclado."),
+                ("🏷️ SNIPPETS",
+                 "Fragmentos pequeños reutilizables: tags de calidad (8k, intricate), configuraciones de cámara, luces, estilos. Se insertan con un clic o atajo de teclado."),
+                ("📐 FÓRMULAS",
+                 "Combinaciones de variables + lógica predefinida que generan prompts estructurados. Ej: 'Retrato [adjetivo] + [sujeto] + [entorno] + [estilo] + [iluminación]'."),
+                ("🧑 PERSONAJES",
+                 "Guarda personajes con nombre, descripción y notas. Se insertan en prompts para mantener consistencia en series de imágenes. Incluye LoRA asociado si lo tiene."),
+                ("⚡ BATCH / LOTE",
+                 "Genera múltiples prompts a la vez usando una lista o patrón. Ideal para crear series de variaciones o preparar contenido para catálogos."),
+                ("🎯 FOCUS MODE",
+                 "Oculta elementos de UI para que te concentres solo en escribir. Solo muestra: idea, salida, botón generar. Perfecto para sesiones de escritura intensa."),
+                ("🌟 PROMPTS ESTRELLA",
+                 "Tus mejores prompts, guardados con nota (1-10) y modelo usado. Marcalos como favoritos para acceder rápido y comparar qué hace a un prompt excelente."),
+
+                # ── Conceptos avanzados ─────────────────────
+                ("🔁.img2img / IMAGE TO IMAGE",
+                 "Técnica que parte de una imagen existente (no generada por IA) y la transforma. En Stable Diffusion: carga imagen → ajusta prompt → genera. Produce resultados más controlables."),
+                ("📦 CONTROLNET",
+                 "Modelo adicional que controla la composición de la imagen mediante mapas (poses, bordes, profundidad). Permite especificar exactamente dónde va cada elemento."),
+                ("🎨 STYLE PROMPT / STYLE REFERENCE",
+                 "Referencia de estilo que indica al modelo qué tipo de arte imitar. En Midjourney: '--style', en DALL-E: 'style: photography/painting/3d'."),
+                ("🔢 RESOLUTION / UPSCALE",
+                 "Resolución de salida. 512x512 = rápido, 1024x1024 = estándar, 2048+ = alta calidad. Upscaling posterior mejora detalles sin aumentar tiempo de generación."),
+                ("🎭 CHAOS / VARIETY",
+                 "Parámetro (Midjourney) que controla cuánto se desvía el resultado del prompt. Bajo = fiel, alto = inesperado. Ideal para explorar."),
+                ("🌊 PROMPT WEIGHTING AVANZADO",
+                 "En FLUX puedes usar :: para separar pesos: 'rojo::1.5 azul::0.5 verde'. En SD: (tag:1.3)(tag:0.8). En Midjourney: ::0.5 después de la palabra."),
             ]
 
             for titulo, desc in glosario:
@@ -91,7 +179,6 @@ class ToolsAnalysisMixin:
         self.set_estado("🔍 Analizando tus ideas y patrones de uso...", "#f39c12")
 
         ultimos = items[:30]
-        from collections import Counter
         modelos_usados = Counter()
         plataformas_usadas = Counter()
         modos_usados = Counter()
@@ -110,7 +197,6 @@ class ToolsAnalysisMixin:
                         if e: estilos_usados[e] += 1
                 contenido = it.get("contenido", "")
                 if contenido:
-                    import re
                     m = re.search(r'POSITIVE\s+PROMPT\s*:\s*([^,\n]+)', contenido, re.IGNORECASE)
                     if m:
                         temas.append(m.group(1).strip()[:80])
@@ -164,9 +250,35 @@ class ToolsAnalysisMixin:
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", resp)
-                    txt.configure(state="disabled")
-                    ctk.CTkButton(vent, text="📋 Copiar análisis", width=140, height=28,
-                                  command=lambda: pyperclip.copy(resp)).pack(pady=10)
+                    # Mantener editable para permitir seleccionar texto con el ratón
+                    # (con state="disabled" no se puede seleccionar)
+
+                    # Fila de botones
+                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
+                    btn_row.pack(pady=10)
+
+                    def _copiar_todo():
+                        pyperclip.copy(resp)
+                        self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+
+                    def _copiar_seleccion():
+                        try:
+                            sel = txt.get("sel.first", "sel.last")
+                            if sel:
+                                pyperclip.copy(sel)
+                                self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+                        except Exception:
+                            self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
+
+                    ctk.CTkButton(btn_row, text="📋 Copiar todo", width=140, height=30,
+                                  fg_color="#1a7a3c", hover_color="#145e2d",
+                                  command=_copiar_todo).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="📋 Copiar selección", width=160, height=30,
+                                  command=_copiar_seleccion).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
+                                  fg_color="#444", hover_color="#555",
+                                  command=vent.destroy).pack(side="left", padx=4)
+
                     self.set_estado("🔍 Análisis listo", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
@@ -214,9 +326,33 @@ class ToolsAnalysisMixin:
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", resp)
-                    txt.configure(state="disabled")
-                    ctk.CTkButton(vent, text="📋 Copiar mejoras", width=140, height=28,
-                                  command=lambda: pyperclip.copy(resp)).pack(pady=10)
+                    # Editable para permitir seleccionar texto
+
+                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
+                    btn_row.pack(pady=10)
+
+                    def _copiar_todo():
+                        pyperclip.copy(resp)
+                        self.set_estado("📋 Mejoras copiadas al portapapeles", "#2ecc71")
+
+                    def _copiar_seleccion():
+                        try:
+                            sel = txt.get("sel.first", "sel.last")
+                            if sel:
+                                pyperclip.copy(sel)
+                                self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+                        except Exception:
+                            self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
+
+                    ctk.CTkButton(btn_row, text="📋 Copiar todo", width=140, height=30,
+                                  fg_color="#1a7a3c", hover_color="#145e2d",
+                                  command=_copiar_todo).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="📋 Copiar selección", width=160, height=30,
+                                  command=_copiar_seleccion).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
+                                  fg_color="#444", hover_color="#555",
+                                  command=vent.destroy).pack(side="left", padx=4)
+
                     self.set_estado("🚀 Auto-mejora lista", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
@@ -225,8 +361,9 @@ class ToolsAnalysisMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _abrir_estadisticas(self):
-        """Ventana con estadísticas de uso: prompts generados, modelos más usados, etc."""
+        """Ventana con estadísticas detalladas de uso."""
         import tkinter as tk
+        from collections import Counter
         prefs = self.store.cargar_preferencias()
         hist = self.store.historial or []
         favs = self.store.favoritos or []
@@ -234,64 +371,192 @@ class ToolsAnalysisMixin:
         seeds = prefs.get("seeds_favoritos", [])
 
         vent = ctk.CTkToplevel(self)
-        vent.title("📈 Estadísticas de uso")
-        vent.geometry("700x550")
+        vent.title("📈 Estadísticas detalladas")
+        vent.geometry("750x700")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="📈 Estadísticas", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
-        ctk.CTkLabel(vent, text=f"Desde {hist[-1].get('fecha', 'inicio') if hist else '—'} hasta {hist[0].get('fecha', 'hoy') if hist else '—'}",
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 15))
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c_bg = "#0d1117" if not is_lt else "#f0f0f0"
+        c_card = "#161b22" if not is_lt else "#ffffff"
+        c_text = "#e6edf3" if not is_lt else "#24292f"
+        c_muted = "#7d8590" if not is_lt else "#656d76"
+        c_accent = "#58a6ff" if not is_lt else "#0969da"
 
-        stats = [
-            ("📋 Prompts en historial", str(len(hist))),
-            ("⭐ Favoritos", str(len(favs))),
-            ("🌟 Estrellas", str(len(stars))),
-            ("💎 Seeds guardados", str(len(seeds))),
-            ("🧑 Personajes", str(len(self.store.personajes or []))),
-            ("🔗 LoRAs", str(len(self.store.loras or []))),
-            ("🏷️ Snippets", str(len(prefs.get("snippets", [])))),
-            ("📐 Fórmulas", str(len(prefs.get("formulas", [])))),
-            ("📑 Plantillas", str(len(prefs.get("plantillas", [])))),
+        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=10, pady=5)
+
+        ctk.CTkLabel(scroll, text="📈 Estadísticas detalladas", font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=c_text).pack(pady=(10, 5))
+
+        # Rango de fechas
+        if hist:
+            fechas = [h.get("fecha", "") for h in hist if h.get("fecha")]
+            rango = f"{fechas[-1] if fechas else '—'} → {fechas[0] if fechas else '—'}"
+            ctk.CTkLabel(scroll, text=f"📅 {rango} · {len(hist)} prompts totales", font=ctk.CTkFont(size=10),
+                         text_color=c_muted).pack(pady=(0, 15))
+
+        def _card(parent, label, valor, color="#3498db"):
+            card = ctk.CTkFrame(parent, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
+            card.pack(fill="x", pady=3, padx=2)
+            ctk.CTkLabel(card, text=valor, font=ctk.CTkFont(size=24, weight="bold"), text_color=color).pack(pady=(10, 2))
+            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=10), text_color=c_muted).pack(pady=(0, 10))
+
+        def _seccion(parent, titulo):
+            ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=13, weight="bold"), text_color=c_accent).pack(pady=(15, 8), anchor="w", padx=5)
+
+        def _barra(parent, texto, count, max_val, color="#58a6ff"):
+            bar_frame = ctk.CTkFrame(parent, fg_color=c_card, corner_radius=6)
+            bar_frame.pack(fill="x", pady=2, padx=2)
+            pct = int(count / max_val * 100) if max_val else 0
+            ctk.CTkLabel(bar_frame, text=f"  {texto}", font=ctk.CTkFont(size=10), text_color=c_text, anchor="w").pack(side="left", padx=5, pady=5)
+            barra = ctk.CTkProgressBar(bar_frame, width=150, height=6, progress_color=color)
+            barra.pack(side="left", padx=(5, 5), pady=5)
+            barra.set(pct / 100)
+            ctk.CTkLabel(bar_frame, text=f"{count}x ({pct}%)", font=ctk.CTkFont(size=9), text_color=c_muted).pack(side="right", padx=(0, 8))
+
+        # ── Stats generales ──
+        _seccion(scroll, "📊 Colecciones")
+        grid = ctk.CTkFrame(scroll, fg_color="transparent")
+        grid.pack(fill="x", padx=5)
+        stats_gen = [
+            ("📋 Historial", len(hist), "#3498db"),
+            ("⭐ Favoritos", len(favs), "#f1c40f"),
+            ("🌟 Estrellas", len(stars), "#e74c3c"),
+            ("💎 Seeds", len(seeds), "#9b59b6"),
+            ("🧑 Personajes", len(self.store.personajes or []), "#2ecc71"),
+            ("🔗 LoRAs", len(self.store.loras or []), "#e67e22"),
+            ("🏷️ Snippets", len(prefs.get("snippets", [])), "#1abc9c"),
+            ("📐 Fórmulas", len(prefs.get("formulas", [])), "#e91e63"),
+            ("🧬 ADNs", len(prefs.get("adns_guardados", [])), "#00bcd4"),
         ]
-
-        # Grid de stats
-        grid = ctk.CTkFrame(vent, fg_color="transparent")
-        grid.pack(fill="x", padx=20, pady=10)
-        for i, (label, val) in enumerate(stats):
+        for i, (label, val, color) in enumerate(stats_gen):
             col, row = i % 3, i // 3
-            card = ctk.CTkFrame(grid, fg_color="#111820", corner_radius=10, border_color="#1e2d3d", border_width=1)
-            card.grid(row=row, column=col, padx=8, pady=6, sticky="nsew")
-            ctk.CTkLabel(card, text=val, font=ctk.CTkFont(size=22, weight="bold"),
-                         text_color="#3498db").pack(pady=(12, 2))
-            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=10),
-                         text_color="#888888").pack(pady=(0, 10))
-
+            card = ctk.CTkFrame(grid, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
+            card.grid(row=row, column=col, padx=5, pady=4, sticky="nsew")
+            ctk.CTkLabel(card, text=str(val), font=ctk.CTkFont(size=20, weight="bold"), text_color=color).pack(pady=(8, 2))
+            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=9), text_color=c_muted).pack(pady=(0, 8))
         for c in range(3):
             grid.grid_columnconfigure(c, weight=1)
 
-        # Modelos más usados
+        # ── Modelos más usados ──
         if hist:
-            from collections import Counter
             modelos = Counter()
-            for it in hist:
-                if isinstance(it, dict) and it.get("modelo"):
-                    modelos[it["modelo"]] += 1
-            top = modelos.most_common(5)
-            if top:
-                ctk.CTkLabel(vent, text="🏆 Top modelos usados", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 8))
-                for i, (modelo, count) in enumerate(top, 1):
-                    bar = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=6)
-                    bar.pack(fill="x", padx=20, pady=2)
-                    pct = int(count / len(hist) * 100)
-                    ctk.CTkLabel(bar, text=f"{i}. {modelo}", font=ctk.CTkFont(size=10, weight="bold"),
-                                 text_color="#aaccee", width=140, anchor="w").pack(side="left", padx=8, pady=4)
-                    barra_pct = ctk.CTkProgressBar(bar, width=300, height=8)
-                    barra_pct.pack(side="left", padx=(10, 5), pady=4)
-                    barra_pct.set(pct / 100)
-                    ctk.CTkLabel(bar, text=f"{count}x ({pct}%)", font=ctk.CTkFont(size=9),
-                                 text_color="#888888").pack(side="left", padx=(0, 8))
+            plataformas = Counter()
+            ratios = Counter()
+            estilos_count = Counter()
+            largos = []
 
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30, command=vent.destroy).pack(pady=15)
+            for it in hist:
+                if isinstance(it, dict):
+                    m = it.get("modelo", "")
+                    if m: modelos[m] += 1
+                    p = it.get("plataforma", "")
+                    if p: plataformas[p] += 1
+                    r = it.get("ratio", "")
+                    if r: ratios[r] += 1
+                    est = it.get("estilos", [])
+                    if est:
+                        for e in est: estilos_count[e] += 1
+                    contenido = it.get("contenido", "")
+                    if contenido:
+                        count_w = len(str(contenido).split())
+                        largos.append(count_w)
+
+            if modelos:
+                _seccion(scroll, "🏆 Top Modelos usados")
+                top_m = modelos.most_common(8)
+                max_m = top_m[0][1] if top_m else 1
+                for modelo, count in top_m:
+                    _barra(scroll, modelo, count, max_m, "#58a6ff")
+
+            if plataformas:
+                _seccion(scroll, "🌐 Top Plataformas")
+                top_p = plataformas.most_common(6)
+                max_p = top_p[0][1] if top_p else 1
+                for plat, count in top_p:
+                    _barra(scroll, plat, count, max_p, "#3fb950")
+
+            if ratios:
+                _seccion(scroll, "📐 Ratios más usados")
+                top_r = ratios.most_common(8)
+                max_r = top_r[0][1] if top_r else 1
+                for ratio, count in top_r:
+                    _barra(scroll, ratio, count, max_r, "#f78166")
+
+            if estilos_count:
+                pass  # omitido por ser redundante con la UI de estilos
+
+            if largos:
+                _seccion(scroll, "📏 Longitud de prompts")
+                media = sum(largos) // len(largos)
+                minimo = min(largos)
+                maximo = max(largos)
+                info_largos = ctk.CTkFrame(scroll, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
+                info_largos.pack(fill="x", pady=5, padx=2)
+                ctk.CTkLabel(info_largos, text=f"📊 Media: ~{media} palabras  ·  Mín: {minimo}  ·  Máx: {maximo}",
+                             font=ctk.CTkFont(size=11), text_color=c_accent).pack(padx=10, pady=10)
+
+        # ── Actividad por período ──
+        if hist:
+            from collections import defaultdict
+            meses = defaultdict(int)
+            dias = defaultdict(int)
+            for it in hist:
+                fecha = it.get("fecha", "")
+                if fecha:
+                    mes = fecha[:7] if len(fecha) >= 7 else "??"
+                    dia = fecha[:10] if len(fecha) >= 10 else "??"
+                    meses[mes] += 1
+                    dias[dia] += 1
+
+            if meses:
+                _seccion(scroll, "📅 Prompts por mes")
+                top_mes = sorted(meses.items(), reverse=True)[:12]
+                max_mes = max(v for _, v in top_mes) if top_mes else 1
+                for mes, count in top_mes:
+                    _barra(scroll, mes, count, max_mes, "#ffa657")
+
+        # ── Top seeds aplicados ──
+        if seeds:
+            _seccion(scroll, "💎 Seeds más usados (historial)")
+            seed_usage = Counter()
+            for it in hist:
+                sn = it.get("seed_nombre", "")
+                if sn: seed_usage[sn] += 1
+            if seed_usage:
+                top_s = seed_usage.most_common(5)
+                max_s = top_s[0][1] if top_s else 1
+                for nombre, count in top_s:
+                    _barra(scroll, nombre, count, max_s, "#9b59b6")
+            else:
+                ctk.CTkLabel(scroll, text="  Sin datos de uso aún (se registra al aplicar seed)", font=ctk.CTkFont(size=10), text_color=c_muted).pack(anchor="w", padx=10)
+
+        # ── Exportar CSV ──
+        def _exportar_csv():
+            import csv
+            from tkinter import filedialog
+            path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV", "*.csv")], parent=vent)
+            if not path: return
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                w = csv.writer(f)
+                w.writerow(["Fecha", "Modelo", "Plataforma", "Ratio", "Estilos", "Longitud"])
+                for it in (hist or []):
+                    est = it.get("estilos", [])
+                    cont = it.get("contenido", "")
+                    w.writerow([
+                        it.get("fecha", ""),
+                        it.get("modelo", ""),
+                        it.get("plataforma", ""),
+                        it.get("ratio", ""),
+                        ", ".join(est) if est else "",
+                        len(str(cont).split()) if cont else 0
+                    ])
+            self.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
+
+        ctk.CTkButton(scroll, text="📊 Exportar CSV", width=180, height=32, fg_color="#1a7a3c",
+                      command=_exportar_csv).pack(pady=15)
+
+        ctk.CTkButton(vent, text="Cerrar", width=120, height=30, command=vent.destroy).pack(pady=8)
 
     def _cmd_scoring(self):
         """Puntúa el prompt actual y genera versión mejorada.
@@ -482,13 +747,19 @@ class ToolsAnalysisMixin:
                                               wrap="word", height=160)
                         txt.pack(fill="both", expand=True, padx=4, pady=4)
                         txt.insert("1.0", resp)
-                        txt.configure(state="disabled")
+                        # Editable para permitir seleccionar texto
 
                     # ── Botones ─────────────────────────────────────
                     btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_frame.pack(pady=10)
+
+                    def _copiar_analisis():
+                        pyperclip.copy(resp)
+                        self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+
                     ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=30,
-                                  command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
+                                  fg_color="#1a7a3c", hover_color="#145e2d",
+                                  command=_copiar_analisis).pack(side="left", padx=4)
 
                     def _generar_mejorado():
                         self.set_estado("✨ Generando versión mejorada...", "#f39c12")
@@ -833,7 +1104,7 @@ class ToolsAnalysisMixin:
                              text_color=c.get("entry_text", "#111827" if is_lt else "#e5e7eb"),
                              border_color=c.get("entry_border", "#9ca3af" if is_lt else "#2a2a3e"))
         txt.insert("1.0", texto)
-        txt.configure(state="disabled")
+        # Editable para permitir seleccionar texto con el ratón
         txt.pack(fill="both", expand=True, pady=(0, 10))
 
         frame_btn = ctk.CTkFrame(marco, fg_color="transparent")

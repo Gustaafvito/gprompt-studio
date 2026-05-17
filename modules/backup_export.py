@@ -135,15 +135,14 @@ class BackupExportMixin:
     def _cmd_export_cli(self):
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.
 
-        v1.0: ampliado de 2 a 10 formatos:
+        15 formatos disponibles:
         - Midjourney v6+, Niji 6
-        - Grok / X (formato simple)
-        - DALL-E 3 (sin tags negativas)
-        - Leonardo.AI
-        - Ideogram
-        - ComfyUI (texto plano)
-        - Automatic1111 / WebUI (con (parens:1.2))
+        - FLUX Dev, FLUX Schnell
+        - Grok / X, DALL-E 3, Leonardo.AI, Ideogram
+        - ComfyUI, Automatic1111 / WebUI
         - Stable Diffusion (tags limpios)
+        - Kling, Seedance (vídeo)
+        - Suno (audio)
         - JSON genérico (para automatización)
         """
         import re
@@ -160,21 +159,30 @@ class BackupExportMixin:
         pos_sin_pesos = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', pos).strip().rstrip(",").strip()
         pos_con_pesos = pos.strip().rstrip(",").strip()
         neg_sin_pesos = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', neg).strip()
+        neg_texto = neg.strip()
+
+        # Negativo limpio para CLI (limitado a 6 tags principales)
+        if neg_sin_pesos:
+            neg_cli = ", ".join([t.strip() for t in neg_sin_pesos.split(",")[:6] if t.strip()])
+        else:
+            neg_cli = ""
 
         # ── Construir cada formato ───────────────────────────────────
 
         # Midjourney v6+
         mj = pos_sin_pesos + f" --ar {ratio}"
-        if neg_sin_pesos:
-            neg_main = ", ".join([t.strip() for t in neg_sin_pesos.split(",")[:6] if t.strip()])
-            if neg_main:
-                mj += f" --no {neg_main}"
+        if neg_cli:
+            mj += f" --no {neg_cli}"
         mj += " --stylize 250 --quality 1 --v 6"
 
-        # Niji 6 (anime)
+        # Niji 6 (anime) — Bug fix: ahora usa neg_cli directamente
         niji = pos_sin_pesos + f" --ar {ratio} --niji 6 --stylize 180"
-        if neg_sin_pesos:
-            niji += f" --no {neg_main if 'neg_main' in dir() else neg_sin_pesos[:80]}"
+        if neg_cli:
+            niji += f" --no {neg_cli}"
+
+        # FLUX formats
+        flux_dev = pos_sin_pesos
+        flux_schnell = pos_sin_pesos
 
         # Grok / X (texto plano sin flags)
         grok = pos_sin_pesos
@@ -198,8 +206,8 @@ class BackupExportMixin:
 
         # Automatic1111 / WebUI (con pesos preservados)
         a1111 = pos_con_pesos
-        if neg:
-            a1111 += f"\n\nNegative prompt: {neg}"
+        if neg_texto:
+            a1111 += f"\n\nNegative prompt: {neg_texto}"
         a1111 += f"\nSampler: DPM++ 2M Karras, Steps: 25, CFG: 7, Aspect: {ratio}"
 
         # Stable Diffusion / SDXL genérico (tags limpios sin pesos)
@@ -207,12 +215,39 @@ class BackupExportMixin:
         if neg_sin_pesos:
             sd += f"\nNEG: {neg_sin_pesos}"
 
+        # Video: Kling
+        kling_prompt = pos_sin_pesos
+        kling_neg = neg_sin_pesos
+
+        # Video: Seedance
+        seedance_prompt = pos_sin_pesos
+        seedance_neg = neg_sin_pesos
+
+        # Audio: Suno
+        suno_prompt = pos_sin_pesos
+
         # JSON genérico (para automatización / API)
         json_payload = _json.dumps({
             "positive": pos_sin_pesos,
             "negative": neg_sin_pesos,
             "aspect_ratio": ratio,
             "model_target": getattr(self, "combo_modelo_imagen", None).get() if hasattr(self, "combo_modelo_imagen") else "unknown",
+            "formats": {
+                "midjourney": mj,
+                "niji6": niji,
+                "flux_dev": flux_dev,
+                "flux_schnell": flux_schnell,
+                "grok": grok,
+                "dalle3": dalle,
+                "leonardo": leonardo_pos,
+                "ideogram": ideogram,
+                "comfyui": comfyui,
+                "a1111": a1111,
+                "stable_diffusion": sd,
+                "kling": kling_prompt,
+                "seedance": seedance_prompt,
+                "suno": suno_prompt,
+            }
         }, indent=2, ensure_ascii=False)
 
         # ── Ventana con tabs ──────────────────────────────────────────
@@ -233,6 +268,8 @@ class BackupExportMixin:
         formatos = [
             ("🎨 Midjourney v6", mj, "#1a7a3c"),
             ("🌸 Niji 6 (anime)", niji, "#a64aa6"),
+            ("⚡ FLUX Dev", flux_dev, "#7c3aed"),
+            ("⚡ FLUX Schnell", flux_schnell, "#9333ea"),
             ("🤖 Grok / X", grok, "#1c1c1c"),
             ("🖌 DALL-E 3", dalle, "#10a37f"),
             ("✨ Leonardo.AI", f"POS: {leonardo_pos}\n\nNEG: {leonardo_neg}" if leonardo_neg else leonardo_pos, "#7b3aed"),
@@ -240,6 +277,9 @@ class BackupExportMixin:
             ("⚡ ComfyUI", comfyui, "#0891b2"),
             ("🖥 Automatic1111", a1111, "#dc2626"),
             ("🎯 SD genérico", sd, "#475569"),
+            ("🎬 Kling (vídeo)", kling_prompt, "#f59e0b"),
+            ("🎬 Seedance (vídeo)", seedance_prompt, "#eab308"),
+            ("🎵 Suno (audio)", suno_prompt, "#ec4899"),
             ("📦 JSON (API)", json_payload, "#6366f1"),
         ]
 
@@ -277,6 +317,18 @@ class BackupExportMixin:
             tabs.set("🎨 Midjourney v6")
         except Exception:
             pass
+
+        # ── Botón Copiar Todo ──────────────────────────────────────────
+        def _copiar_todo():
+            todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont, _ in formatos])
+            pyperclip.copy(todo)
+            self.set_estado(f"📋 {len(formatos)} formatos copiados al portapapeles", "#2ecc71")
+
+        ctk.CTkButton(vent, text=f"📋 Copiar todos los formatos ({len(formatos)})",
+                      width=280, height=36, fg_color="#0f172a", hover_color="#1e293b",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      text_color="#e2e8f0",
+                      command=_copiar_todo).pack(pady=(4, 12))
 
     def _cmd_busqueda_global(self):
         """Busca un término en TODAS las colecciones: historial, favoritos, estrellas, seeds, snippets, fórmulas."""

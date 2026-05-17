@@ -1747,7 +1747,6 @@ class ToolsWorkflowMixin:
                     if len(sugeridos) >= 3:
                         break
 
-        # === VENTANA DE SELECCIÓN ===
         sel_vent = ctk.CTkToplevel(self)
         sel_vent.title("🆚 Elige 3 modelos para comparar")
         sel_vent.geometry("500x350")

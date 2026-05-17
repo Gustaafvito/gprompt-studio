@@ -9,7 +9,7 @@ Cambios v1.0 vs v8.x:
 - NEW: helper open_child_window() para crear Toplevel correctamente.
 - NEW: sistema de toast in-app no bloqueante (self.show_toast()).
 - NEW: atajo Ctrl+Enter desde el textarea de idea = generar prompt.
-- NEW: backup automático semanal de ~/.gpromptstudio/.
+- NEW: backup automático semanal de ~/.arquitecto_prompts/.
 - NEW: cierre limpio de threads al cerrar la app.
 """
 import customtkinter as ctk
@@ -67,22 +67,18 @@ from workers import (
 from windows import abrir_personajes, abrir_loras, abrir_batch, abrir_lista
 
 
-# ══════════════════════════════════════════════════════════════
 # Parche global v1.0.4 — Ventanas hijas: AL FRENTE + MAXIMIZABLES
-#
 # Historial:
 # - v8.x: ventanas hijas salían DETRÁS (bug original)
 # - v1.0:  fix con transient(master) → ventanas al frente PERO no se podían
 #          maximizar (Windows oculta los botones cuando hay transient)
 # - v1.0.4: SIN transient + lift() + topmost momentáneo → al frente Y
 #          maximizables Y con barra completa de Windows
-#
 # La clave: después de crear la Toplevel, hacemos un truco visual de
 # "topmost momentáneo" (200ms) que la fuerza al frente sin bloquearla
 # permanentemente. La ventana NO es transient → tiene minimize/maximize
 # completos. Cuando el usuario hace alt+tab a otra app, la ventana queda
 # atrás como cualquier ventana normal.
-# ══════════════════════════════════════════════════════════════
 _original_ctk_toplevel_init = ctk.CTkToplevel.__init__
 _original_ctk_toplevel_transient = ctk.CTkToplevel.transient
 
@@ -98,7 +94,6 @@ def _patched_ctk_toplevel_init(self, *args, **kwargs):
         self.after(50, lambda: _bring_to_front(self))
     except Exception:
         pass
-    # v1.0.5 — atajos GLOBALES de pantalla completa para CUALQUIER Toplevel
     # (antes solo estaban en open_child_window que no se usa en todas las ventanas)
     def _toggle_fs(event=None, w=self):
         try:
@@ -189,7 +184,6 @@ class ArquitectoApp(
     def __init__(self):
         super().__init__()
 
-        # v1.0.5 — splash inicial usando withdraw() de la ventana principal.
         # En v1.0 metimos un splash con root temporal que generaba errores
         # 'invalid command name'. Ahora ocultamos la ventana principal y
         # mostramos un Toplevel splash mientras construimos la UI.
@@ -310,7 +304,6 @@ class ArquitectoApp(
         self._on_modo_cambio()
         self.reiniciar_memoria()
 
-        # v1.0.5 — Aplicar tema actual a TODOS los widgets construidos.
         # Sin esto, si el usuario arranca con tema claro guardado, los
         # widgets que tienen colores hardcodeados de modo dark salen
         # con texto blanco sobre fondo claro = invisibles.
@@ -334,7 +327,6 @@ class ArquitectoApp(
         except Exception:
             pass
 
-        # v1.0.5 — F11 en la ventana principal para pantalla completa
         try:
             self.bind("<F11>", self._toggle_fullscreen_principal)
             self.bind("<Escape>", self._exit_fullscreen_principal)
@@ -346,7 +338,6 @@ class ArquitectoApp(
 
         self.protocol("WM_DELETE_WINDOW", self._on_cerrar)
 
-        # v1.0.5 — Cerrar splash y mostrar la ventana principal
         try:
             self._splash_estado("¡Listo!")
             self.after(150, self._cerrar_splash)
@@ -380,7 +371,6 @@ class ArquitectoApp(
                 pass
         self.after(900, _marcar_init_completo)
 
-        # v1.0.8 — Si NO hay nombre guardado, mostrar mini-wizard al cabo
         # de 1.2s (cuando todo está cargado y la ventana visible).
         try:
             prefs_actuales = self.store.cargar_preferencias() or {}
@@ -455,9 +445,6 @@ class ArquitectoApp(
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=_guardar).pack(side="left", padx=4)
 
-    # ══════════════════════════════════════════════════════════════
-    # v1.0.5 — Splash screen integrado
-    # ══════════════════════════════════════════════════════════════
 
     def _crear_splash(self):
         """Crea splash screen como Toplevel SIN parent root temporal."""
@@ -537,9 +524,7 @@ class ArquitectoApp(
         except Exception:
             pass
 
-    # ══════════════════════════════════════════════════════════════
     # NEW v1.0 — Helpers para ventanas hijas, toasts, atajos
-    # ══════════════════════════════════════════════════════════════
 
     def _aplicar_geometria_adaptativa(self):
         """v1.0.3: calcula tamaño y posición inicial según el monitor.
@@ -628,7 +613,6 @@ class ArquitectoApp(
             except Exception:
                 pass
 
-        # v1.0.4 — atajos de pantalla completa para CUALQUIER ventana hija
         def _toggle_fullscreen(event=None):
             try:
                 actual = bool(v.attributes("-fullscreen"))
@@ -756,13 +740,18 @@ class ArquitectoApp(
             pass
 
     def _backup_semanal_check(self):
-        """Si han pasado >7 días desde el último backup, crea uno automático."""
+        """Si han pasado >7 días desde el último backup, crea uno automático.
+
+        Respalda TODA la carpeta de datos (~/.arquitecto_prompts/), incluyendo
+        historial, favoritos, plantillas, personajes, loras, estrellas y prefs.
+        """
         try:
             import time
-            base = Path.home() / ".gpromptstudio"
+            from config import CARPETA_APP, BACKUPS_DIR, ARCHIVOS
+            base = CARPETA_APP
             if not base.exists():
                 return
-            marker = base / "_last_autobackup.txt"
+            marker = ARCHIVOS["autobackup_marker"]
             ahora = time.time()
             necesario = True
             if marker.exists():
@@ -779,10 +768,16 @@ class ArquitectoApp(
             _log.getLogger(__name__).warning(f"Backup semanal falló: {e}")
 
     def _crear_backup_automatico(self, base: Path, marker: Path, ahora: float):
-        """Crea un zip de ~/.gpromptstudio/ en backups/auto-AAAAMMDD.zip"""
+        """Crea un zip de la carpeta de datos en backups/auto-AAAAMMDD.zip.
+
+        Incluye TODOS los .json de la carpeta (historial, favoritos, plantillas,
+        personajes, loras, estrellas, preferencias, keys). Excluye la propia
+        subcarpeta backups/ y logs/ para no recursivar.
+        """
         import zipfile
         import datetime as _dt
-        backups_dir = base / "backups"
+        from config import BACKUPS_DIR
+        backups_dir = BACKUPS_DIR
         backups_dir.mkdir(parents=True, exist_ok=True)
         nombre = f"auto-{_dt.datetime.now().strftime('%Y%m%d')}.zip"
         path = backups_dir / nombre
@@ -790,6 +785,10 @@ class ArquitectoApp(
             with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zf:
                 for f in base.glob("*.json"):
                     zf.write(f, f.name)
+                # active_provider.txt también merece respaldo
+                ap = base / "active_provider.txt"
+                if ap.exists():
+                    zf.write(ap, ap.name)
             marker.write_text(str(ahora), encoding="utf-8")
             # Toast informativo
             self.after(2000, lambda: self.show_toast(
@@ -1324,7 +1323,6 @@ class ArquitectoApp(
         frame = ctk.CTkFrame(wizard)
         frame.pack(fill="x", padx=30, pady=5)
 
-        # v1.0.8 — Campo nombre (lo usamos en el saludo del dashboard)
         ctk.CTkLabel(frame, text="👤 ¿Cómo quieres que te llamemos?",
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
         entry_nombre = ctk.CTkEntry(frame, width=480, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
@@ -1425,7 +1423,6 @@ class ArquitectoApp(
                 lbl_estado.configure(text=f"❌ Error guardando: {e}", text_color="#e74c3c")
                 return
 
-            # v1.0.8 — Guardar nombre en preferences.json
             try:
                 nombre = entry_nombre.get().strip()
                 if nombre:
@@ -1470,7 +1467,6 @@ class ArquitectoApp(
         except Exception:
             _prefs_llm_labels = ["DeepSeek V3", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
 
-        # v1.0.8 — Campo Nombre del usuario (para saludo del dashboard)
         ctk.CTkLabel(tab_gen, text="👤 Tu nombre (saludo del Dashboard):",
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.entry_nombre_pref = ctk.CTkEntry(tab_gen, width=250,
@@ -1554,7 +1550,6 @@ class ArquitectoApp(
             _tema_from_display = getattr(self, '_tema_from_display', {"Dark": "dark", "Light": "light", "System": "system"})
             nuevo_tema = _tema_from_display.get(self.combo_tema.get(), "dark")
             ctk.set_appearance_mode(nuevo_tema)
-            # v1.0.8 — Repintar frames adaptativos tras cambio de tema desde Preferencias
             try:
                 self.after(50, self._apply_theme_colors)
             except Exception:
@@ -1568,7 +1563,6 @@ class ArquitectoApp(
         if hasattr(self, 'switch_video_sesion_var'):
             self._sesion_grabar_video = self.switch_video_sesion_var.get()
 
-        # v1.0.8 — Guardar nombre del usuario si lo cambió
         try:
             if hasattr(self, 'entry_nombre_pref'):
                 nuevo_nombre = self.entry_nombre_pref.get().strip()

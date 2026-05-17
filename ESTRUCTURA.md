@@ -1,7 +1,7 @@
-# 🧠 G-Prompt Studio v1.0 — Estructura del Proyecto
+# 🧠 G-Prompt Studio v1.0.9 — Estructura del Proyecto
 
 > Aplicación de escritorio para generar, gestionar y optimizar prompts de IA (imagen, vídeo, audio).
-> **Lanzamiento público**: v1.0 — listo para mercado.
+> **Última versión**: v1.0.9 — con biblioteca integrada, headers, dashboard, herramientas creativas.
 
 ---
 
@@ -31,14 +31,14 @@ gprompt-studio/
 │
 ├── modules/                     # 8 mixins extraídos de app.py
 │   ├── __init__.py
-│   ├── core.py                  # Workers, comandos, estado (~1.940 líneas)
-│   ├── ui_builders.py           # Construcción de UI (~1.495 líneas)
-│   ├── tools_creative.py        # Moodboard, ADN, Negative Builder (~1.357 líneas)
-│   ├── tools_workflow.py        # Macros, A/B Testing, Cron (~1.655 líneas)
-│   ├── tools_analysis.py        # Stats, Scoring, Education (~635 líneas)
-│   ├── data_mgmt.py             # Historial, favoritos, snippets (~1.038 líneas)
-│   ├── backup_export.py         # Backup, restore, CSV (~325 líneas)
-│   └── dialogs.py               # API Keys, Dashboard, Theme (~570 líneas)
+│   ├── core.py                  # Workers, comandos, estado (~4.000 líneas)
+│   ├── ui_builders.py           # Construcción de UI (~2.400 líneas)
+│   ├── tools_creative.py        # Moodboard, ADN, Negative Builder, Paleta (~3.300 líneas)
+│   ├── tools_workflow.py        # Macros, A/B Testing, Cron (~2.600 líneas)
+│   ├── tools_analysis.py        # Stats, Scoring, Education (~1.600 líneas)
+│   ├── data_mgmt.py             # Historial, favoritos, snippets (~1.700 líneas)
+│   ├── backup_export.py        # Backup, restore, CSV, Export CLI (~1.100 líneas)
+│   └── dialogs.py               # API Keys, Dashboard, Theme (~2.600 líneas)
 │
 └── tests/                       # 7 suites pytest
     ├── __init__.py
@@ -52,7 +52,7 @@ gprompt-studio/
     └── test_workers.py
 ```
 
-**Total**: ~14.000 líneas de código en 21 archivos principales + 7 suites de tests.
+**Total**: ~22.500 líneas de código en 21 archivos principales + 7 suites de tests.
 
 ---
 
@@ -153,11 +153,11 @@ Las actualizaciones de UI se hacen con `self.after(0, callback)` para volver al 
 
 ## 🔌 Persistencia
 
-Archivos en **`~/.gpromptstudio/`**:
+Archivos en **`~/.arquitecto_prompts/`**:
 
 | Archivo | Contenido |
 |---------|-----------|
-| `historial.json` | Últimos 100 prompts |
+| `historial.json` | Últimos 500 prompts |
 | `favoritos.json` | Prompts marcados ⭐ |
 | `estrellas.json` | Prompts con nota y modelo |
 | `personajes.json` | Personajes guardados |
@@ -173,7 +173,7 @@ Archivos en **`~/.gpromptstudio/`**:
 ### Almacenamiento de API keys (orden de prioridad)
 
 1. **OS keyring** (Windows Credential Manager / macOS Keychain / Linux Secret Service)
-2. `~/.gpromptstudio/keys.json` (fallback)
+2. `~/.arquitecto_prompts/keys.json` (fallback)
 3. Variables de entorno (`.env`)
 
 ### Escrituras atómicas
@@ -214,12 +214,38 @@ pytest tests/ -v
 
 ---
 
-## ⌨ Atajos de teclado
+## ⌨ Atajos de teclado (27 activos)
 
 | Atajo | Acción |
-|-------|--------|
-| `Ctrl+Enter` | Generar prompt (desde textarea de idea) |
+|------|--------|
+| `Alt+1` | Modo imagen |
+| `Alt+2` | Modo vídeo |
+| `Alt+3` | Modo audio |
+| `Alt+Enter` | Quick generate |
+| `Ctrl+1` | Copiar POSITIVE |
+| `Ctrl+2` | Copiar NEGATIVE |
+| `Ctrl+D` | Duplicar al historial |
+| `Ctrl+E` | Exportar rápido |
+| `Ctrl+Enter` | Generar prompt |
+| `Ctrl+F` | Búsqueda global |
+| `Ctrl+H` | Modo Focus |
+| `Ctrl+I` | Ideas creativas |
+| `Ctrl+L` | Abrir LoRAs |
+| `Ctrl+P` | Grupo personajes |
+| `Ctrl+R` | Idea aleatoria |
+| `Ctrl+S` | Guardar favorito |
+| `Ctrl+Shift+A` | Analizar imagen |
+| `Ctrl+Shift+Enter` | Variaciones x3 |
+| `Ctrl+Shift+L` | Cambiar tema |
+| `Ctrl+Shift+N` | Negative builder |
+| `Ctrl+Shift+P` | Previsualizar |
+| `Ctrl+Shift+S` | Guardar estrella |
+| `Ctrl+Shift+T` | Traducir idea |
+| `Ctrl+T` | Abrir tutorial |
+| `Ctrl+V` | Pegar inteligente |
+| `Ctrl+?` | Mostrar todos los atajos |
 | `Escape` | Cerrar popup activo |
+| `F11` | Pantalla completa |
 
 ---
 
@@ -247,9 +273,9 @@ pytest tests/ -v
 7. **Notificar al usuario**: usar `self.show_toast(msg, color)` para feedback no bloqueante; `messagebox` solo para confirmaciones importantes.
 8. **El `.env` NO se commitea** — está en `.gitignore`.
 9. **Theme switching** no destruye widgets — usa `_apply_theme_colors()` para actualizar.
-10. **Backups automáticos** se crean cada 7 días en `~/.gpromptstudio/backups/`. Se conservan los últimos 10.
+10. **Backups automáticos** se crean cada 7 días en `~/.arquitecto_prompts/backups/`. Se conservan los últimos 10.
 
 ---
 
-*Generado: 2026-05-07 | Versión: 1.0.0 | Python: 3.10+*
-*Lanzamiento público — listo para mercado.*
+*Generado: 2026-05-16 | Versión: 1.0.9 | Python: 3.10+*
+*Última versión — biblioteca integrada, dashboard, herramientas creativas.*

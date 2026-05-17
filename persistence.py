@@ -76,7 +76,7 @@ class DataStore:
     @log_operation("historial.agregar")
     def agregar_historial(self, entrada: dict):
         self.historial.insert(0, entrada)
-        if len(self.historial) > 100:
+        if len(self.historial) > 500:
             self.historial.pop()
         self._guardar("historial")
 

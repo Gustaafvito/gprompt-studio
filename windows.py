@@ -35,9 +35,7 @@ def _card_colors():
     }
 
 
-# ══════════════════════════════════════════════════════════════════
 # PERSONAJES
-# ══════════════════════════════════════════════════════════════════
 
 def abrir_personajes(app):
     cc = _card_colors()
@@ -129,9 +127,7 @@ def abrir_personajes(app):
     refrescar()
 
 
-# ══════════════════════════════════════════════════════════════════
 # LORAS
-# ══════════════════════════════════════════════════════════════════
 
 def abrir_loras(app):
     cc = _card_colors()
@@ -247,9 +243,7 @@ def abrir_loras(app):
     refrescar()
 
 
-# ══════════════════════════════════════════════════════════════════
 # BATCH
-# ══════════════════════════════════════════════════════════════════
 
 def abrir_batch(app):
     cc = _card_colors()
@@ -612,9 +606,7 @@ def abrir_batch(app):
                   command=lambda: pyperclip.copy(txt_batch.get("1.0", "end").strip())).pack(side="left", padx=4)
 
 
-# ══════════════════════════════════════════════════════════════════
 # HISTORIAL / FAVORITOS
-# ══════════════════════════════════════════════════════════════════
 
 def abrir_lista(app, coleccion, titulo, color_hdr):
     """Abre ventana de historial o favoritos con búsqueda."""

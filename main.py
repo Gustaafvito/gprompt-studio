@@ -9,7 +9,10 @@ import traceback
 import customtkinter as ctk
 
 # ─── Logging ───────────────────────────────────────────────
-LOG_DIR = os.path.join(os.path.expanduser("~"), ".gpromptstudio", "logs")
+# Todo (datos, keys, logs, backups) vive en ~/.arquitecto_prompts/
+# Importamos LOGS_DIR de config para tener una sola fuente de verdad.
+from config import LOGS_DIR
+LOG_DIR = str(LOGS_DIR)
 os.makedirs(LOG_DIR, exist_ok=True)
 
 logging.basicConfig(
@@ -22,9 +25,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("gprompt.main")
 
-# ═══════════════════════════════════════════════════════════
-# v1.0.8 — FIX BUG "None" EN TOOLTIPS
-# ═══════════════════════════════════════════════════════════
 # CTkToolTip 0.9 hace `StringVar().set(None)` en DOS sitios:
 #   - __init__ línea 78  (cuando message=None al crear)
 #   - configure() línea 253  (cuando se llama configure() sin message)

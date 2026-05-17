@@ -135,9 +135,7 @@ def _recolor_widgets(container, is_light):
 class CoreMixin:
     """Mixin containing all core methods: workers, commands, state management."""
 
-    # ══════════════════════════════════════════════════════════════
     # ON DESTINO CAMBIO
-    # ══════════════════════════════════════════════════════════════
 
     def _on_destino_cambio(self, valor=None):
         """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
@@ -175,9 +173,7 @@ class CoreMixin:
 
         self.reiniciar_memoria()
 
-    # ══════════════════════════════════════════════════════════════
     # MODO FOCUS
-    # ══════════════════════════════════════════════════════════════
 
     def _cmd_modo_focus(self):
         """Modo Focus: oculta paneles secundarios. Botón flotante para salir."""
@@ -261,9 +257,7 @@ class CoreMixin:
                 pass
             self.set_estado("🎯 Modo Focus desactivado")
 
-    # ══════════════════════════════════════════════════════════════
     # ON LLM CAMBIO
-    # ══════════════════════════════════════════════════════════════
 
     def _on_llm_cambio(self, label=None):
         """Cuando el usuario cambia de proveedor LLM en el dropdown."""
@@ -300,16 +294,13 @@ class CoreMixin:
             try: self._sesion_log(f"🧠 Cambió cerebro → {pid}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
-            # v1.0: actualizar indicador visual del botón 🔑
             try:
                 if hasattr(self, "_actualizar_indicador_proveedor"):
                     self._actualizar_indicador_proveedor()
             except Exception:
                 pass
 
-    # ══════════════════════════════════════════════════════════════
     # TOGGLE TEMA CLARO/OSCURO
-    # ══════════════════════════════════════════════════════════════
 
     def _apply_theme_colors(self):
         """Actualiza colores de header, barra de modo, checkboxes y labels sin destruir widgets.
@@ -365,7 +356,6 @@ class CoreMixin:
             self._lbl_plataforma.configure(text_color=modo_label)
 
         # Switches
-        # v1.0.8 — bolita oscura en light, clara en dark
         sw_button = "#374151" if is_light else "#ffffff"
         sw_button_hover = "#1f2937" if is_light else "#f3f4f6"
         if hasattr(self, 'switch_nsfw'):
@@ -456,14 +446,12 @@ class CoreMixin:
         # ── v1.0.7+v1.0.8 — Refrescar fondos de frames principales ──
         # Sin esto, al cambiar tema las inner frames mantienen el fg_color
         # del tema anterior (ej: dark → light deja frames oscuros).
-        # v1.0.8: ampliado a frame_video / frame_audio que se quedaban con
         # el fondo del tema anterior tras cambio en caliente.
         tab_bg = c["panel_bg"]
         # Frames con fondo "panel_bg" (claro/oscuro según tema)
         for _fname in ("frame_pers_lora", "frame_plantilla_brief", "frame_imgref_inner",
                        "frame_neg_outer", "frame_video", "frame_audio",
                        "_img_history_frame",
-                       # v1.0.8 — headers de estilos y negativos que quedaban negros en light
                        "_frame_estilos_header", "_frame_neg_header", "_frame_neg_presets"):
             try:
                 _f = getattr(self, _fname, None)
@@ -615,9 +603,7 @@ class CoreMixin:
         except Exception as e:
             self.set_estado(f"⚠️ Error cambiando tema: {e}", "#e74c3c")
 
-    # ══════════════════════════════════════════════════════════════
     # EXTRAER POSITIVE / NEGATIVE
-    # ══════════════════════════════════════════════════════════════
 
     def extraer_positive(self):
         texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
@@ -688,9 +674,7 @@ class CoreMixin:
         except Exception as e:
             self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
-    # ══════════════════════════════════════════════════════════════
     # LÓGICA CORE
-    # ══════════════════════════════════════════════════════════════
 
     def reiniciar_memoria(self):
         modo    = self.modo_var.get()
@@ -737,9 +721,7 @@ class CoreMixin:
             sys_p = self._inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
 
-    # ══════════════════════════════════════════════════════════════
     # HELPERS: Inyección de specs por modo
-    # ══════════════════════════════════════════════════════════════
 
     def _inyectar_specs_modelo(self, system_prompt):
         modo = self.modo_var.get()
@@ -922,9 +904,7 @@ class CoreMixin:
             return system_prompt + f"\n\n📢 {regla}\n"
         return system_prompt
 
-    # ══════════════════════════════════════════════════════════════
     # CONSTRUIR MODELO INFO / PETICION
-    # ══════════════════════════════════════════════════════════════
 
     def construir_modelo_info(self):
         # Cacheo simple: si no cambió la config, devolver cache
@@ -1007,9 +987,7 @@ class CoreMixin:
                 pass
         widget.pack(**kwargs)
 
-    # ══════════════════════════════════════════════════════════════
     # MODO CAMBIO
-    # ══════════════════════════════════════════════════════════════
 
     def _on_modo_cambio(self):
         """Cambia la UI según modo (imagen/video/audio). No opera si Focus está activo."""
@@ -1302,9 +1280,7 @@ class CoreMixin:
             self.set_estado("Modo Brief desactivado — prompts artísticos libres")
         self.reiniciar_memoria()
 
-    # ══════════════════════════════════════════════════════════════
     # MODEL SPECS / NATURAL MODE HELPERS
-    # ══════════════════════════════════════════════════════════════
 
     def get_current_model_specs(self):
         modo = self.modo_var.get()
@@ -1394,9 +1370,7 @@ class CoreMixin:
         es_turbo = any(m in modelo for m in modelos_turbo)
         return es_comfyui and es_turbo
 
-    # ══════════════════════════════════════════════════════════════
     # IDEAS / VARIACIONES / COMPARADOR
-    # ══════════════════════════════════════════════════════════════
 
     def _ocultar_ideas(self):
         for attr in ['_ideas_frame', '_variaciones_frame']:
@@ -1578,9 +1552,7 @@ class CoreMixin:
             return global_neg
         return None
 
-    # ══════════════════════════════════════════════════════════════
     # COMANDOS & WORKERS
-    # ══════════════════════════════════════════════════════════════
 
     def _recortar_si_excede(self, texto, max_chars):
         """Recorta el POSITIVE y NEGATIVE del prompt si excede el límite, preservando estructura."""
@@ -1751,9 +1723,7 @@ class CoreMixin:
         self.toggle_botones(False)
         threading.Thread(target=self._worker_prompt_traduccion, args=(idea,), daemon=True).start()
 
-    # ══════════════════════════════════════════════════════════════
     # ⚡ QUICK GENERATE — v1.0.8
-    # ══════════════════════════════════════════════════════════════
 
     def cmd_prompt_quick(self):
         """⚡ Quick Generate — versión rápida del cmd_prompt.
@@ -2267,9 +2237,7 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-    # ══════════════════════════════════════════════════════════════
     # CHAT COPILOTO NARRADOR
-    # ══════════════════════════════════════════════════════════════
 
     def cmd_copiloto(self):
         texto_actual = self.txt_salida.get("1.0", "end").strip()
@@ -2375,9 +2343,7 @@ class CoreMixin:
         btn_send.pack(side="right")
         txt_input.bind("<Return>", _enviar)
 
-    # ══════════════════════════════════════════════════════════════
     # BIND SHORTCUTS / CAMBIAR MODO
-    # ══════════════════════════════════════════════════════════════
 
     def _bind_shortcuts(self):
         for widget in [self, self.txt_idea]:
@@ -2407,6 +2373,9 @@ class CoreMixin:
             widget.bind("<Control-p>",            lambda e: (self._cmd_grupo_personajes(), "break")[1])
             widget.bind("<Control-t>",            lambda e: (self._abrir_tutorial(), "break")[1])
             widget.bind("<Control-Shift-N>",      lambda e: (self._cmd_negative_builder(), "break")[1])
+            widget.bind("<Control-h>",            lambda e: (self._cmd_modo_focus(), "break")[1])
+            widget.bind("<Control-Shift-L>",      lambda e: (self._cmd_toggle_tema(), "break")[1])
+            widget.bind("<Control-Shift-T>",      lambda e: (self._atajo_traducir_idea(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.bind("<Control-v>", self._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
@@ -2464,6 +2433,24 @@ class CoreMixin:
             self.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
         return "break"
 
+    def _atajo_traducir_idea(self):
+        """Ctrl+Shift+T - Traduce el campo idea al inglés."""
+        idea = self.txt_idea.get("1.0", "end").strip()
+        if not idea:
+            self.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
+            return "break"
+        try:
+            texto_traducido = self.deepseek.traducir(idea)
+            if texto_traducido and texto_traducido != idea:
+                self.txt_idea.delete("1.0", "end")
+                self.txt_idea.insert("1.0", texto_traducido)
+                self.set_estado("🌐 Idea traducida al inglés", "#3498db")
+            else:
+                self.set_estado("⚠️ No se pudo traducir", "#e67e22")
+        except Exception as e:
+            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+        return "break"
+
     def _toggle_fullscreen(self):
         """F11 - Alternar pantalla completa."""
         if hasattr(self, '_toggle_fullscreen_principal'):
@@ -2506,49 +2493,57 @@ class CoreMixin:
 
         vent = ctk.CTkToplevel(self)
         vent.title("⌨️ Atajos de teclado")
-        vent.geometry("600x550")
+        vent.geometry("620x600")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
         ctk.CTkLabel(vent, text="Usa estos atajos para trabajar más rápido", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
         atajos = [
-            ("Generación", [
+            ("⚡ Generación", [
                 ("Ctrl+Enter", "Generar prompt"),
                 ("Ctrl+Shift+Enter", "Generar variaciones (x3)"),
-                ("Alt+Enter", "Generación rápida"),
-                ("Ctrl+I", "Generar ideas"),
+                ("Alt+Enter", "Generación rápida (Quick)"),
+                ("Ctrl+I", "Generar 3 ideas"),
             ]),
-            ("Edición", [
+            ("✏️  Edición", [
                 ("Ctrl+S", "Guardar como favorito"),
                 ("Ctrl+Shift+S", "Guardar como estrella"),
                 ("Ctrl+D", "Duplicar al historial"),
                 ("Ctrl+Shift+P", "Previsualizar (Pollinations)"),
-            ]),
-            ("Portapapeles", [
-                ("Ctrl+1", "Copiar positive"),
-                ("Ctrl+2", "Copiar negative"),
-                ("Ctrl+Shift+A", "Analizar imagen (Vision)"),
+                ("Ctrl+Shift+T", "Traducir idea al inglés"),
                 ("Ctrl+V", "Pegar inteligente"),
             ]),
-            ("Navegación", [
+            ("📋 Portapapeles", [
+                ("Ctrl+1", "Copiar POSITIVE"),
+                ("Ctrl+2", "Copiar NEGATIVE"),
+                ("Ctrl+Shift+A", "Analizar imagen (Vision)"),
+            ]),
+            ("🎬 Navegación", [
                 ("Alt+1", "Modo imagen"),
                 ("Alt+2", "Modo vídeo"),
                 ("Alt+3", "Modo audio"),
                 ("Ctrl+R", "Idea aleatoria del historial"),
+                ("Ctrl+T", "Abrir tutorial"),
             ]),
-            ("Herramientas", [
+            ("🛠 Herramientas", [
                 ("Ctrl+E", "Exportar rápido"),
                 ("Ctrl+F", "Búsqueda global"),
                 ("Ctrl+L", "Abrir LoRAs"),
                 ("Ctrl+P", "Grupo de personajes"),
                 ("Ctrl+Shift+N", "Constructor de negative"),
+                ("Ctrl+H", "Modo Focus"),
+                ("Ctrl+Shift+L", "Cambiar tema claro/oscuro"),
             ]),
-            ("Ayuda", [
-                ("Ctrl+?", "Mostrar esta ayuda"),
+            ("❓ Extra", [
+                ("F11", "Pantalla completa"),
+                ("Escape", "Cerrar popup / Salir de pantalla completa"),
+            ]),
+            ("❓ Ayuda", [
+                ("Ctrl+?", "Mostrar atajos"),
             ]),
         ]
 
@@ -2561,7 +2556,7 @@ class CoreMixin:
                 row = ctk.CTkFrame(frame_cat, fg_color="transparent")
                 row.pack(fill="x", padx=10, pady=1)
                 ctk.CTkLabel(row, text=tecla, font=ctk.CTkFont(size=10, weight="bold"),
-                             width=140, anchor="w", text_color="#3498db").pack(side="left")
+                             width=160, anchor="w", text_color="#3498db").pack(side="left")
                 ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=10),
                              anchor="w", text_color=c["panel_text"]).pack(side="left")
 

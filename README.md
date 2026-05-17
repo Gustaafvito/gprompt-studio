@@ -1,11 +1,11 @@
-# 🧠 G-Prompt Studio v1.0
+# 🧠 G-Prompt Studio v1.0.9
 
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
-[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)]()
+[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen.svg)](https://github.com/gusta/gprompt-studio)
 
 ---
 
@@ -58,7 +58,7 @@ Conecta con cualquiera de estos proveedores con una sola key:
 - **🧑 Personajes** — descripciones reutilizables
 - **🔗 LoRAs** — trigger words guardadas
 - **📐 Plantillas** — configuraciones completas (modo + modelo + estilos + ratio)
-- **💾 Backup automático semanal** — zip de tus datos cada 7 días en `~/.gpromptstudio/backups/`
+- **💾 Backup automático semanal** — zip de tus datos cada 7 días en `~/.arquitecto_prompts/backups/`
 - **📤 Exportar** a `.txt`, `.csv` o formato CLI Midjourney/Grok
 
 ## 🎯 Adaptación inteligente
@@ -106,7 +106,7 @@ La primera vez se abrirá un **wizard de configuración** para introducir tus AP
 Las keys se guardan de forma **segura** en este orden de prioridad:
 
 1. **Windows Credential Manager / macOS Keychain / Secret Service** (vía `keyring` si está instalado)
-2. `~/.gpromptstudio/keys.json` (fallback)
+2. `~/.arquitecto_prompts/keys.json` (fallback)
 3. Variables de entorno desde `.env`
 
 Para usar el almacenamiento seguro:
@@ -193,8 +193,8 @@ Cubre: api_clients, config helpers, exceptions, persistence atómica, state, typ
 ## 🐛 Reportar bugs
 
 Si algo no funciona, revisa el log en:
-- Windows: `%USERPROFILE%\.gpromptstudio\logs\gprompt.log`
-- macOS/Linux: `~/.gpromptstudio/logs/gprompt.log`
+- Windows: `%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`
+- macOS/Linux: `~/.arquitecto_prompts/logs/gprompt.log`
 
 ---
 

@@ -9,7 +9,9 @@ Refactor v1.0:
 import os
 try:
     from dotenv import load_dotenv
+    _proj_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
     load_dotenv()
+    load_dotenv(_proj_env, override=False)
 except ImportError:
     pass
 import io
@@ -26,7 +28,6 @@ from config import (
     MAX_HIST_IA, MODELOS_GEMINI_CANDIDATOS, MODELOS_OLLAMA_VISION,
     MODELOS_OPENROUTER_VISION,
 )
-# v1.0.9 — System prompt único para ADN Visual (fuente: prompts.py)
 from prompts import VISION_SYSTEM_PROMPT
 
 if TYPE_CHECKING:
@@ -276,11 +277,8 @@ class VisionChain:
             "Escribe SOLO la descripción, sin etiquetas ni explicaciones."
         )
 
-    # ═══════════════════════════════════════════════════════════════════
     # ADN VISUAL — Análisis estructurado JSON
-    # ═══════════════════════════════════════════════════════════════════
 
-    # v1.0.9 — VISION_SYSTEM_PROMPT vive en prompts.py (única fuente de verdad).
     # Aquí solo está la lógica de la cadena de fallback (Gemini → Ollama → OpenRouter).
 
     def analizar_adn(
@@ -366,14 +364,25 @@ class VisionChain:
         buf = io.BytesIO()
         imagen_pil.save(buf, format="JPEG", quality=90)
         img_bytes = buf.getvalue()
-        
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        if not api_key:
-            raise RuntimeError("No hay API key de Gemini configurada.")
-        
-        import google.genai as genai
-        client = genai.Client(api_key=api_key)
-        
+
+        # Buscar key en este orden: cliente preexistente → keyring/keys.json → .env
+        # Esto evita que la visión falle si la key vive en keyring pero no en .env.
+        client = getattr(self.clients, "gemini", None)
+        if client is None:
+            api_key = ""
+            try:
+                # Sistema centralizado de keys (keyring → keys.json → variable env)
+                from api_clients import cargar_api_key
+                api_key = cargar_api_key("gemini")
+            except Exception:
+                api_key = ""
+            if not api_key:
+                api_key = os.getenv("GEMINI_API_KEY", "")
+            if not api_key:
+                raise RuntimeError("No hay API key de Gemini configurada.")
+            import google.genai as genai
+            client = genai.Client(api_key=api_key)
+
         modelos = self._modelos_gemini_disponibles()
         ultimo_error = None
 

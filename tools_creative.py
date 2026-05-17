@@ -621,7 +621,6 @@ class ToolsCreativeMixin:
                             self.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
 
                     def _guardar_adn():
-                        # v1.0.9 — Pedir nombre con sugerencia inteligente del ADN
                         from tkinter import simpledialog
 
                         # Generar sugerencia: estilo + sujeto + iluminación
@@ -695,7 +694,6 @@ class ToolsCreativeMixin:
                     lbl_plat.pack(side="left", padx=(0, 5))
 
                     def _convertir_plataforma(plataforma):
-                        # v1.0.9 — logging en lugar de except pass silencioso.
                         # También cambiado destino: ahora va a txt_idea (no
                         # txt_salida) para no sobreescribir el prompt actual
                         # del usuario sin pedir confirmación.
@@ -789,7 +787,6 @@ class ToolsCreativeMixin:
 
                         prompt = ", ".join([p for p in partes if p])
                         if prompt:
-                            # v1.0.9 — Va a txt_idea, NO sobreescribe txt_salida sin permiso.
                             # El usuario luego pulsa "Generar" para producir el prompt final.
                             try:
                                 self.txt_idea.delete("1.0", "end")
