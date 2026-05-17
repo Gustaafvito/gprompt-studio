@@ -118,6 +118,18 @@ class DialogsMixin:
                     cambios += 1
             if cambios:
                 self.set_estado(f"🔑 {cambios} API keys actualizadas", "#2ecc71")
+                # Refrescar el desplegable del cerebro para que los iconos ✅/🔒
+                # reflejen las keys recién guardadas
+                try:
+                    if hasattr(self, "_refrescar_indicadores_llm"):
+                        self._refrescar_indicadores_llm()
+                except Exception:
+                    pass
+                try:
+                    if hasattr(self, "_actualizar_indicador_proveedor"):
+                        self._actualizar_indicador_proveedor()
+                except Exception:
+                    pass
             else:
                 self.set_estado("Sin cambios")
             v.destroy()

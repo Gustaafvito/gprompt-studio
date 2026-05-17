@@ -149,33 +149,6 @@ GRUPOS_VIDEO = [
 # MODELOS DE IMAGEN
 # ══════════════════════════════════════════════════════════════════
 GRUPOS_IMAGEN = [
-    ("── SeaArt Oficiales ──", sorted([
-        "Luma Uni-1.1 Image",
-        "SeaArt Infinity",
-        "SeaArt Infinity V2.0",
-        "SeaArt Realism",
-    ])),
-    ("── Familia Z-Image ──", sorted([
-        "Z Image Turbo",
-        "Z-Image-Base-Realistic",
-    ])),
-("── Realismo SD ──", sorted([
-        "Alchemist Mix (Illustrious Realism)",
-        "CyberRealistic",
-        "Deliberate",
-        "DreamShaper",
-        "FantasticChix-HR",
-        "Illustrious Realism by Klaabu",
-        "Juggernaut XL",
-        "MajicMIX Realistic v6",
-        "NiwaStyle – DreamReal SR (Illustrious)",
-        "PornRealistic",
-        "Real Dream SDXL",
-        "Realistic Vision V6.0",
-        "Realities Edge XL Turbo V7",
-        "Prodigies",
-        "Woman Realistic 3.1.0",
-    ])),
     ("── Anime / Ilustración ──", sorted([
         "Counterfeit V3.0",
         "Disney Pixar Cartoon type B",
@@ -210,32 +183,52 @@ GRUPOS_IMAGEN = [
         "Flux-dev",
         "MASTER FLUX (LoRA merged with flux1-dev fp16)",
     ])),
+    ("── Familia Z-Image ──", sorted([
+        "Z Image Turbo",
+        "Z-Image-Base-Realistic",
+    ])),
+    ("── GPT Image (OpenAI en SeaArt) ──", sorted([
+        "GPT Image 2",
+    ])),
     ("── Nano Banana ──", sorted([
         "Nano Banana Pro Image", "Nano Banana 2",
     ])),
-    ("── SeaArt Special ──", sorted([
+    ("── Realismo SD ──", sorted([
+        "Alchemist Mix (Illustrious Realism)",
+        "CyberRealistic",
+        "Deliberate",
+        "DreamShaper",
+        "FantasticChix-HR",
+        "Illustrious Realism by Klaabu",
+        "Juggernaut XL",
+        "MajicMIX Realistic v6",
+        "NiwaStyle – DreamReal SR (Illustrious)",
+        "PornRealistic",
+        "Real Dream SDXL",
+        "Realistic Vision V6.0",
+        "Realities Edge XL Turbo V7",
+        "Prodigies",
+        "Woman Realistic 3.1.0",
+    ])),
+    ("── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──", sorted([
         "SeaArt Film",
         "SeaArt Film V2.0",
         "SeaArt Film Edit",
         "SeaArt Film Edit 2.0",
         "SeaArt Film Edit 3.0",
-    ])),
-    ("── SeaArt Furry ──", sorted([
         "SeaArt Furry XL V1.0",
-    ])),
-    ("── SeaArt Story ──", sorted([
         "SeaArt Story",
         "SeaArt Story 2.0",
         "SeaArt Story Edit",
-    ])),
-    ("── SeaArt Fusion ──", sorted([
         "SeaArt Fusion",
-    ])),
-    ("── SeaArt Genesis ──", sorted([
         "SeaArt Genesis",
-    ])),
-    ("── SeaArt Ultra ──", sorted([
         "SeaArt Ultra Edit",
+    ])),
+    ("── SeaArt Oficiales ──", sorted([
+        "Luma Uni-1.1 Image",
+        "SeaArt Infinity",
+        "SeaArt Infinity V2.0",
+        "SeaArt Realism",
     ])),
     ("── Stable Diffusion 3.5 ──", sorted([
         "SD 3.5 Large",
@@ -425,8 +418,12 @@ ESTILOS_GRUPOS = {
         "Wildlife / Naturaleza", "Macro / Close-up", "Underwater", "Drone / Aéreo",
         "Editorial Fashion", "Street Photography", "Polaroid / Vintage Photo",
         "Disposable Camera", "Analog Film / 35mm", "Cross-processed",
-        "Studio Shot", "Product Photography", "Foodie", "Phone Photo",
+        "Studio Shot", "Studio Headshot", "Product Photography", "Foodie", "Phone Photo",
         "Low-key Cinematic", "Cinematic Still", "Documental",
+        # Añadidos v1.1
+        "HDR Photography", "Long Exposure", "Fisheye / Wide-angle",
+        "Black & White Photography", "Lifestyle / Candid", "Tilt-shift",
+        "Bokeh Portrait", "Golden Hour", "Blue Hour",
     ],
     "🎨 Arte": [
         "Óleo / Oil Painting", "Acrílico", "Watercolor", "Charcoal / Carboncillo",
@@ -437,6 +434,10 @@ ESTILOS_GRUPOS = {
         "Linocut", "Risograph", "Screenprint", "Collage",
         "Pencil / Sketch", "Ink / Lineart", "Pen & Ink",
         "Oil Pastel", "Colored Pencil", "Wax Crayon",
+        # Añadidos v1.1
+        "Impressionism", "Cubism", "Abstract Expressionism", "Minimalism",
+        "Street Art / Graffiti", "Mural", "Mosaic", "Stained Glass / Vitral",
+        "Gouache", "Sketchbook",
     ],
     "💥 Cómic & Manga": [
         "Comic Book", "Retro Comic", "Western Comic", "Marvel/DC Style",
@@ -444,7 +445,7 @@ ESTILOS_GRUPOS = {
         "Webtoon / Manhwa", "Comic Strip", "Graphic Novel",
         "Anime / Ilustración", "Anime 90s Retro", "Anime Classic",
         "Studio Ghibli", "Chibi / Kawaii", "Cartoon",
-        "Cartoon Fun", "Cute Cartoon", "Whimsy Anime",
+        "Cartoon Fun", "Whimsy Anime",
         "Speech Bubbles", "Halftone Print", "Inked Style",
     ],
     "🚀 Digital & 3D": [
@@ -454,49 +455,83 @@ ESTILOS_GRUPOS = {
         "Cyberpunk / Neon", "Sci-Fi", "Retro / Synthwave", "Vaporwave / Aesthetic",
         "Isometric", "Low Poly", "Pixel Art", "Voxel Art",
         "Holography", "Iridescent / Pearlescent", "Chrome / Metallic",
-        "Glass / Translucent", "Liquid / Fluid", "Dreamglass",
+        "Glass / Translucent", "Liquid / Fluid",
+        # Añadidos v1.1
+        "Octane Render", "Unreal Engine 5", "Blender Stylized",
+        "Toy Photography", "Claymation", "Bioluminescent",
+        "Liquid Metal", "Holographic Foil",
     ],
     "🎬 Cine & TV": [
-        "Cinematic Lighting", "Film Noir", "Concrete Noir", "Silent Noir",
-        "Movie Poster", "Trailer Style", "Music Video", "Videoclip",
-        "70s Vibe", "80s Couture", "Found Footage", "VHS Aesthetic",
-        "Old Money Still", "Cinematic Pastel", "Vibrant Film",
+        "Cinematic Lighting", "Film Noir", "Movie Poster", "Trailer Style",
+        "Music Video", "Videoclip", "70s Vibe", "80s Couture",
+        "Found Footage", "VHS Aesthetic", "Old Money Still",
+        "Cinematic Pastel", "Vibrant Film",
+        # Añadidos v1.1 — directores y estéticas reconocibles
+        "Wes Anderson Style", "David Fincher Style", "Christopher Nolan Style",
+        "A24 Aesthetic", "Studio Ghibli Cinematography",
+        "Tarantino Style", "Denis Villeneuve Style",
     ],
     "🎯 Diseño Gráfico": [
-        "Minimalista", "Bold Poster", "Letterpop", "RetroGrid",
+        "Minimalista", "Bold Poster",
         "Neo Memphis", "Paper Noise", "Glitch Collage", "Halftone",
         "Typography Heavy", "Bold Typo", "Vector / Flat",
         "Vintage Vector", "Simple Vector", "Indie Poster",
         "Sticker Icon", "Pixel Icon", "3D Icon",
+        # Añadidos v1.1
+        "Swiss Design", "Brutalist Web", "Editorial Layout",
     ],
     "🌑 Oscuro & Fantasy": [
         "Fantasy Épica", "Dark Fantasy", "Gothic / Oscuro", "Tarot / Místico",
-        "Terror / Horror", "Halloween", "Cursed", "Sinister Nights",
-        "Scary Times", "Burnt Velvet", "Dark Concept", "Lucid Sci-Fi",
-        "Steampunk", "Mistery Mist", "Foggy", "Surreal Fashion",
+        "Terror / Horror", "Halloween", "Cursed",
+        "Dark Concept", "Lucid Sci-Fi",
+        "Steampunk", "Foggy", "Surreal Fashion",
+        # Añadidos v1.1
+        "Cosmic Horror / Lovecraftian", "Dieselpunk", "Biopunk",
+        "Apocalyptic / Wasteland",
     ],
     "✨ Estética & Mood": [
-        "Pastel Aesthetic", "Pink History", "Pink Whimsical", "Coquette",
-        "Soft Float", "Soft Muted", "Coolpastel", "Softpasty", "Softprism",
+        "Pastel Aesthetic", "Coquette",
         "Peachy", "Trendy Mocha", "Warm Cozy", "Mediterranean",
         "Italian Vibes", "Cozy Coffee Shop", "Botanical Folk", "Floral Elegance",
-        "Glimmerish", "Sparkling", "Aetherial", "Dreamy Mini",
+        "Sparkling", "Aetherial", "Dreamy Mini",
+        # Añadidos v1.1 — estéticas trending 2024-2026
+        "Cottagecore", "Dark Academia", "Light Academia", "Y2K Aesthetic",
+        "Bohemian", "Maximalism", "Brutalism", "Nordic / Scandinavian",
+        "Japandi", "Wabi-sabi",
     ],
     "🎭 Editorial & Fashion": [
         "Vogue Editorial", "Runway Fashion", "High Fashion", "Editorial Glow",
         "Editorial Portrait", "Cover Art", "Avant Garde", "Stylized Cyber",
-        "Symbolic Editorial", "Neon Editorial", "Boldproduct",
+        "Symbolic Editorial", "Neon Editorial",
+        # Añadidos v1.1
+        "Haute Couture", "Streetwear Lookbook", "Y2K Fashion",
+        "Vintage Glam", "Punk Editorial",
     ],
     "👶 Infantil & Juguete": [
         "Children's Story", "Childbook Illustration", "Storybook",
         "Sunset Cartoon", "Fresh Cartoon", "Cute Grainy", "Kawaii",
         "Mini World", "Squishy", "Plushies", "Adorable", "Cute Cartoon",
+        # Añadidos v1.1
+        "Crayon Drawing", "Felt Craft", "Paper Cut-out",
+    ],
+    "🏗 Arquitectura & Espacios": [
+        # Grupo renombrado de "Otros estilos" — ahora coherente
+        "Architecture", "Interior Design", "Eclectic Decor",
+        "Brutalist Architecture", "Mid-century Modern", "Art Deco Interior",
+        "Industrial Loft", "Tropical Modern", "Japanese Tea House",
+    ],
+    "📦 Mockups & Producto": [
+        # Grupo nuevo — extraído de "Otros estilos"
+        "Mockup / Phone Photo", "Tshirt Mockup", "Laptop Mockup",
+        "Coffee Shop Mockup", "Branding in the Wild",
+        "Packaging Design", "Book Cover Mockup",
     ],
     "🏛 Otros estilos": [
-        "Architecture", "Interior Design", "Eclectic Mocking", "Eclectic Decor",
-        "Mockup / Phone Photo", "Tshirt Mockup", "Laptop Mockup",
-        "Coffee Shop Mockup", "Branding in the Wild", "Italian Vibes",
-        "Pinup Vintage", "Space / Cosmic", "Underwater Scene",
+        "Pinup Vintage", "Space / Cosmic",
+        # Añadidos v1.1
+        "Tattoo Old School", "Tattoo Neo Traditional",
+        "Manuscript / Codex", "Cartography / Maps",
+        "Religious Iconography",
     ],
 }
 
@@ -2144,10 +2179,37 @@ MODEL_SPECS_IMAGEN = {
         "nota": 4.9, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4"],
         "max_chars": 5000, "modos_gen": ["Low", "Medium", "High"],
-        "best_for": "GPT Image 2 (Abril 2026). Modelo más reciente con razonamiento integrado. Text rendering casi perfecto, screenshots realistas, fotorrealismo top. Capacidades de búsqueda web y multi-imagen desde un prompt.",
-        "prompt_formula": "Lenguaje natural muy estructurado. Estructura: background/scene → subject → key details → constraints + intended use. Usar lenguaje fotográfico (lens, lighting, framing) y pedir texturas reales (poros, arrugas, imperfecciones).",
-        "prompt_ejemplo": "Photorealistic candid photo of an elderly fisherman on his boat at dawn. Weathered skin with visible pores and sun texture, faded sailor tattoos. Adjusting nets while his dog sits nearby. Shot like 35mm film, 50mm lens, soft coastal daylight, shallow DOF, subtle film grain. Honest, unposed feel.",
-        "limitaciones": "Sin negative ni pesos. Solo accesible vía ChatGPT o API OpenAI.",
+        "best_for": (
+            "GPT Image 2 en SeaArt (Abril 2026). Modelo OpenAI más reciente, "
+            "destacado por: (1) text rendering casi perfecto en posters, signage, "
+            "labels y UI, (2) realismo natural en piel, materiales, iluminación y "
+            "sombras, (3) prompt understanding superior con múltiples requisitos, "
+            "(4) consistencia entre generaciones (ideal para series, campañas, "
+            "story boards). Ideal para marketing, UI/app mockups, product shots, "
+            "fotorrealismo editorial, worldbuilding."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural estructurado. ORDEN: subject → scene/setting → "
+            "lighting → style/mood → composition → exact text (entre comillas si "
+            "aparece en la imagen). Para texto literal: 'with the words \"...\"'. "
+            "Para UI/mockups: indicar tipo de pantalla, elementos de interfaz, "
+            "estado. Para realismo: pedir lens (35mm, 50mm), DOF, grain, texturas."
+        ),
+        "prompt_ejemplo": (
+            "Photorealistic marketing banner for a coffee brand. Subject: a "
+            "ceramic cup of espresso on a wooden table at golden hour. Soft "
+            "natural light coming from the left, visible steam, reflections on "
+            "the cup, shallow depth of field. Above the cup, clean modern "
+            "typography with the words \"Morning Ritual\" in dark brown sans-serif. "
+            "Composition: rule of thirds, cup bottom-left, copy upper-right. "
+            "Cinematic still, 50mm lens, soft film grain."
+        ),
+        "limitaciones": (
+            "Sin negative prompt ni pesos (no aplican sintaxis SD). Modelo de "
+            "OpenAI accesible vía SeaArt (también disponible en Magnific y ChatGPT). "
+            "Tiempo de generación: ~1m 30s para alta calidad. Mejor en lenguaje "
+            "natural detallado que en tags sueltos."
+        ),
     },
 
     # ══════════════════════════════════════════════════════════════

@@ -148,22 +148,45 @@ class UIBuildersMixin:
         try:
             from api_clients import LLM_PROVIDERS
             self._llm_providers_dict = LLM_PROVIDERS
-            # Mostrar en el dropdown solo los que están configurados (con key) o usar lista completa
-            lista_llms = [info["label"] for info in LLM_PROVIDERS.values()]
-            # Mapeo label → provider_id para poder identificar
-            self._llm_label_to_id = {info["label"]: pid for pid, info in LLM_PROVIDERS.items()}
+
+            # Construir labels con indicador visual de estado:
+            # ✅ = key configurada (provider disponible)
+            # 🔒 = sin key (al pulsarlo se abre el wizard automáticamente)
+            def _label_con_estado(pid: str, label: str) -> str:
+                try:
+                    prov = self.clients.providers.get(pid) if hasattr(self.clients, "providers") else None
+                    ok = bool(prov and prov.disponible())
+                except Exception:
+                    ok = False
+                icon = "✅" if ok else "🔒"
+                return f"{icon} {label}"
+
+            lista_llms = [_label_con_estado(pid, info["label"]) for pid, info in LLM_PROVIDERS.items()]
+            # Mapeo label-con-icono → provider_id para poder identificar
+            self._llm_label_to_id = {
+                _label_con_estado(pid, info["label"]): pid
+                for pid, info in LLM_PROVIDERS.items()
+            }
+            # Guardar referencia para refrescar luego (al cambiar de cerebro o al guardar key)
+            self._llm_lista_llms = lista_llms
+            self._llm_label_con_estado_fn = _label_con_estado
+
             # Determinar valor inicial según provider activo
             try:
                 pid_activo = self.clients.provider_activo_id if hasattr(self.clients, 'provider_activo_id') else "deepseek"
-                label_inicial = LLM_PROVIDERS.get(pid_activo, {}).get("label", lista_llms[0])
-                self.llm_var.set(label_inicial)
+                info_activa = LLM_PROVIDERS.get(pid_activo, {})
+                label_inicial = _label_con_estado(pid_activo, info_activa.get("label", ""))
+                if label_inicial in lista_llms:
+                    self.llm_var.set(label_inicial)
+                else:
+                    self.llm_var.set(lista_llms[0])
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception:
             # Fallback al sistema antiguo si falla algo
             lista_llms = ["DeepSeek V3", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
             self._llm_label_to_id = {}
-        self.combo_llm = ctk.CTkComboBox(frame_llm, values=lista_llms, variable=self.llm_var, width=200, height=28,
+        self.combo_llm = ctk.CTkComboBox(frame_llm, values=lista_llms, variable=self.llm_var, width=240, height=28,
                                           fg_color=combo_bg, border_color=combo_border, button_color=combo_btn,
                                           text_color=hdr_text, font=ctk.CTkFont(size=11),
                                           command=self._on_llm_cambio)
@@ -370,6 +393,41 @@ class UIBuildersMixin:
 
         self.bind("<Configure>", _on_resize, add="+")
         self.after(200, _on_resize)
+
+    def _refrescar_indicadores_llm(self):
+        """Recalcula los iconos ✅/🔒 del desplegable de cerebro.
+
+        Se llama tras cambiar de proveedor o guardar una key nueva, para que
+        el desplegable refleje el estado real sin reiniciar la app.
+        """
+        try:
+            if not hasattr(self, "_llm_label_con_estado_fn"):
+                return
+            from api_clients import LLM_PROVIDERS
+            label_fn = self._llm_label_con_estado_fn
+
+            nueva_lista = [label_fn(pid, info["label"]) for pid, info in LLM_PROVIDERS.items()]
+            self._llm_label_to_id = {
+                label_fn(pid, info["label"]): pid for pid, info in LLM_PROVIDERS.items()
+            }
+
+            # Recordar selección actual (mapeada a pid para reasignar tras refresh)
+            pid_actual = None
+            try:
+                if hasattr(self.clients, "provider_activo_id"):
+                    pid_actual = self.clients.provider_activo_id
+            except Exception:
+                pid_actual = None
+
+            if hasattr(self, "combo_llm"):
+                self.combo_llm.configure(values=nueva_lista)
+                if pid_actual:
+                    info_act = LLM_PROVIDERS.get(pid_actual, {})
+                    nuevo_label = label_fn(pid_actual, info_act.get("label", ""))
+                    if nuevo_label in nueva_lista:
+                        self.llm_var.set(nuevo_label)
+        except Exception as e:
+            logger.debug(f"[silent] refrescar indicadores llm: {e}")
 
     def _build_modo(self):
         is_light = _get_real_is_light()
@@ -1492,6 +1550,24 @@ class UIBuildersMixin:
             menu.grab_release()
 
     def _construir_checkboxes(self, lista):
+        # Optimización v1.1: si los checkboxes para esta misma lista ya existen,
+        # no se destruyen ni se recrean — solo se restablecen a desmarcados.
+        # Esto evita el lag al cambiar entre modos Imagen/Vídeo/Audio cuando hay
+        # cientos de estilos.
+        if hasattr(self, "_estilos_lista_actual") and self._estilos_lista_actual == lista \
+           and hasattr(self, "estilo_checks") and self.estilo_checks:
+            # Reset rápido: solo desmarcar todo, sin destruir nada
+            for var in self.estilo_checks.values():
+                try:
+                    var.set(False)
+                except Exception:
+                    pass
+            if hasattr(self, 'lbl_estilos_sel'):
+                self.lbl_estilos_sel.configure(text="")
+            self._auto_sugerir_negativos()
+            self._actualizar_contador_estilos()
+            return
+
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
 
@@ -1518,6 +1594,9 @@ class UIBuildersMixin:
 
         for c_i in range(cols):
             self.frame_checks.columnconfigure(c_i, weight=1)
+
+        # Recordar qué lista construimos para evitar recrear al volver al mismo modo
+        self._estilos_lista_actual = lista
 
         self._auto_sugerir_negativos()
         self._actualizar_contador_estilos()

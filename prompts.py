@@ -105,9 +105,15 @@ REGLA DE NEGATIVE PROMPT:
 - SIEMPRE incluir como base: [negative tags]
 - Añadir 10-20 negative tags adicionales ESPECÍFICOS al contenido generado.
 
-FORMATO OBLIGATORIO — NUNCA markdown (**, *, ##, etc). Texto plano:
+FORMATO OBLIGATORIO — DEBES DEVOLVER AMBAS LÍNEAS SIEMPRE, sin excepciones:
 POSITIVE PROMPT: [tags en inglés separados por comas, siguiendo el orden de arriba]
 NEGATIVE PROMPT: [negative tags base + tags específicos al contenido]
+
+REGLAS ESTRICTAS DE FORMATO (no negociables):
+- NUNCA uses markdown (sin **, sin *, sin ##, sin backticks). Solo texto plano.
+- AMBAS líneas son obligatorias incluso si la idea parece simple. Un prompt sin NEGATIVE es un prompt incompleto.
+- Si el modelo es turbo y no admite weights, omite los paréntesis pero MANTÉN ambas líneas.
+- No añadas explicaciones, ni introducciones, ni cierre. Solo las dos líneas con el contenido.
 """
 
 SYSTEM_IMAGEN_NSFW = """
@@ -140,9 +146,14 @@ NEGATIVE:
 - SIEMPRE incluir base: [negative tags]
 - Añadir 10-20 tags adicionales específicos al contenido.
 
-FORMATO — texto plano, nunca markdown:
+FORMATO OBLIGATORIO — DEBES DEVOLVER AMBAS LÍNEAS SIEMPRE:
 POSITIVE PROMPT: [tags NSFW en inglés, ordenados]
 NEGATIVE PROMPT: [base + específicos]
+
+REGLAS ESTRICTAS:
+- Texto plano, nunca markdown (sin **, sin *, sin ##).
+- Ambas líneas obligatorias sin excepción.
+- No añadas explicaciones ni introducciones — solo las dos líneas.
 """
 
 # IMAGEN NATURAL LANGUAGE (Midjourney, DALL-E, Z Image Turbo, Ideogram)
@@ -342,9 +353,15 @@ NEGATIVE PROMPT:
 - Solo si el modelo lo soporta.
 - Incluir base [negative tags] + tags específicos al contenido del vídeo.
 
-FORMATO — texto plano, nunca markdown:
+FORMATO OBLIGATORIO — texto plano, nunca markdown:
 POSITIVE PROMPT: [prompt optimizado según motor]
-NEGATIVE PROMPT: [base + específicos, solo si modelo soporta]
+NEGATIVE PROMPT: [base + específicos, solo si el modelo soporta negative; si no, omite SOLO esta línea]
+
+REGLAS ESTRICTAS:
+- Sin markdown (sin **, sin *, sin ##).
+- La línea POSITIVE PROMPT es OBLIGATORIA siempre.
+- La línea NEGATIVE PROMPT es obligatoria salvo que el modelo no la soporte (ahí la omites).
+- No añadas explicaciones, introducciones ni cierre. Solo las líneas pedidas.
 """
 
 SYSTEM_NATURAL_VIDEO = """

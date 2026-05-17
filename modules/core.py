@@ -299,6 +299,11 @@ class CoreMixin:
                     self._actualizar_indicador_proveedor()
             except Exception:
                 pass
+            try:
+                if hasattr(self, "_refrescar_indicadores_llm"):
+                    self._refrescar_indicadores_llm()
+            except Exception:
+                pass
 
     # TOGGLE TEMA CLARO/OSCURO
 

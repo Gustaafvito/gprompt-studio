@@ -265,25 +265,15 @@ class GeminiProvider(BaseLLMProvider):
         if not GEMINI_DISPONIBLE:
             raise Exception("google-genai no instalado")
 
-        # Crear cliente fresco en cada llamada con la key explícita.
-        # Esto evita que cambios en el entorno o re-imports envejezcan el cliente.
         cliente = google_genai.Client(api_key=self.api_key)
-
-        # Debug: log de la key efectiva (enmascarada)
-        try:
-            _k = self.api_key
-            _masked = f"{_k[:6]}...{_k[-4:]}" if len(_k) > 12 else "(corta)"
-            logger.debug(f"GeminiProvider.completar → key {_masked} (len={len(_k)})")
-        except Exception:
-            pass
 
         modelo = model or self.model or "gemini-2.5-flash"
 
-        system_prompt = None
         contents = []
+        system_instruction = ""
         for m in messages:
             if m["role"] == "system":
-                system_prompt = m["content"]
+                system_instruction = m["content"]
             else:
                 role = "user" if m["role"] == "user" else "model"
                 contents.append(genai_types.Content(role=role, parts=[genai_types.Part.from_text(text=m["content"])]))
@@ -291,29 +281,29 @@ class GeminiProvider(BaseLLMProvider):
         if not contents:
             raise Exception("Gemini: no hay mensajes de usuario para enviar.")
 
-        last_user_text = contents[-1].parts[0].text
-        history = contents[:-1] if len(contents) > 1 else []
-
         config = genai_types.GenerateContentConfig(
             temperature=temperature,
             max_output_tokens=max_tokens,
-            system_instruction=system_prompt,
+            system_instruction=system_instruction if system_instruction else None,
         )
 
-        if history:
-            response = cliente.models.generate_content(
-                model=modelo,
-                contents=last_user_text,
-                config=config,
-            )
-        else:
-            response = cliente.models.generate_content(
-                model=modelo,
-                contents=last_user_text,
-                config=config,
-            )
+        response = cliente.models.generate_content(
+            model=modelo,
+            contents=contents,
+            config=config,
+        )
 
-        return response.text
+        raw = response.text or ""
+        markers = [
+            "<system-reminder>", "<system-reminder",
+            "Your operational mode", "You are no longer in read-only mode",
+            "You are permitted to make file changes", "You are a helpful assistant",
+            "You are Claude", "You are an AI"
+        ]
+        for marker in markers:
+            while marker in raw:
+                raw = raw.replace(marker, "")
+        return raw.strip()
 
 
 class ClaudeProvider(BaseLLMProvider):

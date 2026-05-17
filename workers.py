@@ -114,6 +114,27 @@ class DeepSeekWorker:
             )
         return provider
 
+    def _escalar_max_tokens(self, max_tokens: int) -> int:
+        """Ajusta max_tokens según el provider activo.
+
+        Algunos modelos (Gemini, Claude) usan tokenizadores donde cada token
+        cubre menos texto en inglés que DeepSeek/GPT, por lo que necesitan
+        más presupuesto para producir la misma salida.
+        """
+        try:
+            pid = self.clients.provider_activo_id if hasattr(self.clients, "provider_activo_id") else ""
+        except Exception:
+            return max_tokens
+        # Multiplicadores empíricos por provider
+        multiplicadores = {
+            "gemini": 2.5,    # Gemini 2.5 Flash necesita ~2.5x más tokens
+            "claude": 1.8,    # Claude también algo más
+            "openai": 1.0,    # GPT base
+            "deepseek": 1.0,  # Referencia
+        }
+        mult = multiplicadores.get(pid, 1.0)
+        return int(max_tokens * mult)
+
     def generar(self, peticion: str, temperature: float = 0.75, max_tokens: int = 900, **kwargs) -> str:
         """
         Envía petición al provider activo manteniendo historial.
@@ -125,10 +146,12 @@ class DeepSeekWorker:
         siempre desde self.clients.get_active_provider().
 
         v1.0.8: añadido retry automático con backoff exponencial (3 intentos).
+        v1.1: escala max_tokens según provider activo (Gemini necesita más).
         """
         import time
 
         self.historial.append({"role": "user", "content": peticion})
+        max_tokens_escalado = self._escalar_max_tokens(max_tokens)
 
         # Retry con backoff exponencial (3 intentos)
         max_reintentos = 3
@@ -137,7 +160,7 @@ class DeepSeekWorker:
         for intento in range(max_reintentos):
             try:
                 provider = self._get_provider()
-                texto = provider.completar(self.historial, temperature=temperature, max_tokens=max_tokens)
+                texto = provider.completar(self.historial, temperature=temperature, max_tokens=max_tokens_escalado)
 
                 self.historial.append({"role": "assistant", "content": texto})
 
@@ -159,13 +182,15 @@ class DeepSeekWorker:
                     raise
 
     def generar_batch(self, system_content: str, peticion: str, **kwargs) -> str:
-        """Generación batch sin historial (one-shot). v1.0.5: **kwargs para retrocompat."""
+        """Generación batch sin historial (one-shot). v1.0.5: **kwargs para retrocompat.
+        v1.1: max_tokens también se escala según provider."""
         msgs = [
             {"role": "system", "content": system_content},
             {"role": "user",   "content": peticion},
         ]
         provider = self._get_provider()
-        return provider.completar(msgs, temperature=0.8, max_tokens=6000)
+        max_tokens_escalado = self._escalar_max_tokens(6000)
+        return provider.completar(msgs, temperature=0.8, max_tokens=max_tokens_escalado)
 
     def traducir(self, texto_es: str, **kwargs) -> str:
         """Traduce ES → EN para prompts de IA. Devuelve original si falla.
