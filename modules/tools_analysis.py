@@ -236,7 +236,7 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2500, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2500)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
@@ -312,7 +312,7 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
@@ -602,7 +602,7 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
 
                 # Parsear scores con regex
@@ -773,7 +773,7 @@ class ToolsAnalysisMixin:
                         )
                         def _worker_mejorar():
                             try:
-                                texto_mejorado = self.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000, modelo_llm=self.llm_var.get())
+                                texto_mejorado = self.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
                                 texto_mejorado = limpiar_marcadores(texto_mejorado)
                                 def _aplicar():
                                     self.actualizar_salida(texto_mejorado)

@@ -240,9 +240,26 @@ class VisionChain:
         self.proveedores: list[tuple[str, Callable]] = []
         if clients.has_gemini():
             self.proveedores.append(("Gemini", self._describir_gemini))
-        self.proveedores.append(("Ollama", self._describir_ollama))
+        # Ollama se añade siempre, pero la función _describir_ollama hace check
+        # interno; si no está corriendo, lanza excepción que la cadena maneja
+        # como fallback al siguiente. Adicionalmente, al inicio comprobamos en
+        # background si Ollama está disponible para log informativo.
+        if self._ollama_disponible():
+            self.proveedores.append(("Ollama", self._describir_ollama))
+            logger.info("VisionChain: Ollama disponible (será fallback)")
+        else:
+            logger.info("VisionChain: Ollama no detectado (se omite del fallback)")
         if clients.has_openrouter():
             self.proveedores.append(("OpenRouter", self._describir_openrouter))
+
+        if not self.proveedores:
+            logger.warning(
+                "VisionChain: sin proveedores de visión disponibles. "
+                "Configura Gemini, OpenRouter o instala Ollama para usar ADN Visual."
+            )
+        else:
+            nombres = ", ".join(n for n, _ in self.proveedores)
+            logger.info(f"VisionChain: cadena activa → {nombres}")
 
     def describir(
         self,

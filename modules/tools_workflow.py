@@ -386,7 +386,7 @@ class ToolsWorkflowMixin:
                         f"- Sé creativo y diverso: cada llamada debe dar resultado distinto.\n\n"
                         f"FORMATO:\nPOSITIVE PROMPT: [prompt completo]\nNEGATIVE PROMPT: [si el modelo lo soporta]\n"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.9, max_tokens=1500, modelo_llm=self.llm_var.get())
+                    resp = self.deepseek.generar(peticion, temperature=0.9, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
 
                     # Eliminar negative si el modelo no lo soporta
@@ -738,7 +738,7 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 self.after(0, lambda: self.actualizar_salida(resp))
                 self.after(0, lambda: self.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
@@ -759,7 +759,7 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=200, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip()
                 self.after(0, lambda: self.txt_idea.insert("1.0", resp + "\n\n"))
                 self.after(0, lambda: self.set_estado("💡 Idea generada (macro)", "#2ecc71"))
@@ -782,7 +782,7 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
                 self.after(0, lambda: self.actualizar_salida(resp))
                 self.after(0, lambda: self.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
@@ -1659,7 +1659,7 @@ class ToolsWorkflowMixin:
                 )
 
                 try:
-                    resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500, modelo_llm=self.llm_var.get())
+                    resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
                     if not has_neg:
                         import re
@@ -1872,7 +1872,7 @@ class ToolsWorkflowMixin:
                         f"Estilos: {self.estilos_texto()}.\n"
                         f"Responde SOLO con el prompt formateado, sin explicaciones."
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=1500, modelo_llm=self.llm_var.get())
+                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
                     if not has_neg:
                         import re

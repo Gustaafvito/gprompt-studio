@@ -31,10 +31,17 @@ class DataStore:
         # Migraciones de plataforma (rebrand/deprecaciones)
         self._migrar_plataformas()
 
-        if not self.plantillas:
-            self._crear_plantillas_ejemplo()
-
-        self._crear_formulas_ejemplo()
+        # Crear ejemplos SOLO la primera vez. Si el usuario los borra, no vuelven a aparecer.
+        # Esto se controla con el flag `_ejemplos_iniciados` en preferencias.
+        prefs = self.cargar_preferencias()
+        ejemplos_iniciados = prefs.get("_ejemplos_iniciados", False)
+        if not ejemplos_iniciados:
+            if not self.plantillas:
+                self._crear_plantillas_ejemplo()
+            self._crear_formulas_ejemplo()
+            # Marcar como iniciado para que no vuelvan a aparecer si el usuario los borra
+            prefs["_ejemplos_iniciados"] = True
+            self.guardar_preferencias(prefs)
 
     # ── Lectura / Escritura atómica ───────────────────────────────
 

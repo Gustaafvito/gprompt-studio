@@ -43,7 +43,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=1.0, max_tokens=200, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=1.0, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip().strip('"').strip("'")
                 def _aplicar():
                     self.txt_idea.delete("1.0", "end")
@@ -92,7 +92,7 @@ class ToolsCreativeMixin:
                     f"Estilos: {self.estilos_texto()}.\n"
                     f"Responde SOLO con el prompt, sin explicaciones."
                 )
-                resp = self.deepseek.generar(peticion, temperature=temp, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=temp, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 if not has_neg:
                     import re
@@ -154,7 +154,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.2, max_tokens=400, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.2, max_tokens=400)
                 resp = limpiar_marcadores(resp)
                 import re
                 m = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)$', resp, re.DOTALL | re.IGNORECASE)
@@ -216,7 +216,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400)
                 resp = limpiar_marcadores(resp)
 
                 # Extraer modelo recomendado
@@ -291,7 +291,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400)
                 resp = limpiar_marcadores(resp)
                 import re
                 m = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)$', resp, re.DOTALL | re.IGNORECASE)
@@ -433,7 +433,7 @@ class ToolsCreativeMixin:
                     f"   - Reescribe el prompt para que describa fielmente la imagen real\n"
                     f"   - Mantén el formato original (tags/natural)\n"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2500, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2500)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
@@ -1032,7 +1032,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=300, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=300)
                 resp = limpiar_marcadores(resp).strip()
 
                 # Parsear lista de estilos
@@ -1142,7 +1142,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     f"DETALLES CLAVE: [3-5 elementos que NO deben cambiar nunca]\n\n"
                     f"Sé MUY específico. 'pelo plateado plata-azulado' es mejor que 'pelo gris'. 'ojos verdes esmeralda con manchas doradas' es mejor que 'ojos verdes'."
                 )
-                adn = self.deepseek.generar(peticion, temperature=0.2, max_tokens=800, modelo_llm=self.llm_var.get())
+                adn = self.deepseek.generar(peticion, temperature=0.2, max_tokens=800)
                 adn = limpiar_marcadores(adn).strip()
                 self._anclaje_visual = adn
                 self.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
@@ -1299,7 +1299,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     f"- {neg_str}\n\n"
                     f"FORMATO:\nPOSITIVE PROMPT: [prompt completo con ADN intacto]\nNEGATIVE PROMPT: [si aplica]\n"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 if not has_neg:
                     import re
@@ -1357,7 +1357,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
@@ -1638,7 +1638,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=4000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=4000)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
                 if len(bloques) < 2:
@@ -1687,7 +1687,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=3000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=3000)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
 
@@ -1734,7 +1734,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=3500, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=3500)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
 
@@ -1776,7 +1776,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                         f"Responde SOLO con el nuevo prompt, sin explicaciones.\n"
                         f"FORMATO: POSITIVE PROMPT: ... NEGATIVE PROMPT: ..."
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.85, max_tokens=1800, modelo_llm=self.llm_var.get())
+                    resp = self.deepseek.generar(peticion, temperature=0.85, max_tokens=1800)
                     resp = limpiar_marcadores(resp)
                     evoluciones.append(resp)
                     base = resp
@@ -2102,7 +2102,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000, modelo_llm=self.llm_var.get())
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
                 resp = limpiar_marcadores(resp)
 
                 bloques = self._parsear_bloques_numerados(resp)
@@ -2381,8 +2381,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                         + "💡 ILUMINACIÓN: [tipo de luz común]\n\n"
                         + "🎬 PROMPT TEMPLATE EN INGLÉS (para generar imágenes en este mismo estilo):\n[prompt completo]"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=2000,
-                                                  modelo_llm=self.llm_var.get())
+                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=2000)
                     resp = limpiar_marcadores(resp)
 
                     def _mostrar():
