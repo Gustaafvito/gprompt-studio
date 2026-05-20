@@ -16,6 +16,7 @@ from .gprompt_window import GPromptWindow
 from .event_bus import EventBus
 from .preview_service import PreviewService
 from .comfyui_exporter import ComfyUIWorkflowExporter
+from .components import install_components
 
 __all__ = [
     "UIBuildersMixin",
@@ -30,4 +31,5 @@ __all__ = [
     "EventBus",
     "PreviewService",
     "ComfyUIWorkflowExporter",
+    "install_components",
 ]

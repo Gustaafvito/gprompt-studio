@@ -67,7 +67,8 @@ from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_li
 from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin, EventBus, PreviewService
+    DialogsMixin, CoreMixin, EventBus, PreviewService,
+    install_components,
 )
 
 # Inicializar EventBus singleton
@@ -88,6 +89,12 @@ class ArquitectoApp(
 
     def __init__(self):
         super().__init__()
+
+        # Instala 8 componentes (self.core, self.ui, self.creative,
+        # self.workflow, self.analysis, self.data, self.backup, self.dialogs)
+        # que delegan al app. Namespace progresivo hacia composición sin
+        # romper la herencia de mixins existente.
+        install_components(self)
 
         # En v1.0 metimos un splash con root temporal que generaba errores
         # 'invalid command name'. Ahora ocultamos la ventana principal y
