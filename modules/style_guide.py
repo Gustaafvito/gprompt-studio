@@ -250,23 +250,60 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
                 return k
         return "todos"
 
-    def render(filtro: str = ""):
+    # Estado para paginación y debounce del buscador
+    PAGE_SIZE = 60
+    estado = {"visible": PAGE_SIZE, "after_id": None}
+
+    def _render_card(parent, nombre, d, modos_cache):
+        modos_estilo = modos_cache.get(nombre, frozenset())
+        badge_text = " ".join(
+            {"imagen": "🖼", "video": "🎬", "audio": "🎵"}[m]
+            for m in ("imagen", "video", "audio") if m in modos_estilo
+        )
+        card = ctk.CTkFrame(parent, fg_color=bg_card, corner_radius=6)
+        card.pack(fill="x", padx=4, pady=2)
+
+        fila_top = ctk.CTkFrame(card, fg_color="transparent")
+        fila_top.pack(fill="x", padx=10, pady=(6, 0))
+        ctk.CTkLabel(
+            fila_top, text=nombre, font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=text_main, anchor="w",
+        ).pack(side="left")
+        if badge_text:
+            ctk.CTkLabel(
+                fila_top, text=badge_text, text_color=text_muted,
+                font=ctk.CTkFont(size=11),
+            ).pack(side="right")
+
+        if d["descripcion"]:
+            ctk.CTkLabel(
+                card, text=d["descripcion"], text_color=text_muted,
+                anchor="w", wraplength=820, justify="left",
+            ).pack(fill="x", padx=10)
+        if d["ejemplo"]:
+            ctk.CTkLabel(
+                card, text=f"📷 {d['ejemplo']}", text_color=accent,
+                font=ctk.CTkFont(size=10, slant="italic"),
+                anchor="w", wraplength=820, justify="left",
+            ).pack(fill="x", padx=10, pady=(0, 6))
+
+    def render(filtro: str = "", reset_paginacion: bool = True):
+        if reset_paginacion:
+            estado["visible"] = PAGE_SIZE
         for w in scroll.winfo_children():
             w.destroy()
         f = filtro.strip().lower()
         modo = _modo_actual()
         modos_cache = _construir_modos_cache()
 
-        por_grupo: dict[str, list[tuple[str, dict]]] = {}
-        n = 0
-        total_modo = 0  # cuántos hay en este modo (independiente del texto de búsqueda)
+        # Filtrado completo (rápido, solo iteración sobre dict)
+        resultados: list[tuple[str, dict]] = []
+        total_modo = 0
         for nombre, d in guia.items():
-            # Filtro por modo
             if modo != "todos":
                 if modo not in modos_cache.get(nombre, frozenset()):
                     continue
             total_modo += 1
-            # Filtro de búsqueda
             if f and not (
                 f in nombre.lower()
                 or f in d["grupo"].lower()
@@ -274,80 +311,63 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
                 or f in d["ejemplo"].lower()
             ):
                 continue
-            por_grupo.setdefault(d["grupo"], []).append((nombre, d))
-            n += 1
+            resultados.append((nombre, d))
 
+        total = len(resultados)
         if modo == "todos":
-            contador_var.set(f"{n} de {len(guia)}" if f else f"{len(guia)} estilos")
+            contador_var.set(f"{total} de {len(guia)}" if f else f"{len(guia)} estilos")
         else:
             etiqueta = _FILTRO_LABELS[modo]
             contador_var.set(
-                f"{n} de {total_modo} en {etiqueta}" if f else f"{total_modo} en {etiqueta}"
+                f"{total} de {total_modo} en {etiqueta}" if f else f"{total_modo} en {etiqueta}"
             )
 
-        if n == 0:
-            msg = "Sin resultados." if f else f"No hay estilos en la guía para el modo {_FILTRO_LABELS[modo]}."
+        if total == 0:
+            msg = "Sin resultados." if f else f"No hay estilos en la guía para {_FILTRO_LABELS[modo]}."
             ctk.CTkLabel(scroll, text=msg, text_color=text_muted, font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 
+        # Página visible
+        visibles = min(estado["visible"], total)
+        sublista = resultados[:visibles]
+
+        # Renderizar agrupado por grupo
+        por_grupo: dict[str, list[tuple[str, dict]]] = {}
+        for nombre, d in sublista:
+            por_grupo.setdefault(d["grupo"], []).append((nombre, d))
+
         for grupo in por_grupo:
             ctk.CTkLabel(
-                scroll,
-                text=grupo,
-                font=ctk.CTkFont(size=15, weight="bold"),
-                text_color=accent,
-                anchor="w",
+                scroll, text=grupo, font=ctk.CTkFont(size=15, weight="bold"),
+                text_color=accent, anchor="w",
             ).pack(fill="x", padx=4, pady=(14, 4))
-
             for nombre, d in por_grupo[grupo]:
-                # Badges de los modos en los que aparece este estilo
-                modos_estilo = modos_cache.get(nombre, frozenset())
-                badge_text = " ".join(
-                    {"imagen": "🖼", "video": "🎬", "audio": "🎵"}[m] for m in ("imagen", "video", "audio") if m in modos_estilo
-                )
+                _render_card(scroll, nombre, d, modos_cache)
 
-                card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=6)
-                card.pack(fill="x", padx=4, pady=2)
+        # Botón "Mostrar más" si quedan resultados sin pintar
+        restantes = total - visibles
+        if restantes > 0:
+            def _mostrar_mas():
+                estado["visible"] += PAGE_SIZE
+                render(ent_buscar.get(), reset_paginacion=False)
+            ctk.CTkButton(
+                scroll,
+                text=f"▼ Mostrar {min(PAGE_SIZE, restantes)} más  ({restantes} restantes)",
+                command=_mostrar_mas,
+                height=34,
+                fg_color=accent,
+                hover_color=("#1d4ed8" if is_lt else "#3b82f6"),
+            ).pack(fill="x", padx=4, pady=(14, 6))
 
-                fila_top = ctk.CTkFrame(card, fg_color="transparent")
-                fila_top.pack(fill="x", padx=10, pady=(6, 0))
-                ctk.CTkLabel(
-                    fila_top,
-                    text=nombre,
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color=text_main,
-                    anchor="w",
-                ).pack(side="left")
-                if badge_text:
-                    ctk.CTkLabel(
-                        fila_top,
-                        text=badge_text,
-                        text_color=text_muted,
-                        font=ctk.CTkFont(size=11),
-                    ).pack(side="right")
-
-                if d["descripcion"]:
-                    ctk.CTkLabel(
-                        card,
-                        text=d["descripcion"],
-                        text_color=text_muted,
-                        anchor="w",
-                        wraplength=820,
-                        justify="left",
-                    ).pack(fill="x", padx=10)
-                if d["ejemplo"]:
-                    ctk.CTkLabel(
-                        card,
-                        text=f"📷 {d['ejemplo']}",
-                        text_color=accent,
-                        font=ctk.CTkFont(size=10, slant="italic"),
-                        anchor="w",
-                        wraplength=820,
-                        justify="left",
-                    ).pack(fill="x", padx=10, pady=(0, 6))
-
+    # ── Debounce del buscador ──────────────────────────────
     def on_buscar(*_):
-        render(ent_buscar.get())
+        # Cancelar render pendiente y reprogramar (200ms tras dejar de escribir)
+        if estado["after_id"]:
+            try:
+                win.after_cancel(estado["after_id"])
+            except Exception as _e:
+                logger.debug(f"[silent] after_cancel: {_e}")
+        estado["after_id"] = win.after(200, lambda: render(ent_buscar.get()))
 
     def on_filtro():
         render(ent_buscar.get())
