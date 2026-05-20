@@ -44,6 +44,7 @@
 |--------|------------|---------|
 | Óleo / Oil Painting | Pinceladas visibles, texturas | Retrato renacentista de mujer |
 | Acrílico | Colores brillantes, secado rápido | Pintura moderna abstracta |
+| Pastel Painting | Pintura al pastel seco, colores suaves y empolvados | Retrato infantil con tonos pastel difuminados |
 | Watercolor | Colores suaves, degradados húmedos | Flores en papel húmedo |
 | Charcoal / Carboncillo | Blanco/negro puro, sombras suaves | Retrato Bohemio |
 | Sumi-e / Tinta china | Minimalismo oriental, tinta negra | Bambú en tinta sobre papel arroz |
@@ -348,6 +349,144 @@
 
 ---
 
+## 🎥 Movimientos de cámara (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| Cámara Lenta / Slow Motion | Velocidad reducida, alta resolución temporal | Salpicadura de agua filmada a 240 fps |
+| Cámara Mano (Handheld) | Cámara al hombro, vibración natural | Documental en zona de conflicto |
+| Crane / Grúa | Movimiento aéreo amplio con grúa | Plano de boda subiendo desde los novios |
+| Dolly Zoom | Efecto vértigo (Hitchcock), zoom + dolly opuestos | Cara aterrada acercándose con fondo deformado |
+| First Person POV | Vista en primera persona, GoPro | Skater bajando escalera en POV |
+| Gimbal Smooth | Gimbal estabilizado, fluidez total | Travelling cinematográfico con DJI Ronin |
+| Helicóptero | Toma aérea desde helicóptero | Vista de costa filmada desde helicóptero |
+| Hyperlapse | Time-lapse en movimiento, dinámico | Caminata por Tokyo acelerada con steady move |
+| Jump Cut | Cortes saltones, energético | Vlog de YouTuber con cortes rápidos |
+| Match Cut | Corte que conecta dos escenas por similitud visual | Hueso a nave espacial (2001) |
+| Orbital Shot | Cámara orbita 360° alrededor del sujeto | Bullet-time de Matrix |
+| Parallax | Capas a distintas profundidades, movimiento separado | Animación 2D con fondos múltiples |
+| Pull Back / Reveal | Revelación con zoom out | Empieza en detalle, retrocede y muestra paisaje |
+| Split Screen | Pantalla dividida, multi-ángulo | Llamada con dos personajes simultáneos |
+| Steadicam | Travelling fluido sin gimbal | Plano largo de Goodfellas en el club |
+| Tracking Shot | Plano travelling siguiendo al sujeto | Niño corriendo por el patio |
+| Whip Pan | Paneo rápido violento, transición | Cambio de escena con barrido lateral |
+| Zoom Burst | Zoom súbito explosivo, énfasis | Zoom violento a cara sorprendida |
+
+---
+
+## 🎞 Animación (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| 2D Animation | Animación tradicional 2D, dibujos animados | Película Disney clásica, Los Simpson |
+| 3D Animation | CGI, 3D renderizado | Película Pixar, Toy Story |
+| Motion Graphics | Gráficos en movimiento, formas, tipografía | Intro de canal de YouTube animado |
+| Typography Animation | Tipografía animada, kinetic text | Intro de Netflix con letras en movimiento |
+| Whiteboard Animation | Pizarra con mano dibujando | Tutorial educativo explicado con dibujo en vivo |
+
+---
+
+## 📱 Formatos & plataformas (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| 360° Video | Vista esférica completa, interactivo | Tour virtual de museo en 360° |
+| ASMR Visual | Texturas, sonido detallado, hipnótico | Vídeo de slime mezclándose con audio binaural |
+| Cortometraje | Película corta narrativa, 5-20 min | Corto de festival con principio-desarrollo-final |
+| Feature Film | Largometraje cinematográfico, 90+ min | Película de Hollywood con producción AAA |
+| Immersive / AR | Realidad aumentada, capas interactivas | App de IKEA poniendo muebles virtuales en salón |
+| Instagram Reels | Reel vertical 9:16, dinámico, viral | Receta de café en 30s con texto y música trending |
+| Interactive Video | Vídeo con elecciones del espectador | Bandersnatch (Netflix) |
+| Live Performance | Show en directo, multicámara | Concierto de Coldplay grabado en vivo |
+| Loop / Bucle | Bucle perfecto, sin fin visible | GIF de cascada que se repite indefinidamente |
+| Lyric Video | Letra de canción animada | Lyric video oficial con texto bailando |
+| Music Video Sync | Visuales sincronizados al ritmo | Visuales que cambian al bombo de la canción |
+| Reels / Stories | Vertical 9:16, dinámico, breve | Story de Instagram con stickers |
+| TikTok / Short-form | Formato corto vertical, viral | Trend con audio popular |
+| Trailer Cinematográfico | Tráiler de película, montaje impactante | Tráiler de Marvel con golpes orquestales |
+| Videoclip Musical | Videoclip oficial, alta producción | Clip de pop con coreografía |
+| VR Experience | Realidad virtual, inmersivo | Demo de Oculus saltando en paracaídas |
+| YouTube Shorts | Vertical YouTube < 60s | Compilado de shorts con sticker |
+
+---
+
+## 📢 Marketing & comercial (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| Anuncio 15s (TikTok/IG) | Comercial corto vertical, gancho rápido | Spot de bebida energética para Stories |
+| Anuncio 30s (TV) | Comercial estándar TV, narrativa clara | Anuncio de coche con voz en off |
+| Anuncio 6s (bumper) | Bumper YouTube, mensaje directo | Logo + claim + CTA en 6 segundos |
+| Anuncio Lifestyle | Estilo de vida aspiracional, personas reales | Pareja desayunando en cocina luminosa |
+| Behind-the-Scenes | Detrás de cámaras, making-of | Equipo grabando, técnico ajustando luz |
+| Brand Storytelling | Historia de marca emocional, narrativa | Origen de marca contado por el fundador |
+| Corporate Video | Empresarial profesional, oficinas, B-roll | Vídeo corporativo de banco con CEO |
+| Event Coverage | Cobertura de evento, B-roll y testimonios | Aftermovie de conferencia tech |
+| Explainer Video | Vídeo explicativo animado, didáctico | "Cómo funciona blockchain" en 90 segundos |
+| Fashion Editorial | Moda editorial, alta producción | Pasarela París, modelos en pose |
+| FAQ Video | Preguntas frecuentes, talking head | Soporte respondiendo "¿cómo cancelar?" |
+| Gamified Content | Dinámicas de juego, barra de progreso | Tutorial con logros desbloqueables |
+| Influencer Content | Influencer mostrando producto, casual | YouTuber haciendo review en su habitación |
+| Infographic Video | Datos en movimiento, gráficos animados | Estadísticas animadas tipo Vox |
+| Onboarding Video | Bienvenida a app/servicio nuevo | Tour inicial de Slack al registrarte |
+| Polished / Hi-Res | Producción pulida, alta resolución | Anuncio de Apple, todo perfecto |
+| Product Demo | Demo de producto en uso | Cómo funciona el nuevo iPhone |
+| Producto Macro | Macro extremo del producto | Zapatilla con primerísimos planos texturizados |
+| Shoppable Video | Vídeo con productos clicables | Reel con tags de TikTok Shop |
+| Tech Review | Review tecnológica, gadgets | MKBHD analizando el último iPhone |
+| Testimonial / Case Study | Testimonio de cliente, caso de éxito | Cliente contando cómo le ayudó el producto |
+| Training Video | Formación corporativa | Onboarding de empleado nuevo |
+| UGC Content | Contenido generado por usuario, auténtico | Vídeo casero de usuario probando producto |
+| Unboxing | Apertura de producto desde la caja | Unboxing del PS5 al desempaquetar |
+
+---
+
+## 📺 Géneros narrativos (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| Concert Documentary | Concierto en directo, multicámara | Documental de show de rock con público |
+| Cooking / Foodie | Comida en cámara cenital, manos | Receta de pasta filmada desde arriba |
+| Deportes / Sports | Acción deportiva, multicámara, replays | Final de fútbol con cámaras lentas |
+| Experimental Film | Cine abstracto, autoral | Cortos sin narrativa lineal con texturas |
+| Exploratory / Documentary | Documental observacional, descubrimiento | National Geographic sobre tribu remota |
+| Gaming Highlights | Mejores jugadas de gaming | Compilado épico de Fortnite |
+| How-to / Tutorial | Tutorial paso a paso | Cómo cambiar el aceite del coche |
+| Interior / Real Estate | Tour por casa o inmueble | Tour de piso en venta con dolly |
+| Misterio / Suspense | Suspense gradual, atmósfera tensa | Thriller psicológico |
+| Naturaleza / Wildlife | Vida salvaje, fauna en su hábitat | Documental BBC de leones cazando |
+| Romance | Película romántica, luz suave | Notting Hill, La La Land |
+| Sátira | Comedia social ácida | Black Mirror, The Office (UK) |
+| Silent Film | Cine mudo, intertítulos, B&N | Chaplin, El Artista |
+| Slasher / Horror | Terror gore, slasher | Halloween, Scream |
+| Surrealist Film | Cine surrealista, Buñuel, Lynch | Eraserhead, The Holy Mountain |
+| True Crime | Documental crime real, reconstrucciones | Making a Murderer, Tiger King |
+| Tutorial Cocina | Receta paso a paso | Paella en 5 minutos |
+| Vlog / Handheld | Vlog en mano, casual, cámara personal | Vlog diario de viajes |
+
+---
+
+## 🌈 Estética cinematográfica (vídeo)
+
+| Estilo | Cómo se ve | Ejemplo |
+|--------|------------|---------|
+| Black & White | Blanco y negro, contraste alto | Película noir o documental autoral en B&N |
+| Cinemagraph | Foto con un elemento en bucle | Café humeando mientras todo lo demás está quieto |
+| Cinematic Noir | Cine negro, sombras duras, neón | Detective bajo farola en callejón lluvioso |
+| Color Pop | Un color saturado sobre B&N | Paraguas rojo en multitud en B&N |
+| Dreamcore | Surrealista, onírico, nostálgico raro | Habitación vacía con luz extraña, sin gente |
+| Glitch / VHS | Ruido analógico, glitches digitales | Vídeo retro con interferencias y scan lines |
+| Lo-Fi Aesthetic | Estética lo-fi, grano, vintage | Lo-fi girl estudiando con beats |
+| Neo-noir | Noir moderno, neón, ciudad nocturna | Blade Runner 2049, Drive |
+| Neon / Vaporwave | Neón, estética 80s, retrofuturismo | Synthwave video con palmeras y rejillas |
+| Retro 70s | Estética años 70, granulado, tonos cálidos | Documental con look Kodachrome |
+| Retro 80s | Años 80, neón, VHS, paleta saturada | Stranger Things vibes |
+| Retro 90s | Años 90, hi8 cam, pop colors | Sitcom de los 90, look MTV |
+| Tilt-Shift Miniature | Efecto miniatura, profundidad falsa | Ciudad que parece maqueta |
+| Vintage Film | Cine vintage, grano, paleta envejecida | Película de los 70s restaurada |
+
+---
+
 ## 🎬 Estilos de Vídeo
 
 | Estilo | Cómo se ve |
@@ -403,4 +542,4 @@
 
 ---
 
-**Total: 249 estilos de imagen + 62 de vídeo + 20 de audio**
+**Total: 257 estilos de imagen + 118 de vídeo + 20 de audio (391 entradas, cobertura 100% del catálogo de la app)**
