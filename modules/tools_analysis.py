@@ -23,156 +23,13 @@ class ToolsAnalysisMixin:
     """Mixin containing all analysis tool methods."""
 
     def _cmd_modo_educativo(self):
-        """Activa/desactiva el modo educativo: tooltips explicativos para principiantes."""
-        if not hasattr(self, '_modo_educativo_activo'):
-            self._modo_educativo_activo = False
-        self._modo_educativo_activo = not self._modo_educativo_activo
+        """Abre el glosario de términos AI desde data/glosario.json.
 
-        if self._modo_educativo_activo:
-            vent = GPromptWindow(self)
-            vent.title("📖 Modo educativo — Glosario")
-            vent.geometry("800x680")
-            vent.transient(self)
-            ctk.CTkLabel(vent, text="📖 Glosario de términos AI",
-                         font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-            ctk.CTkLabel(vent, text="Aprende qué significa cada término — busca para filtrar",
-                         font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 6))
-
-            search_frame = ctk.CTkFrame(vent, fg_color="transparent")
-            search_frame.pack(fill="x", padx=15, pady=(0, 4))
-            search_entry = ctk.CTkEntry(search_frame, placeholder_text="🔍 Busca un término...",
-                                        height=30, font=ctk.CTkFont(size=11))
-            search_entry.pack(fill="x")
-
-            scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
-            scroll.pack(fill="both", expand=True, padx=15, pady=5)
-
-            def _mostrar_glosario(filtro=""):
-                for w in scroll.winfo_children():
-                    w.destroy()
-                filtro = filtro.lower()
-                for titulo, desc in glosario:
-                    if filtro and filtro not in titulo.lower() and filtro not in desc.lower():
-                        continue
-                    card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=8)
-                    card.pack(fill="x", pady=3)
-                    ctk.CTkLabel(card, text=titulo, font=ctk.CTkFont(size=11, weight="bold"),
-                                 text_color="#aaccee").pack(anchor="w", padx=12, pady=(6, 2))
-                    ctk.CTkLabel(card, text=desc, font=ctk.CTkFont(size=10),
-                                 text_color="#888888", wraplength=730, anchor="w",
-                                 justify="left").pack(fill="x", padx=12, pady=(0, 6))
-
-            search_entry.bind("<KeyRelease>", lambda e: _mostrar_glosario(search_entry.get()))
-
-            glosario = [
-                # ── Básicos ────────────────────────────────
-                ("📐 ¿Qué es un PROMPT?",
-                 "El prompt es la descripción en texto que le das al modelo IA para que genere una imagen, vídeo o audio. Cuanto más específico, mejor resultado."),
-                ("🟢 POSITIVE PROMPT",
-                 "Lo que SÍ quieres que aparezca: sujeto, estilo, iluminación, cámara, atmósfera, calidad."),
-                ("🔴 NEGATIVE PROMPT",
-                 "Lo que NO quieres: artefactos, texto, deformaciones, estilo equivocado. Solo algunos modelos lo soportan."),
-                ("🏷 TAGS vs LENGUAJE NATURAL",
-                 "Tags = palabras clave separadas por comas (estilo Stable Diffusion). Natural = frases descriptivas (estilo Midjourney/GPT)."),
-
-                # ── Pesos y parámetros ─────────────────────
-                ("⚖️ PESOS NUMÉRICOS — (tag:1.2)",
-                 "Aumentan la importancia de un tag. (tag:1.5) refuerza, (tag:0.7) reduce. Solo en modelos Stable Diffusion."),
-                ("🎯 CFG (Classifier-Free Guidance)",
-                 "Controla qué tan fielmente el modelo sigue tu prompt. Bajo (1-3) = más creativo, Alto (7-15) = más estricto."),
-                ("⚡ MODELOS TURBO",
-                 "Modelos optimizados para velocidad (Z Image Turbo, FLUX Schnell). Generan en segundos pero con CFG bajo (~1) — IGNORAN pesos y negative prompt."),
-                ("🌐 LENGUAJE NATURAL",
-                 "Modelos como Midjourney, GPT Image, FLUX entienden frases completas. NO uses tags ni pesos numéricos en estos."),
-                ("📐 RATIO / ASPECT RATIO",
-                 "Proporción de la imagen. 1:1 = cuadrado, 16:9 = horizontal, 9:16 = vertical, 2:3 = retrato, 21:9 = cine."),
-                ("🎨 SAMPLER",
-                 "Algoritmo que decide cómo el modelo va creando la imagen. Euler = rápido, DPM++ = balanceado, Karras = alta calidad."),
-                ("🔢 STEPS / PASOS",
-                 "Cuántas iteraciones hace el modelo. Más pasos = más detalle pero más lento. Turbo: 4-8, Estándar: 20-30, HQ: 50+."),
-                ("🌱 SEED / SEMILLA",
-                 "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar y comparar."),
-                ("🎯 TRIGGER WORDS",
-                 "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt."),
-                ("✨ MASTERPIECE / 8K / DETAILED",
-                 "Tags 'mágicos' que mejoran calidad en SD. Cuidado: usarlos demasiado los degrada. 1-2 al final del prompt es suficiente."),
-                ("👤 LORA",
-                 "Modelo pequeño que se 'enchufa' al modelo principal para añadir un estilo, personaje o concepto específico."),
-
-                # ── Calidad y estilos ───────────────────────
-                ("📸 DEPTH OF FIELD / BOKEH",
-                 "Efecto de enfoque selectivo: sujeto nítido, fondo difuminado. Tags: 'depth of field', 'bokeh', 'f/1.4', 'background blur'."),
-                ("💡 LIGHTING / ILUMINACIÓN",
-                 "Tipo de luz en la escena. 'Golden hour', 'blue hour', 'rim lighting', 'volumetric lighting', 'neon glow', 'soft diffused'."),
-                ("🎬 SHOT / PLANO",
-                 "Tipo de encuadre: 'wide shot', 'close-up', 'medium shot', 'extreme close-up', 'aerial view', 'dutch angle'."),
-                ("🖼️ ESTILOS ARTÍSTICOS",
-                 "'Cyberpunk', 'Art Nouveau', 'Art Deco', 'Baroque', 'Impressionist', 'Photorealistic', 'Anime', 'Synthwave', 'Solarpunk'."),
-                ("🔲 CLIP SKIP",
-                 "Parámetro que controla hasta qué capa de red neuronal se usa. 1 = todo, 2 = menos detalle (más artístico). En Anime: 2, Realismo: 1."),
-                ("🧬 GUIDANCE SCALE / GUIDANCE",
-                 "Similar al CFG pero en modelos FLUX. Controla adherencia al prompt. Valores típicos: 1-3 (turbo), 3.5-7.5 (estándar)."),
-
-                # ── Herramientas de G-Prompt Studio ──────────
-                ("📊 SCORING",
-                 "Evalúa la calidad de tu prompt en 4 categorías (25 pts c/u): Claridad del sujeto, Detalle de estilo, Composición y cámara, Calidad y atmósfera. Verde ≥80%, amarillo 50-79%, rojo <50%. Sugiere mejoras automáticamente."),
-                ("🧬 ADN VISUAL",
-                 "Extrae la 'huella genética' de una imagen en JSON estructurado: sujeto, escena, iluminación, cámara, estilo, composición, atmósfera, datos técnicos. Sirve para replicar el estilo en otras imágenes."),
-                ("🔍 ANÁLISIS INVERSO",
-                 "Compara una imagen cargada con tu prompt actual. Muestra: % de coincidencia, elementos que coinciden, elementos que faltan en tu prompt, elementos extra que no pediste. Ideal para mejorar prompts."),
-                ("⚡ QUICK GENERATE",
-                 "Generación ultra-rápida usando modelos turbo. Ideal para iterar ideas sin esperar. Solo funciona con modelos marcados como 'Turbo' en la config."),
-                ("🔄 VARIACIONES",
-                 "Genera 3 variantes del prompt actual: una más concisa, una más descriptiva, una con enfoque diferente. Útil para explorar direcciones creativas."),
-                ("🎯 AUTO-MEJORAR",
-                 "Revisa tus últimos 10 prompts del historial y para cada uno sugiere: qué está bien, qué mejorar, versión mejorada. Te ayuda a identificar patrones de mejora."),
-                ("📋 CRÍTICA DE HISTORIAL",
-                 "El LLM analiza tus últimos 30 prompts y te cuenta: qué tipo de contenido generas, qué modelos/plataformas prefieres, qué estilos usas más, qué podrías explorar más."),
-                ("💎 SEMILLAS / SEEDS FAVORITOS",
-                 "Guarda seeds que te gustaron para reutilizarlas. Al aplicar una seed, se cargan automáticamente: modelo, plataforma, sampler, steps, CFG, clip skip y resol. Ideales para mantener coherencia visual en una serie."),
-                ("📐 PLANTILLAS",
-                 "Estructuras predefinidas de prompts con variables (sujeto, entorno, estilo). Permiten generar prompts completos rellenando solo lo que cambia. Las hay por modo (imagen/vídeo/audio) y por estilo."),
-                ("🔄 MACROS",
-                 "Atajos que insertan bloques de texto predefinidos. Ej:插入 un negative preset, una fórmula de iluminación, una estructura de cámara. Se usan con botones rápidos o atajos de teclado."),
-                ("🏷️ SNIPPETS",
-                 "Fragmentos pequeños reutilizables: tags de calidad (8k, intricate), configuraciones de cámara, luces, estilos. Se insertan con un clic o atajo de teclado."),
-                ("📐 FÓRMULAS",
-                 "Combinaciones de variables + lógica predefinida que generan prompts estructurados. Ej: 'Retrato [adjetivo] + [sujeto] + [entorno] + [estilo] + [iluminación]'."),
-                ("🧑 PERSONAJES",
-                 "Guarda personajes con nombre, descripción y notas. Se insertan en prompts para mantener consistencia en series de imágenes. Incluye LoRA asociado si lo tiene."),
-                ("⚡ BATCH / LOTE",
-                 "Genera múltiples prompts a la vez usando una lista o patrón. Ideal para crear series de variaciones o preparar contenido para catálogos."),
-                ("🎯 FOCUS MODE",
-                 "Oculta elementos de UI para que te concentres solo en escribir. Solo muestra: idea, salida, botón generar. Perfecto para sesiones de escritura intensa."),
-                ("🌟 PROMPTS ESTRELLA",
-                 "Tus mejores prompts, guardados con nota (1-10) y modelo usado. Marcalos como favoritos para acceder rápido y comparar qué hace a un prompt excelente."),
-
-                # ── Conceptos avanzados ─────────────────────
-                ("🔁.img2img / IMAGE TO IMAGE",
-                 "Técnica que parte de una imagen existente (no generada por IA) y la transforma. En Stable Diffusion: carga imagen → ajusta prompt → genera. Produce resultados más controlables."),
-                ("📦 CONTROLNET",
-                 "Modelo adicional que controla la composición de la imagen mediante mapas (poses, bordes, profundidad). Permite especificar exactamente dónde va cada elemento."),
-                ("🎨 STYLE PROMPT / STYLE REFERENCE",
-                 "Referencia de estilo que indica al modelo qué tipo de arte imitar. En Midjourney: '--style', en DALL-E: 'style: photography/painting/3d'."),
-                ("🔢 RESOLUTION / UPSCALE",
-                 "Resolución de salida. 512x512 = rápido, 1024x1024 = estándar, 2048+ = alta calidad. Upscaling posterior mejora detalles sin aumentar tiempo de generación."),
-                ("🎭 CHAOS / VARIETY",
-                 "Parámetro (Midjourney) que controla cuánto se desvía el resultado del prompt. Bajo = fiel, alto = inesperado. Ideal para explorar."),
-                ("🌊 PROMPT WEIGHTING AVANZADO",
-                 "En FLUX puedes usar :: para separar pesos: 'rojo::1.5 azul::0.5 verde'. En SD: (tag:1.3)(tag:0.8). En Midjourney: ::0.5 después de la palabra."),
-            ]
-
-            for titulo, desc in glosario:
-                card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=8)
-                card.pack(fill="x", pady=4)
-                ctk.CTkLabel(card, text=titulo, font=ctk.CTkFont(size=11, weight="bold"),
-                             text_color="#aaccee").pack(anchor="w", padx=12, pady=(6, 2))
-                ctk.CTkLabel(card, text=desc, font=ctk.CTkFont(size=10),
-                             text_color="#888888", wraplength=680, anchor="w",
-                             justify="left").pack(fill="x", padx=12, pady=(0, 6))
-
-            ctk.CTkButton(vent, text="✅ Entendido", width=140, height=30, fg_color="#1a7a3c",
-                          command=vent.destroy).pack(pady=10)
+        47 entradas en 5 categorías, con buscador, filtro y botón "▶ Probar"
+        en las entradas que mapean a funciones reales de la app.
+        """
+        from modules.glosario import abrir_glosario
+        abrir_glosario(self)
 
     def _cmd_critica_historial(self):
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""
@@ -180,9 +37,58 @@ class ToolsAnalysisMixin:
         if len(items) < 5:
             return self.set_estado("⚠️ Necesitas al menos 5 prompts en historial.", "#e67e22")
 
-        self.set_estado("🔍 Analizando tus ideas y patrones de uso...", "#f39c12")
+        # ── Selector N + comprobar caché ──
+        vent_sel = GPromptWindow(self)
+        vent_sel.title("📝 Crítica historial — ¿Cuántos prompts analizar?")
+        vent_sel.geometry("440x290")
+        vent_sel.transient(self)
+        ctk.CTkLabel(vent_sel, text="📝 Crítica de historial",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
+        ctk.CTkLabel(vent_sel,
+                     text=f"Tienes {len(items)} prompts en historial.\n¿Cuántos analizar?",
+                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
 
-        ultimos = items[:30]
+        n_var = ctk.IntVar(value=min(30, len(items)))
+        n_max = min(100, len(items))
+        slider = ctk.CTkSlider(vent_sel, from_=5, to=max(5, n_max),
+                               number_of_steps=max(1, n_max - 5),
+                               variable=n_var)
+        slider.pack(fill="x", padx=30, pady=(0, 4))
+        lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
+                             font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_n.pack(pady=(0, 8))
+        slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
+
+        # Aviso si hay caché
+        prefs_cache = self.store.cargar_preferencias() or {}
+        cache_critica = prefs_cache.get("_cache_critica_historial", {})
+        cache_hash = cache_critica.get("hash_historial")
+        cache_n = cache_critica.get("n", 0)
+        actual_hash = f"{len(items)}_{items[0].get('fecha','') if items and isinstance(items[0], dict) else ''}"
+        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
+                                      text_color="#2ecc71")
+        lbl_cache_info.pack(pady=(0, 8))
+        if cache_hash == actual_hash and cache_critica.get("resp"):
+            lbl_cache_info.configure(text=f"💾 Hay un análisis cacheado de {cache_n} prompts (mismo historial)")
+
+        def _lanzar():
+            n = int(n_var.get())
+            usar_cache = (cache_hash == actual_hash and cache_critica.get("resp") and cache_n == n)
+            vent_sel.destroy()
+            if usar_cache:
+                self.after(0, lambda: self._critica_mostrar(cache_critica["resp"], n, cacheado=True))
+            else:
+                self._critica_ejecutar(items[:n])
+
+        ctk.CTkButton(vent_sel, text="▶ Analizar", width=160, height=34,
+                      fg_color="#1a7a3c", command=_lanzar).pack(pady=4)
+        ctk.CTkButton(vent_sel, text="Cancelar", width=100, height=28,
+                      fg_color="#444", hover_color="#555",
+                      command=vent_sel.destroy).pack(pady=2)
+
+    def _critica_ejecutar(self, ultimos: list):
+        self.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
+
         modelos_usados = Counter()
         plataformas_usadas = Counter()
         modos_usados = Counter()
@@ -242,53 +148,83 @@ class ToolsAnalysisMixin:
             try:
                 resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2500)
                 resp = limpiar_marcadores(resp)
-
-                def _mostrar():
-                    vent = GPromptWindow(self)
-                    vent.title("🔍 Análisis de tus patrones")
-                    vent.geometry("750x650")
-                    vent.transient(self)
-                    ctk.CTkLabel(vent, text="🔍 Análisis de tus patrones creativos", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    ctk.CTkLabel(vent, text=f"Análisis de tus últimas {len(ultimos)} ideas — patrones, temas y sugerencias",
-                                 font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
-                    txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
-                    txt.insert("1.0", resp)
-                    # Mantener editable para permitir seleccionar texto con el ratón
-                    # (con state="disabled" no se puede seleccionar)
-
-                    # Fila de botones
-                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
-                    btn_row.pack(pady=10)
-
-                    def _copiar_todo():
-                        pyperclip.copy(resp)
-                        self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
-
-                    def _copiar_seleccion():
-                        try:
-                            sel = txt.get("sel.first", "sel.last")
-                            if sel:
-                                pyperclip.copy(sel)
-                                self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
-                        except Exception:
-                            self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
-
-                    ctk.CTkButton(btn_row, text="📋 Copiar todo", width=140, height=30,
-                                  fg_color="#1a7a3c", hover_color="#145e2d",
-                                  command=_copiar_todo).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="📋 Copiar selección", width=160, height=30,
-                                  command=_copiar_seleccion).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
-                                  fg_color="#444", hover_color="#555",
-                                  command=vent.destroy).pack(side="left", padx=4)
-
-                    self.set_estado("🔍 Análisis listo", "#2ecc71")
-                self.after(0, _mostrar)
+                # Persistir caché
+                try:
+                    items_all = self.store.historial or []
+                    cache_h = f"{len(items_all)}_{items_all[0].get('fecha','') if items_all and isinstance(items_all[0], dict) else ''}"
+                    prefs_p = self.store.cargar_preferencias() or {}
+                    prefs_p["_cache_critica_historial"] = {
+                        "hash_historial": cache_h,
+                        "n": len(ultimos),
+                        "resp": resp,
+                    }
+                    self.store.guardar_preferencias(prefs_p)
+                except Exception as e:
+                    logger.debug(f"Cache crítica no se pudo guardar: {e}")
+                self.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
             except Exception as e:
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False):
+        """Ventana de resultados de la crítica."""
+        vent = GPromptWindow(self)
+        vent.title("🔍 Análisis de tus patrones" + (" (caché)" if cacheado else ""))
+        vent.geometry("750x650")
+        vent.transient(self)
+        ctk.CTkLabel(vent, text="🔍 Análisis de tus patrones creativos",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+        sub = f"Análisis de tus últimas {n} ideas — patrones, temas y sugerencias"
+        if cacheado:
+            sub += "  ·  💾 caché"
+        ctk.CTkLabel(vent, text=sub,
+                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
+        txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
+        txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
+        txt.insert("1.0", resp)
+
+        btn_row = ctk.CTkFrame(vent, fg_color="transparent")
+        btn_row.pack(pady=10)
+
+        def _copiar_todo():
+            pyperclip.copy(resp)
+            self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+
+        def _copiar_seleccion():
+            try:
+                sel = txt.get("sel.first", "sel.last")
+                if sel:
+                    pyperclip.copy(sel)
+                    self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+            except Exception:
+                self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
+
+        def _regenerar():
+            # Borra caché y vuelve a llamar a la crítica desde cero
+            try:
+                prefs_p = self.store.cargar_preferencias() or {}
+                prefs_p.pop("_cache_critica_historial", None)
+                self.store.guardar_preferencias(prefs_p)
+            except Exception as e:
+                logger.debug(f"Borrar caché crítica falló: {e}")
+            vent.destroy()
+            self._cmd_critica_historial()
+
+        ctk.CTkButton(btn_row, text="📋 Copiar todo", width=140, height=30,
+                      fg_color="#1a7a3c", hover_color="#145e2d",
+                      command=_copiar_todo).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="📋 Copiar selección", width=160, height=30,
+                      command=_copiar_seleccion).pack(side="left", padx=4)
+        if cacheado:
+            ctk.CTkButton(btn_row, text="🔄 Regenerar", width=120, height=30,
+                          fg_color="#7c3aed", hover_color="#6d28d9",
+                          command=_regenerar).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
+                      fg_color="#444", hover_color="#555",
+                      command=vent.destroy).pack(side="left", padx=4)
+
+        self.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
 
     def _cmd_automejora_periodica(self):
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
@@ -296,185 +232,344 @@ class ToolsAnalysisMixin:
         if len(items) < 3:
             return self.set_estado("⚠️ Necesitas al menos 3 prompts en historial.", "#e67e22")
 
-        self.set_estado("🚀 Auto-mejora: analizando tus últimos prompts...", "#f39c12")
+        # ── Selector "últimos N" ──
+        vent_sel = GPromptWindow(self)
+        vent_sel.title("🚀 Auto-mejora — ¿Cuántos prompts analizar?")
+        vent_sel.geometry("420x230")
+        vent_sel.transient(self)
+        ctk.CTkLabel(vent_sel, text="🚀 Auto-mejora",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
+        ctk.CTkLabel(vent_sel,
+                     text=f"Tienes {len(items)} prompts en el historial.\n¿Cuántos quieres analizar?",
+                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
 
-        ultimos = items[:10]
+        n_var = ctk.IntVar(value=min(10, len(items)))
+        n_max = min(50, len(items))
+        slider = ctk.CTkSlider(vent_sel, from_=1, to=n_max,
+                               number_of_steps=max(1, n_max - 1),
+                               variable=n_var)
+        slider.pack(fill="x", padx=30, pady=(0, 4))
+        lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
+                             font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_n.pack(pady=(0, 14))
+        slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
+
+        def _lanzar():
+            n = int(n_var.get())
+            vent_sel.destroy()
+            self._auto_mejora_ejecutar(items[:n])
+
+        ctk.CTkButton(vent_sel, text="▶ Analizar", width=160, height=34,
+                      fg_color="#1a7a3c", command=_lanzar).pack(pady=4)
+        ctk.CTkButton(vent_sel, text="Cancelar", width=100, height=28,
+                      fg_color="#444", hover_color="#555",
+                      command=vent_sel.destroy).pack(pady=2)
+
+    def _auto_mejora_ejecutar(self, ultimos: list):
+        """Lanza la auto-mejora con un set concreto de prompts."""
+        self.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
+
         prompts = []
         for i, it in enumerate(ultimos, 1):
             contenido = it.get("contenido", "") if isinstance(it, dict) else str(it)
             prompts.append(f"{i}. {contenido[:300]}")
 
         peticion = (
-            f"Aquí tienes los últimos 10 prompts del usuario:\n\n"
+            f"Aquí tienes {len(ultimos)} prompts del usuario:\n\n"
             f"{chr(10).join(prompts)}\n\n"
-            f"Para cada prompt, proporciona:\n"
-            f"1. Qué está BIEN (1 frase)\n"
-            f"2. Qué podría MEJORAR (1 frase específica)\n"
-            f"3. Versión MEJORADA del prompt\n\n"
-            f"Devuelve en español, formato compacto."
+            f"Analiza cada uno y devuelve EXCLUSIVAMENTE un JSON array válido. "
+            f"Cada elemento del array debe tener esta estructura:\n"
+            f'{{"n": <numero 1..N>, "bien": "...", "mejorar": "...", "mejorado": "..."}}\n\n'
+            f"- bien: 1 frase de qué está bien\n"
+            f"- mejorar: 1 frase específica de qué mejorar\n"
+            f"- mejorado: versión mejorada COMPLETA del prompt (no resumen)\n\n"
+            f"Devuelve SOLO el array JSON, sin texto antes ni después, sin markdown."
         )
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
-                resp = limpiar_marcadores(resp)
-
-                def _mostrar():
-                    vent = GPromptWindow(self)
-                    vent.title("🚀 Auto-mejora de prompts")
-                    vent.geometry("800x700")
-                    vent.transient(self)
-                    ctk.CTkLabel(vent, text="🚀 Sugerencias de mejora", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    ctk.CTkLabel(vent, text=f"Análisis de tus últimos {len(ultimos)} prompts",
-                                 font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
-                    txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
-                    txt.insert("1.0", resp)
-                    # Editable para permitir seleccionar texto
-
-                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
-                    btn_row.pack(pady=10)
-
-                    def _copiar_todo():
-                        pyperclip.copy(resp)
-                        self.set_estado("📋 Mejoras copiadas al portapapeles", "#2ecc71")
-
-                    def _copiar_seleccion():
-                        try:
-                            sel = txt.get("sel.first", "sel.last")
-                            if sel:
-                                pyperclip.copy(sel)
-                                self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
-                        except Exception:
-                            self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
-
-                    ctk.CTkButton(btn_row, text="📋 Copiar todo", width=140, height=30,
-                                  fg_color="#1a7a3c", hover_color="#145e2d",
-                                  command=_copiar_todo).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="📋 Copiar selección", width=160, height=30,
-                                  command=_copiar_seleccion).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
-                                  fg_color="#444", hover_color="#555",
-                                  command=vent.destroy).pack(side="left", padx=4)
-
-                    self.set_estado("🚀 Auto-mejora lista", "#2ecc71")
-                self.after(0, _mostrar)
+                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=6000)
+                resp = limpiar_marcadores(resp).strip()
+                # Recuperar el JSON aunque venga con cosas alrededor
+                import json as _json
+                m = re.search(r'\[\s*\{.*\}\s*\]', resp, re.DOTALL)
+                resultados = None
+                if m:
+                    try:
+                        resultados = _json.loads(m.group(0))
+                    except Exception as e:
+                        logger.debug(f"JSON parse falló: {e}")
+                self.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str):
+        """Render cards colapsables con originales/sugerencias y botón Aplicar."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        bg_card = "#ffffff" if is_lt else "#1a1a2e"
+        text_main = "#111827" if is_lt else "#e5e7eb"
+        text_muted = "#4b5563" if is_lt else "#9ca3af"
+        accent = "#2563eb" if is_lt else "#60a5fa"
+        success = "#16a34a" if is_lt else "#22c55e"
+
+        vent = GPromptWindow(self)
+        vent.title("🚀 Auto-mejora de prompts")
+        vent.geometry("900x720")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="🚀 Sugerencias de mejora",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text=f"Análisis de {len(originales)} prompts",
+                     font=ctk.CTkFont(size=10), text_color=text_muted).pack(pady=(0, 8))
+
+        scroll = ctk.CTkScrollableFrame(vent,
+                                        fg_color=("#f3f4f6" if is_lt else "#0d1117"))
+        scroll.pack(fill="both", expand=True, padx=10, pady=(0, 8))
+
+        if not resultados:
+            # Fallback: si el LLM no devolvió JSON parseable, muestro texto plano
+            ctk.CTkLabel(scroll,
+                         text="⚠️ El LLM no devolvió JSON parseable. Muestro la respuesta cruda:",
+                         text_color="#e67e22").pack(pady=4)
+            txt = ctk.CTkTextbox(scroll, wrap="word", font=ctk.CTkFont(size=11), height=500)
+            txt.pack(fill="both", expand=True, padx=4, pady=4)
+            txt.insert("1.0", resp_raw)
+        else:
+            for r in resultados:
+                n = r.get("n", 0)
+                bien = r.get("bien", "")
+                mejorar = r.get("mejorar", "")
+                mejorado = r.get("mejorado", "")
+                orig_text = ""
+                if 0 < n <= len(originales):
+                    o = originales[n - 1]
+                    orig_text = (o.get("contenido", "") if isinstance(o, dict) else str(o))
+
+                card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=8)
+                card.pack(fill="x", pady=4, padx=2)
+
+                ctk.CTkLabel(card, text=f"Prompt #{n}",
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=accent, anchor="w").pack(anchor="w", padx=12, pady=(8, 2))
+
+                # Original (truncado)
+                if orig_text:
+                    orig_short = orig_text[:200] + ("..." if len(orig_text) > 200 else "")
+                    ctk.CTkLabel(card, text=f"📝 {orig_short}",
+                                 text_color=text_muted, anchor="w", wraplength=820,
+                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12, pady=(0, 4))
+
+                if bien:
+                    ctk.CTkLabel(card, text=f"✅ {bien}",
+                                 text_color=success, anchor="w", wraplength=820,
+                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
+                if mejorar:
+                    ctk.CTkLabel(card, text=f"💡 {mejorar}",
+                                 text_color="#e67e22", anchor="w", wraplength=820,
+                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
+
+                if mejorado:
+                    ctk.CTkLabel(card, text="✨ Versión mejorada:",
+                                 text_color=text_main, anchor="w",
+                                 font=ctk.CTkFont(size=10, weight="bold")).pack(fill="x", padx=12, pady=(6, 0))
+                    txt_mejor = ctk.CTkTextbox(card, wrap="word",
+                                               height=80,
+                                               font=ctk.CTkFont(size=10),
+                                               fg_color=("#f9fafb" if is_lt else "#0f172a"),
+                                               text_color=text_main)
+                    txt_mejor.pack(fill="x", padx=12, pady=(2, 6))
+                    txt_mejor.insert("1.0", mejorado)
+                    txt_mejor.configure(state="disabled")
+
+                    fila_btn = ctk.CTkFrame(card, fg_color="transparent")
+                    fila_btn.pack(fill="x", padx=12, pady=(0, 10))
+
+                    def _aplicar(texto=mejorado):
+                        try:
+                            if hasattr(self, "txt_salida"):
+                                self.txt_salida.delete("1.0", "end")
+                                self.txt_salida.insert("1.0", texto)
+                                self.set_estado("✨ Versión mejorada aplicada en el área de salida", "#2ecc71")
+                        except Exception as e:
+                            self.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
+
+                    def _copiar(texto=mejorado):
+                        pyperclip.copy(texto)
+                        self.set_estado("📋 Versión mejorada copiada", "#2ecc71")
+
+                    ctk.CTkButton(fila_btn, text="✨ Aplicar versión",
+                                  width=160, height=28, fg_color=success,
+                                  command=_aplicar).pack(side="left", padx=4)
+                    ctk.CTkButton(fila_btn, text="📋 Copiar",
+                                  width=100, height=28,
+                                  command=_copiar).pack(side="left", padx=4)
+
+        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+                      fg_color="#444", hover_color="#555",
+                      command=vent.destroy).pack(pady=8)
+
+        self.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
+
     def _abrir_estadisticas(self):
-        """Ventana con estadísticas detalladas de uso."""
-        import tkinter as tk
-        from collections import Counter
+        """Ventana con estadísticas detalladas + filtro por rango de fechas."""
+        from collections import Counter, defaultdict
+        import datetime as _dt
         prefs = self.store.cargar_preferencias()
-        hist = self.store.historial or []
+        hist_full = self.store.historial or []
         favs = self.store.favoritos or []
         stars = self.store.estrellas or []
         seeds = prefs.get("seeds_favoritos", [])
 
         vent = GPromptWindow(self)
         vent.title("📈 Estadísticas detalladas")
-        vent.geometry("750x700")
+        vent.geometry("780x720")
         vent.transient(self)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        c_bg = "#0d1117" if not is_lt else "#f0f0f0"
         c_card = "#161b22" if not is_lt else "#ffffff"
         c_text = "#e6edf3" if not is_lt else "#24292f"
         c_muted = "#7d8590" if not is_lt else "#656d76"
         c_accent = "#58a6ff" if not is_lt else "#0969da"
 
+        # ── Cabecera + filtro de rango ──
+        header = ctk.CTkFrame(vent, fg_color="transparent")
+        header.pack(fill="x", padx=10, pady=(8, 4))
+        ctk.CTkLabel(header, text="📈 Estadísticas detalladas",
+                     font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=c_text).pack(side="left")
+
+        filtro_var = ctk.StringVar(value="Todo")
+        seg = ctk.CTkSegmentedButton(
+            header, values=["7d", "30d", "90d", "Todo"],
+            variable=filtro_var,
+            command=lambda _v: _render(),
+        )
+        seg.pack(side="right")
+
+        # ── Área scrollable que se re-renderiza al cambiar el filtro ──
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
-        ctk.CTkLabel(scroll, text="📈 Estadísticas detalladas", font=ctk.CTkFont(size=18, weight="bold"),
-                     text_color=c_text).pack(pady=(10, 5))
-
-        # Rango de fechas
-        if hist:
-            fechas = [h.get("fecha", "") for h in hist if h.get("fecha")]
-            rango = f"{fechas[-1] if fechas else '—'} → {fechas[0] if fechas else '—'}"
-            ctk.CTkLabel(scroll, text=f"📅 {rango} · {len(hist)} prompts totales", font=ctk.CTkFont(size=10),
-                         text_color=c_muted).pack(pady=(0, 15))
-
-        def _card(parent, label, valor, color="#3498db"):
-            card = ctk.CTkFrame(parent, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
-            card.pack(fill="x", pady=3, padx=2)
-            ctk.CTkLabel(card, text=valor, font=ctk.CTkFont(size=24, weight="bold"), text_color=color).pack(pady=(10, 2))
-            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=10), text_color=c_muted).pack(pady=(0, 10))
+        def _filtrar_por_rango(hist_all: list, rango: str) -> list:
+            if rango == "Todo":
+                return list(hist_all)
+            dias = {"7d": 7, "30d": 30, "90d": 90}.get(rango)
+            if not dias:
+                return list(hist_all)
+            cutoff = (_dt.datetime.now() - _dt.timedelta(days=dias))
+            cutoff_iso = cutoff.strftime("%Y-%m-%d")
+            out = []
+            for it in hist_all:
+                if not isinstance(it, dict):
+                    continue
+                fecha = it.get("fecha", "")
+                if not fecha:
+                    continue
+                # Las fechas suelen ir como "AAAA-MM-DD ..." — comparar prefijo
+                if fecha[:10] >= cutoff_iso:
+                    out.append(it)
+            return out
 
         def _seccion(parent, titulo):
-            ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=13, weight="bold"), text_color=c_accent).pack(pady=(15, 8), anchor="w", padx=5)
+            ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=13, weight="bold"),
+                         text_color=c_accent).pack(pady=(15, 8), anchor="w", padx=5)
 
         def _barra(parent, texto, count, max_val, color="#58a6ff"):
             bar_frame = ctk.CTkFrame(parent, fg_color=c_card, corner_radius=6)
             bar_frame.pack(fill="x", pady=2, padx=2)
             pct = int(count / max_val * 100) if max_val else 0
-            ctk.CTkLabel(bar_frame, text=f"  {texto}", font=ctk.CTkFont(size=10), text_color=c_text, anchor="w").pack(side="left", padx=5, pady=5)
-            barra = ctk.CTkProgressBar(bar_frame, width=150, height=6, progress_color=color)
+            ctk.CTkLabel(bar_frame, text=f"  {texto}",
+                         font=ctk.CTkFont(size=10), text_color=c_text,
+                         anchor="w").pack(side="left", padx=5, pady=5)
+            barra = ctk.CTkProgressBar(bar_frame, width=150, height=6,
+                                       progress_color=color)
             barra.pack(side="left", padx=(5, 5), pady=5)
             barra.set(pct / 100)
-            ctk.CTkLabel(bar_frame, text=f"{count}x ({pct}%)", font=ctk.CTkFont(size=9), text_color=c_muted).pack(side="right", padx=(0, 8))
+            ctk.CTkLabel(bar_frame, text=f"{count}x ({pct}%)",
+                         font=ctk.CTkFont(size=9), text_color=c_muted).pack(side="right", padx=(0, 8))
 
-        # ── Stats generales ──
-        _seccion(scroll, "📊 Colecciones")
-        grid = ctk.CTkFrame(scroll, fg_color="transparent")
-        grid.pack(fill="x", padx=5)
-        stats_gen = [
-            ("📋 Historial", len(hist), "#3498db"),
-            ("⭐ Favoritos", len(favs), "#f1c40f"),
-            ("🌟 Estrellas", len(stars), "#e74c3c"),
-            ("💎 Seeds", len(seeds), "#9b59b6"),
-            ("🧑 Personajes", len(self.store.personajes or []), "#2ecc71"),
-            ("🔗 LoRAs", len(self.store.loras or []), "#e67e22"),
-            ("🏷️ Snippets", len(prefs.get("snippets", [])), "#1abc9c"),
-            ("📐 Fórmulas", len(prefs.get("formulas", [])), "#e91e63"),
-            ("🧬 ADNs", len(prefs.get("adns_guardados", [])), "#00bcd4"),
-        ]
-        for i, (label, val, color) in enumerate(stats_gen):
-            col, row = i % 3, i // 3
-            card = ctk.CTkFrame(grid, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
-            card.grid(row=row, column=col, padx=5, pady=4, sticky="nsew")
-            ctk.CTkLabel(card, text=str(val), font=ctk.CTkFont(size=20, weight="bold"), text_color=color).pack(pady=(8, 2))
-            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=9), text_color=c_muted).pack(pady=(0, 8))
-        for c in range(3):
-            grid.grid_columnconfigure(c, weight=1)
+        def _render():
+            for w in scroll.winfo_children():
+                w.destroy()
 
-        # ── Modelos más usados ──
-        if hist:
+            rango = filtro_var.get()
+            hist = _filtrar_por_rango(hist_full, rango)
+
+            # ── Rango de fechas del filtro ──
+            if hist:
+                fechas = [h.get("fecha", "") for h in hist if isinstance(h, dict) and h.get("fecha")]
+                rango_txt = f"{fechas[-1] if fechas else '—'} → {fechas[0] if fechas else '—'}"
+                sub = f"📅 {rango_txt} · {len(hist)} prompts ({rango})"
+            else:
+                sub = f"📅 Sin prompts en el rango ({rango})"
+            ctk.CTkLabel(scroll, text=sub, font=ctk.CTkFont(size=10),
+                         text_color=c_muted).pack(pady=(0, 8))
+
+            # ── Stats generales (no dependen del rango) ──
+            _seccion(scroll, "📊 Colecciones")
+            grid = ctk.CTkFrame(scroll, fg_color="transparent")
+            grid.pack(fill="x", padx=5)
+            stats_gen = [
+                ("📋 Historial", len(hist_full), "#3498db"),
+                ("⭐ Favoritos", len(favs), "#f1c40f"),
+                ("🌟 Estrellas", len(stars), "#e74c3c"),
+                ("💎 Seeds", len(seeds), "#9b59b6"),
+                ("🧑 Personajes", len(self.store.personajes or []), "#2ecc71"),
+                ("🔗 LoRAs", len(self.store.loras or []), "#e67e22"),
+                ("🏷️ Snippets", len(prefs.get("snippets", [])), "#1abc9c"),
+                ("📐 Fórmulas", len(prefs.get("formulas", [])), "#e91e63"),
+                ("🧬 ADNs", len(prefs.get("adns_guardados", [])), "#00bcd4"),
+            ]
+            for i, (label, val, color) in enumerate(stats_gen):
+                col, row = i % 3, i // 3
+                card = ctk.CTkFrame(grid, fg_color=c_card, corner_radius=8,
+                                    border_color="#30363d", border_width=1)
+                card.grid(row=row, column=col, padx=5, pady=4, sticky="nsew")
+                ctk.CTkLabel(card, text=str(val), font=ctk.CTkFont(size=20, weight="bold"),
+                             text_color=color).pack(pady=(8, 2))
+                ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=9),
+                             text_color=c_muted).pack(pady=(0, 8))
+            for c in range(3):
+                grid.grid_columnconfigure(c, weight=1)
+
+            if not hist:
+                return
+
+            # ── Stats por modelo / plataforma / ratio / estilos / longitud ──
             modelos = Counter()
             plataformas = Counter()
             ratios = Counter()
             estilos_count = Counter()
             largos = []
-
             for it in hist:
-                if isinstance(it, dict):
-                    m = it.get("modelo", "")
-                    if m: modelos[m] += 1
-                    p = it.get("plataforma", "")
-                    if p: plataformas[p] += 1
-                    r = it.get("ratio", "")
-                    if r: ratios[r] += 1
-                    est = it.get("estilos", [])
-                    if est:
-                        for e in est: estilos_count[e] += 1
-                    contenido = it.get("contenido", "")
-                    if contenido:
-                        count_w = len(str(contenido).split())
-                        largos.append(count_w)
+                if not isinstance(it, dict):
+                    continue
+                if it.get("modelo"): modelos[it["modelo"]] += 1
+                if it.get("plataforma"): plataformas[it["plataforma"]] += 1
+                if it.get("ratio"): ratios[it["ratio"]] += 1
+                est = it.get("estilos", [])
+                if isinstance(est, list):
+                    for e in est:
+                        if e: estilos_count[e] += 1
+                elif isinstance(est, str) and est:
+                    for e in est.split(","):
+                        e = e.strip()
+                        if e: estilos_count[e] += 1
+                contenido = it.get("contenido", "")
+                if contenido:
+                    largos.append(len(str(contenido).split()))
 
             if modelos:
-                _seccion(scroll, "🏆 Top Modelos usados")
+                _seccion(scroll, "🏆 Top modelos usados")
                 top_m = modelos.most_common(8)
                 max_m = top_m[0][1] if top_m else 1
                 for modelo, count in top_m:
                     _barra(scroll, modelo, count, max_m, "#58a6ff")
 
             if plataformas:
-                _seccion(scroll, "🌐 Top Plataformas")
+                _seccion(scroll, "🌐 Top plataformas")
                 top_p = plataformas.most_common(6)
                 max_p = top_p[0][1] if top_p else 1
                 for plat, count in top_p:
@@ -484,35 +579,35 @@ class ToolsAnalysisMixin:
                 _seccion(scroll, "📐 Ratios más usados")
                 top_r = ratios.most_common(8)
                 max_r = top_r[0][1] if top_r else 1
-                for ratio, count in top_r:
-                    _barra(scroll, ratio, count, max_r, "#f78166")
+                for r_lbl, count in top_r:
+                    _barra(scroll, r_lbl, count, max_r, "#f78166")
 
+            # Top estilos (antes omitido, ahora útil para identificar tendencias)
             if estilos_count:
-                pass  # omitido por ser redundante con la UI de estilos
+                _seccion(scroll, "🎨 Top estilos marcados")
+                top_e = estilos_count.most_common(10)
+                max_e = top_e[0][1] if top_e else 1
+                for est_lbl, count in top_e:
+                    _barra(scroll, est_lbl, count, max_e, "#a78bfa")
 
             if largos:
-                _seccion(scroll, "📏 Longitud de prompts")
+                _seccion(scroll, "📏 Longitud de prompts (palabras)")
                 media = sum(largos) // len(largos)
-                minimo = min(largos)
-                maximo = max(largos)
-                info_largos = ctk.CTkFrame(scroll, fg_color=c_card, corner_radius=8, border_color="#30363d", border_width=1)
-                info_largos.pack(fill="x", pady=5, padx=2)
-                ctk.CTkLabel(info_largos, text=f"📊 Media: ~{media} palabras  ·  Mín: {minimo}  ·  Máx: {maximo}",
-                             font=ctk.CTkFont(size=11), text_color=c_accent).pack(padx=10, pady=10)
+                info = ctk.CTkFrame(scroll, fg_color=c_card, corner_radius=8,
+                                    border_color="#30363d", border_width=1)
+                info.pack(fill="x", pady=5, padx=2)
+                ctk.CTkLabel(info,
+                             text=f"📊 Media: ~{media}  ·  Mín: {min(largos)}  ·  Máx: {max(largos)}",
+                             font=ctk.CTkFont(size=11),
+                             text_color=c_accent).pack(padx=10, pady=10)
 
-        # ── Actividad por período ──
-        if hist:
-            from collections import defaultdict
+            # ── Actividad por mes ──
             meses = defaultdict(int)
-            dias = defaultdict(int)
             for it in hist:
-                fecha = it.get("fecha", "")
-                if fecha:
-                    mes = fecha[:7] if len(fecha) >= 7 else "??"
-                    dia = fecha[:10] if len(fecha) >= 10 else "??"
-                    meses[mes] += 1
-                    dias[dia] += 1
-
+                if isinstance(it, dict):
+                    fecha = it.get("fecha", "")
+                    if len(fecha) >= 7:
+                        meses[fecha[:7]] += 1
             if meses:
                 _seccion(scroll, "📅 Prompts por mes")
                 top_mes = sorted(meses.items(), reverse=True)[:12]
@@ -520,47 +615,63 @@ class ToolsAnalysisMixin:
                 for mes, count in top_mes:
                     _barra(scroll, mes, count, max_mes, "#ffa657")
 
-        # ── Top seeds aplicados ──
-        if seeds:
-            _seccion(scroll, "💎 Seeds más usados (historial)")
-            seed_usage = Counter()
-            for it in hist:
-                sn = it.get("seed_nombre", "")
-                if sn: seed_usage[sn] += 1
-            if seed_usage:
-                top_s = seed_usage.most_common(5)
-                max_s = top_s[0][1] if top_s else 1
-                for nombre, count in top_s:
-                    _barra(scroll, nombre, count, max_s, "#9b59b6")
-            else:
-                ctk.CTkLabel(scroll, text="  Sin datos de uso aún (se registra al aplicar seed)", font=ctk.CTkFont(size=10), text_color=c_muted).pack(anchor="w", padx=10)
+            # ── Top seeds aplicados ──
+            if seeds:
+                _seccion(scroll, "💎 Seeds más usados (en este rango)")
+                seed_usage = Counter()
+                for it in hist:
+                    if isinstance(it, dict):
+                        sn = it.get("seed_nombre", "")
+                        if sn: seed_usage[sn] += 1
+                if seed_usage:
+                    top_s = seed_usage.most_common(5)
+                    max_s = top_s[0][1] if top_s else 1
+                    for nombre, count in top_s:
+                        _barra(scroll, nombre, count, max_s, "#9b59b6")
+                else:
+                    ctk.CTkLabel(scroll,
+                                 text="  Sin datos de uso de seeds en este rango",
+                                 font=ctk.CTkFont(size=10),
+                                 text_color=c_muted).pack(anchor="w", padx=10)
 
-        # ── Exportar CSV ──
+        # ── Pie: Exportar CSV (usa hist_full siempre) ──
         def _exportar_csv():
             import csv
             from tkinter import filedialog
-            path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV", "*.csv")], parent=vent)
-            if not path: return
+            path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                filetypes=[("CSV", "*.csv")], parent=vent)
+            if not path:
+                return
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
                 w.writerow(["Fecha", "Modelo", "Plataforma", "Ratio", "Estilos", "Longitud"])
-                for it in (hist or []):
+                for it in (hist_full or []):
+                    if not isinstance(it, dict):
+                        continue
                     est = it.get("estilos", [])
+                    if isinstance(est, list):
+                        est_s = ", ".join(est)
+                    else:
+                        est_s = str(est)
                     cont = it.get("contenido", "")
                     w.writerow([
                         it.get("fecha", ""),
                         it.get("modelo", ""),
                         it.get("plataforma", ""),
                         it.get("ratio", ""),
-                        ", ".join(est) if est else "",
-                        len(str(cont).split()) if cont else 0
+                        est_s,
+                        len(str(cont).split()) if cont else 0,
                     ])
             self.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
 
-        ctk.CTkButton(scroll, text="📊 Exportar CSV", width=180, height=32, fg_color="#1a7a3c",
-                      command=_exportar_csv).pack(pady=15)
+        pie = ctk.CTkFrame(vent, fg_color="transparent")
+        pie.pack(fill="x", padx=10, pady=8)
+        ctk.CTkButton(pie, text="📊 Exportar CSV completo", width=200, height=32,
+                      fg_color="#1a7a3c", command=_exportar_csv).pack(side="left")
+        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+                      command=vent.destroy).pack(side="right")
 
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30, command=vent.destroy).pack(pady=8)
+        _render()
 
     def _cmd_scoring(self):
         """Puntúa el prompt actual y genera versión mejorada.

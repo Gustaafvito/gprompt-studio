@@ -1,0 +1,269 @@
+{
+  "categorias": [
+    "Básicos",
+    "Pesos & parámetros",
+    "Calidad y estilos",
+    "Herramientas G-Prompt",
+    "Conceptos avanzados"
+  ],
+  "entradas": [
+    {
+      "titulo": "📐 ¿Qué es un PROMPT?",
+      "descripcion": "El prompt es la descripción en texto que le das al modelo IA para que genere una imagen, vídeo o audio. Cuanto más específico, mejor resultado.",
+      "categoria": "Básicos",
+      "accion": null
+    },
+    {
+      "titulo": "🟢 POSITIVE PROMPT",
+      "descripcion": "Lo que SÍ quieres que aparezca: sujeto, estilo, iluminación, cámara, atmósfera, calidad.",
+      "categoria": "Básicos",
+      "accion": null
+    },
+    {
+      "titulo": "🔴 NEGATIVE PROMPT",
+      "descripcion": "Lo que NO quieres: artefactos, texto, deformaciones, estilo equivocado. Solo algunos modelos lo soportan.",
+      "categoria": "Básicos",
+      "accion": "_cmd_negative_builder"
+    },
+    {
+      "titulo": "🏷 TAGS vs LENGUAJE NATURAL",
+      "descripcion": "Tags = palabras clave separadas por comas (estilo Stable Diffusion). Natural = frases descriptivas (estilo Midjourney/GPT).",
+      "categoria": "Básicos",
+      "accion": null
+    },
+    {
+      "titulo": "⚖️ PESOS NUMÉRICOS — (tag:1.2)",
+      "descripcion": "Aumentan la importancia de un tag. (tag:1.5) refuerza, (tag:0.7) reduce. Solo en modelos Stable Diffusion.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 CFG (Classifier-Free Guidance)",
+      "descripcion": "Controla qué tan fielmente el modelo sigue tu prompt. Bajo (1-3) = más creativo, Alto (7-15) = más estricto.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "⚡ MODELOS TURBO",
+      "descripcion": "Modelos optimizados para velocidad (Z Image Turbo, FLUX Schnell). Generan en segundos pero con CFG bajo (~1) — IGNORAN pesos y negative prompt.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🌐 LENGUAJE NATURAL",
+      "descripcion": "Modelos como Midjourney, GPT Image, FLUX entienden frases completas. NO uses tags ni pesos numéricos en estos.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "📐 RATIO / ASPECT RATIO",
+      "descripcion": "Proporción de la imagen. 1:1 = cuadrado, 16:9 = horizontal, 9:16 = vertical, 2:3 = retrato, 21:9 = cine.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🎨 SAMPLER",
+      "descripcion": "Algoritmo que decide cómo el modelo va creando la imagen. Euler = rápido, DPM++ = balanceado, Karras = alta calidad.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🔢 STEPS / PASOS",
+      "descripcion": "Cuántas iteraciones hace el modelo. Más pasos = más detalle pero más lento. Turbo: 4-8, Estándar: 20-30, HQ: 50+.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🌱 SEED / SEMILLA",
+      "descripcion": "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar y comparar.",
+      "categoria": "Pesos & parámetros",
+      "accion": "_abrir_seeds_favoritos"
+    },
+    {
+      "titulo": "🎯 TRIGGER WORDS",
+      "descripcion": "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "✨ MASTERPIECE / 8K / DETAILED",
+      "descripcion": "Tags 'mágicos' que mejoran calidad en SD. Cuidado: usarlos demasiado los degrada. 1-2 al final del prompt es suficiente.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "👤 LORA",
+      "descripcion": "Modelo pequeño que se 'enchufa' al modelo principal para añadir un estilo, personaje o concepto específico.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "📸 DEPTH OF FIELD / BOKEH",
+      "descripcion": "Efecto de enfoque selectivo: sujeto nítido, fondo difuminado. Tags: 'depth of field', 'bokeh', 'f/1.4', 'background blur'.",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "💡 LIGHTING / ILUMINACIÓN",
+      "descripcion": "Tipo de luz en la escena. 'Golden hour', 'blue hour', 'rim lighting', 'volumetric lighting', 'neon glow', 'soft diffused'.",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "🎬 SHOT / PLANO",
+      "descripcion": "Tipo de encuadre: 'wide shot', 'close-up', 'medium shot', 'extreme close-up', 'aerial view', 'dutch angle'.",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "🖼️ ESTILOS ARTÍSTICOS",
+      "descripcion": "'Cyberpunk', 'Art Nouveau', 'Art Deco', 'Baroque', 'Impressionist', 'Photorealistic', 'Anime', 'Synthwave', 'Solarpunk'.",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "🔲 CLIP SKIP",
+      "descripcion": "Parámetro que controla hasta qué capa de red neuronal se usa. 1 = todo, 2 = menos detalle (más artístico). En Anime: 2, Realismo: 1.",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "🧬 GUIDANCE SCALE / GUIDANCE",
+      "descripcion": "Similar al CFG pero en modelos FLUX. Controla adherencia al prompt. Valores típicos: 1-3 (turbo), 3.5-7.5 (estándar).",
+      "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "📊 SCORING",
+      "descripcion": "Evalúa la calidad de tu prompt en 4 categorías (25 pts c/u): Claridad del sujeto, Detalle de estilo, Composición y cámara, Calidad y atmósfera. Verde ≥80%, amarillo 50-79%, rojo <50%. Sugiere mejoras automáticamente.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_scoring"
+    },
+    {
+      "titulo": "🧬 ADN VISUAL",
+      "descripcion": "Extrae la 'huella genética' de una imagen en JSON estructurado: sujeto, escena, iluminación, cámara, estilo, composición, atmósfera, datos técnicos. Sirve para replicar el estilo en otras imágenes.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_adn_visual"
+    },
+    {
+      "titulo": "🔍 ANÁLISIS INVERSO",
+      "descripcion": "Compara una imagen cargada con tu prompt actual. Muestra: % de coincidencia, elementos que coinciden, elementos que faltan en tu prompt, elementos extra que no pediste. Ideal para mejorar prompts.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_analisis_inverso"
+    },
+    {
+      "titulo": "⚡ QUICK GENERATE",
+      "descripcion": "Generación ultra-rápida usando modelos turbo. Ideal para iterar ideas sin esperar. Solo funciona con modelos marcados como 'Turbo' en la config.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "cmd_prompt_quick"
+    },
+    {
+      "titulo": "🔄 VARIACIONES",
+      "descripcion": "Genera 3 variantes del prompt actual: una más concisa, una más descriptiva, una con enfoque diferente. Útil para explorar direcciones creativas.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "cmd_variaciones"
+    },
+    {
+      "titulo": "🎯 AUTO-MEJORAR",
+      "descripcion": "Revisa tus últimos 10 prompts del historial y para cada uno sugiere: qué está bien, qué mejorar, versión mejorada. Te ayuda a identificar patrones de mejora.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_automejora_periodica"
+    },
+    {
+      "titulo": "📋 CRÍTICA DE HISTORIAL",
+      "descripcion": "El LLM analiza tus últimos 30 prompts y te cuenta: qué tipo de contenido generas, qué modelos/plataformas prefieres, qué estilos usas más, qué podrías explorar más.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_critica_historial"
+    },
+    {
+      "titulo": "💎 SEMILLAS / SEEDS FAVORITOS",
+      "descripcion": "Guarda seeds que te gustaron para reutilizarlas. Al aplicar una seed, se cargan automáticamente: modelo, plataforma, sampler, steps, CFG, clip skip y resol. Ideales para mantener coherencia visual en una serie.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_abrir_seeds_favoritos"
+    },
+    {
+      "titulo": "📐 PLANTILLAS",
+      "descripcion": "Estructuras predefinidas de prompts con variables (sujeto, entorno, estilo). Permiten generar prompts completos rellenando solo lo que cambia. Las hay por modo (imagen/vídeo/audio) y por estilo.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_plantillas_populares"
+    },
+    {
+      "titulo": "🔄 MACROS",
+      "descripcion": "Atajos que insertan bloques de texto predefinidos. Ej: insertar un negative preset, una fórmula de iluminación, una estructura de cámara. Se usan con botones rápidos o atajos de teclado.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_abrir_macros"
+    },
+    {
+      "titulo": "🏷️ SNIPPETS",
+      "descripcion": "Fragmentos pequeños reutilizables: tags de calidad (8k, intricate), configuraciones de cámara, luces, estilos. Se insertan con un clic o atajo de teclado.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_abrir_snippets"
+    },
+    {
+      "titulo": "📐 FÓRMULAS",
+      "descripcion": "Combinaciones de variables + lógica predefinida que generan prompts estructurados. Ej: 'Retrato [adjetivo] + [sujeto] + [entorno] + [estilo] + [iluminación]'.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_abrir_formulas"
+    },
+    {
+      "titulo": "🧑 PERSONAJES",
+      "descripcion": "Guarda personajes con nombre, descripción y notas. Se insertan en prompts para mantener consistencia en series de imágenes. Incluye LoRA asociado si lo tiene.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "abrir_personajes"
+    },
+    {
+      "titulo": "⚡ BATCH / LOTE",
+      "descripcion": "Genera múltiples prompts a la vez usando una lista o patrón. Ideal para crear series de variaciones o preparar contenido para catálogos.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "abrir_batch"
+    },
+    {
+      "titulo": "🎯 FOCUS MODE",
+      "descripcion": "Oculta elementos de UI para que te concentres solo en escribir. Solo muestra: idea, salida, botón generar. Perfecto para sesiones de escritura intensa.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "_cmd_modo_focus"
+    },
+    {
+      "titulo": "🌟 PROMPTS ESTRELLA",
+      "descripcion": "Tus mejores prompts, guardados con nota (1-10) y modelo usado. Marcalos como favoritos para acceder rápido y comparar qué hace a un prompt excelente.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🔁 img2img / IMAGE TO IMAGE",
+      "descripcion": "Técnica que parte de una imagen existente (no generada por IA) y la transforma. En Stable Diffusion: carga imagen → ajusta prompt → genera. Produce resultados más controlables.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "📦 CONTROLNET",
+      "descripcion": "Modelo adicional que controla la composición de la imagen mediante mapas (poses, bordes, profundidad). Permite especificar exactamente dónde va cada elemento.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🎨 STYLE PROMPT / STYLE REFERENCE",
+      "descripcion": "Referencia de estilo que indica al modelo qué tipo de arte imitar. En Midjourney: '--style', en DALL-E: 'style: photography/painting/3d'.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🔢 RESOLUTION / UPSCALE",
+      "descripcion": "Resolución de salida. 512x512 = rápido, 1024x1024 = estándar, 2048+ = alta calidad. Upscaling posterior mejora detalles sin aumentar tiempo de generación.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🎭 CHAOS / VARIETY",
+      "descripcion": "Parámetro (Midjourney) que controla cuánto se desvía el resultado del prompt. Bajo = fiel, alto = inesperado. Ideal para explorar.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🌊 PROMPT WEIGHTING AVANZADO",
+      "descripcion": "En FLUX puedes usar :: para separar pesos: 'rojo::1.5 azul::0.5 verde'. En SD: (tag:1.3)(tag:0.8). En Midjourney: ::0.5 después de la palabra.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    }
+  ]
+}
