@@ -100,31 +100,32 @@ def abrir_glosario(app):
     # Estado para debounce
     estado = {"after_id": None}
 
+    # Funciones libres (no son métodos del app) que viven en modules.windows
+    _FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
+
     def _ejecutar_accion(metodo_nombre: str):
-        """Cierra la ventana e invoca el método del app."""
-        fn = getattr(app, metodo_nombre, None)
-        if not callable(fn):
-            try:
-                app.show_toast(f"⚠️ '{metodo_nombre}' no disponible", "#e67e22")
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-            return
+        """Cierra la ventana e invoca la acción asociada al glosario.
+
+        Prueba primero como función libre de modules.windows (pasando app
+        como argumento), después como método del app.
+        """
+        win.destroy()
         try:
-            win.destroy()
-            # Algunos métodos son funciones libres (abrir_personajes, abrir_batch)
-            # que reciben self como argumento. Detectarlas y llamarlas correctamente.
-            if metodo_nombre.startswith("abrir_") and metodo_nombre not in ("abrir_personajes", "abrir_loras", "abrir_batch"):
-                # Es método del app
-                fn()
-            elif metodo_nombre in ("abrir_personajes", "abrir_loras", "abrir_batch"):
-                # Función libre — pasar app
+            if metodo_nombre in _FREE_FUNCS:
+                from modules import windows as _w
+                fn = getattr(_w, metodo_nombre, None)
+                if not callable(fn):
+                    raise AttributeError(f"{metodo_nombre} no existe en modules.windows")
                 fn(app)
-            else:
-                fn()
+                return
+            fn = getattr(app, metodo_nombre, None)
+            if not callable(fn):
+                raise AttributeError(f"{metodo_nombre} no es método de ArquitectoApp")
+            fn()
         except Exception as e:
             logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
             try:
-                app.show_toast(f"❌ Error: {e}", "#e74c3c")
+                app.show_toast(f"❌ '{metodo_nombre}' no disponible: {e}", "#e74c3c")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

@@ -212,22 +212,27 @@ def abrir_tutorial(app):
         # Persistir último paso visto
         _guardar_progreso(app, completados, idx + 1)
 
+    _FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
+
     def _probar(metodo_nombre: str):
-        fn = getattr(app, metodo_nombre, None)
-        if not callable(fn):
-            try:
-                app.show_toast(f"⚠️ '{metodo_nombre}' no disponible", "#e67e22")
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-            return
+        """Ejecuta la acción del paso actual.
+
+        Prueba primero como función libre de modules.windows (pasando app),
+        después como método del app.
+        """
         try:
-            # Para abrir_personajes/loras/batch (funciones libres en
-            # modules.windows) llamar pasando app
-            if metodo_nombre in ("abrir_personajes", "abrir_loras", "abrir_batch"):
+            if metodo_nombre in _FREE_FUNCS:
+                from modules import windows as _w
+                fn = getattr(_w, metodo_nombre, None)
+                if not callable(fn):
+                    raise AttributeError(f"{metodo_nombre} no existe en modules.windows")
                 fn(app)
             else:
+                fn = getattr(app, metodo_nombre, None)
+                if not callable(fn):
+                    raise AttributeError(f"{metodo_nombre} no es método de ArquitectoApp")
                 fn()
-            # Marcar el paso como completado al probarlo
+            # Marcar el paso como completado al probarlo con éxito
             completados.add(idx + 1)
             btn_completado_var.set(True)
             actualizar_indice()
@@ -235,7 +240,7 @@ def abrir_tutorial(app):
         except Exception as e:
             logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
             try:
-                app.show_toast(f"❌ Error: {e}", "#e74c3c")
+                app.show_toast(f"❌ '{metodo_nombre}' no disponible: {e}", "#e74c3c")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 
