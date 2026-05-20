@@ -1237,7 +1237,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         ctk.CTkLabel(f, text="Cantidad de variantes:").pack(side="left", padx=8)
         ent_n = ctk.CTkEntry(f, width=60); ent_n.insert(0, "5"); ent_n.pack(side="left")
 
-        # Qué variar — v1.0.8: ampliado de 6 a 10 opciones
+        # Qué variar (10 opciones)
         ctk.CTkLabel(sel, text="Qué cambiar (ADN se mantiene):", font=ctk.CTkFont(size=11, weight="bold")).pack(pady=(15, 3))
         opciones = [
             "Localización / fondo",

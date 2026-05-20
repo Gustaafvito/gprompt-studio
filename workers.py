@@ -140,13 +140,10 @@ class DeepSeekWorker:
         Envía petición al provider activo manteniendo historial.
         Si falla, limpia la última entrada del historial para no contaminar.
 
-        v1.0.5: aceptamos **kwargs para retrocompatibilidad. Llamadas
-        antiguas que pasaban modelo_llm=... ya no fallan; el parámetro
-        se ignora silenciosamente porque el provider activo se obtiene
-        siempre desde self.clients.get_active_provider().
-
-        v1.0.8: añadido retry automático con backoff exponencial (3 intentos).
-        v1.1: escala max_tokens según provider activo (Gemini necesita más).
+        Retry automático con backoff exponencial (3 intentos).
+        max_tokens se escala según provider activo (Gemini necesita más).
+        **kwargs se ignora (retrocompat: el provider activo se obtiene
+        siempre desde self.clients.get_active_provider()).
         """
         import time
 
@@ -182,8 +179,8 @@ class DeepSeekWorker:
                     raise
 
     def generar_batch(self, system_content: str, peticion: str, **kwargs) -> str:
-        """Generación batch sin historial (one-shot). v1.0.5: **kwargs para retrocompat.
-        v1.1: max_tokens también se escala según provider."""
+        """Generación batch sin historial (one-shot). max_tokens se
+        escala según provider. **kwargs se ignora (retrocompat)."""
         msgs = [
             {"role": "system", "content": system_content},
             {"role": "user",   "content": peticion},
@@ -193,9 +190,7 @@ class DeepSeekWorker:
         return provider.completar(msgs, temperature=0.8, max_tokens=max_tokens_escalado)
 
     def traducir(self, texto_es: str, **kwargs) -> str:
-        """Traduce ES → EN para prompts de IA. Devuelve original si falla.
-
-        v1.0.5: **kwargs para retrocompat con llamadas legacy."""
+        """Traduce ES → EN para prompts de IA. Devuelve original si falla."""
         peticion_trad = (
             "Translate this to English for an AI image/video prompt. "
             "Keep it concise, preserve all descriptive details. "
@@ -211,7 +206,7 @@ class DeepSeekWorker:
             return texto_es
 
     def traducir_a_espanol(self, texto_en: str, **kwargs) -> str:
-        """Traduce EN → ES. Devuelve original si falla. v1.0.5: **kwargs para retrocompat."""
+        """Traduce EN → ES. Devuelve original si falla."""
         peticion = (
             "Traduce este prompt de IA al español de forma natural y clara. "
             "Devuelve SOLO la traducción, sin explicaciones: " + texto_en
@@ -219,7 +214,7 @@ class DeepSeekWorker:
         msgs = [{"role": "user", "content": peticion}]
         try:
             provider = self._get_provider()
-            return provider.completar(msgs, temperature=0.2, max_tokens=500).strip()
+            return provider.completar(msgs, temperature=0.2, max_tokens=5000).strip()
         except Exception as e:
             logger.warning(f"Traducción EN→ES falló, devolviendo original: {e}")
             return texto_en

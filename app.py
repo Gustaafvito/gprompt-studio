@@ -1,18 +1,13 @@
-"""
-G-Prompt Studio v1.0 — Aplicación principal.
-Clase ArquitectoApp encapsula toda la interfaz y lógica.
+"""G-Prompt Studio — Aplicación principal.
 
-Cambios v1.0 vs v8.x:
-- FIX: ventanas hijas (Toplevel) ahora aparecen siempre al frente.
-- FIX: eliminado _build_header duplicado entre app.py y UIBuildersMixin.
-- NEW: indicador visual del proveedor LLM activo (✅ verde / ⚠️ amarillo).
-- NEW: helper open_child_window() para crear Toplevel correctamente.
-- NEW: sistema de toast in-app no bloqueante (self.show_toast()).
-- NEW: atajo Ctrl+Enter desde el textarea de idea = generar prompt.
-- NEW: backup automático semanal de ~/.arquitecto_prompts/.
-- NEW: cierre limpio de threads al cerrar la app.
+Generador de prompts para creadores de imágenes con IA.
+Las ventanas secundarias usan GPromptWindow (modules.gprompt_window).
 """
+import sys, os, re, json, time, threading, traceback, logging, inspect
+from pathlib import Path
 import customtkinter as ctk
+
+from modules.gprompt_window import GPromptWindow
 from tkinter import filedialog, messagebox, simpledialog
 from PIL import Image
 import pyperclip
@@ -64,21 +59,13 @@ from workers import (
     DeepSeekWorker, VisionChain, contar_tokens_aprox,
     limpiar_marcadores, parsear_ideas, detectar_idioma_es,
 )
-from windows import abrir_personajes, abrir_loras, abrir_batch, abrir_lista
+from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_lista
 
 
-# Parche global v1.0.4 — Ventanas hijas: AL FRENTE + MAXIMIZABLES
-# Historial:
-# - v8.x: ventanas hijas salían DETRÁS (bug original)
-# - v1.0:  fix con transient(master) → ventanas al frente PERO no se podían
-#          maximizar (Windows oculta los botones cuando hay transient)
-# - v1.0.4: SIN transient + lift() + topmost momentáneo → al frente Y
-#          maximizables Y con barra completa de Windows
-# La clave: después de crear la Toplevel, hacemos un truco visual de
-# "topmost momentáneo" (200ms) que la fuerza al frente sin bloquearla
-# permanentemente. La ventana NO es transient → tiene minimize/maximize
-# completos. Cuando el usuario hace alt+tab a otra app, la ventana queda
-# atrás como cualquier ventana normal.
+# Parche global de CTkToplevel: ventanas hijas al frente y maximizables.
+# Truco: tras crear la Toplevel, "-topmost" momentáneo (250ms) la fuerza
+# delante sin bloquearla. NO es transient → conserva minimize/maximize de
+# Windows. Al alt+tab queda atrás como cualquier ventana normal.
 _original_ctk_toplevel_init = ctk.CTkToplevel.__init__
 _original_ctk_toplevel_transient = ctk.CTkToplevel.transient
 
@@ -136,15 +123,10 @@ def _bring_to_front(top):
         pass
 
 def _patched_ctk_toplevel_transient(self, master=None):
-    """v1.0.4: NO llamamos al transient original.
-
-    Razón: con transient activo, Windows oculta los botones de
-    minimize/maximize de la ventana. Sin transient, la ventana mantiene
-    los 3 botones (minimize, maximize, close) y se puede poner en
-    pantalla completa con doble-click en la barra de título.
-
-    A cambio, perdemos la asociación automática al padre. Lo compensamos
-    con _bring_to_front() que la fuerza al frente al crearse.
+    """NO llamamos al transient original: con transient activo, Windows
+    oculta los botones de minimize/maximize. Sin transient se mantienen
+    los 3 botones y se puede maximizar con doble-click en la barra.
+    Compensamos la falta de asociación al padre con _bring_to_front().
     """
     # NO llamamos al original transient — eso quitaría minimize/maximize
     # En Windows, asegurar que NO se trate como tool window
@@ -165,8 +147,11 @@ ctk.CTkToplevel.transient = _patched_ctk_toplevel_transient
 from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin
+    DialogsMixin, CoreMixin, GPromptWindow, EventBus, PreviewService
 )
+
+# Inicializar EventBus singleton
+bus = EventBus()
 
 
 class ArquitectoApp(
@@ -350,14 +335,10 @@ class ArquitectoApp(
             except Exception:
                 pass
 
-        # ── v1.0.8 — Marcar fin de inicialización ────────────────────
-        # Este flag lo lee _get_real_is_light() en ui_builders.py para
-        # decidir si fiarse de ctk.get_appearance_mode() (post-init,
-        # cuando el toggle de tema en caliente debe respetarse) o leer
-        # preferencias.json (durante init, cuando hay race condition con
-        # set_appearance_mode diferido). Lo seteamos con un delay
-        # generoso (800ms) para asegurarnos de que el set_appearance_mode
-        # diferido (200ms) ya disparó.
+        # Flag que lee _get_real_is_light() en ui_builders.py para decidir
+        # si fiarse de ctk.get_appearance_mode() (post-init) o leer
+        # preferencias.json (durante init, donde hay race con el
+        # set_appearance_mode diferido a 200ms). Delay generoso (800ms).
         def _marcar_init_completo():
             try:
                 import sys
@@ -527,7 +508,7 @@ class ArquitectoApp(
     # NEW v1.0 — Helpers para ventanas hijas, toasts, atajos
 
     def _aplicar_geometria_adaptativa(self):
-        """v1.0.3: calcula tamaño y posición inicial según el monitor.
+        """Calcula tamaño y posición inicial según el monitor.
 
         - En monitores pequeños (1366x768): la app ocupa ~95% del ancho
           y ~92% del alto disponible (margen para taskbar).
@@ -594,7 +575,7 @@ class ArquitectoApp(
         - Transient(self) si transient=True (lo asocia a la ventana principal)
         - grab_set() si modal=True (bloquea la principal)
         - Garantiza que aparece AL FRENTE (gracias al patch global)
-        - v1.0.4: F11 = toggle pantalla completa, Escape = salir de fullscreen
+        - F11 = toggle pantalla completa, Escape = salir de fullscreen
 
         Use:
             v = self.open_child_window("Mi ventana", "600x400")
@@ -680,7 +661,7 @@ class ArquitectoApp(
             pass
 
     def _toggle_fullscreen_principal(self, event=None):
-        """v1.0.5: F11 en ventana principal = toggle pantalla completa."""
+        """F11 en ventana principal = toggle pantalla completa."""
         try:
             actual = bool(self.attributes("-fullscreen"))
             self.attributes("-fullscreen", not actual)
@@ -694,7 +675,7 @@ class ArquitectoApp(
         return "break"
 
     def _exit_fullscreen_principal(self, event=None):
-        """v1.0.5: Escape sale de pantalla completa si está activo."""
+        """Escape sale de pantalla completa si está activo."""
         try:
             if bool(self.attributes("-fullscreen")):
                 self.attributes("-fullscreen", False)
@@ -1047,123 +1028,36 @@ class ArquitectoApp(
         # Último fallback: devolver como un solo bloque
         return [texto.strip()] if len(texto.strip()) > 30 else []
 
+    def _cargar_plantillas_desde_json(self) -> list:
+        """Carga plantillas desde config/plantillas_default.json."""
+        import json, os
+        try:
+            ruta_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     "config", "plantillas_default.json")
+            if not os.path.exists(ruta_json):
+                logger.warning(f"Plantillas JSON no encontrado: {ruta_json}")
+                return []
+            with open(ruta_json, "r", encoding="utf-8") as f:
+                datos = json.load(f)
+            plantillas = datos.get("plantillas", [])
+            return [(p["nombre"], p["positive"], p.get("negative", "")) for p in plantillas]
+        except Exception as e:
+            logger.error(f"Error cargando plantillas JSON: {e}")
+            return []
+
     def _cmd_plantillas_populares(self):
-        """Biblioteca de plantillas probadas con variables {} para rellenar."""
+        """Biblioteca de plantillas cargadas desde plantillas_default.json."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        plantillas = [
-            # ═══ RETRATOS ═══
-            ("📸 Portrait Pro - Detallado",
-             "(close-up portrait:1.4), {sujeto}, (intricate detailed eyes:1.3), (detailed skin texture:1.3), (realistic skin pores:1.2), {expresion}, (masterpiece:1.2), (best quality:1.2), (ultra detailed:1.2), (8k resolution:1.2), professional studio lighting, (volumetric lighting:1.1), (rim light:1.1), {iluminacion}, shallow DOF, 85mm lens, bokeh background, ({color_pelo} hair:1.2), (silky hair:1.1), (自然 skin), photorealistic, (dslr:1.1), (film grain:1.1), no watermark, no text",
-             "(worst quality:1.4), (low quality:1.4), (bad anatomy:1.4), (deformed face:1.3), (bad hands:1.3), (missing fingers:1.3), (extra limbs:1.3), (ugly:1.3), (poorly drawn face:1.3), (mutation:1.3), (blurry:1.3), (anime, cartoon:1.3), (3d render:1.2), text, watermark, logo, signature"),
-            ("📸 Portrait - Natural Light",
-             "(portrait of {sujeto}:1.3), natural lighting, (soft window light:1.2), {expresion}, (realistic skin texture:1.2), (detailed eyes:1.2), (natural makeup:1.1), (shallow depth of field:1.2), 50mm lens, (sunset golden hour:1.1), warm color grading, (film photography:1.1), (grainy:1.0), professional color grading, beautiful bokeh, (natural shadows:1.1)",
-             "(artificial light:1.3), (studio lighting:1.2), (harsh shadows:1.3), (overexposed:1.3), (blurry:1.3), (bad anatomy:1.3), (deformed:1.3), (watermark:1.3), (text:1.3)"),
-            ("📸 Portrait - Dramatic",
-             "(dramatic portrait:1.4), {sujeto}, (chiaroscuro lighting:1.3), (dramatic shadows:1.3), {expresion}, (intricate details:1.2), (moody atmosphere:1.2), (high contrast:1.2), (deep shadows:1.2), (rim light:1.2), (cinematic:1.2), (film noir style:1.2), shallow DOF, (dark mood:1.1), (mysterious:1.1), ultra detailed, 8k, masterpiece",
-             "(flat lighting:1.4), (bright:1.3), (boring:1.3), (flat:1.3), (bad anatomy:1.3), (deformed:1.3), (low quality:1.3), (blurry:1.3)"),
-            # ═══ PAISAJES ═══
-            ("🌅 Landscape - Cinemático",
-             "({lugar}:1.3), {hora_dia}, (golden hour:1.2), (dramatic sunset:1.2), (volumetric light rays:1.2), (god rays:1.1), (cinematic composition:1.2), (rule of thirds:1.1), (wide angle:1.2), (ultra wide:1.1), (landscape photography:1.2), (mountain range:1.1), (rolling hills:1.1), (foreground elements:1.1), (depth of field:1.2), (atmospheric perspective:1.1), (moody:1.1), (misty:1.1), (epic:1.1), (8k:1.1), (ultra detailed:1.2), (masterpiece:1.2), (high resolution:1.2), photorealistic",
-             "(flat:1.4), (boring composition:1.3), (distorted perspective:1.3), (bad sky:1.3), (ugly colors:1.3), (oversaturated:1.3), (hdr nuclear:1.3), (artificial:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🌅 Landscape - Amanecer",
-             "({lugar}:1.3), (sunrise:1.3), (morning light:1.2), (soft golden light:1.2), (warm color palette:1.2), (long shadows:1.1), (foggy:1.1), (mist:1.1), (atmospheric:1.2), (dew on grass:1.1), (silhouette:1.1), (backlit:1.1), (misty mountains:1.1), (soft clouds:1.1), (cinematic:1.2), (epic vista:1.2), (panoramic:1.1), (ultra detailed:1.2), (8k:1.1), photorealistic landscape, (nature photography:1.1), masterpiece",
-             "(night:1.4), (artificial:1.3), (harsh light:1.3), (overexposed:1.3), (ugly:1.3), (distorted:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🏔️ Landscape - Montaña",
-             "(mountain landscape:1.3), {lugar}, {hora_dia}, (snow capped peaks:1.2), (alpine:1.2), (rocky peaks:1.1), (clouds:1.1), (dramatic sky:1.2), (vast:1.1), (expansive:1.1), (depth:1.1), (foreground rocks:1.1), (pine trees:1.1), (forest:1.1), (misty valley:1.1), (atmospheric:1.2), (epic:1.2), (cinematic:1.2), (landscape:1.1), ultra detailed, 8k, photorealistic, (nature:1.1), masterpiece",
-             "(flat:1.4), (boring:1.3), (ugly:1.3), (artificial:1.3), (bad composition:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ MODO ─ ESTILOS ═══
-            ("🎬 Cine - Acción",
-             "(cinematic action shot:1.4), {sujeto}, {accion}, (dynamic pose:1.3), (motion blur:1.2), (fast shutter:1.1), (explosion:1.1), (fire:1.1), (smoke:1.1), (debris:1.1), (dramatic lighting:1.2), (chiaroscuro:1.2), (high contrast:1.2), (cinematic color grading:1.2), (desaturated:1.1), (filmic:1.2), (movie still:1.2), (70mm film:1.1), (anamorphic:1.1), (wide aspect:1.1), (Hollywood:1.2), (epic:1.2), (ultra detailed:1.2), (8k:1.1), masterpiece, (best quality:1.2)",
-             "(static:1.4), (still:1.3), (boring:1.3), (clean:1.3), (no action:1.3), (blurry:1.3), (bad anatomy:1.3), (low quality:1.3)"),
-            ("🎬 Cine - Drama",
-             "(cinematic drama:1.4), {sujeto}, {expresion}, (emotional:1.2), (deep focus:1.2), (slow motion:1.1), (tears:1.1), (rain:1.1), (wet surface:1.1), (melancholic:1.2), (sorrow:1.1), (crying:1.1), (cinematic lighting:1.2), (soft light:1.1), (natural:1.1), (movie still:1.2), (35mm film:1.1), (grainy:1.1), (desaturated tones:1.1), (moody:1.2), (cinematic:1.2), (film photography:1.1), ultra detailed, 8k",
-             "(happy:1.3), (bright:1.3), (comedy:1.3), (no emotion:1.3), (blurry:1.3), (bad anatomy:1.3), (low quality:1.3)"),
-            ("🎬 Cine - Sci-Fi",
-             "(sci-fi cinematic:1.4), {tema_sci_fi}, (futuristic:1.2), {elemento}, (spaceship:1.1), (alien planet:1.1), (futuristic city:1.1), (neon lights:1.1), (holographic:1.1), (cyberspace:1.1), (laser:1.1), (blue hour:1.1), (cyberpunk:1.1), (light speed:1.1), (warp:1.1), (cinematic:1.2), (epic:1.2), (wide shot:1.1), (movie still:1.1), (film grain:1.1), (anamorphic lens flare:1.1), (glow:1.1), ultra detailed, 8k, concept art, (digital painting:1.1), masterpiece",
-             "(dated:1.4), (retro:1.3), (80s:1.3), (primitive cgi:1.3), (bad cgi:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ MODA ═══
-            ("👗 Fashion - Editorial",
-             "(high fashion editorial:1.4), {sujeto} wearing {prenda}, (designer:1.2), (couture:1.2), {pose}, {locacion}, (editorial:1.2), (vogue:1.2), (harper's bazaar:1.1), (professional studio lighting:1.2), (softbox:1.1), (rim light:1.1), (high key:1.1), (clean background:1.1), (minimalist:1.1), (fashion photography:1.2), (magazine cover:1.2), (dramatic:1.1), (bold:1.1), (8k:1.2), (ultra detailed:1.2), (sharp focus:1.2), (perfect composition:1.1), masterpiece",
-             "(low quality:1.4), (amateur:1.4), (casual:1.3), (bad lighting:1.3), (ugly:1.3), (deformed:1.3), (bad anatomy:1.3), (blurry:1.3), (text:1.3), (watermark:1.3)"),
-            ("👗 Fashion - Street Style",
-             "(street style photography:1.3), {sujeto} wearing {prenda}, (casual:1.2), (urban:1.2), (street wear:1.1), (trendy:1.1), (graffiti:1.1), (city background:1.1), (urban environment:1.1), (natural light:1.2), (golden hour:1.1), (environmental portrait:1.1), (documentary style:1.1), (candid:1.1), (gritty:1.1), (authentic:1.1), (street fashion:1.2), (street photography:1.1), (photojournalism:1.1), (8k:1.1), ultra detailed, photorealistic",
-             "(studio:1.4), (artificial:1.3), (posed:1.3), (fake:1.3), (unnatural:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ ANIME/ILUSTRACIÓN ═══
-            ("🎨 Anime - Boy",
-             "(anime style:1.3), (1boy:1.2), {sujeto}, {ropa}, {pose}, ({color_pelo} hair:1.2), ({color_ojos} eyes:1.2), (sharp eyes:1.1), (anime illustration:1.2), (digital painting:1.1), (clean lineart:1.1), (flat colors:1.1), (cel shading:1.2), (anime art:1.2), (manga style:1.1), (highly detailed:1.2), (masterpiece:1.2), (best quality:1.2), (8k:1.1), vibrant colors, (beautiful:1.1), (cute:1.1)",
-             "(realistic:1.4), (photorealistic:1.4), (worst quality:1.4), (low quality:1.4), (bad anatomy:1.3), (bad face:1.3), (deformed:1.3), (blurry:1.3), ( watermark:1.3), (text:1.3)"),
-            ("🎨 Anime - Girl",
-             "(anime style:1.3), (1girl:1.2), {sujeto}, {ropa}, {pose}, ({color_pelo} hair:1.2), ({color_ojos} eyes:1.2), (sparkling eyes:1.1), (anime illustration:1.2), (digital painting:1.1), (clean lineart:1.1), (soft shading:1.1), (cel shading:1.2), (anime art:1.2), (manga style:1.1), (highly detailed:1.2), (masterpiece:1.2), (best quality:1.2), (8k:1.1), (beautiful girl:1.2), (pretty:1.1), (adorable:1.1), vibrant colors",
-             "(realistic:1.4), (photorealistic:1.4), (worst quality:1.4), (low quality:1.4), (bad anatomy:1.3), (bad hands:1.3), (deformed:1.3), (blurry:1.3), ( watermark:1.3), (text:1.3)"),
-            ("🎨 Anime - scenery",
-             "(anime landscape:1.3), ({lugar}:1.2), {hora_dia}, (anime background:1.2), (background art:1.1), (detailed background:1.1), (anime style:1.1), (illustration:1.1), (digital art:1.1), (painting:1.1), (beautiful scenery:1.2), (sky:1.1), (clouds:1.1), (trees:1.1), (water:1.1), (anime aesthetic:1.1), (soft colors:1.1), (pastel:1.1), (cozy:1.1), (peaceful:1.1), (masterpiece:1.2), (best quality:1.2), (ultra detailed:1.2)",
-             "(realistic:1.4), (photo:1.3), (ugly:1.3), (bad:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ PRODUCTO ═══
-            ("🛍 Producto - Minimalista",
-             "(professional product photography:1.3), {producto}, (clean:1.2), (minimalist:1.2), (white background:1.2), (studio lighting:1.1), (soft shadows:1.1), (macro:1.1), (sharp focus:1.2), (detailed:1.1), (8k:1.1), (commercial:1.1), (advertising:1.1), (product shot:1.1), (studio:1.1), (professional:1.1), (high end:1.1), (luxury:1.1), (clean design:1.1), (perfect:1.1), (brandable:1.1)",
-             "(messy:1.4), (ugly:1.3), (dirty:1.3), (bad lighting:1.3), (shadow:1.3), (blurry:1.3), (low quality:1.3), (hands:1.3), (person:1.3)"),
-            ("🛍 Producto - Lifestyle",
-             "(product lifestyle:1.3), {producto}, (in use:1.1), (lifestyle shot:1.1), (environment:1.1), (natural light:1.1), (indoor:1.1), ({fondo_color} background:1.1), (styled:1.1), (magazine:1.1), (editorial:1.1), (professional photography:1.1), (8k:1.1), (detailed:1.1), (authentic:1.1), (aspirational:1.1), (dreamy:1.1), (warm:1.1), (aesthetic:1.1), (beautiful composition:1.1)",
-             "(bad lighting:1.4), (ugly:1.3), (messy:1.3), (unprofessional:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ ARQUITECTURA ═══
-            ("🏛 Architecture - Interior",
-             "({estilo_arq} interior:1.3), {edificio}, {habitacion}, ({iluminacion}:1.1), (interior design:1.2), (architectural photography:1.1), (wide angle:1.1), (24mm:1.0), (natural light:1.1), (soft shadows:1.1), (warm tones:1.1), (cozy:1.1), (detailed:1.1), (spacious:1.1), (minimal:1.1), (modern:1.1), (ultra detailed:1.2), (8k:1.1), (photorealistic:1.2), (realistic:1.1), (high-end:1.1), (architectural digest:1.1)",
-             "(ugly:1.4), (bad lighting:1.3), (dark:1.3), (cluttered:1.3), (messy:1.3), (old:1.3), (broken:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🏛 Architecture - Exterior",
-             "({estilo_arq} architecture:1.3), {edificio}, {hora_dia} lighting, (exterior:1.1), (architectural photography:1.1), (building:1.1), (wide shot:1.1), (dramatic angle:1.1), (perspective:1.1), (symmetry:1.1), (perfect composition:1.1), (golden hour:1.1), (blue hour:1.1), (sky:1.1), (clouds:1.1), (minimal sky:1.0), (architectural:1.1), (ultra detailed:1.2), (8k:1.1), (photorealistic:1.2), (professional:1.1), (magazine:1.1)",
-             "(ugly:1.4), (bad angle:1.3), (distorted:1.3), (bad lighting:1.3), (bad weather:1.3), (blurry:1.3), (low quality:1.3), (people:1.3), (cars:1.3)"),
-            # ═══ GAMING/3D ═══
-            ("🎮 Game - Character 3D",
-             "(3d character:1.3), {sujeto}, (video game style:1.2), (game ready:1.1), (render:1.1), (blender:1.1), (maya:1.1), (cinematic lighting:1.1), (character design:1.1), (concept art:1.1), (digital sculpture:1.1), (subsurface scattering:1.1), (game texture:1.1), (stylized:1.1), (next gen:1.1), (unreal engine:1.1), (unity:1.1), (8k texture:1.1), (detailed:1.1), (masterpiece:1.2), (high quality:1.1), (photorealistic:1.1)",
-             "(low poly:1.4), (ugly:1.3), (bad topology:1.3), (bad texture:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🎮 Game - Screenshot",
-             "(video game screenshot:1.3), {tema}, (in-game screenshot:1.2), (realistic:1.1), (graphics:1.1), (next gen:1.1), (gameplay:1.1), (capture:1.1), (cinematic:1.1), (epic moment:1.1), (beautiful:1.1), (detailed:1.1), (ultra settings:1.1), (high res:1.1), (8k:1.1), (photorealistic game graphics:1.1), (game engine:1.1), (real-time rendering:1.1), (masterpiece:1.1), (best quality:1.1)",
-             "(low quality graphics:1.4), (bad graphics:1.3), (old game:1.3), (pixelated:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ GAMING/3D ═══
-            ("🖼️ Art - Oil Painting",
-             "(oil painting:1.3), {tema_art}, (classical painting:1.2), (brushstrokes visible:1.1), (impasto:1.1), (canvas texture:1.1), (fine art:1.1), (museum quality:1.1), (old master:1.1), (realistic:1.1), (traditional media:1.1), (painterly:1.1), (textured:1.1), (rich colors:1.1), (dramatic lighting:1.1), (chiaroscuro:1.1), (masterpiece:1.2), (museum worthy:1.1), (beautiful:1.1), (artstation:1.1), (gallery:1.1)",
-             "(digital:1.4), (photo:1.4), (ugly:1.3), (bad art:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🖼️ Art - Digital Art",
-             "(digital artwork:1.3), {tema_art}, (concept art:1.1), (digital painting:1.1), (illustration:1.1), (highly detailed:1.2), (cinematic:1.1), (epic:1.1), (beautiful:1.1), (artstation:1.1), (deviantart:1.1), (CGSociety:1.1), (procreate:1.1), (photoshop:1.1), (8k:1.1), (ultra detailed:1.2), (masterpiece:1.2), (best quality:1.2), (sharp focus:1.1), (detailed eyes:1.1), (award winning:1.1)",
-             "(photo:1.4), (ugly:1.3), (amateur:1.3), (bad:1.3), (blurry:1.3), (low quality:1.3), (watermark:1.3)"),
-            # ═══ ESTILOS ESPECIALES ═══
-            ("📷 Photo - Vintage",
-             "(vintage photography:1.3), {sujeto}, {escena}, (film:1.2), (analog:1.1), (retro:1.1), (80s:1.1), (90s:1.1), (grainy:1.1), (film grain:1.1), (light leak:1.1), (faded:1.1), (warm tones:1.1), (faded colors:1.1), (nostalgic:1.1), (vintage style:1.1), (old photo:1.1), (polaroid:1.1), (disposable camera:1.1), (documentary:1.1), (authentic:1.1), (realistic:1.1), (natural:1.1)",
-             "(digital:1.4), (modern:1.3), (new:1.3), (clean:1.3), (processed:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("📷 Photo - Neon Portrait",
-             "(neon portrait:1.3), {sujeto}, (neon lights:1.2), (RGB lights:1.1), (colorful lighting:1.1), (cyberpunk:1.1), (night:1.1), (dark:1.1), (dramatic:1.1), (neon glow:1.2), (bokeh:1.1), (city lights:1.1), (urban:1.1), (backlight:1.1), (rim light:1.1), (portrait photography:1.1), (night photography:1.1), (artificial light:1.1), (colorful:1.1), (vibrant:1.1), (ultra detailed:1.2), (8k:1.1), photorealistic",
-             "(daytime:1.4), (natural light:1.3), (plain:1.3), (ugly:1.3), (bad lighting:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("✨ Fantasy - Magic",
-             "(fantasy magic:1.3), {tema_magico}, (magical:1.2), (spell:1.1), (magic effects:1.1), (glowing:1.1), (particles:1.1), (fire:1.1), (ice:1.1), (lightning:1.1), (sparkles:1.1), (energy:1.1), (mystical:1.1), (fantasy art:1.1), (concept art:1.1), (epic:1.1), (magical atmosphere:1.1), (fantasy landscape:1.1), (enchanted:1.1), (ultra detailed:1.2), (8k:1.1), (masterpiece:1.2), (artstation:1.1)",
-             "(ugly:1.4), (bad:1.3), (realistic:1.3), (boring:1.3), (blurry:1.3), (low quality:1.3)"),
-            ("🦸 Superhéroe - Epic",
-             "(superhero shot:1.3), {sujeto}, (heroic:1.2), (powerful:1.1), (dynamic pose:1.1), (muscular:1.1), (cape:1.1), (costume:1.1), (mask:1.1), (comic book:1.1), (comic style:1.1), (Marvel:1.1), (DC:1.1), (comics:1.1), (action pose:1.1), (dramatic:1.1), (epic:1.1), (cinematic:1.1), (comic art:1.1), (panel:1.1), (ink:1.1), (line art:1.1), (color:1.1), (hyper detailed:1.2), (masterpiece:1.2), (comic cover:1.1)",
-             "(realistic:1.4), (photo:1.4), (ugly:1.3), (bad anatomy:1.3), (deformed:1.3), (blurry:1.3), (low quality:1.3)"),
-            # ═══ PLANTILLAS COMUNIDAD (probadas) ═══
-            ("📷 RAW iPhone authentic",
-             "(completely raw:1.3), (unprocessed:1.2), (unedited:1.2), (iPhone camera quality:1.2), {escena}, {sujeto}, (authentic momentary capture:1.2), (not staged:1.1), (realistic:1.1), (natural:1.1), (no makeup:1.1), (casual:1.1), (documentary:1.1), (photojournalism:1.1), (candid:1.1), (no filter:1.1), (dslr quality:1.1), (high resolution:1.1), (detailed:1.1), (authentic:1.1)",
-             "(staged:1.4), (posed:1.3), (professional retouching:1.3), (oversaturated:1.3), (glossy filter:1.3), (beautified:1.3), (artificial:1.3), (studio:1.3), (artificial:1.3)"),
-            ("🎮 GTA in-game footage",
-             "({tema} in-game footage:1.3), (very detailed:1.2), (very realistic:1.2), (close-up shot:1.1), (stationary 4k monitor:1.1), (slight blurriness:1.1), (handheld:1.1), (wide bright environment:1.1), (realistic details:1.1), {sujeto}, (game screenshot:1.1), (video game:1.1), (capture:1.1), (real-time:1.1), (graphics:1.1), (next gen:1.1), (photorealistic game:1.1), (ultra:1.1), (detailed:1.1), (masterpiece:1.1)",
-             "(low quality graphics:1.4), (anime:1.3), (cartoon:1.3), (painted:1.3), (illustration:1.3), (pixel art:1.3), (2d:1.3), (old game:1.3)"),
-            ("🌃 Convenience store night",
-             "(ultra-realistic urban street:1.3), ({entorno} {hora} night:1.2), {sujeto}, (characters wearing everyday clothes:1.1), (real pedestrians:1.1), (not overly polished:1.1), (bright white light through glass:1.1), (warm yellow street lights:1.1), (distant car headlights:1.1), (authentic life slice:1.1), (photographer captured:1.1), (night photography:1.1), (cinematic:1.1), (realistic:1.1), (no makeup:1.1), (natural:1.1), (authentic:1.1), (documentary style:1.1), (ultra detailed:1.2), (8k:1.1), photorealistic",
-             "(staged photoshoot:1.4), (models:1.3), (fashion clothes:1.3), (internet celebrity:1.3), (perfect makeup:1.3), (posed:1.3), (artificial:1.3), (studio:1.3)"),
-            ("🎭 16-panel expressions grid",
-             "(16-panel expression grid:1.4), ({personaje}:1.2), (highly consistent:1.2), (face shape:1.1), (hairstyle:1.1), (clothing:1.1), (across all panels:1.1), (16 expressions:1.1), (happy:1.1), (sad:1.1), (angry:1.1), (surprised:1.1), (shy:1.1), (speechless:1.1), (evil grin:1.1), (contemplative:1.1), (curious:1.1), (proud:1.1), (wronged:1.1), (disdainful:1.1), (confused:1.1), (scared:1.1), (crying:1.1), (heart eyes:1.1), (character sheet:1.1), (reference sheet:1.1), (consistent character:1.2), (anime style:1.1), (digital art:1.1), (masterpiece:1.1), (best quality:1.1)",
-             "(inconsistent character:1.4), (different faces:1.4), (varied clothing:1.3), (low quality:1.3), (blurry:1.3), (bad:1.3), (ugly:1.3)"),
-            ("📺 YouTube screenshot",
-             "(YouTube screenshot:1.3), (showing {tema}:1.2), (UI must include:1.1), (video timeline:1.1), (title:1.1), (view count:1.1), (like button:1.1), (dislike button:1.1), (channel name:1.1), (subscribe button:1.1), (realistic interface:1.1), (desktop:1.1), (web interface:1.1), (modern UI:1.1), (clean design:1.1), (accurate:1.1), (detailed:1.1), (screenshot:1.1), (capture:1.1), (real:1.1), (authentic:1.1)",
-             "(low quality:1.4), (distorted UI:1.4), (unrealistic interface:1.3), (text artifacts:1.3), (broken:1.3), (fake:1.3), (bad:1.3)"),
-            ("🎬 Movie collage one-shot",
-             "({pelicula} movie collage:1.3), (one shot:1.2), (one output:1.1), (multiple iconic scenes:1.1), (arranged dynamically:1.1), (characters:1.1), (locations:1.1), (key moments:1.1), (seamlessly combined:1.1), (unified composition:1.1), (cinematic:1.1), (film still:1.1), (movie reference:1.1), (epic:1.1), (beautiful:1.1), (detailed:1.1), (ultra detailed:1.2), (high quality:1.1), (photorealistic:1.1), (masterpiece:1.1)",
-             "(blurry:1.4), (low detail:1.4), (inconsistent style:1.3), (broken composition:1.3), (messy:1.3), (bad:1.3), (ugly:1.3)"),
-        ]
+
+        plantillas = self._cargar_plantillas_desde_json()
+        if not plantillas:
+            self.set_estado("⚠️ No se pudieron cargar las plantillas", "#e74c3c")
+            return
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
 
-        # Filtrar plantillas hardcoded que el usuario haya borrado previamente.
+        # Filtrar plantillas que el usuario haya borrado previamente.
         # La lista de borradas vive en preferencias.json bajo 'plantillas_predef_ocultas'.
         prefs = self.store.cargar_preferencias()
         ocultas = set(prefs.get("plantillas_predef_ocultas", []))
@@ -1594,6 +1488,32 @@ class ArquitectoApp(
                      text="    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]",
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
 
+        ctk.CTkLabel(tab_gen, text="📁 Ruta de ComfyUI (opcional, para auto-discovery):",
+                     font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+
+        frame_ruta = ctk.CTkFrame(tab_gen, fg_color="transparent")
+        frame_ruta.pack(anchor="w", padx=20, fill="x")
+
+        self.entry_comfyui_path = ctk.CTkEntry(frame_ruta, width=300, placeholder_text="C:\\ComfyUI o vacío si no usas")
+        prefs_exist = self.store.cargar_preferencias() or {}
+        ruta_actual = prefs_exist.get("comfyui_path", "") or ""
+        if ruta_actual:
+            self.entry_comfyui_path.insert(0, ruta_actual)
+        self.entry_comfyui_path.pack(side="left", fill="x", expand=True)
+
+        def _seleccionar_carpeta():
+            from tkinter import filedialog
+            carpeta = filedialog.askdirectory(title="Selecciona carpeta de ComfyUI")
+            if carpeta:
+                self.entry_comfyui_path.delete(0, "end")
+                self.entry_comfyui_path.insert(0, carpeta)
+
+        ctk.CTkButton(frame_ruta, text="📂", width=35, command=_seleccionar_carpeta).pack(side="left", padx=(5, 0))
+
+        ctk.CTkLabel(tab_gen,
+                     text="    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente.",
+                     font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
+
         # Botón Guardar Abajo
         btn_guardar = ctk.CTkButton(ventana, text="💾 Guardar Preferencias", fg_color="#2ecc71", hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
         btn_guardar.pack(pady=(0, 20))
@@ -1630,6 +1550,19 @@ class ArquitectoApp(
         if hasattr(self, 'switch_video_sesion_var'):
             self._sesion_grabar_video = self.switch_video_sesion_var.get()
 
+        # Aplicar ruta de ComfyUI y auto-discovery
+        if hasattr(self, 'entry_comfyui_path'):
+            ruta_comfy = self.entry_comfyui_path.get().strip()
+            prefs_n = self.store.cargar_preferencias() or {}
+            prefs_n["comfyui_path"] = ruta_comfy
+            self.store.guardar_preferencias(prefs_n)
+
+            if ruta_comfy:
+                from config import escanear_modelos_comfyui
+                grupos_img, grupos_vid = escanear_modelos_comfyui(ruta_comfy, prefs_n)
+                if grupos_img:
+                    self.set_estado(f"🔍 ComfyUI: {sum(len(m) for _, m in grupos_img)} modelos detectados", "#2ecc71")
+
         try:
             if hasattr(self, 'entry_nombre_pref'):
                 nuevo_nombre = self.entry_nombre_pref.get().strip()
@@ -1646,7 +1579,24 @@ class ArquitectoApp(
         # 3. Guardar las preferencias usando tu sistema de persistence.py
         self._guardar_preferencias()
 
-        self.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
+        # Mostrar resumen
+        total_modelos = 0
+        if hasattr(self, 'entry_comfyui_path'):
+            ruta_comfy = self.entry_comfyui_path.get().strip()
+            if ruta_comfy:
+                from config import escanear_modelos_comfyui
+                grupos_img, grupos_vid = escanear_modelos_comfyui(ruta_comfy, prefs_n)
+                if grupos_img:
+                    total_img = sum(len(m) for _, m in grupos_img)
+                    total_modelos += total_img
+                if grupos_vid:
+                    total_vid = sum(len(m) for _, m in grupos_vid)
+                    total_modelos += total_vid
+
+        if total_modelos > 0:
+            self.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
+        else:
+            self.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
         ventana.destroy()
 
     def cmd_previsualizar(self):

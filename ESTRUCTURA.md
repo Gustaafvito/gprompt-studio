@@ -10,49 +10,46 @@
 ```
 gprompt-studio/
 │
-├── main.py                      # Punto de entrada con splash (~210 líneas)
-├── app.py                       # ArquitectoApp (~1.130 líneas tras refactor)
-├── api_clients.py               # 9 proveedores LLM (patrón Provider, ~550 líneas)
-├── config.py                    # MODEL_SPECS, plataformas, constantes (~2.073 líneas)
-├── persistence.py               # DataStore atómico (~210 líneas)
-├── prompts.py                   # System prompts (~520 líneas)
-├── workers.py                   # DeepSeekWorker + VisionChain (~310 líneas)
-├── windows.py                   # Ventanas auxiliares (~800 líneas)
-├── state.py                     # AppState centralizado (~40 líneas)
-├── gtypes.py                    # TypedDicts (~80 líneas)
-├── exceptions.py                # GPromptError + subclases (~30 líneas)
-├── logging_utils.py             # @log_operation decorator (~25 líneas)
-├── theme.json                   # Paleta dark/light (~507 líneas)
-├── requirements.txt             # Dependencias mínimas
+├── main.py                      # Punto de entrada (~217 líneas)
+├── app.py                       # ArquitectoApp (~1.713 líneas)
+├── api_clients.py               # 14 proveedores LLM (patrón Provider, ~713 líneas)
+├── config.py                    # MODEL_SPECS, plataformas, constantes (~4.040 líneas)
+├── persistence.py               # DataStore atómico (~352 líneas)
+├── prompts.py                   # System prompts (~751 líneas)
+├── workers.py                   # DeepSeekWorker + VisionChain (~530 líneas)
+├── logging_utils.py             # @log_operation decorator (~58 líneas)
+├── theme.json                   # Paleta dark/light
 ├── pyproject.toml               # Configuración del proyecto (PEP 621)
 ├── .gitignore
 ├── README.md
 ├── ESTRUCTURA.md                # Este archivo
 │
-├── modules/                     # 8 mixins extraídos de app.py
+├── modules/                     # 8 mixins + servicios auxiliares
 │   ├── __init__.py
-│   ├── core.py                  # Workers, comandos, estado (~4.000 líneas)
-│   ├── ui_builders.py           # Construcción de UI (~2.400 líneas)
-│   ├── tools_creative.py        # Moodboard, ADN, Negative Builder, Paleta (~3.300 líneas)
-│   ├── tools_workflow.py        # Macros, A/B Testing, Cron (~2.600 líneas)
-│   ├── tools_analysis.py        # Stats, Scoring, Education (~1.600 líneas)
-│   ├── data_mgmt.py             # Historial, favoritos, snippets (~1.700 líneas)
-│   ├── backup_export.py        # Backup, restore, CSV, Export CLI (~1.100 líneas)
-│   └── dialogs.py               # API Keys, Dashboard, Theme (~2.600 líneas)
+│   ├── core.py                  # Workers, comandos, estado (~2.828 líneas)
+│   ├── ui_builders.py           # Construcción de UI (~1.932 líneas)
+│   ├── tools_creative.py        # Moodboard, ADN, Negative Builder (~2.444 líneas)
+│   ├── tools_workflow.py        # Macros, A/B Testing, Cron (~1.933 líneas)
+│   ├── tools_analysis.py        # Stats, Scoring, Education (~1.305 líneas)
+│   ├── data_mgmt.py             # Historial, favoritos, snippets (~1.336 líneas)
+│   ├── backup_export.py         # Backup, restore, CSV, Export CLI (~473 líneas)
+│   ├── dialogs.py               # API Keys, Dashboard, Theme (~1.901 líneas)
+│   ├── windows.py               # Ventanas auxiliares (~845 líneas)
+│   ├── gprompt_window.py        # Wrapper de CTkToplevel (~68 líneas)
+│   ├── event_bus.py             # Pub/sub singleton (~98 líneas)
+│   ├── preview_service.py       # (~82 líneas)
+│   └── comfyui_exporter.py      # (~232 líneas)
 │
-└── tests/                       # 7 suites pytest
+└── tests/                       # 6 suites pytest
     ├── __init__.py
     ├── conftest.py
     ├── test_api_clients.py
     ├── test_config.py
-    ├── test_exceptions.py
     ├── test_persistence.py
-    ├── test_state.py
-    ├── test_types.py
     └── test_workers.py
 ```
 
-**Total**: ~22.500 líneas de código en 21 archivos principales + 7 suites de tests.
+**Total**: ~23.880 líneas de código.
 
 ---
 
@@ -200,16 +197,13 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-**40+ tests** cubriendo:
+**48 tests** cubriendo:
 
 | Suite | Cobertura |
 |-------|-----------|
 | `test_api_clients.py` | Proveedores LLM, fábrica `get_provider()`, interfaces |
 | `test_config.py` | Helpers (`es_separador`, `get_model_specs`, etc.) |
-| `test_exceptions.py` | Jerarquía de excepciones |
 | `test_persistence.py` | DataStore CRUD, atomic writes, preferencias |
-| `test_state.py` | AppState, logging |
-| `test_types.py` | TypedDicts |
 | `test_workers.py` | Token counting, parser de ideas, detección de idioma |
 
 ---

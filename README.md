@@ -19,7 +19,7 @@ G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque 
 | 🎬 **Vídeo** | 14+ motores: Kling 3.0, Seedance 2.0, Sora2, Veo 3.1, Wan 2.6, SeaArt Ultra Pro, Pixverse, Vidu, Luma Dream Machine, Runway Gen-3 |
 | 🎵 **Audio** | Suno (v4/v4.5/v5), SeaArt Audio (Minimax Music 2.5, MusicGo), con letras, estilo, emoción, voz e idioma |
 
-## 🧠 Multi-Cerebro (9 LLMs soportados)
+## 🧠 Multi-Cerebro (14 LLMs soportados)
 
 Conecta con cualquiera de estos proveedores con una sola key:
 
@@ -27,13 +27,18 @@ Conecta con cualquiera de estos proveedores con una sola key:
 |-----------|------|-------|
 | 🥈 **DeepSeek V3** | Pago | ~€0.14/1M tokens |
 | 💎 **Claude (Anthropic)** | Pago | ~€2.40/1M tokens |
-| 💎 **OpenAI GPT-4o** | Pago | ~€2.40/1M |
+| 💎 **Fireworks AI** | Pago | Modelos open-source rápidos |
 | 🏆 **Google Gemini** | Gratis | 15 rpm |
+| 🏆 **GitHub Models** | Gratis | Acceso a OpenAI/Claude/Llama |
 | 🏆 **Groq** | Gratis | 14.400 req/día |
-| 🥈 **OpenRouter** | Pago | 100+ modelos con UNA key |
-| 🏆 **Ollama** | Local | Sin internet, sin coste |
+| 🏆 **LM Studio** | Local | Servidor OpenAI-compatible |
 | 💎 **Mistral** | Pago | Modelos europeos |
-| 💎 **xAI Grok** | Pago | Calidad alta |
+| 🏆 **Ollama** | Local | Sin internet, sin coste |
+| 💎 **OpenAI GPT-4o** | Pago | ~€2.40/1M |
+| 🥈 **OpenRouter** | Pago | 100+ modelos con UNA key |
+| 💎 **Perplexity** | Pago | Modelos con búsqueda en tiempo real |
+| 💎 **Together AI** | Pago | Modelos open-source y propietarios |
+| 🏆 **Google Gemini Omni** | Nuevo | Modelo de vídeo multimodal |
 
 ## 🚀 Funciones principales
 
@@ -95,8 +100,14 @@ Conecta con cualquiera de estos proveedores con una sola key:
 ```bash
 git clone https://github.com/tu-usuario/gprompt-studio.git
 cd gprompt-studio
-pip install -r requirements.txt
+pip install -e .
 python main.py
+```
+
+Para instalar todas las dependencias opcionales (Claude, keyring, visión, etc.):
+
+```bash
+pip install -e ".[all]"
 ```
 
 La primera vez se abrirá un **wizard de configuración** para introducir tus API keys. Puedes usar el botón **🧪 Test conexión** para verificar que tu key funciona antes de empezar.
@@ -142,20 +153,16 @@ pip install -e ".[all]"
 
 ```
 gprompt-studio/
-├── main.py              # Punto de entrada con splash
+├── main.py              # Punto de entrada
 ├── app.py               # ArquitectoApp (clase principal)
-├── api_clients.py       # 9 proveedores LLM (patrón Provider)
+├── api_clients.py       # 14 proveedores LLM (patrón Provider)
 ├── workers.py           # DeepSeekWorker + VisionChain
 ├── persistence.py       # DataStore con escrituras atómicas
 ├── prompts.py           # System prompts por modo/modelo
 ├── config.py            # MODEL_SPECS, plataformas, estilos
-├── windows.py           # Ventanas auxiliares (batch, listas)
-├── state.py             # AppState (variables Tk centralizadas)
-├── exceptions.py        # GPromptError + subclases
-├── gtypes.py            # TypedDicts
 ├── logging_utils.py     # @log_operation decorator
 ├── theme.json           # Tema customtkinter (dark/light)
-├── modules/             # 8 mixins
+├── modules/             # 8 mixins + servicios auxiliares
 │   ├── core.py          # Workers, comandos, estado
 │   ├── ui_builders.py   # Construcción UI
 │   ├── tools_creative.py
@@ -163,8 +170,13 @@ gprompt-studio/
 │   ├── tools_analysis.py
 │   ├── data_mgmt.py
 │   ├── backup_export.py
-│   └── dialogs.py
-└── tests/               # 7 suites pytest
+│   ├── dialogs.py
+│   ├── windows.py       # Ventanas auxiliares (batch, listas)
+│   ├── gprompt_window.py # Wrapper de CTkToplevel
+│   ├── event_bus.py     # Pub/sub singleton
+│   ├── preview_service.py
+│   └── comfyui_exporter.py
+└── tests/               # 6 suites pytest
 ```
 
 ## 🧪 Tests

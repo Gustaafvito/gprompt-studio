@@ -82,11 +82,11 @@ try:
         _CTkToolTip_orig_configure(self, message=message, **kwargs)
     _CTkToolTip_class.configure = _CTkToolTip_safe_configure
 
-    logger.info("[v1.0.8] CTkToolTip patched OK (None → \"\", colores adaptativos al tema)")
+    logger.info("CTkToolTip patched OK (None → \"\", colores adaptativos al tema)")
 except ImportError:
-    logger.info("[v1.0.8] CTkToolTip no instalado, sin parche")
+    logger.info("CTkToolTip no instalado, sin parche")
 except Exception as _e_patch:
-    logger.warning(f"[v1.0.8] CTkToolTip patch falló: {_e_patch}")
+    logger.warning(f"CTkToolTip patch falló: {_e_patch}")
 
 # ─── Validación y recuperación de preferencias ─────────────
 
@@ -196,11 +196,9 @@ def main():
 
     try:
         from app import ArquitectoApp
-        # NOTA v1.0.1: el splash inicial se eliminó porque al usar un root
-        # temporal y luego destruirlo justo antes de crear la app real, los
-        # after() pendientes intentaban ejecutarse contra widgets ya muertos
-        # y la consola se llenaba de "invalid command name". La app arranca
-        # rápido (<1 segundo en máquinas modernas), no necesita splash.
+        # Sin splash de root temporal: destruirlo antes de crear la app
+        # real disparaba after() pendientes contra widgets muertos
+        # ("invalid command name"). La app arranca rápido y no lo necesita.
         app = ArquitectoApp()
         logger.info("App inicializada correctamente.")
         app.mainloop()

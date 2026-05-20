@@ -70,7 +70,7 @@ Documentation = "https://github.com/Gustaafvito/gprompt-studio/blob/main/README.
 [tool.setuptools]
 py-modules = [
     "main", "app", "api_clients", "workers", "persistence", "prompts",
-    "config", "windows", "state", "exceptions", "gtypes", "logging_utils",
+    "config", "logging_utils",
 ]
 
 [tool.setuptools.packages.find]

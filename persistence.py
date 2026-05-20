@@ -246,6 +246,8 @@ class DataStore:
 
         Reglas actuales:
         - Freepik AI → Magnific (rebrand oficial abril 2026)
+        - DALL-E (ChatGPT) → ChatGPT / GPT Image (rebrand mayo 2026,
+            tras retirada oficial de DALL-E 2/3 de la API el 12 mayo 2026)
         - Tomoviee.ai → redirigido según el modo del item:
             • modo "imagen"  → Magnific
             • modo "video"   → Kling AI
@@ -256,6 +258,7 @@ class DataStore:
         """
         MAP_DIRECTO = {
             "Freepik AI": "Magnific",
+            "DALL-E (ChatGPT)": "ChatGPT / GPT Image",
         }
         # Tomoviee: requiere lookup del modo
         TOMOVIEE_FALLBACK_POR_MODO = {

@@ -1,17 +1,15 @@
-"""UI Builders Mixin - All _build_* methods and UI helpers.
+"""UI Builders Mixin — métodos _build_* y helpers de UI.
 
-v1.0:
-- _build_header() ahora pinta indicador de proveedor LLM activo (✅/⚠).
-- Header responsive: en ventanas <1200px se compacta el texto de los
-  botones de menú a solo emoji.
+_build_header() pinta indicador de proveedor LLM activo (✅/⚠) y es
+responsive: en ventanas <1200px se compacta el texto de los botones
+de menú a solo emoji.
 
-v1.0.8 fix:
-- _get_real_is_light() lee el tema persistido en preferencias.json en
-  lugar de depender de ctk.get_appearance_mode() — esto evita el race
-  condition donde los _build_*_panel() se ejecutan ANTES de que
-  set_appearance_mode("light") haya disparado (está diferido 200ms).
-  Sin este fix, los labels se construían con color de tema dark y
-  quedaban invisibles sobre el fondo light cuando el tema cambiaba.
+_get_real_is_light() lee el tema persistido en preferencias.json en
+lugar de depender de ctk.get_appearance_mode() para evitar el race
+condition donde los _build_*_panel() se ejecutan ANTES de que
+set_appearance_mode("light") haya disparado (diferido 200ms). Sin
+esto, los labels se construían con color de tema dark y quedaban
+invisibles sobre el fondo light tras cambiar tema.
 """
 import customtkinter as ctk
 import tkinter as tk
@@ -26,7 +24,6 @@ import pyperclip
 def _get_real_is_light() -> bool:
     """Devuelve si el tema activo es light.
 
-    v1.0.8 fix:
     Estrategia robusta — priorizar SIEMPRE ctk.get_appearance_mode() salvo
     durante el caso muy concreto del race condition de arranque, donde:
     - CTk reporta "dark" (su valor por defecto antes del set diferido)
@@ -109,7 +106,7 @@ from config import (
     ESTILO_NEGATIVO_AUTO, get_theme_colors,
 )
 from workers import detectar_idioma_es
-from windows import abrir_personajes, abrir_loras, abrir_lista
+from modules.windows import abrir_personajes, abrir_loras, abrir_lista
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -800,7 +797,7 @@ class UIBuildersMixin:
         self.combo_personaje = ctk.CTkComboBox(self.frame_pers_lora, values=["— Sin personaje —"], width=160,
                                                 fg_color=c["combo_bg"], border_color=c["combo_border"],
                                                 text_color=c["hdr_text"],
-                                                command=lambda v: self._sesion_log(f"🧑 Personaje → {v}") if hasattr(self, "_sesion_eventos") else None)
+                                                command=self._on_personaje_selected)
         self.combo_personaje.pack(side="left", padx=5)
 
         ctk.CTkLabel(self.frame_pers_lora, text="🔗 LoRA:",
@@ -1270,11 +1267,19 @@ class UIBuildersMixin:
             CTkToolTip(btn, delay=0.5, message=tooltip)
             self.action_btns.append(btn)
 
+        # ═══ BADGE DE COSTE (junto a Generar) ═══
+        self.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=10, weight="bold"),
+                                       text_color="#22c55e", fg_color="transparent")
+        self.lbl_coste.pack(side="left", padx=(4, 0))
+
         # Índices reales de botones_r1:
         # [0]💡 Ideas, [1]🎲, [2]✨ Generar, [3]🔄 Regenerar, [4]←, [5]→, [6]📊 Diff,
         # [7]🔀 Variaciones, [8]👁 Analizar, [9]🎯 Img→Prompt, [10]🔍 Análisis Inv, [11]🧬 ADN Visual
         self.btn_vision = self.action_btns[8]
         self.btn_img_prompt = self.action_btns[9]
+
+        # Registrar callback para actualizar coste cuando cambie la idea
+        self.txt_idea.bind("<<Modified>>", self._actualizar_coste_estimado)
 
         row2 = ctk.CTkFrame(outer, fg_color="transparent")
         row2.pack(fill="x")
@@ -1624,6 +1629,59 @@ class UIBuildersMixin:
             self.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
         else:
             self.set_estado("🎨 Estilos: General (ninguno seleccionado)")
+
+    def _on_personaje_selected(self, nombre: str):
+        if not nombre or nombre == "— Sin personaje —":
+            return
+        desc = self.store.descripcion_personaje(nombre) if hasattr(self, 'store') else ""
+        if desc:
+            self.txt_idea.delete("1.0", "end")
+            self.txt_idea.insert("1.0", desc)
+            if hasattr(self, "_sesion_eventos"):
+                self._sesion_log(f"🧑 Personaje → {nombre}")
+
+    def _actualizar_coste_estimado(self, event=None):
+        """Calcula y muestra el coste estimado de la generación."""
+        try:
+            texto = self.txt_idea.get("1.0", "end").strip()
+            if not texto or len(texto) < 5:
+                self.lbl_coste.configure(text="")
+                return
+
+            tokens = max(1, len(texto) // 4)
+            proveedor = self.llm_var.get().lower() if hasattr(self, 'llm_var') else ""
+
+            precios = {
+                "deepseek": 0.27,
+                "openai": 1.5,
+                "gpt": 1.5,
+                "claude": 3.0,
+                "gemini": 0.075,
+                "ollama": 0.0,
+                "mistral": 0.8,
+                "groq": 0.2,
+                "fireworks": 0.5,
+            }
+
+            precio_base = 0.27
+            for clave, valor in precios.items():
+                if clave in proveedor:
+                    precio_base = valor
+                    break
+
+            coste = (tokens / 1000) * precio_base
+
+            if precio_base == 0:
+                self.lbl_coste.configure(text=f"🆓 gratis")
+            elif coste < 0.001:
+                self.lbl_coste.configure(text=f"$0.00{coste:.0f}")
+            elif coste < 0.01:
+                self.lbl_coste.configure(text=f"${coste:.3f}")
+            else:
+                self.lbl_coste.configure(text=f"${coste:.2f}")
+
+        except Exception:
+            self.lbl_coste.configure(text="")
 
     def _auto_sugerir_negativos(self):
         if not self._debe_mostrar_negatives():

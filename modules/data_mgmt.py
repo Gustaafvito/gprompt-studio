@@ -786,7 +786,7 @@ class DataMgmtMixin:
     def _abrir_biblioteca(self):
         """Ventana con prompts de ejemplo probados.
 
-        Mejoras v1.0.9b:
+        Features:
           - Búsqueda en tiempo real por título, modelo, tags y estilos.
           - Filtros adicionales por plataforma y dificultad.
           - Badges visuales (dificultad coloreada, plataforma, tags).
@@ -1145,12 +1145,12 @@ class DataMgmtMixin:
                                 logger.debug(f"[silent] {e}")
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
-                    # ── FIX v1.0.8 ──────────────────────────────────────
-                    # Tras cambiar el modo de apariencia, los labels que se
-                    # construyeron con el tema "dark" inicial mantienen sus
-                    # text_color de tema oscuro y quedan invisibles sobre el
-                    # fondo claro. Hay que repintar el tema MANUALMENTE
-                    # después del set_appearance_mode con un pequeño delay
+                    # Tras cambiar el modo de apariencia, los labels que
+                    # se construyeron con el tema "dark" inicial mantienen
+                    # sus text_color de tema oscuro y quedan invisibles
+                    # sobre el fondo claro. Hay que repintar el tema
+                    # MANUALMENTE después del set_appearance_mode con un
+                    # pequeño delay
                     # para que CTk termine su transición interna.
                     try:
                         if hasattr(self, "_apply_theme_colors"):

@@ -40,7 +40,7 @@ from prompts import (
     BRIEF_MODIFIER, REGLAS_APROVECHAR_BUDGET,
 )
 from workers import parsear_ideas, contar_tokens_aprox, limpiar_marcadores
-from windows import abrir_batch
+from modules.windows import abrir_batch
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -50,9 +50,9 @@ if TYPE_CHECKING:
 def _recolor_labels(container, primary_color, secondary_color, muted_color):
     """Recursivamente recolorea todos los CTkLabel dentro de un contenedor.
 
-    v1.0.4: usado por _apply_theme_colors para que al cambiar de tema
-    todos los labels (Personaje, LoRA, Plantilla, Modelo, Ratio, Destino,
-    Emoción, Voz, etc.) se actualicen sin necesidad de reiniciar la app.
+    Usado por _apply_theme_colors para que al cambiar de tema todos los
+    labels (Personaje, LoRA, Plantilla, Modelo, Ratio, Destino, Emoción,
+    Voz…) se actualicen sin reiniciar la app.
 
     Heurística: el primer label de cada fila suele ser un título tipo
     "Modelo:" o "Ratio:" — esos van con primary_color. Los grises pequeños
@@ -308,10 +308,9 @@ class CoreMixin:
     # TOGGLE TEMA CLARO/OSCURO
 
     def _apply_theme_colors(self):
-        """Actualiza colores de header, barra de modo, checkboxes y labels sin destruir widgets.
-
-        v1.0.2: ampliado para incluir checkboxes de estilos (que sin esto
-        se quedaban con el color del tema antiguo al cambiar de tema)."""
+        """Actualiza colores de header, barra de modo, checkboxes y labels
+        sin destruir widgets. Incluye checkboxes de estilos (sin esto
+        mantenían el color del tema antiguo al cambiar de tema)."""
         is_light = ctk.get_appearance_mode().lower() == "light"
         try:
             from config import get_theme_colors
@@ -384,9 +383,8 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.2 — Refrescar checkboxes de estilos ──────────────
-        # Sin esto, al cambiar tema en caliente los checkboxes mantenían
-        # los colores antiguos (gris claro sobre gris claro).
+        # Refrescar checkboxes de estilos: sin esto, al cambiar tema en
+        # caliente los checkboxes mantenían colores antiguos (gris/gris).
         if hasattr(self, "estilo_checks") and hasattr(self, "frame_checks") and c:
             try:
                 for w in self.frame_checks.winfo_children():
@@ -422,9 +420,9 @@ class CoreMixin:
         except Exception:
             pass
 
-        # ── v1.0.4 — Refrescar tabview central (Ajustes/Estilos/Negativos) ──
-        # El tabview de CustomTkinter no se repinta bien al cambiar tema
-        # si no le forzamos los colores explícitamente.
+        # Refrescar tabview central (Ajustes/Estilos/Negativos): el
+        # tabview de CustomTkinter no se repinta al cambiar tema sin
+        # forzar los colores explícitamente.
         if hasattr(self, "tabview") and c:
             try:
                 tab_bg = c["panel_bg"]
@@ -448,10 +446,8 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.7+v1.0.8 — Refrescar fondos de frames principales ──
-        # Sin esto, al cambiar tema las inner frames mantienen el fg_color
-        # del tema anterior (ej: dark → light deja frames oscuros).
-        # el fondo del tema anterior tras cambio en caliente.
+        # Refrescar fondos de frames principales: sin esto al cambiar
+        # tema las inner frames mantienen el fg_color del tema anterior.
         tab_bg = c["panel_bg"]
         # Frames con fondo "panel_bg" (claro/oscuro según tema)
         for _fname in ("frame_pers_lora", "frame_plantilla_brief", "frame_imgref_inner",
@@ -465,11 +461,10 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.8 — Reconfigurar tabs internos del tabview ──
-        # El tabview gestiona sus tabs internos como CTkFrame que necesitan
-        # ser repintados explícitamente al cambiar tema, sino el contenido
-        # interno (Ajustes Extra, Estilos, Negativos) queda con el fg_color
-        # del tema anterior.
+        # Reconfigurar tabs internos del tabview: gestionan sus tabs
+        # como CTkFrame que necesitan ser repintados explícitamente al
+        # cambiar tema, sino el contenido interno (Ajustes Extra,
+        # Estilos, Negativos) queda con el fg_color del tema anterior.
         if hasattr(self, "tabview"):
             try:
                 self.tabview.configure(fg_color=tab_bg, bg_color=tab_bg)
@@ -483,19 +478,17 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.8 — Forzar fg_color de la ventana raíz ──
-        # Sin esto, el área entre tabs y el footer se queda gris medio
-        # del tema anterior al cambiar.
+        # Forzar fg_color de la ventana raíz: sin esto, el área entre
+        # tabs y el footer se queda gris medio del tema anterior.
         try:
             root_bg = "#f5f5f5" if is_light else "#0d1117"
             self.configure(fg_color=root_bg)
         except Exception:
             pass
 
-        # ── v1.0.8 — Repintar botones rápidos de ratio ──────────
-        # Los iconos ⬜📱🖥📸🖼 al lado del combo Ratio se quedaban con
-        # fondo oscuro al pasar a tema claro porque su fg_color se fija
-        # en construcción.
+        # Repintar botones rápidos de ratio: los iconos ⬜📱🖥📸🖼 al lado
+        # del combo Ratio se quedaban con fondo oscuro al pasar a tema
+        # claro porque su fg_color se fija en construcción.
         if hasattr(self, "ratio_btns") and self.ratio_btns:
             ratio_btn_bg = "#ffffff" if is_light else "#1a2030"
             ratio_btn_hover = "#dbeafe" if is_light else "#2a3a50"
@@ -512,7 +505,7 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.4 — Refrescar TODOS los labels en paneles ──
+        # Refrescar TODOS los labels en paneles
         # Recorremos todos los frames superiores y actualizamos los CTkLabel
         # que tengan texto pero no color forzado.
         if c:
@@ -542,13 +535,13 @@ class CoreMixin:
             except Exception:
                 pass
 
-        # ── v1.0.6 — Recolorear combos, opciones, segmentados ──
+        # Recolorear combos, opciones, segmentados
         try:
             _recolor_widgets(self, is_light)
         except Exception:
             pass
 
-        # ── v1.0.6 — Recolorear labels específicos de entrada/estado/footer ──
+        # Recolorear labels específicos de entrada/estado/footer
         mt = c["muted_text"] if c else ("#4b5563" if is_light else "#9ca3af")
         pl = c["panel_label"] if c else ("#1f2937" if is_light else "#9ca3af")
         pt = c["panel_text"] if c else ("#111827" if is_light else "#e5e7eb")
@@ -612,31 +605,41 @@ class CoreMixin:
 
     def extraer_positive(self):
         texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
+        
+        # Buscar marcador POSITIVE PROMPT:
         if "POSITIVE PROMPT:" in texto:
             bloque = texto.split("POSITIVE PROMPT:")[1]
-            return (bloque.split("NEGATIVE PROMPT:")[0] if "NEGATIVE PROMPT:" in bloque else bloque).strip(" \n*")
+            if "NEGATIVE PROMPT:" in bloque:
+                return bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*")
+            return bloque.strip(" \n*")
+        
+        # Buscar marcador PROMPT: (sin POSITIVE)
         if "PROMPT:" in texto:
             bloque = texto.split("PROMPT:")[1]
-            if "NEGATIVE PROMPT:" in bloque: bloque = bloque.split("NEGATIVE PROMPT:")[0]
-            for marca in ["\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:", "\n\nNEGATIVE"]:
-                if marca in bloque:
-                    bloque = bloque.split(marca)[0]
-                    break
+            for marca in ["\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:", "\nNEGATIVE PROMPT:"]:
+                if marca in bloque: bloque = bloque.split(marca)[0]
             for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
                 if sep in bloque: bloque = bloque.split(sep)[0]
             return bloque.strip(" \n*")
-        # ── FIX FLUX/SD3.5/Natural mode: cuando no hay marcadores, el prompt es prosa pura ──
-        # Devolvemos el texto limpio quitando solo bloque NEGATIVE si existiera al final
-        if texto and len(texto.strip()) > 5:
-            limpio = texto
-            for marca in ["NEGATIVE PROMPT:", "\nNEGATIVE\n", "\nNEGATIVE:", "\nNEGATIVE "]:
-                if marca in limpio:
-                    limpio = limpio.split(marca, 1)[0]
-                    break
-            for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
-                if sep in limpio: limpio = limpio.split(sep)[0]
-            limpio = limpio.strip(" \n*:")
-            if limpio: return limpio
+        
+        # Sin marcadores: buscar bloque NEGATIVE y devolver lo anterior
+        # Marcas que indican inicio del negative
+        marcas_neg = ["NEGATIVE PROMPT:", "NEGATIVE:", "\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:"]
+        limpia = texto
+        for marca in marcas_neg:
+            if marca in limpia:
+                limpia = limpia.split(marca, 1)[0]
+                break
+        
+        # Si hay separadores de variantes al final, quitarlos
+        for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
+            if sep in limpia:
+                limpia = limpia.split(sep)[0]
+        
+        limpia = limpia.strip(" \n*:")
+        if limpia and len(limpia.strip()) > 5:
+            return limpia
+        
         return None
 
     def extraer_negative(self):
@@ -1148,6 +1151,41 @@ class CoreMixin:
             self.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | 🎬 {specs['best_for']}", text_color="#8bb4d4")
             self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.tabview)
             self.set_estado(f"🎬 {motor_name}", "#3498db")
+
+            # Tooltip rico para modelos de vídeo (similar a imagen)
+            try:
+                if hasattr(self, '_tooltip_motor_video') and self._tooltip_motor_video is not None:
+                    try:
+                        self._tooltip_motor_video.hide()
+                    except Exception:
+                        pass
+
+                tip_rico = (
+                    f"⭐ Nota: {specs.get('nota', '?')}/5\n"
+                    f"📝 Max: {specs.get('max_chars', '?')} chars\n"
+                    f"⏱ Duraciones: {', '.join(specs.get('duraciones', []))}\n"
+                    f"📐 Ratios: {', '.join(specs.get('ratios', []))}\n\n"
+                    f"🎯 Ideal para:\n{specs.get('best_for', '')[:300]}\n\n"
+                    f"📐 Fórmula:\n{specs.get('prompt_formula', '?')[:200]}\n\n"
+                    f"💡 Ejemplo:\n{specs.get('prompt_ejemplo', '?')[:250]}"
+                )
+
+                tips = specs.get('prompt_tips', [])
+                if tips:
+                    tip_rico += "\n\n💡 PROMPT TIPS:"
+                    for i, tip in enumerate(tips[:5], 1):
+                        if len(tip) <= 80:
+                            tip_rico += f"\n  {i}. {tip}"
+                        else:
+                            tip_rico += f"\n  {i}. {tip[:77]}..."
+
+                if specs.get('has_audio'):
+                    tip_rico += f"\n\n🔊 Audio: {specs.get('audio_desc', 'Sí')}"
+
+                self._tooltip_motor_video = CTkToolTip(self.combo_modelo_video, delay=0.6, message=tip_rico,
+                                                      wraplength=450, justify="left")
+            except Exception as e:
+                logger.debug(f"Tooltip video error: {e}")
         else:
             self.combo_ratio_v.configure(values=RATIOS_VIDEO)
             self.lbl_img_model_info.pack_forget()
@@ -1728,7 +1766,7 @@ class CoreMixin:
         self.toggle_botones(False)
         threading.Thread(target=self._worker_prompt_traduccion, args=(idea,), daemon=True).start()
 
-    # ⚡ QUICK GENERATE — v1.0.8
+    # ⚡ QUICK GENERATE
 
     def cmd_prompt_quick(self):
         """⚡ Quick Generate — versión rápida del cmd_prompt.
@@ -2354,7 +2392,7 @@ class CoreMixin:
         for widget in [self, self.txt_idea]:
             widget.bind("<Control-Return>",       lambda e: self.cmd_prompt())
             widget.bind("<Control-Shift-Return>", lambda e: self.cmd_variaciones())
-            # ⚡ Quick Generate · Alt+Enter (v1.0.8)
+            # ⚡ Quick Generate · Alt+Enter
             widget.bind("<Alt-Return>",           lambda e: self.cmd_prompt_quick())
             widget.bind("<Control-i>",            lambda e: self.cmd_ideas())
             widget.bind("<Control-1>",            lambda e: self._copiar("positivo"))
@@ -2483,7 +2521,7 @@ class CoreMixin:
 
     def _cmd_abrir_loras(self):
         """Atajo Ctrl+L - Abrir gestión de LoRAs."""
-        from windows import abrir_loras
+        from modules.windows import abrir_loras
         try:
             abrir_loras(self)
         except Exception as e:

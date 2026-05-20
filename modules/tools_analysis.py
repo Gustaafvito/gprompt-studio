@@ -561,8 +561,8 @@ class ToolsAnalysisMixin:
     def _cmd_scoring(self):
         """Puntúa el prompt actual y genera versión mejorada.
 
-        v1.0.8: renderizado con código de colores. Cada score se detecta
-        con regex y se colorea según su valor (verde >= 80%, amarillo
+        Renderizado con código de colores: cada score se detecta con
+        regex y se colorea según su valor (verde >= 80%, amarillo
         50-79%, rojo < 50%). El TOTAL se destaca en grande.
         """
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -1046,22 +1046,146 @@ class ToolsAnalysisMixin:
         refrescar()
 
     def _copiar_comfyui_json(self):
-        """Copia el prompt en formato JSON compatible con ComfyUI."""
+        """Crea y exporta un workflow completo de ComfyUI."""
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual:
             return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         pos = self.extraer_positive() or actual
         neg = self.extraer_negative() or ""
+        modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
 
         import json
-        comfy_format = {
-            "3": {"inputs": {"text": pos, "seed": 42}, "class_type": "CLIPTextEncode"},
-            "4": {"inputs": {"text": neg, "seed": 42}, "class_type": "CLIPTextEncode"},
+        import uuid
+
+        workflow = {
+            "version": "1.0",
+            "prompt_from": "G-Prompt Studio",
+            "model_used": modelo,
+            "nodes": {}
         }
 
-        pyperclip.copy(json.dumps(comfy_format, indent=2, ensure_ascii=False))
-        self.set_estado("📋 JSON ComfyUI copiado", "#2ecc71")
+        id_check = "1"
+        id_clip_pos = "2"
+        id_clip_neg = "3"
+        id_sampler = "4"
+        id_vae = "5"
+        id_save = "6"
+
+        workflow["nodes"][id_check] = {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+                "ckpt_name": modelo + ".safetensors" if modelo else "model.safetensors"
+            }
+        }
+
+        workflow["nodes"][id_clip_pos] = {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+                "text": pos,
+                "clip": [id_check, 1]
+            }
+        }
+
+        workflow["nodes"][id_clip_neg] = {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+                "text": neg if neg else "low quality, worst quality, bad anatomy, blurry",
+                "clip": [id_check, 1]
+            }
+        }
+
+        workflow["nodes"][id_sampler] = {
+            "class_type": "KSampler",
+            "inputs": {
+                "model": [id_check, 0],
+                "positive": [id_clip_pos, 0],
+                "negative": [id_clip_neg, 0],
+                "seed": 0,
+                "steps": 25,
+                "cfg": 7.0,
+                "sampler_name": "euler",
+                "scheduler": "normal"
+            }
+        }
+
+        workflow["nodes"][id_vae] = {
+            "class_type": "VAEDecode",
+            "inputs": {
+                "samples": [id_sampler, 0],
+                "vae": [id_check, 2]
+            }
+        }
+
+        workflow["nodes"][id_save] = {
+            "class_type": "SaveImage",
+            "inputs": {
+                "images": [id_vae, 0],
+                "filename_prefix": "G-Prompt-Studio"
+            }
+        }
+
+        json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
+        self._mostrar_ventana_comfyui(json_str, modelo)
+
+    def _mostrar_ventana_comfyui(self, json_str, modelo):
+        """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar."""
+        from config import get_theme_colors
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = ctk.CTkToplevel(self)
+        vent.title("🔧 Workflow ComfyUI - G-Prompt Studio")
+        vent.geometry("750x550")
+        vent.transient(self)
+
+        marco = ctk.CTkFrame(vent, fg_color=c.get("tab_bg", "#f3f4f6" if is_lt else "#0f1318"))
+        marco.pack(fill="both", expand=True, padx=10, pady=10)
+
+        hdr = ctk.CTkFrame(marco, fg_color="transparent")
+        hdr.pack(fill="x", pady=(0, 8))
+        ctk.CTkLabel(hdr, text="🔧 Workflow ComfyUI", font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=c["hdr_text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text=f"Modelo: {modelo}", font=ctk.CTkFont(size=11),
+                     text_color=c.get("muted_text", "#888")).pack(side="right")
+
+        info = ctk.CTkLabel(marco, text="📋 Copia este JSON y pégalo en ComfyUI (Edit → Paste) o guarda como .json",
+                            font=ctk.CTkFont(size=10), text_color=c.get("muted_text", "#888"))
+        info.pack(anchor="w", pady=(0, 6))
+
+        txt = ctk.CTkTextbox(marco, wrap="none", font=ctk.CTkFont(family="Consolas", size=10),
+                             fg_color=c.get("entry_bg", "#1a1a2e" if not is_lt else "#ffffff"),
+                             text_color=c.get("entry_text", "#e5e7eb" if not is_lt else "#111827"),
+                             border_color=c.get("entry_border", "#3a3a5a"))
+        txt.insert("1.0", json_str)
+        txt.pack(fill="both", expand=True, pady=(0, 10))
+
+        frame_btn = ctk.CTkFrame(marco, fg_color="transparent")
+        frame_btn.pack(fill="x")
+
+        def _copiar():
+            pyperclip.copy(json_str)
+            self.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
+
+        def _guardar():
+            from tkinter import filedialog, messagebox
+            ruta = filedialog.asksaveasfilename(
+                title="Guardar workflow ComfyUI",
+                defaultextension=".json",
+                filetypes=[("JSON", "*.json"), ("Todos", "*.*")],
+                initialfile=f"gprompt_workflow_{modelo.replace(' ', '_')}.json"
+            )
+            if ruta:
+                with open(ruta, "w", encoding="utf-8") as f:
+                    f.write(json_str)
+                self.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
+
+        ctk.CTkButton(frame_btn, text="📋 Copiar JSON", width=120, fg_color="#15803d",
+                      hover_color="#166534", command=_copiar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(frame_btn, text="💾 Guardar .json", width=120, fg_color="#1e3a8a",
+                      hover_color="#172554", command=_guardar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(frame_btn, text="❌ Cerrar", width=80, fg_color="#991b1b",
+                      hover_color="#7f1d1d", command=vent.destroy).pack(side="right")
 
     def _traducir_salida(self):
         """Traduce el prompt actual al español en una ventana aparte."""

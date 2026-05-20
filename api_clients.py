@@ -472,11 +472,56 @@ def borrar_api_key(provider_id: str):
 
 
 def _ruta_keys_fallback() -> str:
-    # Todo en ~/.arquitecto_prompts/ — carpeta única.
     from config import ARCHIVOS
     ruta = str(ARCHIVOS["keys"])
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     return ruta
+
+
+def _obtener_clave_cifrado() -> bytes:
+    """Deriva una clave de cifrado del hardware local."""
+    import hashlib
+    try:
+        import uuid
+        mac = uuid.getnode()
+        usuario = os.getenv("USERNAME") or os.getenv("USER") or "gprompt"
+        raw = f"{mac}_{usuario}_GPromptStudio_v1".encode()
+        return hashlib.sha256(raw).digest()
+    except Exception:
+        import hashlib
+        clave_fija = b"GPromptStudio_v1_key_backup_2024"
+        return hashlib.sha256(clave_fija).digest()
+
+
+def _cifrar_aes(texto: str, clave: bytes) -> str:
+    """Cifra texto con AES-256-CBC. Devuelve base64."""
+    import base64, os
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    from cryptography.hazmat.backends import default_backend
+
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(clave), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    padded = texto.encode() + b" " * (16 - len(texto.encode()) % 16)
+    ct = encryptor.update(padded) + encryptor.finalize()
+    return base64.b64encode(iv + ct).decode()
+
+
+def _descifrar_aes(texto_cifrado: str, clave: bytes) -> str:
+    """Descifra texto AES-256-CBC. Devuelve texto plano."""
+    import base64
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    from cryptography.hazmat.backends import default_backend
+
+    try:
+        data = base64.b64decode(texto_cifrado.encode())
+        iv, ct = data[:16], data[16:]
+        cipher = Cipher(algorithms.AES(clave), modes.CBC(iv), backend=default_backend())
+        decryptor = cipher.decryptor()
+        pt = decryptor.update(ct) + decryptor.finalize()
+        return pt.rstrip(b" ").decode()
+    except Exception:
+        return ""
 
 
 def _cargar_dict_fallback() -> dict:
@@ -485,18 +530,32 @@ def _cargar_dict_fallback() -> dict:
         return {}
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            return json.load(f)
+            contenido = f.read().strip()
+            if not contenido:
+                return {}
+            datos = json.loads(contenido)
+            if isinstance(datos, dict) and "encrypted" in datos:
+                clave = _obtener_clave_cifrado()
+                descifrado = {}
+                for k, v in datos.get("keys", {}).items():
+                    descifrado[k] = _descifrar_aes(v, clave)
+                return descifrado
+            return datos
     except Exception:
         return {}
 
 
 def _escribir_dict_fallback(d: dict):
-    """Escritura atómica: escribe a tmp + rename."""
     ruta = _ruta_keys_fallback()
     tmp = ruta + ".tmp"
+    clave = _obtener_clave_cifrado()
+    cifrado = {}
+    for k, v in d.items():
+        cifrado[k] = _cifrar_aes(v, clave)
+    datos = {"version": 1, "encrypted": True, "keys": cifrado}
     try:
         with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(d, f, indent=2, ensure_ascii=False)
+            json.dump(datos, f, indent=2, ensure_ascii=False)
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp, ruta)

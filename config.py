@@ -2,7 +2,10 @@
 G-Prompt Studio v1.0 — Configuración y constantes.
 Modelos, estilos, ratios, presets de negativos, colores UI.
 """
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # ── Versión ───────────────────────────────────────────────────────
 VERSION = "1.0.9"
@@ -29,6 +32,7 @@ ARCHIVOS = {
     "keys":          CARPETA_APP / "keys.json",
     "active_provider": CARPETA_APP / "active_provider.txt",
     "autobackup_marker": CARPETA_APP / "_last_autobackup.txt",
+    "modelos_comfy": CARPETA_APP / "mis_modelos_comfy.json",
 }
 
 # ── Modelos Ollama Vision ─────────────────────────────────────────
@@ -141,7 +145,7 @@ GRUPOS_VIDEO = [
         "Nano Banana Video", "Nano Banana Pro Video",
     ])),
     ("── Otros Motores ──", sorted([
-        "Wan 2.6", "Sora2 Video", "Veo 3.1",
+        "Wan 2.6", "Sora2 Video", "Veo 3.1", "Gemini Omni",
     ])),
 ]
 
@@ -238,47 +242,156 @@ GRUPOS_IMAGEN = [
 ]
 
 # ══════════════════════════════════════════════════════════════════
-# MODELOS DE IMAGEN — ESPECÍFICOS PARA COMFYUI / A1111 / FORGE
-# (Solo los que el usuario tiene instalados localmente)
+# RUTA COMFYUI Y AUTO-DISCOVERY DE MODELOS
 # ══════════════════════════════════════════════════════════════════
-GRUPOS_IMAGEN_COMFYUI = [
-    ("── Checkpoints SDXL ──", sorted([
-        "Juggernaut-XL v9 RunDiffusionPhoto v2",
-        "RealVisXL V5.0 fp16",
-        "JuggernautXL Ragnarok",
-    ])),
-    ("── Familia Z-Image ──", sorted([
-        "z_image_bf16 (Base)",
-        "z_image_turbo_bf16 (Turbo)",
-        "zImageBase_base",
-    ])),
-    ("── Familia FLUX (UNet) ──", sorted([
-        "flux-2-klein-base-4b-fp8",
-    ])),
-    ("── Edit ──", sorted([
-        "qwen_image_edit_2509_fp8_e4m3fn",
-    ])),
-]
+
+def get_comfyui_path(preferencias: dict = None) -> str:
+    """Obtiene la ruta de ComfyUI configurada en preferencias."""
+    if preferencias:
+        return preferencias.get("comfyui_path", "") or ""
+    return ""
+
+
+def guardar_comfyui_path(ruta: str, store) -> bool:
+    """Guarda la ruta de ComfyUI en preferencias."""
+    try:
+        prefs = store.cargar_preferencias() or {}
+        prefs["comfyui_path"] = ruta
+        store.guardar_preferencias(prefs)
+        return True
+    except Exception:
+        return False
+
+
+def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None) -> tuple:
+    """
+    Escanea la carpeta de ComfyUI para encontrar modelos instalados.
+    
+    Returns:
+        tuple: (grupos_img, grupos_vid) - listas de tuplas (grupo, [modelos])
+    """
+    if not ruta_comfyui:
+        ruta_comfyui = get_comfyui_path(preferencias)
+    
+    if not ruta_comfyui or not Path(ruta_comfyui).exists():
+        return None, None
+
+    grupos_img = []
+    grupos_vid = []
+
+    checkpoints = Path(ruta_comfyui) / "models" / "checkpoints"
+    if checkpoints.exists():
+        # Modelos de imagen
+        modelos_img = []
+        # Modelos de video
+        modelos_vid = []
+        
+        for f in checkpoints.glob("*.safetensors"):
+            nombre = f.stem
+            # Detectar si es modelo de video
+            es_video = any(x in nombre.lower() for x in ["wan", "ltx", "svd", "i2v", "video", "stable_video"])
+            if es_video:
+                modelos_vid.append(nombre)
+            else:
+                modelos_img.append(nombre)
+        
+        modelos_img.extend([f.stem for f in checkpoints.glob("*.ckpt")])
+        modelos_img.extend([f.stem for f in checkpoints.glob("*.pth")])
+        
+        modelos_img = sorted(modelos_img)
+        modelos_vid = sorted(set(modelos_vid))
+        
+        if modelos_img:
+            grupos_img.append(("── ComfyUI Checkpoints ──", modelos_img))
+        if modelos_vid:
+            grupos_vid.append(("── ComfyUI Video ──", modelos_vid))
+
+    i2v = Path(ruta_comfyui) / "models" / "diffusion_models"
+    if i2v.exists():
+        modelos_video = sorted([f.stem for f in i2v.glob("*.safetensors")])
+        modelos_video.extend(sorted([f.stem for f in i2v.glob("*.ckpt")]))
+        # Filtrar solo los modelos de video conocidos
+        modelos_video = [m for m in modelos_video if any(x in m.lower() for x in ["wan", "ltx", "svd", "i2v", "video", "stable_video"])]
+        if modelos_video:
+            grupos_vid.append(("── ComfyUI Video ──", modelos_video))
+
+    return grupos_img if grupos_img else None, grupos_vid if grupos_vid else None
+
+
+def _cargar_modelos_locales():
+    """Carga modelos locales desde JSON con soporte para auto-discovery de ComfyUI."""
+    import json as _json
+
+    ruta_json = ARCHIVOS["modelos_comfy"]
+
+    plantilla_default = {
+        "_meta": {
+            "version": 1,
+            "descripcion": "Tus modelos locales. Edita este archivo o conecta ComfyUI para auto-discovery."
+        },
+        "imagen": [
+            {"grupo": "── Checkpoints SDXL ──", "modelos": ["Juggernaut-XL v9 RunDiffusionPhoto v2", "RealVisXL V5.0 fp16", "JuggernautXL Ragnarok"]},
+            {"grupo": "── Familia Z-Image ──", "modelos": ["z_image_bf16 (Base)", "z_image_turbo_bf16 (Turbo)", "zImageBase_base"]},
+            {"grupo": "── Familia FLUX (UNet) ──", "modelos": ["flux-2-klein-base-4b-fp8"]},
+            {"grupo": "── Edit ──", "modelos": ["qwen_image_edit_2509_fp8_e4m3fn"]},
+        ],
+        "video": [
+            {"grupo": "── Wan 2.2 (Image-to-Video) ──", "modelos": ["wan2.2_i2v_high_noise_14B_fp8_scaled", "wan2.2_i2v_low_noise_14B_fp8_scaled"]},
+            {"grupo": "── LTX-Video ──", "modelos": ["ltx-2.3-22b-dev-fp8"]},
+            {"grupo": "── Stable Video ──", "modelos": ["svd"]},
+        ]
+    }
+
+    if not ruta_json.exists():
+        try:
+            with open(ruta_json, "w", encoding="utf-8") as f:
+                _json.dump(plantilla_default, f, indent=4, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f"No se pudo crear mis_modelos_comfy.json: {e}")
+        data = plantilla_default
+    else:
+        try:
+            with open(ruta_json, "r", encoding="utf-8") as f:
+                data = _json.load(f)
+        except Exception as e:
+            logger.warning(f"Error leyendo mis_modelos_comfy.json, usando fallback: {e}")
+            data = plantilla_default
+
+    grupos_img = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("imagen", [])]
+    grupos_vid = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("video", [])]
+
+    # Auto-discovery: agregar modelos de ComfyUI si se configuró ruta
+    comfy_ruta = data.get("comfyui_path") or ""
+    if comfy_ruta and Path(comfy_ruta).exists():
+        checkpoint_dir = Path(comfy_ruta) / "models" / "checkpoints"
+        if checkpoint_dir.exists():
+            modelos_img_comfy = []
+            modelos_vid_comfy = []
+            for f in checkpoint_dir.glob("*.safetensors"):
+                nombre = f.stem
+                if any(x in nombre.lower() for x in ["wan", "ltx", "svd", "i2v", "video"]):
+                    modelos_vid_comfy.append(nombre)
+                else:
+                    modelos_img_comfy.append(nombre)
+            
+            modelos_img_comfy = sorted(set(modelos_img_comfy))
+            modelos_vid_comfy = sorted(set(modelos_vid_comfy))
+            
+            if modelos_img_comfy:
+                grupos_img.append(("── ComfyUI Local ──", modelos_img_comfy))
+            if modelos_vid_comfy:
+                grupos_vid.append(("── ComfyUI Video ──", modelos_vid_comfy))
+
+    return grupos_img, grupos_vid
+
+
+GRUPOS_IMAGEN_COMFYUI, GRUPOS_VIDEO_COMFYUI = _cargar_modelos_locales()
+
 MODELOS_IMAGEN_COMFYUI_FLAT = []
 for g, ms in GRUPOS_IMAGEN_COMFYUI:
     MODELOS_IMAGEN_COMFYUI_FLAT.append(g)
     MODELOS_IMAGEN_COMFYUI_FLAT.extend(ms)
 
-# ══════════════════════════════════════════════════════════════════
-# MODELOS DE VÍDEO PARA COMFYUI (locales)
-# ══════════════════════════════════════════════════════════════════
-GRUPOS_VIDEO_COMFYUI = [
-    ("── Wan 2.2 (Image-to-Video) ──", sorted([
-        "wan2.2_i2v_high_noise_14B_fp8_scaled",
-        "wan2.2_i2v_low_noise_14B_fp8_scaled",
-    ])),
-    ("── LTX-Video ──", sorted([
-        "ltx-2.3-22b-dev-fp8",
-    ])),
-    ("── Stable Video ──", sorted([
-        "svd",
-    ])),
-]
 MODELOS_VIDEO_COMFYUI_FLAT = []
 for g, ms in GRUPOS_VIDEO_COMFYUI:
     MODELOS_VIDEO_COMFYUI_FLAT.append(g)
@@ -364,10 +477,11 @@ GRUPOS_MAGNIFIC_IMAGEN = [
 ]
 MODELOS_MAGNIFIC_IMAGEN_FLAT = _lista_plana(GRUPOS_MAGNIFIC_IMAGEN)
 
-# Modelos exclusivos de DALL-E (ChatGPT)
+# Modelos OpenAI/ChatGPT oficial (DALL-E retirado mayo 2026)
+# Solo familia GPT Image actualmente activa en la API oficial.
 GRUPOS_DALLE_IMAGEN = [
-    ("── OpenAI ──", sorted([
-        "DALL-E 3 (legacy)", "GPT Image 1", "GPT Image 1.5", "GPT Image 2",
+    ("── ChatGPT / GPT Image (OpenAI oficial) ──", sorted([
+        "GPT Image 1", "GPT Image 1 mini", "GPT Image 1.5", "GPT Image 2",
     ])),
 ]
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
@@ -375,7 +489,10 @@ MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
 # Modelos exclusivos de Midjourney
 GRUPOS_MIDJOURNEY_IMAGEN = [
     ("── Midjourney ──", sorted([
-        "Midjourney v6.1",
+        "Midjourney v8.1", "Midjourney v8", "Midjourney v7", "Midjourney v6.1", "Midjourney v6",
+    ])),
+    ("── Niji (Anime) ──", sorted([
+        "Niji 7", "Niji 6", "Niji 5",
     ])),
 ]
 MODELOS_MIDJOURNEY_IMAGEN_FLAT = _lista_plana(GRUPOS_MIDJOURNEY_IMAGEN)
@@ -390,12 +507,12 @@ MODELOS_IDEOGRAM_IMAGEN_FLAT = _lista_plana(GRUPOS_IDEOGRAM_IMAGEN)
 
 # Mapeo plataforma -> lista de modelos (para imagen)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
-    "SeaArt / Tensor.Art":        MODELOS_IMAGEN_FLAT,
-    "ComfyUI / A1111 / Forge":    MODELOS_IMAGEN_COMFYUI_FLAT,
-    "Midjourney":                  MODELOS_MIDJOURNEY_IMAGEN_FLAT,
-    "DALL-E (ChatGPT)":            MODELOS_DALLE_IMAGEN_FLAT,
-    "Ideogram / Recraft":          MODELOS_IDEOGRAM_IMAGEN_FLAT,
-    "Magnific":                    MODELOS_MAGNIFIC_IMAGEN_FLAT,
+    "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
+    "ComfyUI / A1111 / Forge":      MODELOS_IMAGEN_COMFYUI_FLAT,
+    "Midjourney":                    MODELOS_MIDJOURNEY_IMAGEN_FLAT,
+    "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
+    "Ideogram / Recraft":            MODELOS_IDEOGRAM_IMAGEN_FLAT,
+    "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
 }
 
 # Mapeo plataforma -> lista de modelos (para vídeo)
@@ -574,6 +691,26 @@ ESTILOS_VIDEO = sorted([
     "Fashion Editorial", "Gaming Highlights", "Interior / Real Estate",
     "Naturaleza / Wildlife", "Producto Macro", "Tech Review",
     "Tutorial Cocina", "Unboxing",
+    # ── Producción audiovisual ──
+    "Corporate Video", "Brand Storytelling", "Behind-the-Scenes",
+    "Event Coverage", "Feature Film", "Testimonial / Case Study",
+    # ── Social Media ──
+    "TikTok / Short-form", "YouTube Shorts", "Instagram Reels",
+    "Shoppable Video", "Influencer Content", "UGC Content",
+    # ── Cinematografía ──
+    "Silent Film", "Experimental Film", "Neo-noir",
+    "Surrealist Film", "Exploratory / Documentary",
+    # ── Animación ──
+    "2D Animation", "3D Animation", "Whiteboard Animation",
+    "Infographic Video", "Typography Animation",
+    # ── Corporativo ──
+    "Explainer Video", "Training Video", "Onboarding Video",
+    "Product Demo", "FAQ Video", "How-to / Tutorial",
+    # ── Musical ──
+    "Lyric Video", "Live Performance", "Concert Documentary",
+    # ── Interactivo/VR ──
+    "360° Video", "VR Experience", "Interactive Video",
+    "Gamified Content", "Immersive / AR",
 ])
 
 ESTILOS_AUDIO = sorted([
@@ -630,7 +767,7 @@ PLATAFORMAS_IMAGEN = {
     "SeaArt / Tensor.Art":        "sd",
     "ComfyUI / A1111 / Forge":    "sd",
     "Midjourney":                  "natural",
-    "DALL-E (ChatGPT)":            "natural",
+    "ChatGPT / GPT Image":         "natural",
     "Ideogram / Recraft":          "natural",
     "Magnific":                    "natural",
 }
@@ -647,6 +784,7 @@ PLATAFORMAS_VIDEO = {
 
 PLATAFORMAS_AUDIO = {
     "Suno":             "natural",
+    "Udio":             "natural",
     "SeaArt Audio":     "natural",
 }
 
@@ -679,19 +817,21 @@ MOTORES_VIDEO = {
     "Pika / Luma": [],
     "Runway Gen": [],
     "Pixverse.ai": [],
-    "Sora / Veo": ["Sora2 Video", "Veo 3.1"],
+    "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni"],
 }
 
 MOTORES_AUDIO = {
-    "Suno": ["Suno v5", "Suno v4.5", "Suno v4"],
-    "SeaArt Audio": ["Minimax Music 2.5", "SeaArt MusicGo"],
+    "Suno": ["Suno v5.5", "Suno v5", "Suno v4.5", "Suno v4.5-All (Free)", "Suno v4"],
+    "Udio": ["Udio v4", "Udio v1.5"],
+    "SeaArt Audio": ["Minimax Music 2.6", "Minimax Music 2.5", "SeaArt MusicGo"],
 }
 
 MOTOR_DEFAULT = {
     "SeaArt Video": "Kling 3.0",
     "Kling AI": "Kling 3.0",
-    "Suno": "Suno v5",
-    "SeaArt Audio": "Minimax Music 2.5",
+    "Suno": "Suno v5.5",
+    "Udio": "Udio v4",
+    "SeaArt Audio": "Minimax Music 2.6",
 }
 
 # ── Límites de Tokens por Plataforma ─────────────────
@@ -699,7 +839,7 @@ TOKEN_LIMITS = {
     "SeaArt / Tensor.Art": 200,
     "ComfyUI / A1111 / Forge": 75,
     "Midjourney": 60,
-    "DALL-E (ChatGPT)": 75,
+    "ChatGPT / GPT Image": 75,
     "Adobe Firefly": 75,
     "Ideogram / Recraft": 75,
     "Leonardo.AI": 75,
@@ -892,32 +1032,105 @@ MODEL_SPECS = {
         "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía.",
     },
     "Sora2 Video": {
-        "nota": 4.4,
+        "nota": 4.8,
         "has_negative": True,
-        "has_audio": False,
-        "audio_desc": "Subir audio manual (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
-        "duraciones": ["5s", "10s", "15s"],
-        "ratios": ["9:16", "16:9", "1:1"],
+        "has_audio": True,
+        "audio_desc": "Audio nativo integrado (diálogos, música, SFX automáticos)",
+        "duraciones": ["5s", "10s", "15s", "20s"],
+        "ratios": ["9:16", "16:9", "1:1", "3:4"],
         "max_chars": 2000,
         "modos_gen": ["Estándar", "Calidad", "Ultra HD", "Profesional"],
-        "best_for": "OpenAI Sora integrado en SeaArt. 172K usos. Image-to-Video + Text-to-Video. Prompt negativo. Magia de sugerencia.",
-        "prompt_formula": "Subject + action + camera + setting + mood. Prompts descriptivos cinematográficos.",
-        "prompt_ejemplo": "A lone astronaut floating above Earth, helmet reflecting blue planet, slow rotation, stars in background, epic cinematic scale.",
-        "limitaciones": "Sin audio nativo (subida manual). Coste variable.",
+        "best_for": "CONSISTENCIA DE PERSONAJES superior. Manejo excepcional de física de materiales (ropa ondeando, colisiones, telas). API de referencias para personajes consistentes. Audio nativo con diálogos sincronizados. Timing preciso de acciones.",
+        "prompt_formula": "BLOQUES SEPARADOS: [Scene Description] + Cinematography: + Physics & Motion: + Dialogue: + Background Sound:. Descriptivo con peso y velocidad de movimientos.",
+        "prompt_ejemplo": "A weathered blacksmith hammers molten metal in his forge. The sparks fly in precise timing with each strike, ember particles drifting slowly in the cool air.\n\nCinematography:\n- Camera: Medium close-up, slow push-in with parallax effect on the sparks\n- Lighting: Warm orange glow from the forge, deep shadows on face, dramatic contrast\n\nPhysics & Motion:\nThe heavy leather apron moves with realistic weight as he swings the hammer. Sweat droplets fly off with each impact, cloth physics perfectly synced to movement. Metal rings with each collision.\n\nDialogue:\n- Blacksmith: \"This blade will outlive us all.\"\n\nBackground Sound:\nMetallic clang of hammer striking steel, crackling fire, heavy breathing, distant town ambiance, no background music.",
+        "prompt_ejemplo_simple": "A lone astronaut floating above Earth, helmet reflecting blue planet, slow rotation, stars in background, epic cinematic scale.",
+        "prompt_tips": [
+            "BLOQUES EXPLÍCITOS: Usa headers como 'Cinematography:', 'Physics & Motion:', 'Dialogue:', 'Background Sound:'.",
+            "CONSISTENCIA DE PERSONAJES: Usa la API de referencias para mantener same character across shots.",
+            "FÍSICA DE MATERIALES: Describe peso, velocidad, sincronización. 'La tela se mueve con peso realista', 'el agua salpica con física natural'.",
+            "TIMING PRECISO: Sincroniza acciones: 'los chispas vuelan en timing preciso con cada golpe'.",
+            "DIÁLOGOS: Especifica líneas exactas con nombre del personaje: '- Personaje: \"Línea\"'.",
+            "BACKGROUND SOUND: Incluye foley específico: 'pasos sobre grava', 'lluvia golpeando', 'sin música de fondo'.",
+            "PROFUNDIDAD: Describe capas de audio: foreground (diálogos), midground (SFX cercanos), background (ambiente lejano).",
+            "MENCIONA LENTE: 'lente de 35mm', 'cámara en mano', 'drone' para control de estilo visual.",
+            "NO USES TAGS COMA-SEPARADOS: Escribe en párrafos descriptivos estructurados.",
+            "MASSIVE PROMPT: Sora 2 acepta prompts largos y detallados. No escatimes en descripción.",
+        ],
+        "estructura_bloques": ["Scene Description", "Cinematography", "Lighting & Mood", "Physics & Motion", "Dialogue", "Background Sound"],
+        "estructura_camara": ["medium close-up", "slow push-in", "tracking shot", "dolly zoom", "crane up", "handheld", "stabilized", "parallax effect", "rack focus", "slow motion"],
+        "estructura_audio": ["dialogue", "background music", "foley", "ambient", "silence", "SFX", "voiceover"],
+        "limitaciones": "Coste más alto que otros. Requiere referencia de personaje para consistencia. Duración máxima ~20s.",
     },
     "Veo 3.1": {
-        "nota": 4.2,
+        "nota": 4.7,
         "has_negative": False,
-        "has_audio": False,
-        "audio_desc": "",
-        "duraciones": ["4s", "6s", "8s"],
-        "ratios": ["9:16", "16:9"],
+        "has_audio": True,
+        "audio_desc": "Audio nativo (música ambiental, SFX, diálogos)",
+        "duraciones": ["4s", "6s", "8s", "12s"],
+        "ratios": ["9:16", "16:9", "1:1", "4:3"],
         "max_chars": 1500,
-        "modos_gen": ["720p", "1080p"],
-        "best_for": "Google Veo integrado en SeaArt. 2.8K usos (nuevo). Solo 2 ratios (9:16, 16:9). Duración corta (4-8s). Image-to-Video + Text-to-Video.",
-        "prompt_formula": "Subject + action + camera + style. Prompts concisos y directos.",
-        "prompt_ejemplo": "A person walking through a foggy forest path, mysterious atmosphere, cinematic lighting, 1080p.",
-        "limitaciones": "Sin audio, sin prompt negativo. Solo 2 ratios. Máx 8s. Modelo nuevo con pocos usos.",
+        "modos_gen": ["720p", "1080p", "4K"],
+        "best_for": "ÓPTICA Y LENTE cinematográfica avanzada. Consistencia de fluidos, reflejos, texturas (fuego, cristales, espejos, agua). Iluminación fotorrealista. Mejor comprensión de lenguaje natural (no tan rígido como versiones anteriores).",
+        "prompt_formula": "FOCALIZACIÓN PROGRESIVA: [CÁMARA/PLANO] + [SUJETO EN ACCIÓN] + [ILUMINACIÓN/ÓPTICA] + [TEXTURAS/MATERIALES] + [AUDIO]. Front-loading: lo más importante al principio.",
+        "prompt_ejemplo": "Medium close-up filmed with a 35mm cinematic lens, shallow depth of field. An artisan with weathered hands shapes molten blown glass in his dark workshop. The scene features dramatic lighting coming solely from the incandescent glass glow, creating deep shadows and orange glints on his face. Highlights include subtle rising smoke, imperfections in the molten glass, and sweat on the skin. Audio: the crackle of fire, the hiss of cooling glass, and a deep steady breathing.",
+        "prompt_ejemplo_simple": "A person walking through a foggy forest path, mysterious atmosphere, cinematic lighting, 1080p.",
+        "prompt_tips": [
+            "FRONT-LOADING: Tipo de plano y sujeto al principio. Máximo 3-5 frases.",
+            "ÓPTICA DE LENTE: Especifica tipo de lente (35mm cinematográfico, 50mm, macro). Añade efectos: bokeh, chromatic aberration, lens flare.",
+            "CÁMARA EN UN FRASE INDEPENDIENTE: 'La cámara hace un push-in lento hacia su rostro' al final.",
+            "MATERIALIDAD: Describe texturas difíciles: humo, fuego, líquidos reflectantes, piel, metal, cristal, espejo.",
+            "CONSISTENCIA LUMÍNICA: Fuente de luz principal clara: 'luz cenital', 'contraluz', 'neón reflejado en suelo mojado'.",
+            "FLUIDOS Y REFLEJOS: Especializado en física de fluidos, reflejos realistas (fuego en cristal, agua en espejo).",
+            "TEXTURAS ÓPTICAS: 'destellos anaranjados', 'sombras profundas', 'imperfecciones del material'.",
+            "AUDIO INTEGRADO: Incluye descripción de sonido: 'graznido de gaviotas', 'olas rompiendo', 'respiración profunda'.",
+            "ESCENA ATÓMICA: Una sola acción principal por toma. No sobrecargues.",
+            "LENGUAJE FLUIDO: Ya no necesitas ser ultra-estructurado. Describe con frases naturales.",
+            "ESTILO DE CÁMARA: Selecciona de menú: 'Lente Cinematográfica 35mm', 'Cámara en mano (documental)', 'Drone cenital', 'Macro detalle'.",
+            "NO TAGS COMA-SEPARADOS: Frases descriptivas fluidas pero directas.",
+        ],
+        "estructura_camara": ["medium close-up", "close-up", "wide shot", "extreme close-up", "over the shoulder", "pov shot", "drone shot", "aerial view", "macro shot"],
+        "estructura_lente": ["35mm cinematic lens", "50mm lens", "85mm portrait lens", "wide-angle lens", "macro lens", "anamorphic lens", "handheld camera", "steadicam", "gimbal stabilized"],
+        "estructura_fisica": ["smoke rising", "fire glow", "water reflections", "glass imperfections", "metal shine", "fabric movement", "particle dispersion", "light refraction", "shadow casting"],
+        "estructura_audio": ["ambient noise", "dialogue", "foley", "silence", "music", "SFX", "weather sounds", "footsteps", "breathing"],
+        "limitaciones": "Solo 2 ratios básicos (9:16, 16:9). Máx ~12s. Sin negative prompt. Mejor para cinematografía que para acciones complejas.",
+    },
+    "Gemini Omni": {
+        "nota": 4.9,
+        "has_negative": False,
+        "has_audio": True,
+        "audio_desc": "Audio realista (música ambiental, SFX, voz sincronizada)",
+        "duraciones": ["~10s", "~20s"],
+        "ratios": ["9:16", "16:9", "1:1", "4:3"],
+        "max_chars": 2000,
+        "modos_gen": ["Text-to-Video", "Image-to-Video", "Video-to-Video", "Omni Motion"],
+        "best_for": "DIRECTOR CREATIVO CON INTELIGENCIA FÍSICA. Modelo de MUNDO que entiende causa-efecto, dinámicas de fluidos, gravedad, materiales. Edición conversacional iterativa. Cámara cinematográfica avanzada. Renderiza texto animado. Referencia multimodal (imagen+vídeo+audio+texto).",
+        "prompt_formula": "5 BLOQUES CLAVE: {Sujeto/Acción} + {Entorno} + {Física/Dinámica} + {Cámara} + {Estilo/Iluminación}. Narrativa técnica, no lista de keywords. Enfoca en causa-efecto.",
+        "prompt_ejemplo": "Close-up of a coffee cup dripping in slow motion on a rustic wooden table in a dim café. The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam. Cinematic golden hour side lighting with lens flare. Dolly push-in, grounded cinematic feel.",
+        "prompt_ejemplo_estructura": {
+            "sujeto": "a coffee cup dripping in slow motion",
+            "entorno": "a rustic wooden table in a dim café",
+            "fisica": "The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam",
+            "camara": "Close-up, slow motion, dolly push-in",
+            "estilo": "Cinematic, golden hour side lighting, lens flare, grounded feel"
+        },
+        "prompt_tips": [
+            "5 BLOQUES OBLIGATORIOS: Sujeto + Entorno + Física + Cámara + Estilo. Todos deben estar presentes.",
+            "NARRATIVA TÉCNICA: Escribe como si narraras una escena de película, no como lista de tags.",
+            "FÍSICA/DINÁMICA ES CLAVE: Omni entiende causa-efecto. Describe qué pasa 'cuando' ocurre una acción.",
+            "FLUIDOS Y MATERIALES: 'El líquido salpica creando gotas', 'el humo se dispersa', 'la tela ondea con viento'.",
+            "EVITA SOBRESPECIFICAR: No listes cada objeto. Describe atmósfera y Omni infiere los detalles.",
+            "CÁMARA: wide-angle, medium shot, close-up, dolly zoom, push-in, punch in, oners (toma continua).",
+            "ILUMINACIÓN: Fuente + efecto + temperatura. 'Warm golden light from the left', 'ethereal backlight'.",
+            "EDICIÓN ITERATIVA: Pide cambios específicos sin reescribir todo: 'Change the butterfly to a bee'.",
+            "OMNI MOTION: Para movimiento fluido, describe keyframes de acción: 'starting from X, transitioning to Y'.",
+            "CONOCIMIENTO DEL MUNDO: No explains contexto histórico/científico. Omni lo sabe. Solo describe tu visión.",
+            "TEXT EN VÍDEO: Especifica tipo de letra, posición, animación, exposición.",
+            "REFERENCIAS MULTIMODAL: Combina imagen de referencia + prompt para control de estilo.",
+            "NO USES MIDJOURNEY STYLE: No '(word:1.5)'. Escribe en prosa narrativa técnica.",
+        ],
+        "estructura_camara": ["close-up", "medium shot", "wide shot", "extreme close-up", "over the shoulder", "pov", "dolly push-in", "dolly zoom", "crane up/down", "tracking shot", "steadicam", "oner (continuous shot)", "slow motion", "fast motion", "push-in", "pull-out", "punch in", "rack focus"],
+        "estructura_fisica": ["fluid dynamics", "gravity simulation", "particle systems", "smoke dispersion", "cloth physics", "water splashes", "explosion debris", "elastic deformation", "bounce physics", "light refraction", "shadow casting", "reflection"],
+        "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo.",
     },
 }
 
@@ -2134,66 +2347,396 @@ MODEL_SPECS_IMAGEN = {
 
     # ══════════════════════════════════════════════════════════════
     # MIDJOURNEY (lenguaje natural + parámetros CLI)
+    # Modelos principales: v8.1, v8, v7, v6.1, v6
+    # Niji (anime): 7, 6, 5
     # ══════════════════════════════════════════════════════════════
-    "Midjourney v6.1": {
+    "Midjourney v8.1": {
+        "nota": 5.0, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4", "21:9", "3:1", "1:3"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax", "Draft"],
+        "best_for": (
+            "Modelo más reciente de Midjourney (lanzado 30 abril 2026, default actual). "
+            "4-5× más rápido que V7 en jobs estándar. Primer modelo con HD 2K nativo (sin "
+            "upscale). Mejor lectura de prompt, retención de detalles pequeños, --raw para "
+            "más adherencia. Ideal para: arte conceptual de máxima calidad, fotografía "
+            "profesional editorial, branding corporativo, marketing premium, personajes "
+            "consistentes con Omni Reference, series narrativas, product shots, wallpapers HD. "
+            "Requiere Global V7/V8 Personalization Profile desbloqueado."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural en frases completas (no keywords). ORDEN: scene/setting → "
+            "subject → action → style/medium → lighting → mood → camera/lens → composition. "
+            "Parámetros al final, todos opcionales:\n"
+            "  --ar X:Y → ratio (1:1 hasta 4:1 panorámico)\n"
+            "  --v 8.1 → fuerza versión (default si está en settings)\n"
+            "  --hd → activa salida HD 2K\n"
+            "  --raw → elimina estilo MJ por defecto (más fotográfico)\n"
+            "  --stylize 0-1000 (default 100) → fuerza del estilo MJ\n"
+            "  --chaos 0-100 (default 0) → variedad entre los 4 results\n"
+            "  --weird 0-3000 → composiciones extrañas/únicas\n"
+            "  --q .25/.5/1/2 → tiempo de render (más = más detalle)\n"
+            "  --sref [url/code] → referencia de estilo\n"
+            "  --oref [url] → personaje consistente (V7/V8)\n"
+            "  --p [code] → personalization profile\n"
+            "  --no [items] → exclusión (equivalente a negative)\n"
+            "  --seed N → reproducibilidad"
+        ),
+        "prompt_ejemplo": (
+            "Cinematic portrait of an elderly fisherman mending nets on a wooden boat at "
+            "golden hour, weathered hands and face full of stories, soft warm light from "
+            "the setting sun, deep blue ocean in the background, shot on 35mm film with "
+            "shallow depth of field --ar 16:9 --stylize 250 --raw --no boat name, watermark, text"
+        ),
+        "limitaciones": (
+            "Plan gratuito: NO existe (Midjourney retiró el free trial; Basic desde $10/mes). "
+            "Sin negative tradicional (usar --no). Sin pesos numéricos estilo SD. Solo "
+            "Discord o midjourney.com. Text rendering mejor que V7 pero no perfecto. "
+            "Aspect ratios >2:1 marcados experimentales. --sv 6 con Style References cuesta "
+            "4× más GPU. --hd y --q 4 cuestan 4× más GPU cada uno; combinados, 16× más."
+        ),
+    },
+    "Midjourney v8": {
+        "nota": 4.9, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4", "21:9", "3:1", "1:3"],
+        "max_chars": 4000, "modos_gen": ["Fast"],
+        "best_for": (
+            "V8.0 Alpha (lanzado 17 marzo 2026 en alpha.midjourney.com). Primera "
+            "iteración V8, todavía disponible tiempo limitado pero V8.1 es el modelo "
+            "activamente mejorado. Útil para A/B testing entre V8.0 y V8.1, o para "
+            "mantener consistencia con jobs anteriores hechos con V8.0."
+        ),
+        "prompt_formula": (
+            "Misma estructura que V8.1 (NL + CLI). ORDEN: scene → subject → style → "
+            "lighting → mood → camera. Parámetros principales: --ar, --stylize, --chaos, "
+            "--weird, --sref, --oref, --p, --no, --seed. NO admite --raw como V8.1."
+        ),
+        "prompt_ejemplo": (
+            "Hyperrealistic macro shot of a dewdrop on a vibrant rose petal at dawn, "
+            "soft morning light, intricate reflections inside the droplet, shallow depth "
+            "of field --ar 1:1 --stylize 500"
+        ),
+        "limitaciones": (
+            "SOLO Fast mode (no Relax ni Turbo). --sv 6 con Style References y Moodboards "
+            "cuesta 4× más GPU y no funciona con --hd ni --q 4. V8.1 ya tiene todas las "
+            "mejoras y es 4-5× más rápido. Disponible tiempo limitado: migra a V8.1 si puedes."
+        ),
+    },
+    "Midjourney v7": {
         "nota": 4.8, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4", "21:9", "3:1", "1:3"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax", "Draft"],
+        "best_for": (
+            "Lanzado 3 abril 2025, default desde 17 junio 2025 hasta abril 2026. Modelo "
+            "muy estable y maduro. Textos e imagen-prompts manejados con precisión, calidad "
+            "visual con texturas ricas y detalles coherentes (especialmente cuerpos, manos, "
+            "objetos). Introduce DRAFT MODE (10× más rápido para iteración) y OMNI REFERENCE "
+            "(personajes/objetos consistentes entre generaciones). 85% de usuarios prefieren "
+            "V7 sobre V6.1. Sigue siendo opción muy sólida si V8.1 da problemas o resulta caro."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural en frases (no keywords). ORDEN: scene → subject → style → "
+            "lighting → mood → camera. Parámetros: --ar, --v 7, --stylize 0-1000, --chaos "
+            "0-100, --weird 0-3000, --q .25/.5/1/2, --sref [url/code] (estilo), --oref [url] "
+            "(personaje), --cref [url] (legacy, mejor usar --oref en V7), --p [code] (profile "
+            "personalizado), --no [items] (excluir), --draft (Draft Mode), --raw (sin estilo "
+            "default MJ), --seed N."
+        ),
+        "prompt_ejemplo": (
+            "Editorial fashion photograph of a model wearing a flowing red silk dress on an "
+            "urban rooftop, soft golden hour backlight, distant city skyline, shot on medium "
+            "format film, shallow depth of field --ar 3:4 --stylize 400 --v 7 --raw"
+        ),
+        "limitaciones": (
+            "Sin negative tradicional (usar --no). Sin pesos numéricos. Slightly slower than "
+            "V8.1 (4-5× diferencia). Personalization profile recomendado para mejores resultados. "
+            "Draft Mode útil para explorar antes de pasar a Standard. V8.1 es superior en text "
+            "rendering y velocidad."
+        ),
+    },
+    "Midjourney v6.1": {
+        "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4", "21:9"],
         "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax"],
-        "best_for": "Estándar de la industria en imagen generativa. Mejor estética cinematográfica. Excelente para arte conceptual, fotografía, ilustración. Sintaxis natural + parámetros CLI (--ar, --stylize, --weird, --chaos, --no, --sref).",
-        "prompt_formula": "Lenguaje natural descriptivo + parámetros CLI al final. Estructura: scene + subject + style + lighting + mood --ar X:Y --stylize 100-1000 --no [exclusions].",
-        "prompt_ejemplo": "Cinematic portrait of an elderly fisherman at sunset, weathered face, deep blue ocean background, golden hour lighting, shot on 35mm film, photographic style --ar 16:9 --stylize 250 --no boat, watermark",
-        "limitaciones": "Sin negative prompt tradicional (usar --no). Sin pesos numéricos estilo SD. Solo accesible vía Discord o web app oficial.",
+        "best_for": (
+            "Lanzado 30 julio 2024, default hasta 16 junio 2025. 25% más rápido que V6. "
+            "Coherencia mejorada de detalles y texturas. Aún ampliamente usado por su "
+            "balance velocidad/calidad y estilo artístico característico de Midjourney. "
+            "Ideal para arte conceptual, ilustración, posters, social media, cuando quieres "
+            "el 'look' clásico MJ pintado/cinematográfico. Más estable que V7 en algunos "
+            "estilos artísticos específicos. --cref (Character Reference) original aquí."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural descriptivo (más keyword-friendly que V7/V8). ORDEN: scene → "
+            "subject → style → lighting → mood. Parámetros: --v 6.1, --ar X:Y, --stylize "
+            "100-1000 (más alto = más estilo MJ), --chaos 0-100, --no [exclusions], --cref "
+            "[url] --cw 0-100 (character weight), --sref [url/code] (style reference), --q "
+            ".25/.5/1, --seed N. NO admite --oref ni --draft ni --raw (son V7+)."
+        ),
+        "prompt_ejemplo": (
+            "Cinematic portrait of an elderly fisherman at sunset, weathered face, deep blue "
+            "ocean background, golden hour lighting, shot on 35mm film, painterly photographic "
+            "style --ar 16:9 --stylize 250 --v 6.1 --no boat, watermark"
+        ),
+        "limitaciones": (
+            "Sin negative tradicional (usar --no). Sin --raw (estilo MJ siempre presente, "
+            "para fotografía pura V7+ es mejor). --cref menos potente que --oref de V7. Sin "
+            "Draft Mode (iteración más lenta). V7/V8.1 superiores en prompt understanding "
+            "complejo. Buen fallback si V8.1 da resultados inesperados."
+        ),
+    },
+    "Midjourney v6": {
+        "nota": 4.5, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax"],
+        "best_for": (
+            "Lanzado diciembre 2023. Primera versión con mejor prompt accuracy en inputs "
+            "largos y coherence mejorada. Legacy pero aún disponible. Útil para mantener "
+            "consistencia con trabajos antiguos hechos en V6, o cuando V6.1 da artifacts "
+            "específicos no presentes en V6. Estilo MJ ligeramente más pictórico que V6.1."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural más keyword-friendly. ORDEN: scene → subject → details → "
+            "style → lighting. Parámetros: --v 6, --ar X:Y, --stylize 0-1000, --chaos 0-100, "
+            "--no [exclusions], --cref [url], --q .25/.5/1, --seed N. Funciona bien con "
+            "weights y multi-prompts usando ::."
+        ),
+        "prompt_ejemplo": (
+            "A serene Japanese garden in spring with cherry blossoms in full bloom, a koi "
+            "pond with orange fish, traditional wooden bridge, soft morning mist, ukiyo-e "
+            "inspired painterly style --ar 16:9 --stylize 200 --v 6"
+        ),
+        "limitaciones": (
+            "Legacy. V6.1, V7 y V8.1 superiores en casi todo. Sin --oref, sin --draft, sin "
+            "--raw, sin --hd. Menor coherencia en manos/cuerpos vs V7. Usar solo si "
+            "necesitas reproducir el look específico de V6 o continuar series antiguas."
+        ),
+    },
+
+    # ── Niji (Anime) ──────────────────────────────────────────────
+
+    "Niji 7": {
+        "nota": 4.9, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4", "21:9"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax"],
+        "best_for": (
+            "Lanzado 9 enero 2026. Modelo especializado en anime/manga, la línea Niji "
+            "actual. Mejoras clave: ojos crystal-clear, reflejos, detalles finos de fondo, "
+            "coherencia mejorada en poses complejas y multi-arm setups, interpretación "
+            "MÁS LITERAL del prompt (respeta colores específicos y peinados exactos), "
+            "mejor text rendering Japanese, mejor --sref performance. Soporta Personalization "
+            "y Moodboards. Perfecto para: anime/manga art, ilustraciones japonesas, "
+            "character design, wallpapers, game assets, illustration commercial work."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural + CLI (misma sintaxis que MJ). ORDEN: character/subject → "
+            "outfit/style → pose/action → scene → details (hair color, eye color, expression) "
+            "→ mood. Parámetros: --niji 7, --ar X:Y, --stylize 0-1000, --sref [url/code], "
+            "--cref [url] (Niji 6/V6-era control; en Niji 7 algunas implementaciones todavía "
+            "lo usan), --p [code] (Personalization), --no [items], --seed N. Más literal que "
+            "Niji 6: prompts vagos dan resultados diferentes a Niji 6/5."
+        ),
+        "prompt_ejemplo": (
+            "Beautiful anime girl with long silver hair tied in a ponytail, large expressive "
+            "violet eyes, wearing a traditional Japanese school uniform, cherry blossom "
+            "petals falling around her, soft afternoon light, detailed background of a "
+            "Japanese garden --niji 7 --ar 3:4 --stylize 500 --no background clutter, watermark"
+        ),
+        "limitaciones": (
+            "Solo anime/ilustración (NO usar para fotorrealismo). Interpretación más literal: "
+            "prompts vagos rinden distinto que Niji 6. --cref en Niji 7 es Niji 6/V6-era "
+            "(no V7-path completo). Sin --oref nativo. Sin --raw. Plan gratuito no existe "
+            "(igual que Midjourney general)."
+        ),
+    },
+    "Niji 6": {
+        "nota": 4.7, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax"],
+        "best_for": (
+            "Lanzado junio 2024. Default Niji hasta enero 2026. Japanese text rendering "
+            "mejorado (kana, kanji básicos, Chinese simple). Mejor estructura de ojos anime "
+            "vs Niji 5. Menos artifacts. Sigue siendo buena opción para diseño de personajes "
+            "con texto japonés visible (signage, manga panels, posters anime). Estilo "
+            "ligeramente más estilizado/expresivo que Niji 7 (que es más literal)."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural anime-focused. ORDEN: character → outfit → scene → style → "
+            "mood. Parámetros: --niji 6, --ar X:Y, --stylize 0-1000, --cref [url] (Character "
+            "Reference, funciona bien), --sref [url/code], --no [items], --q .25/.5/1, "
+            "--seed N. Acepta multi-prompts con :: para weight."
+        ),
+        "prompt_ejemplo": (
+            "Anime warrior princess with flowing white dress and silver armor, holding a "
+            "katana, standing on a cliff overlooking a stormy ocean, dramatic clouds, "
+            "epic cinematic lighting, manga illustration style --niji 6 --ar 16:9 --stylize 300"
+        ),
+        "limitaciones": (
+            "Niji 7 superior en coherencia, ojos, multi-poses y --sref. Sin Personalization "
+            "completa (Niji 7 sí). Más estilizado que Niji 7 (puede ser pro o contra según "
+            "uso). Sin --oref."
+        ),
+    },
+    "Niji 5": {
+        "nota": 4.5, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4"],
+        "max_chars": 4000, "modos_gen": ["Standard", "Turbo", "Relax"],
+        "best_for": (
+            "Lanzado abril 2023. Modelo Niji clásico con --style parameters muy expresivos: "
+            "--style cute (adorable, infantil, kawaii), --style expressive (sofisticado, "
+            "detallado, expresivo), --style original (Niji V5 default, balanced), --style "
+            "scenic (cinematic backgrounds, escenarios épicos). Legacy pero útil para "
+            "conseguir looks anime específicos que Niji 6/7 no replican exactamente."
+        ),
+        "prompt_formula": (
+            "Anime scene + character + style modifier. Parámetros distintivos de Niji 5: "
+            "--niji 5, --style cute/expressive/original/scenic (CRÍTICO en esta versión), "
+            "--ar X:Y, --stylize 0-1000, --no [items], --seed N. El --style elegido cambia "
+            "drásticamente el resultado, más que en Niji 6/7."
+        ),
+        "prompt_ejemplo": (
+            "Cute chibi anime girl with pink twin-tails in a magical forest, surrounded by "
+            "small glowing fairies and floating mushrooms, soft pastel colors, dreamy "
+            "atmosphere --niji 5 --style cute --ar 1:1 --stylize 200"
+        ),
+        "limitaciones": (
+            "Legacy. Niji 6 y 7 superiores en coherencia, detalles y prompt understanding. "
+            "Sin --cref ni --sref ni --oref. Sin Personalization. Los --style flags pueden "
+            "ignorarse en algunos casos. Útil solo para reproducir el look específico V5."
+        ),
     },
 
     # ══════════════════════════════════════════════════════════════
-    # DALL-E / GPT Image (OpenAI)
+    # ChatGPT / GPT Image (OpenAI oficial)
+    # DALL-E 2 y 3 retirados de la API el 12 de mayo de 2026.
+    # Familia GPT Image: 1 (Abr 2025), 1 mini, 1.5 (Nov 2025), 2 (Abr 2026).
     # ══════════════════════════════════════════════════════════════
-    "DALL-E 3 (legacy)": {
-        "nota": 4.0, "has_negative": False, "is_natural": True,
-        "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 4000, "modos_gen": ["Standard", "HD"],
-        "best_for": "Modelo OpenAI legacy (pre-2025). Bueno para conceptos creativos, ilustración, arte estilizado. Reemplazado por GPT Image en ChatGPT.",
-        "prompt_formula": "Lenguaje natural muy descriptivo. ChatGPT reescribe automáticamente el prompt para añadir detalles.",
-        "prompt_ejemplo": "A vibrant illustration of a cyberpunk cat playing a holographic guitar in a neon-lit alleyway, colorful, detailed, digital art style",
-        "limitaciones": "Sin pesos, sin negative. Solo 3 ratios. Reemplazado por GPT Image series.",
-    },
     "GPT Image 1": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "2:3", "3:2", "1024x1024", "1024x1536", "1536x1024"],
         "max_chars": 4000, "modos_gen": ["Low", "Medium", "High"],
-        "best_for": "Primer GPT Image (Marzo 2025). Modelo nativo multimodal de GPT-4o. Excelente integración con ChatGPT, mejor que DALL-E 3 en text-in-image y composición compleja. Famoso por estilo Studio Ghibli viral.",
-        "prompt_formula": "Lenguaje natural en prosa fluida. Estructura: background/scene → subject → key details → constraints + intended use (ad, UI, infographic).",
-        "prompt_ejemplo": "Create a photorealistic portrait of an elderly sailor on a fishing boat at dawn, weathered face, soft coastal light, 35mm film aesthetic, medium close-up at eye level",
-        "limitaciones": "Warm color bias en muchas salidas. Sin negative prompt. Cropping prematuro a veces. Sin pesos numéricos.",
+        "best_for": (
+            "Primer GPT Image (Abril 2025). Modelo nativo multimodal de GPT-4o. "
+            "Excelente integración con ChatGPT, mejor que DALL-E 3 en text-in-image, "
+            "composición compleja y world knowledge. Famoso por estilo Studio Ghibli "
+            "viral. Disponible en API (gpt-image-1) y ChatGPT. Requiere verificación "
+            "de organización en la API. Casos de uso destacados: ilustración con texto, "
+            "personajes con specs detalladas, prototipos UI, posters, branding visual."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural en prosa fluida. Estructura: background/scene → subject "
+            "→ key details → constraints + intended use (ad, UI, infographic). "
+            "Para texto literal: usar comillas, e.g. 'with the words \"Hello World\"'. "
+            "Soporta specs muy largas tipo character sheet (rasgos físicos, paleta, "
+            "movimiento, mood). Para fondo transparente: incluir 'on a transparent "
+            "background' (auto-detecta y aplica transparency en PNG/WebP)."
+        ),
+        "prompt_ejemplo": (
+            "Create a photorealistic portrait of an elderly sailor on a fishing boat "
+            "at dawn, weathered face, soft coastal light, 35mm film aesthetic, "
+            "medium close-up at eye level"
+        ),
+        "limitaciones": (
+            "Warm color bias en muchas salidas. Sin negative prompt. Cropping "
+            "prematuro a veces. Sin pesos numéricos. Resolución máxima ~1024px. "
+            "Edición: soporta hasta 10 imágenes input + máscara con alpha channel "
+            "(para edición localizada). Parámetro 'input_fidelity=high' preserva "
+            "caras, logos y texturas con más detalle (primera imagen retiene mejor). "
+            "Precio: ~$0.02 low / ~$0.07 medium / ~$0.19 high (1024x1024)."
+        ),
+    },
+    "GPT Image 1 mini": {
+        "nota": 4.2, "has_negative": False, "is_natural": True,
+        "ratios": ["1:1", "2:3", "3:2", "1024x1024", "1024x1536", "1536x1024"],
+        "max_chars": 4000, "modos_gen": ["Low", "Medium"],
+        "best_for": (
+            "GPT Image 1 mini (2026). Versión optimizada para coste y velocidad. "
+            "Ideal para alto volumen, prototipado, iteración rápida y workflows "
+            "automatizados donde el coste por imagen importa más que la fidelidad "
+            "máxima. Mantiene la capacidad multimodal de GPT Image 1."
+        ),
+        "prompt_formula": (
+            "Igual que GPT Image 1 pero prefiere prompts más cortos y directos. "
+            "Estructura: subject + scene + 2-3 detalles clave. Evita prompts muy "
+            "complejos con muchas restricciones simultáneas."
+        ),
+        "prompt_ejemplo": (
+            "A friendly cartoon mascot for a coffee app, smiling coffee cup with "
+            "arms and legs, holding a tablet, flat vector style, warm orange and "
+            "brown palette, simple background"
+        ),
+        "limitaciones": (
+            "Solo modos Low y Medium (no High). Menos detalle fino que GPT Image 1 "
+            "full. Sin negative. ~3-5× más barato por imagen que GPT Image 1. "
+            "Recomendado para tareas que no requieran 4K ni text rendering complejo."
+        ),
     },
     "GPT Image 1.5": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "2:3", "3:2", "1024x1024", "1024x1536", "1536x1024", "9:16", "16:9"],
         "max_chars": 4000, "modos_gen": ["Low", "Medium", "High"],
-        "best_for": "GPT Image 1.5 (Diciembre 2025). 4x más rápido que GPT Image 1. Mejor edición de imagen, preserva detalles, branding consistente. Inputs/outputs 20% más baratos. Excelente para ecommerce y branding.",
-        "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'. Para generación: scene → subject → details → style → constraints.",
-        "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic",
-        "limitaciones": "Sigue sin negative prompt ni pesos. Algunas regresiones en estilos artísticos respecto a GPT Image 1.",
+        "best_for": (
+            "GPT Image 1.5 (Noviembre 2025). 4× más rápido que GPT Image 1. "
+            "Mejor edición de imagen preservando detalles (lighting, composición, "
+            "rostros). Adherencia a instrucciones reforzada. Inputs/outputs ~20% "
+            "más baratos. EXCELENTE para edición precisa con input_fidelity=high: "
+            "item edits (cambiar color de un objeto sin tocar resto), element "
+            "removal (quitar limpio), element addition (insertar nuevo natural), "
+            "face preservation (mantener identidad en variaciones), branding "
+            "consistency (logo sin distorsión), product photography (mismo "
+            "producto en nuevos fondos), fashion (cambiar outfit sin alterar pose). "
+            "Ideal para ecommerce, branding, story sequences, avatares consistentes."
+        ),
+        "prompt_formula": (
+            "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z "
+            "intact'. Para generación: scene → subject → details → style → "
+            "constraints. Reseteo de identidad facial: 'maintain the same person'. "
+            "Cuando se editan múltiples caras: combina las fotos en un canvas único "
+            "antes de enviar (la primera imagen del input preserva más fidelidad)."
+        ),
+        "prompt_ejemplo": (
+            "Edit this product photo: change the background to a clean white "
+            "studio with soft shadows, keep the product, lighting and proportions "
+            "exactly as they are, photorealistic"
+        ),
+        "limitaciones": (
+            "Sigue sin negative prompt ni pesos. Algunas regresiones en estilos "
+            "artísticos respecto a GPT Image 1. Resolución máxima ~1024px (no 4K). "
+            "input_fidelity=high consume más tokens de input pero crítico para "
+            "preservar caras y logos. Output formats: PNG, JPEG, WebP."
+        ),
     },
     "GPT Image 2": {
         "nota": 4.9, "has_negative": False, "is_natural": True,
-        "ratios": ["1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4"],
+        "ratios": [
+            "1:1", "2:3", "3:2", "9:16", "16:9", "4:5", "5:4",
+            "1024x1024", "1536x1024", "1024x1536",
+            "2048x2048", "2048x1152", "3840x2160 (4K)",
+        ],
         "max_chars": 5000, "modos_gen": ["Low", "Medium", "High"],
         "best_for": (
-            "GPT Image 2 en SeaArt (Abril 2026). Modelo OpenAI más reciente, "
-            "destacado por: (1) text rendering casi perfecto en posters, signage, "
-            "labels y UI, (2) realismo natural en piel, materiales, iluminación y "
-            "sombras, (3) prompt understanding superior con múltiples requisitos, "
-            "(4) consistencia entre generaciones (ideal para series, campañas, "
-            "story boards). Ideal para marketing, UI/app mockups, product shots, "
-            "fotorrealismo editorial, worldbuilding."
+            "GPT Image 2 (Abril 2026). Modelo OpenAI más reciente y capaz. "
+            "Primero con razonamiento O-series integrado (Understand→Plan→Generate→Review). "
+            "Destacado por: (1) text rendering casi perfecto en posters, signage, "
+            "labels y UI; (2) realismo natural en piel, materiales, iluminación; "
+            "(3) prompt understanding superior con múltiples requisitos; "
+            "(4) consistencia entre generaciones (series, campañas, story boards); "
+            "(5) RESOLUCIÓN NATIVA HASTA 4K (3840×2160); "
+            "(6) HIGH FIDELITY AUTOMÁTICO en imágenes de referencia (no necesita "
+            "el parámetro input_fidelity explícito como GPT Image 1/1.5); "
+            "(7) hasta 5 imágenes de referencia + máscara para edición composite "
+            "('subject from img1 + scene from img2 + style from img3'). "
+            "Ideal para marketing profesional, UI/app mockups, product shots, "
+            "fotorrealismo editorial, posters de cine, wallpapers."
         ),
         "prompt_formula": (
             "Lenguaje natural estructurado. ORDEN: subject → scene/setting → "
             "lighting → style/mood → composition → exact text (entre comillas si "
             "aparece en la imagen). Para texto literal: 'with the words \"...\"'. "
             "Para UI/mockups: indicar tipo de pantalla, elementos de interfaz, "
-            "estado. Para realismo: pedir lens (35mm, 50mm), DOF, grain, texturas."
+            "estado. Para realismo: pedir lens (35mm, 50mm), DOF, grain, texturas. "
+            "Para edición composite: 'subject from img1, scene from img2, style "
+            "from img3'. Para fondos transparentes: incluir 'transparent background' "
+            "en el texto (en GPT Image 2 ya no se acepta el parámetro background=transparent)."
         ),
         "prompt_ejemplo": (
             "Photorealistic marketing banner for a coffee brand. Subject: a "
@@ -2205,10 +2748,14 @@ MODEL_SPECS_IMAGEN = {
             "Cinematic still, 50mm lens, soft film grain."
         ),
         "limitaciones": (
-            "Sin negative prompt ni pesos (no aplican sintaxis SD). Modelo de "
-            "OpenAI accesible vía SeaArt (también disponible en Magnific y ChatGPT). "
-            "Tiempo de generación: ~1m 30s para alta calidad. Mejor en lenguaje "
-            "natural detallado que en tags sueltos."
+            "Sin negative prompt ni pesos (no aplican sintaxis SD). Solo n=1 por "
+            "llamada en API (lanzar requests paralelas para múltiples). Tiempo: "
+            "high quality + 2K/4K puede tardar 3-5 minutos (timeout recomendado "
+            "≥360s, exponential backoff en 5xx). Resoluciones >2560×1440 marcadas "
+            "experimentales. NO admite parámetro 'background=transparent' (usar "
+            "post-procesado). NO usar input_fidelity (auto-forzado high; el "
+            "parámetro genera error). Precio: ~$0.006 low / $0.053 medium / "
+            "$0.211 high (1024×1024); 4K alta sube a ~$0.41/imagen."
         ),
     },
 
@@ -2216,26 +2763,43 @@ MODEL_SPECS_IMAGEN = {
     # IDEOGRAM / RECRAFT
     # ══════════════════════════════════════════════════════════════
     "Ideogram v3": {
-        "nota": 4.6, "has_negative": True, "is_natural": True,
+        "nota": 4.8, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "16:10", "10:16", "3:2", "2:3"],
-        "max_chars": 4000, "modos_gen": ["Default", "Quality", "Turbo"],
-        "best_for": "Líder en text-in-image. Rendering de tipografías, logos, posters. Excelente para diseño gráfico, branding, social media con texto visible.",
-        "prompt_formula": "Lenguaje natural + tipografía explícita. Para texto: poner el texto entre comillas. Soporta negative prompt nativo.",
-        "prompt_ejemplo": 'A vintage 1970s rock concert poster with bold typography saying "MIDNIGHT TOUR" in golden letters, psychedelic background, bright colors, retro design',
-        "limitaciones": "Calidad fotográfica menor que Mystic/FLUX. Mejor para diseño con texto que para foto pura.",
+        "max_chars": 2000, "modos_gen": ["Default", "Quality", "Turbo"],
+        "best_for": "Líder en text-in-image. Rendering de tipografías, logos, posters. Estilo References hasta 3 imágenes. 4.3B presets de estilo. Mejor para diseño gráfico, branding, social media con texto visible.",
+        "prompt_formula": "Lenguaje natural descriptivo. Máx ~150-160 palabras. Texto entre comillas. Estructura: [Image summary]. [Main subject], [Pose], [Setting], [Lighting], [Style], [Technical enhancers]",
+        "prompt_ejemplo": 'A vintage 1970s rock concert poster with bold typography saying "MIDNIGHT TOUR" in golden letters, psychedelic background with swirling colors, retro design, warm tones, professional typography, concert photography style',
+        "prompt_tips": [
+            "ESCRIBE EN INGLÉS: Para resultados más fiables (especialmente con texto), usa inglés.",
+            "NATURAL LANGUAGE: Escribe como le explicarías la imagen a otra persona. Full sentences.",
+            "TEXTO EN COMILLAS: Para texto visible, ponlo entre comillas dobles.",
+            "ORDEN IMPORTANTE: Lo más importante va al principio, hasta 150-160 palabras.",
+            "NO PESOS: No uses (palabra:1.5) ni pesos. Describe mejor.",
+            "NO FLAGS: No uses --ar, --v, --style. Describe el estilo en texto.",
+            "STYLE REFERENCES: Sube hasta 3 imágenes de referencia para controlar estética.",
+            "MAGIC PROMPT: Puede expandir tu prompt automáticamente si lo necesitas.",
+        ],
+        "limitaciones": "Sin negative prompt. Máx ~150-160 palabras. Scripts no latinos (árabe, chino) pueden renderizar mal.",
     },
     "Recraft v3": {
-        "nota": 4.5, "has_negative": True, "is_natural": True,
+        "nota": 4.6, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["Standard", "HD"],
-        "best_for": "Especializado en arte vectorial, ilustraciones consistentes, branding. Excelente para diseñadores. Genera SVG editable.",
-        "prompt_formula": "Lenguaje natural + estilo vectorial. Mencionar 'flat illustration', 'vector art', 'icon style' funciona muy bien.",
-        "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design, no gradients",
-        "limitaciones": "No hace fotorrealismo. Mejor para gráfico/vectorial. Salida SVG no siempre limpia.",
+        "max_chars": 2000, "modos_gen": ["Standard", "HD"],
+        "best_for": "Especializado en arte vectorial, ilustraciones consistentes, branding. Genera SVG editable. Style References hasta 3 imágenes. Ideal para diseñadores.",
+        "prompt_formula": "Lenguaje natural + estilo artístico. Mencionar 'flat illustration', 'vector art', 'icon style', 'realistic'.",
+        "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design, no gradients, clean lines",
+        "prompt_tips": [
+            "USA ESTILOS EXPLÍCITOS: 'flat illustration', 'realistic photo', 'vector art'.",
+            "SVG OUTPUT: Genera graphics escalables editables.",
+            "STYLE REFERENCES: Hasta 3 imágenes de referencia para consistencia.",
+            "COMPOSICIÓN ESTRUCTURADA: Excelente para layouts con texto y iconografía.",
+        ],
+        "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial. SVG puede necesitar limpieza.",
     },
 
-    # ══════════════════════════════════════════════════════════════
-    # MAGNIFIC (antes Freepik AI) — TODOS LOS MODELOS DISPONIBLES (Marzo 2026)
+# ══════════════════════════════════════════════════════════════
+    # MAGNIFIC (antes Freepik AI) — TODOS LOS MODELOS DISPONIBLES (Mayo 2026)
+    # NOTA: La mayoría NO soporta negative prompt nativo. Solo Classic y Recraft V4 lo soportan.
     # ══════════════════════════════════════════════════════════════
     "Auto (Sugerencias)": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
@@ -2251,25 +2815,39 @@ MODEL_SPECS_IMAGEN = {
     "GPT 2": {
         "nota": 4.9, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2", "4:3", "3:4"],
-        "max_chars": 5000, "modos_gen": ["Standard", "Quality"],
-        "best_for": "GPT Image 2 en Magnific (Destacado/Nuevo). Salida 2K-4K. ~1m 27s de generación. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
-        "prompt_formula": "Lenguaje natural muy estructurado. Estructura: scene → subject → key details → constraints + intended use. Lenguaje fotográfico (lens, lighting, framing) y texturas reales.",
+        "max_chars": 2000, "modos_gen": ["Standard", "Quality"],
+        "best_for": "GPT Image 2 en Magnific (Destacado/Nuevo). Salida 2K-4K. ~1m 27s. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
+        "prompt_formula": "Lenguaje natural muy estructurado. Estructura: scene → subject → key details → constraints. Lenguaje fotográfico (lens, lighting, framing) y texturas reales.",
         "prompt_ejemplo": "Photorealistic candid photo of an elderly fisherman on his boat at dawn. Weathered skin with visible pores, sun texture. Adjusting nets, dog nearby. 35mm film aesthetic, 50mm lens, soft coastal daylight, shallow DOF.",
-        "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Soporta referencias.",
+        "prompt_tips": [
+            "ESCRIBE EN INGLÉS: Resultados más fiables.",
+            "LENGUAJE FOTOGRÁFICO: Menciona lentes, iluminación, profundidad de campo.",
+            "TEXTURAS REALES: Describe piel, telas, materiales con detalle.",
+            "ESTRUCTURA CLARA: escena → sujeto → detalles → estilo.",
+            "MÁX 150-160 PALABRAS: Lo más importante al inicio.",
+            "SIN NEGATIVE PROMPT: No funciona aquí.",
+            "REFERENCIAS: Soporta hasta varias imágenes de referencia.",
+        ],
+        "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Máx ~160 palabras.",
     },
     "GPT 1.5 - High": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 4000, "modos_gen": ["High"],
+        "max_chars": 2000, "modos_gen": ["High"],
         "best_for": "GPT Image 1.5 alta calidad en Magnific. ~59s. Buena edición de imagen, preserva detalles, branding consistente.",
         "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'.",
         "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are",
+        "prompt_tips": [
+            "EDICIÓN CLARA: 'Change X to Y, keep Z intact'.",
+            "REFERENCIAS: Soporta varias imágenes de referencia.",
+            "INGLÉS MEJOR: Para resultados más predecibles.",
+        ],
         "limitaciones": "Sin negative prompt ni pesos.",
     },
     "GPT 1.5": {
         "nota": 4.6, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 4000, "modos_gen": ["Standard"],
+        "max_chars": 2000, "modos_gen": ["Standard"],
         "best_for": "GPT Image 1.5 estándar. ~41s. 4x más rápido que GPT 1, mejor edición, preserva detalles.",
         "prompt_formula": "Lenguaje natural estructurado.",
         "prompt_ejemplo": "Modern poster design with bold typography, minimalist layout, gradient background, professional design",
@@ -2278,16 +2856,21 @@ MODEL_SPECS_IMAGEN = {
     "GPT 1 - HQ": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 4000, "modos_gen": ["HQ"],
+        "max_chars": 2000, "modos_gen": ["HQ"],
         "best_for": "GPT Image 1 alta calidad. ~1m 3s. Modelo viral por estilo Studio Ghibli. Excelente integración multimodal.",
         "prompt_formula": "Lenguaje natural en prosa. Estructura: scene → subject → details → style.",
         "prompt_ejemplo": "Studio Ghibli style illustration of a young girl walking through a field of sunflowers at dusk, soft warm light, dreamy atmosphere",
+        "prompt_tips": [
+            "PROSA NATURAL: Escribe en oraciones completas.",
+            "ESTILO ARTÍSTICO: Menciona estilos como 'Studio Ghibli', 'Pixar', etc.",
+            "EMOCIÓN Y ATMÓSFERA: Describe el mood además de lo visual.",
+        ],
         "limitaciones": "Lento (~1m 3s). Warm color bias. Sin negative ni pesos.",
     },
     "GPT": {
         "nota": 4.3, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "GPT Image base. ~40s. Versión rápida y económica.",
         "prompt_formula": "Lenguaje natural simple. Soporta referencias.",
         "prompt_ejemplo": "A vibrant illustration of a cyberpunk cat in a neon-lit alleyway, colorful, detailed",
@@ -2298,52 +2881,78 @@ MODEL_SPECS_IMAGEN = {
     "Flux.2 Max": {
         "nota": 4.8, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2", "4:3", "3:4"],
-        "max_chars": 4000, "modos_gen": ["Max"],
+        "max_chars": 2000, "modos_gen": ["Max"],
         "best_for": "Flux 2 Max en Magnific. Salida 2K. ~38s. Máxima calidad de la familia Flux 2. Ideal para hero shots, branding crítico.",
         "prompt_formula": "Lenguaje natural muy descriptivo y específico. Flux 2 entiende prompts complejos con múltiples sujetos y relaciones espaciales.",
         "prompt_ejemplo": "A high-end fashion editorial photograph of a model standing in a brutalist concrete corridor, dramatic side lighting from a single skylight, wearing a sculptural black dress, photorealistic, magazine quality",
+        "prompt_tips": [
+            "DESCRIPTIVO Y ESPECÍFICO: Flux 2 entiende prompts complejos.",
+            "MULTIPLES SUJETOS: Maneja composiciones con varios elementos.",
+            "RELACIONES ESPACIALES: Describe posiciones y direcciones con precisión.",
+            "ILUMINACIÓN DRAMÁTICA: Funciona muy bien con descripciones de luz.",
+        ],
         "limitaciones": "Sin negative ni pesos. Más lento que Pro.",
     },
     "Flux.2 Pro": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2", "4:3", "3:4"],
-        "max_chars": 4000, "modos_gen": ["Pro"],
+        "max_chars": 2000, "modos_gen": ["Pro"],
         "best_for": "Flux 2 Pro. Salida 2K. ~22s. Producción profesional, alta resolución, fotorrealismo top, hasta 10 imágenes ref. Para uso comercial intensivo.",
         "prompt_formula": "Lenguaje natural fluido + tipografía explícita si necesitas texto. Hasta 10 referencias.",
         "prompt_ejemplo": "Professional product photo of a luxury watch on dark velvet, soft directional lighting from upper left, macro detail, sharp focus on dial, depth of field",
+        "prompt_tips": [
+            "HASTA 10 REFERENCIAS: Usa múltiples imágenes para controlar estilo.",
+            "TIPOGRAFÍA: Describe explícitamente si necesitas texto visible.",
+            "FLUIDO Y DESCRIPTIVO: No necesitas estructura rígida.",
+        ],
         "limitaciones": "Sin negative ni pesos.",
     },
     "Flux.2 Flex": {
         "nota": 4.6, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 4000, "modos_gen": ["Flex"],
+        "max_chars": 2000, "modos_gen": ["Flex"],
         "best_for": "Flux 2 Flex. Salida 2K. ~25s. Especializado en TIPOGRAFÍA y detalles finos. El mejor cuando el texto en imagen es crítico.",
         "prompt_formula": "Para texto: usar comillas y describir tipografía explícitamente. 'Bold serif typeface', 'handwritten script', etc.",
         "prompt_ejemplo": 'Vintage diner sign with the text "DINER" in bold red retro typography, neon accent, weathered metal background, 1950s aesthetic',
+        "prompt_tips": [
+            "TEXTO EN COMILLAS: \"TU TEXTO AQUÍ\" para texto visible.",
+            "TIPOGRAFÍA EXPLÍCITA: Describe fuente, peso, estilo.",
+            "MEJOR PARA TEXTO: Que otros Flux para renderizar palabras.",
+        ],
         "limitaciones": "Optimizado para texto. Para foto pura, Pro o Max son mejores.",
     },
     "Flux.2 Klein": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Klein"],
+        "max_chars": 1500, "modos_gen": ["Klein"],
         "best_for": "Flux 2 Klein. Salida 2K. ⚡ ~7s (RÁPIDO). Compacto para generación en tiempo real. Para iteración rápida.",
         "prompt_formula": "Lenguaje natural conciso. Optimizado para velocidad.",
         "prompt_ejemplo": "A red apple on a wooden table, soft natural light from the right, photorealistic",
+        "prompt_tips": [
+            "CONCISO: Prompts más cortos funcionan mejor.",
+            "VELOCIDAD: Ideal para iterar y probar ideas rápido.",
+            "NATURAL PERO BREVE: No necesitas essays.",
+        ],
         "limitaciones": "Calidad menor que Pro/Max pero muy rápido.",
     },
     "Flux.1 Kontext Max": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 4000, "modos_gen": ["Max"],
+        "max_chars": 2000, "modos_gen": ["Max"],
         "best_for": "Flux 1 Kontext Max. ~18s. Modelo de EDICIÓN avanzada. Preserva contexto entre ediciones múltiples.",
         "prompt_formula": "Instrucciones de edición específicas: 'Change [elemento] to [nuevo]', 'Keep [elemento] exactly the same', 'Add [elemento] to [posición]'.",
         "prompt_ejemplo": "Change the woman's dress from red to emerald green, keep her face, hair, pose and lighting exactly the same",
+        "prompt_tips": [
+            "EDICIÓN ESPECÍFICA: Change X to Y, keep Z.",
+            "PRESERVA CONTEXTO: Funciona mejor con múltiples ediciones.",
+            "REFERENCIAS: Soporta imágenes de referencia para estilo.",
+        ],
         "limitaciones": "Especializado en edición. Para generación desde cero, otros Flux son mejores.",
     },
     "Flux.1 Kontext Pro": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Pro"],
+        "max_chars": 1500, "modos_gen": ["Pro"],
         "best_for": "Flux 1 Kontext Pro. ~13s. Edición rápida con preservación de contexto.",
         "prompt_formula": "Instrucciones de edición concisas y específicas.",
         "prompt_ejemplo": "Add subtle bokeh background blur, keep subject sharp",
@@ -2352,16 +2961,21 @@ MODEL_SPECS_IMAGEN = {
     "Flux.1 Realism": {
         "nota": 4.6, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["Realism"],
+        "max_chars": 1500, "modos_gen": ["Realism"],
         "best_for": "Flux 1 Realism. ⚡ ~8s. Optimizado para FOTORREALISMO. Pieles, texturas, escenarios fotográficos.",
         "prompt_formula": "Lenguaje natural fotográfico. Mencionar lente, distancia focal, tipo de cámara mejora resultados.",
         "prompt_ejemplo": "Candid photograph of a barista preparing coffee, shallow depth of field, 50mm lens, natural window light, film grain",
+        "prompt_tips": [
+            "LENGUAJE FOTOGRÁFICO: 50mm, f/1.8, shallow DOF, etc.",
+            "TEXTURAS REALES: Piel con poros, tela con textura, etc.",
+            "REFERENCIAS: Funcionan muy bien para realismo.",
+        ],
         "limitaciones": "Para arte estilizado, Flux 2 Max es mejor.",
     },
     "Flux.1 Fast": {
         "nota": 4.3, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 2500, "modos_gen": ["Fast"],
+        "max_chars": 1000, "modos_gen": ["Fast"],
         "best_for": "Flux 1 Fast. ⚡ ~8s. Velocidad máxima en familia Flux 1. Ideal para iteración rápida y exploración.",
         "prompt_formula": "Prompts cortos y directos.",
         "prompt_ejemplo": "A cat in a garden, golden hour light",
@@ -2370,7 +2984,7 @@ MODEL_SPECS_IMAGEN = {
     "Flux.1.1": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Flux 1.1 ULTRA RÁPIDO. ⚡ ~6s. Mejorado respecto Flux 1 base.",
         "prompt_formula": "Lenguaje natural fluido.",
         "prompt_ejemplo": "A young woman with curly hair laughing, soft studio lighting, professional portrait",
@@ -2379,7 +2993,7 @@ MODEL_SPECS_IMAGEN = {
     "Flux.1": {
         "nota": 4.3, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Flux 1 base. ~17s. El primer Flux de Black Forest Labs.",
         "prompt_formula": "Lenguaje natural descriptivo.",
         "prompt_ejemplo": "A serene mountain landscape at sunset, dramatic clouds, vibrant colors",
@@ -2390,27 +3004,37 @@ MODEL_SPECS_IMAGEN = {
     "Mystic 2.5 Fluid": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["Fluid"],
+        "max_chars": 2000, "modos_gen": ["Fluid"],
         "best_for": "Mystic 2.5 Fluid. ~24s. 80 créditos. Hiperrealismo nativo de Magnific basado en Flux + tecnología de upscaling Magnific. 2K nativo. El mejor para retratos, expresiones faciales.",
         "prompt_formula": "Lenguaje natural muy descriptivo. Soporta texto en imagen con comillas.",
         "prompt_ejemplo": "A young woman with long brown hair wearing a yellow dress against a patterned background, natural skin texture, individual hair strands, soft daylight, 2K resolution",
-        "limitaciones": "Costoso (80 créditos). Para diseño con texto, otros como Ideogram funcionan mejor.",
+        "prompt_tips": [
+            "DESCRIPTIVO DETALLADO: Piel con poros, cabellos individuales, etc.",
+            "RETRATOS: Excelente para rostros y expresiones.",
+            "UPSDALING NATIVO: 2K de salida sin post-procesamiento.",
+        ],
+        "limitaciones": "Costoso (80 créditos). Para diseño con texto, Ideogram funciona mejor.",
     },
 
     # ── Google Imagen ─────────────────────────────────
     "Google Imagen 4 Ultra": {
         "nota": 4.8, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
-        "max_chars": 3000, "modos_gen": ["Ultra"],
+        "max_chars": 2000, "modos_gen": ["Ultra"],
         "best_for": "Google Imagen 4 Ultra. ~18s. Fotorrealismo top de Google. Excelente entendimiento espacial y físico. Ideal para escenas complejas.",
         "prompt_formula": "Lenguaje natural muy descriptivo. Imagen entiende relaciones espaciales precisas.",
         "prompt_ejemplo": "A red coffee mug placed on a wooden desk to the right of an open notebook, soft morning light streaming through a window from the left, shallow depth of field",
+        "prompt_tips": [
+            "RELACIONES ESPACIALES: Describe posiciones precisas (to the right of, behind, above).",
+            "FÍSICA REALISTA: Entiende gravedad, luz, sombras correctamente.",
+            "ESCENAS COMPLEJAS: Maneja múltiples objetos y sus interacciones.",
+        ],
         "limitaciones": "Sin negative.",
     },
     "Google Imagen 4": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Google Imagen 4. ⚡ ~10s. Fotorrealismo + rápido. Buen balance velocidad/calidad.",
         "prompt_formula": "Lenguaje natural descriptivo con relaciones espaciales claras.",
         "prompt_ejemplo": "A photorealistic portrait of a young woman with auburn hair, soft natural lighting from a window on the left, blurred forest background",
@@ -2419,7 +3043,7 @@ MODEL_SPECS_IMAGEN = {
     "Google Imagen 3": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 2500, "modos_gen": ["Standard"],
+        "max_chars": 1000, "modos_gen": ["Standard"],
         "best_for": "Google Imagen 3. ⚡ ~9s. Generación rápida calidad media.",
         "prompt_formula": "Lenguaje natural simple.",
         "prompt_ejemplo": "A cat sitting in a garden of wildflowers, sunny day, photorealistic",
@@ -2430,25 +3054,35 @@ MODEL_SPECS_IMAGEN = {
     "Seedream 5 Lite": {
         "nota": 4.7, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["Lite"],
+        "max_chars": 2000, "modos_gen": ["Lite"],
         "best_for": "Seedream 5 Lite (Destacado/Nuevo). Salida 2K. ~51s. Modelo más reciente de ByteDance. Excelente para fotorrealismo y arte.",
         "prompt_formula": "Lenguaje natural muy descriptivo. Soporta múltiples sujetos y composiciones complejas.",
         "prompt_ejemplo": "A cinematic shot of two friends sitting at a vintage diner counter, neon reflections on the chrome surface, warm dramatic lighting, 35mm film aesthetic",
+        "prompt_tips": [
+            "DESCRIPTIVO CINEMÁTICO: Menciona iluminación, ángulo, estética.",
+            "MÚLTIPLES SUJETOS: Maneja grupos y composiciones complejas.",
+            "RECIENTE: Último modelo de ByteDance, tecnología actualizada.",
+        ],
         "limitaciones": "Más lento que Flux Klein.",
     },
     "Seedream 4.5": {
         "nota": 4.6, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["High Resolution"],
+        "max_chars": 2000, "modos_gen": ["High Resolution"],
         "best_for": "Seedream 4.5. Salida 2K-4K. ~1m 5s. Alta resolución, fotorrealismo, soporta referencias.",
         "prompt_formula": "Lenguaje natural detallado. Mencionar resolución target.",
         "prompt_ejemplo": "Highly detailed product photo of a luxury watch, macro lens, perfect studio lighting, 4K resolution, commercial quality",
+        "prompt_tips": [
+            "RESOLUCIÓN EXPLÍCITA: Menciona 2K, 4K si necesitas alta calidad.",
+            "REFERENCIAS: Soporta imágenes de estilo.",
+            "MACRO/DETALLE: Excelente para productos y texturas.",
+        ],
         "limitaciones": "Lento (~1m 5s).",
     },
     "Seedream 4 4K": {
         "nota": 4.5, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["4K"],
+        "max_chars": 2000, "modos_gen": ["4K"],
         "best_for": "Seedream 4 4K. ~37s. Genera directamente en 4K nativo. Para impresión y trabajos de alta resolución.",
         "prompt_formula": "Lenguaje natural detallado. Aprovecha la alta resolución pidiendo detalles finos.",
         "prompt_ejemplo": "An intricate macro photograph of a butterfly wing showing fine scale patterns, ultra-detailed, 4K resolution",
@@ -2457,7 +3091,7 @@ MODEL_SPECS_IMAGEN = {
     "Seedream 4": {
         "nota": 4.4, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 2500, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Seedream 4. ~19s. Versión estándar, balance calidad/velocidad.",
         "prompt_formula": "Lenguaje natural fluido.",
         "prompt_ejemplo": "A serene Japanese garden with a koi pond, cherry blossoms falling, soft natural light",
@@ -2468,16 +3102,22 @@ MODEL_SPECS_IMAGEN = {
     "Recraft V4 Pro": {
         "nota": 4.7, "has_negative": True, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "2:3", "3:2"],
-        "max_chars": 3000, "modos_gen": ["Pro"],
+        "max_chars": 2000, "modos_gen": ["Pro"],
         "best_for": "Recraft V4 Pro (Nuevo). ~35s. Soporta NEGATIVE PROMPT. Especialista en arte vectorial, ilustraciones, branding. Mejor que V3.",
         "prompt_formula": "Lenguaje natural + estilo vectorial. 'Flat illustration', 'vector art', 'icon style'.",
         "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design",
+        "prompt_tips": [
+            "SOPORTA NEGATIVE: Usa (cosa:1.2) para mejorar precisión.",
+            "ESTILOS VECTORIALES: Flat, line art, icon, etc.",
+            "SVG OUTPUT: Genera graphics escalables editables.",
+            "REFERENCIAS: Hasta 3 imágenes de estilo.",
+        ],
         "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial.",
     },
     "Recraft V4": {
         "nota": 4.5, "has_negative": True, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
-        "max_chars": 2500, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Recraft V4 (Nuevo). ~18s. Soporta NEGATIVE PROMPT. Versión estándar para vectorial.",
         "prompt_formula": "Lenguaje natural + estilo vectorial.",
         "prompt_ejemplo": "Minimalist vector poster with geometric shapes, monochrome palette, clean lines",
@@ -2488,16 +3128,21 @@ MODEL_SPECS_IMAGEN = {
     "Z-Image": {
         "nota": 4.4, "has_negative": False, "is_natural": False, "no_weights": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 1500, "modos_gen": ["Turbo"],
+        "max_chars": 1000, "modos_gen": ["Turbo"],
         "best_for": "Z-Image en Magnific. ⚡ ~8s. Modelo Turbo: tags limpios sin pesos ni negative. Latencia mínima.",
         "prompt_formula": "Tags limpios separados por comas SIN pesos numéricos.",
         "prompt_ejemplo": "close-up portrait, silver hair, blue eyes, detailed skin, soft studio lighting, 8K, masterpiece",
+        "prompt_tips": [
+            "TAGS LIMPIOS: Sin paréntesis ni números.",
+            "COMAS SEPARAN: keyword1, keyword2, keyword3.",
+            "MÁX SIMPLICIDAD: Diseñado para velocidad.",
+        ],
         "limitaciones": "Sin negative ni pesos. Para alta calidad usar Mystic/Flux.",
     },
     "Qwen": {
         "nota": 4.3, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Qwen Image en Magnific. ~12s. Buena calidad general, soporta referencias. De Alibaba/Aliyun.",
         "prompt_formula": "Lenguaje natural descriptivo.",
         "prompt_ejemplo": "A modern minimalist living room with large windows, natural light, scandinavian design",
@@ -2506,7 +3151,7 @@ MODEL_SPECS_IMAGEN = {
     "Grok": {
         "nota": 4.2, "has_negative": False, "is_natural": True,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 3000, "modos_gen": ["Standard"],
+        "max_chars": 1500, "modos_gen": ["Standard"],
         "best_for": "Grok Imagine en Magnific. ~11s. Modelo de xAI. Buena para arte conceptual y escenas creativas.",
         "prompt_formula": "Lenguaje natural creativo. Le va bien lo absurdo y la fantasía.",
         "prompt_ejemplo": "A surreal scene of giant mushrooms in a crystal forest, dreamy ethereal lighting, fantasy art style",
@@ -2515,27 +3160,71 @@ MODEL_SPECS_IMAGEN = {
     "Classic": {
         "nota": 4.0, "has_negative": True, "is_natural": False,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 2000, "modos_gen": ["Classic"],
-        "best_for": "Modelo Classic de Magnific. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo SD tradicional. Ideal cuando quieres control con negatives.",
+        "max_chars": 1000, "modos_gen": ["Classic"],
+        "best_for": "Modelo Classic de Magnific. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo Stable Diffusion. Ideal cuando quieres control con negatives.",
         "prompt_formula": "Tags con pesos estilo Stable Diffusion. (tag:1.2). Soporta negative.",
         "prompt_ejemplo": "(beautiful portrait:1.3), 1girl, detailed face, soft lighting, professional photography, 8K",
+        "prompt_tips": [
+            "PESOS CON PARÉNTESIS: (tag:1.2) para усилить, (tag:0.8) para debilitar.",
+            "NEGATIVE PROMPT: Campo separado para excluir elementos.",
+            "TAGS COMO SD: Inspirado en Stable Diffusion clásico.",
+            "RÁPIDO: ~4s para generación.",
+        ],
         "limitaciones": "Calidad inferior a modelos modernos pero soporta negative.",
     },
     "Classic Fast": {
         "nota": 3.9, "has_negative": True, "is_natural": False,
         "ratios": ["1:1", "16:9", "9:16"],
-        "max_chars": 1500, "modos_gen": ["Fast"],
+        "max_chars": 500, "modos_gen": ["Fast"],
         "best_for": "Classic Fast. ⚡ ~2s (más rápido). Soporta NEGATIVE PROMPT. Ideal para iteración rápida con tags + negative.",
         "prompt_formula": "Tags con pesos. Soporta negative.",
         "prompt_ejemplo": "(portrait:1.2), 1girl, detailed face, studio lighting, masterpiece",
+        "prompt_tips": [
+            "VELOCIDAD MÁXIMA: ~2s para iterar ultra-rápido.",
+            "TAGS SIMPLES: No necesitas essays.",
+            "NEGATIVE DISPONIBLE: Control sobre qué excluir.",
+        ],
         "limitaciones": "Calidad menor que Classic estándar.",
     },
 }
 
 # ══════════════════════════════════════════════════════════════════
-# ESPECIFICACIONES DE MODELOS DE AUDIO
+# ESPECIFICACIONES DE MODELOS DE AUDIO (Mayo 2026)
 # ══════════════════════════════════════════════════════════════════
 MODEL_SPECS_AUDIO = {
+    # ─────────────────────────────────────────────────────────────────
+    # SUNO (Modelos principales - Todos tienen negative prompt)
+    # ─────────────────────────────────────────────────────────────────
+    "Suno v5.5": {
+        "nota": 4.9,
+        "has_negative": True,
+        "has_lyrics": True,
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 8,
+        "max_chars_letra": 5000,
+        "max_chars_estilo": 200,
+        "idiomas": ["inglés", "español", "frañol", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
+        "best_for": "Modelo flagship actual (Marzo 2026). Expresividad máxima, voces naturales, Studio integrado, 12 stems, Voice Cloning, Custom Models personalizados. Comercial con Pro/Premier.",
+        "prompt_formula": "GMVP: Genre + Mood + Vocals + Production. Tags limpios (5-8 máximo). Negative: 'no elemento'. Custom Mode obligatorio.",
+        "prompt_ejemplo_estilo": "indie folk, melancholic, breathy female vocals, fingerpicked acoustic guitar, warm analog sound, 94 BPM, no reverb wash, no synths",
+        "prompt_ejemplo_letra": "[Verse 1]\nWalking down the old street...\n[Chorus]\nMidnight rain falling on me...",
+        "prompt_tips": [
+            "GMVP METHOD: Genre + Mood + Vocals + Production (en ese orden).",
+            "SIMPLIFICAR: v5.5 funciona MEJOR con prompts simples (5-8 tags). Menos = mejor.",
+            "CUSTOM MODE: Siempre usa Custom Mode para control total sobre Style + Lyrics.",
+            "TAGS ESTRUCTURALES: [Verse], [Chorus], [Bridge], [Pre-Chorus], [Intro], [Outro] (funcionan mejor en letras).",
+            "NEGATIVE PROMPT: Añade 'no autotune', 'no reverb', 'no falsetto' al final del Style.",
+            "VOCALS: Especifica género (male/female), tono (breathy/raspy), técnica (belting/whispered).",
+            "NO EXAGERES: 10+ tags = peor resultado. 5-8 tags óptimos.",
+            "WEIRDNESS/STYLE INFLUENCE: 50/70 por defecto para empezar.",
+            "VOICE CLONING: Pro/Premier. Clone tu voz para consistencia en albumes.",
+            "CUSTOM MODELS: Entrena hasta 3 modelos con tu catálogo (mín 6 canciones).",
+            "MY TASTE: Sesión aprende preferencias. Desactívalo si quieres control total.",
+        ],
+        "estructura_tags": ["[Verse]", "[Verse 1]", "[Verse 2]", "[Pre-Chorus]", "[Chorus]", "[Post-Chorus]", "[Bridge]", "[Intro]", "[Outro]", "[Instrumental]", "[Instrumental Break]", "[Guitar Solo]", "[Break]", "[Build]", "[Drop]", "[Spoken]", "[Whispered]", "[Belting]", "[Harmonies]", "[Tag: descriptors]"],
+        "limitaciones": "Pro/Premier para v5.5. Credits no se acumulan. Extensiones >6min pueden derivar estilísticamente.",
+    },
     "Suno v5": {
         "nota": 4.8,
         "has_negative": True,
@@ -2544,13 +3233,25 @@ MODEL_SPECS_AUDIO = {
         "usa_tags_estructurales": True,
         "duracion_max_min": 8,
         "max_chars_letra": 5000,
-        "max_chars_estilo": 1000,
+        "max_chars_estilo": 200,
         "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
-        "best_for": "Expresividad vocal superior, modelo top actual. Ideal para releases.",
-        "prompt_formula": "Estilo: géneros+mood. Letra: tags [Verse]/[Chorus] + letra",
-        "prompt_ejemplo_estilo": "indie pop, dreamy vocals, 90s alternative, melancholic",
-        "prompt_ejemplo_letra": "[Verse 1]\nCaminando por la calle vieja...",
-        "limitaciones": "Requiere suscripción Pro/Premier para acceso temprano.",
+        "best_for": "Studio-grade audio (48kHz), Suno Studio DAW integrado, 12-stem separation, vocals realistas con vibrato natural. Generación 10x más rápida que v4.",
+        "prompt_formula": "Genre + Mood + Vocals + Production. Negative: 'no X'. 5-8 tags óptimos.",
+        "prompt_ejemplo_estilo": "neo-soul R&B, warm and groovy, smooth female vocals, talking drum, melodic guitar, 100 BPM, F minor",
+        "prompt_ejemplo_letra": "[Verse]\nTalk to me softly...\n[Chorus]\nWe could be dancing all night long...",
+        "prompt_tips": [
+            "ESTUDIO-GRADE: Audio más limpio y profesional que versiones anteriores.",
+            "NEGATIVE PROMPTING FUNCIONA: 'no autotune', 'no heavy reverb', 'no falsetto'.",
+            "SUNO STUDIO: Editor timeline, regenerar secciones, exportar 12 stems.",
+            "STEM SEPARATION: Vocals, drums, bass, other — hasta 12 tracks separados.",
+            "VOCAL REALISM: Respiraciones naturales, phrasing mejorado, menos 'robótico'.",
+            "GMVP: Genre + Mood + Vocals + Production — en ese orden exacto.",
+            "STRUCTURAL TAGS: [Verse], [Chorus], [Bridge], [Pre-Chorus] + nuevos como [Build], [Drop].",
+            "SIMPLIFICAR: 5-8 tags funciona mejor que essays descriptivos.",
+            "NEGATIVE AL FINAL: Suno procesa positives primero, luego exclusions.",
+        ],
+        "estructura_tags": ["[Verse]", "[Pre-Chorus]", "[Chorus]", "[Bridge]", "[Outro]", "[Intro]", "[Instrumental Break]", "[Build]", "[Drop]", "[Spoken]", "[Whispered]"],
+        "limitaciones": "Pro/Premier. Extensiones largas pueden perder coherencia. No tiene Voice Cloning ni Custom Models (v5.5).",
     },
     "Suno v4.5": {
         "nota": 4.7,
@@ -2562,15 +3263,27 @@ MODEL_SPECS_AUDIO = {
         "max_chars_letra": 5000,
         "max_chars_estilo": 1000,
         "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
-        "best_for": "Mashups de géneros avanzados, vocales ricas, hasta 8 min.",
-        "prompt_formula": "Estilo: géneros+mood. Letra: tags estructurales + letra.",
-        "prompt_ejemplo_estilo": "midwest emo mixed with neosoul, warm vocals",
-        "prompt_ejemplo_letra": "[Intro]\n(soft piano)...",
-        "limitaciones": "Aún puede tener inconsistencias en letras largas.",
+        "best_for": "Heavy genres (metal, rock, punk), Mashups creativos, géneros híbridos. Prompt Enhancement Helper. Agrega Add Vocals / Add Instrumentals / Inspire.",
+        "prompt_formula": "Más conversacional que v5. Descripciones detalladas funcionan. 'A crushing industrial metal track with mechanical drums...'",
+        "prompt_ejemplo_estilo": "midwest emo mixed with neosoul, warm vocals, dynamic drums, emotional guitar solos, introspective mood",
+        "prompt_ejemplo_letra": "[Intro]\n(soft piano)...\n[Verse 1]\nI used to think I'd never fall in love...",
+        "prompt_tips": [
+            "MÁS DETALLE = MEJOR: v4.5 se beneficia de descripciones más ricas que v5.",
+            "CONVERSATIONAL STYLE: 'A crushing industrial metal track with...' funciona mejor que tags simples.",
+            "GENRE COMBINATIONS: midwest emo + neosoul, jazz + hip-hop, etc. v4.5 lo maneja bien.",
+            "PROMPT ENHANCEMENT HELPER: AI expande tus tags antes de generar. Úsalo.",
+            "ADD VOCALS: Genera encima de un instrumental (uploaded o generado).",
+            "ADD INSTRUMENTALS: Genera pista debajo de una vocal.",
+            "INSPIRE: Mantén coherencia de estilo en sets/albumes.",
+            "MEJOR PARA: Heavy metal, hard rock, punk, EDM rápido.",
+            "NO PARA: Soft genres (usa v5 para eso).",
+        ],
+        "estructura_tags": ["[Verse]", "[Pre-Chorus]", "[Chorus]", "[Bridge]", "[Outro]", "[Intro]", "[Instrumental]"],
+        "limitaciones": "Vocales menos naturales que v5. Prompts muy complejos pueden confundirse. v5 supera en audio quality.",
     },
     "Suno v4": {
-        "nota": 4.3,
-        "has_negative": False,
+        "nota": 4.5,
+        "has_negative": True,
         "has_lyrics": True,
         "has_instrumental_toggle": True,
         "usa_tags_estructurales": True,
@@ -2578,32 +3291,145 @@ MODEL_SPECS_AUDIO = {
         "max_chars_letra": 3000,
         "max_chars_estilo": 200,
         "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
-        "best_for": "Audio limpio, estructura refinada, hasta 4 min.",
-        "prompt_formula": "Estilo: géneros directos. Letra: tags + letra",
-        "prompt_ejemplo_estilo": "acoustic folk, fingerpicking, soft male vocals",
-        "prompt_ejemplo_letra": "[Verse]\n...",
-        "limitaciones": "Máx 4 min. Menos expresividad vocal que v4.5+",
+        "best_for": "Audio limpio, Covers feature, Personas, hasta 4 min. Introdujo stem separation básico (2 stems).",
+        "prompt_formula": "Tags directos: género + mood + instrumentos. Estilo simple.",
+        "prompt_ejemplo_estilo": "acoustic folk, fingerpicking, soft male vocals, warm and intimate, campfire atmosphere",
+        "prompt_ejemplo_letra": "[Verse]\nWalking through the morning light...\n[Chorus]\nThis is where we come alive...",
+        "prompt_tips": [
+            "MÁS SIMPLE QUE v4.5/v5: No necesitas estructuras complejas.",
+            "TAGS BÁSICOS: Genre + Mood + Instruments suficiente.",
+            "LIMITADO A 4 MIN: No genera tracks tan largos como versiones nuevas.",
+            "PERSONAS: Guarda voces generadas para reutilizar en future songs.",
+            "COVERS: Cambia género/estilo manteniendo melodía de una canción existente.",
+            "STEM SEPARATION: Solo 2 stems (vocals + instrumental). Limitado para producción.",
+        ],
+        "estructura_tags": ["[Verse]", "[Chorus]", "[Bridge]", "[Intro]", "[Outro]"],
+        "limitaciones": "Máx 4 min. Vocales menos expresivas. Reemplazado por v4.5+ y v5.",
     },
-    "Minimax Music 2.5": {
-        "nota": 4.4,
+
+    # ─────────────────────────────────────────────────────────────────
+    # UDIO (Modelos alternativos - v1.5 y v4)
+    # ─────────────────────────────────────────────────────────────────
+    "Udio v4": {
+        "nota": 4.7,
+        "has_negative": True,
+        "has_lyrics": True,
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 10,
+        "max_chars_letra": 4000,
+        "max_chars_estilo": 700,
+        "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
+        "best_for": "Audio 48kHz stereo, instrumentales de calidad, jazz/clásica/electrónica. Timeline editing, inpainting (fix secciones), extiende hasta 10min sin drift musical.",
+        "prompt_formula": "Tag-based: [Genre], [Mood], [Instruments], [Production]. Estilo 'sandwich': Top Bun (genre), Meat (vibe), Bottom Bun (production).",
+        "prompt_ejemplo_estilo": "cinematic orchestral, epic trailer music, intense building tension, full strings brass stabs deep percussion, warm analog sound no vocals",
+        "prompt_ejemplo_letra": "[Intro]\n(Orchestral build)...\n[Verse]\nDark clouds gathering above...",
+        "prompt_tips": [
+            "SANDWICH METHOD: Genre (top bun) + Vibe/Instruments (meat) + Production (bottom bun).",
+            "MEJOR PARA: Instrumentales, jazz, clásica, electrónica, scores cinematográficos.",
+            "48kHz STEREO: Mejor resolución que Suno (44.1kHz). Audio más limpio.",
+            "INPAINTING: Selecciona 2 segundos de una sección y regenera solo esa parte.",
+            "TIMELINE EDITING: Visual para reorganizar secciones con precisión.",
+            "EXTEND 30s: Cada extensión mantiene key, tempo, estilo. Hasta 10+ minutos.",
+            "QUALITY TAGS: Añade 'clean mix', 'streaming-ready', 'pristine' al final.",
+            "STEREO FIELD: 'wide stereo image', 'spacious', 'immersive' para sonido envolvente.",
+            "LOW END: 'tight bass', 'controlled sub-bass', 'punchy low-end' para graves profesionales.",
+            "PRODUCTION: 'warm tape saturation', 'vintage crackle', 'analog warmth' para carácter.",
+        ],
+        "estructura_tags": ["[Intro]", "[Verse]", "[Pre-Chorus]", "[Chorus]", "[Post-Chorus]", "[Bridge]", "[Solo]", "[Outro]", "[Interlude]", "[Instrumental Break]", "[Drop]", "[Build]", "[Breakdown]"],
+        "limitaciones": "Vocales menos expresivas que Suno v5. Generación nativa más corta (30s). Requiere extender para songs completos.",
+    },
+    "Udio v1.5": {
+        "nota": 4.6,
+        "has_negative": True,
+        "has_lyrics": True,
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 10,
+        "max_chars_letra": 4000,
+        "max_chars_estilo": 700,
+        "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
+        "best_for": "Audio-to-audio remixing, key control, granular production control. Stem downloads (paid). Inpainting básico.",
+        "prompt_formula": "Basic: 'A song about [tema], [genre], [mood], [instruments]'. Custom: título + estilo + letras separadas.",
+        "prompt_ejemplo_estilo": "emotional pop ballad, piano soft strings intimate female vocals, slow tempo 65 BPM building to full chorus layered harmonies modern production warm vulnerable",
+        "prompt_ejemplo_letra": "[Verse]\nEvery night I think about us...\n[Chorus]\nWe could be dancing in the rain...",
+        "prompt_tips": [
+            "BASIC VS CUSTOM MODE: Basic = describe todo en un prompt. Custom = separate title/style/lyrics.",
+            "AUDIO-TO-AUDIO: Sube un track y reinterpreta en diferente género manteniendo melodía.",
+            "KEY CONTROL: Especifica tonalidad (A minor, C major, etc.) para mejor precisión armónica.",
+            "BPM/TEMPO: 'slow ballad at 70 BPM' o 'fast-paced at 140 BPM' mejora precisión rítmica.",
+            "SPECIFIC INSTRUMENTS: 'acoustic guitar upright bass brushed drums' > solo 'jazz'.",
+            "ERA REFERENCES: '1970s funk', '1990s R&B', '2010s blog-era indie' para sonido auténtico.",
+            "STRUCTURE TAGS: Funcionan en Custom Mode para control de secciones.",
+            "MANUAL MODE: Disable auto-rewrite para control total (solo tags, no free text).",
+            "VOICE CLONING: Upload 1min audio + verificación de identidad.",
+        ],
+        "estructura_tags": ["[Verse]", "[Chorus]", "[Hook]", "[Bridge]", "[Intro]", "[Outro]", "[Guitar Solo]", "[Drop]", "[Spoken Word]", "[Choir]", "[Announcer]"],
+        "limitaciones": "Stem export limitado (Standard/Pro). Vocales menos naturales que Suno. Manual mode puede producir lyrics genéricos.",
+    },
+
+    # ─────────────────────────────────────────────────────────────────
+    # MINIMAX MUSIC (Modelos de integración - SeaArt/Tensor.art)
+    # ─────────────────────────────────────────────────────────────────
+    "Minimax Music 2.6": {
+        "nota": 4.6,
         "has_negative": False,
         "has_lyrics": True,
-        "has_instrumental_toggle": False,
-        "usa_tags_estructurales": False,
-        "duracion_max_min": 4,
-        "max_chars_letra": 2000,
-        "max_chars_estilo": 400,
-        "idiomas": ["inglés", "español", "chino", "japonés", "coreano", "francés"],
-        "generos": ["Pop", "R&B", "Rock", "Disco", "Electrónica", "Folk", "Hip-hop", "Blues", "Clásica", "Música de videojuegos"],
-        "best_for": "Integrado en SeaArt. Filtros por género, emoción, voz.",
-        "prompt_formula": "Letra: directa SIN tags. Estilo: género + mood.",
-        "prompt_ejemplo_estilo": "Pop romántico, voz femenina aguda, tempo medio",
-        "prompt_ejemplo_letra": "Letra directa en castellano...",
-        "coste_energia": "135",
-        "limitaciones": "No usa tags estructurales de Suno.",
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 5,
+        "max_chars_letra": 3500,
+        "max_chars_estilo": 2000,
+        "idiomas": ["inglés", "chino mandarín"],
+        "best_for": "Physical-grade high fidelity, paragraph-level precision control (14+ structural tags), 100+ instruments, automatic style-adaptive mixing.",
+        "prompt_formula": "Style: [Genre], [Mood], [Vocal description], [Tempo], [Key instruments], [Era/Style reference], [Production]. Lyrics: [Verse], [Chorus], etc.",
+        "prompt_ejemplo_estilo": "indie folk melancholic intimate female vocals slightly raspy mid-register breathy on verse open on chorus fingerpicked acoustic guitar warm upright bass sparse brushed drums 94 BPM D minor no reverb wash no synths no drum machines",
+        "prompt_ejemplo_letra": "[Verse]\nCaminando por la calle...\n[Chorus]\nLa lluvia cae sobre mí...",
+        "prompt_tips": [
+            "14+ STRUCTURAL TAGS: Intro, Verse, Pre-Chorus, Chorus, Hook, Bridge, Build-up, Interlude, Outro, Instrumental Break, etc.",
+            "PARAGRAPH-LEVEL CONTROL: Cada sección tiene instrucciones específicas (guitar only, soft drums).",
+            "100+ INSTRUMENTS: Guitarra (acoustic/distorted/clean), piano, synth, orchestral strings, brass, drums, 808, hi-hats, etc.",
+            "STYLE-ADAPTIVE MIXING: Rock = distortion/power. Jazz = vintage warmth. 80s = lo-fi texture automáticamente.",
+            "VOCAL SYNTHESIS: Natural vibrato, chest/head transitions, authentic breathing. Menos robótico.",
+            "GENRE PROMPT: 'lo-fi jazz', '2010s blog-era indie', '1980s Minneapolis sound' para precisión.",
+            "TEMPO/BPM: '94 BPM', 'driving 125 BPM', 'slow tempo' para control rítmico.",
+            "PRODUCTION DESCRIPTORS: 'wide soundstage', 'intimate studio feel', 'vintage warmth'.",
+            "INSTRUMENTAL MODE: isInstrumental=true para tracks sin vocal (2.6 only).",
+            "AUTO LYRICS: lyricsOptimizer=true genera lyrics del prompt (2.6 only).",
+            "BEST FOR: Productores que necesitan control granular de secciones.",
+        ],
+        "estructura_tags": ["[Intro]", "[Verse]", "[Pre-Chorus]", "[Chorus]", "[Hook]", "[Bridge]", "[Build-up]", "[Interlude]", "[Instrumental Break]", "[Solo]", "[Outro]", "[Outro-Fade]", "[Tag]", "[Inst]", "[Break]"],
+        "limitaciones": "Up to ~5 min por generación. No stem export. Sin negative prompt nativo. Español/otros idiomas menos precisos que inglés/chino.",
+    },
+    "Minimax Music 2.5": {
+        "nota": 4.5,
+        "has_negative": False,
+        "has_lyrics": True,
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 5,
+        "max_chars_letra": 3500,
+        "max_chars_estilo": 2000,
+        "idiomas": ["inglés", "chino mandarín", "español"],
+        "best_for": "Precisión de sección, 100+ instrumentos, producción profesional. Mejor que v2.0 en vocal y instrument separation.",
+        "prompt_formula": "Prompt: [Genre], [Mood/Emotion], [Vocal description], [Tempo], [Key instruments], [Era/Style], [Production]. Lyrics: con tags [Verse], [Chorus].",
+        "prompt_ejemplo_estilo": "blues soulful rainy night electric guitar melancholic male vocals slow tempo moody atmosphere warm analog production",
+        "prompt_ejemplo_letra": "[Intro]\n(Guitar solo - slow mournful bluesy)...\n[Verse]\nEach drop of rain...\n[Chorus]\nMidnight rain falling on me...",
+        "prompt_tips": [
+            "LIRICS REQUIRED: A diferencia de 2.6, en 2.5 los lyrics son obligatorios.",
+            "14 STRUCTURAL TAGS: Control de sección completo como 2.6.",
+            "100+ INSTRUMENTS: Biblioteca extensa con orchestral, rock, jazz, electronic.",
+            "STYLE-AWARE MIXING: Automáticamente adapta mixing a género.",
+            "VOCAL QUALITY: Mejor que 2.0 — vibrato natural, transiciones chest/head.",
+            "FORMATOS: MP3 (256kbps) o WAV (44.1kHz) para producción.",
+            "SAMPLE RATE: 16kHz a 44.1kHz. 44.1kHz recomendado para calidad CD.",
+            "BITRATE: 32kbps a 256kbps. 256kbps para máxima calidad.",
+        ],
+        "estructura_tags": ["[Verse]", "[Chorus]", "[Bridge]", "[Intro]", "[Outro]", "[Instrumental Break]", "[Build-up]", "[Hook]", "[Interlude]", "[Solo]", "[Tag]"],
+        "limitaciones": "Lyrics obligatorios (no instrumental mode). No stem export. Max ~5min. Sin negative prompt.",
     },
     "SeaArt MusicGo": {
-        "nota": 4.2,
+        "nota": 4.3,
         "has_negative": False,
         "has_lyrics": True,
         "has_instrumental_toggle": True,
@@ -2613,12 +3439,45 @@ MODEL_SPECS_AUDIO = {
         "max_chars_estilo": 300,
         "idiomas": ["inglés", "español", "chino", "japonés", "francés"],
         "generos": ["Pop", "R&B", "Rock", "Disco", "Electrónica", "Folk", "Hip-hop", "Blues", "Clásica", "Música de videojuegos"],
-        "best_for": "Integrado en SeaArt. Toggle Vocal/Instrumental explícito. Económico.",
-        "prompt_formula": "Toggle Vocal/Instrumental. Letra directa. Estilo: género + mood",
-        "prompt_ejemplo_estilo": "Instrumental electrónico, synthwave relajado",
-        "prompt_ejemplo_letra": "Letra directa sin tags",
-        "coste_energia": "120",
-        "limitaciones": "Menor variedad de géneros. Sin tags estructurales.",
+        "best_for": "Integrado en SeaArt. Toggle Vocal/Instrumental explícito. Generación rápida y económica.",
+        "prompt_formula": "Toggle Vocal/Instrumental. Letra directa sin tags. Estilo: género + mood + instrumentos.",
+        "prompt_ejemplo_estilo": "electronic synthwave relaxing ambient background 80s retro vibes",
+        "prompt_ejemplo_letra": "Letra directa sin tags estructurales",
+        "prompt_tips": [
+            "INTERFAZ SIMPLE: Integración directa con SeaArt para usuarios de esa plataforma.",
+            "TOGGLE EXPLICITO: Selecciona Vocal Mode o Instrumental Mode claramente.",
+            "SIN TAGS ESTRUCTURALES: No uses [Verse], [Chorus] — no los interpreta.",
+            "LETRA DIRECTA: Escribe la letra tal cual quieres que se cante.",
+            "ESTILO SIMPLE: 'electronic synthwave', 'acoustic folk', 'jazz ballad'.",
+            "ECONÓMICO: Coste de energía bajo comparado con otras plataformas.",
+        ],
+        "limitaciones": "Sin tags estructurales. Menor variedad de géneros que Suno/Udio. Max 3 min. Sin control de sección.",
+    },
+
+    # ─────────────────────────────────────────────────────────────────
+    # OTROS MODELOS DE AUDIO
+    # ─────────────────────────────────────────────────────────────────
+    "Suno v4.5-All (Free)": {
+        "nota": 4.5,
+        "has_negative": True,
+        "has_lyrics": True,
+        "has_instrumental_toggle": True,
+        "usa_tags_estructurales": True,
+        "duracion_max_min": 8,
+        "max_chars_letra": 5000,
+        "max_chars_estilo": 1000,
+        "idiomas": ["inglés", "español", "francés", "italiano", "portugués", "alemán", "chino", "japonés", "coreano"],
+        "best_for": "Versión gratuita de v4.5 con mejoras. Available para usuarios free. Buena opción si no puedes pagar.",
+        "prompt_formula": "Igual que v4.5: más detalle funciona bien. Genre + mood + instrumentos + vocal description.",
+        "prompt_ejemplo_estilo": "dream pop ethereal atmospheric floating vocals reverb-drenched guitars ambient synths 90s shoegaze influence",
+        "prompt_ejemplo_letra": "[Verse]\nFloating through the neon lights...\n[Chorus]\nWe are infinite tonight...",
+        "prompt_tips": [
+            "SAME AS v4.5: Usa los mismos tips y fórmulas que v4.5.",
+            "FREE TIER: Sin necesidad de Pro/Premier para acceder.",
+            "BUENA CALIDAD: Las mismas mejoras de v4.5 disponibles sin pagar.",
+            "LIMITADO EN: No tiene Studio, stems limitados, menos créditos.",
+        ],
+        "limitaciones": "Credits limitados. Sin Studio features. Stem export básico.",
     },
 }
 
@@ -2802,9 +3661,9 @@ def get_prompt_template(modelo_name):
 def get_theme_colors(is_light: bool) -> dict:
     """Devuelve paleta de colores adaptativa para UI basada en el tema.
 
-    v1.0.2: añadidos `chk_text`, `chk_bg`, `panel_bg`, `panel_text`,
-    `accent_text` para garantizar contraste en modo light en checkboxes,
-    scrollables y labels que viven dentro de tabs."""
+    Incluye `chk_text`, `chk_bg`, `panel_bg`, `panel_text`, `accent_text`
+    para garantizar contraste en modo light en checkboxes, scrollables
+    y labels que viven dentro de tabs."""
     if is_light:
         return {
             "hdr_bg": "#e8e8e8", "hdr_text": "#111827", "hdr_label": "#4b5563",
@@ -2852,7 +3711,6 @@ def get_theme_colors(is_light: bool) -> dict:
             "fg_dark": "#1f2937", "fg_dark_border": "#374151",
             "fg_dark_text": "#9ca3af", "fg_dark_hover": "#374151",
             "instr_active_text": "#9ca3af", "instr_active_border": "#374151",
-            # v1.0.2 — colores explícitos consistentes con dark
             "chk_text": "#ffffff",
             "chk_bg": "#0d1117",
             "chk_hover": "#1f2937",
@@ -2872,7 +3730,7 @@ def get_theme_colors(is_light: bool) -> dict:
 
 # ══════════════════════════════════════════════════════════════════
 # BIBLIOTECA DE PROMPTS DE EJEMPLO (ordenados alfabéticamente por título)
-# Muestras para nuevos usuarios — Lanzamiento v1.0.9
+# Muestras para nuevos usuarios.
 #
 # Campos por entrada:
 #   titulo (str)       — nombre visible en la UI
@@ -3108,5 +3966,74 @@ def validar_biblioteca(estricto: bool = False) -> list[str]:
             problemas.append(f"{prefijo} '{titulo}': 'prompt' debe ser str, no {type(prompt).__name__}")
         elif prompt is not None and len(prompt.strip()) == 0:
             problemas.append(f"{prefijo} '{titulo}': 'prompt' está vacío")
+
+    return problemas
+
+
+# ══════════════════════════════════════════════════════════════════
+# VALIDADOR DE MODELOS
+# Verifica que todos los modelos en listas existan en specs y viceversa
+# ══════════════════════════════════════════════════════════════════
+def validar_modelos() -> list[str]:
+    """
+    Verifica la integridad de modelos entre listas y specs.
+
+    Detecta:
+      - Modelos en listas (GRUPOS_*) sin especificación en MODEL_SPECS_*
+      - Especificaciones en MODEL_SPECS_* sin modelo en ninguna lista
+
+    Returns:
+        Lista de strings con los problemas detectados (vacía si todo OK).
+    """
+    problemas = []
+
+    # Recopilar todos los modelos de las listas planas
+    modelos_en_listas = set()
+
+    for g, ms in GRUPOS_IMAGEN:
+        for m in ms:
+            modelos_en_listas.add(m)
+    for g, ms in GRUPOS_IMAGEN_COMFYUI:
+        for m in ms:
+            modelos_en_listas.add(m)
+
+    modelos_en_specs = set(MODEL_SPECS_IMAGEN.keys())
+
+    # Modelos en listas sin spec
+    for m in modelos_en_listas:
+        if m not in modelos_en_specs:
+            problemas.append(f"Modelo '{m}' en GRUPOS_IMAGEN pero sin spec en MODEL_SPECS_IMAGEN")
+
+    # Specs sin modelo en lista (INFO, no error)
+    for m in modelos_en_specs:
+        if m not in modelos_en_listas:
+            logger.debug(f"[INFO] Modelo '{m}' tiene spec pero no aparece en GRUPOS_IMAGEN")
+
+    # Video
+    modelos_video_lista = set()
+    for g, ms in GRUPOS_VIDEO:
+        for m in ms:
+            modelos_video_lista.add(m)
+    for g, ms in GRUPOS_VIDEO_COMFYUI:
+        for m in ms:
+            modelos_video_lista.add(m)
+
+    modelos_video_specs = set(MODEL_SPECS.keys())
+
+    for m in modelos_video_lista:
+        if m not in modelos_video_specs:
+            problemas.append(f"Modelo '{m}' en GRUPOS_VIDEO pero sin spec en MODEL_SPECS")
+
+    # Audio
+    modelos_audio_lista = set()
+    for g, ms in GRUPOS_AUDIO:
+        for m in ms:
+            modelos_audio_lista.add(m)
+
+    modelos_audio_specs = set(MODEL_SPECS_AUDIO.keys())
+
+    for m in modelos_audio_lista:
+        if m not in modelos_audio_specs:
+            problemas.append(f"Modelo '{m}' en GRUPOS_AUDIO pero sin spec en MODEL_SPECS_AUDIO")
 
     return problemas

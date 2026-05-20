@@ -141,16 +141,10 @@ class DialogsMixin:
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=v.destroy).pack(side="right", padx=2)
 
-    # ──────────────────────────────────────────────────────────
-    # NOTA v1.0.8: la implementación de _apply_theme_colors VIVE EN
-    # CoreMixin (modules/core.py). Aquí había una versión obsoleta que,
-    # por orden de herencia (DialogsMixin antes que CoreMixin), tomaba
-    # precedencia y solo repintaba header+switches, dejando frame_video,
-    # frame_audio, frame_modelo_imagen, tabview y labels de paneles
-    # con los colores del tema anterior al cambiar dark↔light en
-    # caliente. Eliminada para que el MRO encuentre la versión completa
-    # de core.py.
-    # ──────────────────────────────────────────────────────────
+    # _apply_theme_colors VIVE EN CoreMixin (modules/core.py). NO
+    # añadir aquí: el orden de herencia (DialogsMixin antes que
+    # CoreMixin) haría que esta versión tomara precedencia.
+
 
     def _close_menu_if_open(self, event=None):
         """Cierra menú del header si el click fue fuera del popup y botones."""
@@ -193,9 +187,9 @@ class DialogsMixin:
     def _build_author(self):
         """Barra de autor en el footer con enlaces sociales clickables.
 
-        v1.0.4: el texto de "Creado por..." y los 4 enlaces sociales
-        comparten la MISMA fila en el footer (texto a la izquierda,
-        enlaces a la derecha), todo en la última línea de la ventana.
+        Texto de "Creado por..." y los 4 enlaces sociales comparten la
+        MISMA fila en el footer (texto a la izquierda, enlaces a la
+        derecha), todo en la última línea de la ventana.
         """
         import webbrowser
         from config import AUTHOR, PUBLIC_VERSION
@@ -462,7 +456,7 @@ class DialogsMixin:
 
     def _cmd_dashboard(self):
         """🏠 Dashboard v2 — Panel de control completo con estadísticas, accesos
-        rápidos, gráficos y herramientas. Implementado en v1.0.8.
+        rápidos, gráficos y herramientas.
 
         Features:
         - Saludo personalizado por hora del día
