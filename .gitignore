@@ -38,9 +38,11 @@ venv/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Claude Code (settings locales de máquina)
+.claude/settings.local.json
+
 # Archivos temporales de trabajo
 *_temp.py
 *.tmp
 *.corrupt
-__pycache__/
-modules/__pycache__/
