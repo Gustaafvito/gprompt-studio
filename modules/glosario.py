@@ -194,8 +194,7 @@ def abrir_glosario(app):
             return
 
         if cat_sel_real:
-            # Vista categoría única → orden alfabético plano (el JSON ya viene
-            # ordenado, así que basta con renderizar en orden)
+            # Vista categoría única → solo esa categoría
             ctk.CTkLabel(
                 scroll, text=cat_sel_real,
                 font=ctk.CTkFont(size=15, weight="bold"),
@@ -204,9 +203,21 @@ def abrir_glosario(app):
             for entrada in sorted(filtradas, key=lambda e: _clave_orden(e["titulo"])):
                 _render_card(scroll, entrada)
         else:
-            # Vista "Todas" → alfabético plano sin agrupar por categoría
-            for entrada in sorted(filtradas, key=lambda e: _clave_orden(e["titulo"])):
-                _render_card(scroll, entrada)
+            # Vista "Todas" → agrupado por categoría (en orden alfabético del JSON)
+            # con cada categoría ordenada alfabéticamente por título.
+            por_cat: dict[str, list[dict]] = {}
+            for e in filtradas:
+                por_cat.setdefault(e["categoria"], []).append(e)
+            for cat in categorias:
+                if not por_cat.get(cat):
+                    continue
+                ctk.CTkLabel(
+                    scroll, text=cat,
+                    font=ctk.CTkFont(size=15, weight="bold"),
+                    text_color=accent, anchor="w",
+                ).pack(fill="x", padx=4, pady=(14, 4))
+                for entrada in sorted(por_cat[cat], key=lambda e: _clave_orden(e["titulo"])):
+                    _render_card(scroll, entrada)
 
     def on_buscar(*_):
         if estado["after_id"]:

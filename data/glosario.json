@@ -1,10 +1,10 @@
 {
   "categorias": [
     "Básicos",
-    "Pesos & parámetros",
     "Calidad y estilos",
+    "Conceptos avanzados",
     "Herramientas G-Prompt",
-    "Conceptos avanzados"
+    "Pesos & parámetros"
   ],
   "entradas": [
     {
@@ -29,72 +29,6 @@
       "titulo": "🏷 TAGS vs LENGUAJE NATURAL",
       "descripcion": "Tags = palabras clave separadas por comas (estilo Stable Diffusion). Natural = frases descriptivas (estilo Midjourney/GPT).",
       "categoria": "Básicos",
-      "accion": null
-    },
-    {
-      "titulo": "🎯 CFG (Classifier-Free Guidance)",
-      "descripcion": "Controla qué tan fielmente el modelo sigue tu prompt. Bajo (1-3) = más creativo, Alto (7-15) = más estricto.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "🌐 LENGUAJE NATURAL",
-      "descripcion": "Modelos como Midjourney, GPT Image, FLUX entienden frases completas. NO uses tags ni pesos numéricos en estos.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "👤 LORA",
-      "descripcion": "Modelo pequeño que se 'enchufa' al modelo principal para añadir un estilo, personaje o concepto específico.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "✨ MASTERPIECE / 8K / DETAILED",
-      "descripcion": "Tags 'mágicos' que mejoran calidad en SD. Cuidado: usarlos demasiado los degrada. 1-2 al final del prompt es suficiente.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "⚡ MODELOS TURBO",
-      "descripcion": "Modelos optimizados para velocidad (Z Image Turbo, FLUX Schnell). Generan en segundos pero con CFG bajo (~1) — IGNORAN pesos y negative prompt.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "⚖️ PESOS NUMÉRICOS — (tag:1.2)",
-      "descripcion": "Aumentan la importancia de un tag. (tag:1.5) refuerza, (tag:0.7) reduce. Solo en modelos Stable Diffusion.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "📐 RATIO / ASPECT RATIO",
-      "descripcion": "Proporción de la imagen. 1:1 = cuadrado, 16:9 = horizontal, 9:16 = vertical, 2:3 = retrato, 21:9 = cine.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "🎨 SAMPLER",
-      "descripcion": "Algoritmo que decide cómo el modelo va creando la imagen. Euler = rápido, DPM++ = balanceado, Karras = alta calidad.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "🌱 SEED / SEMILLA",
-      "descripcion": "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar y comparar.",
-      "categoria": "Pesos & parámetros",
-      "accion": "_abrir_seeds_favoritos"
-    },
-    {
-      "titulo": "🔢 STEPS / PASOS",
-      "descripcion": "Cuántas iteraciones hace el modelo. Más pasos = más detalle pero más lento. Turbo: 4-8, Estándar: 20-30, HQ: 50+.",
-      "categoria": "Pesos & parámetros",
-      "accion": null
-    },
-    {
-      "titulo": "🎯 TRIGGER WORDS",
-      "descripcion": "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt.",
-      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
@@ -131,6 +65,42 @@
       "titulo": "🎬 SHOT / PLANO",
       "descripcion": "Tipo de encuadre: 'wide shot', 'close-up', 'medium shot', 'extreme close-up', 'aerial view', 'dutch angle'.",
       "categoria": "Calidad y estilos",
+      "accion": null
+    },
+    {
+      "titulo": "🎭 CHAOS / VARIETY",
+      "descripcion": "Parámetro (Midjourney) que controla cuánto se desvía el resultado del prompt. Bajo = fiel, alto = inesperado. Ideal para explorar.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "📦 CONTROLNET",
+      "descripcion": "Modelo adicional que controla la composición de la imagen mediante mapas (poses, bordes, profundidad). Permite especificar exactamente dónde va cada elemento.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🔁 img2img / IMAGE TO IMAGE",
+      "descripcion": "Técnica que parte de una imagen existente (no generada por IA) y la transforma. En Stable Diffusion: carga imagen → ajusta prompt → genera. Produce resultados más controlables.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🌊 PROMPT WEIGHTING AVANZADO",
+      "descripcion": "En FLUX puedes usar :: para separar pesos: 'rojo::1.5 azul::0.5 verde'. En SD: (tag:1.3)(tag:0.8). En Midjourney: ::0.5 después de la palabra.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🔢 RESOLUTION / UPSCALE",
+      "descripcion": "Resolución de salida. 512x512 = rápido, 1024x1024 = estándar, 2048+ = alta calidad. Upscaling posterior mejora detalles sin aumentar tiempo de generación.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "🎨 STYLE PROMPT / STYLE REFERENCE",
+      "descripcion": "Referencia de estilo que indica al modelo qué tipo de arte imitar. En Midjourney: '--style', en DALL-E: 'style: photography/painting/3d'.",
+      "categoria": "Conceptos avanzados",
       "accion": null
     },
     {
@@ -230,39 +200,69 @@
       "accion": "cmd_variaciones"
     },
     {
-      "titulo": "🎭 CHAOS / VARIETY",
-      "descripcion": "Parámetro (Midjourney) que controla cuánto se desvía el resultado del prompt. Bajo = fiel, alto = inesperado. Ideal para explorar.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "🎯 CFG (Classifier-Free Guidance)",
+      "descripcion": "Controla qué tan fielmente el modelo sigue tu prompt. Bajo (1-3) = más creativo, Alto (7-15) = más estricto.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
-      "titulo": "📦 CONTROLNET",
-      "descripcion": "Modelo adicional que controla la composición de la imagen mediante mapas (poses, bordes, profundidad). Permite especificar exactamente dónde va cada elemento.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "🌐 LENGUAJE NATURAL",
+      "descripcion": "Modelos como Midjourney, GPT Image, FLUX entienden frases completas. NO uses tags ni pesos numéricos en estos.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
-      "titulo": "🔁 img2img / IMAGE TO IMAGE",
-      "descripcion": "Técnica que parte de una imagen existente (no generada por IA) y la transforma. En Stable Diffusion: carga imagen → ajusta prompt → genera. Produce resultados más controlables.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "👤 LORA",
+      "descripcion": "Modelo pequeño que se 'enchufa' al modelo principal para añadir un estilo, personaje o concepto específico.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
-      "titulo": "🌊 PROMPT WEIGHTING AVANZADO",
-      "descripcion": "En FLUX puedes usar :: para separar pesos: 'rojo::1.5 azul::0.5 verde'. En SD: (tag:1.3)(tag:0.8). En Midjourney: ::0.5 después de la palabra.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "✨ MASTERPIECE / 8K / DETAILED",
+      "descripcion": "Tags 'mágicos' que mejoran calidad en SD. Cuidado: usarlos demasiado los degrada. 1-2 al final del prompt es suficiente.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
-      "titulo": "🔢 RESOLUTION / UPSCALE",
-      "descripcion": "Resolución de salida. 512x512 = rápido, 1024x1024 = estándar, 2048+ = alta calidad. Upscaling posterior mejora detalles sin aumentar tiempo de generación.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "⚡ MODELOS TURBO",
+      "descripcion": "Modelos optimizados para velocidad (Z Image Turbo, FLUX Schnell). Generan en segundos pero con CFG bajo (~1) — IGNORAN pesos y negative prompt.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     },
     {
-      "titulo": "🎨 STYLE PROMPT / STYLE REFERENCE",
-      "descripcion": "Referencia de estilo que indica al modelo qué tipo de arte imitar. En Midjourney: '--style', en DALL-E: 'style: photography/painting/3d'.",
-      "categoria": "Conceptos avanzados",
+      "titulo": "⚖️ PESOS NUMÉRICOS — (tag:1.2)",
+      "descripcion": "Aumentan la importancia de un tag. (tag:1.5) refuerza, (tag:0.7) reduce. Solo en modelos Stable Diffusion.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "📐 RATIO / ASPECT RATIO",
+      "descripcion": "Proporción de la imagen. 1:1 = cuadrado, 16:9 = horizontal, 9:16 = vertical, 2:3 = retrato, 21:9 = cine.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🎨 SAMPLER",
+      "descripcion": "Algoritmo que decide cómo el modelo va creando la imagen. Euler = rápido, DPM++ = balanceado, Karras = alta calidad.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🌱 SEED / SEMILLA",
+      "descripcion": "Número aleatorio que define las variaciones. Misma seed + mismo prompt = misma imagen exacta. Útil para iterar y comparar.",
+      "categoria": "Pesos & parámetros",
+      "accion": "_abrir_seeds_favoritos"
+    },
+    {
+      "titulo": "🔢 STEPS / PASOS",
+      "descripcion": "Cuántas iteraciones hace el modelo. Más pasos = más detalle pero más lento. Turbo: 4-8, Estándar: 20-30, HQ: 50+.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 TRIGGER WORDS",
+      "descripcion": "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt.",
+      "categoria": "Pesos & parámetros",
       "accion": null
     }
   ]

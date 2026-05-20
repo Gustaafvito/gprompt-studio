@@ -215,41 +215,68 @@ def abrir_tutorial(app):
     _FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
 
     def _flash_widget(w):
-        """Resalta un widget con borde azul durante 1.5s."""
+        """Resalta un widget con borde azul durante 1.5s. Ultra-defensivo:
+        cada operación en su propio try/except, no propaga errores."""
+        orig_color = None
+        orig_width = None
         try:
-            orig_color = w.cget("border_color") if "border_color" in w.keys() else None
-            orig_width = w.cget("border_width") if "border_width" in w.keys() else None
+            orig_color = w.cget("border_color")
+        except Exception as _e:
+            logger.debug(f"[silent] cget border_color: {_e}")
+        try:
+            orig_width = w.cget("border_width")
+        except Exception as _e:
+            logger.debug(f"[silent] cget border_width: {_e}")
+        try:
             w.configure(border_color="#3b82f6", border_width=3)
-            def _restore():
-                try:
-                    if not w.winfo_exists():
-                        return
-                    if orig_color is not None:
-                        w.configure(border_color=orig_color)
-                    if orig_width is not None:
-                        w.configure(border_width=orig_width)
-                except Exception as _e:
-                    logger.debug(f"[silent] restore: {_e}")
+        except Exception as _e:
+            logger.debug(f"[silent] configure flash: {_e}")
+            return  # Si no podemos configurar, no programamos restore
+
+        def _restore():
+            try:
+                if not w.winfo_exists():
+                    return
+                kwargs = {}
+                if orig_color is not None:
+                    kwargs["border_color"] = orig_color
+                if orig_width is not None:
+                    kwargs["border_width"] = orig_width
+                if kwargs:
+                    w.configure(**kwargs)
+            except Exception as _e:
+                logger.debug(f"[silent] restore: {_e}")
+        try:
             app.after(1500, _restore)
         except Exception as _e:
-            logger.debug(f"[silent] flash: {_e}")
+            logger.debug(f"[silent] schedule restore: {_e}")
 
     def _focus_widget(widget_name: str) -> str:
-        """Cierra el tutorial, hace focus y flash al widget. Devuelve mensaje."""
-        w = getattr(app, widget_name, None)
+        """Hace focus + flash al widget. Devuelve mensaje. NO cierra la ventana
+        del tutorial — el caller (dispatcher) lo decide tras éxito."""
+        if not hasattr(app, widget_name):
+            # Lista alternativos (mismo prefijo) para mensaje útil
+            alternativos = [a for a in dir(app)
+                            if widget_name.lower() in a.lower() and not a.startswith("__")][:5]
+            sug = f" — ¿Quizás: {', '.join(alternativos)}?" if alternativos else ""
+            raise AttributeError(f"Widget '{widget_name}' no existe en ArquitectoApp{sug}")
+        w = getattr(app, widget_name)
         if w is None:
-            raise AttributeError(f"Widget '{widget_name}' no existe en la app")
-        win.destroy()
+            raise AttributeError(f"Widget '{widget_name}' es None")
         try:
             w.focus_set()
         except Exception as _e:
             logger.debug(f"[silent] focus_set: {_e}")
         _flash_widget(w)
-        return f"✏️ Foco en {widget_name}"
+        return f"✏️ Foco en {widget_name} — busca el borde azul"
 
     def _focus_modelo() -> str:
         """Resuelve el combo de modelo según el modo activo y le hace focus."""
-        modo = app.modo_var.get() if hasattr(app, "modo_var") else "imagen"
+        modo = "imagen"
+        try:
+            modo = app.modo_var.get()
+        except Exception as _e:
+            logger.debug(f"[silent] modo_var: {_e}")
         nombre = {
             "imagen": "combo_modelo_imagen",
             "video":  "combo_modelo_video",
@@ -258,49 +285,83 @@ def abrir_tutorial(app):
         return _focus_widget(nombre)
 
     def _set_modo(valor: str) -> str:
-        """Cambia el modo activo (imagen / video / audio) y cierra el tutorial."""
+        """Cambia el modo activo (imagen / video / audio)."""
         mapa_label = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
         label = mapa_label.get(valor.lower(), "Imagen")
-        win.destroy()
+        if not hasattr(app, "_seg_modo"):
+            raise AttributeError("app._seg_modo no existe")
         try:
-            if hasattr(app, "_seg_modo"):
-                app._seg_modo.set(label)
+            app._seg_modo.set(label)
             if hasattr(app, "_on_segmento_modo"):
                 app._on_segmento_modo(label)
         except Exception as e:
-            logger.warning(f"_set_modo falló: {e}")
+            raise RuntimeError(f"No se pudo cambiar modo: {e}") from e
         return f"📱 Modo cambiado a {label}"
 
     def _set_tab(nombre_tab: str) -> str:
         """Cambia la tab activa del tabview central."""
         if not hasattr(app, "tabview"):
             raise AttributeError("app.tabview no existe")
-        win.destroy()
+        # Probar nombre exacto, luego sin emojis/espacios
         try:
             app.tabview.set(nombre_tab)
+            return f"📑 Tab cambiada: {nombre_tab}"
         except Exception as e:
-            # Probar también sin tildes/espacios variados
-            for nombre in app.tabview._name_list:
-                if nombre.lower().replace(" ", "") == nombre_tab.lower().replace(" ", ""):
-                    app.tabview.set(nombre)
-                    break
-            else:
-                raise AttributeError(f"Tab '{nombre_tab}' no encontrada: {e}")
-        return f"📑 Tab cambiada: {nombre_tab}"
+            logger.debug(f"tabview.set exacto falló: {e}")
+        nombres_disponibles = getattr(app.tabview, "_name_list", [])
+        norm = lambda s: "".join(c.lower() for c in s if c.isalnum())
+        for nombre in nombres_disponibles:
+            if norm(nombre) == norm(nombre_tab):
+                app.tabview.set(nombre)
+                return f"📑 Tab cambiada: {nombre}"
+        raise AttributeError(
+            f"Tab '{nombre_tab}' no encontrada. Disponibles: {nombres_disponibles}"
+        )
+
+    # Acciones que requieren cerrar la ventana del tutorial para verse bien
+    # (porque el tutorial taparía el widget destacado o la tab nueva).
+    _ACCIONES_CERRAR_VENTANA = ("focus:", "mode:", "tab:", "focus_modelo")
+
+    # Acciones que NO hacen nada visible si txt_salida está vacío.
+    # Las pre-validamos para mostrar un error útil en vez de silencio.
+    _ACCIONES_NECESITAN_SALIDA = {
+        "_guardar_favorito", "_guardar_estrella",
+        "cmd_refinar", "_cmd_scoring", "_cmd_export_cli",
+        "_cmd_versiones_prompt",
+    }
 
     def _probar(accion: str):
         """Ejecuta la acción del paso actual.
 
         Acciones soportadas:
-          - "focus:WIDGET_NAME" → cierra el tutorial y hace focus al widget
-          - "mode:imagen|video|audio" → cambia el modo de la app
-          - "tab:NOMBRE_TAB" → cambia la pestaña del tabview central
-          - "focus_modelo" → resuelve el combo según modo activo
-          - "abrir_X" (función libre en modules.windows) → la invoca con app
-          - cualquier otro → método de ArquitectoApp
+          - "focus:WIDGET"      → focus + flash al widget
+          - "mode:imagen|video|audio" → cambia el modo
+          - "tab:NOMBRE_TAB"    → cambia la pestaña del tabview central
+          - "focus_modelo"      → focus al combo según modo activo
+          - "abrir_X" (libre en modules.windows) → invocar con app
+          - cualquier otro      → método de ArquitectoApp
+
+        En caso de error: NO cierra la ventana del tutorial (para que el
+        usuario lea el mensaje en el toast) y NO marca como completado.
         """
         mensaje = None
+        cerrar = any(accion.startswith(p) for p in _ACCIONES_CERRAR_VENTANA)
         try:
+            # Pre-validación: ¿hay prompt en la salida para acciones que lo necesitan?
+            if accion in _ACCIONES_NECESITAN_SALIDA:
+                txt_sal = getattr(app, "txt_salida", None)
+                contenido_salida = ""
+                if txt_sal is not None:
+                    try:
+                        contenido_salida = txt_sal.get("1.0", "end").strip()
+                    except Exception as _e:
+                        logger.debug(f"[silent] txt_salida.get: {_e}")
+                if not contenido_salida:
+                    raise RuntimeError(
+                        "Necesitas generar un prompt primero (Ctrl+Enter en la app). "
+                        "Esa acción usa el contenido del área de salida."
+                    )
+
             if accion.startswith("focus:"):
                 mensaje = _focus_widget(accion.split(":", 1)[1])
             elif accion.startswith("mode:"):
@@ -320,22 +381,28 @@ def abrir_tutorial(app):
                 if not callable(fn):
                     raise AttributeError(f"{accion} no es método de ArquitectoApp")
                 fn()
-            # Éxito: marcar paso como completado y mostrar mensaje si lo hay
+            # ── Éxito ──
             completados.add(idx + 1)
             btn_completado_var.set(True)
             actualizar_indice()
             _guardar_progreso(app, completados, idx + 1)
             if mensaje:
                 try:
-                    app.show_toast(mensaje, "#3b82f6")
+                    app.show_toast(mensaje, "#3b82f6", 2500)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
+            if cerrar:
+                try:
+                    win.destroy()
+                except Exception as _e:
+                    logger.debug(f"[silent] win.destroy: {_e}")
         except Exception as e:
-            logger.warning(f"Error ejecutando {accion}: {e}")
+            # NO cerramos la ventana — el usuario verá el toast y podrá leer
+            logger.warning(f"Tutorial: acción '{accion}' falló: {e}")
             try:
-                app.show_toast(f"❌ '{accion}': {e}", "#e74c3c")
+                app.show_toast(f"❌ {accion}: {e}", "#e74c3c", 5000)
             except Exception as _e:
-                logger.debug(f"[silent] {_e}")
+                logger.debug(f"[silent] show_toast: {_e}")
 
     def on_toggle_completado():
         if btn_completado_var.get():
