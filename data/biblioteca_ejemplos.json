@@ -1,0 +1,199 @@
+[
+  {
+    "titulo": "Caída cazarecompensas",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt Video",
+    "dificultad": "avanzado",
+    "tags": [
+      "multi-shot",
+      "POV",
+      "audio",
+      "vertical",
+      "9:16",
+      "fantasy futurista"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: Shot 1 (The Dive - 0s to 5s): Extreme high-angle over-the-shoulder vertical tracking shot, camera locked to the subject's perspective as it plummets. A futuristic bounty hunter in sleek, matte black high-tech armor adorned with glowing cyan circuit lines freefalls face-first down the sheer, reflective glass facade of a colossal megacity skyscraper. The sense of acceleration is visceral, with the camera's motion blur rendering the deep background into a breathtaking vortex of light. A dense forest of towering neon skyscrapers, holographic billboards in Japanese and Chinese scripts, and sleek flying vehicles blur into vibrant streaks of neon pink, magenta, and electric cyan. Torrential rain, backlit by the city's omnipresent glow, streaks upwards against the lens in hypnotic patterns, creating dynamic light trails and realistic water droplets on the virtual camera. 8k resolution, vertical 9:16 composition.\n\nShot 2 (The Catch - 5s to 10s): Rapid transition from a shaky, immersive POV to a dynamic low-angle hero shot. Still in violent freefall, the hunter executes a sharp, athletic mid-air twist to face the camera directly, their polished visor reflecting a kaleidoscope of the chaotic neon storm rushing past. From directly above, a sleek, predatory black carbon-fiber hover-bike with an aggressive angular design and pulsating blue intake vents dives into frame with perfect timing, matching the descent velocity. The hunter's gloved hands grab the handlebars with a forceful, definitive clunk. Instantly, the bike's powerful rear thrusters ignite with a concentrated, blinding burst of brilliant cerulean blue plasma energy, firing a jetwash directly at the camera lens, causing a stunning chromatic lens flare and a dramatic light wash over the frame. The vehicle then pulls up with immense, crushing G-force, banking hard into a steep turn and accelerating away from the camera, diving like a predator into the chaotic, rain-soaked neon labyrinth of the city's lower levels.\n\nAudio: A driving, intense synthwave score with a deep, pounding bassline and rapid, precise electronic percussion. Layered sound design includes the roaring, distorted wind of terminal velocity, the high-pitched scream of the freefall, and the distorted Doppler whoosh of passing vehicles. The catch moment is punctuated by a powerful, metallic CLUNK of connection, followed immediately by a deep, sub-bass THRUM and crackle of the thrusters igniting. This transitions into the sustained, powerful roar of the bike's engines and the whip-crack sonic boom of breaking the fall.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cartoon, anime, watermark, text, extra limbs, slow motion, static scene",
+    "estilos": [
+      "Cyberpunk / Neon",
+      "Acción"
+    ]
+  },
+  {
+    "titulo": "Chica espejo (Seedance)",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt Video",
+    "dificultad": "avanzado",
+    "tags": [
+      "multi-shot",
+      "reflejo",
+      "horror",
+      "vertical",
+      "9:16",
+      "psicológico"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: 9:16 ratio. Universal Template & Character: A young woman with an exhausted expression and messy hair, in a dark, moody bathroom, consistent outfit throughout. Shot 1 (Establishing): Medium shot, she washes her face at a sink under flickering cold fluorescent light, slow push-in camera in dim light. Shot 2 (Emotion): Close-up, she looks up, makes intense eye contact with her mirror reflection, takes a deep breath, turns, and walks out of frame, static camera with stable focus. Shot 3 (Horror): Medium shot, camera fixed on the mirror; the physical room is empty, but her reflection remains, slowly breaking into a creepy, sinister smile. Cinematic lighting, dark premium tone, psychological thriller vibe, 4K ultra HD, rich details, clear stable features, no distortion. [style consistency] [scene extension] [motion reference: slow push-in, static, fixed]. Duration: 10 seconds.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cheerful mood, bright colors, cartoon, anime, watermark, text, extra limbs, fast motion, inconsistent outfit, reflection error, happy expression, clean hair, well-lit room, mirror without reflection, sudden cut",
+    "estilos": [
+      "Cinematográfico",
+      "Terror Psicológico"
+    ]
+  },
+  {
+    "titulo": "Henshin - Jinete Enmascarado",
+    "modo": "imagen",
+    "modelo": "Z Image Turbo",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "medio",
+    "tags": [
+      "tokusatsu",
+      "explosión",
+      "hero pose",
+      "pesos numéricos"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: (obra maestra, mejor calidad:1.2), ultra detallada, 1 niño, solo, héroe jinete enmascarado, intrincada armadura de insectos mechas, visera brillante, pose dinámica de henshin, enorme explosión de fuego en segundo plano, brillante cinturón de transformación, escombros voladores, chispas que vuelan, toma de acción dinámica, estilo tokusatsu, contraste dramático, iluminación cinematográfica, 8k\nNEGATIVE PROMPT: (peor calidad, baja calidad:1.4), mala anatomía, armadura deformada, extremidades faltantes, texto, firma, marca de agua",
+    "estilos": [
+      "Tokusatsu",
+      "Acción"
+    ]
+  },
+  {
+    "titulo": "Hoja táctica NEON APOCALYPSE",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "avanzado",
+    "tags": [
+      "UI design",
+      "game design",
+      "infografía",
+      "9:16",
+      "alta complejidad"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: Una hoja de diseño de juego completa y organizada con una cuadrícula de 3x2 para un RPG futurista titulado NEON APOCALYPSE, presentada como una pieza de arte conceptual de alta fidelidad con una estética ciberpunk oscura y cinematográfica. La composición es una maqueta vertical de 9:16 de un documento de diseño de juego, tomada desde un ángulo ligeramente elevado de 15 grados que le da a la cuadrícula una sutil perspectiva isométrica y enfatiza la profundidad entre los paneles. Cada panel está separado por finos bordes cian brillantes y un marco de aluminio cepillado con un ligero desgaste en los bordes. El fondo es de un negro carbón intenso con sutiles líneas de cuadrícula retro en cian desvaído, creando profundidad detrás de los paneles. Un tenue efecto de lluvia digital cae en el fondo, con pequeños flujos de datos cian goteando por la pantalla. Un sutil efecto de glitch distorsiona la esquina inferior derecha del marco, con algunos píxeles fuera de lugar, y una tenue marca de agua holográfica dice DESIGN DOC v2.3 - CLASSIFIED en el fondo. El ambiente general es oscuro, futurista y ligeramente crudo, con alto contraste y sombras profundas en las esquinas. Un sutil grano de película y una ligera aberración cromática le dan una sensación cinematográfica y vivida. En la esquina superior izquierda, una interfaz de INFORME DE MISIÓN muestra un avatar de personaje con un brillo holográfico y tipografía limpia, sin serifa, que explica la historia de BROTE CIBERNÉTICO y la mecánica HACK & SLASH. El texto tiene un sutil brillo de borde cian neón con bordes ligeramente pixelados, sobre un fondo mate de fibra de carbono. En la parte superior central, una pantalla de PERSONALIZACIÓN DE PERSONAJE etiquetada como NEON CYBERPUNK muestra al héroe con múltiples opciones de atuendo y accesorios, todos renderizados con elementos de interfaz de usuario de vidrio brillante y texto blanco nítido y legible sobre fondos oscuros. Los botones tienen un sutil reflejo de vidrio y una suave sombra interior. Completando la fila superior, un PERFIL DE PERSONAJE presenta EQUIPO TÁCTICO seleccionable que incluye GAFAS DE NEÓN frente a BOINA Y AURICULARES, junto con barras de estadísticas para AGILIDAD, FUERZA y TECNOLOGÍA en un vibrante verde neón con un ligero efecto de animación de pulso. Descendiendo a la fila inferior, el panel izquierdo muestra una cuadrícula de EQUIPAMIENTO para modificación, etiquetada como escopeta SG-70 SMARTER con opciones de modificación como SILENCIADOR, MIRA DE PUNTERÍA INTELIGENTE y BALAS EMP, con estadísticas precisas en una fuente monoespaciada sobre un fondo de metal cepillado. Los iconos de modificación tienen una superposición holográfica con una sutil aberración cromática. El panel central muestra una vista sigilosa de la interfaz de usuario del juego, donde la heroína se encuentra en ruinas urbanas con muros de hormigón derruidos y varillas de refuerzo oxidadas, cristales rotos en el suelo y un letrero de neón parpadeante que cuelga torcido. Los indicadores de detección aparecen en amarillo y rojo, las superposiciones tácticas en cian semitransparente, los datos de búsqueda de ruta y un multiplicador de combo de x4 que pulsa con un cálido resplandor naranja sobre el entorno oscuro. El panel inferior derecho muestra un resumen de MISIÓN COMPLETADA con estadísticas organizadas de ZOMBIS ELIMINADOS, DISPAROS DE PRECISIÓN y RANGO: S. Toda la hoja está iluminada por una luz cian ambiental fría desde arriba, con franjas de neón magenta cálidas que proyectan sombras nítidas y angulares sobre los paneles. Los elementos holográficos emiten un brillo suave y pulsante. La paleta de colores está dominada por azules marinos intensos, cian eléctrico, magenta intenso y toques de verde neón. Relación de aspecto 9:16.\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed, bad anatomy",
+    "estilos": [
+      "Cyberpunk / Neon",
+      "Concept Art"
+    ]
+  },
+  {
+    "titulo": "Infografía AURORA-7 smartphone",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "avanzado",
+    "tags": [
+      "producto",
+      "infografía",
+      "tipografía",
+      "marketing"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: Una fotografía cinematográfica de una infografía de alta costura de primera calidad en una relación vertical de 9:16, ambientada en un laboratorio minimalista y luminoso con elegantes superficies de mármol blanco y sutiles detalles dorados. En el centro, un teléfono inteligente de vidrio y titanio llamado AURORA-7 se muestra en una vista explosionada sobre un fondo degradado suave de melocotón a crema, organizado por una elegante interfaz de usuario minimalista superpuesta a la imagen. Un gran texto blanco elegante con serifa en la parte superior dice AURORA-7 SMARTPHONE - PERFIL DE PRODUCTO DECONSTRUIDO. Los componentes flotantes están etiquetados con precisión con líneas de conexión doradas limpias y texto sans-serif ultra legible: PANTALLA DE CRISTAL - OLED de 6,7 pulgadas con difusión de luz prismática, MARCO DE TITANIO DORADO - Aleación aeroespacial pulida a mano con acabado cepillado, LENTE DE ZOOM PERISCOPE - Matriz de triple cámara con estabilización óptica, PROCESADOR AURORA-X - Sistema de refrigeración líquida con disipación de calor brillante. Debajo del perfil del producto, una cuadrícula de cuatro paneles de interfaz de usuario minimalistas muestra iconos de aplicaciones glassmorphism con degradados pastel y bordes dorados, etiquetados como DISEÑADO PARA GPT-IMAGE 2.0, GRADO ESTÉTICO S, CALIFICACIÓN DE PRECISIÓN A+, MEZCLA MINERAL ÚNICA. La escena está iluminada por una gran caja de luz a 45 grados arriba a la izquierda, creando suaves reflejos especulares en los bordes del cristal y suaves sombras a la derecha, con una sutil luz de contorno que separa el teléfono del fondo. Tomada con una lente de 50 mm a f/2.8 desde un ángulo ligeramente bajo, la poca profundidad de campo desenfoca el primer plano donde un par de guantes de algodón blanco descansan junto al teléfono. Resolución 8k, renderizado fotorrealista, brillo editorial, estética minimalista de alta costura.\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed",
+    "estilos": [
+      "Producto",
+      "Infografía"
+    ]
+  },
+  {
+    "titulo": "Persecución cazarecompensas",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt Video",
+    "dificultad": "avanzado",
+    "tags": [
+      "multi-shot",
+      "persecución",
+      "vertical",
+      "9:16",
+      "cyberpunk"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: Shot 1 (The Chase - 0s to 5s): Dynamic third-person vertical tracking shot following a sleek black hover-bike as it weaves at breakneck speed through the rain-soaked neon canyons of a futuristic megacity. The bounty hunter in matte black high-tech armor with glowing cyan circuit lines leans into a sharp turn, sparks flying as the bike's undercarriage grazes a rain-slicked metal bridge. Towering holographic billboards cast shifting pools of magenta and cyan light across the wet surfaces. An enemy flying vehicle with aggressive angular design and red plasma cannons enters frame from above, opening fire. Bright orange plasma bolts streak past the hunter, one narrowly missing the camera perspective, creating dramatic lens flares and heat distortion effects. 8k resolution, vertical 9:16 composition.\n\nShot 2 (The Evasion - 5s to 10s): The hunter dives the bike into a narrow alleyway between two monolithic skyscrapers, the camera executing a rapid side-sweep to maintain visual contact. The pursuing vehicle, too wide to follow, banks hard and takes an alternate route above. The hunter emerges from the alley in a steep vertical climb, spinning the bike 180 degrees to face backward, and returns fire with twin cyan energy blasts from the bike's under-mounted cannons. The camera pulls back to a wide establishing shot as the two vehicles engage in a dizzying dogfight through a maze of towering infrastructure, holographic advertisements, and dense aerial traffic, with rain and neon light creating a dazzling tapestry of streaking colors.\nNEGATIVE PROMPT: distorted face, body deformation, blurry, bad lighting, cartoon, anime, watermark, text, extra limbs, slow motion, static scene, happy mood, bright daylight",
+    "estilos": [
+      "Cyberpunk / Neon",
+      "Acción"
+    ]
+  },
+  {
+    "titulo": "Póster cinematográfico combate MMA",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "medio",
+    "tags": [
+      "póster",
+      "claroscuro",
+      "deportivo",
+      "vertical",
+      "9:16"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: Un dramático diseño de póster cinematográfico para una pelea clandestina de artes marciales mixtas, formato vertical 9:16. Filmado con una lente gran angular de 24 mm a f/1.8, la perspectiva de ángulo bajo extremo crea una marcada distorsión de ojo de pez que exagera la imponente y heroica estatura de los luchadores, mientras que el fondo se convierte en un bokeh cremoso de tenues siluetas de la multitud y pantallas de teléfonos brillantes dispersas. A la izquierda, un fornido y poderoso hombre con la cabeza rapada, una espesa barba y elaborados tatuajes geométricos en índigo profundo que envuelven su brazo, aprieta la mandíbula, una vena palpita en su sien, su piel aceitunada está cubierta de sudor. Viste pantalones cortos de lucha de satén carmesí. Frente a él, un luchador alto y delgado con cabello oscuro recogido en un moño apretado entrecierra los ojos, los labios apretados en una fina línea de fría determinación, su piel pálida brillando bajo la luz. Viste pantalones cortos de satén gris carbón. Ambos están sin camisa, con guantes de MMA, de pie frente a frente en un tenso enfrentamiento. Un único foco de estadio atraviesa la oscuridad, proyectando un cálido resplandor ámbar que crea un halo dorado alrededor de sus músculos venosos y altamente detallados, mientras que frías sombras azul oscuro se acumulan alrededor de sus pies. El fondo se disuelve en profundas sombras con tenues siluetas de una multitud, salpicadas por algunas pantallas de teléfonos brillantes. Toda la imagen está tratada con una textura de cómic retro cruda, patrones de puntos de semitono irregulares y toscos que recuerdan a los cómics underground de los años 70, con un ligero efecto de desajuste en los canales cian y magenta, y un sutil grano de película, que evoca un póster coleccionable de alta calidad. Calidad de obra maestra, resolución 8k, textura de piel hiperdetallada con poros y gotas de sudor visibles, iluminación cinematográfica, audacia de novela gráfica, composición которая, claroscuro dramático.\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed, bad anatomy",
+    "estilos": [
+      "Cinematográfico",
+      "Póster"
+    ]
+  },
+  {
+    "titulo": "Pop electrónico melancólico",
+    "modo": "audio",
+    "modelo": "Suno v5",
+    "plataforma": "Suno",
+    "dificultad": "principiante",
+    "tags": [
+      "pop",
+      "electrónica",
+      "melancólico",
+      "castellano"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "ESTILO: Synthpop, Electropop, Melancholic, Dreamy, Reverb-heavy vocals, Atmospheric pads, 80s inspired, Minor key\n\n[Intro]\nFloating synth pads, slow build\n\n[Verse 1]\nLost in neon corridors of memory\nEvery echo sounds like your goodbye\nDigital tears on a pixel screen\nWe were electric, now just a dream\n\n[Chorus]\nFading signals in the night\nWe were stars that lost their light\nFading signals, can't rewind\nLeaving frequencies behind",
+    "estilos": [
+      "Pop",
+      "Electrónica"
+    ]
+  },
+  {
+    "titulo": "Retrato cyberpunk con reflejos neon",
+    "modo": "imagen",
+    "modelo": "Z Image Turbo",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "principiante",
+    "tags": [
+      "retrato",
+      "close-up",
+      "cyberpunk",
+      "pesos numéricos"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: (close-up portrait:1.3), 1girl, cyberpunk city reflection in eyes, (neon lights:1.4), wet skin, rain drops on face, (chromatic aberration:1.2), dark alley background, purple and teal color palette, (cinematic lighting:1.3), sharp focus, 8K, masterpiece, highly detailed\nNEGATIVE PROMPT: (worst quality, low quality:1.4), (anime, cartoon:1.3), (text, watermark:1.3), blurry, deformed",
+    "estilos": [
+      "Cyberpunk / Neon",
+      "Retrato"
+    ]
+  },
+  {
+    "titulo": "Steampunk Wonderland infografía",
+    "modo": "imagen",
+    "modelo": "Z Image Turbo",
+    "plataforma": "SeaArt / Tensor.Art",
+    "dificultad": "avanzado",
+    "tags": [
+      "steampunk",
+      "infografía",
+      "vintage",
+      "tipografía"
+    ],
+    "autor": "Gustaafvito",
+    "prompt": "POSITIVE PROMPT: (composición infográfica vertical 16:9:1.3), (diseño de tríptico: título de la pancarta superior, ilustración principal central, paneles de información inferiores:1.3), (primer plano: setas de latón gigantes con rejillas de ventilación de vapor brillantes:1.4), (punto medio: dirigible de tetera flotante con casco de cobre:1.3), (fondo: silueta de castillo de relojería contra el cielo de cobre:1.4), (tipografía victoriana dorada: País de las maravillas steampunk en estilo art nouveau:1.4), (detalles mecánicos intrincados: engranajes, remaches, manómetros:1.3), (texturas de pátina de cobre oxidado:1.3), (reflejos de latón pulido:1.2), (patrones de filigrana victoriana grabados en metal:1.4), (condensación de vapor en superficies de latón:1.2), (pintura digital mate:1.3), (bordes ornamentales de estilo art nouveau:1.3), (atmósfera onírica surrealista:1.2), (islas flotantes en el fondo:1.1), (estructuras geométricas imposibles:1.1), (iluminación lateral dramática de las rejillas de ventilación de vapor:1.3), (mezcla de luz cálida ámbar con sombras frías verdeazuladas:1.2), (rayos de dios volumétricos a través de partículas de vapor:1.4), (luz de borde en bordes de latón:1.3), (ámbar, verdete y paleta de colores dorados:1.2), (mariposas de relojería brillantes:1.2), (planetario a vapor en el fondo:1.3), (ultra detallado:1.3), 8k, obra maestra\nNEGATIVE PROMPT: (worst quality, low quality, lowres:1.4), (anime, cartoon, 3d render:1.3), (text, watermark, signature:1.3), (deformed, distorted, asymmetric:1.2), (blurry, jpeg artifacts:1.2), (oversaturated colors:1.3), (plastic texture:1.3), (depth of field error:1.2), (chromatic aberration:1.2), (grainy noise:1.2), (flat lighting:1.3), (underexposed shadows:1.2), (blown out highlights:1.2), (motion blur:1.2)",
+    "estilos": [
+      "Steampunk",
+      "Infografía"
+    ]
+  }
+]

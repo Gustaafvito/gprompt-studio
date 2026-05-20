@@ -1,0 +1,242 @@
+{
+  "Fotografía Realista": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Retrato": [
+    "Anime/2D",
+    "Anatomía",
+    "Deformación"
+  ],
+  "Macro": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Street Photography": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Landscape / Nature": [
+    "Anime/2D",
+    "Texto/Marcas"
+  ],
+  "Producto / Comercial": [
+    "Anime/2D",
+    "Baja Calidad",
+    "Texto/Marcas"
+  ],
+  "Food Photography": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Fashion / Editorial": [
+    "Anime/2D",
+    "Anatomía",
+    "Deformación"
+  ],
+  "Arquitectura": [
+    "Anime/2D",
+    "Deformación"
+  ],
+  "Anime / Ilustración": [
+    "Realismo"
+  ],
+  "Comic / Manga": [
+    "Realismo"
+  ],
+  "Chibi / Kawaii": [
+    "Realismo"
+  ],
+  "Studio Ghibli": [
+    "Realismo"
+  ],
+  "Anime 90s Retro": [
+    "Realismo"
+  ],
+  "Sketch / Lineart": [
+    "Realismo"
+  ],
+  "Pixar / Disney 3D": [
+    "Realismo",
+    "Anime/2D"
+  ],
+  "Oil Painting": [
+    "Realismo"
+  ],
+  "Watercolor": [
+    "Realismo"
+  ],
+  "Pixel Art": [
+    "Realismo"
+  ],
+  "Vaporwave / Aesthetic": [
+    "Realismo"
+  ],
+  "Tarot / Místico": [
+    "Realismo"
+  ],
+  "Sumi-e / Tinta china": [
+    "Realismo"
+  ],
+  "Acrílico": [
+    "Realismo"
+  ],
+  "Charcoal / Carboncillo": [
+    "Realismo"
+  ],
+  "Low Poly": [
+    "Realismo"
+  ],
+  "Isometric": [
+    "Realismo"
+  ],
+  "Ukiyo-e": [
+    "Realismo"
+  ],
+  "Art Nouveau": [
+    "Realismo"
+  ],
+  "Art Deco": [
+    "Realismo"
+  ],
+  "Bauhaus": [
+    "Realismo"
+  ],
+  "Cyberpunk / Neon": [
+    "Baja Calidad"
+  ],
+  "Dark Fantasy": [
+    "Baja Calidad",
+    "Anatomía"
+  ],
+  "Terror / Horror": [
+    "Baja Calidad"
+  ],
+  "Sci-Fi": [
+    "Baja Calidad"
+  ],
+  "Fantasy Épica": [
+    "Baja Calidad",
+    "Anatomía"
+  ],
+  "Steampunk": [
+    "Baja Calidad"
+  ],
+  "Retro / Synthwave": [
+    "Realismo"
+  ],
+  "Pinup Vintage": [
+    "Deformación",
+    "Anatomía"
+  ],
+  "3D Render": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Realismo Mágico": [
+    "Anime/2D"
+  ],
+  "Underwater": [
+    "Anime/2D"
+  ],
+  "Space / Cosmic": [
+    "Anime/2D"
+  ],
+  "Minimalista": [],
+  "Surreal / Dreamlike": [
+    "Realismo"
+  ],
+  "Gothic / Oscuro": [
+    "Baja Calidad"
+  ],
+  "Pop Art": [
+    "Realismo"
+  ],
+  "Arte Conceptual": [
+    "Baja Calidad"
+  ],
+  "Retrato / Portrait": [
+    "Anime/2D",
+    "Deformación"
+  ],
+  "Paisaje / Landscape": [
+    "Anime/2D"
+  ],
+  "Macro / Close-up": [
+    "Anime/2D"
+  ],
+  "Wildlife / Naturaleza": [
+    "Anime/2D"
+  ],
+  "Cinematográfico 4K": [
+    "Anime/2D",
+    "Baja Calidad"
+  ],
+  "Anime": [
+    "Realismo"
+  ],
+  "Acción / Corte Rápido": [
+    "Baja Calidad"
+  ],
+  "Documental": [
+    "Anime/2D"
+  ],
+  "Ciencia Ficción": [
+    "Baja Calidad"
+  ],
+  "Terror / Atmósfera": [
+    "Baja Calidad"
+  ],
+  "Videoclip Musical": [
+    "Baja Calidad"
+  ],
+  "Cortometraje": [
+    "Baja Calidad"
+  ],
+  "Drone / Aéreo": [
+    "Anime/2D",
+    "Deformación"
+  ],
+  "Cámara Lenta": [
+    "Baja Calidad"
+  ],
+  "Motion Graphics": [
+    "Realismo"
+  ],
+  "Time-Lapse": [
+    "Anime/2D"
+  ],
+  "First Person POV": [
+    "Anime/2D"
+  ],
+  "Found Footage": [
+    "Anime/2D"
+  ],
+  "Stop Motion": [
+    "Realismo"
+  ],
+  "Vlog / Handheld": [
+    "Anime/2D"
+  ],
+  "Sports / Deportes": [
+    "Anime/2D"
+  ],
+  "Anuncio Producto": [
+    "Baja Calidad"
+  ],
+  "Cinemagraph": [
+    "Baja Calidad"
+  ],
+  "Hyperlapse": [
+    "Anime/2D"
+  ],
+  "Tutorial / Explainer": [
+    "Baja Calidad"
+  ],
+  "Trailer Cinematográfico": [
+    "Baja Calidad"
+  ],
+  "Music Video Sync": [
+    "Baja Calidad"
+  ]
+}

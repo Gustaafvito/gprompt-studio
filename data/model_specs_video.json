@@ -1,0 +1,562 @@
+{
+  "Kling 3.0": {
+    "nota": 4.5,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Lip-sync, diálogos, SFX, música, ambiente",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "1:1",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "DIRECTOR DE CINE. Prompts negativos. Multi-toma, secuencias narrativas, coherencia brutal de personajes. Audio: lip-sync, diálogos, SFX, música.",
+    "prompt_formula": "Subject + action → setting → time → camera → motion → mood → audio (opcional)",
+    "prompt_ejemplo": "10-15 seconds. Slow push-in on subject's face. Subtle breathing, soft blink. Golden hour rim light, shallow depth of field. Quiet city ambience.",
+    "limitaciones": "Prompts muy cargados pueden fallar; simplificar cámara a un movimiento"
+  },
+  "Kling 3.0 Omni": {
+    "nota": 4.5,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Lip-sync avanzado, SFX, voz consistente entre clips",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "1:1",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Continuidad personaje/voz. Referencia multi-imagen. Secuencias coherentes. Lip-sync avanzado, SFX, voz consistente entre clips",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio",
+    "prompt_ejemplo": "12s. Wide establishing shot, slow pan left. Light rain, wet reflections, neon signs. Distant traffic ambience.",
+    "limitaciones": "Demasiadas referencias conflictivas causan inconsistencia"
+  },
+  "Kling 01 Video Model": {
+    "nota": 4.3,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "3s",
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "1:1",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "Creador básico y estable. Genera clips 3-10s desde texto o imagen. Punto fuerte: imagen inicio+fin para transición perfecta.",
+    "prompt_formula": "Scene description + subject + action + camera movement",
+    "prompt_ejemplo": "A cyberpunk city at dusk with neon lights reflecting on wet pavement, cinematic dolly shot.",
+    "limitaciones": "Sin audio nativo, máximo 10 segundos"
+  },
+  "Kling 2.6": {
+    "nota": 3.1,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Voz nativa, lip-sync, monólogos, diálogos, música, SFX ambientales",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "16:9",
+      "1:1",
+      "9:16"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "ESPECIALISTA EN SONIDO. Personaje hablando a cámara con sincronización labial. Diálogos, vlogs con voz, performances musicales",
+    "prompt_formula": "Scene description + subject + movement + [Character, Emotion] says: 'dialogue' + audio description",
+    "prompt_ejemplo": "[Ana, excited] says: 'Welcome to my channel!' Bright studio, warm key light, slight camera push-in. Upbeat pop BGM.",
+    "limitaciones": "Sin prompt negativo, calidad visual inferior a Kling 3.0"
+  },
+  "Seedance 1.5 PRO": {
+    "nota": 4.3,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Síntesis audio+video conjunta: BGM, SFX, doblaje adaptado sin postproducción",
+    "duraciones": [
+      "5s",
+      "10s",
+      "12s"
+    ],
+    "ratios": [
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "1:1",
+      "21:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Audio nativo integrado (BGM+SFX+doblaje). Text/Image-to-Video. 480p-4K. Multi-ratios. Realismo cine, ads, naturaleza",
+    "prompt_formula": "Scene + subject + action + camera + lighting + audio description",
+    "prompt_ejemplo": "Drone shot over crashing ocean coastline during storm. Audio: roaring waves, howling wind, distant thunder.",
+    "limitaciones": "Máx 5000 letras. Coste energía variable 230-3840pts"
+  },
+  "Seedance 2.0": {
+    "nota": 4.2,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo: ambiental, SFX, señales de audio alineadas con prompt",
+    "duraciones": [
+      "4s",
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "DIRECTOR DE CINE. Multi-shot storytelling. Lenguaje cámara+ritmo+iluminación. Audio nativo integrado. Prompts hasta 5000 chars.",
+    "prompt_formula": "Shot 1: [wide/plano/cámara]. Shot 2: [medium/acción]. Shot 3: [close-up/detail]. Audio: [SFX, ambiente, música]",
+    "prompt_ejemplo": "Shot 1: Wide establishing shot, minimalist studio. Shot 2: Medium shot, product on pedestal. Shot 3: Close-up on label. Audio: soft room tone, subtle whoosh.",
+    "limitaciones": "NO caras reales (usar avatares IA o anime). Sin prompt negativo. Coste energía 540-4275pts"
+  },
+  "Seedance 2.0 Fast": {
+    "nota": 3.0,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "8s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "Velocidad y VLOGs. Image/Text/Video-ref. 8-15s. Prompts hasta 5000 letras.",
+    "prompt_formula": "Natural description of scene + subject + action + camera",
+    "prompt_ejemplo": "Young woman walks through colorful Tokyo streets at night, handheld camera following, neon reflections.",
+    "limitaciones": "SIN audio, SIN negative, SIN Ultra HD/Pro."
+  },
+  "Nano Banana Pro Video": {
+    "nota": 3.3,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Gemini 3. Alta fidelidad profesional. Image-to-Video 2K/4K. Text-to-Video 6s@720p/10s@1080p. Control cámara avanzado.",
+    "prompt_formula": "Subject + action + camera movement + style + lighting",
+    "prompt_ejemplo": "Hyper-realistic racing car drifting around wet track corner, fixed camera, smoke billowing from tires.",
+    "limitaciones": "Clips reales 6-10s (UI muestra 15s), manos ocasionalmente inconsistentes"
+  },
+  "Nano Banana Video": {
+    "nota": 4.5,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Generación automática de SFX y BGM integrados",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Modelo estándar rápido. Image/Text-to-Video 6-10s. Estilos: cine, anime, sci-fi, Disney. Control cámara en prompt.",
+    "prompt_formula": "Subject + action + camera control + style description",
+    "prompt_ejemplo": "Majestic lion in jungle, paw moves to adjust camera, jungle background sways gently, cinematic quality.",
+    "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo"
+  },
+  "SeaArt Film Video": {
+    "nota": 4.5,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2400,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "El modelo de vídeo más usado de SeaArt (10.4M usos). Cinematográfico, HQ, fotogramas. Sujetos múltiples, magia de sugerencia. Image-to-Video y Text-to-Video.",
+    "prompt_formula": "Subject + action + camera + lighting + style. Prompts descriptivos con magia de sugerencia.",
+    "prompt_ejemplo": "A woman in a flowing white dress walks through golden wheat fields at sunset, cinematic slow motion, warm golden hour light, shallow DOF.",
+    "limitaciones": "Sin prompt negativo. Máx 10s. Coste ~480-2400 energía."
+  },
+  "SeaArt Ultra Pro": {
+    "nota": 4.6,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados + slider de Similitud (0-1)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 3000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Versión Pro del Ultra. 4.4M usos. 15s, calidad profesional. Sujetos múltiples, magia de sugerencia, prompt negativo. Ideal para producción seria.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Kling 3.0 pero con slider de similitud.",
+    "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic 4K, slow crane movement.",
+    "limitaciones": "Coste alto (~600-3000 energía). Similitud 0.5 por defecto."
+  },
+  "Wan 2.6": {
+    "nota": 4.3,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Motor Wan (ByteDance). 88K usos. Image-to-Video con prompt negativo. Magia de sugerencia. Semilla fija disponible.",
+    "prompt_formula": "Subject + action + camera movement + style + lighting. Prompts descriptivos.",
+    "prompt_ejemplo": "A samurai drawing his sword in a bamboo forest, slow motion, dramatic backlight, leaves falling, cinematic atmosphere.",
+    "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía."
+  },
+  "Sora2 Video": {
+    "nota": 4.8,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio nativo integrado (diálogos, música, SFX automáticos)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "20s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "CONSISTENCIA DE PERSONAJES superior. Manejo excepcional de física de materiales (ropa ondeando, colisiones, telas). API de referencias para personajes consistentes. Audio nativo con diálogos sincronizados. Timing preciso de acciones.",
+    "prompt_formula": "BLOQUES SEPARADOS: [Scene Description] + Cinematography: + Physics & Motion: + Dialogue: + Background Sound:. Descriptivo con peso y velocidad de movimientos.",
+    "prompt_ejemplo": "A weathered blacksmith hammers molten metal in his forge. The sparks fly in precise timing with each strike, ember particles drifting slowly in the cool air.\n\nCinematography:\n- Camera: Medium close-up, slow push-in with parallax effect on the sparks\n- Lighting: Warm orange glow from the forge, deep shadows on face, dramatic contrast\n\nPhysics & Motion:\nThe heavy leather apron moves with realistic weight as he swings the hammer. Sweat droplets fly off with each impact, cloth physics perfectly synced to movement. Metal rings with each collision.\n\nDialogue:\n- Blacksmith: \"This blade will outlive us all.\"\n\nBackground Sound:\nMetallic clang of hammer striking steel, crackling fire, heavy breathing, distant town ambiance, no background music.",
+    "prompt_ejemplo_simple": "A lone astronaut floating above Earth, helmet reflecting blue planet, slow rotation, stars in background, epic cinematic scale.",
+    "prompt_tips": [
+      "BLOQUES EXPLÍCITOS: Usa headers como 'Cinematography:', 'Physics & Motion:', 'Dialogue:', 'Background Sound:'.",
+      "CONSISTENCIA DE PERSONAJES: Usa la API de referencias para mantener same character across shots.",
+      "FÍSICA DE MATERIALES: Describe peso, velocidad, sincronización. 'La tela se mueve con peso realista', 'el agua salpica con física natural'.",
+      "TIMING PRECISO: Sincroniza acciones: 'los chispas vuelan en timing preciso con cada golpe'.",
+      "DIÁLOGOS: Especifica líneas exactas con nombre del personaje: '- Personaje: \"Línea\"'.",
+      "BACKGROUND SOUND: Incluye foley específico: 'pasos sobre grava', 'lluvia golpeando', 'sin música de fondo'.",
+      "PROFUNDIDAD: Describe capas de audio: foreground (diálogos), midground (SFX cercanos), background (ambiente lejano).",
+      "MENCIONA LENTE: 'lente de 35mm', 'cámara en mano', 'drone' para control de estilo visual.",
+      "NO USES TAGS COMA-SEPARADOS: Escribe en párrafos descriptivos estructurados.",
+      "MASSIVE PROMPT: Sora 2 acepta prompts largos y detallados. No escatimes en descripción."
+    ],
+    "estructura_bloques": [
+      "Scene Description",
+      "Cinematography",
+      "Lighting & Mood",
+      "Physics & Motion",
+      "Dialogue",
+      "Background Sound"
+    ],
+    "estructura_camara": [
+      "medium close-up",
+      "slow push-in",
+      "tracking shot",
+      "dolly zoom",
+      "crane up",
+      "handheld",
+      "stabilized",
+      "parallax effect",
+      "rack focus",
+      "slow motion"
+    ],
+    "estructura_audio": [
+      "dialogue",
+      "background music",
+      "foley",
+      "ambient",
+      "silence",
+      "SFX",
+      "voiceover"
+    ],
+    "limitaciones": "Coste más alto que otros. Requiere referencia de personaje para consistencia. Duración máxima ~20s."
+  },
+  "Veo 3.1": {
+    "nota": 4.7,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo (música ambiental, SFX, diálogos)",
+    "duraciones": [
+      "4s",
+      "6s",
+      "8s",
+      "12s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1",
+      "4:3"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "4K"
+    ],
+    "best_for": "ÓPTICA Y LENTE cinematográfica avanzada. Consistencia de fluidos, reflejos, texturas (fuego, cristales, espejos, agua). Iluminación fotorrealista. Mejor comprensión de lenguaje natural (no tan rígido como versiones anteriores).",
+    "prompt_formula": "FOCALIZACIÓN PROGRESIVA: [CÁMARA/PLANO] + [SUJETO EN ACCIÓN] + [ILUMINACIÓN/ÓPTICA] + [TEXTURAS/MATERIALES] + [AUDIO]. Front-loading: lo más importante al principio.",
+    "prompt_ejemplo": "Medium close-up filmed with a 35mm cinematic lens, shallow depth of field. An artisan with weathered hands shapes molten blown glass in his dark workshop. The scene features dramatic lighting coming solely from the incandescent glass glow, creating deep shadows and orange glints on his face. Highlights include subtle rising smoke, imperfections in the molten glass, and sweat on the skin. Audio: the crackle of fire, the hiss of cooling glass, and a deep steady breathing.",
+    "prompt_ejemplo_simple": "A person walking through a foggy forest path, mysterious atmosphere, cinematic lighting, 1080p.",
+    "prompt_tips": [
+      "FRONT-LOADING: Tipo de plano y sujeto al principio. Máximo 3-5 frases.",
+      "ÓPTICA DE LENTE: Especifica tipo de lente (35mm cinematográfico, 50mm, macro). Añade efectos: bokeh, chromatic aberration, lens flare.",
+      "CÁMARA EN UN FRASE INDEPENDIENTE: 'La cámara hace un push-in lento hacia su rostro' al final.",
+      "MATERIALIDAD: Describe texturas difíciles: humo, fuego, líquidos reflectantes, piel, metal, cristal, espejo.",
+      "CONSISTENCIA LUMÍNICA: Fuente de luz principal clara: 'luz cenital', 'contraluz', 'neón reflejado en suelo mojado'.",
+      "FLUIDOS Y REFLEJOS: Especializado en física de fluidos, reflejos realistas (fuego en cristal, agua en espejo).",
+      "TEXTURAS ÓPTICAS: 'destellos anaranjados', 'sombras profundas', 'imperfecciones del material'.",
+      "AUDIO INTEGRADO: Incluye descripción de sonido: 'graznido de gaviotas', 'olas rompiendo', 'respiración profunda'.",
+      "ESCENA ATÓMICA: Una sola acción principal por toma. No sobrecargues.",
+      "LENGUAJE FLUIDO: Ya no necesitas ser ultra-estructurado. Describe con frases naturales.",
+      "ESTILO DE CÁMARA: Selecciona de menú: 'Lente Cinematográfica 35mm', 'Cámara en mano (documental)', 'Drone cenital', 'Macro detalle'.",
+      "NO TAGS COMA-SEPARADOS: Frases descriptivas fluidas pero directas."
+    ],
+    "estructura_camara": [
+      "medium close-up",
+      "close-up",
+      "wide shot",
+      "extreme close-up",
+      "over the shoulder",
+      "pov shot",
+      "drone shot",
+      "aerial view",
+      "macro shot"
+    ],
+    "estructura_lente": [
+      "35mm cinematic lens",
+      "50mm lens",
+      "85mm portrait lens",
+      "wide-angle lens",
+      "macro lens",
+      "anamorphic lens",
+      "handheld camera",
+      "steadicam",
+      "gimbal stabilized"
+    ],
+    "estructura_fisica": [
+      "smoke rising",
+      "fire glow",
+      "water reflections",
+      "glass imperfections",
+      "metal shine",
+      "fabric movement",
+      "particle dispersion",
+      "light refraction",
+      "shadow casting"
+    ],
+    "estructura_audio": [
+      "ambient noise",
+      "dialogue",
+      "foley",
+      "silence",
+      "music",
+      "SFX",
+      "weather sounds",
+      "footsteps",
+      "breathing"
+    ],
+    "limitaciones": "Solo 2 ratios básicos (9:16, 16:9). Máx ~12s. Sin negative prompt. Mejor para cinematografía que para acciones complejas."
+  },
+  "Gemini Omni": {
+    "nota": 4.9,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio realista (música ambiental, SFX, voz sincronizada)",
+    "duraciones": [
+      "~10s",
+      "~20s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1",
+      "4:3"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Text-to-Video",
+      "Image-to-Video",
+      "Video-to-Video",
+      "Omni Motion"
+    ],
+    "best_for": "DIRECTOR CREATIVO CON INTELIGENCIA FÍSICA. Modelo de MUNDO que entiende causa-efecto, dinámicas de fluidos, gravedad, materiales. Edición conversacional iterativa. Cámara cinematográfica avanzada. Renderiza texto animado. Referencia multimodal (imagen+vídeo+audio+texto).",
+    "prompt_formula": "5 BLOQUES CLAVE: {Sujeto/Acción} + {Entorno} + {Física/Dinámica} + {Cámara} + {Estilo/Iluminación}. Narrativa técnica, no lista de keywords. Enfoca en causa-efecto.",
+    "prompt_ejemplo": "Close-up of a coffee cup dripping in slow motion on a rustic wooden table in a dim café. The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam. Cinematic golden hour side lighting with lens flare. Dolly push-in, grounded cinematic feel.",
+    "prompt_ejemplo_estructura": {
+      "sujeto": "a coffee cup dripping in slow motion",
+      "entorno": "a rustic wooden table in a dim café",
+      "fisica": "The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam",
+      "camara": "Close-up, slow motion, dolly push-in",
+      "estilo": "Cinematic, golden hour side lighting, lens flare, grounded feel"
+    },
+    "prompt_tips": [
+      "5 BLOQUES OBLIGATORIOS: Sujeto + Entorno + Física + Cámara + Estilo. Todos deben estar presentes.",
+      "NARRATIVA TÉCNICA: Escribe como si narraras una escena de película, no como lista de tags.",
+      "FÍSICA/DINÁMICA ES CLAVE: Omni entiende causa-efecto. Describe qué pasa 'cuando' ocurre una acción.",
+      "FLUIDOS Y MATERIALES: 'El líquido salpica creando gotas', 'el humo se dispersa', 'la tela ondea con viento'.",
+      "EVITA SOBRESPECIFICAR: No listes cada objeto. Describe atmósfera y Omni infiere los detalles.",
+      "CÁMARA: wide-angle, medium shot, close-up, dolly zoom, push-in, punch in, oners (toma continua).",
+      "ILUMINACIÓN: Fuente + efecto + temperatura. 'Warm golden light from the left', 'ethereal backlight'.",
+      "EDICIÓN ITERATIVA: Pide cambios específicos sin reescribir todo: 'Change the butterfly to a bee'.",
+      "OMNI MOTION: Para movimiento fluido, describe keyframes de acción: 'starting from X, transitioning to Y'.",
+      "CONOCIMIENTO DEL MUNDO: No explains contexto histórico/científico. Omni lo sabe. Solo describe tu visión.",
+      "TEXT EN VÍDEO: Especifica tipo de letra, posición, animación, exposición.",
+      "REFERENCIAS MULTIMODAL: Combina imagen de referencia + prompt para control de estilo.",
+      "NO USES MIDJOURNEY STYLE: No '(word:1.5)'. Escribe en prosa narrativa técnica."
+    ],
+    "estructura_camara": [
+      "close-up",
+      "medium shot",
+      "wide shot",
+      "extreme close-up",
+      "over the shoulder",
+      "pov",
+      "dolly push-in",
+      "dolly zoom",
+      "crane up/down",
+      "tracking shot",
+      "steadicam",
+      "oner (continuous shot)",
+      "slow motion",
+      "fast motion",
+      "push-in",
+      "pull-out",
+      "punch in",
+      "rack focus"
+    ],
+    "estructura_fisica": [
+      "fluid dynamics",
+      "gravity simulation",
+      "particle systems",
+      "smoke dispersion",
+      "cloth physics",
+      "water splashes",
+      "explosion debris",
+      "elastic deformation",
+      "bounce physics",
+      "light refraction",
+      "shadow casting",
+      "reflection"
+    ],
+    "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo."
+  }
+}

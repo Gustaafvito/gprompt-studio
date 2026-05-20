@@ -1,0 +1,3114 @@
+{
+  "SeaArt Infinity": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Modelo oficial all-in-one de SeaArt. 144.5M usos. Versátil para cualquier estilo. Magia de sugerencia integrada. Control con sampler/steps/CFG.",
+    "prompt_formula": "Lenguaje natural descriptivo o tags. Modelo versátil que acepta ambos formatos.",
+    "prompt_ejemplo": "A young woman in a sunlit meadow, golden hour, soft bokeh, cinematic composition, professional photography",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Sin prompt negativo visible en UI. Modelo cerrado de SeaArt."
+  },
+  "SeaArt Infinity V2.0": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo oficial V2.0 de SeaArt. Simplificado: sin sampler/CFG/steps. Solo prompt + genera. Magia de sugerencia. Ideal para principiantes y resultados rápidos.",
+    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle, el modelo se encarga del resto.",
+    "prompt_ejemplo": "Cinematic portrait of an old man reading a book in a cozy library, warm lamp light, dust particles in the air, shallow depth of field",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Sin control avanzado (no sampler, no CFG, no steps, no negative). Solo semilla fija. Máx 4 imágenes."
+  },
+  "SeaArt Realism": {
+    "nota": 3.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Fotorrealismo de SeaArt. 3.9M usos. Modelo Flux.1 D. Ideal para retratos y escenas realistas.",
+    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle.",
+    "prompt_ejemplo": "A beautiful woman portrait, detailed skin texture, natural lighting, soft bokeh background, professional photography",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Sin prompt negativo visible en UI. Modelo basado en Flux.1 D."
+  },
+  "Luma Uni-1.1 Image": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "9:1",
+      "1:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Create",
+      "Modify"
+    ],
+    "max_imagenes": 9,
+    "best_for": "Modelo multimodal de Luma. Create vs Modify modes. Hasta 9 referencias con roles asignados (estilo, personaje, composición, color, iluminación). Seeds para reproducibilidad.",
+    "prompt_formula": "Modo Create: descripción nueva. Modo Modify: 'Use IMAGE1 for style, IMAGE2 for lighting'. Naming references + roles es clave.",
+    "prompt_ejemplo": "Create: a cinematic portrait of a woman in dramatic lighting. Modify: lighting shift, mood change to darker tone",
+    "coste_energia": "Gratis (evento) — VIP",
+    "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora."
+  },
+  "Z Image Turbo": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Fotorrealismo ultrarrápido, latencia sub-segundo. Renderizado de texto bilingüe (inglés/chino). Razonamiento profundo. Sampler Euler, 20 pasos. En ComfyUI funciona como Turbo puro (CFG ~1.0, sin negative ni pesos); en SeaArt la plataforma lo adapta para aceptar negative y pesos.",
+    "prompt_formula": "Depende de plataforma. SeaArt: tags con pesos SD tradicionales + negative. ComfyUI: tags limpios sin pesos ni negative (modelo Turbo puro).",
+    "prompt_ejemplo": "close-up portrait, 1girl, silver hair, blue eyes, detailed skin, soft studio lighting, shallow DOF, muted teal background, professional photography, 8K",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 1.0,
+    "coste_energia": "28 (Calidad) — gratis VIP",
+    "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI."
+  },
+  "Z-Image-Base-Realistic": {
+    "nota": 4.8,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Fotorrealismo de máxima fidelidad (no destilado). Versión Europe-v1.0: texturas de personajes optimizadas para estética europea. Más pasos = más detalle que Z Image Turbo.",
+    "prompt_formula": "Tag-based con pesos SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, colores, iluminación, calidad. Mayor budget de pasos permite prompts más detallados.",
+    "prompt_ejemplo": "close-up portrait, 1girl, European features, (detailed skin texture:1.3), freckles, green eyes, auburn hair, soft natural lighting, shallow DOF, (cinematic color grading:1.2), 8K, hyper-realistic, professional photography",
+    "sampler_recomendado": "Euler",
+    "pasos": "25-50",
+    "cfg": "3-5",
+    "clip_skip": 1,
+    "negative_recomendado": "Low quality, blurry, distorted, ugly, extra fingers, deformed face, asymmetrical eyes, misaligned teeth, repetitive textures, compression artifacts, watermarks, text, overexposure, heavy shadows, color distortion, lack of details, stiff movements, deformities",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Más lento que Z Image Turbo (más pasos). Optimizado para personajes europeos en v1.0."
+  },
+  "NiwaStyle - Animax ColorPop (Illustrious)": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Anime / Digital Painting de altísima calidad. Ideal para ilustración, personajes anime, obras masterpiece.",
+    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
+    "prompt_ejemplo": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, 1girl, silver hair, blue eyes",
+    "sampler_recomendado": "Euler a / DPM++ 2M",
+    "pasos": "25-40",
+    "cfg": "4-7",
+    "clip_skip": 2,
+    "resolucion_recomendada": "936x1536",
+    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
+    "coste_energia": "6 (mín) - 40 (máx) — gratis VIP",
+    "limitaciones": "No diseñado para fotorrealismo extremo."
+  },
+  "FLUX.1 [dev]": {
+    "nota": 4.4,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Excelente adherencia al prompt y renderizado de texto impecable. Genera gran variedad de contenido sin necesidad de Loras.",
+    "prompt_formula": "Lenguaje natural simple y descriptivo. Olvida las técnicas de Midjourney o Stable Diffusion.",
+    "prompt_ejemplo": "A young woman lying on a bed wearing a shirt with the words 'touch me', soft lighting, cinematic atmosphere",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Aprox. 7 por imagen",
+    "limitaciones": "Modelo muy pesado, tarda más que otros. Estrictamente SFW"
+  },
+  "FLUX.1-dev-fp8": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Versión optimizada (quantized) de FLUX.1 [dev]. Más rápida y consume menos recursos.",
+    "prompt_formula": "Lenguaje natural simple y descriptivo.",
+    "prompt_ejemplo": "A high-fashion studio portrait of a woman exuding serene elegance.",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 1,
+    "coste_energia": "Aprox. 7 por imagen",
+    "limitaciones": "Podría perder ligerísimos detalles comparado con el original."
+  },
+  "FLUX.1": {
+    "nota": 4.9,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Versión 'schnell'. VELOCIDAD: genera imágenes de altísima calidad con 1-4 pasos. Ideal prototipado.",
+    "prompt_formula": "Lenguaje natural simple.",
+    "prompt_ejemplo": "A high-fashion studio portrait of a woman exuding serene elegance",
+    "sampler_recomendado": "Euler",
+    "pasos": 4,
+    "cfg": 1,
+    "coste_energia": "Aprox. 7 por imagen",
+    "limitaciones": "Podría carecer de los micro-detalles absolutos de la versión [dev]."
+  },
+  "FLUX.1D UltraReal": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "FOTORREALISMO ABSOLUTO. Retratos con detalles de piel hiperrealistas.",
+    "prompt_formula": "Lenguaje natural descriptivo. Describe con detalle iluminación y textura.",
+    "prompt_ejemplo": "A close-up cinematic portrait of a young woman, highly detailed skin texture, soft natural lighting",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Aprox. 7 por imagen",
+    "limitaciones": "Optimizado para 1024x1024 o superior. Licencia no comercial."
+  },
+  "MASTER FLUX (LoRA merged with flux1-dev fp16)": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "CONTENIDO NSFW. Diseñado para saltarse la censura.",
+    "prompt_formula": "Lenguaje natural descriptivo. Enfocado en anatomía y acción.",
+    "prompt_ejemplo": "A high-fashion studio portrait...",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 6,
+    "coste_energia": "Aprox. 12 por imagen",
+    "limitaciones": "Estrictamente para contenido adulto/NSFW."
+  },
+  "Flux-dev": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Flux-dev (fp8). 1.1M usos. Modelo Flux.1 D con excelente adherencia al prompt y renderizado de texto.",
+    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle.",
+    "prompt_ejemplo": "A fantasy character portrait, detailed armor, magical effects, cinematic lighting",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "fp8 quantization. Sin modo 'fast'."
+  },
+  "SD 3.5 Large": {
+    "nota": 3.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Stable Diffusion 3.5 Large (fp8). 229.7K usos. Modelo base SD 3.5L. Alta calidad, versátil para distintos estilos.",
+    "prompt_formula": "Tag-based: tags descriptivos separados por comas.weights como (tag:1.2). Negative prompt recomendado.",
+    "prompt_ejemplo": "1girl, portrait, detailed skin, natural lighting, (cinematic:1.3), best quality, masterpiece, (deformed hands:0.8)",
+    "clip_skip": 1,
+    "sampler_recomendado": "Euler",
+    "pasos": "25-40",
+    "cfg": "4-7",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "fp8 quantization. Sin modo 'fast'. Requiere negative prompt para mejores resultados."
+  },
+  "SD 3.5 Medium": {
+    "nota": 3.8,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Stable Diffusion 3.5 Medium (fp8). Versión reducida del modelo SD 3.5. Más eficiente en recursos manteniendo buena calidad.",
+    "prompt_formula": "Tag-based: tags descriptivos. Negative prompt recomendado para evitar artefactos.",
+    "prompt_ejemplo": "landscape, nature, mountains, golden hour, (detailed:1.2), best quality, masterpiece",
+    "clip_skip": 1,
+    "sampler_recomendado": "Euler",
+    "pasos": "20-35",
+    "cfg": "4-6",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Menor capacidad que Large para detalles finos."
+  },
+  "SD 3.5 Large Turbo": {
+    "nota": 3.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Stable Diffusion 3.5 Large Turbo (fp8). Versión rápida del SD 3.5. Menos pasos, generación más rápida.",
+    "prompt_formula": "Tag-based simplificado. Fewer steps, good results.",
+    "prompt_ejemplo": "1girl, portrait, soft lighting, (high quality:1.2), masterpiece, (nsfw:0.9)",
+    "clip_skip": 1,
+    "sampler_recomendado": "Euler",
+    "pasos": "10-20",
+    "cfg": "3-5",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Modo 'fast' no funciona. Menor calidad que la versión completa."
+  },
+  "SeaArt Film": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "max_imagenes": 8,
+    "best_for": "SeaArt Film. 8.8M usos. Cinematografía profesional, iluminación avanzada, composición artística. Soporta Text-to-Image e Image-to-Image.",
+    "prompt_formula": "Lenguaje natural descriptivo: sujeto + escena + iluminación + cámara + estilo + calidad.",
+    "prompt_ejemplo": "A dramatic portrait of a woman in golden hour light, cinematic composition, volumetric lighting, 8K, professional photography",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Optimizado para cinematografía. Menos versátil que Infinity para estilos variados."
+  },
+  "SeaArt Film V2.0": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "max_imagenes": 8,
+    "best_for": "SeaArt Film V2.0. 247K usos. Cinematografía mejorada, control preciso de luz/sombra/composición. Mejor consistencia visual.",
+    "prompt_formula": "Lenguaje natural detallado: escena + sujeto + iluminación profesional + cámara + mood + calidad.",
+    "prompt_ejemplo": "Wide establishing shot of a cowboy walking through a desert at sunset, dust particles in golden light, cinematic wide angle, dramatic atmosphere",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Nuevo modelo (sep 2025). Menos documentación de settings óptimos."
+  },
+  "SeaArt Film Edit": {
+    "nota": 4.3,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Film Edit. 1.5M usos. Edición de imágenes con referencia. Cambios precisos: peinado, ropa, pose, ángulo. Preserva identidad del sujeto.",
+    "prompt_formula": "Instrucciones de edición: cambiar/añadir/remplazar elementos. Reference images para estilo consistente.",
+    "prompt_ejemplo": "Change the hairstyle to spiky hair, keep the same face and outfit, add studio lighting from above",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 4,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Editor, no generador puro. Requiere imagen de referencia."
+  },
+  "SeaArt Film Edit 2.0": {
+    "nota": 4.0,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Film Edit 2.0. 898.8K usos. Edición avanzada con multi-referencia. Mejor preservación de identidad, texto layout profesional, texturas realistas.",
+    "prompt_formula": "Instrucciones de edición precisas + múltiples referencias. Soporta combinación de estilos de diferentes imágenes.",
+    "prompt_ejemplo": "Replace the clothing with a black suit, keep the pose unchanged, add warm studio lighting from the left, match the style of reference image 2",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 4,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Editor especializado. Multi-referencia puede reducir consistencia si son muy diferentes."
+  },
+  "SeaArt Film Edit 3.0": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Pro"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Film Edit 3.0. 114.2K usos. Producción visual profesional. Física correcta, materiales realistas, Ultra HD 4K, tipografía profesional.",
+    "prompt_formula": "Instrucciones complejas multi-cláusula. Ejecuta planes estructurados: distribuir elementos, mantener mientras modifica. Ideal para publicidad, e-commerce, diagramas.",
+    "prompt_ejemplo": "Generate product photo: place the perfume bottle centered, add dramatic lighting from above, change background to pure white, maintain glass reflections",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP (evento)",
+    "limitaciones": "Producción industrial. Resultados más técnicos/artísticos según el caso."
+  },
+  "SeaArt Furry XL V1.0": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Furry XL V1.0. 546.4K usos. Primer modelo open-source de SeaArt. Especializado en furry/anthro. Millones de imágenes furry en training.",
+    "prompt_formula": "Tag-based: calidad + especie + character details + estilo + iluminación.",
+    "prompt_ejemplo": "masterpiece, best quality, 1 furry wolf character, detailed fur texture, blue eyes, standing pose, fantasy forest background, cinematic lighting",
+    "sampler_recomendado": "Euler",
+    "pasos": 28,
+    "cfg": 7,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Especializado en furry. No fotorrealismo general."
+  },
+  "SeaArt Story": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Story. 444.8K usos. Storytelling/narrativa visual. Captura momentos emocionales, storytelling cinematográfico. Ideal para storyboards, conceptos visuales.",
+    "prompt_formula": "Lenguaje natural narrativo: describe escena + emoción + composición visual + estilo.",
+    "prompt_ejemplo": "A dramatic scene of two strangers meeting in a rain-soaked Tokyo alleyway at night, cinematic lighting, emotional tension, film quality",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Optimizado para narrativa, menos para static portraits aislados."
+  },
+  "SeaArt Story 2.0": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Story 2.0. 71.5K usos. Fotorrealismo cinematográfico mejorado, consistencia de personaje entre frames, text+image hybrid editing.",
+    "prompt_formula": "Lenguaje natural descriptivo + referencia de imagen. Describe pose, expresión, iluminación precisa. Control de identidad entre generaciones.",
+    "prompt_ejemplo": "Close-up portrait of a woman with silver hair in a vintage diner, golden hour light streaming through window, cinematic mood, sharp focus on eyes",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Mejor para escenas narrativas que para static portraits aislados."
+  },
+  "SeaArt Fusion": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Pro"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Fusion. 65.8K usos. Razonamiento conceptual multimodal, contenido educativo, científico, histórico. Combina conocimiento real con expresión artística.",
+    "prompt_formula": "Lenguaje natural descriptivo para conceptos complejos. Explicar principios científicos, procesos históricos, contenido educativo visual.",
+    "prompt_ejemplo": "Create a four-panel diagram showing the bee life cycle: egg, larva, pupa, adult bee, scientific illustration style, clean lines, labeled",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Mejor para contenido conceptual/educativo que para arte puro."
+  },
+  "SeaArt Genesis": {
+    "nota": 3.5,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Genesis. 57.9K usos. Moda, diseño de alta costura, estética, arte personalizado. Detalles hiperrealistas, texturas stunning. Feature de personalización de estilo único.",
+    "prompt_formula": "Lenguaje natural con enfoque en moda y diseño. Describe prendas, accesorios, iluminación editorial, pose. SFW solo.",
+    "prompt_ejemplo": "A high-fashion editorial of a model wearing a sculptural silver gown, dramatic runway lighting, luxury brand aesthetic, 8K resolution, professional photography",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SFW solo. Enfoque en moda. Menos versátil para otros estilos. Nota baja (3.5)."
+  },
+  "SeaArt Story Edit": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Story Edit. 9.1K usos. Precision local editing sin máscara. Rewriting de historia: cambiar expresión, pose, elementos. Consistencia de identidad del sujeto. Soporta multi-referencia.",
+    "prompt_formula": "Instrucciones de edición precisas: 'Change [elemento] to [nuevo]', 'Keep [elemento] same'. Sin máscara, solo instrucciones.",
+    "prompt_ejemplo": "Change the expression to a confident smile, keep the same outfit and background, add soft studio lighting from above",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 4,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Editor especializado. Más edición que generación pura."
+  },
+  "SeaArt Ultra Edit": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Pro"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SeaArt Ultra Edit. 53.5K usos. Next-gen all-in-one: Text-to-Image + Image-to-Image + Multi-Reference. Preserva identidad, respuestas precisas a edits detallados, control de estilo. Cine, portraits, publicidad.",
+    "prompt_formula": "Lenguaje natural detallado. Describe escena completa o usa referencias múltiples para consistencia. Soporta inicio+fin frames para transiciones.",
+    "prompt_ejemplo": "Cinematic portrait of a samurai warrior in a bamboo forest, golden hour backlight, traditional armor, misty atmosphere, ultra detailed, sharp focus on katana",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Multi-referencia puede reducir consistencia si son muy diferentes."
+  },
+  "T-Ponynai3 V6": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "T-Ponynai3 V6. 1.1M usos. Fusion anime (PonyV6 + NAI3). Estilo anime vibrant. Excelente en escenas, manos/pies, luz/sombra. No requiere VAE (incluido). Usa score tags y source_anime.",
+    "prompt_formula": "Score tags primero: score_9, score_8_up, score_7_up, source_anime, anime, sujeto, composicion tag-based.",
+    "prompt_ejemplo": "score_9, score_8_up, score_7_up, source_anime, anime, 1girl, raiden shogun, holding sword, sakura forest, purple sky, dramatic lighting",
+    "sampler_recomendado": "Euler a",
+    "pasos": "25-30",
+    "cfg": 7,
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo."
+  },
+  "NoobAI-XL (NAI-XL)": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "max_imagenes": 4,
+    "best_for": "NoobAI-XL (NAI-XL). 796.5K usos. V-prediction model. Excelente para anime y furry. 13M imágenes Danbooru+e621. Reconoce personajes, artistas, series.",
+    "prompt_formula": "Calidad tags al inicio: masterpiece, best quality, newest, absurdres, highres. Luego: personaje, serie, artistas, tags. No underscores, escapar ().",
+    "prompt_ejemplo": "masterpiece, best quality, newest, absurdres, highres, ganyu (genshin impact), genshin impact, solo, blue hair, detailed background",
+    "sampler_recomendado": "Euler",
+    "pasos": "28-35",
+    "cfg": "4-5",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. Compatible con LoRA PonyV6 y Animagine."
+  },
+  "WAI-Pluralistic-Noob": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "WAI-Pluralistic-Noob. 1.7M usos. Estilo artístico estable basado en Noob. Colaboración con artistas NOOB para ángulos de composición y colores.",
+    "prompt_formula": "Tag-based SDXL: calidad + sujeto + estilo + iluminación. Noob estilo base.",
+    "prompt_ejemplo": "masterpiece, best quality, 1girl, detailed face, elegant dress, soft lighting, bokeh background, cinematic",
+    "sampler_recomendado": "Euler",
+    "pasos": "28-35",
+    "cfg": "4-5",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Basado en SDXL. No soporta weights como Flux."
+  },
+  "Counterfeit V3.0": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Counterfeit V3.0. Modelo anime de alta calidad enfocado en personajes femeninos. Composición creativa, estilo anime estilizado. Uso de Danbooru tags.",
+    "prompt_formula": "Calidad + vista + sujeto + detalles + tags + iluminacion. EasyNegativeV2 en negativo.",
+    "prompt_ejemplo": "(masterpiece, best quality), highly detailed, office scene, 1girl, brown eyes, glasses, green hair, office woman, formal attire, depth of field, bokeh",
+    "sampler_recomendado": "DPM++ 2M Karras / DPM++ SDE Karras",
+    "pasos": "20-25",
+    "cfg": "8-10",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. Solo personajes conocidos limitados."
+  },
+  "Temporal Paradox Mix": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Temporal Paradox Mix. 37.7K usos. Fusion de 10+ modelos. Versátil: personajes M/F, paisajes, mechas, animales. Excelente manos y uñas. Funciona con prompts largos y cortos.",
+    "prompt_formula": "Tag-based mixto. Funciona con prompts breves o detallados. Embeddings negativos recomendados.",
+    "prompt_ejemplo": "cinematic portrait, 1woman, detailed hands, elegant outfit, studio lighting, 8K, photorealistic, sharp focus",
+    "sampler_recomendado": "Euler a / DPM++ 2M Karras",
+    "pasos": "20-40",
+    "cfg": "7-8",
+    "clip_skip": "1-2",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos."
+  },
+  "Illustrious Realism by Klaabu": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Fotorrealismo cinematográfico de alta fidelidad. Fine-tuned sobre Illustrious. 1.6M usos. Personajes ricos en detalle, texturas realistas, text rendering.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad. Pesos (tag:1.2).",
+    "prompt_ejemplo": "cinematic portrait, 1woman, freckled skin, green eyes, auburn hair, (detailed skin texture:1.3), soft golden hour light, shallow DOF, 8K, photorealistic",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 25,
+    "cfg": "4-6.5",
+    "clip_skip": 1,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Máx 4 imágenes simultáneas. Tiene reparación avanzada (rostros/personajes)."
+  },
+  "Real Dream SDXL": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Realismo SDXL versátil. 873K usos. Personajes, paisajes, celebridades. Base Pony/SDXL11. Reparación avanzada de rostros.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad.",
+    "prompt_ejemplo": "full body portrait, 1woman, elegant dress, dramatic lighting, urban background at dusk, (cinematic:1.2), photorealistic, 8K, sharp focus",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 20,
+    "cfg": 6,
+    "clip_skip": 2,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Máx 4 imágenes simultáneas. Resolución por defecto 768x1152."
+  },
+  "MajicMIX Realistic v6": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Clásico del fotorrealismo SD. 1.2M usos, nota 5.0. Excelente para retratos, fotografía y fantasía realista. Reparación de rostros/personajes.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad. Modelo SD 1.5, prompts más cortos.",
+    "prompt_ejemplo": "close-up portrait, 1girl, detailed face, soft studio light, (skin pores:1.2), natural makeup, blurred background, professional photo, masterpiece",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 7,
+    "clip_skip": 2,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "SD 1.5, resolución base 512x768. Prompts cortos funcionan mejor (~800 chars max)."
+  },
+  "Realities Edge XL Turbo V7": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "SDXL Turbo ultrarrápido. Prompts cortos y directos dan mejores resultados. Fotorrealismo, 3D, retratos, mangas. Versión Lightning disponible.",
+    "prompt_formula": "Tag-based SD: prompts cortos y concisos. Este modelo responde mejor a prompts simples y directos que a prompts muy elaborados.",
+    "prompt_ejemplo": "portrait of a rugged man, cinematic dust, sharp details, dramatic light, photorealistic, 8K",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 20,
+    "cfg": 2,
+    "clip_skip": 2,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "CFG muy bajo (2.0). Resolución por defecto 1152x1536. Prompts largos pueden dar resultados inconsistentes."
+  },
+  "CyberRealistic": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Fotorrealismo alternativo de alta calidad. 8.7M usos. Versión Final. Excelente para retratos, escenas urbanas, moda. Upscaler 4x-UltraSharp integrado.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, estilo, fondo, iluminación, calidad.",
+    "prompt_ejemplo": "close-up portrait, 1woman, detailed face, urban background, (cinematic lighting:1.3), shallow DOF, photorealistic, sharp focus, 8K",
+    "sampler_recomendado": "DPM++ 2M SDE",
+    "pasos": 32,
+    "cfg": 7,
+    "clip_skip": 2,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "SD 1.5 base. Resolución nativa 1024x1024. Muchas versiones disponibles (Final es la recomendada)."
+  },
+  "Realistic Vision V6.0": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "El estándar de oro del fotorrealismo SD. 4.2M usos, 99.6K favoritos. Retratos masculinos/femeninos hiperrealistas. Steps bajos (10) para resultados rápidos.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo fotográfico, iluminación, calidad. Prompts concisos funcionan mejor.",
+    "prompt_ejemplo": "RAW photo, portrait, 1man, formal suit, sharp jawline, (detailed skin:1.2), studio lighting, professional photography, 8K",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 10,
+    "cfg": 3,
+    "clip_skip": 1,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "CFG muy bajo (3.0), solo 10 steps por defecto. Prompts cortos y directos dan mejor resultado."
+  },
+  "Prodigies": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Retratos femeninos de altísima calidad. 596.8K usos. VAE incluido. Upscaler 4x-UltraSharp. Reparación de rostros/personajes avanzada.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles faciales, estilo, iluminación, calidad. Especialmente bueno con tags de belleza y moda.",
+    "prompt_ejemplo": "close-up portrait, 1girl, detailed eyes, soft skin, natural makeup, (golden hour:1.2), bokeh, photorealistic, masterpiece",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 25,
+    "cfg": 7,
+    "clip_skip": 1,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "SD 1.5 base. Resolución nativa 512x768. Orientado a retratos femeninos principalmente."
+  },
+  "DreamShaper": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Clásico legendario versátil. 5.9M usos, 99.3K favoritos. Realismo + fantasía + arte digital. V8. CFG alto (9.0) para máximo seguimiento del prompt.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación. Acepta prompts largos y detallados gracias al CFG alto.",
+    "prompt_ejemplo": "epic fantasy portrait, 1woman warrior, ornate golden armor, (dramatic lighting:1.3), volumetric fog, castle background, cinematic, masterpiece, 8K",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 30,
+    "cfg": 9,
+    "clip_skip": 2,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "CFG alto (9.0). Upscaler 8x-NMKD. Muchas versiones disponibles (v8 es la actual)."
+  },
+  "Deliberate": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Deliberate v4. 1.5M usos, 14.3K favoritos, 122.1K likes. All-in-One. Prompts cortos funcionan mejor. Sin negativos necesarios. Tokens mj, cozy, cinematic.",
+    "prompt_formula": "Prompts cortos y simples. Añadir mj, cozy o cinematic para boost. Sin necesidad de質量 tags.",
+    "prompt_ejemplo": "beautiful woman portrait, mj, cinematic",
+    "sampler_recomendado": "Euler a / UniPC",
+    "pasos": "15-25",
+    "cfg": "6-8",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "CC BY-NC-ND 4.0 (comercial requiere permiso). v4 (abr 2026)."
+  },
+  "PornRealistic": {
+    "nota": 3.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "PornRealistic. 53.1K usos. Merge de Epicrealism + CyberRealistic. Retratos femeninos fotorrealistas.",
+    "prompt_formula": "Tag-based SD: sujeto + detalles + iluminación realista + calidad.",
+    "prompt_ejemplo": "portrait, 1woman, detailed face, realistic skin, natural lighting, professional photography, 8K",
+    "sampler_recomendado": "Euler a",
+    "pasos": "20-30",
+    "cfg": "6-8",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Merge experimental. Orientado a femenino. Base SD 1.5."
+  },
+  "Woman Realistic 3.1.0": {
+    "nota": 4.3,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Woman Realistic 3.1.0. 922.6K usos. Fotorrealismo femenino. SD 2.1 base. Excelente para retratos de mujeres.",
+    "prompt_formula": "Realism, (masterpiece:1.4, best quality), intricate details + sujeto + estilo.",
+    "prompt_ejemplo": "Realistic, masterpiece, best quality, 1girl, detailed face, elegant dress, Victorian mansion",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 15,
+    "cfg": 6,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Trigger words: Realism, Photorealism, Woman, Vestido, Minifalda. Base SD 2.1."
+  },
+  "Alchemist Mix (Illustrious Realism)": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Alchemist Mix (Illustrious Realism). 209.7K usos. Merge de Illustrious + RillusmRealistic + RedcraftCADS. Semi-realismo de alta calidad.",
+    "prompt_formula": "DSLR photo style: very awa, masterpiece, best quality, year 2024, absurdres, highres + sujeto + detalles.",
+    "prompt_ejemplo": "DSLR, realistic, cosplay photo, very awa, masterpiece, best quality, year 2024, absurdres, highres, realistic skin texture, photography shot with Canon EOS 5D",
+    "sampler_recomendado": "Euler a",
+    "pasos": 30,
+    "cfg": 4.5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Rostro en distancias largas puede requerir inpaint. v4.1 Finetune (jul 2025)."
+  },
+  "FantasticChix-HR": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "FantasticChix-HR. 695.8K usos. Semi-realismo/mezcla. Fusiona Fantastic Mix V4, ChikMix V3, ZemiHR V2. Retratos femeninos excelentes.",
+    "prompt_formula": "Simple prompts funcionan bien: 1girl + sujeto + calidad. Soporta LoRAs.",
+    "prompt_ejemplo": "A 21 year old female, masterpiece, best quality, detailed skin, natural lighting",
+    "sampler_recomendado": "DPM++ SDE Karras",
+    "pasos": 20,
+    "cfg": 7,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Requiere VAE: vae-ft-mse-840000-ema-pruned. Base SD 1.5."
+  },
+  "Juggernaut XL": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Juggernaut XL. 203.2K usos. Fotorrealismo SDXL versátil. Personajes de fantasía, retratos, escenas diversas.",
+    "prompt_formula": "Tag-based SDXL: sujeto + detalles + iluminación + estilo + calidad.",
+    "prompt_ejemplo": "portrait, 1woman, detailed face, studio lighting, cinematic, photorealistic, 8K, sharp focus",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 5,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Base SDXL 1.0. Versión v7.0 disponible."
+  },
+  "majicMIX fantasy": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "majicMIX fantasy (麦橘幻想). 680.3K usos. Estilo 2D/2.5D con mezcla de arte digital y semi-realismo. v3.0. Merge de Noosphere + dalcefoPainting.",
+    "prompt_formula": "official art, unity 8k wallpaper, ultra detailed, masterpiece, best quality + sujeto + estilo artístico.",
+    "prompt_ejemplo": "official art, unity 8k wallpaper, ultra detailed, beautiful and aesthetic, masterpiece, 1girl, elegant dress, dramatic lighting, fantasy style",
+    "sampler_recomendado": "Euler",
+    "pasos": "25-35",
+    "cfg": "4-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5."
+  },
+  "Disney Pixar Cartoon type B": {
+    "nota": 4.1,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Disney Pixar Cartoon type B. 2.2M usos. Estilo Pixar/Disney/Dreamworks. Merge de Type A + LoRA entrenado con imágenes Midjourney. Mejor en masculino y mayores que type A.",
+    "prompt_formula": "Disney/Pixar style tags + sujeto + iluminación. Compatible con hires.fix.",
+    "prompt_ejemplo": "pixar style, 3d render, beautiful girl, detailed hair, cinematic lighting, vibrant colors, 8k",
+    "sampler_recomendado": "Euler a",
+    "pasos": "25-30",
+    "cfg": 7,
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5."
+  },
+  "MiaoMiao Harem": {
+    "nota": 4.8,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "MiaoMiao Harem V2.0. 1.7M usos. Estilo anime/harem con concepto 2026. CKXL05 architecture. Excelente manos/pies, LoRA compatible, prompts simples.",
+    "prompt_formula": "very aesthetic, masterpiece, best quality, ultra-detailed, high contrast + sujeto + detalles.",
+    "prompt_ejemplo": "very aesthetic, masterpiece, best quality, ultra-detailed, 1girl, elegant dress, beautiful face, soft lighting",
+    "sampler_recomendado": "Euler a / DPM++ 2M Exponential",
+    "pasos": "20-30",
+    "cfg": "5-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
+  },
+  "REED_XXX_illustrious_SDXL": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "REED_XXX_illustrious_SDXL. 1.9M usos. Soporta 2D y 3D. Excelente retratos, character sheets, poses dinámicas. Iluminación limpia, mínima necesidad de ajuste.",
+    "prompt_formula": "masterpiece, best quality, high quality, newest, highres, 8K, HDR, absurdres + sujeto + tags de composición.",
+    "prompt_ejemplo": "masterpiece, best quality, highres, 8K, portrait, 1girl, elegant pose, looking at viewer, dramatic lighting",
+    "sampler_recomendado": "Euler a / DPM++ 2M",
+    "pasos": "15-40",
+    "cfg": "5-8",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
+  },
+  "Lily-Illustrious XL": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Lily-Illustrious XL. 1.8M usos. Estilo anime suave con colores pastel. Detección de artistas/caracteres. Compatible LoRA.",
+    "prompt_formula": "Anime style tags + sujeto + colores pastel. Soporta JP/EN/tags.",
+    "prompt_ejemplo": "1girl, pastel colors, soft lighting, beautiful landscape, masterpiece, best quality",
+    "sampler_recomendado": "Euler a / DPM++ 2M",
+    "pasos": "20-30",
+    "cfg": "5-8",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "v3.0. No vender imágenes sin editar."
+  },
+  "Pixel Illustrious": {
+    "nota": 4.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Pixel Illustrious v3.0. 23.8K usos. Pixel art retro anime/cyber-fantasy. 16-32bit video games style. Glowing eyes, expressive characters.",
+    "prompt_formula": "Pixel art style tags + sujeto + neon/retro elementos.",
+    "prompt_ejemplo": "pixel art, 1girl, cyberpunk city, neon lights, glowing eyes, retro game style",
+    "sampler_recomendado": "Euler a",
+    "pasos": "25-45",
+    "cfg": "5-7",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "A veces no dispara pixel. Ver trigger words."
+  },
+  "SDXL FaeTastic": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1200,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SDXL FaeTastic v24. 294.2K usos. Colores vibrantes tipo 1.5 FaeTastic. SDXL optimizado con LoRAs de detalles y ojos.",
+    "prompt_formula": "masterpiece, newest, absurdres, best quality, amazing quality + sujeto + estilo.",
+    "prompt_ejemplo": "1girl, fantasy dress, magical forest, vibrant colors, masterpiece, best quality, detailed",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "25-35",
+    "cfg": "5-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso."
+  },
+  "Pie - Models 🥧": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Pie Models 🥧. 2.0M usos. Colección Illustrious: Apple Pie (anime), Blueberry (semi-real), Cherry (híbrido), Mango (vibrant 2.5D), etc.",
+    "prompt_formula": "Varía por tipo. general: masterpiece, newest, absurdres, best quality + sujeto.",
+    "prompt_ejemplo": "1girl, beautiful portrait, (add realistic tag for semi-real pies), masterpiece, best quality",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 30,
+    "cfg": 5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon."
+  },
+  "Nano Banana Pro Image": {
+    "nota": 3.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 10,
+    "best_for": "Motor Gemini 3 Pro. 331.9K usos. Text rendering mejorado, multi-image fusion, character consistency, 2K nativo con 4K upscale. Generación 1-5 segundos.",
+    "prompt_formula": "Lenguaje natural: describe cambios deseados, usa 'Replace background with...', 'Keep face identity...'",
+    "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin sampler/CFG/negative. Limitaciones ocasionales en manos y reflejos complejos."
+  },
+  "Nano Banana 2": {
+    "nota": 4.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Pro"
+    ],
+    "max_imagenes": 14,
+    "best_for": "Motor Gemini 3.1 Flash Image. 505.9K usos. Fast iteration, strong world knowledge, text-to-image + editing avanzado. Mejor price-performance.",
+    "prompt_formula": "Write constraints as checklist: Subject, Scene, Composition, Lighting, Materials, Output. Para editing: 'Replace background with...', 'Keep face identity...'",
+    "prompt_ejemplo": "A portrait of a woman, studio lighting, golden hour, professional photography, keep the face identity, change outfit to formal suit",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio."
+  },
+  "NiwaStyle - Animax Plus (Illustrious)": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Hermana mayor de Animax ColorPop. Anime/2.5D de altísima calidad. 285K usos. Illustrious SDXL. Ideal para personajes anime detallados con toques semi-realistas.",
+    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
+    "prompt_ejemplo": "masterpiece, 8k, Highest Quality, ultra detailed, 1girl, long white hair, violet eyes, gothic lolita dress, moonlit balcony, (cinematic lighting:1.2), cherry blossoms",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 25,
+    "cfg": 7,
+    "clip_skip": 2,
+    "resolucion_recomendada": "936x1536",
+    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Máx 4 imágenes. Optimizado para anime/2.5D, no fotorrealismo."
+  },
+  "Pipi-iL-CG6.5": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Estilo CG/3D render cinematográfico. Ideal para mech suits, sci-fi, personajes con armaduras, escenas épicas con iluminación dramática.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo CG, fondo, iluminación cinematográfica.",
+    "prompt_ejemplo": "1girl, mech pilot, futuristic cockpit, (detailed mechanical suit:1.3), neon blue accents, dramatic rim light, CG render, 8K, ultra detailed",
+    "sampler_recomendado": "Euler a",
+    "pasos": 25,
+    "cfg": 4.5,
+    "clip_skip": 2,
+    "resolucion_recomendada": "720x1280",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos."
+  },
+  "NiwaStyle - Animax Chill (Illustrious)": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Anime relajado, slice-of-life, personajes suaves. 316K usos. Illustrious v3.0. Estética chill/dreamy, tonos suaves, iluminación atmosférica.",
+    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
+    "prompt_ejemplo": "masterpiece, 8k, ultra detailed, 1girl, short brown hair, cozy sweater, sitting by window, rainy day, (warm lighting:1.2), soft focus background, slice of life",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 25,
+    "cfg": 6,
+    "clip_skip": 2,
+    "resolucion_recomendada": "936x1536",
+    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Máx 4 imágenes. Estilo chill/suave, menos indicado para acción intensa o dark fantasy."
+  },
+  "Mix Max Cinematic Realism": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Realismo cinematográfico FLUX. 391K usos. Nota 5.0. Retratos, escenas con iluminación de cine, color grading profesional. Magia de sugerencia integrada.",
+    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena como un director de fotografía: sujeto, iluminación, color grading, atmósfera.",
+    "prompt_ejemplo": "A cinematic portrait of a young woman with windswept hair, golden hour backlight, warm color grading, shallow depth of field, film grain",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 7,
+    "coste_energia": "Gratis VIP",
+    "limitaciones": "Modelo FLUX: sin negative prompt, sin clip skip. Prompts en lenguaje natural, no tags SD."
+  },
+  "Juggernaut-XL v9 RunDiffusionPhoto v2": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Fotorrealismo SDXL premium. Excelente para retratos, personas, escenas naturales. Uno de los mejores SDXL para foto realista.",
+    "prompt_formula": "Tags SDXL con pesos. cinematic photo, RAW photo, dslr, ultra detailed.",
+    "prompt_ejemplo": "(cinematic photo:1.3), 1girl, detailed face, soft natural lighting, shallow DOF, 8K, RAW photo, masterpiece",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 30,
+    "cfg": 5
+  },
+  "RealVisXL V5.0 fp16": {
+    "nota": 4.6,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Hiperrealismo SDXL. Pieles, texturas reales, escenarios fotográficos. Excelente para portraits.",
+    "prompt_formula": "RAW photo, photographic style, ultra realistic, professional photography.",
+    "prompt_ejemplo": "RAW photo, professional portrait, 1woman, natural skin texture, golden hour lighting, 85mm lens, bokeh background",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 30,
+    "cfg": 5
+  },
+  "JuggernautXL Ragnarok": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Variante de Juggernaut con estética más cinematográfica/fantasy. Bueno para escenas épicas y entornos detallados.",
+    "prompt_formula": "Tags SDXL con énfasis en cinematic + fantasy.",
+    "prompt_ejemplo": "(epic cinematic shot:1.3), warrior in dramatic landscape, volumetric lighting, intricate armor details, 8K",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": 30,
+    "cfg": 5
+  },
+  "z_image_bf16 (Base)": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Z-Image base (no Turbo). Soporta CFG normal, negative prompt y pesos. Buena calidad fotorrealista.",
+    "prompt_formula": "Tags con pesos SD tradicional. Acepta prompts complejos.",
+    "prompt_ejemplo": "(close-up portrait:1.2), silver hair, detailed eyes, soft studio lighting, 8K, masterpiece",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 4
+  },
+  "z_image_turbo_bf16 (Turbo)": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": false,
+    "no_weights": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Z-Image TURBO local. Rapidísimo (~1s). CFG ~1.0 — ignora negative y pesos. Solo tags limpios.",
+    "prompt_formula": "Tags limpios SIN pesos numéricos. SIN negative prompt.",
+    "prompt_ejemplo": "close-up portrait, silver hair, detailed skin, soft studio lighting, 8K, masterpiece",
+    "sampler_recomendado": "Euler",
+    "pasos": 8,
+    "cfg": 1.0,
+    "limitaciones": "Modelo TURBO: ignora negative prompt y pesos numéricos. Solo tags limpios."
+  },
+  "zImageBase_base": {
+    "nota": 4.3,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Z-Image Base alternativo. Soporta negative y pesos. Calidad similar a z_image_bf16.",
+    "prompt_formula": "Tags con pesos SD tradicional.",
+    "prompt_ejemplo": "(detailed portrait:1.2), 1girl, professional lighting, sharp focus, 8K",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 4
+  },
+  "flux-2-klein-base-4b-fp8": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "FLUX 2 Klein base 4B (versión cuantizada fp8). Lenguaje natural descriptivo. Sin negative prompt.",
+    "prompt_formula": "Lenguaje natural en prosa fluida. Describe escena, sujeto, iluminación, cámara, estilo.",
+    "prompt_ejemplo": "A photorealistic portrait of a woman with silver hair, soft natural lighting from a window on the left, shallow depth of field, professional photography, 85mm lens",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 1.0,
+    "limitaciones": "Sin negative prompt. CFG bajo. Solo lenguaje natural."
+  },
+  "wan2.2_i2v_high_noise_14B_fp8_scaled": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Wan 2.2 Image-to-Video (high noise). 14B parámetros fp8. Convierte imagen estática en vídeo de 5s. Animación más expresiva (high noise = más movimiento).",
+    "prompt_formula": "Lenguaje natural describiendo el MOVIMIENTO que quieres añadir a la imagen. Cámara, sujeto, transiciones.",
+    "prompt_ejemplo": "Camera slowly zooms in, subject's hair gently moves with the wind, leaves fall in the background",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 5,
+    "limitaciones": "Solo Image-to-Video. Necesita imagen base. 5s de duración."
+  },
+  "wan2.2_i2v_low_noise_14B_fp8_scaled": {
+    "nota": 4.4,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Wan 2.2 Image-to-Video (low noise). Animación más sutil y conservadora (low noise = movimiento mínimo, mantiene fielmente la imagen base).",
+    "prompt_formula": "Lenguaje natural describiendo movimientos sutiles. Ideal para parallax, viento suave, miradas.",
+    "prompt_ejemplo": "Subtle breathing motion, slight head tilt, soft eye blink, minimal background sway",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 4,
+    "limitaciones": "Movimiento limitado por diseño. Para animaciones más dinámicas usar high_noise."
+  },
+  "qwen_image_edit_2509_fp8_e4m3fn": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Qwen Image Edit (Septiembre 2025). Modelo de edición tipo InstructPix2Pix. Recibe imagen + instrucción de edición en lenguaje natural.",
+    "prompt_formula": "Instrucción de edición en lenguaje natural. 'change X to Y', 'add Z', 'make it more...'.",
+    "prompt_ejemplo": "Change the dress color to red, add soft sunset lighting, make the background more blurred",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 4,
+    "limitaciones": "Solo edición de imagen. Necesita imagen base. No genera desde cero."
+  },
+  "ltx-2.3-22b-dev-fp8": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "16:9",
+      "9:16",
+      "1:1",
+      "1280x720",
+      "1920x1080",
+      "2560x1440"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Quality"
+    ],
+    "best_for": "LTX-Video 2.3 dev (22B fp8). El mejor open-source para Text-to-Video y Image-to-Video. Soporta 2K y 50fps. Audio sincronizado opcional, vídeo vertical nativo (1080×1920), text rendering mejorado, prompt adherence top.",
+    "prompt_formula": "MUY ESPECÍFICO: Mantén el prompt a 1-2 acciones máximo (más de eso confunde al modelo). Estructura: [sujeto] + [acción concreta] + [movimiento de cámara] + [iluminación] + [estilo]. Resolución debe ser divisible por 32. Frames: 8n+1 (ej: 121 frames). Específica resolución target desde el inicio (no upscalear después).",
+    "prompt_ejemplo": "A woman walks through misty forest, camera slowly zooms in, soft morning light filtering through trees, cinematic style. [resolution: 1280x720, 121 frames, 24fps]",
+    "sampler_recomendado": "LTX Sampler",
+    "pasos": 30,
+    "cfg": 4,
+    "limitaciones": "REQUIERE 32GB+ VRAM (versión bf16) o fp8 para 16-24GB. Negative recomendado: 'worst quality, inconsistent motion, blurry, jittery, distorted, watermarks'. Prompts demasiado largos empeoran resultado. Resolución debe ser múltiplo de 32."
+  },
+  "svd": {
+    "nota": 4.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "16:9",
+      "9:16",
+      "1:1"
+    ],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "best_for": "Stable Video Diffusion (SVD). Image-to-Video. Genera 14-25 frames a partir de una imagen estática. Movimiento sutil.",
+    "prompt_formula": "Casi sin texto — funciona principalmente con la imagen de entrada. Prompt mínimo.",
+    "prompt_ejemplo": "Subtle camera motion, gentle background movement",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 2.5,
+    "limitaciones": "Solo Image-to-Video. Movimiento muy sutil. No control fino del prompt."
+  },
+  "Midjourney v8.1": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "21:9",
+      "3:1",
+      "1:3"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax",
+      "Draft"
+    ],
+    "best_for": "Modelo más reciente de Midjourney (lanzado 30 abril 2026, default actual). 4-5× más rápido que V7 en jobs estándar. Primer modelo con HD 2K nativo (sin upscale). Mejor lectura de prompt, retención de detalles pequeños, --raw para más adherencia. Ideal para: arte conceptual de máxima calidad, fotografía profesional editorial, branding corporativo, marketing premium, personajes consistentes con Omni Reference, series narrativas, product shots, wallpapers HD. Requiere Global V7/V8 Personalization Profile desbloqueado.",
+    "prompt_formula": "Lenguaje natural en frases completas (no keywords). ORDEN: scene/setting → subject → action → style/medium → lighting → mood → camera/lens → composition. Parámetros al final, todos opcionales:\n  --ar X:Y → ratio (1:1 hasta 4:1 panorámico)\n  --v 8.1 → fuerza versión (default si está en settings)\n  --hd → activa salida HD 2K\n  --raw → elimina estilo MJ por defecto (más fotográfico)\n  --stylize 0-1000 (default 100) → fuerza del estilo MJ\n  --chaos 0-100 (default 0) → variedad entre los 4 results\n  --weird 0-3000 → composiciones extrañas/únicas\n  --q .25/.5/1/2 → tiempo de render (más = más detalle)\n  --sref [url/code] → referencia de estilo\n  --oref [url] → personaje consistente (V7/V8)\n  --p [code] → personalization profile\n  --no [items] → exclusión (equivalente a negative)\n  --seed N → reproducibilidad",
+    "prompt_ejemplo": "Cinematic portrait of an elderly fisherman mending nets on a wooden boat at golden hour, weathered hands and face full of stories, soft warm light from the setting sun, deep blue ocean in the background, shot on 35mm film with shallow depth of field --ar 16:9 --stylize 250 --raw --no boat name, watermark, text",
+    "limitaciones": "Plan gratuito: NO existe (Midjourney retiró el free trial; Basic desde $10/mes). Sin negative tradicional (usar --no). Sin pesos numéricos estilo SD. Solo Discord o midjourney.com. Text rendering mejor que V7 pero no perfecto. Aspect ratios >2:1 marcados experimentales. --sv 6 con Style References cuesta 4× más GPU. --hd y --q 4 cuestan 4× más GPU cada uno; combinados, 16× más."
+  },
+  "Midjourney v8": {
+    "nota": 4.9,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "21:9",
+      "3:1",
+      "1:3"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Fast"
+    ],
+    "best_for": "V8.0 Alpha (lanzado 17 marzo 2026 en alpha.midjourney.com). Primera iteración V8, todavía disponible tiempo limitado pero V8.1 es el modelo activamente mejorado. Útil para A/B testing entre V8.0 y V8.1, o para mantener consistencia con jobs anteriores hechos con V8.0.",
+    "prompt_formula": "Misma estructura que V8.1 (NL + CLI). ORDEN: scene → subject → style → lighting → mood → camera. Parámetros principales: --ar, --stylize, --chaos, --weird, --sref, --oref, --p, --no, --seed. NO admite --raw como V8.1.",
+    "prompt_ejemplo": "Hyperrealistic macro shot of a dewdrop on a vibrant rose petal at dawn, soft morning light, intricate reflections inside the droplet, shallow depth of field --ar 1:1 --stylize 500",
+    "limitaciones": "SOLO Fast mode (no Relax ni Turbo). --sv 6 con Style References y Moodboards cuesta 4× más GPU y no funciona con --hd ni --q 4. V8.1 ya tiene todas las mejoras y es 4-5× más rápido. Disponible tiempo limitado: migra a V8.1 si puedes."
+  },
+  "Midjourney v7": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "21:9",
+      "3:1",
+      "1:3"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax",
+      "Draft"
+    ],
+    "best_for": "Lanzado 3 abril 2025, default desde 17 junio 2025 hasta abril 2026. Modelo muy estable y maduro. Textos e imagen-prompts manejados con precisión, calidad visual con texturas ricas y detalles coherentes (especialmente cuerpos, manos, objetos). Introduce DRAFT MODE (10× más rápido para iteración) y OMNI REFERENCE (personajes/objetos consistentes entre generaciones). 85% de usuarios prefieren V7 sobre V6.1. Sigue siendo opción muy sólida si V8.1 da problemas o resulta caro.",
+    "prompt_formula": "Lenguaje natural en frases (no keywords). ORDEN: scene → subject → style → lighting → mood → camera. Parámetros: --ar, --v 7, --stylize 0-1000, --chaos 0-100, --weird 0-3000, --q .25/.5/1/2, --sref [url/code] (estilo), --oref [url] (personaje), --cref [url] (legacy, mejor usar --oref en V7), --p [code] (profile personalizado), --no [items] (excluir), --draft (Draft Mode), --raw (sin estilo default MJ), --seed N.",
+    "prompt_ejemplo": "Editorial fashion photograph of a model wearing a flowing red silk dress on an urban rooftop, soft golden hour backlight, distant city skyline, shot on medium format film, shallow depth of field --ar 3:4 --stylize 400 --v 7 --raw",
+    "limitaciones": "Sin negative tradicional (usar --no). Sin pesos numéricos. Slightly slower than V8.1 (4-5× diferencia). Personalization profile recomendado para mejores resultados. Draft Mode útil para explorar antes de pasar a Standard. V8.1 es superior en text rendering y velocidad."
+  },
+  "Midjourney v6.1": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "21:9"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax"
+    ],
+    "best_for": "Lanzado 30 julio 2024, default hasta 16 junio 2025. 25% más rápido que V6. Coherencia mejorada de detalles y texturas. Aún ampliamente usado por su balance velocidad/calidad y estilo artístico característico de Midjourney. Ideal para arte conceptual, ilustración, posters, social media, cuando quieres el 'look' clásico MJ pintado/cinematográfico. Más estable que V7 en algunos estilos artísticos específicos. --cref (Character Reference) original aquí.",
+    "prompt_formula": "Lenguaje natural descriptivo (más keyword-friendly que V7/V8). ORDEN: scene → subject → style → lighting → mood. Parámetros: --v 6.1, --ar X:Y, --stylize 100-1000 (más alto = más estilo MJ), --chaos 0-100, --no [exclusions], --cref [url] --cw 0-100 (character weight), --sref [url/code] (style reference), --q .25/.5/1, --seed N. NO admite --oref ni --draft ni --raw (son V7+).",
+    "prompt_ejemplo": "Cinematic portrait of an elderly fisherman at sunset, weathered face, deep blue ocean background, golden hour lighting, shot on 35mm film, painterly photographic style --ar 16:9 --stylize 250 --v 6.1 --no boat, watermark",
+    "limitaciones": "Sin negative tradicional (usar --no). Sin --raw (estilo MJ siempre presente, para fotografía pura V7+ es mejor). --cref menos potente que --oref de V7. Sin Draft Mode (iteración más lenta). V7/V8.1 superiores en prompt understanding complejo. Buen fallback si V8.1 da resultados inesperados."
+  },
+  "Midjourney v6": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax"
+    ],
+    "best_for": "Lanzado diciembre 2023. Primera versión con mejor prompt accuracy en inputs largos y coherence mejorada. Legacy pero aún disponible. Útil para mantener consistencia con trabajos antiguos hechos en V6, o cuando V6.1 da artifacts específicos no presentes en V6. Estilo MJ ligeramente más pictórico que V6.1.",
+    "prompt_formula": "Lenguaje natural más keyword-friendly. ORDEN: scene → subject → details → style → lighting. Parámetros: --v 6, --ar X:Y, --stylize 0-1000, --chaos 0-100, --no [exclusions], --cref [url], --q .25/.5/1, --seed N. Funciona bien con weights y multi-prompts usando ::.",
+    "prompt_ejemplo": "A serene Japanese garden in spring with cherry blossoms in full bloom, a koi pond with orange fish, traditional wooden bridge, soft morning mist, ukiyo-e inspired painterly style --ar 16:9 --stylize 200 --v 6",
+    "limitaciones": "Legacy. V6.1, V7 y V8.1 superiores en casi todo. Sin --oref, sin --draft, sin --raw, sin --hd. Menor coherencia en manos/cuerpos vs V7. Usar solo si necesitas reproducir el look específico de V6 o continuar series antiguas."
+  },
+  "Niji 7": {
+    "nota": 4.9,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "21:9"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax"
+    ],
+    "best_for": "Lanzado 9 enero 2026. Modelo especializado en anime/manga, la línea Niji actual. Mejoras clave: ojos crystal-clear, reflejos, detalles finos de fondo, coherencia mejorada en poses complejas y multi-arm setups, interpretación MÁS LITERAL del prompt (respeta colores específicos y peinados exactos), mejor text rendering Japanese, mejor --sref performance. Soporta Personalization y Moodboards. Perfecto para: anime/manga art, ilustraciones japonesas, character design, wallpapers, game assets, illustration commercial work.",
+    "prompt_formula": "Lenguaje natural + CLI (misma sintaxis que MJ). ORDEN: character/subject → outfit/style → pose/action → scene → details (hair color, eye color, expression) → mood. Parámetros: --niji 7, --ar X:Y, --stylize 0-1000, --sref [url/code], --cref [url] (Niji 6/V6-era control; en Niji 7 algunas implementaciones todavía lo usan), --p [code] (Personalization), --no [items], --seed N. Más literal que Niji 6: prompts vagos dan resultados diferentes a Niji 6/5.",
+    "prompt_ejemplo": "Beautiful anime girl with long silver hair tied in a ponytail, large expressive violet eyes, wearing a traditional Japanese school uniform, cherry blossom petals falling around her, soft afternoon light, detailed background of a Japanese garden --niji 7 --ar 3:4 --stylize 500 --no background clutter, watermark",
+    "limitaciones": "Solo anime/ilustración (NO usar para fotorrealismo). Interpretación más literal: prompts vagos rinden distinto que Niji 6. --cref en Niji 7 es Niji 6/V6-era (no V7-path completo). Sin --oref nativo. Sin --raw. Plan gratuito no existe (igual que Midjourney general)."
+  },
+  "Niji 6": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax"
+    ],
+    "best_for": "Lanzado junio 2024. Default Niji hasta enero 2026. Japanese text rendering mejorado (kana, kanji básicos, Chinese simple). Mejor estructura de ojos anime vs Niji 5. Menos artifacts. Sigue siendo buena opción para diseño de personajes con texto japonés visible (signage, manga panels, posters anime). Estilo ligeramente más estilizado/expresivo que Niji 7 (que es más literal).",
+    "prompt_formula": "Lenguaje natural anime-focused. ORDEN: character → outfit → scene → style → mood. Parámetros: --niji 6, --ar X:Y, --stylize 0-1000, --cref [url] (Character Reference, funciona bien), --sref [url/code], --no [items], --q .25/.5/1, --seed N. Acepta multi-prompts con :: para weight.",
+    "prompt_ejemplo": "Anime warrior princess with flowing white dress and silver armor, holding a katana, standing on a cliff overlooking a stormy ocean, dramatic clouds, epic cinematic lighting, manga illustration style --niji 6 --ar 16:9 --stylize 300",
+    "limitaciones": "Niji 7 superior en coherencia, ojos, multi-poses y --sref. Sin Personalization completa (Niji 7 sí). Más estilizado que Niji 7 (puede ser pro o contra según uso). Sin --oref."
+  },
+  "Niji 5": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Standard",
+      "Turbo",
+      "Relax"
+    ],
+    "best_for": "Lanzado abril 2023. Modelo Niji clásico con --style parameters muy expresivos: --style cute (adorable, infantil, kawaii), --style expressive (sofisticado, detallado, expresivo), --style original (Niji V5 default, balanced), --style scenic (cinematic backgrounds, escenarios épicos). Legacy pero útil para conseguir looks anime específicos que Niji 6/7 no replican exactamente.",
+    "prompt_formula": "Anime scene + character + style modifier. Parámetros distintivos de Niji 5: --niji 5, --style cute/expressive/original/scenic (CRÍTICO en esta versión), --ar X:Y, --stylize 0-1000, --no [items], --seed N. El --style elegido cambia drásticamente el resultado, más que en Niji 6/7.",
+    "prompt_ejemplo": "Cute chibi anime girl with pink twin-tails in a magical forest, surrounded by small glowing fairies and floating mushrooms, soft pastel colors, dreamy atmosphere --niji 5 --style cute --ar 1:1 --stylize 200",
+    "limitaciones": "Legacy. Niji 6 y 7 superiores en coherencia, detalles y prompt understanding. Sin --cref ni --sref ni --oref. Sin Personalization. Los --style flags pueden ignorarse en algunos casos. Útil solo para reproducir el look específico V5."
+  },
+  "GPT Image 1": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "1024x1024",
+      "1024x1536",
+      "1536x1024"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Low",
+      "Medium",
+      "High"
+    ],
+    "best_for": "Primer GPT Image (Abril 2025). Modelo nativo multimodal de GPT-4o. Excelente integración con ChatGPT, mejor que DALL-E 3 en text-in-image, composición compleja y world knowledge. Famoso por estilo Studio Ghibli viral. Disponible en API (gpt-image-1) y ChatGPT. Requiere verificación de organización en la API. Casos de uso destacados: ilustración con texto, personajes con specs detalladas, prototipos UI, posters, branding visual.",
+    "prompt_formula": "Lenguaje natural en prosa fluida. Estructura: background/scene → subject → key details → constraints + intended use (ad, UI, infographic). Para texto literal: usar comillas, e.g. 'with the words \"Hello World\"'. Soporta specs muy largas tipo character sheet (rasgos físicos, paleta, movimiento, mood). Para fondo transparente: incluir 'on a transparent background' (auto-detecta y aplica transparency en PNG/WebP).",
+    "prompt_ejemplo": "Create a photorealistic portrait of an elderly sailor on a fishing boat at dawn, weathered face, soft coastal light, 35mm film aesthetic, medium close-up at eye level",
+    "limitaciones": "Warm color bias en muchas salidas. Sin negative prompt. Cropping prematuro a veces. Sin pesos numéricos. Resolución máxima ~1024px. Edición: soporta hasta 10 imágenes input + máscara con alpha channel (para edición localizada). Parámetro 'input_fidelity=high' preserva caras, logos y texturas con más detalle (primera imagen retiene mejor). Precio: ~$0.02 low / ~$0.07 medium / ~$0.19 high (1024x1024)."
+  },
+  "GPT Image 1 mini": {
+    "nota": 4.2,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "1024x1024",
+      "1024x1536",
+      "1536x1024"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Low",
+      "Medium"
+    ],
+    "best_for": "GPT Image 1 mini (2026). Versión optimizada para coste y velocidad. Ideal para alto volumen, prototipado, iteración rápida y workflows automatizados donde el coste por imagen importa más que la fidelidad máxima. Mantiene la capacidad multimodal de GPT Image 1.",
+    "prompt_formula": "Igual que GPT Image 1 pero prefiere prompts más cortos y directos. Estructura: subject + scene + 2-3 detalles clave. Evita prompts muy complejos con muchas restricciones simultáneas.",
+    "prompt_ejemplo": "A friendly cartoon mascot for a coffee app, smiling coffee cup with arms and legs, holding a tablet, flat vector style, warm orange and brown palette, simple background",
+    "limitaciones": "Solo modos Low y Medium (no High). Menos detalle fino que GPT Image 1 full. Sin negative. ~3-5× más barato por imagen que GPT Image 1. Recomendado para tareas que no requieran 4K ni text rendering complejo."
+  },
+  "GPT Image 1.5": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "1024x1024",
+      "1024x1536",
+      "1536x1024",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Low",
+      "Medium",
+      "High"
+    ],
+    "best_for": "GPT Image 1.5 (Noviembre 2025). 4× más rápido que GPT Image 1. Mejor edición de imagen preservando detalles (lighting, composición, rostros). Adherencia a instrucciones reforzada. Inputs/outputs ~20% más baratos. EXCELENTE para edición precisa con input_fidelity=high: item edits (cambiar color de un objeto sin tocar resto), element removal (quitar limpio), element addition (insertar nuevo natural), face preservation (mantener identidad en variaciones), branding consistency (logo sin distorsión), product photography (mismo producto en nuevos fondos), fashion (cambiar outfit sin alterar pose). Ideal para ecommerce, branding, story sequences, avatares consistentes.",
+    "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'. Para generación: scene → subject → details → style → constraints. Reseteo de identidad facial: 'maintain the same person'. Cuando se editan múltiples caras: combina las fotos en un canvas único antes de enviar (la primera imagen del input preserva más fidelidad).",
+    "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic",
+    "limitaciones": "Sigue sin negative prompt ni pesos. Algunas regresiones en estilos artísticos respecto a GPT Image 1. Resolución máxima ~1024px (no 4K). input_fidelity=high consume más tokens de input pero crítico para preservar caras y logos. Output formats: PNG, JPEG, WebP."
+  },
+  "GPT Image 2": {
+    "nota": 4.9,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9",
+      "4:5",
+      "5:4",
+      "1024x1024",
+      "1536x1024",
+      "1024x1536",
+      "2048x2048",
+      "2048x1152",
+      "3840x2160 (4K)"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "Low",
+      "Medium",
+      "High"
+    ],
+    "best_for": "GPT Image 2 (Abril 2026). Modelo OpenAI más reciente y capaz. Primero con razonamiento O-series integrado (Understand→Plan→Generate→Review). Destacado por: (1) text rendering casi perfecto en posters, signage, labels y UI; (2) realismo natural en piel, materiales, iluminación; (3) prompt understanding superior con múltiples requisitos; (4) consistencia entre generaciones (series, campañas, story boards); (5) RESOLUCIÓN NATIVA HASTA 4K (3840×2160); (6) HIGH FIDELITY AUTOMÁTICO en imágenes de referencia (no necesita el parámetro input_fidelity explícito como GPT Image 1/1.5); (7) hasta 5 imágenes de referencia + máscara para edición composite ('subject from img1 + scene from img2 + style from img3'). Ideal para marketing profesional, UI/app mockups, product shots, fotorrealismo editorial, posters de cine, wallpapers.",
+    "prompt_formula": "Lenguaje natural estructurado. ORDEN: subject → scene/setting → lighting → style/mood → composition → exact text (entre comillas si aparece en la imagen). Para texto literal: 'with the words \"...\"'. Para UI/mockups: indicar tipo de pantalla, elementos de interfaz, estado. Para realismo: pedir lens (35mm, 50mm), DOF, grain, texturas. Para edición composite: 'subject from img1, scene from img2, style from img3'. Para fondos transparentes: incluir 'transparent background' en el texto (en GPT Image 2 ya no se acepta el parámetro background=transparent).",
+    "prompt_ejemplo": "Photorealistic marketing banner for a coffee brand. Subject: a ceramic cup of espresso on a wooden table at golden hour. Soft natural light coming from the left, visible steam, reflections on the cup, shallow depth of field. Above the cup, clean modern typography with the words \"Morning Ritual\" in dark brown sans-serif. Composition: rule of thirds, cup bottom-left, copy upper-right. Cinematic still, 50mm lens, soft film grain.",
+    "limitaciones": "Sin negative prompt ni pesos (no aplican sintaxis SD). Solo n=1 por llamada en API (lanzar requests paralelas para múltiples). Tiempo: high quality + 2K/4K puede tardar 3-5 minutos (timeout recomendado ≥360s, exponential backoff en 5xx). Resoluciones >2560×1440 marcadas experimentales. NO admite parámetro 'background=transparent' (usar post-procesado). NO usar input_fidelity (auto-forzado high; el parámetro genera error). Precio: ~$0.006 low / $0.053 medium / $0.211 high (1024×1024); 4K alta sube a ~$0.41/imagen."
+  },
+  "Ideogram v3": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "16:10",
+      "10:16",
+      "3:2",
+      "2:3"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Default",
+      "Quality",
+      "Turbo"
+    ],
+    "best_for": "Líder en text-in-image. Rendering de tipografías, logos, posters. Estilo References hasta 3 imágenes. 4.3B presets de estilo. Mejor para diseño gráfico, branding, social media con texto visible.",
+    "prompt_formula": "Lenguaje natural descriptivo. Máx ~150-160 palabras. Texto entre comillas. Estructura: [Image summary]. [Main subject], [Pose], [Setting], [Lighting], [Style], [Technical enhancers]",
+    "prompt_ejemplo": "A vintage 1970s rock concert poster with bold typography saying \"MIDNIGHT TOUR\" in golden letters, psychedelic background with swirling colors, retro design, warm tones, professional typography, concert photography style",
+    "prompt_tips": [
+      "ESCRIBE EN INGLÉS: Para resultados más fiables (especialmente con texto), usa inglés.",
+      "NATURAL LANGUAGE: Escribe como le explicarías la imagen a otra persona. Full sentences.",
+      "TEXTO EN COMILLAS: Para texto visible, ponlo entre comillas dobles.",
+      "ORDEN IMPORTANTE: Lo más importante va al principio, hasta 150-160 palabras.",
+      "NO PESOS: No uses (palabra:1.5) ni pesos. Describe mejor.",
+      "NO FLAGS: No uses --ar, --v, --style. Describe el estilo en texto.",
+      "STYLE REFERENCES: Sube hasta 3 imágenes de referencia para controlar estética.",
+      "MAGIC PROMPT: Puede expandir tu prompt automáticamente si lo necesitas."
+    ],
+    "limitaciones": "Sin negative prompt. Máx ~150-160 palabras. Scripts no latinos (árabe, chino) pueden renderizar mal."
+  },
+  "Recraft v3": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Standard",
+      "HD"
+    ],
+    "best_for": "Especializado en arte vectorial, ilustraciones consistentes, branding. Genera SVG editable. Style References hasta 3 imágenes. Ideal para diseñadores.",
+    "prompt_formula": "Lenguaje natural + estilo artístico. Mencionar 'flat illustration', 'vector art', 'icon style', 'realistic'.",
+    "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design, no gradients, clean lines",
+    "prompt_tips": [
+      "USA ESTILOS EXPLÍCITOS: 'flat illustration', 'realistic photo', 'vector art'.",
+      "SVG OUTPUT: Genera graphics escalables editables.",
+      "STYLE REFERENCES: Hasta 3 imágenes de referencia para consistencia.",
+      "COMPOSICIÓN ESTRUCTURADA: Excelente para layouts con texto y iconografía."
+    ],
+    "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial. SVG puede necesitar limpieza."
+  },
+  "Auto (Sugerencias)": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 4000,
+    "modos_gen": [
+      "Auto"
+    ],
+    "best_for": "Modo automático de Magnific. Selecciona el mejor modelo según tu prompt y referencias. ~10s de generación. Ideal cuando no sabes qué modelo elegir.",
+    "prompt_formula": "Lenguaje natural muy descriptivo. Magnific decide internamente qué modelo usar según contenido.",
+    "prompt_ejemplo": "A cinematic portrait of a young woman with auburn hair against a soft blurred forest background, golden hour lighting",
+    "limitaciones": "No tienes control sobre qué modelo se usa internamente."
+  },
+  "GPT 2": {
+    "nota": 4.9,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Standard",
+      "Quality"
+    ],
+    "best_for": "GPT Image 2 en Magnific (Destacado/Nuevo). Salida 2K-4K. ~1m 27s. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
+    "prompt_formula": "Lenguaje natural muy estructurado. Estructura: scene → subject → key details → constraints. Lenguaje fotográfico (lens, lighting, framing) y texturas reales.",
+    "prompt_ejemplo": "Photorealistic candid photo of an elderly fisherman on his boat at dawn. Weathered skin with visible pores, sun texture. Adjusting nets, dog nearby. 35mm film aesthetic, 50mm lens, soft coastal daylight, shallow DOF.",
+    "prompt_tips": [
+      "ESCRIBE EN INGLÉS: Resultados más fiables.",
+      "LENGUAJE FOTOGRÁFICO: Menciona lentes, iluminación, profundidad de campo.",
+      "TEXTURAS REALES: Describe piel, telas, materiales con detalle.",
+      "ESTRUCTURA CLARA: escena → sujeto → detalles → estilo.",
+      "MÁX 150-160 PALABRAS: Lo más importante al inicio.",
+      "SIN NEGATIVE PROMPT: No funciona aquí.",
+      "REFERENCIAS: Soporta hasta varias imágenes de referencia."
+    ],
+    "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Máx ~160 palabras."
+  },
+  "GPT 1.5 - High": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "High"
+    ],
+    "best_for": "GPT Image 1.5 alta calidad en Magnific. ~59s. Buena edición de imagen, preserva detalles, branding consistente.",
+    "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'.",
+    "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are",
+    "prompt_tips": [
+      "EDICIÓN CLARA: 'Change X to Y, keep Z intact'.",
+      "REFERENCIAS: Soporta varias imágenes de referencia.",
+      "INGLÉS MEJOR: Para resultados más predecibles."
+    ],
+    "limitaciones": "Sin negative prompt ni pesos."
+  },
+  "GPT 1.5": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "GPT Image 1.5 estándar. ~41s. 4x más rápido que GPT 1, mejor edición, preserva detalles.",
+    "prompt_formula": "Lenguaje natural estructurado.",
+    "prompt_ejemplo": "Modern poster design with bold typography, minimalist layout, gradient background, professional design",
+    "limitaciones": "Sin negative ni pesos."
+  },
+  "GPT 1 - HQ": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "HQ"
+    ],
+    "best_for": "GPT Image 1 alta calidad. ~1m 3s. Modelo viral por estilo Studio Ghibli. Excelente integración multimodal.",
+    "prompt_formula": "Lenguaje natural en prosa. Estructura: scene → subject → details → style.",
+    "prompt_ejemplo": "Studio Ghibli style illustration of a young girl walking through a field of sunflowers at dusk, soft warm light, dreamy atmosphere",
+    "prompt_tips": [
+      "PROSA NATURAL: Escribe en oraciones completas.",
+      "ESTILO ARTÍSTICO: Menciona estilos como 'Studio Ghibli', 'Pixar', etc.",
+      "EMOCIÓN Y ATMÓSFERA: Describe el mood además de lo visual."
+    ],
+    "limitaciones": "Lento (~1m 3s). Warm color bias. Sin negative ni pesos."
+  },
+  "GPT": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "GPT Image base. ~40s. Versión rápida y económica.",
+    "prompt_formula": "Lenguaje natural simple. Soporta referencias.",
+    "prompt_ejemplo": "A vibrant illustration of a cyberpunk cat in a neon-lit alleyway, colorful, detailed",
+    "limitaciones": "Calidad inferior a GPT 1.5/2. Sin negative."
+  },
+  "Flux.2 Max": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Max"
+    ],
+    "best_for": "Flux 2 Max en Magnific. Salida 2K. ~38s. Máxima calidad de la familia Flux 2. Ideal para hero shots, branding crítico.",
+    "prompt_formula": "Lenguaje natural muy descriptivo y específico. Flux 2 entiende prompts complejos con múltiples sujetos y relaciones espaciales.",
+    "prompt_ejemplo": "A high-end fashion editorial photograph of a model standing in a brutalist concrete corridor, dramatic side lighting from a single skylight, wearing a sculptural black dress, photorealistic, magazine quality",
+    "prompt_tips": [
+      "DESCRIPTIVO Y ESPECÍFICO: Flux 2 entiende prompts complejos.",
+      "MULTIPLES SUJETOS: Maneja composiciones con varios elementos.",
+      "RELACIONES ESPACIALES: Describe posiciones y direcciones con precisión.",
+      "ILUMINACIÓN DRAMÁTICA: Funciona muy bien con descripciones de luz."
+    ],
+    "limitaciones": "Sin negative ni pesos. Más lento que Pro."
+  },
+  "Flux.2 Pro": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Pro"
+    ],
+    "best_for": "Flux 2 Pro. Salida 2K. ~22s. Producción profesional, alta resolución, fotorrealismo top, hasta 10 imágenes ref. Para uso comercial intensivo.",
+    "prompt_formula": "Lenguaje natural fluido + tipografía explícita si necesitas texto. Hasta 10 referencias.",
+    "prompt_ejemplo": "Professional product photo of a luxury watch on dark velvet, soft directional lighting from upper left, macro detail, sharp focus on dial, depth of field",
+    "prompt_tips": [
+      "HASTA 10 REFERENCIAS: Usa múltiples imágenes para controlar estilo.",
+      "TIPOGRAFÍA: Describe explícitamente si necesitas texto visible.",
+      "FLUIDO Y DESCRIPTIVO: No necesitas estructura rígida."
+    ],
+    "limitaciones": "Sin negative ni pesos."
+  },
+  "Flux.2 Flex": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Flex"
+    ],
+    "best_for": "Flux 2 Flex. Salida 2K. ~25s. Especializado en TIPOGRAFÍA y detalles finos. El mejor cuando el texto en imagen es crítico.",
+    "prompt_formula": "Para texto: usar comillas y describir tipografía explícitamente. 'Bold serif typeface', 'handwritten script', etc.",
+    "prompt_ejemplo": "Vintage diner sign with the text \"DINER\" in bold red retro typography, neon accent, weathered metal background, 1950s aesthetic",
+    "prompt_tips": [
+      "TEXTO EN COMILLAS: \"TU TEXTO AQUÍ\" para texto visible.",
+      "TIPOGRAFÍA EXPLÍCITA: Describe fuente, peso, estilo.",
+      "MEJOR PARA TEXTO: Que otros Flux para renderizar palabras."
+    ],
+    "limitaciones": "Optimizado para texto. Para foto pura, Pro o Max son mejores."
+  },
+  "Flux.2 Klein": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Klein"
+    ],
+    "best_for": "Flux 2 Klein. Salida 2K. ⚡ ~7s (RÁPIDO). Compacto para generación en tiempo real. Para iteración rápida.",
+    "prompt_formula": "Lenguaje natural conciso. Optimizado para velocidad.",
+    "prompt_ejemplo": "A red apple on a wooden table, soft natural light from the right, photorealistic",
+    "prompt_tips": [
+      "CONCISO: Prompts más cortos funcionan mejor.",
+      "VELOCIDAD: Ideal para iterar y probar ideas rápido.",
+      "NATURAL PERO BREVE: No necesitas essays."
+    ],
+    "limitaciones": "Calidad menor que Pro/Max pero muy rápido."
+  },
+  "Flux.1 Kontext Max": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Max"
+    ],
+    "best_for": "Flux 1 Kontext Max. ~18s. Modelo de EDICIÓN avanzada. Preserva contexto entre ediciones múltiples.",
+    "prompt_formula": "Instrucciones de edición específicas: 'Change [elemento] to [nuevo]', 'Keep [elemento] exactly the same', 'Add [elemento] to [posición]'.",
+    "prompt_ejemplo": "Change the woman's dress from red to emerald green, keep her face, hair, pose and lighting exactly the same",
+    "prompt_tips": [
+      "EDICIÓN ESPECÍFICA: Change X to Y, keep Z.",
+      "PRESERVA CONTEXTO: Funciona mejor con múltiples ediciones.",
+      "REFERENCIAS: Soporta imágenes de referencia para estilo."
+    ],
+    "limitaciones": "Especializado en edición. Para generación desde cero, otros Flux son mejores."
+  },
+  "Flux.1 Kontext Pro": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Pro"
+    ],
+    "best_for": "Flux 1 Kontext Pro. ~13s. Edición rápida con preservación de contexto.",
+    "prompt_formula": "Instrucciones de edición concisas y específicas.",
+    "prompt_ejemplo": "Add subtle bokeh background blur, keep subject sharp",
+    "limitaciones": "Para edición. Más rápido que Max pero menos preciso."
+  },
+  "Flux.1 Realism": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Realism"
+    ],
+    "best_for": "Flux 1 Realism. ⚡ ~8s. Optimizado para FOTORREALISMO. Pieles, texturas, escenarios fotográficos.",
+    "prompt_formula": "Lenguaje natural fotográfico. Mencionar lente, distancia focal, tipo de cámara mejora resultados.",
+    "prompt_ejemplo": "Candid photograph of a barista preparing coffee, shallow depth of field, 50mm lens, natural window light, film grain",
+    "prompt_tips": [
+      "LENGUAJE FOTOGRÁFICO: 50mm, f/1.8, shallow DOF, etc.",
+      "TEXTURAS REALES: Piel con poros, tela con textura, etc.",
+      "REFERENCIAS: Funcionan muy bien para realismo."
+    ],
+    "limitaciones": "Para arte estilizado, Flux 2 Max es mejor."
+  },
+  "Flux.1 Fast": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Fast"
+    ],
+    "best_for": "Flux 1 Fast. ⚡ ~8s. Velocidad máxima en familia Flux 1. Ideal para iteración rápida y exploración.",
+    "prompt_formula": "Prompts cortos y directos.",
+    "prompt_ejemplo": "A cat in a garden, golden hour light",
+    "limitaciones": "Calidad más baja que Realism o 1.1."
+  },
+  "Flux.1.1": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Flux 1.1 ULTRA RÁPIDO. ⚡ ~6s. Mejorado respecto Flux 1 base.",
+    "prompt_formula": "Lenguaje natural fluido.",
+    "prompt_ejemplo": "A young woman with curly hair laughing, soft studio lighting, professional portrait",
+    "limitaciones": "Para máxima calidad usar Flux 2 Max o Pro."
+  },
+  "Flux.1": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Flux 1 base. ~17s. El primer Flux de Black Forest Labs.",
+    "prompt_formula": "Lenguaje natural descriptivo.",
+    "prompt_ejemplo": "A serene mountain landscape at sunset, dramatic clouds, vibrant colors",
+    "limitaciones": "Reemplazado por versiones más recientes."
+  },
+  "Mystic 2.5 Fluid": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Fluid"
+    ],
+    "best_for": "Mystic 2.5 Fluid. ~24s. 80 créditos. Hiperrealismo nativo de Magnific basado en Flux + tecnología de upscaling Magnific. 2K nativo. El mejor para retratos, expresiones faciales.",
+    "prompt_formula": "Lenguaje natural muy descriptivo. Soporta texto en imagen con comillas.",
+    "prompt_ejemplo": "A young woman with long brown hair wearing a yellow dress against a patterned background, natural skin texture, individual hair strands, soft daylight, 2K resolution",
+    "prompt_tips": [
+      "DESCRIPTIVO DETALLADO: Piel con poros, cabellos individuales, etc.",
+      "RETRATOS: Excelente para rostros y expresiones.",
+      "UPSDALING NATIVO: 2K de salida sin post-procesamiento."
+    ],
+    "limitaciones": "Costoso (80 créditos). Para diseño con texto, Ideogram funciona mejor."
+  },
+  "Google Imagen 4 Ultra": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Ultra"
+    ],
+    "best_for": "Google Imagen 4 Ultra. ~18s. Fotorrealismo top de Google. Excelente entendimiento espacial y físico. Ideal para escenas complejas.",
+    "prompt_formula": "Lenguaje natural muy descriptivo. Imagen entiende relaciones espaciales precisas.",
+    "prompt_ejemplo": "A red coffee mug placed on a wooden desk to the right of an open notebook, soft morning light streaming through a window from the left, shallow depth of field",
+    "prompt_tips": [
+      "RELACIONES ESPACIALES: Describe posiciones precisas (to the right of, behind, above).",
+      "FÍSICA REALISTA: Entiende gravedad, luz, sombras correctamente.",
+      "ESCENAS COMPLEJAS: Maneja múltiples objetos y sus interacciones."
+    ],
+    "limitaciones": "Sin negative."
+  },
+  "Google Imagen 4": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Google Imagen 4. ⚡ ~10s. Fotorrealismo + rápido. Buen balance velocidad/calidad.",
+    "prompt_formula": "Lenguaje natural descriptivo con relaciones espaciales claras.",
+    "prompt_ejemplo": "A photorealistic portrait of a young woman with auburn hair, soft natural lighting from a window on the left, blurred forest background",
+    "limitaciones": "Menos detalle que Imagen 4 Ultra."
+  },
+  "Google Imagen 3": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Google Imagen 3. ⚡ ~9s. Generación rápida calidad media.",
+    "prompt_formula": "Lenguaje natural simple.",
+    "prompt_ejemplo": "A cat sitting in a garden of wildflowers, sunny day, photorealistic",
+    "limitaciones": "Reemplazado por Imagen 4. Calidad menor."
+  },
+  "Seedream 5 Lite": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Lite"
+    ],
+    "best_for": "Seedream 5 Lite (Destacado/Nuevo). Salida 2K. ~51s. Modelo más reciente de ByteDance. Excelente para fotorrealismo y arte.",
+    "prompt_formula": "Lenguaje natural muy descriptivo. Soporta múltiples sujetos y composiciones complejas.",
+    "prompt_ejemplo": "A cinematic shot of two friends sitting at a vintage diner counter, neon reflections on the chrome surface, warm dramatic lighting, 35mm film aesthetic",
+    "prompt_tips": [
+      "DESCRIPTIVO CINEMÁTICO: Menciona iluminación, ángulo, estética.",
+      "MÚLTIPLES SUJETOS: Maneja grupos y composiciones complejas.",
+      "RECIENTE: Último modelo de ByteDance, tecnología actualizada."
+    ],
+    "limitaciones": "Más lento que Flux Klein."
+  },
+  "Seedream 4.5": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "High Resolution"
+    ],
+    "best_for": "Seedream 4.5. Salida 2K-4K. ~1m 5s. Alta resolución, fotorrealismo, soporta referencias.",
+    "prompt_formula": "Lenguaje natural detallado. Mencionar resolución target.",
+    "prompt_ejemplo": "Highly detailed product photo of a luxury watch, macro lens, perfect studio lighting, 4K resolution, commercial quality",
+    "prompt_tips": [
+      "RESOLUCIÓN EXPLÍCITA: Menciona 2K, 4K si necesitas alta calidad.",
+      "REFERENCIAS: Soporta imágenes de estilo.",
+      "MACRO/DETALLE: Excelente para productos y texturas."
+    ],
+    "limitaciones": "Lento (~1m 5s)."
+  },
+  "Seedream 4 4K": {
+    "nota": 4.5,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "4K"
+    ],
+    "best_for": "Seedream 4 4K. ~37s. Genera directamente en 4K nativo. Para impresión y trabajos de alta resolución.",
+    "prompt_formula": "Lenguaje natural detallado. Aprovecha la alta resolución pidiendo detalles finos.",
+    "prompt_ejemplo": "An intricate macro photograph of a butterfly wing showing fine scale patterns, ultra-detailed, 4K resolution",
+    "limitaciones": "Sin negative."
+  },
+  "Seedream 4": {
+    "nota": 4.4,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Seedream 4. ~19s. Versión estándar, balance calidad/velocidad.",
+    "prompt_formula": "Lenguaje natural fluido.",
+    "prompt_ejemplo": "A serene Japanese garden with a koi pond, cherry blossoms falling, soft natural light",
+    "limitaciones": "Reemplazado por Seedream 4.5 y 5 Lite."
+  },
+  "Recraft V4 Pro": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "2:3",
+      "3:2"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Pro"
+    ],
+    "best_for": "Recraft V4 Pro (Nuevo). ~35s. Soporta NEGATIVE PROMPT. Especialista en arte vectorial, ilustraciones, branding. Mejor que V3.",
+    "prompt_formula": "Lenguaje natural + estilo vectorial. 'Flat illustration', 'vector art', 'icon style'.",
+    "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design",
+    "prompt_tips": [
+      "SOPORTA NEGATIVE: Usa (cosa:1.2) para mejorar precisión.",
+      "ESTILOS VECTORIALES: Flat, line art, icon, etc.",
+      "SVG OUTPUT: Genera graphics escalables editables.",
+      "REFERENCIAS: Hasta 3 imágenes de estilo."
+    ],
+    "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial."
+  },
+  "Recraft V4": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Recraft V4 (Nuevo). ~18s. Soporta NEGATIVE PROMPT. Versión estándar para vectorial.",
+    "prompt_formula": "Lenguaje natural + estilo vectorial.",
+    "prompt_ejemplo": "Minimalist vector poster with geometric shapes, monochrome palette, clean lines",
+    "limitaciones": "No fotorrealismo."
+  },
+  "Z-Image": {
+    "nota": 4.4,
+    "has_negative": false,
+    "is_natural": false,
+    "no_weights": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Turbo"
+    ],
+    "best_for": "Z-Image en Magnific. ⚡ ~8s. Modelo Turbo: tags limpios sin pesos ni negative. Latencia mínima.",
+    "prompt_formula": "Tags limpios separados por comas SIN pesos numéricos.",
+    "prompt_ejemplo": "close-up portrait, silver hair, blue eyes, detailed skin, soft studio lighting, 8K, masterpiece",
+    "prompt_tips": [
+      "TAGS LIMPIOS: Sin paréntesis ni números.",
+      "COMAS SEPARAN: keyword1, keyword2, keyword3.",
+      "MÁX SIMPLICIDAD: Diseñado para velocidad."
+    ],
+    "limitaciones": "Sin negative ni pesos. Para alta calidad usar Mystic/Flux."
+  },
+  "Qwen": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Qwen Image en Magnific. ~12s. Buena calidad general, soporta referencias. De Alibaba/Aliyun.",
+    "prompt_formula": "Lenguaje natural descriptivo.",
+    "prompt_ejemplo": "A modern minimalist living room with large windows, natural light, scandinavian design",
+    "limitaciones": "Sin negative."
+  },
+  "Grok": {
+    "nota": 4.2,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Grok Imagine en Magnific. ~11s. Modelo de xAI. Buena para arte conceptual y escenas creativas.",
+    "prompt_formula": "Lenguaje natural creativo. Le va bien lo absurdo y la fantasía.",
+    "prompt_ejemplo": "A surreal scene of giant mushrooms in a crystal forest, dreamy ethereal lighting, fantasy art style",
+    "limitaciones": "Sin negative ni pesos."
+  },
+  "Classic": {
+    "nota": 4.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Classic"
+    ],
+    "best_for": "Modelo Classic de Magnific. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo Stable Diffusion. Ideal cuando quieres control con negatives.",
+    "prompt_formula": "Tags con pesos estilo Stable Diffusion. (tag:1.2). Soporta negative.",
+    "prompt_ejemplo": "(beautiful portrait:1.3), 1girl, detailed face, soft lighting, professional photography, 8K",
+    "prompt_tips": [
+      "PESOS CON PARÉNTESIS: (tag:1.2) para усилить, (tag:0.8) para debilitar.",
+      "NEGATIVE PROMPT: Campo separado para excluir elementos.",
+      "TAGS COMO SD: Inspirado en Stable Diffusion clásico.",
+      "RÁPIDO: ~4s para generación."
+    ],
+    "limitaciones": "Calidad inferior a modelos modernos pero soporta negative."
+  },
+  "Classic Fast": {
+    "nota": 3.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16"
+    ],
+    "max_chars": 500,
+    "modos_gen": [
+      "Fast"
+    ],
+    "best_for": "Classic Fast. ⚡ ~2s (más rápido). Soporta NEGATIVE PROMPT. Ideal para iteración rápida con tags + negative.",
+    "prompt_formula": "Tags con pesos. Soporta negative.",
+    "prompt_ejemplo": "(portrait:1.2), 1girl, detailed face, studio lighting, masterpiece",
+    "prompt_tips": [
+      "VELOCIDAD MÁXIMA: ~2s para iterar ultra-rápido.",
+      "TAGS SIMPLES: No necesitas essays.",
+      "NEGATIVE DISPONIBLE: Control sobre qué excluir."
+    ],
+    "limitaciones": "Calidad menor que Classic estándar."
+  }
+}
