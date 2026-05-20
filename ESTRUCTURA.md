@@ -1,46 +1,60 @@
-# 🧠 G-Prompt Studio v1.0.9 — Estructura del Proyecto
+# 🧠 G-Prompt Studio — Estructura del proyecto
 
-> Aplicación de escritorio para generar, gestionar y optimizar prompts de IA (imagen, vídeo, audio).
-> **Última versión**: v1.0.9 — con biblioteca integrada, headers, dashboard, herramientas creativas.
+> Aplicación de escritorio para generar, gestionar y optimizar prompts de IA
+> (imagen, vídeo, audio). Documento técnico para mantenedores; ver
+> [README.md](README.md) para info de usuario.
 
 ---
 
-## 📁 Estructura de carpetas
+## 📁 Árbol del repo
 
 ```
 gprompt-studio/
 │
-├── main.py                      # Punto de entrada (~217 líneas)
-├── app.py                       # ArquitectoApp (~1.713 líneas)
-├── api_clients.py               # 14 proveedores LLM (patrón Provider, ~713 líneas)
-├── config.py                    # MODEL_SPECS, plataformas, constantes (~4.040 líneas)
-├── persistence.py               # DataStore atómico (~352 líneas)
-├── prompts.py                   # System prompts (~751 líneas)
-├── workers.py                   # DeepSeekWorker + VisionChain (~530 líneas)
-├── logging_utils.py             # @log_operation decorator (~58 líneas)
-├── theme.json                   # Paleta dark/light
-├── pyproject.toml               # Configuración del proyecto (PEP 621)
+├── main.py                # Punto de entrada (parche CTkToolTip, tema, splash) — 215 líneas
+├── app.py                 # ArquitectoApp + install_components — 1.599 líneas
+├── api_clients.py         # 14 proveedores LLM (patrón Provider, openai lazy) — 721 líneas
+├── config.py              # API pública de constantes + carga desde data/*.json — 1.111 líneas
+├── persistence.py         # DataStore atómico (tmp + os.replace + fsync) — 352 líneas
+├── prompts.py             # System prompts por modo/modelo — 751 líneas
+├── workers.py             # DeepSeekWorker + VisionChain (retry backoff) — 525 líneas
+├── logging_utils.py       # @log_operation, silent(), silent_call() — 58 líneas
+├── theme.json             # Paleta dark/light de customtkinter
+├── pyproject.toml         # Config del proyecto (PEP 621)
 ├── .gitignore
-├── README.md
-├── ESTRUCTURA.md                # Este archivo
+├── README.md              # Doc para usuario
+├── ESTRUCTURA.md          # ← este archivo
+├── GUIA_ESTILOS.md        # Referencia visual de ~250 estilos
 │
-├── modules/                     # 8 mixins + servicios auxiliares
-│   ├── __init__.py
-│   ├── core.py                  # Workers, comandos, estado (~2.828 líneas)
-│   ├── ui_builders.py           # Construcción de UI (~1.932 líneas)
-│   ├── tools_creative.py        # Moodboard, ADN, Negative Builder (~2.444 líneas)
-│   ├── tools_workflow.py        # Macros, A/B Testing, Cron (~1.933 líneas)
-│   ├── tools_analysis.py        # Stats, Scoring, Education (~1.305 líneas)
-│   ├── data_mgmt.py             # Historial, favoritos, snippets (~1.336 líneas)
-│   ├── backup_export.py         # Backup, restore, CSV, Export CLI (~473 líneas)
-│   ├── dialogs.py               # API Keys, Dashboard, Theme (~1.901 líneas)
-│   ├── windows.py               # Ventanas auxiliares (~845 líneas)
-│   ├── gprompt_window.py        # Wrapper de CTkToplevel (~68 líneas)
-│   ├── event_bus.py             # Pub/sub singleton (~98 líneas)
-│   ├── preview_service.py       # (~82 líneas)
-│   └── comfyui_exporter.py      # (~232 líneas)
+├── modules/               # Mixins + componentes + servicios auxiliares
+│   ├── __init__.py        # Re-export público + install_components
+│   ├── core.py            # Workers, comandos, estado — 2.799 líneas
+│   ├── ui_builders.py     # Construcción de UI — 1.923 líneas
+│   ├── tools_creative.py  # Moodboard, ADN, Negative Builder — 2.442 líneas
+│   ├── tools_workflow.py  # Macros, A/B Testing, Cron, Proyectos — 1.937 líneas
+│   ├── tools_analysis.py  # Stats, Scoring, Auto-improve — 1.309 líneas
+│   ├── data_mgmt.py       # Historial, favoritos, plantillas — 1.335 líneas
+│   ├── backup_export.py   # Backup, restore, CSV, Export CLI — 476 líneas
+│   ├── dialogs.py         # API Keys, Dashboard, Theme — 1.887 líneas
+│   ├── windows.py         # Ventanas auxiliares (Personajes, LoRAs…) — 849 líneas
+│   ├── gprompt_window.py  # Wrapper de CTkToplevel — 76 líneas
+│   ├── components.py      # 8 componentes que delegan a app — 99 líneas
+│   ├── event_bus.py       # Pub/sub singleton — 98 líneas
+│   ├── preview_service.py # Preview vía Pollinations — 82 líneas
+│   └── comfyui_exporter.py# Exportador ComfyUI workflow — 232 líneas
 │
-└── tests/                       # 6 suites pytest
+├── config/
+│   └── plantillas_default.json   # Plantillas por defecto (load-bearing)
+│
+├── data/                  # Datos extraídos de config.py en Fase 3 (cargados al import)
+│   ├── model_specs_imagen.json   # 118 modelos de imagen
+│   ├── model_specs_video.json    # 15 modelos de vídeo
+│   ├── model_specs_audio.json    # 10 modelos de audio
+│   ├── biblioteca_ejemplos.json  # 10 ejemplos para nuevos usuarios
+│   ├── estilos_grupos.json       # 13 grupos / ~257 estilos
+│   └── estilo_negativo_auto.json # 74 mapeos estilo → negativos
+│
+└── tests/                 # 4 suites pytest
     ├── __init__.py
     ├── conftest.py
     ├── test_api_clients.py
@@ -49,121 +63,117 @@ gprompt-studio/
     └── test_workers.py
 ```
 
-**Total**: ~23.880 líneas de código.
-
----
-
-## 🆕 Cambios v1.0 vs v8.x
-
-### 🐛 Bugs corregidos
-
-| # | Bug | Solución |
-|---|-----|----------|
-| 1 | **Ventanas hijas (Copiloto, Batch...) salían DETRÁS de la principal** | Reescrito patch global de `CTkToplevel.transient()`: ahora mantiene `transient(master)` original Y fuerza `lift()+focus_force()` con delay tras `__init__`. Manteniendo además minimize/maximize de Windows. |
-| 2 | `_build_header()` duplicado entre `app.py` y `UIBuildersMixin` | Eliminado de `app.py` (219 líneas). Solo vive en el mixin. |
-| 3 | Parámetro muerto `modelo_llm=...` en 9 llamadas a `deepseek.generar()` | Eliminado. El provider activo se obtiene siempre desde `self.clients`. |
-| 4 | README desactualizado (decía 4 LLMs cuando ya son 9) | Reescrito completo para v1.0. |
-| 5 | Versión inconsistente entre archivos | Unificada a **v1.0** en todos los puntos. |
-
-### ✨ Features nuevas
-
-| # | Feature | Dónde |
-|---|---------|-------|
-| 1 | **Indicador visual del proveedor LLM** (🔑 verde si OK, ⚠ ámbar si falta key) | `app.py::_actualizar_indicador_proveedor` |
-| 2 | **Splash screen** al arrancar | `main.py::SplashScreen` |
-| 3 | **Toast in-app** no bloqueante | `app.py::show_toast()` |
-| 4 | **Atajo Ctrl+Enter** = generar prompt | `app.py::_atajo_generar_prompt` |
-| 5 | **Backup automático semanal** en zip | `app.py::_backup_semanal_check` |
-| 6 | **Test de proveedor real** en wizard inicial | `app.py::_setup_wizard` |
-| 7 | **Header responsive** (modo compacto <1180px) | `modules/ui_builders.py` |
-| 8 | **Helper `open_child_window()`** para Toplevels correctos | `app.py::open_child_window` |
-| 9 | **Cierre limpio** que destruye Toplevels hijos antes de la principal | `modules/dialogs.py::_on_cerrar` |
-| 10 | **Validación de formato de keys** (sk-, AIza-, sk-or-) | `app.py::_setup_wizard::_validar_formato` |
-
-### 🧹 Limpieza
-
-- Logging estructurado en `workers.py` (warnings cuando hay fallback)
-- Tooltip en botón 🔑 del header
-- Wizard con keys ocultas (`show="*"`)
-- `.env` y `keys.json` autoexplicativo en docstrings
+**Total**: ~21.000 líneas de Python.
 
 ---
 
 ## 🏗 Arquitectura
 
-### Patrón de diseño: Herencia múltiple por Mixins
+### Composición vs. herencia
 
-`ArquitectoApp` hereda de 8 clases mixin. Todas comparten el mismo `self`:
+`ArquitectoApp` hereda de 8 mixins (compatibilidad histórica) **y además** instala 8 componentes vía `install_components(self)` que delegan al app vía `__getattr__`:
 
 ```python
-class ArquitectoApp(
-    ctk.CTk,               # Ventana principal CustomTkinter
-    UIBuildersMixin,       # Construcción de UI
-    ToolsCreativeMixin,    # Moodboard, ADN, Negative Builder
-    ToolsWorkflowMixin,    # Macros, A/B Testing, Cron
-    ToolsAnalysisMixin,    # Stats, Scoring, Education
-    DataMgmtMixin,         # Historial, favoritos, snippets
-    BackupExportMixin,     # Backup, restore, CSV
-    DialogsMixin,          # API Keys, Dashboard, Theme
-    CoreMixin,             # Workers, comandos, estado
-):
+class ArquitectoApp(ctk.CTk, *MIXINS):
     def __init__(self):
         super().__init__()
-        # ...
+        install_components(self)
+        # Ahora ambas formas funcionan:
+        self.cmd_moodboard()          # vía mixin
+        self.creative.cmd_moodboard() # vía componente delegado
 ```
 
-**Regla**: NO añadir métodos directamente a `app.py`. Cada método nuevo va en su mixin correspondiente. La excepción son los helpers de uso global (`open_child_window`, `show_toast`) que son del propio `ArquitectoApp` y no encajan en ningún mixin.
+| Componente | Mixin equivalente |
+|---|---|
+| `self.core` | `CoreMixin` |
+| `self.ui` | `UIBuildersMixin` |
+| `self.creative` | `ToolsCreativeMixin` |
+| `self.workflow` | `ToolsWorkflowMixin` |
+| `self.analysis` | `ToolsAnalysisMixin` |
+| `self.data` | `DataMgmtMixin` |
+| `self.backup` | `BackupExportMixin` |
+| `self.dialogs` | `DialogsMixin` |
+
+**Regla:** código nuevo debe usar `self.componente.X`. Las refs `self.X` se mantienen para no reescribir 2.640 referencias internas en los mixins.
 
 ### Patrón Provider (LLMs)
 
-`api_clients.py` define `BaseLLMProvider` con `completar()` y `disponible()`. Cada proveedor implementa esa interfaz.
+`api_clients.py` define `BaseLLMProvider` con `completar()` y `disponible()`. Cada proveedor implementa esa interfaz:
 
 ```
 ArquitectoApp
   └── self.clients (APIClients)
         └── self.providers[pid] (BaseLLMProvider)
-              ├── OpenAICompatibleProvider  → DeepSeek, OpenRouter, Groq, OpenAI, Mistral, xAI
+              ├── OpenAICompatibleProvider  → DeepSeek, OpenRouter, Groq, OpenAI, Mistral, xAI…
               ├── OllamaProvider            → Ollama local
               ├── GeminiProvider            → Google Gemini
               └── ClaudeProvider            → Anthropic Claude
 ```
 
-Añadir un nuevo proveedor = crear una clase con 2 métodos + entrada en `LLM_PROVIDERS`.
+**14 proveedores** soportados (ver [LLM_PROVIDERS en api_clients.py](api_clients.py)). Añadir uno = 2 métodos + entrada en el registro.
+
+`openai` se importa de forma **lazy** (`OPENAI_DISPONIBLE` flag): si no está instalado, los providers OpenAI-compatible lanzan `ImportError` explicativo, no peta al cargar.
+
+### Carga de datos desde JSON
+
+Los specs y datasets grandes viven en `data/*.json` y se cargan al import vía `_load_json_data()` en config.py:
+
+```python
+MODEL_SPECS        = _load_json_data("model_specs_video.json")
+MODEL_SPECS_IMAGEN = _load_json_data("model_specs_imagen.json")
+MODEL_SPECS_AUDIO  = _load_json_data("model_specs_audio.json")
+ESTILOS_GRUPOS     = _load_json_data("estilos_grupos.json")
+ESTILO_NEGATIVO_AUTO = _load_json_data("estilo_negativo_auto.json")
+BIBLIOTECA_EJEMPLOS  = _load_json_data("biblioteca_ejemplos.json")
+```
+
+Beneficio: añadir un modelo nuevo es editar JSON, no Python. La **API pública de config.py** (todas las constantes y funciones `get_*_specs`) está intacta — los imports siguen siendo `from config import MODEL_SPECS_IMAGEN, …`.
+
+### Ventanas hijas — GPromptWindow
+
+Todas las ventanas secundarias usan `GPromptWindow` (extiende `CTkToplevel`). Comportamiento al crear:
+
+- `resizable(True, True)`
+- `attributes("-toolwindow", False)`
+- `bring_to_front` diferido 50ms (lift + topmost momentáneo 250ms)
+- Bind `<F11>` toggle fullscreen + `<Escape>` salir fullscreen
+- `transient()` sobreescrito como **no-op**: en Windows, transient() oculta los botones minimize/maximize. Compensamos lift+focus.
+
+Sustituyó al monkey-patching global de `ctk.CTkToplevel.__init__` y `.transient()` (Fase 4).
 
 ### Flujo de generación
 
 ```
 Usuario escribe idea → txt_idea
-  └── Click "Generar Prompt" o Ctrl+Enter → cmd_prompt()
-        └── _construir_peticion() construye prompt con specs del modelo
+  └── "Generar Prompt" o Ctrl+Enter → cmd_prompt()
+        └── _construir_peticion() inyecta specs del modelo (max_chars, sampler…)
               └── self.deepseek.generar()  ← worker en thread daemon
                     └── self.clients.get_active_provider().completar()
-                          └── API → LLM
-                                └── Respuesta → actualizar_salida()
-                                      └── guardar_en_historial()
+                          └── Retry x3 con backoff exponencial
+                                └── API → LLM → respuesta
+                                      └── actualizar_salida() (vía self.after)
+                                            └── guardar_en_historial()
 ```
 
-**Threading**: TODAS las llamadas a IA van en `threading.Thread(daemon=True)`.
-Las actualizaciones de UI se hacen con `self.after(0, callback)` para volver al hilo principal.
+**Threading:** todas las llamadas a IA en `threading.Thread(daemon=True)`. UI updates con `self.after(0, callback)` para volver al hilo principal de Tk.
 
 ---
 
-## 🔌 Persistencia
+## 💾 Persistencia
 
-Archivos en **`~/.arquitecto_prompts/`**:
+Carpeta: **`~/.arquitecto_prompts/`**
 
 | Archivo | Contenido |
-|---------|-----------|
+|---|---|
 | `historial.json` | Últimos 500 prompts |
 | `favoritos.json` | Prompts marcados ⭐ |
 | `estrellas.json` | Prompts con nota y modelo |
 | `personajes.json` | Personajes guardados |
 | `loras.json` | LoRAs con triggers |
 | `plantillas.json` | Plantillas (modo + modelo + estilos + ratio) |
-| `preferences.json` | Preferencias de usuario |
+| `preferencias.json` | Preferencias de usuario |
 | `keys.json` | API keys (fallback si no hay keyring) |
-| `borrador.txt` | Borrador auto-guardado |
-| `_last_autobackup.txt` | Marca de tiempo del último backup |
+| `borrador.txt` | Borrador auto-guardado cada 30s |
 | `backups/auto-AAAAMMDD.zip` | Backups automáticos semanales (máx 10) |
 | `logs/gprompt.log` | Log de la app |
 
@@ -175,7 +185,7 @@ Archivos en **`~/.arquitecto_prompts/`**:
 
 ### Escrituras atómicas
 
-TODOS los `.json` se escriben con el patrón **tmp + `os.replace()`** para prevenir corrupción si la app se cierra mid-write:
+TODOS los `.json` se escriben con el patrón **tmp + `os.replace()`**:
 
 ```python
 def _guardar(self, nombre):
@@ -197,79 +207,95 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-**48 tests** cubriendo:
+**48 tests** (46 pasan, 2 con drift conocido en `test_persistence.py`):
 
 | Suite | Cobertura |
-|-------|-----------|
+|---|---|
 | `test_api_clients.py` | Proveedores LLM, fábrica `get_provider()`, interfaces |
 | `test_config.py` | Helpers (`es_separador`, `get_model_specs`, etc.) |
 | `test_persistence.py` | DataStore CRUD, atomic writes, preferencias |
-| `test_workers.py` | Token counting, parser de ideas, detección de idioma |
+| `test_workers.py` | Token counting, parser de ideas, detección idioma |
 
 ---
 
-## ⌨ Atajos de teclado (27 activos)
+## 🪵 Logging
+
+Todos los módulos usan `logger = logging.getLogger(__name__)` a nivel módulo. Los 140 `except: pass` originales se convirtieron en `except Exception as _e: logger.debug(f"[silent] {_e}")` — silenciosos en runtime normal, diagnosticables con `LOG_LEVEL=DEBUG`.
+
+Helpers en [logging_utils.py](logging_utils.py):
+- `@silent_call(operation, default=None)` — decorador
+- `with silent(operation):` — context manager
+- `@log_operation(operation)` — log inicio/fin con timing
+
+---
+
+## ⌨ Atajos de teclado
 
 | Atajo | Acción |
-|------|--------|
-| `Alt+1` | Modo imagen |
-| `Alt+2` | Modo vídeo |
-| `Alt+3` | Modo audio |
-| `Alt+Enter` | Quick generate |
-| `Ctrl+1` | Copiar POSITIVE |
-| `Ctrl+2` | Copiar NEGATIVE |
-| `Ctrl+D` | Duplicar al historial |
-| `Ctrl+E` | Exportar rápido |
+|---|---|
 | `Ctrl+Enter` | Generar prompt |
+| `Alt+Enter` | Quick Generate (sin traducción ni NSFW check) |
+| `Ctrl+Shift+Enter` | Variaciones x3 |
+| `Ctrl+I` | Ideas creativas |
+| `Ctrl+Shift+A` | Analizar imagen |
+| `Ctrl+Shift+P` | Previsualizar |
+| `Ctrl+1` / `Ctrl+2` | Copiar POSITIVE / NEGATIVE |
+| `Ctrl+S` / `Ctrl+Shift+S` | Guardar favorito / estrella |
 | `Ctrl+F` | Búsqueda global |
 | `Ctrl+H` | Modo Focus |
-| `Ctrl+I` | Ideas creativas |
-| `Ctrl+L` | Abrir LoRAs |
-| `Ctrl+P` | Grupo personajes |
-| `Ctrl+R` | Idea aleatoria |
-| `Ctrl+S` | Guardar favorito |
-| `Ctrl+Shift+A` | Analizar imagen |
-| `Ctrl+Shift+Enter` | Variaciones x3 |
-| `Ctrl+Shift+L` | Cambiar tema |
-| `Ctrl+Shift+N` | Negative builder |
-| `Ctrl+Shift+P` | Previsualizar |
-| `Ctrl+Shift+S` | Guardar estrella |
-| `Ctrl+Shift+T` | Traducir idea |
-| `Ctrl+T` | Abrir tutorial |
+| `Ctrl+D` | Duplicar al historial |
+| `Ctrl+P` / `Ctrl+L` | Personajes / LoRAs |
+| `Ctrl+R` | Idea aleatoria del historial |
+| `Ctrl+T` | Tutorial |
+| `Ctrl+E` | Exportar rápido |
 | `Ctrl+V` | Pegar inteligente |
+| `Alt+1` / `Alt+2` / `Alt+3` | Modo imagen / vídeo / audio |
+| `Ctrl+Shift+L` | Cambiar tema dark↔light |
+| `Ctrl+Shift+T` | Traducir idea |
+| `Ctrl+Shift+N` | Negative Builder |
 | `Ctrl+?` | Mostrar todos los atajos |
-| `Escape` | Cerrar popup activo |
 | `F11` | Pantalla completa |
+| `Escape` | Cerrar popup / salir fullscreen |
 
 ---
 
 ## 📐 Principios de diseño
 
-1. **Provider Pattern** — Todos los LLMs usan la misma interfaz. Añadir provider = 2 métodos.
-2. **Mixin Architecture** — 8 mixins separan responsabilidades sin duplicar estado.
-3. **Escritura atómica** — `tmp + os.replace()` en TODO write a JSON.
-4. **Threading + after** — IA en threads daemon; UI updates con `self.after(0, fn)`.
-5. **Fallback chains** — VisionChain: Gemini → Ollama → OpenRouter.
-6. **Sin duplicación if/elif** — Worker delega siempre en `provider.completar()`.
-7. **Validación + auto-recuperación** — Archivos corruptos se respaldan y recrean.
-8. **UX no bloqueante** — Toasts en lugar de `messagebox` cuando es posible.
+1. **Provider Pattern** — añadir LLM = 2 métodos + entrada en `LLM_PROVIDERS`.
+2. **Datos en JSON, lógica en Python** — `MODEL_SPECS_*`, `ESTILOS_*` y biblioteca viven en `data/*.json`.
+3. **Composición progresiva** — mixins heredados + componentes (`self.creative.X`) que delegan al app. Migración sin romper.
+4. **Lazy imports** — `openai`, `google-genai`, `anthropic` solo si están instalados. La app arranca sin ellos.
+5. **Escritura atómica** — `tmp + fsync + os.replace()` en TODOS los `.json` del usuario.
+6. **Threading + after** — IA en threads daemon; UI updates con `self.after(0, fn)`.
+7. **Fallback chains** — VisionChain: Gemini → Ollama → OpenRouter.
+8. **Validación + auto-recuperación** — JSONs corruptos se renombran a `.corrupt` y se recrean.
+9. **Logging diagnosticable** — `except: pass` está prohibido; usar `logger.debug` o helpers de `logging_utils`.
+10. **UX no bloqueante** — `show_toast()` en vez de `messagebox` cuando es posible.
 
 ---
 
-## 🔑 Notas para futuros mantenedores
+## 🔑 Notas para mantenedores
 
-1. **NO modificar directamente `app.py`** para añadir métodos de un mixin — añadir al mixin correspondiente.
-2. **Las únicas excepciones** que viven en `app.py` son helpers globales: `open_child_window`, `show_toast`, `_actualizar_indicador_proveedor`, `_backup_semanal_check`, `_atajo_generar_prompt`, `__init__`, `_setup_wizard`, `cmd_preferencias`, `_regen_*`, `_cmd_diff_versiones`, `cmd_previsualizar`, `_cmd_plantillas_populares`, `_abrir_comparador`. Todo lo demás → mixin.
-3. **`self.deepseek`** es un `DeepSeekWorker` que delega en `self.clients.get_active_provider()`. NO pasarle parámetro `modelo_llm`.
-4. **`self.store`** es un `DataStore` para persistencia.
-5. **`self.llm_var`** es un `ctk.StringVar` con la LABEL del LLM activo (no el id).
-6. **Nuevas ventanas hijas**: usar `self.open_child_window(title, size)` en lugar de `ctk.CTkToplevel(self)` directo. Garantiza que aparece al frente.
-7. **Notificar al usuario**: usar `self.show_toast(msg, color)` para feedback no bloqueante; `messagebox` solo para confirmaciones importantes.
-8. **El `.env` NO se commitea** — está en `.gitignore`.
-9. **Theme switching** no destruye widgets — usa `_apply_theme_colors()` para actualizar.
-10. **Backups automáticos** se crean cada 7 días en `~/.arquitecto_prompts/backups/`. Se conservan los últimos 10.
+1. **NO añadir métodos directamente a `app.py`.** Cada método nuevo va en su mixin (`modules/X.py`). Excepciones: helpers globales como `open_child_window`, `show_toast`, `_actualizar_indicador_proveedor`, `__init__`, `_setup_wizard`.
+
+2. **Nuevas ventanas hijas:** instanciar `GPromptWindow(self)` directamente o usar `self.open_child_window(title, size)`. **NO** usar `ctk.CTkToplevel` (perdería el bring-to-front).
+
+3. **Self vs componente:** dentro de un mixin sigue siendo `self.X`. En código nuevo (especialmente nuevas features), preferir `self.componente.X` para hacer explícita la dependencia.
+
+4. **`self.deepseek`** es un `DeepSeekWorker` que delega en `self.clients.get_active_provider()`. NO pasarle `modelo_llm=` (el provider activo se resuelve solo).
+
+5. **`self.store`** es un `DataStore` con escrituras atómicas. Toda persistencia pasa por aquí.
+
+6. **`self.llm_var`** es un `ctk.StringVar` con la **LABEL** del LLM activo (no el id). Para resolver al id usar `self._llm_label_to_id`.
+
+7. **Notificar al usuario:** `self.show_toast(msg, color)` para feedback no bloqueante; `messagebox` solo para confirmaciones importantes (borrar, sobrescribir).
+
+8. **Theme switching** no destruye widgets — usa `_apply_theme_colors()` para actualizar en caliente.
+
+9. **`.env` NO se commitea** — está en `.gitignore`. Lo mismo para `keys.json` y archivos de usuario.
+
+10. **Añadir un modelo nuevo:** editar `data/model_specs_imagen.json` (o `_video.json` / `_audio.json`). Re-arrancar la app. Sin tocar Python.
 
 ---
 
-*Generado: 2026-05-16 | Versión: 1.0.9 | Python: 3.10+*
-*Última versión — biblioteca integrada, dashboard, herramientas creativas.*
+*Documento mantenido manualmente. Si tocas la arquitectura, actualiza este archivo.*

@@ -109,6 +109,7 @@ from config import (
 )
 from workers import detectar_idioma_es
 from modules.windows import abrir_personajes, abrir_loras, abrir_lista
+from modules.style_guide import abrir_guia_estilos, tooltip_para
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -218,6 +219,7 @@ class UIBuildersMixin:
                 ("🚀  Auto-mejora", self._cmd_automejora_periodica),
                 ("📝  Crítica historial", self._cmd_critica_historial),
                 ("📈  Estadísticas", self._abrir_estadisticas),
+                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self)),
                 ("📖  Modo educativo", self._cmd_modo_educativo),
                 ("📚  Tutorial completo", self._abrir_tutorial),
             ]),
@@ -1590,6 +1592,13 @@ class UIBuildersMixin:
                                  border_color=c["chk_border"],
                                  fg_color=c["accent_text"])
             cb.grid(row=i // cols, column=i % cols, sticky="w", padx=5, pady=1)
+            # Tooltip con la descripción de GUIA_ESTILOS.md (si está cubierto)
+            _tip = tooltip_para(nombre)
+            if _tip:
+                try:
+                    CTkToolTip(cb, message=_tip, delay=0.4, wraplength=320)
+                except Exception as _e:
+                    logger.debug(f"[silent] tooltip estilo {nombre}: {_e}")
 
         for c_i in range(cols):
             self.frame_checks.columnconfigure(c_i, weight=1)
