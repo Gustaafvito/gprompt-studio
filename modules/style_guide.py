@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 _MD_PATH = Path(__file__).resolve().parent.parent / "GUIA_ESTILOS.md"
 _cache: dict | None = None
+_modos_cache: dict | None = None  # {nombre_estilo: frozenset({"imagen","video","audio"})}
 
 
 def cargar_guia() -> dict[str, dict]:
@@ -64,6 +65,67 @@ def cargar_guia() -> dict[str, dict]:
     return _cache
 
 
+def _construir_modos_cache() -> dict[str, frozenset]:
+    """Devuelve {nombre_guia: {modos en los que aparece}}.
+
+    Mira ESTILOS_IMAGEN, ESTILOS_VIDEO, ESTILOS_AUDIO de config y
+    busca cada entrada de la guía con `buscar_estilo` reverse — es
+    decir, para cada estilo del catálogo de un modo, comprueba si
+    está en la guía y le añade ese modo al set.
+    """
+    global _modos_cache
+    if _modos_cache is not None:
+        return _modos_cache
+
+    try:
+        import config
+    except Exception as e:
+        logger.warning(f"No se pudo importar config para clasificar modos: {e}")
+        _modos_cache = {}
+        return _modos_cache
+
+    guia = cargar_guia()
+    modos_de: dict[str, set] = {nombre: set() for nombre in guia}
+
+    fuentes = (
+        ("imagen", getattr(config, "ESTILOS_IMAGEN", [])),
+        ("video",  getattr(config, "ESTILOS_VIDEO", [])),
+        ("audio",  getattr(config, "ESTILOS_AUDIO", [])),
+    )
+    for modo, lista in fuentes:
+        for estilo in lista:
+            d = buscar_estilo(estilo)
+            if d is None:
+                continue
+            # Encontrar la clave canónica del MD para este estilo
+            # (buscar_estilo nos da el dict, no el nombre; hacemos lookup inverso)
+            for k, v in guia.items():
+                if v is d:
+                    modos_de[k].add(modo)
+                    break
+
+    _modos_cache = {k: frozenset(v) for k, v in modos_de.items()}
+    return _modos_cache
+
+
+def modos_de_estilo(nombre: str) -> frozenset:
+    """Devuelve los modos ({'imagen','video','audio'}) en los que aparece
+    un estilo. Frozen-set vacío si no se encuentra o si la guía no
+    cubre ese modo para ese estilo.
+    """
+    cache = _construir_modos_cache()
+    if nombre in cache:
+        return cache[nombre]
+    # Match permisivo: buscar por similitud
+    d = buscar_estilo(nombre)
+    if d is None:
+        return frozenset()
+    for k, v in cargar_guia().items():
+        if v is d:
+            return cache.get(k, frozenset())
+    return frozenset()
+
+
 def buscar_estilo(nombre: str) -> dict | None:
     """Devuelve el dict de un estilo, o None si no está.
 
@@ -103,11 +165,21 @@ def tooltip_para(nombre: str) -> str:
     return desc or ej
 
 
-def abrir_guia_estilos(app):
-    """Abre una ventana con la guía completa + buscador.
+_FILTRO_LABELS = {
+    "todos":  "📖 Todos",
+    "imagen": "🖼 Imagen",
+    "video":  "🎬 Vídeo",
+    "audio":  "🎵 Audio",
+}
+
+
+def abrir_guia_estilos(app, modo_inicial: str | None = None):
+    """Abre una ventana con la guía completa + buscador + filtro por modo.
 
     Args:
         app: ArquitectoApp (para parentar la ventana correctamente).
+        modo_inicial: si es "imagen"/"video"/"audio", el filtro se
+            preselecciona en ese modo. Si es None o "todos", muestra todo.
     """
     guia = cargar_guia()
     if not guia:
@@ -117,6 +189,9 @@ def abrir_guia_estilos(app):
             logger.debug(f"[silent] {_e}")
         return
 
+    # Pre-construir el cache de modos (puede tardar un instante la primera vez)
+    _construir_modos_cache()
+
     is_lt = ctk.get_appearance_mode().lower() == "light"
     bg_card = "#ffffff" if is_lt else "#1a1a2e"
     text_main = "#111827" if is_lt else "#e5e7eb"
@@ -125,37 +200,73 @@ def abrir_guia_estilos(app):
 
     win = GPromptWindow(app)
     win.title(f"📖 Guía de estilos ({len(guia)} estilos)")
-    win.geometry("900x650")
+    win.geometry("900x680")
 
-    # Cabecera con buscador
-    header = ctk.CTkFrame(win, height=60, corner_radius=0)
+    # ── Cabecera ─────────────────────────────────────────────
+    header = ctk.CTkFrame(win, height=110, corner_radius=0)
     header.pack(fill="x")
     header.pack_propagate(False)
 
+    # Fila 1: título + buscador
+    fila1 = ctk.CTkFrame(header, fg_color="transparent")
+    fila1.pack(fill="x", padx=20, pady=(12, 6))
     ctk.CTkLabel(
-        header,
+        fila1,
         text="📖 Guía de estilos",
         font=ctk.CTkFont(size=18, weight="bold"),
-    ).pack(side="left", padx=(20, 10), pady=15)
-
+    ).pack(side="left")
     contador_var = ctk.StringVar(value=f"{len(guia)} estilos")
-    ctk.CTkLabel(header, textvariable=contador_var, text_color=text_muted).pack(side="left", pady=15)
+    ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
+    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text="🔍 Buscar por nombre, grupo, descripción…")
+    ent_buscar.pack(side="right")
 
-    ent_buscar = ctk.CTkEntry(header, width=300, placeholder_text="🔍 Buscar por nombre, grupo, descripción…")
-    ent_buscar.pack(side="right", padx=20, pady=15)
+    # Fila 2: filtro por modo (segmented button)
+    fila2 = ctk.CTkFrame(header, fg_color="transparent")
+    fila2.pack(fill="x", padx=20, pady=(0, 12))
+    ctk.CTkLabel(fila2, text="Filtrar por modo:", text_color=text_muted).pack(side="left", padx=(0, 10))
 
-    # Área scrollable con resultados
+    # Normalizar modo_inicial
+    modo_seleccionado = (modo_inicial or "todos").lower()
+    if modo_seleccionado not in _FILTRO_LABELS:
+        modo_seleccionado = "todos"
+
+    filtro_var = ctk.StringVar(value=_FILTRO_LABELS[modo_seleccionado])
+    seg = ctk.CTkSegmentedButton(
+        fila2,
+        values=list(_FILTRO_LABELS.values()),
+        variable=filtro_var,
+        command=lambda _v: on_filtro(),
+    )
+    seg.pack(side="left")
+
+    # ── Scroll con resultados ───────────────────────────────
     scroll = ctk.CTkScrollableFrame(win, fg_color=("#f3f4f6" if is_lt else "#0d1117"))
     scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+    def _modo_actual() -> str:
+        label = filtro_var.get()
+        for k, v in _FILTRO_LABELS.items():
+            if v == label:
+                return k
+        return "todos"
 
     def render(filtro: str = ""):
         for w in scroll.winfo_children():
             w.destroy()
         f = filtro.strip().lower()
-        # Agrupar por grupo
+        modo = _modo_actual()
+        modos_cache = _construir_modos_cache()
+
         por_grupo: dict[str, list[tuple[str, dict]]] = {}
         n = 0
+        total_modo = 0  # cuántos hay en este modo (independiente del texto de búsqueda)
         for nombre, d in guia.items():
+            # Filtro por modo
+            if modo != "todos":
+                if modo not in modos_cache.get(nombre, frozenset()):
+                    continue
+            total_modo += 1
+            # Filtro de búsqueda
             if f and not (
                 f in nombre.lower()
                 or f in d["grupo"].lower()
@@ -165,10 +276,18 @@ def abrir_guia_estilos(app):
                 continue
             por_grupo.setdefault(d["grupo"], []).append((nombre, d))
             n += 1
-        contador_var.set(f"{n} estilos" if not f else f"{n} de {len(guia)}")
+
+        if modo == "todos":
+            contador_var.set(f"{n} de {len(guia)}" if f else f"{len(guia)} estilos")
+        else:
+            etiqueta = _FILTRO_LABELS[modo]
+            contador_var.set(
+                f"{n} de {total_modo} en {etiqueta}" if f else f"{total_modo} en {etiqueta}"
+            )
 
         if n == 0:
-            ctk.CTkLabel(scroll, text="Sin resultados.", text_color=text_muted, font=ctk.CTkFont(size=14)).pack(pady=40)
+            msg = "Sin resultados." if f else f"No hay estilos en la guía para el modo {_FILTRO_LABELS[modo]}."
+            ctk.CTkLabel(scroll, text=msg, text_color=text_muted, font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 
         for grupo in por_grupo:
@@ -181,15 +300,32 @@ def abrir_guia_estilos(app):
             ).pack(fill="x", padx=4, pady=(14, 4))
 
             for nombre, d in por_grupo[grupo]:
+                # Badges de los modos en los que aparece este estilo
+                modos_estilo = modos_cache.get(nombre, frozenset())
+                badge_text = " ".join(
+                    {"imagen": "🖼", "video": "🎬", "audio": "🎵"}[m] for m in ("imagen", "video", "audio") if m in modos_estilo
+                )
+
                 card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=6)
                 card.pack(fill="x", padx=4, pady=2)
+
+                fila_top = ctk.CTkFrame(card, fg_color="transparent")
+                fila_top.pack(fill="x", padx=10, pady=(6, 0))
                 ctk.CTkLabel(
-                    card,
+                    fila_top,
                     text=nombre,
                     font=ctk.CTkFont(size=12, weight="bold"),
                     text_color=text_main,
                     anchor="w",
-                ).pack(fill="x", padx=10, pady=(6, 0))
+                ).pack(side="left")
+                if badge_text:
+                    ctk.CTkLabel(
+                        fila_top,
+                        text=badge_text,
+                        text_color=text_muted,
+                        font=ctk.CTkFont(size=11),
+                    ).pack(side="right")
+
                 if d["descripcion"]:
                     ctk.CTkLabel(
                         card,
@@ -211,6 +347,9 @@ def abrir_guia_estilos(app):
                     ).pack(fill="x", padx=10, pady=(0, 6))
 
     def on_buscar(*_):
+        render(ent_buscar.get())
+
+    def on_filtro():
         render(ent_buscar.get())
 
     ent_buscar.bind("<KeyRelease>", on_buscar)

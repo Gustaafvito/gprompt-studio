@@ -219,7 +219,7 @@ class UIBuildersMixin:
                 ("🚀  Auto-mejora", self._cmd_automejora_periodica),
                 ("📝  Crítica historial", self._cmd_critica_historial),
                 ("📈  Estadísticas", self._abrir_estadisticas),
-                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self)),
+                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self, self.modo_var.get() if hasattr(self, "modo_var") else None)),
                 ("📖  Modo educativo", self._cmd_modo_educativo),
                 ("📚  Tutorial completo", self._abrir_tutorial),
             ]),
