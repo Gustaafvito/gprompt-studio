@@ -5,10 +5,13 @@ Personajes, LoRAs, Batch, Historial, Favoritos.
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
 import datetime
+import logging
 import threading
 from pathlib import Path
 
 from workers import contar_tokens_aprox
+
+logger = logging.getLogger(__name__)
 
 
 def _is_light():
@@ -488,8 +491,8 @@ def abrir_batch(app):
         _batch_cancelado.set()
         try:
             ventana.grab_release()
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         ventana.destroy()
 
     ventana.protocol("WM_DELETE_WINDOW", _on_cerrar_batch)

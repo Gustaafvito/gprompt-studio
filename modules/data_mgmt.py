@@ -3,8 +3,11 @@ import os
 import re
 import json
 import datetime
+import logging
 import random
 import pyperclip
+
+logger = logging.getLogger(__name__)
 import customtkinter as ctk
 import tkinter as tk
 import tkinter.filedialog as filedialog
@@ -53,14 +56,13 @@ class DataMgmtMixin:
                     "modo": self.modo_var.get(),
                 }
                 self.store.guardar_preferencias(prefs)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Reagendar
         try:
             self.after(30000, self._auto_guardar_borrador)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _restaurar_borrador(self):
         """Si hay un borrador guardado, ofrece restaurarlo al abrir la app."""
         try:
@@ -92,9 +94,8 @@ class DataMgmtMixin:
                 # Limpiar borrador descartado
                 prefs["borrador"] = None
                 self.store.guardar_preferencias(prefs)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _cmd_guardar_plantilla(self):
         nombre = simpledialog.askstring("Guardar Plantilla", "Nombre para la plantilla:", parent=self)
         if not nombre or not nombre.strip(): return
@@ -291,9 +292,8 @@ class DataMgmtMixin:
             try: self._sesion_log(f"✨ Expandió snippet: ;{palabra}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _cmd_gestionar_snippets(self):
         """Ventana de gestión de snippets: ver predefinidos + añadir/editar/borrar custom."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1121,9 +1121,8 @@ class DataMgmtMixin:
             if geo:
                 try:
                     self.geometry(geo)
-                except Exception:
-                    pass
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             # Tema (cargado de forma segura: diferido y con fallback)
             tema = prefs.get("tema", "dark")
             if tema in ("dark", "light", "system"):
@@ -1155,8 +1154,8 @@ class DataMgmtMixin:
                     try:
                         if hasattr(self, "_apply_theme_colors"):
                             self.after(50, self._apply_theme_colors)
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
                 try:
                     self.after(200, _aplicar_tema_diferido)
                 except Exception as e:
@@ -1229,9 +1228,9 @@ class DataMgmtMixin:
             # Cargar preferencia de grabación de vídeo de sesión
             self._sesion_grabar_video = prefs.get("sesion_grabar_video", False)
 
-        except Exception:
-            pass
+        except Exception as _e:
 
+            logger.debug(f"[silent] {_e}")
     def _guardar_preferencias(self):
         # como `nombre` que no se gestionan en este método.
         try:
@@ -1332,5 +1331,5 @@ class DataMgmtMixin:
                 self._cargar_imagen_desde_pil(img.convert("RGB"), "clipboard_paste")
                 self.set_estado("📋 Imagen pegada desde el portapapeles", "#2ecc71")
                 return "break"
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")

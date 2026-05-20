@@ -4,11 +4,14 @@ import re
 import json
 import csv
 import datetime
+import logging
 import pyperclip
 import customtkinter as ctk
 import tkinter as tk
 from config import VERSION
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -301,8 +304,8 @@ class BackupExportMixin:
                     if hasattr(self, "show_toast"):
                         try:
                             self.show_toast(f"📋 Copiado: {n}", color, 1800)
-                        except Exception:
-                            pass
+                        except Exception as _e:
+                            logger.debug(f"[silent] {_e}")
                 return _copiar
 
             ctk.CTkButton(btn_row, text=f"📋 Copiar {nombre}", width=200, height=32,
@@ -315,9 +318,8 @@ class BackupExportMixin:
         # Seleccionar Midjourney por defecto
         try:
             tabs.set("🎨 Midjourney v6")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # ── Botón Copiar Todo ──────────────────────────────────────────
         def _copiar_todo():
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont, _ in formatos])
@@ -468,6 +470,6 @@ class BackupExportMixin:
         if hasattr(self, '_menu_activo') and self._menu_activo:
             try:
                 self._menu_activo.destroy()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             self._menu_activo = None

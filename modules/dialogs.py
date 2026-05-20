@@ -123,13 +123,13 @@ class DialogsMixin:
                 try:
                     if hasattr(self, "_refrescar_indicadores_llm"):
                         self._refrescar_indicadores_llm()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
                 try:
                     if hasattr(self, "_actualizar_indicador_proveedor"):
                         self._actualizar_indicador_proveedor()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             else:
                 self.set_estado("Sin cambios")
             v.destroy()
@@ -157,19 +157,19 @@ class DialogsMixin:
                 pw, ph = popup.winfo_width(), popup.winfo_height()
                 if px <= event.x_root <= px + pw and py <= event.y_root <= py + ph:
                     return
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             for btn in getattr(self, '_header_menu_btns', []):
                 try:
                     bx, by, bw, bh = btn.winfo_rootx(), btn.winfo_rooty(), btn.winfo_width(), btn.winfo_height()
                     if bx <= event.x_root <= bx + bw and by <= event.y_root <= by + bh:
                         return
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
         try:
             popup.destroy()
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         self._active_menu_popup = None
 
     def _cmd_toggle_tema(self):
@@ -242,8 +242,8 @@ class DialogsMixin:
                 if hasattr(self, "show_toast"):
                     try:
                         self.show_toast(f"🌐 Abriendo {url[:40]}...", "#3b82f6", 1500)
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
             except Exception as e:
                 self.set_estado(f"⚠ No se pudo abrir el enlace: {e}", "#e74c3c")
 
@@ -263,9 +263,8 @@ class DialogsMixin:
             btn.pack(side="right", padx=2)
             try:
                 CTkToolTip(btn, message=url, delay=0.4)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
     def _darker(self, hex_color, factor=0.8):
         """Oscurece un color hex."""
         hex_color = hex_color.lstrip('#')
@@ -331,9 +330,8 @@ class DialogsMixin:
                 if neg:
                     pyperclip.copy(neg)
                     self.set_estado(" NEGATIVE copiado (doble-click)", "#e74c3c")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def toggle_botones(self, estado=True):
         """Activa/desactiva botones de generación."""
         if hasattr(self, 'action_btns'):
@@ -384,20 +382,18 @@ class DialogsMixin:
             try:
                 if getattr(self, "_sesion_activa", False):
                     self._sesion_activa = False
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             # Cerrar todas las ventanas hijas (Toplevel)
             try:
                 for w in list(self.winfo_children()):
                     try:
                         if isinstance(w, ctk.CTkToplevel) and w.winfo_exists():
                             w.destroy()
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         finally:
             try:
                 self.destroy()
@@ -451,9 +447,8 @@ class DialogsMixin:
         try:
             import winsound
             winsound.MessageBeep(winsound.MB_ICONASTERISK)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _cmd_dashboard(self):
         """🏠 Dashboard v2 — Panel de control completo con estadísticas, accesos
         rápidos, gráficos y herramientas.
@@ -507,9 +502,8 @@ class DialogsMixin:
         try:
             v.lift()
             v.focus_force()
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         main = ctk.CTkScrollableFrame(v, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=20, pady=15)
 
@@ -530,9 +524,8 @@ class DialogsMixin:
             nombre_guardado = prefs_user.get("nombre", "").strip()
             if nombre_guardado:
                 nombre_user = nombre_guardado
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         header_box = ctk.CTkFrame(main, fg_color="transparent")
         header_box.pack(fill="x")
         ctk.CTkLabel(header_box, text=f"{saludo}, {nombre_user}",
@@ -905,9 +898,8 @@ class DialogsMixin:
                         ultima_str = f"Hace {m} minuto{'s' if m != 1 else ''}"
                     else:
                         ultima_str = "Hace unos segundos"
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Estimación de tokens (cuenta caracteres del historial / 4)
         chars_total = sum(len(e.get("contenido", "")) for e in historial)
         tokens_estimados = chars_total // 4
@@ -1111,9 +1103,8 @@ class DialogsMixin:
                     avisos.append(("💾", f"Último backup hace {dias_bk} días", accent_amber))
             else:
                 avisos.append(("💾", "Aún no se ha hecho backup", text_muted))
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         if avisos:
             avisos_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                          border_color=card_border, border_width=1)
@@ -1737,8 +1728,8 @@ class DialogsMixin:
                 try:
                     if f.is_file():
                         total_bytes += f.stat().st_size
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             if total_bytes < 1024:
                 tamano_str = f"{total_bytes} B"
             elif total_bytes < 1024 * 1024:
@@ -1759,8 +1750,8 @@ class DialogsMixin:
                 try:
                     self.store.limpiar_historial()
                     self.set_estado("🧹 Historial limpiado", accent_green)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             ctk.CTkButton(mant_frame, text=f"🧹 Limpiar historial ({len(historial)} prompts)",
                           height=28, fg_color=accent_amber, hover_color="#b45309",
                           font=ctk.CTkFont(size=9, weight="bold"),

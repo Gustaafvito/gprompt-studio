@@ -11,8 +11,14 @@ import os
 import json
 import logging
 import urllib.request
-from openai import OpenAI
 from typing import Optional
+
+try:
+    from openai import OpenAI
+    OPENAI_DISPONIBLE = True
+except ImportError:
+    OpenAI = None  # type: ignore[assignment,misc]
+    OPENAI_DISPONIBLE = False
 
 try:
     from google import genai as google_genai
@@ -202,6 +208,8 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         super().__init__(api_key, model)
         self.base_url = base_url
         if api_key:
+            if not OPENAI_DISPONIBLE:
+                raise ImportError("Paquete `openai` no instalado. Instala con: pip install openai")
             self._cliente = OpenAI(api_key=api_key or "sin-key", base_url=base_url)
 
     def disponible(self) -> bool:
@@ -463,14 +471,12 @@ def borrar_api_key(provider_id: str):
     try:
         import keyring
         keyring.delete_password(KEYRING_SERVICE, f"api_key_{provider_id}")
-    except Exception:
-        pass
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     try:
         _borrar_keys_fallback(provider_id)
-    except Exception:
-        pass
-
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 def _ruta_keys_fallback() -> str:
     from config import ARCHIVOS
     ruta = str(ARCHIVOS["keys"])
@@ -637,8 +643,10 @@ class APIClients:
 
     def _cliente_raw(self, provider_id: str):
         info = LLM_PROVIDERS.get(provider_id, {})
+        if info.get("tipo") != "openai_compatible" or not OPENAI_DISPONIBLE:
+            return None
         api_key = self.api_keys.get(provider_id, "")
-        return OpenAI(api_key=api_key or "sin-key", base_url=info.get("base_url", "")) if info.get("tipo") == "openai_compatible" else None
+        return OpenAI(api_key=api_key or "sin-key", base_url=info.get("base_url", ""))
 
     def _cliente_raw_gemini(self):
         if not GEMINI_DISPONIBLE:
@@ -660,8 +668,8 @@ class APIClients:
                     pid = f.read().strip()
                 if pid in LLM_PROVIDERS:
                     return pid
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         return "deepseek"
 
     def cambiar_provider(self, provider_id: str) -> bool:
@@ -674,8 +682,8 @@ class APIClients:
             ruta = str(ARCHIVOS["active_provider"])
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(provider_id)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         return True
 
     def get_active_provider(self) -> BaseLLMProvider | None:

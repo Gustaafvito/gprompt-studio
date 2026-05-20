@@ -167,8 +167,8 @@ def _cargar_tema():
         try:
             with open(prefs_path, "r", encoding="utf-8") as f:
                 tema_guardado = json.load(f).get("tema", "dark")
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     ctk.set_appearance_mode(tema_guardado)
     logger.info(f"Tema aplicado: {tema_guardado}")
 

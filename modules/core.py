@@ -90,12 +90,10 @@ def _recolor_labels(container, primary_color, secondary_color, muted_color):
             elif hasattr(child, "winfo_children"):
                 try:
                     _recolor_labels(child, primary_color, secondary_color, muted_color)
-                except Exception:
-                    pass
-    except Exception:
-        pass
-
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 def _recolor_widgets(container, is_light):
     """Recursivamente recolorea CTkComboBox, CTkSegmentedButton, CTkOptionMenu."""
     combo_bg = "#ffffff" if is_light else "#1a2030"
@@ -124,14 +122,12 @@ def _recolor_widgets(container, is_light):
                     child.configure(fg_color=combo_bg, button_color=combo_btn,
                                     text_color=combo_text, dropdown_fg_color=dd_fg,
                                     dropdown_hover_color=dd_hov, dropdown_text_color=dd_text)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             if hasattr(child, "winfo_children"):
                 _recolor_widgets(child, is_light)
-    except Exception:
-        pass
-
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 class CoreMixin:
     """Mixin containing all core methods: workers, commands, state management."""
 
@@ -199,9 +195,8 @@ class CoreMixin:
                         info = widget.pack_info()
                         self._focus_pack_order.append((attr, dict(info)))
                         widget.pack_forget()
-                except Exception:
-                    pass
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             # Botón flotante para salir
             self._focus_exit_btn = ctk.CTkButton(self, text="✕ Salir de Focus", width=140, height=28,
                                                   fg_color="#7c3aed", hover_color="#6d28d9",
@@ -244,17 +239,16 @@ class CoreMixin:
                         else:
                             widget.pack(fill="x", padx=16, pady=2)
                         prev = widget
-                    except Exception:
-                        pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
             self._focus_pack_order = []
             self._modo_focus_activo = False
 
             # Repintar colores del tema
             try:
                 self._apply_theme_colors()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             self.set_estado("🎯 Modo Focus desactivado")
 
     # ON LLM CAMBIO
@@ -297,14 +291,13 @@ class CoreMixin:
             try:
                 if hasattr(self, "_actualizar_indicador_proveedor"):
                     self._actualizar_indicador_proveedor()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             try:
                 if hasattr(self, "_refrescar_indicadores_llm"):
                     self._refrescar_indicadores_llm()
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
     # TOGGLE TEMA CLARO/OSCURO
 
     def _apply_theme_colors(self):
@@ -380,9 +373,8 @@ class CoreMixin:
                 sw = getattr(self, sw_attr, None)
                 if sw and sw.winfo_exists():
                     sw.configure(button_color=sw_button, button_hover_color=sw_button_hover)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Refrescar checkboxes de estilos: sin esto, al cambiar tema en
         # caliente los checkboxes mantenían colores antiguos (gris/gris).
         if hasattr(self, "estilo_checks") and hasattr(self, "frame_checks") and c:
@@ -397,29 +389,26 @@ class CoreMixin:
                         )
                 # Fondo del scrollable
                 self.frame_checks.configure(fg_color=c["chk_bg"])
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Label de estilos seleccionados (verde) y contador
         if hasattr(self, "lbl_estilos_sel"):
             try:
                 verde = "#059669" if is_light else "#2ecc71"
                 self.lbl_estilos_sel.configure(text_color=verde)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         if hasattr(self, "lbl_estilos_count") and c:
             try:
                 self.lbl_estilos_count.configure(text_color=c["muted_text"])
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Refrescar contador (ajusta color según hay selección o no)
         try:
             if hasattr(self, "_actualizar_contador_estilos"):
                 self._actualizar_contador_estilos()
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Refrescar tabview central (Ajustes/Estilos/Negativos): el
         # tabview de CustomTkinter no se repinta al cambiar tema sin
         # forzar los colores explícitamente.
@@ -441,11 +430,10 @@ class CoreMixin:
                 for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
                     try:
                         self.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Refrescar fondos de frames principales: sin esto al cambiar
         # tema las inner frames mantienen el fg_color del tema anterior.
         tab_bg = c["panel_bg"]
@@ -458,9 +446,8 @@ class CoreMixin:
                 _f = getattr(self, _fname, None)
                 if _f is not None and _f.winfo_exists():
                     _f.configure(fg_color=tab_bg)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Reconfigurar tabs internos del tabview: gestionan sus tabs
         # como CTkFrame que necesitan ser repintados explícitamente al
         # cambiar tema, sino el contenido interno (Ajustes Extra,
@@ -473,19 +460,17 @@ class CoreMixin:
                         t = self.tabview.tab(tab_name)
                         if t is not None:
                             t.configure(fg_color=tab_bg, bg_color=tab_bg)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Forzar fg_color de la ventana raíz: sin esto, el área entre
         # tabs y el footer se queda gris medio del tema anterior.
         try:
             root_bg = "#f5f5f5" if is_light else "#0d1117"
             self.configure(fg_color=root_bg)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Repintar botones rápidos de ratio: los iconos ⬜📱🖥📸🖼 al lado
         # del combo Ratio se quedaban con fondo oscuro al pasar a tema
         # claro porque su fg_color se fija en construcción.
@@ -500,11 +485,10 @@ class CoreMixin:
                             btn.configure(fg_color=ratio_btn_bg,
                                           hover_color=ratio_btn_hover,
                                           text_color=ratio_btn_text)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Refrescar TODOS los labels en paneles
         # Recorremos todos los frames superiores y actualizamos los CTkLabel
         # que tengan texto pero no color forzado.
@@ -530,17 +514,15 @@ class CoreMixin:
                         try:
                             tab_frame = self.tabview.tab(tab_name)
                             _recolor_labels(tab_frame, lbl_color, lbl_secondary, muted_color)
-                        except Exception:
-                            pass
-            except Exception:
-                pass
-
+                        except Exception as _e:
+                            logger.debug(f"[silent] {_e}")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Recolorear combos, opciones, segmentados
         try:
             _recolor_widgets(self, is_light)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Recolorear labels específicos de entrada/estado/footer
         mt = c["muted_text"] if c else ("#4b5563" if is_light else "#9ca3af")
         pl = c["panel_label"] if c else ("#1f2937" if is_light else "#9ca3af")
@@ -550,24 +532,23 @@ class CoreMixin:
                 w = getattr(self, attr, None)
                 if w and w.winfo_exists():
                     w.configure(text_color=mt)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         for attr in ("lbl_autocomplete",):
             try:
                 w = getattr(self, attr, None)
                 if w and w.winfo_exists():
                     w.configure(text_color="#2563eb" if is_light else "#5a8aaa")
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Recolorear frame_entrada y frame_salida headers via _recolor_labels
         for attr in ("frame_entrada",):
             try:
                 fr = getattr(self, attr, None)
                 if fr and fr.winfo_exists():
                     _recolor_labels(fr, pt, pl, mt)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
     def _cmd_toggle_tema(self):
         """Alterna entre tema claro y oscuro.
         Nota: el theme.json custom puede no soportar light; en ese caso usamos blue por defecto."""
@@ -596,8 +577,8 @@ class CoreMixin:
             # Aplicar colores adaptativos sin destruir layout
             try:
                 self._apply_theme_colors()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         except Exception as e:
             self.set_estado(f"⚠️ Error cambiando tema: {e}", "#e74c3c")
 
@@ -991,8 +972,8 @@ class CoreMixin:
                     if w == ref:
                         kwargs = {k: v for k, v in kwargs.items() if k != 'before'}
                         break
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         widget.pack(**kwargs)
 
     # MODO CAMBIO
@@ -1016,9 +997,8 @@ class CoreMixin:
             # Limpiar ADN visual si estaba activo (suele ser específico de imagen)
             if getattr(self, '_anclaje_visual', None) and modo != "imagen":
                 self._anclaje_visual = None
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Sincronizar SegmentedButton si existe
         if hasattr(self, '_seg_modo'):
             mapa_inv = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
@@ -1157,9 +1137,8 @@ class CoreMixin:
                 if hasattr(self, '_tooltip_motor_video') and self._tooltip_motor_video is not None:
                     try:
                         self._tooltip_motor_video.hide()
-                    except Exception:
-                        pass
-
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
                 tip_rico = (
                     f"⭐ Nota: {specs.get('nota', '?')}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n"
@@ -1228,8 +1207,8 @@ class CoreMixin:
                 if hasattr(self, '_tooltip_modelo_actual') and self._tooltip_modelo_actual is not None:
                     try:
                         self._tooltip_modelo_actual.hide()
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
                 tip_rico = (
                     f"⭐ Nota: {specs.get('nota', '?')}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n\n"
@@ -1239,9 +1218,8 @@ class CoreMixin:
                 )
                 self._tooltip_modelo_actual = CTkToolTip(self.combo_modelo_imagen, delay=0.6, message=tip_rico,
                                                           wraplength=400, justify="left")
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             # Badges visuales según características del modelo
             badges = []
             if specs.get("is_natural"):
@@ -1266,8 +1244,8 @@ class CoreMixin:
             # Generar consejo contextual según situación actual
             try:
                 self._mostrar_consejo_contextual(modelo_name, specs)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         else:
             self.lbl_img_model_info.pack_forget()
             self.combo_ratio.configure(values=RATIOS_IMAGEN)
@@ -1827,9 +1805,8 @@ class CoreMixin:
                     trigger = self.store.trigger_lora(lora_nombre)
                     if trigger:
                         extras += f"\nLORA TRIGGER (incluir literal): {trigger}"
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             ratio = self.ratio_var.get() if hasattr(self, 'ratio_var') else ""
             ratio_str = f"\nRATIO: {ratio}" if ratio else ""
 
@@ -1851,8 +1828,8 @@ class CoreMixin:
                     modelo_actual = self.combo_modelo_video.get()
                 elif modo == "audio" and hasattr(self, 'combo_modelo_audio'):
                     modelo_actual = self.combo_modelo_audio.get()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             if modelo_actual:
                 peticion += f"\nMODELO: {modelo_actual}"
 
@@ -2511,8 +2488,8 @@ class CoreMixin:
             if popups:
                 popups[-1].destroy()
                 return "break"
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Si hay ventana de pantalla completa, salir
         if self.attributes('-fullscreen'):
             self.attributes('-fullscreen', False)

@@ -1109,9 +1109,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             img_copy.thumbnail((160, 120))
             img_tk = ctk.CTkImage(img_copy, size=(img_copy.width, img_copy.height))
             img_preview.configure(image=img_tk)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Estado / progreso
         lbl_estado = ctk.CTkLabel(vent, text="⏳ Iniciando extracción...",
                                    font=ctk.CTkFont(size=11), text_color="#f39c12")
@@ -2299,9 +2298,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     img_tk = ctk.CTkImage(thumb, size=(60, 60))
                     lbl = ctk.CTkLabel(thumbs_area, image=img_tk, text="")
                     lbl.pack(side="left", padx=2)
-                except Exception:
-                    pass
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
         def _anadir_mas():
             nuevas = filedialog.askopenfilenames(
                 title="Selecciona más imágenes",
@@ -2344,9 +2342,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     from PIL import Image as _PIL2
                     for ruta in archivos_state["rutas"][:5]:
                         todas_imagenes.append(_PIL2.open(ruta))
-                except Exception:
-                    pass
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
                 return self.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")

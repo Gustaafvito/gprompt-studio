@@ -2,10 +2,13 @@
 import os
 import re
 import json
+import logging
 import threading
 import datetime
 import random
 import pyperclip
+
+logger = logging.getLogger(__name__)
 from collections import Counter
 from tkinter import messagebox, filedialog
 import customtkinter as ctk
@@ -727,8 +730,8 @@ class ToolsWorkflowMixin:
                 })
                 if len(self._versiones_prompt) > 30:
                     self._versiones_prompt = self._versiones_prompt[-30:]
-        except Exception:
-            pass  # No bloquear si falla el guardado de versión
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
 
         peticion = (
             f"Analiza este prompt y mejora la versión automáticamente.\n\n"
@@ -1892,8 +1895,8 @@ class ToolsWorkflowMixin:
                             cards[m]["lbl_chars"].configure(text=f"{len(r)} / {mc} chars")
                             cards[m]["btn_usar"].configure(state="normal", command=lambda r=r, m=m: (self.actualizar_salida(r), vent.destroy(), self.set_estado(f"✅ Cargado prompt de {m}", "#2ecc71")))
                             cards[m]["btn_copiar"].configure(state="normal", command=lambda r=r, m=m: (pyperclip.copy(r), self.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
-                        except Exception:
-                            pass
+                        except Exception as _e:
+                            logger.debug(f"[silent] {_e}")
                     self.after(0, _mostrar)
                 except Exception as e:
                     def _err(m=modelo, exc=e):
@@ -1904,8 +1907,8 @@ class ToolsWorkflowMixin:
                             cards[m]["txt"].delete("1.0", "end")
                             cards[m]["txt"].insert("1.0", f"❌ Error: {exc}")
                             cards[m]["txt"].configure(state="disabled")
-                        except Exception:
-                            pass
+                        except Exception as _e:
+                            logger.debug(f"[silent] {_e}")
                     self.after(0, lambda: _err(m=modelo, exc=e))
 
             def _todos():

@@ -7,6 +7,8 @@ import sys, os, re, json, time, threading, traceback, logging, inspect
 from pathlib import Path
 import customtkinter as ctk
 
+logger = logging.getLogger(__name__)
+
 from modules.gprompt_window import GPromptWindow
 from tkinter import filedialog, messagebox, simpledialog
 from PIL import Image
@@ -74,20 +76,20 @@ def _patched_ctk_toplevel_init(self, *args, **kwargs):
     # Asegurar redimensionable y barra completa de Windows
     try:
         self.resizable(True, True)
-    except Exception:
-        pass
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     # Forzar al frente justo después del init
     try:
         self.after(50, lambda: _bring_to_front(self))
-    except Exception:
-        pass
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     # (antes solo estaban en open_child_window que no se usa en todas las ventanas)
     def _toggle_fs(event=None, w=self):
         try:
             actual = bool(w.attributes("-fullscreen"))
             w.attributes("-fullscreen", not actual)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         return "break"
 
     def _exit_fs(event=None, w=self):
@@ -95,15 +97,13 @@ def _patched_ctk_toplevel_init(self, *args, **kwargs):
             if bool(w.attributes("-fullscreen")):
                 w.attributes("-fullscreen", False)
                 return "break"
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     try:
         self.bind("<F11>", _toggle_fs)
         self.bind("<Escape>", _exit_fs)
-    except Exception:
-        pass
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 def _bring_to_front(top):
     """Traer ventana al frente sin bloquearla con -topmost permanente."""
     try:
@@ -117,11 +117,10 @@ def _bring_to_front(top):
         top.after(250, lambda: top.attributes("-topmost", False) if top.winfo_exists() else None)
         try:
             top.focus_force()
-        except Exception:
-            pass
-    except Exception:
-        pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 def _patched_ctk_toplevel_transient(self, master=None):
     """NO llamamos al transient original: con transient activo, Windows
     oculta los botones de minimize/maximize. Sin transient se mantienen
@@ -132,14 +131,13 @@ def _patched_ctk_toplevel_transient(self, master=None):
     # En Windows, asegurar que NO se trate como tool window
     try:
         self.attributes("-toolwindow", False)
-    except Exception:
-        pass
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     # Forzar al frente otra vez tras el transient (que no hace nada ahora)
     try:
         self.after(60, lambda: _bring_to_front(self))
-    except Exception:
-        pass
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
 ctk.CTkToplevel.__init__ = _patched_ctk_toplevel_init
 ctk.CTkToplevel.transient = _patched_ctk_toplevel_transient
 
@@ -245,9 +243,8 @@ class ArquitectoApp(
             self.switch_nsfw_var.trace_add("write", lambda *a: self._sesion_log(f"🔞 NSFW → {'ON' if self.switch_nsfw_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
             self.switch_traduccion_var.trace_add("write", lambda *a: self._sesion_log(f"🌐 Auto-trad → {'ON' if self.switch_traduccion_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
             self.brief_var.trace_add("write", lambda *a: self._sesion_log(f"📋 Modo Brief → {'ON' if self.brief_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # ── Construir UI Organizada ───────────────────────────────
         self._build_author()
         self._build_footer()
@@ -309,15 +306,13 @@ class ArquitectoApp(
         # Atajo global Ctrl+Enter para generar prompt (v1.0)
         try:
             self.bind_all("<Control-Return>", self._atajo_generar_prompt, add="+")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         try:
             self.bind("<F11>", self._toggle_fullscreen_principal)
             self.bind("<Escape>", self._exit_fullscreen_principal)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Indicador de proveedor activo (v1.0)
         self.after(800, self._actualizar_indicador_proveedor)
 
@@ -332,9 +327,8 @@ class ArquitectoApp(
         except Exception:
             try:
                 self.deiconify()
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Flag que lee _get_real_is_light() en ui_builders.py para decidir
         # si fiarse de ctk.get_appearance_mode() (post-init) o leer
         # preferencias.json (durante init, donde hay race con el
@@ -348,8 +342,8 @@ class ArquitectoApp(
                 main_mod = sys.modules.get('__main__')
                 if main_mod is not None:
                     setattr(main_mod, '_gprompt_init_done', True)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         self.after(900, _marcar_init_completo)
 
         # de 1.2s (cuando todo está cargado y la ventana visible).
@@ -357,9 +351,8 @@ class ArquitectoApp(
             prefs_actuales = self.store.cargar_preferencias() or {}
             if not prefs_actuales.get("nombre"):
                 self.after(1200, self._wizard_nombre)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _wizard_nombre(self):
         """Mini-wizard que pregunta el nombre del usuario para personalizar saludos.
         Solo se muestra si no hay nombre guardado en preferences.json.
@@ -368,9 +361,8 @@ class ArquitectoApp(
             prefs = self.store.cargar_preferencias() or {}
             if prefs.get("nombre"):
                 return  # Ya tiene nombre, no molestar
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         try:
             is_lt = ctk.get_appearance_mode().lower() == "light"
             from config import get_theme_colors
@@ -411,8 +403,8 @@ class ArquitectoApp(
                     # Si lo deja vacío, marcar como "skip" para no preguntar más
                     prefs["nombre"] = "Creador"
                 self.store.guardar_preferencias(prefs)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             win.destroy()
 
         entry.bind("<Return>", _guardar)
@@ -489,22 +481,20 @@ class ArquitectoApp(
             if self._splash and self._splash.winfo_exists():
                 self._splash._lbl_estado.configure(text=txt)
                 self._splash.update()
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _cerrar_splash(self):
         """Cierra el splash screen."""
         try:
             if self._splash and self._splash.winfo_exists():
                 try:
                     self._splash._pb.stop()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
                 self._splash.destroy()
                 self._splash = None
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     # NEW v1.0 — Helpers para ventanas hijas, toasts, atajos
 
     def _aplicar_geometria_adaptativa(self):
@@ -555,16 +545,15 @@ class ArquitectoApp(
                 _log.getLogger(__name__).info(
                     f"Ventana adaptada: {w}x{h} en pantalla {screen_w}x{screen_h}"
                 )
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         except Exception as e:
             # Fallback a tamaño tradicional si algo falla
             try:
                 import logging as _log
                 _log.getLogger(__name__).warning(f"Geometría adaptativa falló: {e}")
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             self.geometry("1060x900")
 
     def open_child_window(self, title: str = "", size: str = "800x600",
@@ -591,15 +580,14 @@ class ArquitectoApp(
         if modal:
             try:
                 v.grab_set()
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         def _toggle_fullscreen(event=None):
             try:
                 actual = bool(v.attributes("-fullscreen"))
                 v.attributes("-fullscreen", not actual)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             return "break"
 
         def _exit_fullscreen(event=None):
@@ -607,21 +595,19 @@ class ArquitectoApp(
                 if bool(v.attributes("-fullscreen")):
                     v.attributes("-fullscreen", False)
                     return "break"
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         try:
             v.bind("<F11>", _toggle_fullscreen)
             v.bind("<Escape>", _exit_fullscreen)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # El patch global ya hace lift+focus, pero lo reforzamos
         try:
             v.after(80, lambda: v.lift() if v.winfo_exists() else None)
             v.after(120, lambda: v.focus_force() if v.winfo_exists() else None)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         return v
 
     def show_toast(self, mensaje: str, color: str = "#2563eb", duracion_ms: int = 2500):
@@ -632,9 +618,8 @@ class ArquitectoApp(
             if prev:
                 try:
                     prev.destroy()
-                except Exception:
-                    pass
-
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             toast = ctk.CTkToplevel(self)
             toast.overrideredirect(True)
             toast.attributes("-topmost", True)
@@ -652,14 +637,12 @@ class ArquitectoApp(
                 px = self.winfo_rootx() + self.winfo_width() - tw - 24
                 py = self.winfo_rooty() + self.winfo_height() - th - 60
                 toast.geometry(f"+{px}+{py}")
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             self._toast_actual = toast
             toast.after(duracion_ms, lambda: toast.destroy() if toast.winfo_exists() else None)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _toggle_fullscreen_principal(self, event=None):
         """F11 en ventana principal = toggle pantalla completa."""
         try:
@@ -670,8 +653,8 @@ class ArquitectoApp(
                 try: self.show_toast(msg, "#3b82f6", 1500)
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         return "break"
 
     def _exit_fullscreen_principal(self, event=None):
@@ -680,9 +663,8 @@ class ArquitectoApp(
             if bool(self.attributes("-fullscreen")):
                 self.attributes("-fullscreen", False)
                 return "break"
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _atajo_generar_prompt(self, event=None):
         """Ctrl+Enter desde el textarea = generar prompt."""
         try:
@@ -696,9 +678,8 @@ class ArquitectoApp(
             ):
                 self.cmd_prompt()
                 return "break"  # impedir nueva línea
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _actualizar_indicador_proveedor(self):
         """Muestra ✅ verde si el LLM activo está disponible, ⚠️ amarillo si no."""
         try:
@@ -715,11 +696,10 @@ class ArquitectoApp(
                     self._btn_key.configure(text="🔑", fg_color="#059669", hover_color="#047857")
                 else:
                     self._btn_key.configure(text="⚠", fg_color="#d97706", hover_color="#b45309")
-            except Exception:
-                pass
-        except Exception:
-            pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _backup_semanal_check(self):
         """Si han pasado >7 días desde el último backup, crea uno automático.
 
@@ -740,8 +720,8 @@ class ArquitectoApp(
                     last = float(marker.read_text(encoding="utf-8").strip())
                     if ahora - last < 7 * 24 * 3600:
                         necesario = False
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             if necesario:
                 self._crear_backup_automatico(base, marker, ahora)
         except Exception as e:
@@ -780,8 +760,8 @@ class ArquitectoApp(
             for old in backups[:-10]:
                 try:
                     old.unlink()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
         except Exception as e:
             import logging as _log
             _log.getLogger(__name__).warning(f"Error creando backup auto: {e}")
@@ -931,9 +911,8 @@ class ArquitectoApp(
             txt_a._textbox.tag_configure("equal", foreground=c["muted_text"])
             txt_b._textbox.tag_configure("added", background="#1a5a1a", foreground="#ffffff")
             txt_b._textbox.tag_configure("equal", foreground=c["muted_text"])
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Calcular diff palabra a palabra
         palabras_a = texto_a.split()
         palabras_b = texto_b.split()
@@ -997,8 +976,8 @@ class ArquitectoApp(
             elif sistema == "Linux":
                 import subprocess
                 subprocess.run(['notify-send', titulo, mensaje])
-        except Exception:
-            pass  # Si falla, no es crítico
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
 
     def _parsear_bloques_numerados(self, texto, prefijos_validos=None):
         """Parser ROBUSTO de respuestas con bloques tipo 'PROMPT 1:', 'SHOT 2:', 'FRAME 3:', '1.', etc."""
@@ -1390,9 +1369,8 @@ class ArquitectoApp(
                     prefs = self.store.cargar_preferencias() or {}
                     prefs["nombre"] = nombre
                     self.store.guardar_preferencias(prefs)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             resultado[0] = True
             wizard.destroy()
 
@@ -1539,9 +1517,8 @@ class ArquitectoApp(
             ctk.set_appearance_mode(nuevo_tema)
             try:
                 self.after(50, self._apply_theme_colors)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Aplicar sonido
         if hasattr(self, 'switch_sonido_var'):
             self._sonido_activo = self.switch_sonido_var.get()
@@ -1573,9 +1550,8 @@ class ArquitectoApp(
                     # Si lo deja vacío, marcar como "Creador" para no preguntar más
                     prefs_n["nombre"] = "Creador"
                 self.store.guardar_preferencias(prefs_n)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # 3. Guardar las preferencias usando tu sistema de persistence.py
         self._guardar_preferencias()
 

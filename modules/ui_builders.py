@@ -16,9 +16,12 @@ import tkinter as tk
 import re
 import random
 import datetime
+import logging
 import os
 import json
 import pyperclip
+
+logger = logging.getLogger(__name__)
 
 
 def _get_real_is_light() -> bool:
@@ -51,9 +54,8 @@ def _get_real_is_light() -> bool:
             if mod is not None and getattr(mod, '_gprompt_init_done', False):
                 init_done = True
                 break
-    except Exception:
-        pass
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     # Después de init, fiarse 100% de CTk (respeta toggle en caliente)
     if init_done:
         return ctk_mode == "light"
@@ -77,9 +79,8 @@ def _get_real_is_light() -> bool:
                 return True  # caso (a) — race condition
             # tema == "dark" o "system" → caso (b) — respetar dark
             return False
-    except Exception:
-        pass
-
+    except Exception as _e:
+        logger.debug(f"[silent] {_e}")
     # Fallback: CTk dice dark, no se pudo leer prefs → dark
     return False
 
@@ -200,9 +201,8 @@ class UIBuildersMixin:
         # Tooltip si CTkToolTip está instalado
         try:
             CTkToolTip(self._btn_key, message="Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Botones gestión (derecha) — MENÚS DESPLEGABLES por grupo
         menu_style = {"height": 28, "font": ctk.CTkFont(size=11, weight="bold"), "corner_radius": 6,
                       "fg_color": btn_bg, "button_color": btn_bg, "button_hover_color": btn_hover,
@@ -278,8 +278,8 @@ class UIBuildersMixin:
                 popup = getattr(self, '_active_menu_popup', None)
                 if popup and popup.winfo_exists():
                     popup.destroy()
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             self._active_menu_popup = None
             self._active_menu_label = None
 
@@ -296,8 +296,8 @@ class UIBuildersMixin:
                     bx, by, bw, bh = bb.winfo_rootx(), bb.winfo_rooty(), bb.winfo_width(), bb.winfo_height()
                     if bx <= event.x_root <= bx + bw and by <= event.y_root <= by + bh:
                         return
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
             _close_menu()
 
         self.bind("<Button-1>", _on_global_click, add="+")
@@ -385,9 +385,8 @@ class UIBuildersMixin:
                         btn.configure(text=emoji, width=42)
                     else:
                         btn.configure(text=label_orig, width=120)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         self.bind("<Configure>", _on_resize, add="+")
         self.after(200, _on_resize)
 
@@ -763,9 +762,8 @@ class UIBuildersMixin:
         for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
             try:
                 self.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
-            except Exception:
-                pass
-
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
         # Tab 1: Ajustes Extra
         self._build_ajustes_extra(self.tabview.tab("⚙️ Ajustes Extra"))
 
@@ -1099,19 +1097,18 @@ class UIBuildersMixin:
         try:
             if event and event.keysym == "space":
                 self._snippet_expand()
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Autocompletar
         try:
             self._autocompletar_tags(event)
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Actualizar barra visual de chars
         try:
             self._actualizar_barra_chars()
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _actualizar_barra_chars(self):
         """Actualiza la barra de caracteres y el contador de tokens según el texto del campo idea."""
         if not hasattr(self, 'chars_bar'): return
@@ -1133,9 +1130,8 @@ class UIBuildersMixin:
         try:
             self.chars_bar.configure(fg_color=color)
             self.chars_bar.place_configure(relwidth=ratio)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # ── MEJORA 1: actualizar contador numérico ──
         try:
             if chars == 0:
@@ -1147,15 +1143,13 @@ class UIBuildersMixin:
                     text=f"· {chars} chars · ~{tokens_est} tokens · max idea {max_c}",
                     text_color=color
                 )
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # ── MEJORA 2: detectar idioma y avisar si auto-trad no concuerda ──
         try:
             self._detectar_idioma_y_avisar(texto)
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _detectar_idioma_y_avisar(self, texto):
         """Detecta heurísticamente si el texto está en ES o EN y avisa si auto-trad no concuerda."""
         if not hasattr(self, 'lbl_idioma_aviso'): return
@@ -1200,9 +1194,8 @@ class UIBuildersMixin:
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.switch_traduccion_var.get() else "desactivado"
                 self.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
-        except Exception:
-            pass
-
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
     def _build_acciones(self):
         outer = ctk.CTkFrame(self, fg_color="transparent")
         outer.pack(pady=2, padx=16, fill="x")
@@ -1565,8 +1558,8 @@ class UIBuildersMixin:
             for var in self.estilo_checks.values():
                 try:
                     var.set(False)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
             if hasattr(self, 'lbl_estilos_sel'):
                 self.lbl_estilos_sel.configure(text="")
             self._auto_sugerir_negativos()

@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import logging
 import threading
 import datetime
 import random
@@ -11,6 +12,8 @@ import customtkinter as ctk
 import tkinter as tk
 from workers import limpiar_marcadores
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -702,8 +705,8 @@ class ToolsAnalysisMixin:
                                                           progress_color=color)
                                 bar.set(val / maxv if maxv else 0)
                                 bar.pack(side="left", padx=4)
-                            except Exception:
-                                pass
+                            except Exception as _e:
+                                logger.debug(f"[silent] {_e}")
                             # Score numérico coloreado
                             ctk.CTkLabel(row, text=f"{val}/{maxv}",
                                          font=ctk.CTkFont(size=11, weight="bold"),
