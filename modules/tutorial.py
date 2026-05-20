@@ -214,33 +214,126 @@ def abrir_tutorial(app):
 
     _FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
 
-    def _probar(metodo_nombre: str):
+    def _flash_widget(w):
+        """Resalta un widget con borde azul durante 1.5s."""
+        try:
+            orig_color = w.cget("border_color") if "border_color" in w.keys() else None
+            orig_width = w.cget("border_width") if "border_width" in w.keys() else None
+            w.configure(border_color="#3b82f6", border_width=3)
+            def _restore():
+                try:
+                    if not w.winfo_exists():
+                        return
+                    if orig_color is not None:
+                        w.configure(border_color=orig_color)
+                    if orig_width is not None:
+                        w.configure(border_width=orig_width)
+                except Exception as _e:
+                    logger.debug(f"[silent] restore: {_e}")
+            app.after(1500, _restore)
+        except Exception as _e:
+            logger.debug(f"[silent] flash: {_e}")
+
+    def _focus_widget(widget_name: str) -> str:
+        """Cierra el tutorial, hace focus y flash al widget. Devuelve mensaje."""
+        w = getattr(app, widget_name, None)
+        if w is None:
+            raise AttributeError(f"Widget '{widget_name}' no existe en la app")
+        win.destroy()
+        try:
+            w.focus_set()
+        except Exception as _e:
+            logger.debug(f"[silent] focus_set: {_e}")
+        _flash_widget(w)
+        return f"✏️ Foco en {widget_name}"
+
+    def _focus_modelo() -> str:
+        """Resuelve el combo de modelo según el modo activo y le hace focus."""
+        modo = app.modo_var.get() if hasattr(app, "modo_var") else "imagen"
+        nombre = {
+            "imagen": "combo_modelo_imagen",
+            "video":  "combo_modelo_video",
+            "audio":  "combo_modelo_audio",
+        }.get(modo, "combo_modelo_imagen")
+        return _focus_widget(nombre)
+
+    def _set_modo(valor: str) -> str:
+        """Cambia el modo activo (imagen / video / audio) y cierra el tutorial."""
+        mapa_label = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
+        label = mapa_label.get(valor.lower(), "Imagen")
+        win.destroy()
+        try:
+            if hasattr(app, "_seg_modo"):
+                app._seg_modo.set(label)
+            if hasattr(app, "_on_segmento_modo"):
+                app._on_segmento_modo(label)
+        except Exception as e:
+            logger.warning(f"_set_modo falló: {e}")
+        return f"📱 Modo cambiado a {label}"
+
+    def _set_tab(nombre_tab: str) -> str:
+        """Cambia la tab activa del tabview central."""
+        if not hasattr(app, "tabview"):
+            raise AttributeError("app.tabview no existe")
+        win.destroy()
+        try:
+            app.tabview.set(nombre_tab)
+        except Exception as e:
+            # Probar también sin tildes/espacios variados
+            for nombre in app.tabview._name_list:
+                if nombre.lower().replace(" ", "") == nombre_tab.lower().replace(" ", ""):
+                    app.tabview.set(nombre)
+                    break
+            else:
+                raise AttributeError(f"Tab '{nombre_tab}' no encontrada: {e}")
+        return f"📑 Tab cambiada: {nombre_tab}"
+
+    def _probar(accion: str):
         """Ejecuta la acción del paso actual.
 
-        Prueba primero como función libre de modules.windows (pasando app),
-        después como método del app.
+        Acciones soportadas:
+          - "focus:WIDGET_NAME" → cierra el tutorial y hace focus al widget
+          - "mode:imagen|video|audio" → cambia el modo de la app
+          - "tab:NOMBRE_TAB" → cambia la pestaña del tabview central
+          - "focus_modelo" → resuelve el combo según modo activo
+          - "abrir_X" (función libre en modules.windows) → la invoca con app
+          - cualquier otro → método de ArquitectoApp
         """
+        mensaje = None
         try:
-            if metodo_nombre in _FREE_FUNCS:
+            if accion.startswith("focus:"):
+                mensaje = _focus_widget(accion.split(":", 1)[1])
+            elif accion.startswith("mode:"):
+                mensaje = _set_modo(accion.split(":", 1)[1])
+            elif accion.startswith("tab:"):
+                mensaje = _set_tab(accion.split(":", 1)[1])
+            elif accion == "focus_modelo":
+                mensaje = _focus_modelo()
+            elif accion in _FREE_FUNCS:
                 from modules import windows as _w
-                fn = getattr(_w, metodo_nombre, None)
+                fn = getattr(_w, accion, None)
                 if not callable(fn):
-                    raise AttributeError(f"{metodo_nombre} no existe en modules.windows")
+                    raise AttributeError(f"{accion} no existe en modules.windows")
                 fn(app)
             else:
-                fn = getattr(app, metodo_nombre, None)
+                fn = getattr(app, accion, None)
                 if not callable(fn):
-                    raise AttributeError(f"{metodo_nombre} no es método de ArquitectoApp")
+                    raise AttributeError(f"{accion} no es método de ArquitectoApp")
                 fn()
-            # Marcar el paso como completado al probarlo con éxito
+            # Éxito: marcar paso como completado y mostrar mensaje si lo hay
             completados.add(idx + 1)
             btn_completado_var.set(True)
             actualizar_indice()
             _guardar_progreso(app, completados, idx + 1)
+            if mensaje:
+                try:
+                    app.show_toast(mensaje, "#3b82f6")
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
         except Exception as e:
-            logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
+            logger.warning(f"Error ejecutando {accion}: {e}")
             try:
-                app.show_toast(f"❌ '{metodo_nombre}' no disponible: {e}", "#e74c3c")
+                app.show_toast(f"❌ '{accion}': {e}", "#e74c3c")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

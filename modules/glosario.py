@@ -159,6 +159,13 @@ def abrir_glosario(app):
             font=ctk.CTkFont(size=10),
         ).pack(fill="x", padx=12, pady=(2, 10))
 
+    import re as _re
+
+    def _clave_orden(titulo: str) -> str:
+        """Ignora el emoji inicial al ordenar alfabéticamente."""
+        sin_emoji = _re.sub(r"^[^\w]+", "", titulo).strip()
+        return sin_emoji.lower()
+
     def render(filtro_texto: str = ""):
         for w in scroll.winfo_children():
             w.destroy()
@@ -166,16 +173,15 @@ def abrir_glosario(app):
         cat_sel = filtro_var.get()
         cat_sel_real = None if cat_sel == "📚 Todas" else cat_sel
 
-        # Agrupar por categoría
-        por_cat: dict[str, list[dict]] = {c: [] for c in categorias}
-        n = 0
+        # Filtrar
+        filtradas: list[dict] = []
         for e in entradas:
             if cat_sel_real and e["categoria"] != cat_sel_real:
                 continue
             if f and not (f in e["titulo"].lower() or f in e["descripcion"].lower()):
                 continue
-            por_cat.setdefault(e["categoria"], []).append(e)
-            n += 1
+            filtradas.append(e)
+        n = len(filtradas)
 
         if cat_sel_real:
             contador_var.set(f"{n} en {cat_sel_real}")
@@ -187,15 +193,19 @@ def abrir_glosario(app):
                          font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 
-        for cat in categorias:
-            if not por_cat.get(cat):
-                continue
+        if cat_sel_real:
+            # Vista categoría única → orden alfabético plano (el JSON ya viene
+            # ordenado, así que basta con renderizar en orden)
             ctk.CTkLabel(
-                scroll, text=cat,
+                scroll, text=cat_sel_real,
                 font=ctk.CTkFont(size=15, weight="bold"),
                 text_color=accent, anchor="w",
             ).pack(fill="x", padx=4, pady=(14, 4))
-            for entrada in por_cat[cat]:
+            for entrada in sorted(filtradas, key=lambda e: _clave_orden(e["titulo"])):
+                _render_card(scroll, entrada)
+        else:
+            # Vista "Todas" → alfabético plano sin agrupar por categoría
+            for entrada in sorted(filtradas, key=lambda e: _clave_orden(e["titulo"])):
                 _render_card(scroll, entrada)
 
     def on_buscar(*_):

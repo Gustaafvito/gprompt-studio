@@ -4,37 +4,37 @@
       "id": 1,
       "titulo": "🎯 1. IDEA — El punto de partida",
       "descripcion": "Escribe tu idea en el campo superior. Puede ser simple ('un gato') o detallada ('un gato persa dorado durmiendo en un sofá de terciopelo azul con luz cálida de atardecer').\n\n💡 Cuanto más específica, mejor el resultado. Incluye: sujeto, acción, entorno, estilo.",
-      "accion": null
+      "accion": "focus:txt_idea"
     },
     {
       "id": 2,
       "titulo": "📱 2. MODO — Imagen, Vídeo o Audio",
       "descripcion": "Cambia con Alt+1 (Imagen), Alt+2 (Vídeo), Alt+3 (Audio) o el selector superior.\n\n• Imagen: fotos, ilustraciones, arte\n• Vídeo: clips, animaciones, motion graphics\n• Audio: canciones, música, efectos\n\nCada modo tiene modelos específicos y ajustes distintos.",
-      "accion": null
+      "accion": "focus:_seg_modo"
     },
     {
       "id": 3,
       "titulo": "🤖 3. MODELO — El motor de generación",
       "descripcion": "Selecciona el modelo desde el desplegable. Los más populares:\n\n• FLUX — excelente para cualquier cosa, rápido\n• Midjourney — estilo artístico, colores vibrantes\n• Kling / Seedance — para vídeo realista\n• Suno — para música y audio\n• Stable Diffusion — control total, técnico\n\nCada modelo tiene 'personalidad' diferente. Experimenta.",
-      "accion": null
+      "accion": "focus_modelo"
     },
     {
       "id": 4,
       "titulo": "🌐 4. PLATAFORMA — A dónde subirás",
       "descripcion": "Elige la plataforma destino: SeaArt, Tensor.Art, ComfyUI, Kling, Suno, etc.\n\nEsto adapta el formato del prompt: algunas usan tags con pesos, otras lenguaje natural. La plataforma también afecta qué modelos están disponibles.",
-      "accion": null
+      "accion": "focus:combo_plataforma"
     },
     {
       "id": 5,
       "titulo": "🎨 5. ESTILOS — La estética visual",
       "descripcion": "Marca 1-3 estilos que quieras aplicar. Opciones:\n\n• Fotografía Realista • Cine • Animé/Manga\n• Arte Digital • Concept Art • Ilustración\n• Vintage • Cyberpunk • Fantasy • Horror\n\n💡 Combinar más de 3 puede generar resultados inesperados. Menos es más.",
-      "accion": null
+      "accion": "tab:🎨 Estilos"
     },
     {
       "id": 6,
       "titulo": "⚙️ 6. RATIO — Proporción de la imagen",
       "descripcion": "Elige formato según el destino:\n\n• 1:1 — Cuadrado (Instagram posts)\n• 16:9 — Horizontal (YouTube, web)\n• 9:16 — Vertical (Stories, Reels, TikTok)\n• 4:3 — Clásico (fotografía)\n• 21:9 — Ultra wide (cinemático)\n\nEl ratio afecta composición y enfoque. Un 9:16 fuerza primer plano; 16:9 permite más contexto.",
-      "accion": null
+      "accion": "focus:combo_ratio"
     },
     {
       "id": 7,
@@ -64,7 +64,7 @@
       "id": 11,
       "titulo": "🔁 11. REFINAR — Mejora el resultado",
       "descripcion": "Si el resultado no te gusta, usa Refinar:\n\n• Refinar estándar — mejora general\n• Refinar más cinematográfico — encuadre épico, cámara dramática\n• Refinar más detalle facial — ojos, piel, texturas\n• Refinar mejor iluminación — luces, sombras, atmósfera\n• Refinar simplificar — elimina redundancias\n\n💡 Prueba primero Refinar antes de regenerar desde cero.",
-      "accion": null
+      "accion": "cmd_refinar"
     },
     {
       "id": 12,
@@ -76,7 +76,7 @@
       "id": 13,
       "titulo": "⭐ 13. GUARDAR — Favoritos y Estrellas",
       "descripcion": "Guarda lo que te gusta para reutilizarlo:\n\n• Ctrl+S = Favorito (acceso rápido)\n• Ctrl+Shift+S = Estrella (destacado premium)\n\nLos favoritos aparecen en el panel lateral. Las estrellas son tus mejores trabajos.",
-      "accion": null
+      "accion": "_guardar_favorito"
     },
     {
       "id": 14,
@@ -106,7 +106,7 @@
       "id": 18,
       "titulo": "🎥 18. GRABAR SESIÓN — Tutoriales y recuerdos",
       "descripcion": "Activa desde el botón 🎬 en la barra.\n\nRegistra: prompts, clics, errores, flujos completos.\n\nLuego puedes:\n• Exportar como tutorial paso a paso\n• Revisar qué hiciste mal\n• Crear documentación de tu proceso\n\nOpciones de grabación: solo app, pantalla completa, o solo texto.",
-      "accion": null
+      "accion": "_cmd_sesion_grabar_toggle"
     },
     {
       "id": 19,
