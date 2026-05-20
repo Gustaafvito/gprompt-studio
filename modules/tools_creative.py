@@ -17,6 +17,7 @@ from workers import limpiar_marcadores
 
 logger = logging.getLogger(__name__)
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -225,7 +226,7 @@ class ToolsCreativeMixin:
                 modelo_sug = m.group(1).strip().strip("[").strip("]").strip() if m else None
 
                 def _mostrar():
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🤖 Modelo sugerido")
                     vent.geometry("550x350")
                     vent.transient(self)
@@ -312,7 +313,7 @@ class ToolsCreativeMixin:
         """Define una escena con varios personajes y sus relaciones."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("👥 Grupo de personajes")
         vent.geometry("600x500")
         vent.transient(self)
@@ -439,7 +440,7 @@ class ToolsCreativeMixin:
                 def _mostrar():
                     is_lt = ctk.get_appearance_mode().lower() == "light"
                     c = get_theme_colors(is_lt)
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🔍 Análisis inverso")
                     vent.geometry("700x600")
                     vent.transient(self)
@@ -487,7 +488,7 @@ class ToolsCreativeMixin:
         if not adns:
             return self.set_estado("⚠️ No hay ADNs guardados.", "#e67e22")
         
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📚 Biblioteca de ADNs")
         vent.geometry("700x500")
         vent.transient(self)
@@ -537,7 +538,7 @@ class ToolsCreativeMixin:
             
             def _cargar(idx=idx, item=item):
                 # Mostrar el ADN en una ventana de solo lectura
-                ver = ctk.CTkToplevel(self)
+                ver = GPromptWindow(self)
                 ver.title(f"📋 {item.get('nombre', 'ADN')}")
                 ver.geometry("600x500")
                 ver.transient(self)
@@ -605,7 +606,7 @@ class ToolsCreativeMixin:
                     from config import get_theme_colors
                     c = get_theme_colors(is_lt)
 
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🧬 ADN Visual - Análisis estructurado")
                     vent.geometry("700x650")
                     vent.transient(self)
@@ -1086,7 +1087,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🧬 ADN visual — Extracción")
         vent.geometry("720x580")
         vent.transient(self)
@@ -1151,7 +1152,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     lbl_estado.pack_forget()
                     prev_frame.pack_forget()
 
-                    vent2 = ctk.CTkToplevel(self)
+                    vent2 = GPromptWindow(self)
                     vent2.title("🧬 ADN visual extraído")
                     vent2.geometry("700x500")
                     vent2.transient(self)
@@ -1222,7 +1223,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             return
 
         # Ventana selección
-        sel = ctk.CTkToplevel(self)
+        sel = GPromptWindow(self)
         sel.title("🧬 Variar con ADN")
         sel.geometry("520x520")
         sel.transient(self)
@@ -1360,7 +1361,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🔍 Análisis de consistencia")
                     vent.geometry("700x550")
                     vent.transient(self)
@@ -1390,7 +1391,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🧰 Constructor de NEGATIVE")
         vent.geometry("700x720")
         vent.transient(self)
@@ -1535,7 +1536,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         def _mostrar_presets():
             if not hasattr(self, "_negative_presets") or not self._negative_presets:
                 return
-            win = ctk.CTkToplevel(vent)
+            win = GPromptWindow(vent)
             win.title("💾 Presets de NEGATIVE")
             win.geometry("400x350")
             win.transient(vent)
@@ -1860,7 +1861,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     return results
 
                 def _mostrar():
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🎨 Paleta de colores extraída")
                     vent.geometry("580x600")
                     vent.transient(self)
@@ -1980,7 +1981,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         """Modo Cliente: brief simplificado para generar 5 propuestas profesionales."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("💼 Modo Cliente")
         vent.geometry("600x600")
         vent.transient(self)
@@ -2136,7 +2137,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("💼 Propuestas profesionales")
         vent.geometry("900x720")
         vent.transient(self)
@@ -2250,7 +2251,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🎭 Moodboard — Estilo común")
         vent.geometry("720x680")
         vent.transient(self)
@@ -2384,7 +2385,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     def _mostrar():
                         lbl_prog.pack_forget()
                         progress_bar.pack_forget()
-                        vent2 = ctk.CTkToplevel(self)
+                        vent2 = GPromptWindow(self)
                         vent2.title("🎭 Estilo común detectado")
                         vent2.geometry("720x650")
                         vent2.transient(self)

@@ -10,6 +10,7 @@ import threading
 from pathlib import Path
 
 from workers import contar_tokens_aprox
+from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def _card_colors():
 
 def abrir_personajes(app):
     cc = _card_colors()
-    ventana = ctk.CTkToplevel(app)
+    ventana = GPromptWindow(app)
     ventana.title("🧑 Gestor de Personajes")
     ventana.geometry("720x580")
     ventana.grab_set()
@@ -134,7 +135,7 @@ def abrir_personajes(app):
 
 def abrir_loras(app):
     cc = _card_colors()
-    ventana = ctk.CTkToplevel(app)
+    ventana = GPromptWindow(app)
     ventana.title("🔗 Gestor de LoRAs")
     ventana.geometry("780x580")
     ventana.grab_set()
@@ -250,7 +251,7 @@ def abrir_loras(app):
 
 def abrir_batch(app):
     cc = _card_colors()
-    ventana = ctk.CTkToplevel(app)
+    ventana = GPromptWindow(app)
     ventana.title("📦 Generación Batch")
     ventana.geometry("850x750")
     ventana.grab_set()
@@ -619,7 +620,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         return
 
     cc = _card_colors()
-    ventana = ctk.CTkToplevel(app)
+    ventana = GPromptWindow(app)
     ventana.title(titulo)
     ventana.geometry("820x700")
     ventana.grab_set()

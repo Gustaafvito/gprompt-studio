@@ -17,6 +17,7 @@ from config import MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT, 
 from config import get_theme_colors as _get_tc
 from workers import limpiar_marcadores
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -200,7 +201,7 @@ class ToolsWorkflowMixin:
         if not setups:
             self.set_estado("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual.", "#e67e22")
             return
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("📋 Cargar setup")
         v.geometry("560x520")
         v.transient(self)
@@ -274,7 +275,7 @@ class ToolsWorkflowMixin:
             self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
             return
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("⏲ Cron de variantes")
         vent.geometry("520x620")
         vent.transient(self)
@@ -473,7 +474,7 @@ class ToolsWorkflowMixin:
         if not hasattr(self, '_versiones_prompt') or not self._versiones_prompt:
             return self.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📜 Historial de versiones del prompt")
         vent.geometry("700x500")
         vent.transient(self)
@@ -522,7 +523,7 @@ class ToolsWorkflowMixin:
         prefs = self.store.cargar_preferencias()
         macros = prefs.get("macros", [])
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("⚡ Macros — Secuencias automatizadas")
         vent.geometry("700x600")
         vent.transient(self)
@@ -814,7 +815,7 @@ class ToolsWorkflowMixin:
             prefs["proyectos"] = proyectos
             self.store.guardar_preferencias(prefs)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🏷 Proyectos")
         vent.geometry("680x600")
         vent.transient(self)
@@ -1146,7 +1147,7 @@ class ToolsWorkflowMixin:
             if getattr(self, '_sesion_grabar_video', False):
                 if self._sesion_video_disponible():
                     # Ventana de selección
-                    sel = ctk.CTkToplevel(self)
+                    sel = GPromptWindow(self)
                     sel.title("🎬 Tipo de grabación")
                     sel.geometry("350x180")
                     sel.transient(self)
@@ -1225,7 +1226,7 @@ class ToolsWorkflowMixin:
             self.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
 
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("🎬 Sesión grabada")
         v.geometry("780x640")
         v.transient(self)
@@ -1368,7 +1369,7 @@ class ToolsWorkflowMixin:
         # Agrupar eventos en pasos lógicos según los tipos
         pasos = self._sesion_agrupar_pasos(self._sesion_eventos)
 
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("📚 Modo Tutorial — Guion para YouTube")
         v.geometry("900x700")
         v.transient(self)
@@ -1541,7 +1542,7 @@ class ToolsWorkflowMixin:
             logger.debug(f"[silent] {e}")
 
         # Ventana de configuración
-        cfg = ctk.CTkToplevel(self)
+        cfg = GPromptWindow(self)
         cfg.title("🧪 A/B Testing 2x2")
         cfg.geometry("520x520")
         cfg.transient(self)
@@ -1677,7 +1678,7 @@ class ToolsWorkflowMixin:
 
     def _mostrar_ab_grid(self, idea_base, dimensiones, prompts_generados, is_lt, c):
         """Muestra la grid de resultados."""
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title(f"🧪 A/B Testing — {' + '.join(dimensiones)}")
         v.geometry("1100x720")
         v.transient(self)
@@ -1750,7 +1751,7 @@ class ToolsWorkflowMixin:
                     if len(sugeridos) >= 3:
                         break
 
-        sel_vent = ctk.CTkToplevel(self)
+        sel_vent = GPromptWindow(self)
         sel_vent.title("🆚 Elige 3 modelos para comparar")
         sel_vent.geometry("500x350")
         sel_vent.transient(self)
@@ -1801,7 +1802,7 @@ class ToolsWorkflowMixin:
         """Ventana donde se muestran los 3 prompts generados."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🆚 Comparativa de modelos")
         vent.geometry("750x600")
         vent.transient(self)

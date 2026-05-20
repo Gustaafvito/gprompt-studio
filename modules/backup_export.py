@@ -10,6 +10,7 @@ import customtkinter as ctk
 import tkinter as tk
 from config import VERSION
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
 
@@ -255,7 +256,7 @@ class BackupExportMixin:
 
         # ── Ventana con tabs ──────────────────────────────────────────
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📤 Export CLI — múltiples formatos")
         vent.geometry("780x620")
         vent.transient(self)
@@ -334,7 +335,7 @@ class BackupExportMixin:
 
     def _cmd_busqueda_global(self):
         """Busca un término en TODAS las colecciones: historial, favoritos, estrellas, seeds, snippets, fórmulas."""
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🔎 Búsqueda global")
         vent.geometry("750x600")
         vent.transient(self)

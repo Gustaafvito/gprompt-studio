@@ -64,88 +64,10 @@ from workers import (
 from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_lista
 
 
-# Parche global de CTkToplevel: ventanas hijas al frente y maximizables.
-# Truco: tras crear la Toplevel, "-topmost" momentáneo (250ms) la fuerza
-# delante sin bloquearla. NO es transient → conserva minimize/maximize de
-# Windows. Al alt+tab queda atrás como cualquier ventana normal.
-_original_ctk_toplevel_init = ctk.CTkToplevel.__init__
-_original_ctk_toplevel_transient = ctk.CTkToplevel.transient
-
-def _patched_ctk_toplevel_init(self, *args, **kwargs):
-    _original_ctk_toplevel_init(self, *args, **kwargs)
-    # Asegurar redimensionable y barra completa de Windows
-    try:
-        self.resizable(True, True)
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-    # Forzar al frente justo después del init
-    try:
-        self.after(50, lambda: _bring_to_front(self))
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-    # (antes solo estaban en open_child_window que no se usa en todas las ventanas)
-    def _toggle_fs(event=None, w=self):
-        try:
-            actual = bool(w.attributes("-fullscreen"))
-            w.attributes("-fullscreen", not actual)
-        except Exception as _e:
-            logger.debug(f"[silent] {_e}")
-        return "break"
-
-    def _exit_fs(event=None, w=self):
-        try:
-            if bool(w.attributes("-fullscreen")):
-                w.attributes("-fullscreen", False)
-                return "break"
-        except Exception as _e:
-            logger.debug(f"[silent] {_e}")
-    try:
-        self.bind("<F11>", _toggle_fs)
-        self.bind("<Escape>", _exit_fs)
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-def _bring_to_front(top):
-    """Traer ventana al frente sin bloquearla con -topmost permanente."""
-    try:
-        if not top.winfo_exists():
-            return
-        top.lift()
-        top.attributes("-topmost", True)
-        # Quitar topmost después de 250ms — tiempo suficiente para que el
-        # WM la ponga delante, pero no tanto que moleste cuando el usuario
-        # quiere cambiar a otra app
-        top.after(250, lambda: top.attributes("-topmost", False) if top.winfo_exists() else None)
-        try:
-            top.focus_force()
-        except Exception as _e:
-            logger.debug(f"[silent] {_e}")
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-def _patched_ctk_toplevel_transient(self, master=None):
-    """NO llamamos al transient original: con transient activo, Windows
-    oculta los botones de minimize/maximize. Sin transient se mantienen
-    los 3 botones y se puede maximizar con doble-click en la barra.
-    Compensamos la falta de asociación al padre con _bring_to_front().
-    """
-    # NO llamamos al original transient — eso quitaría minimize/maximize
-    # En Windows, asegurar que NO se trate como tool window
-    try:
-        self.attributes("-toolwindow", False)
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-    # Forzar al frente otra vez tras el transient (que no hace nada ahora)
-    try:
-        self.after(60, lambda: _bring_to_front(self))
-    except Exception as _e:
-        logger.debug(f"[silent] {_e}")
-ctk.CTkToplevel.__init__ = _patched_ctk_toplevel_init
-ctk.CTkToplevel.transient = _patched_ctk_toplevel_transient
-
-
 from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin, GPromptWindow, EventBus, PreviewService
+    DialogsMixin, CoreMixin, EventBus, PreviewService
 )
 
 # Inicializar EventBus singleton
@@ -370,7 +292,7 @@ class ArquitectoApp(
         except Exception:
             c = {"muted_text": "#888", "panel_text": "#e5e7eb", "panel_bg": "#0a0e14"}
 
-        win = ctk.CTkToplevel(self)
+        win = GPromptWindow(self)
         win.title("👋 Bienvenida")
         win.geometry("440x230")
         win.transient(self)
@@ -422,7 +344,7 @@ class ArquitectoApp(
     def _crear_splash(self):
         """Crea splash screen como Toplevel SIN parent root temporal."""
         try:
-            splash = ctk.CTkToplevel(self)
+            splash = GPromptWindow(self)
             splash.overrideredirect(True)  # Sin barra de título
             splash.attributes("-topmost", True)
 
@@ -557,26 +479,27 @@ class ArquitectoApp(
             self.geometry("1060x900")
 
     def open_child_window(self, title: str = "", size: str = "800x600",
-                          transient: bool = True, modal: bool = False) -> ctk.CTkToplevel:
+                          transient: bool = True, modal: bool = False) -> GPromptWindow:
         """
-        Crea un CTkToplevel correctamente configurado:
+        Crea una GPromptWindow correctamente configurada:
         - Título y tamaño
-        - Transient(self) si transient=True (lo asocia a la ventana principal)
+        - Transient(self) si transient=True (no-op en GPromptWindow para
+          preservar minimize/maximize en Windows; sí lift+focus)
         - grab_set() si modal=True (bloquea la principal)
-        - Garantiza que aparece AL FRENTE (gracias al patch global)
+        - Garantiza que aparece AL FRENTE (gracias a GPromptWindow)
         - F11 = toggle pantalla completa, Escape = salir de fullscreen
 
         Use:
             v = self.open_child_window("Mi ventana", "600x400")
             ctk.CTkLabel(v, text="hola").pack()
         """
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         if title:
             v.title(title)
         if size:
             v.geometry(size)
         if transient:
-            v.transient(self)  # Patched para no ocultar minimize/maximize
+            v.transient(self)
         if modal:
             try:
                 v.grab_set()
@@ -620,7 +543,7 @@ class ArquitectoApp(
                     prev.destroy()
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
-            toast = ctk.CTkToplevel(self)
+            toast = GPromptWindow(self)
             toast.overrideredirect(True)
             toast.attributes("-topmost", True)
             toast.configure(fg_color=color)
@@ -871,7 +794,7 @@ class ArquitectoApp(
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         import difflib
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("📊 Diff visual entre versiones")
         v.geometry("1100x680")
         v.transient(self)
@@ -1043,7 +966,7 @@ class ArquitectoApp(
         plantillas_visibles = [p for p in plantillas_sorted if p[0] not in ocultas]
         total_borradas = len(ocultas)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📑 Plantillas de prompt")
         vent.geometry("760x620")
         vent.transient(self)
@@ -1138,7 +1061,7 @@ class ArquitectoApp(
                           command=_aplicar).pack(side="right")
 
     def _abrir_comparador(self, variaciones):
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("👁 Comparar Variaciones")
         n = len(variaciones)
 
@@ -1247,7 +1170,7 @@ class ArquitectoApp(
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        wizard = ctk.CTkToplevel(self)
+        wizard = GPromptWindow(self)
         wizard.title("🧠 G-Prompt Studio — Configuración Inicial")
         wizard.geometry("580x560")
         wizard.transient(self)
@@ -1390,7 +1313,7 @@ class ArquitectoApp(
         return resultado[0]
 
     def cmd_preferencias(self):
-        ventana = ctk.CTkToplevel(self)
+        ventana = GPromptWindow(self)
         ventana.title("⚙️ Ajustes del Sistema")
         ventana.geometry("500x400")
         ventana.transient(self) 
@@ -1632,7 +1555,7 @@ class ArquitectoApp(
                 img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
 
                 def _mostrar_imagen():
-                    vent_previa = ctk.CTkToplevel(self)
+                    vent_previa = GPromptWindow(self)
                     vent_previa.title("🎨 Previsualización Rápida")
                     vent_previa.geometry("540x600")
                     vent_previa.transient(self)

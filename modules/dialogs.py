@@ -11,6 +11,7 @@ import tkinter as tk
 from typing import TYPE_CHECKING
 from config import get_theme_colors
 from logging_utils import silent
+from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger("gprompt")
 
@@ -39,7 +40,7 @@ class DialogsMixin:
             self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
             return
 
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("🔑 Configurar API Keys")
         v.geometry("780x720")
 
@@ -494,7 +495,7 @@ class DialogsMixin:
         accent_pink = "#db2777" if is_light else "#ec4899"
         bar_bg = "#e5e7eb" if is_light else "#1f2937"
 
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("🏠 Dashboard")
         v.geometry("960x780")
         v.transient(self)
@@ -1205,7 +1206,7 @@ class DialogsMixin:
 
         def _abrir_todos_los_logros():
             """Ventana con todos los logros: desbloqueados arriba, bloqueados abajo."""
-            win = ctk.CTkToplevel(v)
+            win = GPromptWindow(v)
             win.title("🏆 Todos los logros")
             win.geometry("520x620")
             win.transient(v)

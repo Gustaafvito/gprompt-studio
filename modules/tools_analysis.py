@@ -12,6 +12,7 @@ import customtkinter as ctk
 import tkinter as tk
 from workers import limpiar_marcadores
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class ToolsAnalysisMixin:
         self._modo_educativo_activo = not self._modo_educativo_activo
 
         if self._modo_educativo_activo:
-            vent = ctk.CTkToplevel(self)
+            vent = GPromptWindow(self)
             vent.title("📖 Modo educativo — Glosario")
             vent.geometry("800x680")
             vent.transient(self)
@@ -243,7 +244,7 @@ class ToolsAnalysisMixin:
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🔍 Análisis de tus patrones")
                     vent.geometry("750x650")
                     vent.transient(self)
@@ -319,7 +320,7 @@ class ToolsAnalysisMixin:
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("🚀 Auto-mejora de prompts")
                     vent.geometry("800x700")
                     vent.transient(self)
@@ -373,7 +374,7 @@ class ToolsAnalysisMixin:
         stars = self.store.estrellas or []
         seeds = prefs.get("seeds_favoritos", [])
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📈 Estadísticas detalladas")
         vent.geometry("750x700")
         vent.transient(self)
@@ -652,7 +653,7 @@ class ToolsAnalysisMixin:
                              "card_bg": "#ffffff" if is_lt else "#111820",
                              "card_border": "#d1d5db" if is_lt else "#1f2937"}
 
-                    vent = ctk.CTkToplevel(self)
+                    vent = GPromptWindow(self)
                     vent.title("📝 Scoring de prompt")
                     vent.geometry("720x640")
                     vent.transient(self)
@@ -843,7 +844,7 @@ class ToolsAnalysisMixin:
         if not seeds:
             return self.set_estado("⚠️ No tienes seeds guardados.", "#e67e22")
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("💎 Seeds favoritos")
         vent.geometry("550x450")
         vent.transient(self)
@@ -972,7 +973,7 @@ class ToolsAnalysisMixin:
         prefs = self.store.cargar_preferencias()
         atajos = prefs.get("atajos_tags", [])
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🏷️ Atajos de tags")
         vent.geometry("600x450")
         vent.transient(self)
@@ -1009,7 +1010,7 @@ class ToolsAnalysisMixin:
                               font=ctk.CTkFont(size=9), command=_borrar).pack(side="left", padx=2)
 
         def crear():
-            vent_add = ctk.CTkToplevel(vent)
+            vent_add = GPromptWindow(vent)
             vent_add.title("➕ Nuevo atajo")
             vent_add.geometry("400x250")
             vent_add.transient(vent)
@@ -1137,7 +1138,7 @@ class ToolsAnalysisMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🔧 Workflow ComfyUI - G-Prompt Studio")
         vent.geometry("750x550")
         vent.transient(self)
@@ -1214,7 +1215,7 @@ class ToolsAnalysisMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🇪🇸 Traducción al español")
         vent.geometry("580x400")
         vent.transient(self)
@@ -1297,7 +1298,7 @@ class ToolsAnalysisMixin:
 
     def _cmd_modal_compatibilidad(self):
         """Abre modal de compatibilidad de modelos."""
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🔍 Compatibilidad de modelos")
         vent.geometry("600x400")
         vent.transient(self)

@@ -42,6 +42,7 @@ from prompts import (
 from workers import parsear_ideas, contar_tokens_aprox, limpiar_marcadores
 from modules.windows import abrir_batch
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -2097,7 +2098,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
 
         # Ventana selección elemento a variar
-        sel = ctk.CTkToplevel(self)
+        sel = GPromptWindow(self)
         sel.title("🔂 Iteración")
         sel.geometry("400x300")
         sel.transient(self)
@@ -2267,7 +2268,7 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        vent_copiloto = ctk.CTkToplevel(self)
+        vent_copiloto = GPromptWindow(self)
         vent_copiloto.title("💬 Copiloto de Prompt")
         vent_copiloto.geometry("450x600")
         vent_copiloto.transient(self)
@@ -2511,7 +2512,7 @@ class CoreMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("⌨️ Atajos de teclado")
         vent.geometry("620x600")
         vent.transient(self)
@@ -2589,7 +2590,7 @@ class CoreMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🔍 Búsqueda global")
         vent.geometry("550x450")
         vent.transient(self)
@@ -2716,7 +2717,7 @@ class CoreMixin:
 
         idx_actual = {"valor": 0}
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📖 Tutorial - G-Prompt Studio")
         vent.geometry("650x480")
         vent.transient(self)

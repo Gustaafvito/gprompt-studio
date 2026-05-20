@@ -21,6 +21,7 @@ except ImportError:
     class CTkToolTip:
         def __init__(self, *args, **kwargs): pass
 from typing import TYPE_CHECKING
+from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -298,7 +299,7 @@ class DataMgmtMixin:
         """Ventana de gestión de snippets: ver predefinidos + añadir/editar/borrar custom."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        v = ctk.CTkToplevel(self)
+        v = GPromptWindow(self)
         v.title("⚡ Expansión rápida")
         v.geometry("680x620")
         v.transient(self)
@@ -629,7 +630,7 @@ class DataMgmtMixin:
         prefs = self.store.cargar_preferencias()
         snippets = prefs.get("snippets", [])
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("🏷️ Snippets reutilizables")
         vent.geometry("620x550")
         vent.transient(self)
@@ -708,7 +709,7 @@ class DataMgmtMixin:
         prefs = self.store.cargar_preferencias()
         formulas = prefs.get("formulas", [])
 
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📐 Fórmulas guardadas")
         vent.geometry("680x550")
         vent.transient(self)
@@ -795,7 +796,7 @@ class DataMgmtMixin:
         """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = ctk.CTkToplevel(self)
+        vent = GPromptWindow(self)
         vent.title("📚 Biblioteca de Prompts de Ejemplo")
         vent.geometry("820x680")
         vent.transient(self)

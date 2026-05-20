@@ -20,6 +20,7 @@ import logging
 import os
 import json
 import pyperclip
+from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
 
@@ -316,7 +317,7 @@ class UIBuildersMixin:
                         break
                 if btn_real is None:
                     return
-                new_popup = ctk.CTkToplevel(self)
+                new_popup = GPromptWindow(self)
                 self._active_menu_popup = new_popup
                 self._active_menu_label = lg
                 new_popup.title(lg)
