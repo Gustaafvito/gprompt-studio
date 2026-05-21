@@ -1831,7 +1831,8 @@ class ArquitectoApp(
         if hasattr(self, 'switch_video_sesion_var'):
             self._sesion_grabar_video = self.switch_video_sesion_var.get()
 
-        # Aplicar ruta de ComfyUI y auto-discovery
+        # Aplicar ruta de ComfyUI y auto-discovery (un solo escaneo)
+        total_modelos = 0
         if hasattr(self, 'entry_comfyui_path'):
             ruta_comfy = self.entry_comfyui_path.get().strip()
             prefs_n = self.store.cargar_preferencias() or {}
@@ -1842,7 +1843,9 @@ class ArquitectoApp(
                 from config import escanear_modelos_comfyui
                 grupos_img, grupos_vid = escanear_modelos_comfyui(ruta_comfy, prefs_n)
                 if grupos_img:
-                    self.set_estado(f"🔍 ComfyUI: {sum(len(m) for _, m in grupos_img)} modelos detectados", "#2ecc71")
+                    total_modelos += sum(len(m) for _, m in grupos_img)
+                if grupos_vid:
+                    total_modelos += sum(len(m) for _, m in grupos_vid)
 
         try:
             if hasattr(self, 'entry_nombre_pref'):
@@ -1856,22 +1859,8 @@ class ArquitectoApp(
                 self.store.guardar_preferencias(prefs_n)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-        # 3. Guardar las preferencias usando tu sistema de persistence.py
+        # Guardar las preferencias usando el sistema de persistence.py
         self._guardar_preferencias()
-
-        # Mostrar resumen
-        total_modelos = 0
-        if hasattr(self, 'entry_comfyui_path'):
-            ruta_comfy = self.entry_comfyui_path.get().strip()
-            if ruta_comfy:
-                from config import escanear_modelos_comfyui
-                grupos_img, grupos_vid = escanear_modelos_comfyui(ruta_comfy, prefs_n)
-                if grupos_img:
-                    total_img = sum(len(m) for _, m in grupos_img)
-                    total_modelos += total_img
-                if grupos_vid:
-                    total_vid = sum(len(m) for _, m in grupos_vid)
-                    total_modelos += total_vid
 
         if total_modelos > 0:
             self.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")

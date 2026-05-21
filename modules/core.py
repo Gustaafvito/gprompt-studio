@@ -550,40 +550,8 @@ class CoreMixin:
                     _recolor_labels(fr, pt, pl, mt)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-    def _cmd_toggle_tema(self):
-        """Alterna entre tema claro y oscuro.
-        Nota: el theme.json custom puede no soportar light; en ese caso usamos blue por defecto."""
-        try:
-            actual = ctk.get_appearance_mode().lower()
-            nuevo = "light" if actual == "dark" else "dark"
-            try:
-                ctk.set_appearance_mode(nuevo)
-                self.set_estado(f"🌗 Tema {'claro' if nuevo == 'light' else 'oscuro'} (reinicia la app si se ve mal)",
-                                "#3498db")
-            except Exception as e:
-                # Si falla, restaurar dark
-                ctk.set_appearance_mode("dark")
-                self.set_estado(f"⚠️ Tema light no compatible con theme.json actual ({e})", "#e67e22")
-                nuevo = "dark"
-            try: self._sesion_log(f"🌗 Cambió tema → {nuevo}")
-            except Exception as e:
-                logger.debug(f"[silent] {e}")
-            # Persistir en preferencias
-            try:
-                prefs = self.store.cargar_preferencias()
-                prefs["tema"] = nuevo
-                self.store.guardar_preferencias(prefs)
-            except Exception as e:
-                logger.debug(f"[silent] {e}")
-            # Aplicar colores adaptativos sin destruir layout
-            try:
-                self._apply_theme_colors()
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-        except Exception as e:
-            self.set_estado(f"⚠️ Error cambiando tema: {e}", "#e74c3c")
-
     # EXTRAER POSITIVE / NEGATIVE
+    # Nota: _cmd_toggle_tema vive en DialogsMixin — esta clase no la sobrescribe.
 
     def extraer_positive(self):
         texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
@@ -2507,18 +2475,39 @@ class CoreMixin:
         return "break"
 
     def _cmd_mostrar_atajos(self):
-        """Ctrl+? - Muestra ventana con todos los atajos de teclado."""
+        """Ctrl+? - Muestra ventana con todos los atajos de teclado.
+
+        Buscador filtra por tecla o acción. Click sobre un atajo lo copia
+        al portapapeles.
+        """
         from config import get_theme_colors
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self)
         vent.title("⌨️ Atajos de teclado")
-        vent.geometry("620x600")
+        vent.geometry("620x640")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
-        ctk.CTkLabel(vent, text="Usa estos atajos para trabajar más rápido", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
+        ctk.CTkLabel(vent,
+                     text="Click sobre un atajo para copiarlo · busca por tecla o acción",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 6))
+
+        # Buscador
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=15, pady=(0, 6))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(search_row,
+                                    placeholder_text="Filtrar por tecla o acción…",
+                                    height=28)
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        contador_var = ctk.StringVar(value="")
+        ctk.CTkLabel(vent, textvariable=contador_var,
+                     font=ctk.CTkFont(size=9),
+                     text_color=c["muted_text"]).pack(anchor="w", padx=15)
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
@@ -2562,26 +2551,82 @@ class CoreMixin:
             ("❓ Extra", [
                 ("F11", "Pantalla completa"),
                 ("Escape", "Cerrar popup / Salir de pantalla completa"),
-            ]),
-            ("❓ Ayuda", [
                 ("Ctrl+?", "Mostrar atajos"),
             ]),
         ]
 
-        for categoria, lista in atajos:
-            frame_cat = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
-            frame_cat.pack(fill="x", pady=4)
-            ctk.CTkLabel(frame_cat, text=categoria, font=ctk.CTkFont(size=11, weight="bold"),
-                         text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 4))
-            for tecla, accion in lista:
-                row = ctk.CTkFrame(frame_cat, fg_color="transparent")
-                row.pack(fill="x", padx=10, pady=1)
-                ctk.CTkLabel(row, text=tecla, font=ctk.CTkFont(size=10, weight="bold"),
-                             width=160, anchor="w", text_color="#3498db").pack(side="left")
-                ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=10),
-                             anchor="w", text_color=c["panel_text"]).pack(side="left")
+        # Aplanar para contar
+        total = sum(len(lst) for _, lst in atajos)
 
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30, command=vent.destroy).pack(pady=12)
+        def _copiar_tecla(tecla):
+            try:
+                import pyperclip as _pc
+                _pc.copy(tecla)
+                self.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+
+        def _refrescar():
+            for w in scroll.winfo_children():
+                w.destroy()
+            termino = entry_buscar.get().strip().lower()
+            mostrados = 0
+            for categoria, lista in atajos:
+                # Filtrar elementos de esta categoría
+                visibles = [
+                    (t, a) for (t, a) in lista
+                    if not termino or termino in t.lower() or termino in a.lower()
+                ]
+                if not visibles:
+                    continue
+                mostrados += len(visibles)
+                frame_cat = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
+                frame_cat.pack(fill="x", pady=4)
+                ctk.CTkLabel(frame_cat, text=categoria,
+                             font=ctk.CTkFont(size=11, weight="bold"),
+                             text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 4))
+                for tecla, accion in visibles:
+                    row = ctk.CTkFrame(frame_cat, fg_color="transparent",
+                                       cursor="hand2")
+                    row.pack(fill="x", padx=10, pady=1)
+                    lbl_tecla = ctk.CTkLabel(
+                        row, text=tecla,
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        width=160, anchor="w", text_color="#3498db",
+                        cursor="hand2",
+                    )
+                    lbl_tecla.pack(side="left")
+                    lbl_accion = ctk.CTkLabel(
+                        row, text=accion,
+                        font=ctk.CTkFont(size=10),
+                        anchor="w", text_color=c["panel_text"],
+                        cursor="hand2",
+                    )
+                    lbl_accion.pack(side="left")
+                    # Click en cualquier parte de la fila → copia la tecla
+                    for w in (row, lbl_tecla, lbl_accion):
+                        w.bind("<Button-1>", lambda _e, t=tecla: _copiar_tecla(t))
+
+            if mostrados == 0:
+                ctk.CTkLabel(scroll,
+                             text=f"Sin atajos que coincidan con '{termino}'",
+                             text_color=c["muted_text"]).pack(pady=30)
+            sufijo = f" (filtrando '{termino}')" if termino else ""
+            contador_var.set(f"{mostrados} de {total} atajos{sufijo}")
+
+        # Debounce 150ms
+        pendiente = {"after_id": None}
+        def _on_buscar(_e=None):
+            if pendiente["after_id"]:
+                try: vent.after_cancel(pendiente["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            pendiente["after_id"] = vent.after(150, _refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+
+        _refrescar()
+        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+                      command=vent.destroy).pack(pady=12)
+        entry_buscar.focus_set()
         return "break"
 
     def _abrir_busqueda_global(self):

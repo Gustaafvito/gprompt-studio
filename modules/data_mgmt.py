@@ -1287,8 +1287,15 @@ class DataMgmtMixin:
                     font=ctk.CTkFont(size=10), command=_favorito
                 ).pack(side="left", padx=2)
 
-        # Reactividad: cualquier cambio en la búsqueda refresca al instante
-        busqueda_var.trace_add("write", lambda *_: refrescar())
+        # Debounce 200ms para no repintar con cada tecla cuando la
+        # biblioteca tiene muchos ejemplos.
+        _pendiente = {"after_id": None}
+        def _on_buscar(*_):
+            if _pendiente["after_id"]:
+                try: vent.after_cancel(_pendiente["after_id"])
+                except Exception as _e: logger.debug(f"[silent] {_e}")
+            _pendiente["after_id"] = vent.after(200, refrescar)
+        busqueda_var.trace_add("write", _on_buscar)
 
         # Render inicial
         refrescar()
