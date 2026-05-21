@@ -332,7 +332,28 @@ class ToolsWorkflowMixin:
         lbl_progreso = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
         lbl_progreso.pack(pady=15)
 
-        cron_state = {"activo": False, "actuales": 0, "generados": []}
+        cron_state = {"activo": False, "actuales": 0, "generados": [],
+                      "after_id": None, "cerrada": False}
+
+        def _safe_configure(widget, **kw):
+            """Actualiza el widget solo si la ventana sigue viva."""
+            if cron_state["cerrada"]:
+                return
+            try:
+                widget.configure(**kw)
+            except Exception as _e:
+                logger.debug(f"[silent cron _safe_configure] {_e}")
+
+        def _on_cerrar():
+            """Cierre limpio: para el cron, cancela el after pendiente."""
+            cron_state["activo"] = False
+            cron_state["cerrada"] = True
+            if cron_state["after_id"]:
+                try: vent.after_cancel(cron_state["after_id"])
+                except Exception as _e: logger.debug(f"[silent] {_e}")
+                cron_state["after_id"] = None
+            vent.destroy()
+        vent.protocol("WM_DELETE_WINDOW", _on_cerrar)
 
         def _ejecutar_cron():
             try:
@@ -403,36 +424,51 @@ class ToolsWorkflowMixin:
                     self.guardar_en_historial(resp)
 
                     def _aplicar():
+                        if cron_state["cerrada"]:
+                            return
                         self.actualizar_salida(resp)
                         progreso = f"⏲ Variante {num}/{cantidad} generada · próxima en {int(intervalo)}min"
                         if num >= cantidad:
                             progreso = f"✅ Cron completado: {cantidad} variantes generadas"
-                        lbl_progreso.configure(text=progreso, text_color="#2ecc71" if num >= cantidad else "#3498db")
+                        _safe_configure(lbl_progreso, text=progreso,
+                                        text_color="#2ecc71" if num >= cantidad else "#3498db")
                         self.set_estado(f"⏲ Variante {num}/{cantidad} lista", "#3498db")
                     self.after(0, _aplicar)
                 except Exception as e:
-                    self.after(0, lambda: lbl_progreso.configure(text=f"❌ Error variante {num}: {e}", text_color="#e74c3c"))
+                    self.after(0, lambda: _safe_configure(lbl_progreso,
+                                                          text=f"❌ Error variante {num}: {e}",
+                                                          text_color="#e74c3c"))
 
             def _siguiente():
-                if not cron_state["activo"]: return
+                if cron_state["cerrada"] or not cron_state["activo"]:
+                    return
                 cron_state["actuales"] += 1
                 num = cron_state["actuales"]
-                lbl_progreso.configure(text=f"⏲ Generando variante {num}/{cantidad}...", text_color="#f39c12")
+                _safe_configure(lbl_progreso,
+                                text=f"⏲ Generando variante {num}/{cantidad}...",
+                                text_color="#f39c12")
 
                 threading.Thread(target=lambda n=num: _generar_variante(n), daemon=True).start()
 
                 if num < cantidad and cron_state["activo"]:
-                    self.after(int(intervalo * 60 * 1000), _siguiente)
+                    cron_state["after_id"] = vent.after(
+                        int(intervalo * 60 * 1000), _siguiente)
                 else:
                     cron_state["activo"] = False
+                    cron_state["after_id"] = None
 
             _siguiente()
             self.set_estado(f"⏲ Cron iniciado: {cantidad} variantes cada {intervalo}min", "#2ecc71")
 
         def _detener():
             cron_state["activo"] = False
-            lbl_progreso.configure(text=f"⏹ Cron detenido en variante {cron_state['actuales']}/{ent_cantidad.get()}",
-                                   text_color="#e67e22")
+            if cron_state["after_id"]:
+                try: vent.after_cancel(cron_state["after_id"])
+                except Exception as _e: logger.debug(f"[silent] {_e}")
+                cron_state["after_id"] = None
+            _safe_configure(lbl_progreso,
+                            text=f"⏹ Cron detenido en variante {cron_state['actuales']}/{ent_cantidad.get()}",
+                            text_color="#e67e22")
 
         def _ver_todas():
             if cron_state["generados"]:
@@ -618,7 +654,13 @@ class ToolsWorkflowMixin:
                 def _ejecutar(macro=m):
                     self._ejecutar_macro(macro, acciones_disponibles)
                     vent.destroy()
-                def _borrar(idx=i):
+                def _borrar(idx=i, nombre=m.get("nombre", "?")):
+                    if not messagebox.askyesno(
+                        "Borrar macro",
+                        f"¿Borrar la macro '{nombre}'?",
+                        parent=vent,
+                    ):
+                        return
                     actual2 = prefs.get("macros", [])
                     if idx < len(actual2):
                         actual2.pop(idx)
