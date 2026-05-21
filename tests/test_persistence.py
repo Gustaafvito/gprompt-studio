@@ -63,11 +63,12 @@ class TestDataStoreCRUD:
         store.borrar_plantilla("Test")
         assert store.obtener_plantilla("Test") is None
 
-    def test_historial_max_100(self, store):
+    def test_historial_max_size(self, store):
+        # El límite real en persistence.py es 500 (no 100).
         store.limpiar_historial()
-        for i in range(150):
+        for i in range(600):
             store.agregar_historial({"contenido": f"prompt {i}", "fecha": "2026-01-01"})
-        assert len(store.historial) <= 100
+        assert len(store.historial) <= 500
 
 
 class TestPreferences:
@@ -82,7 +83,10 @@ class TestPreferences:
     def test_corrupt_preferences_returns_empty(self, tmp_path, monkeypatch):
         (tmp_path / "preferencias.json").write_text("not json", encoding="utf-8")
         s = _setup_store(tmp_path, monkeypatch)
-        assert s.cargar_preferencias() == {}
+        # DataStore.__init__ setea `_ejemplos_iniciados=True` la primera vez.
+        # El resto debe estar vacío tras detectar JSON corrupto.
+        loaded = s.cargar_preferencias()
+        assert set(loaded.keys()) <= {"_ejemplos_iniciados"}
 
 
 # ── Helpers ───────────────────────────────────────────────────────
