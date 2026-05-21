@@ -22,71 +22,137 @@ class BackupExportMixin:
 
     def _cmd_backup_completo(self):
         """Exporta TODOS los datos del usuario a un único archivo JSON de respaldo."""
-        from tkinter import filedialog
+        from tkinter import filedialog, messagebox
         archivo = filedialog.asksaveasfilename(
             defaultextension=".json",
             filetypes=[("JSON Backup", "*.json"), ("Todos", "*.*")],
             initialfile=f"gprompt_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.json"
         )
-        if not archivo: return
+        if not archivo:
+            return
 
         try:
-            prefs = self.store.cargar_preferencias()
-            backup = {
-                "version": VERSION if 'VERSION' in globals() else "1.0",
-                "fecha_backup": datetime.datetime.now().isoformat(),
-                "historial": self.store.historial or [],
-                "favoritos": self.store.favoritos or [],
-                "estrellas": self.store.estrellas or [],
-                "personajes": self.store.personajes or [],
-                "loras": self.store.loras or [],
-                "preferencias": prefs,
-            }
+            backup = self._construir_backup()
             with open(archivo, 'w', encoding='utf-8') as f:
                 json.dump(backup, f, ensure_ascii=False, indent=2)
 
-            tot = (len(backup["historial"]) + len(backup["favoritos"]) +
-                   len(backup["estrellas"]) + len(backup["personajes"]) +
-                   len(backup["loras"]))
-            self.set_estado(f"💾 Backup completo guardado ({tot} entradas)", "#2ecc71")
+            tot = sum(len(backup[k]) for k in
+                      ("historial", "favoritos", "estrellas",
+                       "personajes", "loras", "plantillas"))
+            tam_kb = os.path.getsize(archivo) / 1024
+            mensaje = (
+                f"💾 Backup guardado correctamente\n\n"
+                f"Archivo: {os.path.basename(archivo)}\n"
+                f"Tamaño: {tam_kb:.1f} KB\n"
+                f"Entradas: {tot} (historial {len(backup['historial'])}, "
+                f"favoritos {len(backup['favoritos'])}, "
+                f"estrellas {len(backup['estrellas'])}, "
+                f"personajes {len(backup['personajes'])}, "
+                f"loras {len(backup['loras'])}, "
+                f"plantillas {len(backup['plantillas'])})"
+            )
+            messagebox.showinfo("Backup completo", mensaje, parent=self)
+            self.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
         except Exception as e:
             self.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self)
+
+    def _construir_backup(self) -> dict:
+        """Construye el diccionario con todos los datos del usuario."""
+        return {
+            "version": VERSION,
+            "fecha_backup": datetime.datetime.now().isoformat(),
+            "historial":   self.store.historial or [],
+            "favoritos":   self.store.favoritos or [],
+            "estrellas":   self.store.estrellas or [],
+            "personajes":  self.store.personajes or [],
+            "loras":       self.store.loras or [],
+            "plantillas":  self.store.plantillas or [],
+            "preferencias": self.store.cargar_preferencias() or {},
+        }
 
     def _cmd_restore_completo(self):
-        """Restaura un backup JSON completo (sobrescribe los datos actuales)."""
+        """Restaura un backup JSON completo. ANTES de sobreescribir, guarda
+        automáticamente un backup de seguridad de los datos actuales en
+        ~/.arquitecto_prompts/backups/pre_restore_AAAA-MM-DD_HHMM.json
+        para que el usuario pueda volver atrás si se equivoca de archivo.
+        """
         from tkinter import filedialog, messagebox
+        from config import BACKUPS_DIR
+
         archivo = filedialog.askopenfilename(
             filetypes=[("JSON Backup", "*.json"), ("Todos", "*.*")],
         )
-        if not archivo: return
+        if not archivo:
+            return
 
         try:
             with open(archivo, 'r', encoding='utf-8') as f:
                 backup = json.load(f)
 
             if not isinstance(backup, dict) or "version" not in backup:
-                self.set_estado("❌ Archivo no es un backup válido", "#e74c3c")
+                messagebox.showerror("Backup inválido",
+                                     "El archivo no parece un backup de G-Prompt Studio "
+                                     "(falta el campo 'version').",
+                                     parent=self)
                 return
 
-            tot_actual = len(self.store.historial or []) + len(self.store.favoritos or []) + len(self.store.estrellas or [])
-            tot_backup = len(backup.get("historial", [])) + len(backup.get("favoritos", [])) + len(backup.get("estrellas", []))
+            tot_actual = (len(self.store.historial or []) +
+                          len(self.store.favoritos or []) +
+                          len(self.store.estrellas or []) +
+                          len(self.store.personajes or []) +
+                          len(self.store.loras or []) +
+                          len(self.store.plantillas or []))
+            tot_backup = (len(backup.get("historial", [])) +
+                          len(backup.get("favoritos", [])) +
+                          len(backup.get("estrellas", [])) +
+                          len(backup.get("personajes", [])) +
+                          len(backup.get("loras", [])) +
+                          len(backup.get("plantillas", [])))
 
-            if not messagebox.askyesno("⚠️ Confirmar restauración",
-                                         f"Vas a SOBRESCRIBIR todos tus datos actuales:\n\n"
-                                         f"Datos actuales: {tot_actual} entradas\n"
-                                         f"Backup a restaurar: {tot_backup} entradas\n"
-                                         f"Fecha del backup: {backup.get('fecha_backup', 'desconocida')}\n\n"
-                                         f"¿Estás seguro? Esta acción NO se puede deshacer.",
-                                         parent=self):
+            if not messagebox.askyesno(
+                "⚠️ Confirmar restauración",
+                f"Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\n"
+                f"Datos actuales: {tot_actual} entradas\n"
+                f"Backup a restaurar: {tot_backup} entradas\n"
+                f"Fecha del backup: {backup.get('fecha_backup', 'desconocida')}\n\n"
+                f"🛡 G-Prompt guardará automáticamente un backup de seguridad "
+                f"de tus datos ACTUALES antes de sobrescribir, así puedes volver "
+                f"atrás si te equivocas.\n\n"
+                f"¿Continuar?",
+                parent=self,
+            ):
                 return
 
-            self.store.historial = backup.get("historial", [])
-            self.store.favoritos = backup.get("favoritos", [])
-            self.store.estrellas = backup.get("estrellas", [])
-            self.store.personajes = backup.get("personajes", [])
-            self.store.loras = backup.get("loras", [])
+            # ── BACKUP AUTOMÁTICO ANTES DE RESTAURAR ──
+            try:
+                BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
+                ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
+                pre_path = BACKUPS_DIR / f"pre_restore_{ts}.json"
+                with open(pre_path, 'w', encoding='utf-8') as f:
+                    json.dump(self._construir_backup(), f, ensure_ascii=False, indent=2)
+                logger.info(f"Backup pre-restore guardado en {pre_path}")
+            except Exception as e:
+                # Si no se puede guardar el backup pre-restore, ABORTAR
+                # (mejor no restaurar que perder datos)
+                messagebox.showerror(
+                    "Error",
+                    f"No se pudo crear el backup de seguridad pre-restore:\n{e}\n\n"
+                    f"Restauración CANCELADA para no arriesgar tus datos actuales.",
+                    parent=self,
+                )
+                return
 
-            for col in ["historial", "favoritos", "estrellas", "personajes", "loras"]:
+            # ── RESTAURAR ──
+            self.store.historial   = backup.get("historial", [])
+            self.store.favoritos   = backup.get("favoritos", [])
+            self.store.estrellas   = backup.get("estrellas", [])
+            self.store.personajes  = backup.get("personajes", [])
+            self.store.loras       = backup.get("loras", [])
+            self.store.plantillas  = backup.get("plantillas", [])
+
+            for col in ["historial", "favoritos", "estrellas",
+                        "personajes", "loras", "plantillas"]:
                 self.store._guardar(col)
 
             if backup.get("preferencias"):
@@ -94,47 +160,93 @@ class BackupExportMixin:
 
             self.actualizar_combo_personajes()
             self.actualizar_combo_loras()
+            if hasattr(self, "actualizar_combo_plantillas"):
+                self.actualizar_combo_plantillas()
+
+            messagebox.showinfo(
+                "Restauración completada",
+                f"✅ Backup restaurado ({tot_backup} entradas).\n\n"
+                f"Tus datos anteriores se guardaron en:\n{pre_path}\n\n"
+                f"Si te has equivocado, puedes restaurar ese archivo.",
+                parent=self,
+            )
             self.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
         except Exception as e:
             self.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self)
 
     def _cmd_exportar_csv(self):
-        """Exporta historial completo a CSV."""
+        """Exporta historial completo a CSV.
+
+        Bugs corregidos:
+          - Columna Modelo ya no sale vacía: usa "modelo" si existe,
+            si no usa modelo_img/vid/aud según el modo.
+          - "estilos" puede venir como lista o como string; se normaliza a
+            "estilo1, estilo2, …".
+          - Sin truncar prompt a 1000 chars (los CSV modernos lo aguantan).
+        """
         items = self.store.historial or []
         if not items:
             return self.set_estado("⚠️ El historial está vacío.", "#e67e22")
 
-        from tkinter import filedialog
+        from tkinter import filedialog, messagebox
         archivo = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV", "*.csv"), ("Todos", "*.*")],
             initialfile=f"historial_prompts_{datetime.datetime.now().strftime('%Y%m%d')}.csv"
         )
-        if not archivo: return
+        if not archivo:
+            return
+
+        def _modelo_de(it: dict) -> str:
+            # Prioridad: campo "modelo" directo, sino el del modo activo
+            if it.get("modelo"):
+                return str(it["modelo"])
+            modo = it.get("modo", "")
+            return str(it.get({
+                "imagen": "modelo_img",
+                "video":  "modelo_vid",
+                "audio":  "modelo_aud",
+            }.get(modo, "modelo_img"), "") or "")
+
+        def _estilos_de(it: dict) -> str:
+            est = it.get("estilos", "")
+            if isinstance(est, list):
+                return ", ".join(str(e) for e in est if e)
+            return str(est)
 
         try:
+            n = 0
             with open(archivo, 'w', newline='', encoding='utf-8') as f:
                 w = csv.writer(f)
-                w.writerow(["Fecha", "Modo", "Plataforma", "Modelo", "Ratio", "Estilos", "Destino", "NSFW", "Brief", "Personaje", "LoRA", "Prompt"])
+                w.writerow(["Fecha", "Modo", "Plataforma", "Modelo", "Ratio",
+                            "Estilos", "Destino", "NSFW", "Brief",
+                            "Personaje", "LoRA", "Prompt"])
                 for it in items:
-                    if isinstance(it, dict):
-                        w.writerow([
-                            it.get("fecha", ""),
-                            it.get("modo", ""),
-                            it.get("plataforma", ""),
-                            "",  # modelo
-                            it.get("ratio", ""),
-                            it.get("estilos", ""),
-                            it.get("destino", ""),
-                            "Sí" if it.get("nsfw") else "No",
-                            "Sí" if it.get("brief") else "No",
-                            it.get("personaje", ""),
-                            it.get("lora", ""),
-                            it.get("contenido", "")[:1000],
-                        ])
-            self.set_estado(f"💾 Historial exportado a {archivo}", "#2ecc71")
+                    if not isinstance(it, dict):
+                        continue
+                    w.writerow([
+                        it.get("fecha", ""),
+                        it.get("modo", ""),
+                        it.get("plataforma", ""),
+                        _modelo_de(it),
+                        it.get("ratio", ""),
+                        _estilos_de(it),
+                        it.get("destino", ""),
+                        "Sí" if it.get("nsfw") else "No",
+                        "Sí" if it.get("brief") else "No",
+                        it.get("personaje", ""),
+                        it.get("lora", ""),
+                        it.get("contenido", ""),
+                    ])
+                    n += 1
+            self.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
+            messagebox.showinfo("Exportación completada",
+                                f"💾 Exportadas {n} filas a:\n{archivo}",
+                                parent=self)
         except Exception as e:
             self.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self)
 
     def _cmd_export_cli(self):
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.

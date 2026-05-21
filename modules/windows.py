@@ -632,15 +632,26 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
 
     def limpiar_todo():
         total = len(getattr(app.store, coleccion))
-        if messagebox.askyesno("Confirmar",
-                               f"¿Borrar TODAS las {total} entradas?\nEsta acción no se puede deshacer.",
-                               parent=ventana):
-            if coleccion == "historial":
-                app.store.limpiar_historial()
-            else:
-                app.store.limpiar_favoritos()
-            refrescar()
-            app.set_estado(f"🗑 {titulo} limpiado.")
+        if not messagebox.askyesno("Confirmar",
+                                   f"¿Borrar TODAS las {total} entradas?\n"
+                                   f"Esta acción no se puede deshacer.",
+                                   parent=ventana):
+            return
+        # FIX: antes el `else` llamaba a limpiar_favoritos() incluso para
+        # estrellas (que borraba favoritos por error). Ahora dispatch correcto.
+        metodo = {
+            "historial":  app.store.limpiar_historial,
+            "favoritos":  app.store.limpiar_favoritos,
+            "estrellas":  app.store.limpiar_estrellas,
+        }.get(coleccion)
+        if metodo:
+            metodo()
+        else:
+            # Fallback genérico (otras colecciones añadidas en el futuro)
+            setattr(app.store, coleccion, [])
+            app.store._guardar(coleccion)
+        refrescar()
+        app.set_estado(f"🗑 {titulo} limpiado.")
 
     ctk.CTkButton(frame_vtitulo, text="🗑 Limpiar todo", width=130, height=28,
                   fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=limpiar_todo).pack(side="right", padx=4)
