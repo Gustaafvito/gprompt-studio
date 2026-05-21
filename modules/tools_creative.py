@@ -2057,6 +2057,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                                                     vent.destroy())).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text="💾 Guardar paleta", width=130, height=28, fg_color="#4a1a6a",
                                   command=_guardar_paleta).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_row, text="📚 Biblioteca", width=110, height=28, fg_color="#1a4a5a",
+                                  command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
 
                     self.set_estado("🎨 Paleta extraída", "#2ecc71")
                 self.after(0, _mostrar)
@@ -2065,19 +2067,186 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    def _abrir_biblioteca_paletas(self, parent_window=None):
+        """Biblioteca de paletas guardadas con búsqueda, aplicar y borrar."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        bg_card = "#ffffff" if is_lt else "#1a1a2e"
+        text_main = "#111827" if is_lt else "#e5e7eb"
+        text_muted = "#4b5563" if is_lt else "#9ca3af"
+
+        win = GPromptWindow(parent_window or self)
+        win.title("📚 Biblioteca de paletas")
+        win.geometry("560x600")
+        win.transient(parent_window or self)
+
+        ctk.CTkLabel(win, text="📚 Biblioteca de paletas",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+
+        # Cabecera con contador
+        cont_var = ctk.StringVar(value="")
+        ctk.CTkLabel(win, textvariable=cont_var, font=ctk.CTkFont(size=10),
+                     text_color=text_muted).pack(pady=(0, 6))
+
+        scroll = ctk.CTkScrollableFrame(win,
+                                        fg_color=("#f3f4f6" if is_lt else "#0d1117"))
+        scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        def _refrescar():
+            for w in scroll.winfo_children():
+                w.destroy()
+            paletas = self.store.paletas or []
+            cont_var.set(f"{len(paletas)} paletas guardadas")
+            if not paletas:
+                ctk.CTkLabel(scroll, text="No hay paletas guardadas todavía.\n"
+                             "Extrae una imagen y pulsa '💾 Guardar paleta'.",
+                             text_color=text_muted, justify="center"
+                             ).pack(pady=30)
+                return
+
+            for idx, p in enumerate(paletas):
+                card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=8)
+                card.pack(fill="x", padx=4, pady=4)
+
+                # Cabecera con nombre + timestamp + botones
+                hdr = ctk.CTkFrame(card, fg_color="transparent")
+                hdr.pack(fill="x", padx=12, pady=(8, 4))
+                ctk.CTkLabel(hdr, text=p.get("nombre", f"Paleta {idx+1}"),
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=text_main).pack(side="left")
+                if p.get("timestamp"):
+                    ctk.CTkLabel(hdr, text=p["timestamp"][:10],
+                                 font=ctk.CTkFont(size=9),
+                                 text_color=text_muted).pack(side="left", padx=10)
+
+                def _aplicar(pal=p):
+                    hex_str = ", ".join(pal.get("hex", []))
+                    self._aplicar_atajo_tags(f"color palette: {hex_str}")
+                    self.set_estado(f"🎨 Paleta '{pal.get('nombre','')}' añadida al prompt",
+                                    "#2ecc71")
+
+                def _copiar(pal=p):
+                    pyperclip.copy(", ".join(pal.get("hex", [])))
+                    self.set_estado(f"📋 Hex de '{pal.get('nombre','')}' copiados",
+                                    "#2ecc71")
+
+                def _borrar(i=idx, nombre=p.get("nombre", "?")):
+                    from tkinter import messagebox as _mb
+                    if not _mb.askyesno("Confirmar",
+                                        f"¿Borrar paleta '{nombre}'?",
+                                        parent=win):
+                        return
+                    try:
+                        self.store.paletas.pop(i)
+                        self.store._guardar("paletas")
+                        _refrescar()
+                    except Exception as e:
+                        logger.warning(f"Borrar paleta: {e}")
+
+                ctk.CTkButton(hdr, text="🎨 Aplicar", width=80, height=24,
+                              fg_color="#1a7a3c",
+                              command=_aplicar).pack(side="right", padx=2)
+                ctk.CTkButton(hdr, text="📋", width=32, height=24,
+                              command=_copiar).pack(side="right", padx=2)
+                ctk.CTkButton(hdr, text="🗑", width=32, height=24,
+                              fg_color="#7a1a1a", hover_color="#5a0f0f",
+                              command=_borrar).pack(side="right", padx=2)
+
+                # Swatches de colores
+                sw_row = ctk.CTkFrame(card, fg_color="transparent")
+                sw_row.pack(fill="x", padx=12, pady=(0, 10))
+                for hex_c in p.get("hex", []):
+                    f = ctk.CTkFrame(sw_row, fg_color=hex_c, width=58, height=40,
+                                     corner_radius=6)
+                    f.pack(side="left", padx=3)
+                    f.pack_propagate(False)
+                    # Color del label legible según oscuridad del swatch
+                    try:
+                        r, g, b = int(hex_c[1:3], 16), int(hex_c[3:5], 16), int(hex_c[5:7], 16)
+                        text_c = "white" if (r+g+b)/3 < 128 else "black"
+                    except Exception:
+                        text_c = "white"
+                    ctk.CTkLabel(f, text=hex_c, font=ctk.CTkFont(size=8),
+                                 text_color=text_c, fg_color="transparent"
+                                 ).place(relx=0.5, rely=0.5, anchor="center")
+                    # Click para copiar el color individual
+                    def _cp_color(h=hex_c):
+                        pyperclip.copy(h)
+                        self.set_estado(f"📋 {h} copiado", "#2ecc71")
+                    f.bind("<Button-1>", lambda _e, h=hex_c: _cp_color(h))
+
+        _refrescar()
+
+        ctk.CTkButton(win, text="Cerrar", width=100, height=30,
+                      fg_color="#444", hover_color="#555",
+                      command=win.destroy).pack(pady=8)
+
     def _cmd_modo_cliente(self):
-        """Modo Cliente: brief simplificado para generar 5 propuestas profesionales."""
+        """Modo Cliente: brief simplificado para generar 5 propuestas profesionales.
+
+        Recuerda el último brief (preferencias.modo_cliente_ultimo_brief)
+        y ofrece plantillas predefinidas para arrancar rápido.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = GPromptWindow(self)
         vent.title("💼 Modo Cliente")
-        vent.geometry("600x600")
+        vent.geometry("640x720")
         vent.transient(self)
 
         ctk.CTkLabel(vent, text="💼 Modo Cliente — Brief profesional",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Define un brief y genera 5 propuestas profesionales coherentes",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 12))
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        # ── Plantillas predefinidas ──
+        PLANTILLAS_BRIEF = {
+            "Logo minimalista": {
+                "Tipo de proyecto": "Logo",
+                "Cliente / sector": "Marca tech / startup",
+                "Tono / estilo deseado": "Minimalista geométrico, sans-serif, monocromo",
+                "Público objetivo": "Profesionales 25-40 urbanos",
+                "Restricciones / keywords": "Sin gradientes, formato vectorial, fondo blanco",
+            },
+            "Banner web hero": {
+                "Tipo de proyecto": "Banner / Hero image para landing",
+                "Cliente / sector": "App SaaS B2B",
+                "Tono / estilo deseado": "Moderno, espacioso, ilustración isométrica suave",
+                "Público objetivo": "Profesionales tech, decision-makers",
+                "Restricciones / keywords": "16:9 horizontal, paleta corporativa azul-blanco",
+            },
+            "Producto e-commerce": {
+                "Tipo de proyecto": "Foto de producto",
+                "Cliente / sector": "E-commerce moda",
+                "Tono / estilo deseado": "Studio shot, fondo blanco, iluminación 360°",
+                "Público objetivo": "Compradores online 20-45",
+                "Restricciones / keywords": "Sin modelo, solo producto, formato 1:1",
+            },
+            "Editorial fashion": {
+                "Tipo de proyecto": "Editorial de moda",
+                "Cliente / sector": "Revista de moda / marca lujo",
+                "Tono / estilo deseado": "Editorial cinematográfico, alta producción, drama lumínico",
+                "Público objetivo": "Lectores de Vogue / Harper's Bazaar",
+                "Restricciones / keywords": "Formato vertical 2:3, paleta tierra y dorado",
+            },
+            "Anuncio TikTok 15s": {
+                "Tipo de proyecto": "Vídeo corto vertical para TikTok/Reels",
+                "Cliente / sector": "Marca DTC (bebida / cosmética / wellness)",
+                "Tono / estilo deseado": "Energético, viral, gancho en primer segundo",
+                "Público objetivo": "Gen Z 16-24",
+                "Restricciones / keywords": "9:16, texto en pantalla, máximo 15s",
+            },
+        }
+
+        plantilla_row = ctk.CTkFrame(vent, fg_color="transparent")
+        plantilla_row.pack(fill="x", padx=20, pady=(0, 8))
+        ctk.CTkLabel(plantilla_row, text="Plantilla:",
+                     font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
+        plantilla_var = ctk.StringVar(value="— Personalizada —")
+        combo_plantilla = ctk.CTkComboBox(
+            plantilla_row, width=280, variable=plantilla_var,
+            values=["— Personalizada —"] + list(PLANTILLAS_BRIEF.keys()),
+        )
+        combo_plantilla.pack(side="left")
 
         # Imagen de referencia opcional (logo, moodboard, etc.)
         frame_img = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
@@ -2138,24 +2307,59 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             ("Restricciones / keywords", "ej: Sin texto, paleta verde-marrón, formato vertical..."),
         ]:
             ctk.CTkLabel(vent, text=label, font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(4, 2))
-            ent = ctk.CTkEntry(vent, placeholder_text=placeholder, width=540, height=28)
+            ent = ctk.CTkEntry(vent, placeholder_text=placeholder, width=560, height=28)
             ent.pack(padx=20)
             campos[label] = ent
 
+        def _aplicar_plantilla(_v=None):
+            sel = plantilla_var.get()
+            if sel == "— Personalizada —":
+                return
+            datos = PLANTILLAS_BRIEF.get(sel, {})
+            for k, ent in campos.items():
+                ent.delete(0, "end")
+                if datos.get(k):
+                    ent.insert(0, datos[k])
+        combo_plantilla.configure(command=_aplicar_plantilla)
+
+        # ── Cargar último brief desde preferencias ──
+        try:
+            _prefs = self.store.cargar_preferencias() or {}
+            ultimo = _prefs.get("modo_cliente_ultimo_brief") or {}
+            for k, ent in campos.items():
+                if ultimo.get(k):
+                    ent.insert(0, ultimo[k])
+        except Exception as _e:
+            logger.debug(f"[silent] cargar último brief: {_e}")
+
         def _generar_propuestas():
-            brief = "\n".join([f"- {k}: {v.get().strip() or '(no especificado)'}" for k, v in campos.items()])
-            if all(v.get().strip() == "" for v in campos.values()):
+            brief_dict = {k: v.get().strip() for k, v in campos.items()}
+            if not any(brief_dict.values()):
                 self.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
                 return
 
+            # Persistir último brief
+            try:
+                _p = self.store.cargar_preferencias() or {}
+                _p["modo_cliente_ultimo_brief"] = brief_dict
+                self.store.guardar_preferencias(_p)
+            except Exception as _e:
+                logger.debug(f"[silent] persistir brief: {_e}")
+
+            brief = "\n".join([f"- {k}: {v or '(no especificado)'}"
+                               for k, v in brief_dict.items()])
+
             # Si hay imagen analizada, añadirla al brief
             if cliente_state["descripcion"]:
-                brief += f"\n\n📎 IMAGEN DE REFERENCIA proporcionada por el cliente:\n{cliente_state['descripcion']}\n(Usa el estilo visual de esta imagen como guía estética)"
+                brief += (f"\n\n📎 IMAGEN DE REFERENCIA proporcionada por el cliente:\n"
+                          f"{cliente_state['descripcion']}\n"
+                          f"(Usa el estilo visual de esta imagen como guía estética)")
 
             vent.destroy()
             self._generar_propuestas_cliente(brief)
 
-        ctk.CTkButton(vent, text="✨ Generar 5 propuestas", width=200, height=32, fg_color="#1a7a3c",
+        ctk.CTkButton(vent, text="✨ Generar 5 propuestas", width=220, height=34,
+                      fg_color="#1a7a3c",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_generar_propuestas).pack(pady=15)
 

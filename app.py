@@ -141,8 +141,15 @@ class ArquitectoApp(
         self.imagen_cargada         = None
         self._progreso_activo       = False
         self._token_pending         = None
-        self._ultimo_anclaje_visual = None  
-        self._anclaje_visual = None  # ADN visual (rasgos inmutables)
+        self._ultimo_anclaje_visual = None
+        # ADN visual (rasgos inmutables): se restaura desde preferencias.json
+        # al arrancar y se persiste tras cada cambio.
+        try:
+            _prefs = self.store.cargar_preferencias() or {}
+            self._anclaje_visual = _prefs.get("anclaje_visual") or None
+        except Exception as _e:
+            logger.debug(f"[silent] cargar anclaje: {_e}")
+            self._anclaje_visual = None
 
         # ── Ventana ───────────────────────────────────────────────
         self.title(APP_TITLE)
@@ -244,6 +251,8 @@ class ArquitectoApp(
             logger.debug(f"[silent] {_e}")
         # Indicador de proveedor activo (v1.0)
         self.after(800, self._actualizar_indicador_proveedor)
+        # Indicador de ADN visual activo (si se cargó desde preferencias)
+        self.after(900, self._actualizar_indicador_adn)
 
         self.protocol("WM_DELETE_WINDOW", self._on_cerrar)
 
@@ -632,8 +641,16 @@ class ArquitectoApp(
             logger.debug(f"[silent] {_e}")
 
     def _actualizar_indicador_adn(self):
-        """Muestra/oculta el botón 🧬 ADN en el header según haya ADN activo."""
+        """Muestra/oculta el botón 🧬 ADN en el header + persiste estado."""
         try:
+            # Persistir en preferencias para que sobreviva al reinicio
+            try:
+                prefs = self.store.cargar_preferencias() or {}
+                prefs["anclaje_visual"] = self._anclaje_visual or ""
+                self.store.guardar_preferencias(prefs)
+            except Exception as _e:
+                logger.debug(f"[silent] persistir adn: {_e}")
+
             if not hasattr(self, "_btn_adn"):
                 return
             if self._anclaje_visual:
