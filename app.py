@@ -1007,7 +1007,11 @@ class ArquitectoApp(
         return [texto.strip()] if len(texto.strip()) > 30 else []
 
     def _cargar_plantillas_desde_json(self) -> list:
-        """Carga plantillas desde config/plantillas_default.json."""
+        """Carga plantillas desde config/plantillas_default.json.
+
+        Devuelve lista de tuplas (nombre, positive, negative, categoria).
+        La categoría puede ser "" si la plantilla no la define.
+        """
         import json, os
         try:
             ruta_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -1018,7 +1022,11 @@ class ArquitectoApp(
             with open(ruta_json, "r", encoding="utf-8") as f:
                 datos = json.load(f)
             plantillas = datos.get("plantillas", [])
-            return [(p["nombre"], p["positive"], p.get("negative", "")) for p in plantillas]
+            return [
+                (p["nombre"], p["positive"], p.get("negative", ""),
+                 p.get("categoria", ""))
+                for p in plantillas
+            ]
         except Exception as e:
             logger.error(f"Error cargando plantillas JSON: {e}")
             return []
@@ -1047,9 +1055,15 @@ class ArquitectoApp(
         plantillas_visibles = [p for p in plantillas_sorted if p[0] not in ocultas]
         total_borradas = len(ocultas)
 
+        # Categorías disponibles (las que tienen al menos una plantilla visible)
+        cats_disponibles = sorted({
+            p[3] for p in plantillas_visibles
+            if len(p) > 3 and p[3]
+        })
+
         vent = GPromptWindow(self)
         vent.title("📑 Plantillas de prompt")
-        vent.geometry("820x660")
+        vent.geometry("860x700")
         vent.transient(self)
 
         # ── Cabecera ──
@@ -1092,6 +1106,19 @@ class ArquitectoApp(
                       command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
                       ).pack(side="left", padx=(6, 0))
 
+        # Filtro por categoría (si hay categorías en las plantillas)
+        cat_var = ctk.StringVar(value="Todas")
+        if cats_disponibles:
+            cat_row = ctk.CTkFrame(vent, fg_color="transparent")
+            cat_row.pack(fill="x", padx=12, pady=(0, 4))
+            ctk.CTkLabel(cat_row, text="Categoría:",
+                         font=ctk.CTkFont(size=10)).pack(side="left", padx=(0, 6))
+            ctk.CTkComboBox(
+                cat_row, width=180, variable=cat_var,
+                values=["Todas"] + [c.capitalize() for c in cats_disponibles],
+                command=lambda _v: _refrescar(),
+            ).pack(side="left")
+
         ctk.CTkLabel(vent,
                      text="Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final.",
                      font=ctk.CTkFont(size=10),
@@ -1131,30 +1158,50 @@ class ArquitectoApp(
             for w in scroll.winfo_children():
                 w.destroy()
             termino = entry_buscar.get().strip().lower()
+            cat_sel = cat_var.get().lower() if cat_var.get() != "Todas" else None
             import re
             visibles = []
-            for nombre, pos, neg in plantillas_visibles:
+            for p in plantillas_visibles:
+                # Compat: tupla de 3 o 4 elementos
+                if len(p) == 4:
+                    nombre, pos, neg, categoria = p
+                else:
+                    nombre, pos, neg = p[:3]
+                    categoria = ""
+                if cat_sel and categoria.lower() != cat_sel:
+                    continue
                 if termino:
-                    text = f"{nombre} {pos} {neg}".lower()
+                    text = f"{nombre} {pos} {neg} {categoria}".lower()
                     if termino not in text:
                         continue
-                visibles.append((nombre, pos, neg))
+                visibles.append((nombre, pos, neg, categoria))
 
+            sufijo_cat = f" · {cat_var.get()}" if cat_sel else ""
             contador_var.set(
-                f"({len(visibles)} de {len(plantillas_visibles)})"
-                if termino else f"({len(plantillas_visibles)})"
+                f"({len(visibles)} de {len(plantillas_visibles)}{sufijo_cat})"
+                if (termino or cat_sel) else f"({len(plantillas_visibles)})"
             )
             if not visibles:
-                ctk.CTkLabel(scroll, text=f"Sin resultados para '{termino}'",
+                msg = (f"Sin resultados para '{termino}'" if termino
+                       else f"Sin plantillas en {cat_var.get()}" if cat_sel
+                       else "Sin plantillas visibles.")
+                ctk.CTkLabel(scroll, text=msg,
                              text_color=c["muted_text"]).pack(pady=30)
                 return
 
-            for nombre, pos, neg in visibles:
+            for nombre, pos, neg, categoria in visibles:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
                 card.pack(fill="x", pady=4)
-                ctk.CTkLabel(card, text=nombre,
+                hdr_card = ctk.CTkFrame(card, fg_color="transparent")
+                hdr_card.pack(fill="x", padx=10, pady=(6, 2))
+                ctk.CTkLabel(hdr_card, text=nombre,
                              font=ctk.CTkFont(size=12, weight="bold"),
-                             text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 2))
+                             text_color=c["hdr_text"]).pack(side="left")
+                if categoria:
+                    ctk.CTkLabel(hdr_card,
+                                 text=f"  · {categoria}",
+                                 font=ctk.CTkFont(size=9),
+                                 text_color=c["accent_text"]).pack(side="left")
                 vars_pos = re.findall(r'\{(\w+)\}', pos)
                 vars_neg = re.findall(r'\{(\w+)\}', neg)
                 todas_vars = sorted(set(vars_pos + vars_neg))
@@ -1167,7 +1214,7 @@ class ArquitectoApp(
                 ctk.CTkLabel(card, text=f"  POS: {preview}…",
                              font=ctk.CTkFont(size=10),
                              text_color=c["muted_text"],
-                             wraplength=720, justify="left", anchor="w"
+                             wraplength=760, justify="left", anchor="w"
                              ).pack(fill="x", padx=10, pady=(0, 4))
 
                 btns_frame = ctk.CTkFrame(card, fg_color="transparent")

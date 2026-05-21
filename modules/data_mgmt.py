@@ -639,9 +639,16 @@ class DataMgmtMixin:
         vent.transient(self)
         ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Frases cortas que añades al final del POSITIVE con un click",
+        ctk.CTkLabel(vent,
+                     text="Frases cortas (tags, fórmulas de calidad, look…) que añades "
+                          "al final del POSITIVE con un click.",
                      font=ctk.CTkFont(size=10),
-                     text_color=c["muted_text"]).pack(pady=(0, 6))
+                     text_color=c["muted_text"]).pack(pady=(0, 2))
+        ctk.CTkLabel(vent,
+                     text="💡 Diferencia con Fórmulas: aquí son fragmentos cortos para "
+                          "complementar; las Fórmulas guardan un POSITIVE completo.",
+                     font=ctk.CTkFont(size=9, slant="italic"),
+                     text_color="#888").pack(pady=(0, 6))
 
         # Buscador
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -819,9 +826,18 @@ class DataMgmtMixin:
         vent.title("📐 Fórmulas guardadas")
         vent.geometry("680x550")
         vent.transient(self)
-        ctk.CTkLabel(vent, text="📐 Fórmulas guardadas", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Combinaciones de tags listas para aplicar (más completas que snippets)",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+        ctk.CTkLabel(vent, text="📐 Fórmulas guardadas",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent,
+                     text="Prompts COMPLETOS (positive + negative) guardados como receta "
+                          "reutilizable. Carga uno y aplícalo entero al área de salida.",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 2))
+        ctk.CTkLabel(vent,
+                     text="💡 Diferencia con Snippets: aquí guardas el prompt entero; "
+                          "los Snippets son frases cortas para sumar a un prompt existente.",
+                     font=ctk.CTkFont(size=9, slant="italic"),
+                     text_color="#888").pack(pady=(0, 4))
 
         # Botón "Guardar el POSITIVE actual como fórmula"
         def _guardar_actual():

@@ -1099,6 +1099,18 @@ class UIBuildersMixin:
         self.txt_idea = ctk.CTkTextbox(self.frame_entrada, height=90, font=ctk.CTkFont(size=13),
                                         border_width=2, border_color=c["combo_border"] if "combo_border" in c else "#9ca3af", corner_radius=8)
         self.txt_idea.pack(fill="x")
+        # Tooltip explicando la expansión rápida (;trigger + Espacio)
+        try:
+            CTkToolTip(
+                self.txt_idea, delay=0.6,
+                message=(
+                    "💡 Tip: escribe ';trigger' + Espacio para expandir automáticamente.\n"
+                    "Ej: ';cine ' → 'cinematic lighting, film grain'.\n"
+                    "Configura tus triggers en menú Plantillas → Expansión rápida."
+                ),
+            )
+        except Exception as _e:
+            logger.debug(f"[silent] tooltip txt_idea: {_e}")
         # Bind para autocompletar
         self.txt_idea.bind("<KeyRelease>", self._on_idea_keyrelease)
         # Menú contextual click derecho (Cortar/Copiar/Pegar/Seleccionar todo)
