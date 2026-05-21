@@ -42,75 +42,169 @@ def _card_colors():
 # PERSONAJES
 
 def abrir_personajes(app):
+    """Gestor de personajes con buscador. El form de creación está
+    colapsado por defecto; se despliega con el botón "+ Nuevo"."""
     cc = _card_colors()
     ventana = GPromptWindow(app)
     ventana.title("🧑 Gestor de Personajes")
-    ventana.geometry("720x580")
+    ventana.geometry("780x620")
     ventana.grab_set()
 
-    ctk.CTkLabel(ventana, text="🧑 Personajes Guardados",
+    # ── Cabecera ──
+    head = ctk.CTkFrame(ventana, fg_color="transparent")
+    head.pack(fill="x", padx=15, pady=(12, 4))
+    ctk.CTkLabel(head, text="🧑 Personajes Guardados",
                  font=ctk.CTkFont(size=18, weight="bold"),
-                 text_color=cc["label_main"]).pack(pady=12)
+                 text_color=cc["label_main"]).pack(side="left")
+    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
+                             text_color=cc["empty_text"])
+    lbl_count.pack(side="left", padx=10)
+
+    btn_toggle_form = ctk.CTkButton(head, text="+ Nuevo personaje", width=160,
+                                    height=28, fg_color="#1a7a3c",
+                                    hover_color="#145e2d")
+    btn_toggle_form.pack(side="right")
+
     ctk.CTkLabel(ventana,
                  text="Los personajes se insertan automáticamente en el prompt al seleccionarlos.",
-                 font=ctk.CTkFont(size=11), text_color=cc["label_main"]).pack(pady=(0, 8))
+                 font=ctk.CTkFont(size=10),
+                 text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
+    # ── Buscador ──
+    frame_busqueda = ctk.CTkFrame(ventana, fg_color="transparent")
+    frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
+    ctk.CTkLabel(frame_busqueda, text="🔍").pack(side="left", padx=(0, 6))
+    entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text="Buscar por nombre o descripción…",
+                                height=30)
+    entry_buscar.pack(side="left", fill="x", expand=True)
+    busqueda_pending = [None]
+
+    def _on_buscar(_e=None):
+        if busqueda_pending[0]:
+            ventana.after_cancel(busqueda_pending[0])
+        busqueda_pending[0] = ventana.after(250, refrescar)
+    entry_buscar.bind("<KeyRelease>", _on_buscar)
+
+    ctk.CTkButton(frame_busqueda, text="✕", width=32, height=30,
+                  fg_color="#444", hover_color="#222",
+                  command=lambda: (entry_buscar.delete(0, "end"), refrescar())
+                  ).pack(side="left", padx=(6, 0))
+
+    # ── Form de creación (colapsable, oculto por defecto) ──
     frame_nuevo = ctk.CTkFrame(ventana)
-    frame_nuevo.pack(fill="x", padx=15, pady=(0, 8))
+    # No empaqueto aún: el toggle se encarga
 
     ctk.CTkLabel(frame_nuevo, text="Nombre:", font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=10, pady=8)
-    entry_nombre = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text="ej: Luna, Detective...")
+    entry_nombre = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text="ej: Luna, Detective…")
     entry_nombre.pack(side="left", padx=5)
 
     ctk.CTkLabel(frame_nuevo, text="Descripción:", font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=(12, 5))
     entry_desc = ctk.CTkEntry(frame_nuevo, width=260,
-                               placeholder_text="ej: young woman, silver hair, blue eyes...")
+                              placeholder_text="ej: young woman, silver hair, blue eyes…")
     entry_desc.pack(side="left", padx=5)
+
+    form_visible = [False]
+
+    def _toggle_form():
+        if form_visible[0]:
+            frame_nuevo.pack_forget()
+            btn_toggle_form.configure(text="+ Nuevo personaje")
+            form_visible[0] = False
+        else:
+            frame_nuevo.pack(fill="x", padx=15, pady=(2, 6), after=frame_busqueda)
+            btn_toggle_form.configure(text="× Cerrar form")
+            form_visible[0] = True
+            entry_nombre.focus_set()
+
+    btn_toggle_form.configure(command=_toggle_form)
+
+    # ── Estado de edición (cuál personaje estoy editando) ──
+    editando_idx = [None]
 
     def guardar():
         nombre = entry_nombre.get().strip()
         desc = entry_desc.get().strip()
         if not nombre or not desc:
-            messagebox.showwarning("Faltan datos", "Rellena nombre y descripción.", parent=ventana)
+            messagebox.showwarning("Faltan datos", "Rellena nombre y descripción.",
+                                   parent=ventana)
             return
-        existia = app.store.guardar_personaje(nombre, desc)
-        if existia:
-            if not messagebox.askyesno("Ya existe", f"¿Sobreescribir '{nombre}'?", parent=ventana):
+        if editando_idx[0] is not None:
+            # Editar existente
+            i = editando_idx[0]
+            try:
+                app.store.personajes[i] = {"nombre": nombre, "descripcion": desc}
+                app.store._guardar("personajes")
+                editando_idx[0] = None
+                btn_guardar.configure(text="💾 Guardar")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo editar: {e}", parent=ventana)
                 return
+        else:
+            existia = app.store.guardar_personaje(nombre, desc)
+            if existia:
+                if not messagebox.askyesno("Ya existe",
+                                           f"¿Sobreescribir '{nombre}'?",
+                                           parent=ventana):
+                    return
         app.actualizar_combo_personajes()
         entry_nombre.delete(0, "end")
         entry_desc.delete(0, "end")
         refrescar()
         app.set_estado(f"🧑 Personaje '{nombre}' guardado.", "#2ecc71")
 
-    ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
-                  fg_color="#1a7a3c", hover_color="#145e2d", command=guardar).pack(side="left", padx=8)
+    btn_guardar = ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
+                                fg_color="#1a7a3c", hover_color="#145e2d",
+                                command=guardar)
+    btn_guardar.pack(side="left", padx=8)
 
     frame_lista = ctk.CTkScrollableFrame(ventana)
     frame_lista.pack(fill="both", expand=True, padx=15, pady=5)
 
     def refrescar():
-        cc = _card_colors()
+        cc_loc = _card_colors()
         for w in frame_lista.winfo_children():
             w.destroy()
-        if not app.store.personajes:
-            ctk.CTkLabel(frame_lista, text="No hay personajes guardados aún.",
-                         text_color=cc["empty_text"]).pack(pady=20)
+
+        personajes = app.store.personajes or []
+        termino = entry_buscar.get().strip().lower()
+        if termino:
+            visibles = [(i, p) for i, p in enumerate(personajes)
+                        if termino in p.get("nombre", "").lower()
+                        or termino in p.get("descripcion", "").lower()]
+        else:
+            visibles = list(enumerate(personajes))
+
+        lbl_count.configure(
+            text=f"({len(visibles)} de {len(personajes)})" if termino
+            else f"({len(personajes)})"
+        )
+
+        if not visibles:
+            msg = (f"Sin resultados para '{termino}'" if termino
+                   else "No hay personajes guardados aún. Pulsa '+ Nuevo personaje'.")
+            ctk.CTkLabel(frame_lista, text=msg,
+                         text_color=cc_loc["empty_text"]).pack(pady=20)
             return
-        for idx, p in enumerate(app.store.personajes):
-            card = ctk.CTkFrame(frame_lista, fg_color=cc["card_bg"], corner_radius=8)
+
+        for idx, p in visibles:
+            card = ctk.CTkFrame(frame_lista, fg_color=cc_loc["card_bg"], corner_radius=8)
             card.pack(fill="x", pady=4, padx=5)
-            hdr = ctk.CTkFrame(card, fg_color=cc["card_hdr"], corner_radius=6, height=28)
+            hdr = ctk.CTkFrame(card, fg_color=cc_loc["card_hdr"],
+                               corner_radius=6, height=28)
             hdr.pack(fill="x", padx=5, pady=(5, 2))
             hdr.pack_propagate(False)
             ctk.CTkLabel(hdr, text=f"  🧑 {p['nombre']}",
                          font=ctk.CTkFont(size=13, weight="bold"),
-                         text_color=cc["card_hdr_text"]).pack(side="left", padx=8)
-            ctk.CTkLabel(card, text=p["descripcion"], wraplength=620, justify="left",
-                         font=ctk.CTkFont(size=12), text_color=cc["card_text"]).pack(padx=10, pady=(3, 5), anchor="w")
-            btn_row = ctk.CTkFrame(card, fg_color=cc["card_bg"])
+                         text_color=cc_loc["card_hdr_text"]).pack(side="left", padx=8)
+            ctk.CTkLabel(card, text=p["descripcion"],
+                         wraplength=680, justify="left",
+                         font=ctk.CTkFont(size=12),
+                         text_color=cc_loc["card_text"]
+                         ).pack(padx=10, pady=(3, 5), anchor="w")
+
+            btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=10, pady=(0, 6))
 
             def usar(n=p["nombre"]):
@@ -118,113 +212,251 @@ def abrir_personajes(app):
                 ventana.destroy()
                 app.set_estado(f"🧑 Personaje activo: {n}", "#2ecc71")
 
-            def borrar(i=idx):
-                if messagebox.askyesno("Confirmar", f"¿Borrar '{app.store.personajes[i]['nombre']}'?", parent=ventana):
+            def editar(i=idx, p_=p):
+                # Cargar en form y mostrar form si está oculto
+                if not form_visible[0]:
+                    _toggle_form()
+                entry_nombre.delete(0, "end")
+                entry_nombre.insert(0, p_["nombre"])
+                entry_desc.delete(0, "end")
+                entry_desc.insert(0, p_["descripcion"])
+                editando_idx[0] = i
+                btn_guardar.configure(text="✏️ Actualizar")
+                entry_desc.focus_set()
+
+            def copiar(p_=p):
+                import pyperclip
+                pyperclip.copy(p_["descripcion"])
+                app.set_estado(f"📋 Descripción de '{p_['nombre']}' copiada", "#3498db")
+
+            def borrar(i=idx, n=p["nombre"]):
+                if messagebox.askyesno("Confirmar", f"¿Borrar '{n}'?", parent=ventana):
                     app.store.borrar_personaje(i)
                     app.actualizar_combo_personajes()
                     refrescar()
 
-            ctk.CTkButton(btn_row, text="✅ Usar", width=80, height=26,
-                          fg_color=cc["btn_use"], hover_color=cc["btn_use_hov"], command=usar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="🗑 Borrar", width=88, height=26,
-                          fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=borrar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="✅ Usar", width=70, height=26,
+                          fg_color=cc_loc["btn_use"],
+                          hover_color=cc_loc["btn_use_hov"],
+                          command=usar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=26,
+                          command=editar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="📋 Copiar", width=80, height=26,
+                          command=copiar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="🗑 Borrar", width=80, height=26,
+                          fg_color=cc_loc["btn_del"],
+                          hover_color=cc_loc["btn_del_hov"],
+                          command=borrar).pack(side="left", padx=2)
+
     refrescar()
+    entry_buscar.focus_set()
 
 
 # LORAS
 
 def abrir_loras(app):
+    """Gestor de LoRAs con buscador, filtro por familia y edición inline."""
     cc = _card_colors()
     ventana = GPromptWindow(app)
     ventana.title("🔗 Gestor de LoRAs")
-    ventana.geometry("780x580")
+    ventana.geometry("840x640")
     ventana.grab_set()
 
-    ctk.CTkLabel(ventana, text="🔗 LoRAs Guardados",
+    FAMILIAS = ["Todas", "SDXL", "SD15", "Pony", "Illustrious",
+                "Flux", "SD3.5", "Z Image", "Otra"]
+
+    # ── Cabecera ──
+    head = ctk.CTkFrame(ventana, fg_color="transparent")
+    head.pack(fill="x", padx=15, pady=(12, 4))
+    ctk.CTkLabel(head, text="🔗 LoRAs Guardados",
                  font=ctk.CTkFont(size=18, weight="bold"),
-                 text_color=cc["label_main"]).pack(pady=12)
+                 text_color=cc["label_main"]).pack(side="left")
+    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
+                             text_color=cc["empty_text"])
+    lbl_count.pack(side="left", padx=10)
+
+    btn_toggle_form = ctk.CTkButton(head, text="+ Nuevo LoRA", width=140,
+                                    height=28, fg_color="#5b2c8e",
+                                    hover_color="#3d1a6a")
+    btn_toggle_form.pack(side="right")
+
     ctk.CTkLabel(ventana,
                  text="Los LoRAs insertan su trigger word al inicio del prompt automáticamente.",
-                 font=ctk.CTkFont(size=11), text_color=cc["label_main"]).pack(pady=(0, 8))
+                 font=ctk.CTkFont(size=10),
+                 text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
+    # ── Buscador + filtro de familia ──
+    frame_busqueda = ctk.CTkFrame(ventana, fg_color="transparent")
+    frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
+    ctk.CTkLabel(frame_busqueda, text="🔍").pack(side="left", padx=(0, 6))
+    entry_buscar = ctk.CTkEntry(frame_busqueda,
+                                placeholder_text="Buscar por nombre, trigger o nota…",
+                                height=30)
+    entry_buscar.pack(side="left", fill="x", expand=True)
+    busqueda_pending = [None]
+
+    def _on_buscar(_e=None):
+        if busqueda_pending[0]:
+            ventana.after_cancel(busqueda_pending[0])
+        busqueda_pending[0] = ventana.after(250, refrescar)
+    entry_buscar.bind("<KeyRelease>", _on_buscar)
+
+    ctk.CTkButton(frame_busqueda, text="✕", width=32, height=30,
+                  fg_color="#444", hover_color="#222",
+                  command=lambda: (entry_buscar.delete(0, "end"), refrescar())
+                  ).pack(side="left", padx=(6, 8))
+
+    ctk.CTkLabel(frame_busqueda, text="Familia:").pack(side="left", padx=(8, 4))
+    filtro_familia_var = ctk.StringVar(value="Todas")
+    combo_filtro = ctk.CTkComboBox(frame_busqueda, width=120,
+                                   values=FAMILIAS, variable=filtro_familia_var,
+                                   command=lambda _v: refrescar())
+    combo_filtro.pack(side="left")
+
+    # ── Form de creación/edición (colapsable) ──
     frame_nuevo = ctk.CTkFrame(ventana)
-    frame_nuevo.pack(fill="x", padx=15, pady=(0, 8))
 
-    ctk.CTkLabel(frame_nuevo, text="Nombre:", font=ctk.CTkFont(weight="bold"),
-                 text_color=cc["label_main"]).pack(side="left", padx=10, pady=8)
+    ctk.CTkLabel(frame_nuevo, text="Nombre:",
+                 font=ctk.CTkFont(weight="bold")).pack(side="left", padx=10, pady=8)
     entry_nombre = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="ej: Detail Enhancer")
     entry_nombre.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Trigger:", font=ctk.CTkFont(weight="bold"),
-                 text_color=cc["label_main"]).pack(side="left", padx=(10, 5))
-    entry_trigger = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text="ej: add_detail")
+    ctk.CTkLabel(frame_nuevo, text="Trigger:",
+                 font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
+    entry_trigger = ctk.CTkEntry(frame_nuevo, width=140, placeholder_text="ej: add_detail")
     entry_trigger.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Familia:", font=ctk.CTkFont(weight="bold"),
-                 text_color=cc["label_main"]).pack(side="left", padx=(10, 5))
-    combo_familia = ctk.CTkComboBox(frame_nuevo, width=110,
-                                      values=["—", "SDXL", "SD15", "Pony", "Illustrious", "Flux", "SD3.5", "Z Image", "Otra"])
-    combo_familia.set("—")
-    combo_familia.pack(side="left", padx=5)
+    ctk.CTkLabel(frame_nuevo, text="Familia:",
+                 font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
+    combo_familia_form = ctk.CTkComboBox(frame_nuevo, width=100,
+                                         values=["—"] + FAMILIAS[1:])
+    combo_familia_form.set("—")
+    combo_familia_form.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Nota:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
-    entry_nota = ctk.CTkEntry(frame_nuevo, width=120, placeholder_text="opcional")
+    ctk.CTkLabel(frame_nuevo, text="Nota:",
+                 font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
+    entry_nota = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="opcional")
     entry_nota.pack(side="left", padx=5)
+
+    form_visible = [False]
+    editando_idx = [None]
+
+    def _toggle_form():
+        if form_visible[0]:
+            frame_nuevo.pack_forget()
+            btn_toggle_form.configure(text="+ Nuevo LoRA")
+            form_visible[0] = False
+            editando_idx[0] = None
+            btn_guardar.configure(text="💾 Guardar")
+        else:
+            frame_nuevo.pack(fill="x", padx=15, pady=(2, 6), after=frame_busqueda)
+            btn_toggle_form.configure(text="× Cerrar form")
+            form_visible[0] = True
+            entry_nombre.focus_set()
+
+    btn_toggle_form.configure(command=_toggle_form)
 
     def guardar():
         nombre  = entry_nombre.get().strip()
         trigger = entry_trigger.get().strip()
         nota    = entry_nota.get().strip()
-        familia = combo_familia.get().strip()
-        if familia in ("—", ""): familia = ""
+        familia = combo_familia_form.get().strip()
+        if familia in ("—", ""):
+            familia = ""
         if not nombre or not trigger:
-            messagebox.showwarning("Faltan datos", "Rellena nombre y trigger word.", parent=ventana)
+            messagebox.showwarning("Faltan datos", "Rellena nombre y trigger word.",
+                                   parent=ventana)
             return
-        existia = app.store.guardar_lora(nombre, trigger, nota, familia)
-        if existia:
-            if not messagebox.askyesno("Ya existe", f"¿Sobreescribir '{nombre}'?", parent=ventana):
+        if editando_idx[0] is not None:
+            i = editando_idx[0]
+            try:
+                app.store.loras[i] = {
+                    "nombre": nombre, "trigger": trigger,
+                    "descripcion": nota, "familia": familia,
+                }
+                app.store._guardar("loras")
+                editando_idx[0] = None
+                btn_guardar.configure(text="💾 Guardar")
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo editar: {e}",
+                                     parent=ventana)
                 return
+        else:
+            existia = app.store.guardar_lora(nombre, trigger, nota, familia)
+            if existia:
+                if not messagebox.askyesno("Ya existe",
+                                           f"¿Sobreescribir '{nombre}'?",
+                                           parent=ventana):
+                    return
         app.actualizar_combo_loras()
         entry_nombre.delete(0, "end")
         entry_trigger.delete(0, "end")
         entry_nota.delete(0, "end")
-        combo_familia.set("—")
+        combo_familia_form.set("—")
         refrescar()
         app.set_estado(f"🔗 LoRA '{nombre}' guardado.", "#9b59b6")
 
-    ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
-                  fg_color="#5b2c8e", hover_color="#3d1a6a", command=guardar).pack(side="left", padx=8)
+    btn_guardar = ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
+                                fg_color="#5b2c8e", hover_color="#3d1a6a",
+                                command=guardar)
+    btn_guardar.pack(side="left", padx=8)
 
     frame_lista = ctk.CTkScrollableFrame(ventana)
     frame_lista.pack(fill="both", expand=True, padx=15, pady=5)
 
     def refrescar():
-        cc = _card_colors()
+        cc_loc = _card_colors()
         for w in frame_lista.winfo_children():
             w.destroy()
-        if not app.store.loras:
-            ctk.CTkLabel(frame_lista,
-                         text="No hay LoRAs guardados aún.\n\n"
-                              "Añade el nombre del LoRA y su trigger word\n"
-                              "(la palabra clave que activa el LoRA en SeaArt, CivitAI, etc).",
-                         text_color=cc["empty_text"], justify="center").pack(pady=20)
+
+        loras = app.store.loras or []
+        termino = entry_buscar.get().strip().lower()
+        fam_sel = filtro_familia_var.get()
+
+        def _filtra(l):
+            if fam_sel != "Todas" and (l.get("familia", "") or "Otra") != fam_sel:
+                return False
+            if not termino:
+                return True
+            return (termino in l.get("nombre", "").lower()
+                    or termino in l.get("trigger", "").lower()
+                    or termino in l.get("descripcion", "").lower())
+
+        visibles = [(i, l) for i, l in enumerate(loras) if _filtra(l)]
+        sufijo_filtro = "" if fam_sel == "Todas" else f" · familia={fam_sel}"
+        lbl_count.configure(
+            text=f"({len(visibles)} de {len(loras)}{sufijo_filtro})"
+            if (termino or fam_sel != "Todas")
+            else f"({len(loras)})"
+        )
+
+        if not visibles:
+            msg = (f"Sin resultados" if (termino or fam_sel != "Todas")
+                   else "No hay LoRAs guardados aún.\nPulsa '+ Nuevo LoRA' para añadir.")
+            ctk.CTkLabel(frame_lista, text=msg,
+                         text_color=cc_loc["empty_text"], justify="center").pack(pady=20)
             return
-        for idx, l in enumerate(app.store.loras):
-            card = ctk.CTkFrame(frame_lista, fg_color=cc["card_bg"], corner_radius=8)
+
+        for idx, l in visibles:
+            card = ctk.CTkFrame(frame_lista, fg_color=cc_loc["card_bg"], corner_radius=8)
             card.pack(fill="x", pady=4, padx=5)
-            hdr = ctk.CTkFrame(card, fg_color=cc["card_hdr"], corner_radius=6, height=28)
+            hdr = ctk.CTkFrame(card, fg_color=cc_loc["card_hdr"],
+                               corner_radius=6, height=28)
             hdr.pack(fill="x", padx=5, pady=(5, 2))
             hdr.pack_propagate(False)
             familia = l.get("familia", "")
             badge_familia = f"  [{familia}]" if familia else ""
-            ctk.CTkLabel(hdr, text=f"  🔗 {l['nombre']}{badge_familia}   →   trigger: \"{l['trigger']}\"",
+            ctk.CTkLabel(hdr,
+                         text=f"  🔗 {l['nombre']}{badge_familia}   →   trigger: \"{l['trigger']}\"",
                          font=ctk.CTkFont(size=13, weight="bold"),
-                         text_color=cc["card_hdr_text"]).pack(side="left", padx=8)
+                         text_color=cc_loc["card_hdr_text"]).pack(side="left", padx=8)
             nota = l.get("descripcion", "")
             if nota:
-                ctk.CTkLabel(card, text=nota, wraplength=700, justify="left",
-                             font=ctk.CTkFont(size=11), text_color=cc["card_text2"]).pack(padx=10, pady=(2, 3), anchor="w")
-            btn_row = ctk.CTkFrame(card, fg_color=cc["card_bg"])
+                ctk.CTkLabel(card, text=nota, wraplength=760, justify="left",
+                             font=ctk.CTkFont(size=11),
+                             text_color=cc_loc["card_text2"]
+                             ).pack(padx=10, pady=(2, 3), anchor="w")
+            btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=10, pady=(0, 6))
 
             def usar(n=l["nombre"]):
@@ -232,19 +464,45 @@ def abrir_loras(app):
                 ventana.destroy()
                 app.set_estado(f"🔗 LoRA activo: {n}", "#9b59b6")
 
-            def borrar(i=idx):
-                if messagebox.askyesno("Confirmar", f"¿Borrar LoRA '{app.store.loras[i]['nombre']}'?", parent=ventana):
+            def editar(i=idx, l_=l):
+                if not form_visible[0]:
+                    _toggle_form()
+                entry_nombre.delete(0, "end"); entry_nombre.insert(0, l_["nombre"])
+                entry_trigger.delete(0, "end"); entry_trigger.insert(0, l_["trigger"])
+                entry_nota.delete(0, "end"); entry_nota.insert(0, l_.get("descripcion", ""))
+                f = l_.get("familia") or "—"
+                combo_familia_form.set(f if f in FAMILIAS[1:] else "—")
+                editando_idx[0] = i
+                btn_guardar.configure(text="✏️ Actualizar")
+
+            def copiar(l_=l):
+                import pyperclip
+                pyperclip.copy(l_["trigger"])
+                app.set_estado(f"📋 Trigger '{l_['trigger']}' copiado", "#3498db")
+
+            def borrar(i=idx, n=l["nombre"]):
+                if messagebox.askyesno("Confirmar",
+                                       f"¿Borrar LoRA '{n}'?",
+                                       parent=ventana):
                     app.store.borrar_lora(i)
                     app.actualizar_combo_loras()
                     refrescar()
 
-            ctk.CTkButton(btn_row, text="✅ Usar", width=80, height=26,
+            ctk.CTkButton(btn_row, text="✅ Usar", width=70, height=26,
                           fg_color="#7c3aed" if _is_light() else "#3a1a5a",
-                          hover_color="#6d28d9" if _is_light() else "#2a0f4a", command=usar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="🗑 Borrar", width=88, height=26,
+                          hover_color="#6d28d9" if _is_light() else "#2a0f4a",
+                          command=usar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=26,
+                          command=editar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="📋 Trigger", width=80, height=26,
+                          command=copiar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="🗑 Borrar", width=80, height=26,
                           fg_color="#dc2626" if _is_light() else "#6a1a1a",
-                          hover_color="#b91c1c" if _is_light() else "#4a0f0f", command=borrar).pack(side="left", padx=2)
+                          hover_color="#b91c1c" if _is_light() else "#4a0f0f",
+                          command=borrar).pack(side="left", padx=2)
+
     refrescar()
+    entry_buscar.focus_set()
 
 
 # BATCH
@@ -679,8 +937,22 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                   hover_color=cc["btn_del_hov"] if _is_light() else "#222",
                   command=lambda: (entry_buscar.delete(0, "end"), refrescar())).pack(side="left")
 
+    # ── Filtro por modo ──
+    ctk.CTkLabel(frame_busqueda, text="Modo:").pack(side="left", padx=(12, 4))
+    filtro_modo_var = ctk.StringVar(value="Todos")
+    combo_filtro_modo = ctk.CTkComboBox(
+        frame_busqueda, width=110, variable=filtro_modo_var,
+        values=["Todos", "imagen", "video", "audio"],
+        command=lambda _v: refrescar(),
+    )
+    combo_filtro_modo.pack(side="left")
+
     frame_lista = ctk.CTkScrollableFrame(ventana)
     frame_lista.pack(fill="both", expand=True, padx=15, pady=5)
+
+    # Estado de paginación
+    PAGE_SIZE = 50
+    estado = {"visible": PAGE_SIZE}
 
     def refrescar():
         cc = _card_colors()
@@ -688,43 +960,76 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             w.destroy()
         datos_act = getattr(app.store, coleccion)
 
-        # Filtrar por búsqueda
         termino = entry_buscar.get().strip().lower()
-        if termino:
-            filtrados = []
-            for i, entrada in enumerate(datos_act):
-                texto_buscar = " ".join([
-                    entrada.get("contenido", ""),
-                    entrada.get("estilos", ""),
-                    entrada.get("modo", ""),
-                    entrada.get("fecha", ""),
-                    entrada.get("personaje", ""),
-                    entrada.get("lora", ""),
-                    entrada.get("plataforma", ""),
-                ]).lower()
-                if termino in texto_buscar:
-                    filtrados.append((i, entrada))
-        else:
-            filtrados = list(enumerate(datos_act[:100]))
+        modo_sel = filtro_modo_var.get()
+
+        def _coincide(entrada: dict) -> bool:
+            if modo_sel != "Todos" and entrada.get("modo", "") != modo_sel:
+                return False
+            if not termino:
+                return True
+            texto = " ".join([
+                str(entrada.get("contenido", "")),
+                str(entrada.get("estilos", "")),
+                str(entrada.get("modo", "")),
+                str(entrada.get("fecha", "")),
+                str(entrada.get("personaje", "")),
+                str(entrada.get("lora", "")),
+                str(entrada.get("plataforma", "")),
+                str(entrada.get("nota", "")),  # estrellas
+            ]).lower()
+            return termino in texto
+
+        filtrados = [(i, e) for i, e in enumerate(datos_act) if _coincide(e)]
 
         total = len(datos_act)
-        mostrados = len(filtrados)
-        if termino:
-            lbl_contador.configure(text=f"{mostrados} encontrados / {total} total")
-        else:
-            lbl_contador.configure(text=f"{min(total, 100)} mostrados / {total} total")
+        total_filtrado = len(filtrados)
+        visibles = min(estado["visible"], total_filtrado)
 
-        if not filtrados:
-            msg = f"Sin resultados para '{termino}'" if termino else "(sin entradas)"
+        suf_filtro = []
+        if termino: suf_filtro.append(f"búsqueda '{termino}'")
+        if modo_sel != "Todos": suf_filtro.append(f"modo={modo_sel}")
+        filtro_txt = " · " + " · ".join(suf_filtro) if suf_filtro else ""
+        lbl_contador.configure(
+            text=f"{visibles} de {total_filtrado} mostrados ({total} total){filtro_txt}"
+        )
+
+        if total_filtrado == 0:
+            msg = "Sin resultados con esos filtros" if (termino or modo_sel != "Todos") else "(sin entradas)"
             ctk.CTkLabel(frame_lista, text=msg, text_color=cc["empty_text"]).pack(pady=20)
             return
 
-        # ── MEJORA 7: agrupar por fechas SOLO en historial sin búsqueda activa ──
-        if coleccion == "historial" and not termino:
-            _renderizar_agrupado(filtrados[:100])
+        # ── Agrupar SOLO si: historial + sin búsqueda + sin filtro modo ──
+        items_pag = filtrados[:visibles]
+        if coleccion == "historial" and not termino and modo_sel == "Todos":
+            _renderizar_agrupado(items_pag)
         else:
-            for idx_real, entrada in filtrados[:100]:
+            for idx_real, entrada in items_pag:
                 _card(frame_lista, entrada, idx_real)
+
+        # ── Botón "Mostrar más" si quedan ──
+        restantes = total_filtrado - visibles
+        if restantes > 0:
+            def _mas():
+                estado["visible"] += PAGE_SIZE
+                refrescar()
+            ctk.CTkButton(
+                frame_lista,
+                text=f"▼ Mostrar {min(PAGE_SIZE, restantes)} más  ({restantes} restantes)",
+                command=_mas, height=32,
+                fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],
+            ).pack(fill="x", padx=4, pady=(10, 6))
+
+    # Cuando cambia búsqueda o filtro, resetear paginación
+    def _resetear_paginacion(_e=None):
+        estado["visible"] = PAGE_SIZE
+        if busqueda_pending[0]:
+            ventana.after_cancel(busqueda_pending[0])
+        busqueda_pending[0] = ventana.after(300, refrescar)
+    entry_buscar.bind("<KeyRelease>", _resetear_paginacion)
+    combo_filtro_modo.configure(
+        command=lambda _v: (estado.update({"visible": PAGE_SIZE}), refrescar())[1]
+    )
 
     def _renderizar_agrupado(items):
         """Agrupa las entradas por fechas (Hoy / Ayer / Esta semana / Este mes / Más antiguo) en secciones colapsables."""
@@ -820,6 +1125,8 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         fecha   = entrada.get("fecha", "—")
         modo_e  = entrada.get("modo", "imagen")
         estilos = entrada.get("estilos", "—")
+        if isinstance(estilos, list):
+            estilos = ", ".join(str(e) for e in estilos if e) or "—"
         ratio_e = entrada.get("ratio", "")
         nsfw_e  = " 🔥" if entrada.get("nsfw") else ""
         pers_e  = f"  🧑{entrada['personaje'][:12]}" if entrada.get("personaje") else ""
@@ -831,10 +1138,21 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                      font=ctk.CTkFont(size=11),
                      text_color=cc["card_hdr_text"]).pack(side="left", padx=8)
 
+        # Nota (solo estrellas). Aparece encima del contenido si existe.
+        nota = entrada.get("nota", "") if coleccion == "estrellas" else ""
+        if nota:
+            ctk.CTkLabel(card,
+                         text=f"🌟 {nota}",
+                         font=ctk.CTkFont(size=11, weight="bold", slant="italic"),
+                         text_color="#f59e0b" if _is_light() else "#fbbf24",
+                         wraplength=740, justify="left", anchor="w"
+                         ).pack(fill="x", padx=10, pady=(4, 0))
+
         contenido = entrada.get("contenido", "")
         preview = contenido[:200].replace("\n", " ") + ("..." if len(contenido) > 200 else "")
         ctk.CTkLabel(card, text=preview, wraplength=740, justify="left",
-                     font=ctk.CTkFont(size=12), text_color=cc["card_text"]).pack(padx=10, pady=(3, 5), anchor="w")
+                     font=ctk.CTkFont(size=12), text_color=cc["card_text"]
+                     ).pack(padx=10, pady=(3, 5), anchor="w")
 
         btn_row = ctk.CTkFrame(card, fg_color="transparent")
         btn_row.pack(fill="x", padx=10, pady=(0, 6))
@@ -844,11 +1162,24 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             ventana.destroy()
             app.set_estado("📋 Prompt cargado.", "#3498db")
 
+        def copiar(c=contenido):
+            try:
+                import pyperclip
+                pyperclip.copy(c)
+                app.set_estado(f"📋 {len(c)} caracteres copiados", "#2ecc71")
+            except Exception as _e:
+                app.set_estado(f"❌ No se pudo copiar: {_e}", "#e74c3c")
+
         ctk.CTkButton(btn_row, text="Cargar", width=80, height=26,
-                      fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"], command=cargar).pack(side="left", padx=2)
+                      fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],
+                      command=cargar).pack(side="left", padx=2)
+        ctk.CTkButton(btn_row, text="📋 Copiar", width=90, height=26,
+                      command=copiar).pack(side="left", padx=2)
 
         def borrar(i=idx):
-            tipo = "entrada" if coleccion == "historial" else "favorito"
+            tipo = {"historial": "entrada del historial",
+                    "favoritos": "favorito",
+                    "estrellas": "estrella"}.get(coleccion, "entrada")
             if messagebox.askyesno("Confirmar", f"¿Borrar este {tipo}?", parent=ventana):
                 app.store.borrar_entrada(coleccion, i)
                 refrescar()
