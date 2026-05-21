@@ -41,15 +41,16 @@ class BackupExportMixin:
                        "personajes", "loras", "plantillas"))
             tam_kb = os.path.getsize(archivo) / 1024
             mensaje = (
-                f"💾 Backup guardado correctamente\n\n"
+                f"Backup guardado correctamente.\n\n"
                 f"Archivo: {os.path.basename(archivo)}\n"
                 f"Tamaño: {tam_kb:.1f} KB\n"
-                f"Entradas: {tot} (historial {len(backup['historial'])}, "
-                f"favoritos {len(backup['favoritos'])}, "
-                f"estrellas {len(backup['estrellas'])}, "
-                f"personajes {len(backup['personajes'])}, "
-                f"loras {len(backup['loras'])}, "
-                f"plantillas {len(backup['plantillas'])})"
+                f"Total entradas: {tot}\n\n"
+                f"  - Historial:  {len(backup['historial'])}\n"
+                f"  - Favoritos:  {len(backup['favoritos'])}\n"
+                f"  - Estrellas:  {len(backup['estrellas'])}\n"
+                f"  - Personajes: {len(backup['personajes'])}\n"
+                f"  - LoRAs:      {len(backup['loras'])}\n"
+                f"  - Plantillas: {len(backup['plantillas'])}"
             )
             messagebox.showinfo("Backup completo", mensaje, parent=self)
             self.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
@@ -110,13 +111,23 @@ class BackupExportMixin:
                           len(backup.get("loras", [])) +
                           len(backup.get("plantillas", [])))
 
+            # Formatear fecha del backup en algo legible
+            fecha_backup_raw = backup.get("fecha_backup", "")
+            try:
+                fecha_backup = (
+                    datetime.datetime.fromisoformat(fecha_backup_raw)
+                                     .strftime("%Y-%m-%d %H:%M")
+                )
+            except Exception:
+                fecha_backup = fecha_backup_raw or "desconocida"
+
             if not messagebox.askyesno(
-                "⚠️ Confirmar restauración",
+                "Confirmar restauración",
                 f"Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\n"
                 f"Datos actuales: {tot_actual} entradas\n"
                 f"Backup a restaurar: {tot_backup} entradas\n"
-                f"Fecha del backup: {backup.get('fecha_backup', 'desconocida')}\n\n"
-                f"🛡 G-Prompt guardará automáticamente un backup de seguridad "
+                f"Fecha del backup: {fecha_backup}\n\n"
+                f"G-Prompt guardará automáticamente un backup de seguridad "
                 f"de tus datos ACTUALES antes de sobrescribir, así puedes volver "
                 f"atrás si te equivocas.\n\n"
                 f"¿Continuar?",
@@ -165,7 +176,7 @@ class BackupExportMixin:
 
             messagebox.showinfo(
                 "Restauración completada",
-                f"✅ Backup restaurado ({tot_backup} entradas).\n\n"
+                f"Backup restaurado ({tot_backup} entradas).\n\n"
                 f"Tus datos anteriores se guardaron en:\n{pre_path}\n\n"
                 f"Si te has equivocado, puedes restaurar ese archivo.",
                 parent=self,
@@ -302,7 +313,7 @@ class BackupExportMixin:
             self.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
             messagebox.showinfo(
                 "Exportación completada",
-                f"💾 Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
+                f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
                 parent=self,
             )
         except Exception as e:
