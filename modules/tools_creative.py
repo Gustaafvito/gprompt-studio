@@ -1187,7 +1187,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
                     def _guardar_biblioteca():
                         nombre = f"ADN {len(getattr(self.store, 'adns', []) or []) + 1}"
-                        adn_data = {"nombre": nombre, "adn": adn, "fecha": str(_dt.datetime.now())[:16]}
+                        adn_data = {"nombre": nombre, "adn": adn, "fecha": str(datetime.datetime.now())[:16]}
                         if not hasattr(self.store, "adns"):
                             self.store.adns = []
                         self.store.adns.append(adn_data)
@@ -2044,7 +2044,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                             "nombre": nombre.strip(),
                             "hex": hex_codes,
                             "rgb": [list(c) for c in colores_raw[:5]],
-                            "timestamp": str(_dt.datetime.now())[:19],
+                            "timestamp": str(datetime.datetime.now())[:19],
                         }
                         self.store.paletas.append(paleta)
                         self.store._guardar("paletas")  # FIX: era store.guardar() inexistente
@@ -2509,7 +2509,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     "positive": p,
                     "negative": neg,
                     "brief": brief,
-                    "fecha": str(_dt.datetime.now())[:16]
+                    "fecha": str(datetime.datetime.now())[:16]
                 })
                 self.store.guardar()
                 self.set_estado(f"💾 Propuesta '{nom}' guardada", "#2ecc71")
