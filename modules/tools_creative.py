@@ -505,6 +505,26 @@ class ToolsCreativeMixin:
         ctk.CTkLabel(hdr, textvariable=contador_var,
                      text_color=c["muted_text"]).pack(side="right", padx=10)
 
+        # Buscador
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(search_row,
+                                    placeholder_text="Buscar por nombre, sujeto, estética…",
+                                    height=28)
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        busqueda_pending = {"after_id": None}
+        def _on_buscar(_e=None):
+            if busqueda_pending["after_id"]:
+                try: vent.after_cancel(busqueda_pending["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            busqueda_pending["after_id"] = vent.after(200, _refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+        ctk.CTkButton(search_row, text="✕", width=32, height=28,
+                      fg_color="#444", hover_color="#222",
+                      command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
+                      ).pack(side="left", padx=(6, 0))
+
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -514,14 +534,35 @@ class ToolsCreativeMixin:
                 w.destroy()
             prefs_act = self.store.cargar_preferencias()
             adns_act = prefs_act.get("adns_guardados", [])
-            contador_var.set(f"{len(adns_act)} guardado(s)")
+            termino = entry_buscar.get().strip().lower()
 
-            if not adns_act:
-                ctk.CTkLabel(scroll, text="(sin ADNs guardados)",
+            # Filtrar por término
+            visibles = []
+            for idx, item in enumerate(adns_act):
+                if termino:
+                    nombre_b = item.get("nombre", "").lower()
+                    adn_b = item.get("adn", {})
+                    sujeto_b = adn_b.get("sujeto", {}) if isinstance(adn_b, dict) else {}
+                    if isinstance(sujeto_b, list): sujeto_b = sujeto_b[0] if sujeto_b else {}
+                    tipo_b = (sujeto_b.get("tipo", "") if isinstance(sujeto_b, dict) else "").lower()
+                    estilo_b = adn_b.get("estilo", {}) if isinstance(adn_b, dict) else {}
+                    estetica_b = (estilo_b.get("estetica", "") if isinstance(estilo_b, dict) else "").lower()
+                    if (termino not in nombre_b and termino not in tipo_b
+                            and termino not in estetica_b):
+                        continue
+                visibles.append((idx, item))
+
+            sufijo = "" if not termino else f" ({len(visibles)} resultados)"
+            contador_var.set(f"{len(adns_act)} guardado(s){sufijo}")
+
+            if not visibles:
+                msg = (f"Sin resultados para '{termino}'" if termino
+                       else "(sin ADNs guardados)")
+                ctk.CTkLabel(scroll, text=msg,
                              text_color=c["muted_text"]).pack(pady=30)
                 return
 
-            for idx, item in enumerate(adns_act):
+            for idx, item in visibles:
                 nombre = item.get("nombre", f"ADN {idx+1}")
                 fecha = item.get("fecha", "")
                 motor = item.get("motor", "")

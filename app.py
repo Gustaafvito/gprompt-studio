@@ -1024,7 +1024,14 @@ class ArquitectoApp(
             return []
 
     def _cmd_plantillas_populares(self):
-        """Biblioteca de plantillas cargadas desde plantillas_default.json."""
+        """Biblioteca de plantillas con buscador y wizard de variables.
+
+        Mejoras:
+        - Buscador en cabecera (filtra por nombre, contenido o variable).
+        - "Cargar plantilla" abre un wizard que rellena las {variables} y
+          previsualiza el prompt final antes de aplicarlo.
+        - El form siempre arriba ahora sale solo si hay variables.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
@@ -1035,8 +1042,6 @@ class ArquitectoApp(
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
 
-        # Filtrar plantillas que el usuario haya borrado previamente.
-        # La lista de borradas vive en preferencias.json bajo 'plantillas_predef_ocultas'.
         prefs = self.store.cargar_preferencias()
         ocultas = set(prefs.get("plantillas_predef_ocultas", []))
         plantillas_visibles = [p for p in plantillas_sorted if p[0] not in ocultas]
@@ -1044,22 +1049,26 @@ class ArquitectoApp(
 
         vent = GPromptWindow(self)
         vent.title("📑 Plantillas de prompt")
-        vent.geometry("760x620")
+        vent.geometry("820x660")
         vent.transient(self)
 
-        # Header con título + botón restaurar (si hay alguna borrada)
+        # ── Cabecera ──
         hdr_frame = ctk.CTkFrame(vent, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(10, 3), padx=12)
         ctk.CTkLabel(hdr_frame, text="📑 Plantillas probadas",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(side="left")
+        contador_var = ctk.StringVar(value="")
+        ctk.CTkLabel(hdr_frame, textvariable=contador_var,
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(side="left", padx=10)
 
         def _restaurar_borradas():
             prefs_act = self.store.cargar_preferencias()
             prefs_act["plantillas_predef_ocultas"] = []
             self.store.guardar_preferencias(prefs_act)
             vent.destroy()
-            self.set_estado(f"↩ {total_borradas} plantillas predefinidas restauradas", "#2ecc71")
-            # Reabrir el wizard para ver el resultado
+            self.set_estado(f"↩ {total_borradas} plantillas predefinidas restauradas",
+                            "#2ecc71")
             self.after(100, self._cmd_plantillas_populares)
 
         if total_borradas > 0:
@@ -1069,15 +1078,31 @@ class ArquitectoApp(
                           font=ctk.CTkFont(size=10),
                           command=_restaurar_borradas).pack(side="right")
 
-        ctk.CTkLabel(vent, text="Click en una plantilla → rellena las variables {variable} en el campo idea",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+        # ── Buscador ──
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=12, pady=(0, 6))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(
+            search_row, placeholder_text="Buscar por nombre, contenido o variable…",
+            height=30,
+        )
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        ctk.CTkButton(search_row, text="✕", width=32, height=30,
+                      fg_color="#444", hover_color="#222",
+                      command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
+                      ).pack(side="left", padx=(6, 0))
 
-        # Aviso si no hay ninguna plantilla visible
+        ctk.CTkLabel(vent,
+                     text="Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final.",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 4), padx=12, anchor="w")
+
         if not plantillas_visibles:
             empty_frame = ctk.CTkFrame(vent, fg_color="transparent")
             empty_frame.pack(fill="both", expand=True, padx=20, pady=40)
             ctk.CTkLabel(empty_frame,
-                         text="📭 No hay plantillas visibles.\n\nHas borrado todas las plantillas predefinidas.",
+                         text="📭 No hay plantillas visibles.\n\n"
+                              "Has borrado todas las plantillas predefinidas.",
                          font=ctk.CTkFont(size=12), text_color=c["muted_text"],
                          justify="center").pack(pady=20)
             if total_borradas > 0:
@@ -1090,51 +1115,208 @@ class ArquitectoApp(
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=5)
 
-        for nombre, pos, neg in plantillas_visibles:
-            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
-            card.pack(fill="x", pady=4)
-            ctk.CTkLabel(card, text=nombre, font=ctk.CTkFont(size=12, weight="bold"),
-                         text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 2))
-            # Mostrar variables detectadas
+        # Debounce del buscador
+        busqueda_pending = {"after_id": None}
+
+        def _on_buscar(_e=None):
+            if busqueda_pending["after_id"]:
+                try:
+                    vent.after_cancel(busqueda_pending["after_id"])
+                except Exception as _e2:
+                    logger.debug(f"[silent] {_e2}")
+            busqueda_pending["after_id"] = vent.after(200, _refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+
+        def _refrescar():
+            for w in scroll.winfo_children():
+                w.destroy()
+            termino = entry_buscar.get().strip().lower()
             import re
-            vars_pos = re.findall(r'\{(\w+)\}', pos)
-            vars_neg = re.findall(r'\{(\w+)\}', neg)
-            todas_vars = sorted(set(vars_pos + vars_neg))
-            if todas_vars:
-                ctk.CTkLabel(card, text=f"  Variables: {', '.join(todas_vars)}",
-                             font=ctk.CTkFont(size=10, slant="italic"), text_color=c["muted_text"]).pack(anchor="w", padx=10)
-            preview = pos[:120]
-            ctk.CTkLabel(card, text=f"  POS: {preview}...", font=ctk.CTkFont(size=10),
-                         text_color=c["muted_text"], wraplength=620, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
+            visibles = []
+            for nombre, pos, neg in plantillas_visibles:
+                if termino:
+                    text = f"{nombre} {pos} {neg}".lower()
+                    if termino not in text:
+                        continue
+                visibles.append((nombre, pos, neg))
 
-            # Frame para botones (Borrar a la izquierda, Cargar a la derecha)
-            btns_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btns_frame.pack(fill="x", padx=10, pady=(0, 6))
+            contador_var.set(
+                f"({len(visibles)} de {len(plantillas_visibles)})"
+                if termino else f"({len(plantillas_visibles)})"
+            )
+            if not visibles:
+                ctk.CTkLabel(scroll, text=f"Sin resultados para '{termino}'",
+                             text_color=c["muted_text"]).pack(pady=30)
+                return
 
-            def _aplicar(p=pos, n=neg, name=nombre):
-                txt = f"POSITIVE PROMPT: {p}\nNEGATIVE PROMPT: {n}"
-                self.actualizar_salida(txt)
-                vent.destroy()
-                self.set_estado(f"📑 Plantilla '{name}' cargada — rellena las {{variables}}", "#2ecc71")
+            for nombre, pos, neg in visibles:
+                card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
+                card.pack(fill="x", pady=4)
+                ctk.CTkLabel(card, text=nombre,
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 2))
+                vars_pos = re.findall(r'\{(\w+)\}', pos)
+                vars_neg = re.findall(r'\{(\w+)\}', neg)
+                todas_vars = sorted(set(vars_pos + vars_neg))
+                if todas_vars:
+                    ctk.CTkLabel(card, text=f"  Variables: {', '.join(todas_vars)}",
+                                 font=ctk.CTkFont(size=10, slant="italic"),
+                                 text_color=c["muted_text"]
+                                 ).pack(anchor="w", padx=10)
+                preview = pos[:120]
+                ctk.CTkLabel(card, text=f"  POS: {preview}…",
+                             font=ctk.CTkFont(size=10),
+                             text_color=c["muted_text"],
+                             wraplength=720, justify="left", anchor="w"
+                             ).pack(fill="x", padx=10, pady=(0, 4))
 
-            def _borrar(name=nombre, c_ref=card):
-                # Persistir nombre como oculto y destruir card
-                prefs_act = self.store.cargar_preferencias()
-                ocultas_set = set(prefs_act.get("plantillas_predef_ocultas", []))
-                ocultas_set.add(name)
-                prefs_act["plantillas_predef_ocultas"] = sorted(ocultas_set)
-                self.store.guardar_preferencias(prefs_act)
-                c_ref.destroy()
-                self.set_estado(f"🗑 '{name}' borrada (usa ↩ Restaurar para recuperar)", "#e67e22")
+                btns_frame = ctk.CTkFrame(card, fg_color="transparent")
+                btns_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-            ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
-                          fg_color="#8b2c2c", hover_color="#6e2020",
-                          font=ctk.CTkFont(size=10),
-                          command=_borrar).pack(side="left")
-            ctk.CTkButton(btns_frame, text="✅ Cargar plantilla", width=140, height=24,
-                          fg_color="#1a7a3c", hover_color="#15642f",
-                          font=ctk.CTkFont(size=10),
-                          command=_aplicar).pack(side="right")
+                def _aplicar(p=pos, n=neg, name=nombre, variables=todas_vars):
+                    if variables:
+                        # Abrir wizard de variables
+                        self._wizard_variables_plantilla(name, p, n, variables, vent)
+                    else:
+                        # Sin variables: aplicar directo
+                        txt = f"POSITIVE PROMPT: {p}"
+                        if n:
+                            txt += f"\nNEGATIVE PROMPT: {n}"
+                        self.actualizar_salida(txt)
+                        vent.destroy()
+                        self.set_estado(f"📑 Plantilla '{name}' aplicada", "#2ecc71")
+
+                def _borrar(name=nombre):
+                    from tkinter import messagebox as _mb
+                    if not _mb.askyesno("Confirmar",
+                                        f"¿Borrar plantilla '{name}'?\n"
+                                        f"(usa '↩ Restaurar' arriba para recuperarla)",
+                                        parent=vent):
+                        return
+                    prefs_act = self.store.cargar_preferencias()
+                    ocultas_set = set(prefs_act.get("plantillas_predef_ocultas", []))
+                    ocultas_set.add(name)
+                    prefs_act["plantillas_predef_ocultas"] = sorted(ocultas_set)
+                    self.store.guardar_preferencias(prefs_act)
+                    self.set_estado(f"🗑 '{name}' borrada", "#e67e22")
+                    vent.destroy()
+                    self.after(100, self._cmd_plantillas_populares)
+
+                ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
+                              fg_color="#8b2c2c", hover_color="#6e2020",
+                              font=ctk.CTkFont(size=10),
+                              command=_borrar).pack(side="left")
+                ctk.CTkButton(btns_frame, text="✅ Cargar plantilla", width=160, height=24,
+                              fg_color="#1a7a3c", hover_color="#15642f",
+                              font=ctk.CTkFont(size=10),
+                              command=_aplicar).pack(side="right")
+
+        _refrescar()
+        entry_buscar.focus_set()
+
+    def _wizard_variables_plantilla(self, nombre, pos, neg, variables, ventana_padre):
+        """Wizard interactivo: pide valores para las {variables} y previsualiza
+        el prompt final antes de aplicar.
+        """
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        wiz = GPromptWindow(ventana_padre)
+        wiz.title(f"📝 Rellenar variables — {nombre}")
+        wiz.geometry("680x620")
+        wiz.transient(ventana_padre)
+
+        ctk.CTkLabel(wiz, text=f"📝 Rellenar variables de '{nombre}'",
+                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
+        ctk.CTkLabel(wiz,
+                     text=f"Esta plantilla tiene {len(variables)} variable(s). "
+                          f"Rellénalas y verás la previsualización abajo.",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 10))
+
+        # Frame con los campos
+        form = ctk.CTkScrollableFrame(wiz, fg_color="transparent", height=180)
+        form.pack(fill="x", padx=15, pady=(0, 8))
+
+        entries = {}
+        for v in variables:
+            row = ctk.CTkFrame(form, fg_color="transparent")
+            row.pack(fill="x", pady=3)
+            ctk.CTkLabel(row, text=f"{{{v}}}:",
+                         font=ctk.CTkFont(size=11, weight="bold"),
+                         width=140, anchor="w").pack(side="left", padx=(0, 6))
+            ent = ctk.CTkEntry(row,
+                               placeholder_text=f"valor para {v}…",
+                               height=28)
+            ent.pack(side="left", fill="x", expand=True)
+            entries[v] = ent
+
+        # Previsualización
+        ctk.CTkLabel(wiz, text="👁 Previsualización del prompt final:",
+                     font=ctk.CTkFont(size=11, weight="bold")
+                     ).pack(anchor="w", padx=15, pady=(8, 2))
+        preview_txt = ctk.CTkTextbox(wiz,
+                                     font=ctk.CTkFont(family="Consolas", size=10),
+                                     wrap="word", height=200,
+                                     fg_color=("#f9fafb" if is_lt else "#0f172a"))
+        preview_txt.pack(fill="both", expand=True, padx=15, pady=(0, 8))
+
+        def _actualizar_preview(*_):
+            valores = {v: (entries[v].get().strip() or f"{{{v}}}") for v in variables}
+            pos_r = pos
+            neg_r = neg
+            for k, val in valores.items():
+                pos_r = pos_r.replace(f"{{{k}}}", val)
+                neg_r = neg_r.replace(f"{{{k}}}", val)
+            preview_txt.configure(state="normal")
+            preview_txt.delete("1.0", "end")
+            preview_txt.insert("1.0", f"POSITIVE PROMPT: {pos_r}")
+            if neg_r.strip():
+                preview_txt.insert("end", f"\n\nNEGATIVE PROMPT: {neg_r}")
+            preview_txt.configure(state="disabled")
+
+        for ent in entries.values():
+            ent.bind("<KeyRelease>", _actualizar_preview)
+        _actualizar_preview()
+
+        # Botones
+        btn_row = ctk.CTkFrame(wiz, fg_color="transparent")
+        btn_row.pack(pady=8)
+
+        def _aplicar_final():
+            faltan = [v for v, ent in entries.items() if not ent.get().strip()]
+            if faltan:
+                from tkinter import messagebox as _mb
+                if not _mb.askyesno(
+                    "Variables sin rellenar",
+                    f"No has rellenado: {', '.join(faltan)}.\n\n"
+                    f"Si continúas, los valores quedarán como {{{{nombre}}}} literales.\n\n"
+                    f"¿Aplicar de todas formas?",
+                    parent=wiz,
+                ):
+                    return
+            txt_final = preview_txt.get("1.0", "end").strip()
+            self.actualizar_salida(txt_final)
+            wiz.destroy()
+            ventana_padre.destroy()
+            self.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
+
+        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=180, height=32,
+                      fg_color="#1a7a3c", hover_color="#15642f",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      command=_aplicar_final).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="📋 Copiar", width=100, height=32,
+                      fg_color="#1a4a5a",
+                      command=lambda: (pyperclip.copy(preview_txt.get("1.0", "end").strip()),
+                                       self.set_estado("📋 Copiado", "#2ecc71"))
+                      ).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cancelar", width=90, height=32,
+                      fg_color="#444", hover_color="#555",
+                      command=wiz.destroy).pack(side="left", padx=4)
+
+        # Focus al primer campo
+        if entries:
+            list(entries.values())[0].focus_set()
 
     def _abrir_comparador(self, variaciones):
         vent = GPromptWindow(self)

@@ -959,7 +959,27 @@ class ToolsAnalysisMixin:
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text="Guarda tu configuración y recupérala rápido",
                      font=ctk.CTkFont(size=10),
-                     text_color=c["muted_text"]).pack(pady=(0, 8))
+                     text_color=c["muted_text"]).pack(pady=(0, 4))
+
+        # Buscador
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=15, pady=(0, 4))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(search_row,
+                                    placeholder_text="Buscar por nombre, modelo o plataforma…",
+                                    height=28)
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        busqueda_pending = {"after_id": None}
+        def _on_buscar(_e=None):
+            if busqueda_pending["after_id"]:
+                try: vent.after_cancel(busqueda_pending["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            busqueda_pending["after_id"] = vent.after(200, _refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+        ctk.CTkButton(search_row, text="✕", width=32, height=28,
+                      fg_color="#444", hover_color="#222",
+                      command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
+                      ).pack(side="left", padx=(6, 0))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
@@ -969,13 +989,30 @@ class ToolsAnalysisMixin:
                 w.destroy()
             prefs = self.store.cargar_preferencias()
             seeds = prefs.get("seeds_favoritos", [])
-            if not seeds:
-                ctk.CTkLabel(scroll,
-                             text="(sin seeds guardados — pulsa '+ Crear nuevo seed')",
+            termino = entry_buscar.get().strip().lower()
+
+            # Filtrar por término
+            visibles = []
+            for i, seed in enumerate(seeds):
+                if termino:
+                    text = " ".join([
+                        seed.get("nombre", ""),
+                        seed.get("modelo_img", ""),
+                        seed.get("modelo_vid", ""),
+                        seed.get("plataforma", ""),
+                    ]).lower()
+                    if termino not in text:
+                        continue
+                visibles.append((i, seed))
+
+            if not visibles:
+                msg = (f"Sin resultados para '{termino}'" if termino
+                       else "(sin seeds guardados — pulsa '+ Crear nuevo seed')")
+                ctk.CTkLabel(scroll, text=msg,
                              text_color=c["muted_text"]).pack(pady=30)
                 return
 
-            for i, seed in enumerate(seeds):
+            for i, seed in visibles:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
                 card.pack(fill="x", pady=4, padx=2)
                 ctk.CTkLabel(card, text=f"💎 {seed.get('nombre', '?')}",

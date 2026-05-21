@@ -628,63 +628,153 @@ class DataMgmtMixin:
             self.set_estado(f"💾 Exportado: {Path(ruta).name}", "#2ecc71")
 
     def _abrir_snippets(self):
-        """Gestor de snippets reutilizables (frases cortas que añades a prompts)."""
+        """Gestor de snippets con buscador + edit inline."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         prefs = self.store.cargar_preferencias()
-        snippets = prefs.get("snippets", [])
 
         vent = GPromptWindow(self)
         vent.title("🏷️ Snippets reutilizables")
-        vent.geometry("620x550")
+        vent.geometry("680x600")
         vent.transient(self)
-        ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Frases cortas que añades al final del POSITIVE con un click",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 6))
 
-        # Form añadir nuevo
+        # Buscador
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(search_row,
+                                    placeholder_text="Buscar por nombre o tags…",
+                                    height=28)
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        busqueda_pending = {"after_id": None}
+        def _on_buscar(_e=None):
+            if busqueda_pending["after_id"]:
+                try: vent.after_cancel(busqueda_pending["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            busqueda_pending["after_id"] = vent.after(200, refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+        ctk.CTkButton(search_row, text="✕", width=32, height=28,
+                      fg_color="#444", hover_color="#222",
+                      command=lambda: (entry_buscar.delete(0, "end"), refrescar())
+                      ).pack(side="left", padx=(6, 0))
+
+        # Form añadir/editar (colapsado por defecto)
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
-        form.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(form, text="➕ Nuevo snippet", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
-        ent_nombre = ctk.CTkEntry(form, placeholder_text="Nombre (ej: 'Mi look cinematográfico')", width=520)
+        ctk.CTkLabel(form, text="➕ Nuevo / editar snippet",
+                     font=ctk.CTkFont(size=11, weight="bold")
+                     ).pack(anchor="w", padx=10, pady=(8, 2))
+        ent_nombre = ctk.CTkEntry(form,
+                                  placeholder_text="Nombre (ej: 'Mi look cinematográfico')",
+                                  width=560)
         ent_nombre.pack(padx=10, pady=2)
-        ent_tags = ctk.CTkEntry(form, placeholder_text="Tags/frase (ej: cinematic lighting, volumetric, 8K)", width=520)
+        ent_tags = ctk.CTkEntry(form,
+                                placeholder_text="Tags/frase (ej: cinematic lighting, volumetric, 8K)",
+                                width=560)
         ent_tags.pack(padx=10, pady=(2, 5))
+
+        editando_idx = {"valor": None}
+        form_visible = {"valor": False}
+
+        head_form_row = ctk.CTkFrame(vent, fg_color="transparent")
+        head_form_row.pack(fill="x", padx=10, pady=(4, 2))
+
+        btn_toggle = ctk.CTkButton(head_form_row, text="➕ Nuevo snippet",
+                                   width=160, height=28,
+                                   fg_color="#1a7a3c", hover_color="#15642f")
+        btn_toggle.pack(side="left")
+
+        def _toggle_form():
+            if form_visible["valor"]:
+                form.pack_forget()
+                btn_toggle.configure(text="➕ Nuevo snippet")
+                form_visible["valor"] = False
+                editando_idx["valor"] = None
+                btn_crear.configure(text="✅ Crear snippet")
+            else:
+                form.pack(fill="x", padx=10, pady=4, after=head_form_row)
+                btn_toggle.configure(text="× Cerrar form")
+                form_visible["valor"] = True
+                ent_nombre.focus_set()
+        btn_toggle.configure(command=_toggle_form)
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
         def refrescar():
-            for w in scroll.winfo_children(): w.destroy()
-            actual = prefs.get("snippets", [])
-            if not actual:
-                ctk.CTkLabel(scroll, text="Aún no tienes snippets. Crea el primero arriba.",
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
-                return
+            for w in scroll.winfo_children():
+                w.destroy()
+            prefs_act = self.store.cargar_preferencias()
+            actual = prefs_act.get("snippets", [])
+            termino = entry_buscar.get().strip().lower()
+
+            visibles = []
             for i, s in enumerate(actual):
+                if termino:
+                    text = f"{s.get('nombre','')} {s.get('tags','')}".lower()
+                    if termino not in text:
+                        continue
+                visibles.append((i, s))
+
+            if not visibles:
+                msg = (f"Sin resultados para '{termino}'" if termino
+                       else "Aún no tienes snippets. Pulsa '➕ Nuevo snippet'.")
+                ctk.CTkLabel(scroll, text=msg,
+                             font=ctk.CTkFont(size=11),
+                             text_color="#666666").pack(pady=20)
+                return
+
+            for i, s in visibles:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=2)
                 ctk.CTkLabel(card, text=f"  🏷️ {s.get('nombre', '?')}",
-                             font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
-                ctk.CTkLabel(card, text=f"  {s.get('tags', '')[:120]}",
-                             font=ctk.CTkFont(size=10), text_color=c["muted_text"],
-                             wraplength=480, justify="left", anchor="w").pack(fill="x", padx=8, pady=(0, 2))
+                             font=ctk.CTkFont(size=11, weight="bold"),
+                             text_color=c["hdr_text"]
+                             ).pack(anchor="w", padx=8, pady=(4, 0))
+                ctk.CTkLabel(card, text=f"  {s.get('tags', '')[:200]}",
+                             font=ctk.CTkFont(size=10),
+                             text_color=c["muted_text"],
+                             wraplength=560, justify="left", anchor="w"
+                             ).pack(fill="x", padx=8, pady=(0, 2))
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
                 btn_row.pack(fill="x", padx=5, pady=(0, 4))
-                def _aplicar(s=s):
-                    self._aplicar_atajo_tags(s.get("tags", ""))
+
+                def _aplicar(s_l=s):
+                    self._aplicar_atajo_tags(s_l.get("tags", ""))
                     vent.destroy()
-                def _borrar(idx=i):
-                    actual2 = prefs.get("snippets", [])
-                    if idx < len(actual2):
-                        actual2.pop(idx)
-                        prefs["snippets"] = actual2
-                        self.store.guardar_preferencias(prefs)
-                        refrescar()
-                ctk.CTkButton(btn_row, text="➕ Añadir al prompt", width=140, height=22, fg_color="#1a7a3c",
-                              font=ctk.CTkFont(size=10), command=_aplicar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color="#5a1a1a",
-                              font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
+
+                def _editar(idx_l=i, s_l=s):
+                    if not form_visible["valor"]:
+                        _toggle_form()
+                    ent_nombre.delete(0, "end"); ent_nombre.insert(0, s_l.get("nombre", ""))
+                    ent_tags.delete(0, "end"); ent_tags.insert(0, s_l.get("tags", ""))
+                    editando_idx["valor"] = idx_l
+                    btn_crear.configure(text="✏️ Actualizar")
+
+                def _borrar(idx_l=i):
+                    prefs_b = self.store.cargar_preferencias()
+                    snippets_b = prefs_b.get("snippets", [])
+                    if 0 <= idx_l < len(snippets_b):
+                        snippets_b.pop(idx_l)
+                        prefs_b["snippets"] = snippets_b
+                        self.store.guardar_preferencias(prefs_b)
+                    refrescar()
+
+                ctk.CTkButton(btn_row, text="➕ Añadir", width=80, height=22,
+                              fg_color="#1a7a3c",
+                              font=ctk.CTkFont(size=10),
+                              command=_aplicar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=22,
+                              font=ctk.CTkFont(size=10),
+                              command=_editar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
+                              fg_color="#5a1a1a",
+                              font=ctk.CTkFont(size=10),
+                              command=_borrar).pack(side="right", padx=2)
 
         def crear():
             nombre = ent_nombre.get().strip()
@@ -692,18 +782,30 @@ class DataMgmtMixin:
             if not nombre or not tags:
                 self.set_estado("⚠️ Rellena nombre y tags.", "#e67e22")
                 return
-            actual = prefs.get("snippets", [])
-            actual.append({"nombre": nombre, "tags": tags})
-            prefs["snippets"] = actual
-            self.store.guardar_preferencias(prefs)
+            prefs_c = self.store.cargar_preferencias()
+            actual = prefs_c.get("snippets", [])
+            if editando_idx["valor"] is not None:
+                idx_e = editando_idx["valor"]
+                if 0 <= idx_e < len(actual):
+                    actual[idx_e] = {"nombre": nombre, "tags": tags}
+                editando_idx["valor"] = None
+                btn_crear.configure(text="✅ Crear snippet")
+            else:
+                actual.append({"nombre": nombre, "tags": tags})
+            prefs_c["snippets"] = actual
+            self.store.guardar_preferencias(prefs_c)
             ent_nombre.delete(0, "end")
             ent_tags.delete(0, "end")
             refrescar()
 
-        ctk.CTkButton(form, text="✅ Crear snippet", width=140, height=26, fg_color="#1a7a3c",
-                      font=ctk.CTkFont(size=10, weight="bold"), command=crear).pack(pady=(0, 8))
+        btn_crear = ctk.CTkButton(form, text="✅ Crear snippet", width=140, height=26,
+                                  fg_color="#1a7a3c",
+                                  font=ctk.CTkFont(size=10, weight="bold"),
+                                  command=crear)
+        btn_crear.pack(pady=(0, 8))
 
         refrescar()
+        entry_buscar.focus_set()
 
     def _abrir_formulas(self):
         """Gestor de fórmulas: combinaciones de tags reutilizables (igual que snippets pero más estructurado)."""
@@ -746,27 +848,74 @@ class DataMgmtMixin:
                       fg_color="#1a7a3c", hover_color="#145e2d",
                       font=ctk.CTkFont(size=11), command=_guardar_actual).pack(pady=5)
 
+        # Buscador
+        search_row = ctk.CTkFrame(vent, fg_color="transparent")
+        search_row.pack(fill="x", padx=10, pady=(0, 4))
+        ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
+        entry_buscar = ctk.CTkEntry(search_row,
+                                    placeholder_text="Buscar por nombre o contenido…",
+                                    height=28)
+        entry_buscar.pack(side="left", fill="x", expand=True)
+        busqueda_pending = {"after_id": None}
+        def _on_buscar(_e=None):
+            if busqueda_pending["after_id"]:
+                try: vent.after_cancel(busqueda_pending["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            busqueda_pending["after_id"] = vent.after(200, refrescar)
+        entry_buscar.bind("<KeyRelease>", _on_buscar)
+        ctk.CTkButton(search_row, text="✕", width=32, height=28,
+                      fg_color="#444", hover_color="#222",
+                      command=lambda: (entry_buscar.delete(0, "end"), refrescar())
+                      ).pack(side="left", padx=(6, 0))
+
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
         def refrescar():
-            for w in scroll.winfo_children(): w.destroy()
-            actual = prefs.get("formulas", [])
-            if not actual:
-                ctk.CTkLabel(scroll, text="No hay fórmulas. Genera un prompt y guárdalo aquí.",
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
-                return
+            for w in scroll.winfo_children():
+                w.destroy()
+            prefs_a = self.store.cargar_preferencias()
+            actual = prefs_a.get("formulas", [])
+            termino = entry_buscar.get().strip().lower()
+
+            visibles = []
             for i, f in enumerate(actual):
+                if termino:
+                    text = " ".join([
+                        f.get("nombre", ""),
+                        f.get("positive", ""),
+                        f.get("negative", ""),
+                    ]).lower()
+                    if termino not in text:
+                        continue
+                visibles.append((i, f))
+
+            if not visibles:
+                msg = (f"Sin resultados para '{termino}'" if termino
+                       else "No hay fórmulas. Genera un prompt y guárdalo aquí.")
+                ctk.CTkLabel(scroll, text=msg,
+                             font=ctk.CTkFont(size=11),
+                             text_color="#666666").pack(pady=20)
+                return
+
+            for i, f in visibles:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=3)
-                ctk.CTkLabel(card, text=f"  📐 {f.get('nombre', '?')}  ·  {f.get('fecha', '')}",
-                             font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
+                ctk.CTkLabel(card,
+                             text=f"  📐 {f.get('nombre', '?')}  ·  {f.get('fecha', '')}",
+                             font=ctk.CTkFont(size=11, weight="bold"),
+                             text_color=c["hdr_text"]
+                             ).pack(anchor="w", padx=8, pady=(4, 0))
                 preview = f.get("positive", "")[:200]
-                ctk.CTkLabel(card, text=f"  POS: {preview}{'...' if len(f.get('positive','')) > 200 else ''}",
-                             font=ctk.CTkFont(size=10), text_color=c["muted_text"],
-                             wraplength=540, justify="left", anchor="w").pack(fill="x", padx=8, pady=(0, 2))
+                ctk.CTkLabel(card,
+                             text=f"  POS: {preview}{'…' if len(f.get('positive','')) > 200 else ''}",
+                             font=ctk.CTkFont(size=10),
+                             text_color=c["muted_text"],
+                             wraplength=560, justify="left", anchor="w"
+                             ).pack(fill="x", padx=8, pady=(0, 2))
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
                 btn_row.pack(fill="x", padx=5, pady=(0, 4))
+
                 def _cargar(form=f):
                     txt = f"POSITIVE PROMPT: {form.get('positive', '')}"
                     if form.get('negative'):
@@ -774,19 +923,48 @@ class DataMgmtMixin:
                     self.actualizar_salida(txt)
                     vent.destroy()
                     self.set_estado(f"📐 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
-                def _borrar(idx=i):
-                    actual2 = prefs.get("formulas", [])
-                    if idx < len(actual2):
-                        actual2.pop(idx)
-                        prefs["formulas"] = actual2
-                        self.store.guardar_preferencias(prefs)
-                        refrescar()
-                ctk.CTkButton(btn_row, text="✅ Cargar", width=80, height=22, fg_color="#1a7a3c",
-                              font=ctk.CTkFont(size=10), command=_cargar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color="#5a1a1a",
-                              font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
+
+                def _renombrar(idx_l=i, form_l=f):
+                    from tkinter import simpledialog
+                    nuevo = simpledialog.askstring(
+                        "Renombrar fórmula",
+                        "Nuevo nombre:",
+                        initialvalue=form_l.get("nombre", ""),
+                        parent=vent,
+                    )
+                    if not nuevo:
+                        return
+                    prefs_r = self.store.cargar_preferencias()
+                    lst = prefs_r.get("formulas", [])
+                    if 0 <= idx_l < len(lst):
+                        lst[idx_l]["nombre"] = nuevo.strip()
+                        prefs_r["formulas"] = lst
+                        self.store.guardar_preferencias(prefs_r)
+                    refrescar()
+
+                def _borrar(idx_l=i):
+                    prefs_b = self.store.cargar_preferencias()
+                    lst = prefs_b.get("formulas", [])
+                    if 0 <= idx_l < len(lst):
+                        lst.pop(idx_l)
+                        prefs_b["formulas"] = lst
+                        self.store.guardar_preferencias(prefs_b)
+                    refrescar()
+
+                ctk.CTkButton(btn_row, text="✅ Cargar", width=80, height=22,
+                              fg_color="#1a7a3c",
+                              font=ctk.CTkFont(size=10),
+                              command=_cargar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="✏️ Renombrar", width=100, height=22,
+                              font=ctk.CTkFont(size=10),
+                              command=_renombrar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
+                              fg_color="#5a1a1a",
+                              font=ctk.CTkFont(size=10),
+                              command=_borrar).pack(side="right", padx=2)
 
         refrescar()
+        entry_buscar.focus_set()
 
     def _abrir_biblioteca(self):
         """Ventana con prompts de ejemplo probados.
