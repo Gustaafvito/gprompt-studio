@@ -87,7 +87,8 @@ class TestPreferences:
 
 # ── Helpers ───────────────────────────────────────────────────────
 
-_NAMES = ["historial", "favoritos", "personajes", "plantillas", "loras", "preferencias", "estrellas"]
+_NAMES = ["historial", "favoritos", "personajes", "plantillas",
+          "loras", "preferencias", "estrellas", "paletas"]
 
 
 def _setup_store(tmp_path, monkeypatch):
