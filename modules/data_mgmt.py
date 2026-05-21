@@ -958,7 +958,11 @@ class DataMgmtMixin:
                         self.store.guardar_preferencias(prefs_r)
                     refrescar()
 
-                def _borrar(idx_l=i):
+                def _borrar(idx_l=i, n=f.get("nombre", "sin nombre")):
+                    if not messagebox.askyesno("Borrar fórmula",
+                                               f"¿Borrar la fórmula '{n}'?",
+                                               parent=vent):
+                        return
                     prefs_b = self.store.cargar_preferencias()
                     lst = prefs_b.get("formulas", [])
                     if 0 <= idx_l < len(lst):

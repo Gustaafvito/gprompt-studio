@@ -1050,16 +1050,25 @@ class ArquitectoApp(
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
 
-        prefs = self.store.cargar_preferencias()
-        ocultas = set(prefs.get("plantillas_predef_ocultas", []))
-        plantillas_visibles = [p for p in plantillas_sorted if p[0] not in ocultas]
-        total_borradas = len(ocultas)
+        # Estado mutable que `_recargar_estado()` actualiza in-place para
+        # evitar cerrar/reabrir la ventana al borrar o restaurar.
+        estado = {
+            "visibles": [],
+            "total_borradas": 0,
+            "cats": [],
+        }
 
-        # Categorías disponibles (las que tienen al menos una plantilla visible)
-        cats_disponibles = sorted({
-            p[3] for p in plantillas_visibles
-            if len(p) > 3 and p[3]
-        })
+        def _recargar_estado():
+            prefs_act = self.store.cargar_preferencias()
+            ocultas_set = set(prefs_act.get("plantillas_predef_ocultas", []))
+            estado["visibles"] = [p for p in plantillas_sorted if p[0] not in ocultas_set]
+            estado["total_borradas"] = len(ocultas_set)
+            estado["cats"] = sorted({
+                p[3] for p in estado["visibles"]
+                if len(p) > 3 and p[3]
+            })
+
+        _recargar_estado()
 
         vent = GPromptWindow(self)
         vent.title("📑 Plantillas de prompt")
@@ -1076,21 +1085,32 @@ class ArquitectoApp(
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(side="left", padx=10)
 
+        # Slot para el botón de restaurar — recreado por _refrescar_restaurar_btn
+        restaurar_slot = ctk.CTkFrame(hdr_frame, fg_color="transparent")
+        restaurar_slot.pack(side="right")
+
         def _restaurar_borradas():
+            n = estado["total_borradas"]
             prefs_act = self.store.cargar_preferencias()
             prefs_act["plantillas_predef_ocultas"] = []
             self.store.guardar_preferencias(prefs_act)
-            vent.destroy()
-            self.set_estado(f"↩ {total_borradas} plantillas predefinidas restauradas",
-                            "#2ecc71")
-            self.after(100, self._cmd_plantillas_populares)
+            _recargar_estado()
+            _refrescar_restaurar_btn()
+            _refrescar()
+            self.set_estado(f"↩ {n} plantillas predefinidas restauradas", "#2ecc71")
 
-        if total_borradas > 0:
-            ctk.CTkButton(hdr_frame, text=f"↩ Restaurar {total_borradas} borradas",
-                          width=180, height=24,
-                          fg_color="#8b6914", hover_color="#6e5310",
-                          font=ctk.CTkFont(size=10),
-                          command=_restaurar_borradas).pack(side="right")
+        def _refrescar_restaurar_btn():
+            for w in restaurar_slot.winfo_children():
+                w.destroy()
+            if estado["total_borradas"] > 0:
+                ctk.CTkButton(restaurar_slot,
+                              text=f"↩ Restaurar {estado['total_borradas']} borradas",
+                              width=180, height=24,
+                              fg_color="#8b6914", hover_color="#6e5310",
+                              font=ctk.CTkFont(size=10),
+                              command=_restaurar_borradas).pack()
+
+        _refrescar_restaurar_btn()
 
         # ── Buscador ──
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1108,14 +1128,14 @@ class ArquitectoApp(
 
         # Filtro por categoría (si hay categorías en las plantillas)
         cat_var = ctk.StringVar(value="Todas")
-        if cats_disponibles:
+        if estado["cats"]:
             cat_row = ctk.CTkFrame(vent, fg_color="transparent")
             cat_row.pack(fill="x", padx=12, pady=(0, 4))
             ctk.CTkLabel(cat_row, text="Categoría:",
                          font=ctk.CTkFont(size=10)).pack(side="left", padx=(0, 6))
             ctk.CTkComboBox(
                 cat_row, width=180, variable=cat_var,
-                values=["Todas"] + [c.capitalize() for c in cats_disponibles],
+                values=["Todas"] + [c.capitalize() for c in estado["cats"]],
                 command=lambda _v: _refrescar(),
             ).pack(side="left")
 
@@ -1123,21 +1143,6 @@ class ArquitectoApp(
                      text="Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final.",
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 4), padx=12, anchor="w")
-
-        if not plantillas_visibles:
-            empty_frame = ctk.CTkFrame(vent, fg_color="transparent")
-            empty_frame.pack(fill="both", expand=True, padx=20, pady=40)
-            ctk.CTkLabel(empty_frame,
-                         text="📭 No hay plantillas visibles.\n\n"
-                              "Has borrado todas las plantillas predefinidas.",
-                         font=ctk.CTkFont(size=12), text_color=c["muted_text"],
-                         justify="center").pack(pady=20)
-            if total_borradas > 0:
-                ctk.CTkButton(empty_frame, text=f"↩ Restaurar las {total_borradas} borradas",
-                              width=220, height=32,
-                              fg_color="#8b6914", hover_color="#6e5310",
-                              command=_restaurar_borradas).pack(pady=10)
-            return
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=5)
@@ -1161,7 +1166,7 @@ class ArquitectoApp(
             cat_sel = cat_var.get().lower() if cat_var.get() != "Todas" else None
             import re
             visibles = []
-            for p in plantillas_visibles:
+            for p in estado["visibles"]:
                 # Compat: tupla de 3 o 4 elementos
                 if len(p) == 4:
                     nombre, pos, neg, categoria = p
@@ -1178,15 +1183,23 @@ class ArquitectoApp(
 
             sufijo_cat = f" · {cat_var.get()}" if cat_sel else ""
             contador_var.set(
-                f"({len(visibles)} de {len(plantillas_visibles)}{sufijo_cat})"
-                if (termino or cat_sel) else f"({len(plantillas_visibles)})"
+                f"({len(visibles)} de {len(estado['visibles'])}{sufijo_cat})"
+                if (termino or cat_sel) else f"({len(estado['visibles'])})"
             )
             if not visibles:
-                msg = (f"Sin resultados para '{termino}'" if termino
-                       else f"Sin plantillas en {cat_var.get()}" if cat_sel
-                       else "Sin plantillas visibles.")
-                ctk.CTkLabel(scroll, text=msg,
-                             text_color=c["muted_text"]).pack(pady=30)
+                # Sin estado["visibles"] = todas borradas (caso especial)
+                if not estado["visibles"]:
+                    ctk.CTkLabel(scroll,
+                                 text="📭 No hay plantillas visibles.\n\n"
+                                      "Has borrado todas las plantillas predefinidas.",
+                                 font=ctk.CTkFont(size=12),
+                                 text_color=c["muted_text"],
+                                 justify="center").pack(pady=30)
+                else:
+                    msg = (f"Sin resultados para '{termino}'" if termino
+                           else f"Sin plantillas en {cat_var.get()}")
+                    ctk.CTkLabel(scroll, text=msg,
+                                 text_color=c["muted_text"]).pack(pady=30)
                 return
 
             for nombre, pos, neg, categoria in visibles:
@@ -1245,9 +1258,10 @@ class ArquitectoApp(
                     ocultas_set.add(name)
                     prefs_act["plantillas_predef_ocultas"] = sorted(ocultas_set)
                     self.store.guardar_preferencias(prefs_act)
+                    _recargar_estado()
+                    _refrescar_restaurar_btn()
+                    _refrescar()
                     self.set_estado(f"🗑 '{name}' borrada", "#e67e22")
-                    vent.destroy()
-                    self.after(100, self._cmd_plantillas_populares)
 
                 ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
                               fg_color="#8b2c2c", hover_color="#6e2020",
