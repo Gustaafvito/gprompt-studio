@@ -1264,20 +1264,37 @@ class ArquitectoApp(
     def _wizard_variables_plantilla(self, nombre, pos, neg, variables, ventana_padre):
         """Wizard interactivo: pide valores para las {variables} y previsualiza
         el prompt final antes de aplicar.
+
+        Recuerda los últimos valores introducidos por plantilla en
+        preferencias.json bajo "plantilla_variables_ultimas" para que
+        al reabrir la misma plantilla los campos vengan pre-rellenados.
         """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
+        # Cargar últimos valores guardados para ESTA plantilla
+        try:
+            _prefs_w = self.store.cargar_preferencias() or {}
+            _ult = _prefs_w.get("plantilla_variables_ultimas", {}) or {}
+            ultimos = _ult.get(nombre, {}) if isinstance(_ult, dict) else {}
+            if not isinstance(ultimos, dict):
+                ultimos = {}
+        except Exception as _e:
+            logger.debug(f"[silent] cargar últimos del wizard: {_e}")
+            ultimos = {}
+
         wiz = GPromptWindow(ventana_padre)
         wiz.title(f"📝 Rellenar variables — {nombre}")
-        wiz.geometry("680x620")
+        wiz.geometry("680x640")
         wiz.transient(ventana_padre)
 
         ctk.CTkLabel(wiz, text=f"📝 Rellenar variables de '{nombre}'",
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(wiz,
-                     text=f"Esta plantilla tiene {len(variables)} variable(s). "
-                          f"Rellénalas y verás la previsualización abajo.",
+        subtitulo = (f"Esta plantilla tiene {len(variables)} variable(s). "
+                     f"Rellénalas y verás la previsualización abajo.")
+        if ultimos:
+            subtitulo += "  💾 (recordando tus últimos valores)"
+        ctk.CTkLabel(wiz, text=subtitulo,
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 10))
 
@@ -1296,7 +1313,26 @@ class ArquitectoApp(
                                placeholder_text=f"valor para {v}…",
                                height=28)
             ent.pack(side="left", fill="x", expand=True)
+            # Pre-rellenar con el último valor guardado para esta variable
+            if ultimos.get(v):
+                ent.insert(0, ultimos[v])
             entries[v] = ent
+
+        def _limpiar_memoria():
+            try:
+                _p = self.store.cargar_preferencias() or {}
+                _u = _p.get("plantilla_variables_ultimas", {}) or {}
+                if not isinstance(_u, dict):
+                    _u = {}
+                _u.pop(nombre, None)
+                _p["plantilla_variables_ultimas"] = _u
+                self.store.guardar_preferencias(_p)
+                for ent in entries.values():
+                    ent.delete(0, "end")
+                _actualizar_preview()
+                self.set_estado(f"🧹 Memoria de '{nombre}' borrada", "#888")
+            except Exception as e:
+                logger.warning(f"_limpiar_memoria wizard: {e}")
 
         # Previsualización
         ctk.CTkLabel(wiz, text="👁 Previsualización del prompt final:",
@@ -1330,6 +1366,25 @@ class ArquitectoApp(
         btn_row = ctk.CTkFrame(wiz, fg_color="transparent")
         btn_row.pack(pady=8)
 
+        def _persistir_valores():
+            """Guarda los valores actuales como últimos para esta plantilla."""
+            try:
+                valores = {v: ent.get().strip()
+                           for v, ent in entries.items()
+                           if ent.get().strip()}
+                _p = self.store.cargar_preferencias() or {}
+                _u = _p.get("plantilla_variables_ultimas", {}) or {}
+                if not isinstance(_u, dict):
+                    _u = {}
+                if valores:
+                    _u[nombre] = valores
+                else:
+                    _u.pop(nombre, None)
+                _p["plantilla_variables_ultimas"] = _u
+                self.store.guardar_preferencias(_p)
+            except Exception as e:
+                logger.debug(f"_persistir_valores wizard: {e}")
+
         def _aplicar_final():
             faltan = [v for v, ent in entries.items() if not ent.get().strip()]
             if faltan:
@@ -1342,22 +1397,29 @@ class ArquitectoApp(
                     parent=wiz,
                 ):
                     return
+            _persistir_valores()
             txt_final = preview_txt.get("1.0", "end").strip()
             self.actualizar_salida(txt_final)
             wiz.destroy()
             ventana_padre.destroy()
             self.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
 
-        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=180, height=32,
+        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=32,
                       fg_color="#1a7a3c", hover_color="#15642f",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_aplicar_final).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="📋 Copiar", width=100, height=32,
+        ctk.CTkButton(btn_row, text="📋 Copiar", width=90, height=32,
                       fg_color="#1a4a5a",
-                      command=lambda: (pyperclip.copy(preview_txt.get("1.0", "end").strip()),
+                      command=lambda: (_persistir_valores(),
+                                       pyperclip.copy(preview_txt.get("1.0", "end").strip()),
                                        self.set_estado("📋 Copiado", "#2ecc71"))
                       ).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=90, height=32,
+        if ultimos:
+            ctk.CTkButton(btn_row, text="🧹 Olvidar valores", width=130, height=32,
+                          fg_color="#8b6914", hover_color="#6e5310",
+                          font=ctk.CTkFont(size=10),
+                          command=_limpiar_memoria).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cancelar", width=80, height=32,
                       fg_color="#444", hover_color="#555",
                       command=wiz.destroy).pack(side="left", padx=4)
 
