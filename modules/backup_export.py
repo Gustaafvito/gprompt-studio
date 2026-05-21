@@ -176,30 +176,86 @@ class BackupExportMixin:
             messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self)
 
     def _cmd_exportar_csv(self):
-        """Exporta historial completo a CSV.
-
-        Bugs corregidos:
-          - Columna Modelo ya no sale vacía: usa "modelo" si existe,
-            si no usa modelo_img/vid/aud según el modo.
-          - "estilos" puede venir como lista o como string; se normaliza a
-            "estilo1, estilo2, …".
-          - Sin truncar prompt a 1000 chars (los CSV modernos lo aguantan).
+        """Selector previo de qué exportar: historial / favoritos / estrellas /
+        todos juntos. Después abre filedialog y vuelca a CSV.
         """
-        items = self.store.historial or []
-        if not items:
-            return self.set_estado("⚠️ El historial está vacío.", "#e67e22")
+        # Pre-comprobación: ¿hay algo que exportar?
+        hist  = self.store.historial or []
+        favs  = self.store.favoritos or []
+        stars = self.store.estrellas or []
+        if not (hist or favs or stars):
+            return self.set_estado(
+                "⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos).",
+                "#e67e22",
+            )
 
+        # ── Selector ──
+        from modules.gprompt_window import GPromptWindow
+        sel = GPromptWindow(self)
+        sel.title("📊 Exportar a CSV")
+        sel.geometry("420x300")
+        sel.transient(self)
+
+        ctk.CTkLabel(sel, text="📊 Exportar a CSV",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
+        ctk.CTkLabel(sel, text="¿Qué quieres exportar?",
+                     font=ctk.CTkFont(size=11),
+                     text_color="#888").pack(pady=(0, 12))
+
+        # Checkboxes
+        chk_hist_var = ctk.BooleanVar(value=True)
+        chk_favs_var = ctk.BooleanVar(value=False)
+        chk_stars_var = ctk.BooleanVar(value=False)
+
+        ctk.CTkCheckBox(sel, variable=chk_hist_var,
+                        text=f"📋 Historial ({len(hist)} entradas)"
+                        ).pack(anchor="w", padx=40, pady=2)
+        ctk.CTkCheckBox(sel, variable=chk_favs_var,
+                        text=f"⭐ Favoritos ({len(favs)} entradas)"
+                        ).pack(anchor="w", padx=40, pady=2)
+        ctk.CTkCheckBox(sel, variable=chk_stars_var,
+                        text=f"🌟 Estrellas ({len(stars)} entradas)"
+                        ).pack(anchor="w", padx=40, pady=2)
+
+        def _lanzar():
+            seleccion = []
+            if chk_hist_var.get(): seleccion.append(("historial", hist))
+            if chk_favs_var.get(): seleccion.append(("favoritos", favs))
+            if chk_stars_var.get(): seleccion.append(("estrellas", stars))
+            if not seleccion:
+                messagebox.showwarning("Sin selección",
+                                       "Marca al menos una colección.",
+                                       parent=sel)
+                return
+            sel.destroy()
+            self._exportar_csv_ejecutar(seleccion)
+
+        ctk.CTkButton(sel, text="▶ Exportar", width=160, height=34,
+                      fg_color="#1a7a3c", command=_lanzar).pack(pady=(14, 4))
+        ctk.CTkButton(sel, text="Cancelar", width=100, height=28,
+                      fg_color="#444", hover_color="#555",
+                      command=sel.destroy).pack(pady=2)
+
+    def _exportar_csv_ejecutar(self, colecciones: list):
+        """Exporta las colecciones seleccionadas a un CSV único.
+
+        Args:
+            colecciones: lista de tuplas (nombre, items)
+        """
         from tkinter import filedialog, messagebox
+
+        # Nombre por defecto del archivo
+        nombres = "_".join(n for n, _ in colecciones)
+        fecha = datetime.datetime.now().strftime("%Y%m%d")
         archivo = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV", "*.csv"), ("Todos", "*.*")],
-            initialfile=f"historial_prompts_{datetime.datetime.now().strftime('%Y%m%d')}.csv"
+            initialfile=f"gprompt_{nombres}_{fecha}.csv",
         )
         if not archivo:
             return
 
         def _modelo_de(it: dict) -> str:
-            # Prioridad: campo "modelo" directo, sino el del modo activo
             if it.get("modelo"):
                 return str(it["modelo"])
             modo = it.get("modo", "")
@@ -219,31 +275,36 @@ class BackupExportMixin:
             n = 0
             with open(archivo, 'w', newline='', encoding='utf-8') as f:
                 w = csv.writer(f)
-                w.writerow(["Fecha", "Modo", "Plataforma", "Modelo", "Ratio",
-                            "Estilos", "Destino", "NSFW", "Brief",
-                            "Personaje", "LoRA", "Prompt"])
-                for it in items:
-                    if not isinstance(it, dict):
-                        continue
-                    w.writerow([
-                        it.get("fecha", ""),
-                        it.get("modo", ""),
-                        it.get("plataforma", ""),
-                        _modelo_de(it),
-                        it.get("ratio", ""),
-                        _estilos_de(it),
-                        it.get("destino", ""),
-                        "Sí" if it.get("nsfw") else "No",
-                        "Sí" if it.get("brief") else "No",
-                        it.get("personaje", ""),
-                        it.get("lora", ""),
-                        it.get("contenido", ""),
-                    ])
-                    n += 1
+                w.writerow(["Origen", "Fecha", "Modo", "Plataforma", "Modelo",
+                            "Ratio", "Estilos", "Destino", "NSFW", "Brief",
+                            "Personaje", "LoRA", "Nota", "Prompt"])
+                for nombre_col, items in colecciones:
+                    for it in items:
+                        if not isinstance(it, dict):
+                            continue
+                        w.writerow([
+                            nombre_col,
+                            it.get("fecha", ""),
+                            it.get("modo", ""),
+                            it.get("plataforma", ""),
+                            _modelo_de(it),
+                            it.get("ratio", ""),
+                            _estilos_de(it),
+                            it.get("destino", ""),
+                            "Sí" if it.get("nsfw") else "No",
+                            "Sí" if it.get("brief") else "No",
+                            it.get("personaje", ""),
+                            it.get("lora", ""),
+                            it.get("nota", ""),  # solo estrellas
+                            it.get("contenido", ""),
+                        ])
+                        n += 1
             self.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
-            messagebox.showinfo("Exportación completada",
-                                f"💾 Exportadas {n} filas a:\n{archivo}",
-                                parent=self)
+            messagebox.showinfo(
+                "Exportación completada",
+                f"💾 Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
+                parent=self,
+            )
         except Exception as e:
             self.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self)
