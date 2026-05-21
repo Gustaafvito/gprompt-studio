@@ -41,6 +41,7 @@ ARCHIVOS = {
     "personajes":    CARPETA_APP / "personajes.json",
     "plantillas":    CARPETA_APP / "plantillas.json",
     "loras":         CARPETA_APP / "loras.json",
+    "paletas":       CARPETA_APP / "paletas.json",
     "preferencias":  CARPETA_APP / "preferencias.json",
     "estrellas":     CARPETA_APP / "estrellas.json",
     "keys":          CARPETA_APP / "keys.json",

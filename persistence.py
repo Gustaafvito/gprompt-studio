@@ -24,6 +24,7 @@ class DataStore:
         self.plantillas: list = self._cargar("plantillas")
         self.loras: list = self._cargar("loras")
         self.estrellas: list = self._cargar("estrellas")
+        self.paletas: list = self._cargar("paletas")
 
         if self._archivos_corruptos:
             logger.warning(f"Archivos corruptos detectados: {[x[0] for x in self._archivos_corruptos]}")

@@ -1462,52 +1462,45 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             ],
         }
 
+        # check_vars[nombre] = (BooleanVar, tags, checkbox_widget)
+        # Los checkboxes se crean UNA SOLA VEZ al inicio. El filtro
+        # solo hace pack_forget()/pack() para no perder estado visual.
         check_vars = {}
 
         def _actualizar_lbl():
-            n = sum(1 for (v, _) in check_vars.values() if v.get())
-            activos = [nom for nom, (v, _) in check_vars.items() if v.get()]
-            lbl_activos.configure(text=f"✅ {n} activos: {', '.join(activos[:5])}{'...' if len(activos) > 5 else ''}")
+            n = sum(1 for tup in check_vars.values() if tup[0].get())
+            activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
+            extra = f"… (+{len(activos) - 5})" if len(activos) > 5 else ""
+            lbl_activos.configure(
+                text=f"✅ {n} activos: {', '.join(activos[:5])}{extra}"
+            )
 
-        def _mostrar_categoria(tab_frame, categoria, items, filtro=""):
-            for w in tab_frame.winfo_children():
-                w.destroy()
-            filtro = filtro.lower()
-            for nombre, tags in items:
-                if filtro and filtro not in nombre.lower() and filtro not in tags.lower():
-                    continue
-                v = ctk.BooleanVar()
-                cb = ctk.CTkCheckBox(tab_frame, text=nombre, variable=v,
-                                     font=ctk.CTkFont(size=10),
-                                     onvalue=True, offvalue=False)
-                cb.pack(anchor="w", padx=16, pady=1)
-                check_vars[nombre] = (v, tags)
-                v.trace_add("write", lambda *a: _actualizar_lbl())
+        def _crear_checkbox(tab_frame, nombre, tags):
+            v = ctk.BooleanVar()
+            cb = ctk.CTkCheckBox(tab_frame, text=nombre, variable=v,
+                                 font=ctk.CTkFont(size=10),
+                                 onvalue=True, offvalue=False)
+            cb.pack(anchor="w", padx=16, pady=1)
+            check_vars[nombre] = (v, tags, cb)
+            v.trace_add("write", lambda *a: _actualizar_lbl())
 
+        # Crear todos los checkboxes UNA SOLA VEZ
         for cat_nombre, cat_items in categorias.items():
             tab = tabs.add(cat_nombre)
-            _mostrar_categoria(tab, cat_nombre, cat_items)
+            for nombre, tags in cat_items:
+                _crear_checkbox(tab, nombre, tags)
 
-        def _filtrar(e):
-            filtro = search_entry.get()
-            for cat_nombre, cat_items in categorias.items():
-                try:
-                    tab = tabs._tab_dict[cat_nombre]
-                except Exception:
-                    continue
-                for w in tab.winfo_children():
-                    w.destroy()
-                for nombre, tags in cat_items:
-                    if filtro and filtro not in nombre.lower() and filtro not in tags.lower():
-                        continue
-                    v = ctk.BooleanVar() if nombre not in check_vars else check_vars[nombre][0]
-                    if nombre not in check_vars:
-                        check_vars[nombre] = (v, tags)
-                    cb = ctk.CTkCheckBox(tab, text=nombre, variable=v,
-                                         font=ctk.CTkFont(size=10),
-                                         onvalue=True, offvalue=False)
-                    cb.pack(anchor="w", padx=16, pady=1)
-                    v.trace_add("write", lambda *a: _actualizar_lbl())
+        def _filtrar(e=None):
+            """Filtra mostrando/ocultando con pack_forget/pack — NO destruye
+            los checkboxes, así el estado marcado/desmarcado se conserva."""
+            filtro = search_entry.get().lower().strip()
+            for nombre, (v, tags, cb) in check_vars.items():
+                if not filtro or filtro in nombre.lower() or filtro in tags.lower():
+                    if not cb.winfo_ismapped():
+                        cb.pack(anchor="w", padx=16, pady=1)
+                else:
+                    if cb.winfo_ismapped():
+                        cb.pack_forget()
 
         search_entry.bind("<KeyRelease>", _filtrar)
 
@@ -1517,45 +1510,119 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         def _marcar(nombres, exclusivo=False):
             if exclusivo:
-                for v, _ in check_vars.values(): v.set(False)
+                for tup in check_vars.values():
+                    tup[0].set(False)
             for nombre in nombres:
                 if nombre in check_vars:
                     check_vars[nombre][0].set(True)
 
+        def _cargar_presets() -> list:
+            """Lee los presets persistidos desde preferencias.json."""
+            try:
+                prefs = self.store.cargar_preferencias() or {}
+                return list(prefs.get("negative_presets", []))
+            except Exception as e:
+                logger.debug(f"_cargar_presets: {e}")
+                return []
+
+        def _persistir_presets(presets: list) -> None:
+            try:
+                prefs = self.store.cargar_preferencias() or {}
+                prefs["negative_presets"] = presets
+                self.store.guardar_preferencias(prefs)
+            except Exception as e:
+                logger.warning(f"_persistir_presets falló: {e}")
+
         def _guardar_preset():
-            activos = [nom for nom, (v, _) in check_vars.items() if v.get()]
+            activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
             if not activos:
                 return self.set_estado("⚠️ Marca elementos antes de guardar preset.", "#e67e22")
-            if not hasattr(self, "_negative_presets"):
-                self._negative_presets = []
-            nombre_preset = f"Preset {len(self._negative_presets) + 1}"
-            self._negative_presets.append({"nombre": nombre_preset, "items": activos})
-            self.set_estado(f"💾 Preset '{nombre_preset}' guardado ({len(activos)} items)", "#2ecc71")
+            # Pedir nombre al usuario
+            from tkinter import simpledialog
+            presets = _cargar_presets()
+            sugerencia = f"Preset {len(presets) + 1}"
+            nombre = simpledialog.askstring("Guardar preset NEGATIVE",
+                                            "Nombre del preset:",
+                                            initialvalue=sugerencia,
+                                            parent=vent)
+            if not nombre:
+                return
+            nombre = nombre.strip()
+            # Si ya existe ese nombre, preguntar si sobreescribir
+            if any(p.get("nombre") == nombre for p in presets):
+                from tkinter import messagebox as _mb
+                if not _mb.askyesno("Ya existe",
+                                    f"Ya existe un preset llamado '{nombre}'. "
+                                    f"¿Sobreescribir?",
+                                    parent=vent):
+                    return
+                presets = [p for p in presets if p.get("nombre") != nombre]
+            presets.append({"nombre": nombre, "items": activos})
+            _persistir_presets(presets)
+            self.set_estado(f"💾 Preset '{nombre}' guardado ({len(activos)} items)", "#2ecc71")
             _actualizar_lbl()
 
         def _mostrar_presets():
-            if not hasattr(self, "_negative_presets") or not self._negative_presets:
+            presets = _cargar_presets()
+            if not presets:
+                self.set_estado("⚠️ No hay presets guardados todavía.", "#e67e22")
                 return
             win = GPromptWindow(vent)
             win.title("💾 Presets de NEGATIVE")
-            win.geometry("400x350")
+            win.geometry("440x400")
             win.transient(vent)
-            ctk.CTkLabel(win, text="💾 Presets guardados", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(10, 4))
+            ctk.CTkLabel(win, text="💾 Presets guardados",
+                         font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(10, 4))
             scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=15, pady=5)
-            for preset in self._negative_presets:
-                row = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
-                row.pack(fill="x", pady=3)
-                hdr = ctk.CTkFrame(row, fg_color="transparent")
-                hdr.pack(fill="x", padx=10, pady=(5, 0))
-                ctk.CTkLabel(hdr, text=f"📁 {preset['nombre']} ({len(preset['items'])} items)",
-                             font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
-                ctk.CTkButton(hdr, text="Aplicar", width=70, height=22, fg_color="#1a7a3c",
-                              command=lambda p=preset: (_marcar(p["items"]), win.destroy(), _actualizar_lbl())
-                              ).pack(side="right")
-                ctk.CTkLabel(row, text=f"{', '.join(preset['items'][:8])}{'...' if len(preset['items']) > 8 else ''}",
-                             font=ctk.CTkFont(size=9), text_color="#888888", wraplength=340
-                             ).pack(anchor="w", padx=10, pady=(0, 5))
+
+            def _refrescar_presets():
+                for w in scroll.winfo_children():
+                    w.destroy()
+                presets_act = _cargar_presets()
+                if not presets_act:
+                    ctk.CTkLabel(scroll, text="(sin presets)").pack(pady=20)
+                    return
+                for preset in presets_act:
+                    row = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
+                    row.pack(fill="x", pady=3)
+                    hdr = ctk.CTkFrame(row, fg_color="transparent")
+                    hdr.pack(fill="x", padx=10, pady=(5, 0))
+                    ctk.CTkLabel(hdr,
+                                 text=f"📁 {preset['nombre']} ({len(preset['items'])} items)",
+                                 font=ctk.CTkFont(size=11, weight="bold")
+                                 ).pack(side="left")
+
+                    def _aplicar(p=preset):
+                        _marcar(p["items"])
+                        win.destroy()
+                        _actualizar_lbl()
+
+                    def _borrar(p=preset):
+                        from tkinter import messagebox as _mb
+                        if not _mb.askyesno("Confirmar",
+                                            f"¿Borrar preset '{p['nombre']}'?",
+                                            parent=win):
+                            return
+                        nuevos = [x for x in _cargar_presets()
+                                  if x.get("nombre") != p["nombre"]]
+                        _persistir_presets(nuevos)
+                        _refrescar_presets()
+
+                    ctk.CTkButton(hdr, text="Aplicar", width=70, height=22,
+                                  fg_color="#1a7a3c",
+                                  command=_aplicar).pack(side="right", padx=2)
+                    ctk.CTkButton(hdr, text="🗑", width=32, height=22,
+                                  fg_color="#7a1a1a", hover_color="#5a0f0f",
+                                  command=_borrar).pack(side="right", padx=2)
+                    ctk.CTkLabel(
+                        row,
+                        text=f"{', '.join(preset['items'][:8])}"
+                             f"{'…' if len(preset['items']) > 8 else ''}",
+                        font=ctk.CTkFont(size=9), text_color="#888888",
+                        wraplength=380,
+                    ).pack(anchor="w", padx=10, pady=(0, 5))
+            _refrescar_presets()
 
         ctk.CTkButton(preset_row, text="✓ Básicos", width=85, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Manos malas", "Baja calidad", "Texto / letras", "Marca de agua"])
@@ -1570,7 +1637,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                                                 "Tinte amarillo", "Texto / letras", "Marca de agua", "Logos / firmas"])
                       ).pack(side="left", padx=2)
         ctk.CTkButton(preset_row, text="🧹 Limpiar", width=75, height=24, fg_color="#5a3a1a",
-                      command=lambda: [_v.set(False) for (_v, _) in check_vars.values()]
+                      command=lambda: [tup[0].set(False) for tup in check_vars.values()]
                       ).pack(side="left", padx=2)
         ctk.CTkButton(preset_row, text="💾 Guardar", width=90, height=24, fg_color="#4a1a6a",
                       command=_guardar_preset).pack(side="left", padx=2)
@@ -1580,8 +1647,11 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
         btn_row.pack(pady=6)
 
+        def _tags_seleccionados() -> list[str]:
+            return [tup[1] for tup in check_vars.values() if tup[0].get()]
+
         def _aplicar():
-            tags_sel = [tags for (_, (v, tags)) in check_vars.items() if v.get()]
+            tags_sel = _tags_seleccionados()
             if not tags_sel:
                 return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
             negativo = ", ".join(tags_sel)
@@ -1595,7 +1665,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             vent.destroy()
 
         def _copiar():
-            tags_sel = [tags for (_, (v, tags)) in check_vars.items() if v.get()]
+            tags_sel = _tags_seleccionados()
             if not tags_sel:
                 return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
             pyperclip.copy(", ".join(tags_sel))
@@ -1954,12 +2024,24 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     hex_str = ", ".join(hex_codes)
 
                     def _guardar_paleta():
-                        if not hasattr(self.store, "paletas"):
-                            self.store.paletas = []
-                        paleta = {"nombre": f"Paleta {len(self.store.paletas)+1}", "hex": hex_codes,
-                                  "timestamp": str(_dt.datetime.now())[:10]}
+                        # Pedir nombre al usuario en vez de auto-numerar
+                        from tkinter import simpledialog
+                        nombre = simpledialog.askstring(
+                            "Guardar paleta",
+                            "Nombre de la paleta:",
+                            initialvalue=f"Paleta {len(self.store.paletas or []) + 1}",
+                            parent=vent,
+                        )
+                        if not nombre:
+                            return
+                        paleta = {
+                            "nombre": nombre.strip(),
+                            "hex": hex_codes,
+                            "rgb": [list(c) for c in colores_raw[:5]],
+                            "timestamp": str(_dt.datetime.now())[:19],
+                        }
                         self.store.paletas.append(paleta)
-                        self.store.guardar()
+                        self.store._guardar("paletas")  # FIX: era store.guardar() inexistente
                         self.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
 
                     ctk.CTkButton(btn_row, text="📋 Copiar HEX", width=120, height=28,
