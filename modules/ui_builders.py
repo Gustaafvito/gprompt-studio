@@ -1228,94 +1228,127 @@ class UIBuildersMixin:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _build_acciones(self):
+        from config import get_theme_colors
+        is_light = ctk.get_appearance_mode().lower() == "light"
+        c_theme = get_theme_colors(is_light)
+        sep_color = "#d1d5db" if is_light else "#374151"
+
         outer = ctk.CTkFrame(self, fg_color="transparent")
         outer.pack(pady=2, padx=16, fill="x")
 
-        # Fila 1: generación
+        # Fila 1: generación + análisis
         row1 = ctk.CTkFrame(outer, fg_color="transparent")
         row1.pack(fill="x", pady=(0, 3))
 
         btn_s = {"height": 32, "corner_radius": 6, "font": ctk.CTkFont(size=11)}
 
-        # ═══ FILA 1: Generación principal (verde-azul - acciones positivas) ═══
-        # Orden: Ideas → Sorprende → Generar (la principal) → Regenerar → Variaciones → Analizar → Img→Prompt → Análisis Inv
-        botones_r1 = [
-            # GRUPO: Inspiración (verde claro)
-            ("💡 Ideas",          100, "#2a6a4a", self.cmd_ideas,             "3 ideas creativas · Ctrl+I"),
-            ("🎲",                40,  "#3a6a4a", self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
-            # GRUPO: Generar (verde fuerte = acción principal)
-            ("✨ Generar",         110, "#1a8a3c", self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
-            # ── MEJORA 3: Regenerar + flechas para navegar entre regeneraciones ──
-            ("🔄",                40,  "#1a8a3c", self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
-            ("←",                30,  "#1a5a3c", self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
-            ("→",                30,  "#1a5a3c", self._cmd_regenerar_adelante,"→ Versión siguiente de la regeneración"),
-            ("📊",               36,  "#1a5a3c", self._cmd_diff_versiones,   "Diff visual entre versiones (verde=añadido, rojo=quitado)"),
-            ("🔀 Variaciones",    115, "#2563eb", self.cmd_variaciones,       "3 versiones · Ctrl+Shift+Enter"),
-            # GRUPO: Análisis de imagen (azul oscuro)
-            ("👁 Analizar",       100, "#1e3a8a", self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
-            ("🎯 Img→Prompt",     110, "#1e3a8a", self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
-            ("🔍 Análisis Inv",   115, "#1e3a5f", self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
-            # GRUPO: ADN Visual (morado - único)
-            ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,      "Análisis JSON estructurado"),
+        def _sep(parent):
+            """Mini separador vertical entre grupos de botones."""
+            wrap = ctk.CTkFrame(parent, fg_color="transparent",
+                                width=14, height=32)
+            wrap.pack(side="left", padx=2)
+            wrap.pack_propagate(False)
+            line = ctk.CTkFrame(wrap, fg_color=sep_color,
+                                width=1, height=22)
+            line.place(relx=0.5, rely=0.5, anchor="center")
+
+        # ═══ FILA 1 — grupos: Inspiración · Generación · Análisis · ADN ═══
+        # Cada sublista es un grupo visualmente separado.
+        # Quick va aquí (no en fila 2) porque es una variante de Generar.
+        grupos_r1 = [
+            # Inspiración (verde claro)
+            [
+                ("💡 Ideas",          100, "#2a6a4a", self.cmd_ideas,             "3 ideas creativas · Ctrl+I"),
+                ("🎲",                40,  "#3a6a4a", self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
+            ],
+            # Generación (verde fuerte = acción principal)
+            [
+                ("✨ Generar",         110, "#1a8a3c", self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
+                ("🔄",                40,  "#1a8a3c", self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
+                ("←",                30,  "#1a5a3c", self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
+                ("→",                30,  "#1a5a3c", self._cmd_regenerar_adelante,"→ Versión siguiente de la regeneración"),
+                ("📊",               36,  "#1a5a3c", self._cmd_diff_versiones,   "Diff visual entre versiones (verde=añadido, rojo=quitado)"),
+                ("🔀 Variaciones",    115, "#2563eb", self.cmd_variaciones,       "3 versiones · Ctrl+Shift+Enter"),
+                ("🚀 Quick",           80, "#d97706", self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
+            ],
+            # Análisis (azul oscuro)
+            [
+                ("👁 Analizar",       100, "#1e3a8a", self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
+                ("🎯 Img→Prompt",     110, "#1e3a8a", self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
+                ("🔍 Análisis Inv",   115, "#1e3a5f", self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
+            ],
+            # ADN (morado)
+            [
+                ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,       "Análisis JSON estructurado"),
+            ],
         ]
 
-        # ═══ FILA 2: Edición y herramientas (naranja-violeta) ═══
-        # Orden: Refinar/Copiloto (edición) → Batch/Preview (output) → →Vídeo/Compar (transformación) → Iterar/Pulse/Sugerir (variación) → Mood/Story/Board/Walk (creativos)
-        botones_r2 = [
-            # GRUPO: Edición del prompt (violeta)
-            ("🔁 Refinar",         90, "#7c3aed", self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
-            ("💬 Copiloto",        95, "#7c3aed", self.cmd_copiloto,           "Chat para editar"),
-            # GRUPO: Outputs masivos (azul-gris)
-            ("📦 Batch",           80, "#475569", self.cmd_batch,              "Generación masiva"),
-            ("👁️ Preview",        90, "#475569", self.cmd_previsualizar,      "Boceto rápido"),
-            # GRUPO: Conversiones (cyan)
-            ("🎬 →Vídeo",          85, "#0891b2", self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
-            ("🆚 Compar",          80, "#0891b2", self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
-            # GRUPO: Variaciones rápidas (naranja)
-            ("🔂 Iterar",          80, "#d97706", self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
-            ("🚀 Quick",           80, "#d97706", self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
-            ("⚡ Pulse",           75, "#d97706", self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
-            ("🤖 Sugerir",         85, "#d97706", self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
-            # GRUPO: Multi-prompt creativo (rosa-fucsia)
-            ("🎭 Mood",            70, "#be185d", self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
-            ("🎬 Story",           70, "#be185d", self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
-            ("📽 Board",           70, "#be185d", self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
-            ("🌀 Walk",            70, "#be185d", self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+        # ═══ FILA 2 — grupos: Edición · Variantes · Multi-prompt · Outputs ═══
+        grupos_r2 = [
+            # Edición (violeta)
+            [
+                ("🔁 Refinar",         90, "#7c3aed", self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
+                ("💬 Copiloto",        95, "#7c3aed", self.cmd_copiloto,           "Chat para editar"),
+                ("🔂 Iterar",          80, "#d97706", self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
+            ],
+            # Variantes rápidas (naranja)
+            [
+                ("⚡ Pulse",           75, "#d97706", self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
+                ("🤖 Sugerir",         85, "#d97706", self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
+            ],
+            # Multi-prompt creativo (rosa-fucsia)
+            [
+                ("🎭 Mood",            70, "#be185d", self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
+                ("🎬 Story",           70, "#be185d", self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("📽 Board",           70, "#be185d", self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("🌀 Walk",            70, "#be185d", self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+            ],
+            # Outputs y conversiones (azul-gris / cyan)
+            [
+                ("📦 Batch",           80, "#475569", self.cmd_batch,              "Generación masiva"),
+                ("👁️ Preview",        90, "#475569", self.cmd_previsualizar,      "Boceto rápido"),
+                ("🎬 →Vídeo",          85, "#0891b2", self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
+                ("🆚 Compar",          80, "#0891b2", self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
+            ],
         ]
 
         self.action_btns = []
-        for text, w, fg, cmd, tooltip in botones_r1:
-            kw = {"fg_color": fg, "hover_color": self._darker(fg)} if fg else {}
-            btn = ctk.CTkButton(row1, text=text, width=w, command=cmd, **btn_s, **kw)
-            btn.pack(side="left", padx=2)
-            CTkToolTip(btn, delay=0.5, message=tooltip)
-            self.action_btns.append(btn)
 
-        # ═══ BADGE DE COSTE (junto a Generar) ═══
+        def _render_grupos(parent, grupos):
+            for g_idx, grupo in enumerate(grupos):
+                if g_idx > 0:
+                    _sep(parent)
+                for text, w, fg, cmd, tooltip in grupo:
+                    kw = {"fg_color": fg, "hover_color": self._darker(fg)} if fg else {}
+                    btn = ctk.CTkButton(parent, text=text, width=w,
+                                        command=cmd, **btn_s, **kw)
+                    btn.pack(side="left", padx=2)
+                    CTkToolTip(btn, delay=0.5, message=tooltip)
+                    self.action_btns.append(btn)
+                    # Click derecho en Refinar → menú específico
+                    if text == "🔁 Refinar":
+                        btn.bind("<Button-3>", self._menu_refinar_especifico)
+
+        _render_grupos(row1, grupos_r1)
+
+        # ═══ BADGE DE COSTE (al final de fila 1) ═══
         self.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=10, weight="bold"),
                                        text_color="#22c55e", fg_color="transparent")
         self.lbl_coste.pack(side="left", padx=(4, 0))
 
-        # Índices reales de botones_r1:
-        # [0]💡 Ideas, [1]🎲, [2]✨ Generar, [3]🔄 Regenerar, [4]←, [5]→, [6]📊 Diff,
-        # [7]🔀 Variaciones, [8]👁 Analizar, [9]🎯 Img→Prompt, [10]🔍 Análisis Inv, [11]🧬 ADN Visual
-        self.btn_vision = self.action_btns[8]
-        self.btn_img_prompt = self.action_btns[9]
+        # Índices reales tras añadir Quick a fila 1:
+        # [0]💡 Ideas, [1]🎲, [2]✨ Generar, [3]🔄, [4]←, [5]→, [6]📊,
+        # [7]🔀 Variaciones, [8]🚀 Quick, [9]👁 Analizar, [10]🎯 Img→Prompt,
+        # [11]🔍 Análisis Inv, [12]🧬 ADN Visual
+        self.btn_vision = self.action_btns[9]
+        self.btn_img_prompt = self.action_btns[10]
 
         # Registrar callback para actualizar coste cuando cambie la idea
         self.txt_idea.bind("<<Modified>>", self._actualizar_coste_estimado)
 
         row2 = ctk.CTkFrame(outer, fg_color="transparent")
         row2.pack(fill="x")
-        for text, w, fg, cmd, tooltip in botones_r2:
-            kw = {"fg_color": fg, "hover_color": self._darker(fg)} if fg else {}
-            btn = ctk.CTkButton(row2, text=text, width=w, command=cmd, **btn_s, **kw)
-            btn.pack(side="left", padx=2)
-            CTkToolTip(btn, delay=0.5, message=tooltip)
-            self.action_btns.append(btn)
-            # Click derecho en Refinar → menú específico
-            if text == "🔁 Refinar":
-                btn.bind("<Button-3>", self._menu_refinar_especifico)
+        _render_grupos(row2, grupos_r2)
 
         btn_reset = ctk.CTkButton(row2, text="🗑 Reset", width=80, height=32, corner_radius=6,
                                    fg_color="#7f1d1d", hover_color="#5a1414",
