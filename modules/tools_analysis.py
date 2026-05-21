@@ -944,66 +944,98 @@ class ToolsAnalysisMixin:
         self.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
 
     def _abrir_seeds_favoritos(self):
-        """Ventana con seeds favoritos para aplicar."""
+        """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
         from tkinter import messagebox
         is_lt = ctk.get_appearance_mode().lower() == "light"
         from config import get_theme_colors
         c = get_theme_colors(is_lt)
 
-        prefs = self.store.cargar_preferencias()
-        seeds = prefs.get("seeds_favoritos", [])
-        if not seeds:
-            return self.set_estado("⚠️ No tienes seeds guardados.", "#e67e22")
-
         vent = GPromptWindow(self)
         vent.title("💎 Seeds favoritos")
-        vent.geometry("550x450")
+        vent.geometry("580x500")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="💎 Seeds favoritos", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
-        ctk.CTkLabel(vent, text="Guarda tu configuración y recupérala rápido", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+        ctk.CTkLabel(vent, text="💎 Seeds favoritos",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+        ctk.CTkLabel(vent, text="Guarda tu configuración y recupérala rápido",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
-        for i, seed in enumerate(seeds):
-            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
-            card.pack(fill="x", pady=4, padx=2)
-            ctk.CTkLabel(card, text=f"💎 {seed.get('nombre', '?')}", font=ctk.CTkFont(size=12, weight="bold"),
-                         text_color=c["hdr_text"]).pack(anchor="w", padx=12, pady=(8, 2))
+        def _refrescar():
+            for w in scroll.winfo_children():
+                w.destroy()
+            prefs = self.store.cargar_preferencias()
+            seeds = prefs.get("seeds_favoritos", [])
+            if not seeds:
+                ctk.CTkLabel(scroll,
+                             text="(sin seeds guardados — pulsa '+ Crear nuevo seed')",
+                             text_color=c["muted_text"]).pack(pady=30)
+                return
 
-            modelo = seed.get('modelo_img') or seed.get('modelo_vid') or '?'
-            ratio = seed.get('ratio') or ''
-            plataforma = seed.get('plataforma') or ''
-            estilos = ', '.join(seed.get('estilos', [])[:4]) or 'Sin estilos'
+            for i, seed in enumerate(seeds):
+                card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
+                card.pack(fill="x", pady=4, padx=2)
+                ctk.CTkLabel(card, text=f"💎 {seed.get('nombre', '?')}",
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=c["hdr_text"]).pack(anchor="w", padx=12, pady=(8, 2))
 
-            info = f"📱 {modelo}" + (f" | 📐 {ratio}" if ratio else "") + (f" | 🌐 {plataforma}" if plataforma else "")
-            ctk.CTkLabel(card, text=info, font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(anchor="w", padx=12)
-            ctk.CTkLabel(card, text=f"🎨 {estilos}", font=ctk.CTkFont(size=9), text_color=c["muted_text"]).pack(anchor="w", padx=12, pady=(2, 6))
+                modelo = seed.get('modelo_img') or seed.get('modelo_vid') or '?'
+                ratio = seed.get('ratio') or ''
+                plataforma = seed.get('plataforma') or ''
+                estilos_seed = seed.get('estilos', [])
+                if isinstance(estilos_seed, list):
+                    estilos_txt = ', '.join(estilos_seed[:4]) or 'Sin estilos'
+                else:
+                    estilos_txt = str(estilos_seed) or 'Sin estilos'
 
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(anchor="e", padx=10, pady=(0, 6))
+                info = f"📱 {modelo}"
+                if ratio: info += f" | 📐 {ratio}"
+                if plataforma: info += f" | 🌐 {plataforma}"
+                ctk.CTkLabel(card, text=info, font=ctk.CTkFont(size=10),
+                             text_color=c["muted_text"]).pack(anchor="w", padx=12)
+                ctk.CTkLabel(card, text=f"🎨 {estilos_txt}",
+                             font=ctk.CTkFont(size=9),
+                             text_color=c["muted_text"]
+                             ).pack(anchor="w", padx=12, pady=(2, 6))
 
-            def _aplicar(s=seed):
-                self._aplicar_seed(s)
-                vent.destroy()
+                btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+                btn_frame.pack(anchor="e", padx=10, pady=(0, 6))
 
-            def _borrar(idx=i):
-                if messagebox.askyesno("Borrar Seed", f"¿Borrar el seed '{seed.get('nombre', '?')}'?"):
-                    seeds_actuales = prefs.get("seeds_favoritos", [])
-                    if 0 <= idx < len(seeds_actuales):
-                        seeds_actuales.pop(idx)
-                        prefs["seeds_favoritos"] = seeds_actuales
-                        self.store.guardar_preferencias(prefs)
-                    vent.destroy()
+                def _aplicar(s=seed):
+                    self._aplicar_seed(s)
+                    vent.destroy()  # OK: tras aplicar tiene sentido cerrar
 
-            ctk.CTkButton(btn_frame, text="✅ Aplicar", width=90, height=26, fg_color="#1a7a3c",
-                          font=ctk.CTkFont(size=10), command=_aplicar).pack(side="left", padx=3)
-            ctk.CTkButton(btn_frame, text="🗑 Borrar", width=80, height=26, fg_color="#8b2020",
-                          font=ctk.CTkFont(size=10), command=_borrar).pack(side="left", padx=3)
+                def _borrar(idx=i, nombre=seed.get('nombre', '?')):
+                    if not messagebox.askyesno("Borrar Seed",
+                                               f"¿Borrar el seed '{nombre}'?",
+                                               parent=vent):
+                        return
+                    prefs_b = self.store.cargar_preferencias()
+                    seeds_act = prefs_b.get("seeds_favoritos", [])
+                    if 0 <= idx < len(seeds_act):
+                        seeds_act.pop(idx)
+                        prefs_b["seeds_favoritos"] = seeds_act
+                        self.store.guardar_preferencias(prefs_b)
+                    _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
+                    self.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
 
-        ctk.CTkButton(vent, text="➕ Crear nuevo seed", width=180, height=28, fg_color="#1a5a8a",
-                      command=self._guardar_seed_favorito).pack(pady=(5, 12))
+                ctk.CTkButton(btn_frame, text="✅ Aplicar", width=90, height=26,
+                              fg_color="#1a7a3c", font=ctk.CTkFont(size=10),
+                              command=_aplicar).pack(side="left", padx=3)
+                ctk.CTkButton(btn_frame, text="🗑 Borrar", width=80, height=26,
+                              fg_color="#8b2020", font=ctk.CTkFont(size=10),
+                              command=_borrar).pack(side="left", padx=3)
+
+        _refrescar()
+
+        ctk.CTkButton(vent, text="➕ Crear nuevo seed", width=180, height=28,
+                      fg_color="#1a5a8a",
+                      command=lambda: (self._guardar_seed_favorito(),
+                                       vent.after(300, _refrescar))
+                      ).pack(pady=(5, 12))
 
     def _aplicar_seed(self, seed):
         """Aplica una configuración guardada como seed."""
@@ -1032,12 +1064,18 @@ class ToolsAnalysisMixin:
             elif seed["modelo_img"]:
                 mensajes.append(f"Modelo '{seed['modelo_img']}' no disponible")
 
-        # Cargar modelo video
-        if seed.get("modelo_vid") and hasattr(self, 'combo_modelo_vid'):
-            valores_vid = list(self.combo_modelo_vid.cget("values") or [])
+        # Cargar modelo video — FIX: el widget se llama combo_modelo_video
+        # (no combo_modelo_vid), por lo que esta rama NUNCA se ejecutaba.
+        if seed.get("modelo_vid") and hasattr(self, 'combo_modelo_video'):
+            valores_vid = list(self.combo_modelo_video.cget("values") or [])
             if seed["modelo_vid"] in valores_vid:
-                self.modelo_vid_var.set(seed["modelo_vid"])
+                self.combo_modelo_video.set(seed["modelo_vid"])
+                if hasattr(self, '_on_motor_cambio'):
+                    try: self._on_motor_cambio(seed["modelo_vid"])
+                    except Exception as _e: logger.debug(f"[silent] {_e}")
                 aplicado = True
+            elif seed["modelo_vid"]:
+                mensajes.append(f"Modelo vídeo '{seed['modelo_vid']}' no disponible")
 
         # Cargar ratio
         if seed.get("ratio") and hasattr(self, 'combo_ratio'):

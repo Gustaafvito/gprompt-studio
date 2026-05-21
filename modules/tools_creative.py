@@ -481,105 +481,147 @@ class ToolsCreativeMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_ver_biblioteca_adn(self):
-        """Muestra la biblioteca de ADNs guardados."""
+        """Muestra la biblioteca de ADNs guardados, con refresh sin recargar."""
         prefs = self.store.cargar_preferencias()
         adns = prefs.get("adns_guardados", [])
-        
+
         if not adns:
             return self.set_estado("⚠️ No hay ADNs guardados.", "#e67e22")
-        
+
         vent = GPromptWindow(self)
         vent.title("📚 Biblioteca de ADNs")
-        vent.geometry("700x500")
+        vent.geometry("720x540")
         vent.transient(self)
-        
+
         is_light = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_light)
-        
-        # Header
+
+        # Header con contador dinámico
         hdr = ctk.CTkFrame(vent, fg_color=c["fg_dark"])
         hdr.pack(fill="x", padx=10, pady=10)
-        ctk.CTkLabel(hdr, text="🧬 ADNs Guardados", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
-        ctk.CTkLabel(hdr, text=f"{len(adns)} guardado(s)", text_color=c["muted_text"]).pack(side="right", padx=10)
-        
-        # Scroll frame para la lista
+        ctk.CTkLabel(hdr, text="🧬 ADNs Guardados",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        contador_var = ctk.StringVar(value=f"{len(adns)} guardado(s)")
+        ctk.CTkLabel(hdr, textvariable=contador_var,
+                     text_color=c["muted_text"]).pack(side="right", padx=10)
+
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
-        
-        for idx, item in enumerate(adns):
-            nombre = item.get("nombre", f"ADN {idx+1}")
-            fecha = item.get("fecha", "")
-            motor = item.get("motor", "")
-            adn_data = item.get("adn", {})
-            
-            # Obtener info del sujeto y estilo
-            sujeto = adn_data.get("sujeto", {})
-            if isinstance(sujeto, list):
-                sujeto = sujeto[0] if sujeto else {}
-            tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
-            
-            estilo = adn_data.get("estilo", {})
-            estetica = ""
-            if isinstance(estilo, dict):
-                estetica = estilo.get("estetica", "")
-            
-            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
-            card.pack(fill="x", pady=5)
-            
-            info_frame = ctk.CTkFrame(card, fg_color="transparent")
-            info_frame.pack(fill="x", padx=10, pady=8)
-            
-            ctk.CTkLabel(info_frame, text=nombre, font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-            ctk.CTkLabel(info_frame, text=f"{tipo} • {estetica}", text_color=c["muted_text"], font=ctk.CTkFont(size=11)).pack(anchor="w")
-            ctk.CTkLabel(info_frame, text=f"{fecha} • {motor}", text_color=c["muted_text"], font=ctk.CTkFont(size=10)).pack(anchor="w")
-            
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(fill="x", padx=10, pady=(0, 8))
-            
-            def _cargar(idx=idx, item=item):
-                # Mostrar el ADN en una ventana de solo lectura
-                ver = GPromptWindow(self)
-                ver.title(f"📋 {item.get('nombre', 'ADN')}")
-                ver.geometry("600x500")
-                ver.transient(self)
-                
-                import json
-                json_str = json.dumps(item.get("adn", {}), indent=2, ensure_ascii=False)
-                
-                txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(family="Consolas", size=11), wrap="none")
-                txt.pack(fill="both", expand=True, padx=10, pady=10)
-                txt.insert("1.0", json_str)
-                txt.configure(state="disabled")
-                
-                # Botón usar en idea
-                def _usar_en_idea():
-                    prompt = ", ".join([
-                        item["adn"].get("sujeto", {}).get("tipo", ""),
-                        item["adn"].get("estilo", {}).get("estetica", ""),
-                        item["adn"].get("iluminacion", {}).get("tipo", ""),
-                        item["adn"].get("escena", {}).get("ubicacion", "")
-                    ])
-                    self.txt_idea.delete("1.0", "end")
-                    self.txt_idea.insert("1.0", prompt)
-                    ver.destroy()
-                    self.set_estado(f"🧬 '{nombre}' cargado en idea", "#2ecc71")
-                
-                btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
-                btn_frame2.pack(pady=(0, 10))
-                ctk.CTkButton(btn_frame2, text="🎯 Usar en idea", command=_usar_en_idea).pack(side="left", padx=5)
-                ctk.CTkButton(btn_frame2, text="Cerrar", command=ver.destroy).pack(side="left", padx=5)
-            
-            def _borrar(idx=idx):
-                from tkinter import messagebox
-                if messagebox.askyesno("🗑 Eliminar", f"¿Borrar '{nombre}'?"):
-                    prefs = self.store.cargar_preferencias()
-                    prefs["adns_guardados"].pop(idx)
-                    self.store.guardar_preferencias(prefs)
-                    vent.destroy()
-                    self.set_estado(f"🧬 '{nombre}' eliminado", "#e67e22")
-            
-            ctk.CTkButton(btn_frame, text="👁 Ver", width=70, height=25, command=_cargar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="🗑", width=40, height=25, fg_color="#c0392b", hover_color="#e74c3c", command=_borrar).pack(side="right", padx=2)
+
+        def _refrescar():
+            """Repinta la lista sin cerrar la ventana."""
+            for w in scroll.winfo_children():
+                w.destroy()
+            prefs_act = self.store.cargar_preferencias()
+            adns_act = prefs_act.get("adns_guardados", [])
+            contador_var.set(f"{len(adns_act)} guardado(s)")
+
+            if not adns_act:
+                ctk.CTkLabel(scroll, text="(sin ADNs guardados)",
+                             text_color=c["muted_text"]).pack(pady=30)
+                return
+
+            for idx, item in enumerate(adns_act):
+                nombre = item.get("nombre", f"ADN {idx+1}")
+                fecha = item.get("fecha", "")
+                motor = item.get("motor", "")
+                adn_data = item.get("adn", {})
+
+                sujeto = adn_data.get("sujeto", {})
+                if isinstance(sujeto, list):
+                    sujeto = sujeto[0] if sujeto else {}
+                tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
+
+                estilo = adn_data.get("estilo", {})
+                estetica = estilo.get("estetica", "") if isinstance(estilo, dict) else ""
+
+                card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
+                card.pack(fill="x", pady=5)
+
+                info_frame = ctk.CTkFrame(card, fg_color="transparent")
+                info_frame.pack(fill="x", padx=10, pady=8)
+                ctk.CTkLabel(info_frame, text=nombre,
+                             font=ctk.CTkFont(weight="bold")).pack(anchor="w")
+                ctk.CTkLabel(info_frame, text=f"{tipo} • {estetica}",
+                             text_color=c["muted_text"],
+                             font=ctk.CTkFont(size=11)).pack(anchor="w")
+                ctk.CTkLabel(info_frame, text=f"{fecha} • {motor}",
+                             text_color=c["muted_text"],
+                             font=ctk.CTkFont(size=10)).pack(anchor="w")
+
+                btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+                btn_frame.pack(fill="x", padx=10, pady=(0, 8))
+
+                def _cargar(idx_l=idx, item_l=item, nombre_l=nombre):
+                    ver = GPromptWindow(self)
+                    ver.title(f"📋 {item_l.get('nombre', 'ADN')}")
+                    ver.geometry("620x520")
+                    ver.transient(self)
+
+                    import json
+                    json_str = json.dumps(item_l.get("adn", {}), indent=2, ensure_ascii=False)
+
+                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(family="Consolas", size=11),
+                                         wrap="none")
+                    txt.pack(fill="both", expand=True, padx=10, pady=10)
+                    txt.insert("1.0", json_str)
+                    txt.configure(state="disabled")
+
+                    def _usar_en_idea():
+                        # Construir prompt aprovechando más campos del ADN
+                        adn_obj = item_l.get("adn", {})
+                        partes = []
+                        def _add(seccion, campos):
+                            sec = adn_obj.get(seccion, {})
+                            if not isinstance(sec, dict):
+                                return
+                            for campo in campos:
+                                v = sec.get(campo)
+                                if v and isinstance(v, str):
+                                    partes.append(v)
+                        _add("sujeto", ["tipo", "rasgos"])
+                        _add("escena", ["ubicacion", "ambiente"])
+                        _add("iluminacion", ["tipo", "intensidad"])
+                        _add("estilo", ["estetica", "tecnica"])
+                        _add("camara", ["tipo_plano", "angulo"])
+                        _add("composicion", ["regla"])
+                        prompt = ", ".join(p for p in partes if p)
+                        if hasattr(self, "txt_idea"):
+                            self.txt_idea.delete("1.0", "end")
+                            self.txt_idea.insert("1.0", prompt)
+                        ver.destroy()
+                        self.set_estado(f"🧬 '{nombre_l}' cargado en idea ({len(partes)} campos)",
+                                        "#2ecc71")
+
+                    btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
+                    btn_frame2.pack(pady=(0, 10))
+                    ctk.CTkButton(btn_frame2, text="🎯 Usar en idea",
+                                  command=_usar_en_idea).pack(side="left", padx=5)
+                    ctk.CTkButton(btn_frame2, text="Cerrar",
+                                  command=ver.destroy).pack(side="left", padx=5)
+
+                def _borrar(idx_l=idx, nombre_l=nombre):
+                    from tkinter import messagebox
+                    if not messagebox.askyesno("Eliminar",
+                                               f"¿Borrar '{nombre_l}'?",
+                                               parent=vent):
+                        return
+                    prefs_b = self.store.cargar_preferencias()
+                    lst = prefs_b.get("adns_guardados", [])
+                    if 0 <= idx_l < len(lst):
+                        lst.pop(idx_l)
+                        prefs_b["adns_guardados"] = lst
+                        self.store.guardar_preferencias(prefs_b)
+                    _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
+                    self.set_estado(f"🧬 '{nombre_l}' eliminado", "#e67e22")
+
+                ctk.CTkButton(btn_frame, text="👁 Ver", width=70, height=25,
+                              command=_cargar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_frame, text="🗑", width=40, height=25,
+                              fg_color="#c0392b", hover_color="#e74c3c",
+                              command=_borrar).pack(side="right", padx=2)
+
+        _refrescar()
         
         # Cerrar
         ctk.CTkButton(vent, text="Cerrar", command=vent.destroy).pack(pady=10)

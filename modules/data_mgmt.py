@@ -329,8 +329,12 @@ class DataMgmtMixin:
             if not t or not e:
                 self.set_estado("⚠️ Trigger y expansión son obligatorios", "#e67e22")
                 return
-            if not t.replace("_", "").isalnum():
-                self.set_estado("⚠️ Trigger solo puede tener letras/números", "#e67e22")
+            # FIX: antes la validación rechazaba "mi-trigger" (con guion).
+            # Acepto letras, dígitos, guion bajo y guion medio.
+            import re as _re
+            if not _re.fullmatch(r'[a-z0-9_\-]+', t):
+                self.set_estado("⚠️ Trigger solo puede tener letras, números, _ o -",
+                                "#e67e22")
                 return
             prefs = self.store.cargar_preferencias()
             custom = prefs.get("snippets_expand", {}) or {}
