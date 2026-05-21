@@ -117,6 +117,33 @@ class DataStore:
         self.estrellas.clear()
         self._guardar("estrellas")
 
+    # ── Genérico: borrar una entrada por índice ───────────────────
+
+    @log_operation("borrar_entrada")
+    def borrar_entrada(self, coleccion: str, idx: int) -> bool:
+        """Borra una entrada por índice de la colección dada.
+
+        Args:
+            coleccion: nombre de la colección ("historial", "favoritos",
+                "estrellas", "loras", "personajes", "plantillas", "paletas")
+            idx: índice de la entrada a borrar
+        Returns:
+            True si se borró, False si el índice o colección no es válido.
+        """
+        if not hasattr(self, coleccion):
+            logger.warning(f"borrar_entrada: colección desconocida '{coleccion}'")
+            return False
+        lista = getattr(self, coleccion)
+        if not isinstance(lista, list) or not (0 <= idx < len(lista)):
+            return False
+        del lista[idx]
+        try:
+            self._guardar(coleccion)
+        except Exception as e:
+            logger.warning(f"borrar_entrada({coleccion}): _guardar falló: {e}")
+            return False
+        return True
+
     # ── Personajes ────────────────────────────────────────────────
 
     @log_operation("personajes.guardar")
