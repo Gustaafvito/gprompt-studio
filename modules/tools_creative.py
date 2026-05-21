@@ -2397,23 +2397,55 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
                 resp = limpiar_marcadores(resp)
 
-                bloques = self._parsear_bloques_numerados(resp)
-
-                bloques_limpios = []
+                # ── Parseo específico de "=== PROPUESTA N: Nombre === ... ──
+                # Captura: (numero, nombre, contenido) por cada bloque
                 import re
-                for b in bloques:
-                    m = re.search(r'(POSITIVE\s+PROMPT\s*:.*?)(?=\Z|===)', b, re.DOTALL | re.IGNORECASE)
-                    if m:
-                        bloques_limpios.append(m.group(1).strip())
-                    else:
-                        bloques_limpios.append(b)
+                # Permitimos ===, ##, **, o nada como delimitador alrededor
+                patron_propuesta = re.compile(
+                    r'(?:^|\n)\s*(?:===|\*\*|##)?\s*PROPUESTA\s+(\d+)\s*:?\s*([^\n=*#]*?)\s*(?:===|\*\*|##)?\s*\n'
+                    r'(.*?)(?=(?:\n\s*(?:===|\*\*|##)?\s*PROPUESTA\s+\d+)|\Z)',
+                    re.DOTALL | re.IGNORECASE,
+                )
+                propuestas: list[dict] = []
+                for m in patron_propuesta.finditer(resp):
+                    num = m.group(1).strip()
+                    nombre = (m.group(2) or "").strip(" :-—–[]")
+                    contenido = m.group(3).strip()
+                    # Extraer POSITIVE / NEGATIVE del contenido
+                    mp = re.search(r'POSITIVE\s+PROMPT\s*:?\s*(.+?)(?=\n\s*NEGATIVE\s+PROMPT\s*:|\Z)',
+                                   contenido, re.DOTALL | re.IGNORECASE)
+                    mn = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)\Z',
+                                   contenido, re.DOTALL | re.IGNORECASE)
+                    pos_txt = (mp.group(1).strip() if mp else contenido).strip().rstrip("=").strip()
+                    neg_txt = (mn.group(1).strip().rstrip("=").strip() if mn else "")
+                    propuestas.append({
+                        "num": num,
+                        "nombre": nombre or f"Propuesta {num}",
+                        "positive": pos_txt,
+                        "negative": neg_txt,
+                    })
 
-                if not bloques_limpios:
-                    bloques_limpios = bloques
+                # Fallback: si el LLM no respetó el formato, usar el parser legacy
+                if not propuestas:
+                    bloques = self._parsear_bloques_numerados(resp)
+                    for i, b in enumerate(bloques[:5], 1):
+                        mp = re.search(r'POSITIVE\s+PROMPT\s*:?\s*(.+?)(?=\n\s*NEGATIVE|\Z)',
+                                       b, re.DOTALL | re.IGNORECASE)
+                        mn = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)\Z',
+                                       b, re.DOTALL | re.IGNORECASE)
+                        propuestas.append({
+                            "num": str(i),
+                            "nombre": f"Propuesta {i}",
+                            "positive": mp.group(1).strip() if mp else b,
+                            "negative": mn.group(1).strip() if mn else "",
+                        })
 
                 def _mostrar():
-                    self._abrir_comparador_propuestas(bloques_limpios[:5], brief)
-                    self.set_estado(f"💼 {len(bloques_limpios)} propuestas profesionales generadas", "#2ecc71")
+                    self._abrir_comparador_propuestas(propuestas[:5], brief)
+                    self.set_estado(
+                        f"💼 {len(propuestas)} propuestas profesionales generadas",
+                        "#2ecc71",
+                    )
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
@@ -2424,17 +2456,44 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _abrir_comparador_propuestas(self, propuestas, brief=""):
-        """Muestra propuestas como cards interactivos con vista previa y copiar."""
+        """Muestra propuestas como cards interactivos.
+
+        Args:
+            propuestas: lista de dicts {num, nombre, positive, negative}
+                (formato nuevo). Si llega como lista de strings (formato
+                legacy), se reparsean al vuelo.
+            brief: texto del brief original (para mostrar en cabecera y
+                guardar con la propuesta como favorito).
+        """
         import re as _re
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
+
+        # Normalizar: aceptar list[str] legacy convirtiendo a dicts
+        propuestas_norm: list[dict] = []
+        for i, p in enumerate(propuestas, 1):
+            if isinstance(p, dict):
+                propuestas_norm.append(p)
+            else:
+                # Legacy: string. Extraer positive/negative al vuelo.
+                texto = str(p)
+                mp = _re.search(r'POSITIVE\s+PROMPT\s*:?\s*(.+?)(?=\n\s*NEGATIVE|\Z)',
+                                texto, _re.DOTALL | _re.IGNORECASE)
+                mn = _re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)\Z',
+                                texto, _re.DOTALL | _re.IGNORECASE)
+                propuestas_norm.append({
+                    "num": str(i),
+                    "nombre": f"Propuesta {i}",
+                    "positive": mp.group(1).strip() if mp else texto,
+                    "negative": mn.group(1).strip() if mn else "",
+                })
 
         vent = GPromptWindow(self)
         vent.title("💼 Propuestas profesionales")
         vent.geometry("900x720")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text=f"💼 {len(propuestas)} Propuestas para tu brief",
+        ctk.CTkLabel(vent, text=f"💼 {len(propuestas_norm)} Propuestas para tu brief",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
         ctk.CTkLabel(vent, text=f"Brief: {brief[:120]}{'...' if len(brief) > 120 else ''}",
                      font=ctk.CTkFont(size=9), text_color=c["muted_text"], wraplength=840
@@ -2446,24 +2505,12 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
         col_colors = ["#1a7a3c", "#1a4a7a", "#7a1a4a", "#7a4a1a", "#1a5a7a"]
 
-        def _extraer_nombre(prop):
-            m = _re.search(r'PROPUESTA\s+(\d+)', prop[:200], _re.IGNORECASE)
-            if m:
-                return f"Propuesta {m.group(1)}"
-            return "Propuesta sin nombre"
-
-        def _extraer_positivo(prop):
-            m = _re.search(r'POSITIVE\s+PROMPT\s*:\s*(.+?)(?=\Z|NEGATIVE)', prop, _re.DOTALL | _re.IGNORECASE)
-            return m.group(1).strip() if m else prop
-
-        def _extraer_negativo(prop):
-            m = _re.search(r'NEGATIVE\s+PROMPT\s*:\s*(.+?)(?=\Z)', prop, _re.DOTALL | _re.IGNORECASE)
-            return m.group(1).strip() if m else ""
-
-        for idx, prop in enumerate(propuestas):
-            nombre = _extraer_nombre(prop)
-            positivo = _extraer_positivo(prop)
-            negativo = _extraer_negativo(prop)
+        for idx, prop in enumerate(propuestas_norm):
+            num = prop.get("num") or str(idx + 1)
+            nombre_corto = prop.get("nombre") or f"Propuesta {num}"
+            titulo = f"Propuesta {num}: {nombre_corto}" if nombre_corto != f"Propuesta {num}" else nombre_corto
+            positivo = prop.get("positive", "")
+            negativo = prop.get("negative", "")
             preview = positivo[:150].replace("\n", " ") + ("..." if len(positivo) > 150 else "")
 
             card = ctk.CTkFrame(cards_frame, fg_color="#111820", corner_radius=10,
@@ -2472,7 +2519,9 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=12, pady=(8, 4))
-            ctk.CTkLabel(hdr, text=f"{emojis[idx]} {nombre}", font=ctk.CTkFont(size=13, weight="bold"),
+            emoji = emojis[idx] if idx < len(emojis) else "•"
+            ctk.CTkLabel(hdr, text=f"{emoji}  {titulo}",
+                         font=ctk.CTkFont(size=13, weight="bold"),
                          text_color=col_colors[idx % len(col_colors)]).pack(side="left")
 
             desc_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -2483,36 +2532,50 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
             if negativo:
                 neg_preview = negativo[:100].replace("\n", " ")
-                ctk.CTkLabel(desc_row, text=f"🔴 NEG: {neg_preview}...",
+                ctk.CTkLabel(desc_row, text=f"🔴 NEG: {neg_preview}…",
                              font=ctk.CTkFont(size=9), text_color="#ef4444",
                              anchor="w").pack(anchor="w", pady=(2, 0))
 
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=12, pady=(0, 8))
 
-            def _usar(p=positivo, n=negativo, nom=nombre):
+            def _usar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 self.actualizar_salida(completo)
                 self.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
                 vent.destroy()
 
-            def _copiar(p=positivo, n=negativo, nom=nombre):
+            def _copiar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 pyperclip.copy(completo)
                 self.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
 
-            def _guardar_prop(nom=nombre, p=positivo, neg=negativo, idx=idx):
-                if not hasattr(self.store, "propuestas"):
-                    self.store.propuestas = []
-                self.store.propuestas.append({
-                    "nombre": nom,
-                    "positive": p,
-                    "negative": neg,
-                    "brief": brief,
-                    "fecha": str(datetime.datetime.now())[:16]
-                })
-                self.store.guardar()
-                self.set_estado(f"💾 Propuesta '{nom}' guardada", "#2ecc71")
+            def _guardar_prop(nom=titulo, p=positivo, neg=negativo):
+                """Guarda como FAVORITO con marca de origen. Antes intentaba
+                guardar en self.store.propuestas que no existe + llamaba a
+                self.store.guardar() que no existe → crasheaba."""
+                completo = f"POSITIVE PROMPT: {p}"
+                if neg:
+                    completo += f"\nNEGATIVE PROMPT: {neg}"
+                try:
+                    self.store.agregar_favorito({
+                        "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        "modo":       self.modo_var.get() if hasattr(self, "modo_var") else "imagen",
+                        "plataforma": self.plataforma_var.get() if hasattr(self, "plataforma_var") else "",
+                        "estilos":    "",
+                        "ratio":      self.ratio_var.get() if hasattr(self, "ratio_var") else "",
+                        "nsfw":       False,
+                        "personaje":  "",
+                        "lora":       "",
+                        "destino":    "",
+                        "brief":      brief[:200],
+                        "origen":     "modo_cliente",
+                        "nombre":     nom,
+                        "contenido":  completo,
+                    })
+                    self.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
+                except Exception as e:
+                    self.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
 
             ctk.CTkButton(btn_row, text="✅ Usar propuesta", width=150, height=30, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
