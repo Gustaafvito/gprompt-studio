@@ -205,6 +205,22 @@ class UIBuildersMixin:
             CTkToolTip(self._btn_key, message="Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+
+        # ── Indicador de ADN visual activo ──
+        # Se muestra solo cuando hay self._anclaje_visual. Es un botón
+        # clicable que abre un menú con: ver / desactivar.
+        self._btn_adn = ctk.CTkButton(
+            frame_llm, text="🧬 ADN", width=70, height=28,
+            fg_color="#1a7a3c", hover_color="#145e2d",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=self._cmd_indicador_adn,
+        )
+        # No empaquetar todavía: solo se muestra si hay ADN activo
+        try:
+            CTkToolTip(self._btn_adn,
+                       message="ADN visual activo en próximas generaciones.\nClick para ver / desactivar.")
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
         # Botones gestión (derecha) — MENÚS DESPLEGABLES por grupo
         menu_style = {"height": 28, "font": ctk.CTkFont(size=11, weight="bold"), "corner_radius": 6,
                       "fg_color": btn_bg, "button_color": btn_bg, "button_hover_color": btn_hover,

@@ -1145,6 +1145,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 adn = self.deepseek.generar(peticion, temperature=0.2, max_tokens=800)
                 adn = limpiar_marcadores(adn).strip()
                 self._anclaje_visual = adn
+                if hasattr(self, "_actualizar_indicador_adn"):
+                    self.after(0, self._actualizar_indicador_adn)
                 self.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
 
                 def _mostrar():
@@ -1171,11 +1173,15 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
                     def _guardar_editado():
                         self._anclaje_visual = txt.get("1.0", "end").strip()
+                        if hasattr(self, "_actualizar_indicador_adn"):
+                            self._actualizar_indicador_adn()
                         vent2.destroy()
                         self.set_estado("🧬 ADN visual guardado y activo en próximas generaciones", "#2ecc71")
 
                     def _desactivar():
                         self._anclaje_visual = None
+                        if hasattr(self, "_actualizar_indicador_adn"):
+                            self._actualizar_indicador_adn()
                         vent2.destroy()
                         self.set_estado("🧬 ADN visual desactivado")
 
@@ -2372,17 +2378,46 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         def _actualizar_thumbs():
             for w in thumbs_area.winfo_children():
                 w.destroy()
-            lbl_count.configure(text=f"{len(archivos_state['rutas'])} imágenes seleccionadas")
-            for ruta in archivos_state["rutas"][:8]:
+            n = len(archivos_state['rutas'])
+            sufijo = " (máx 5 procesadas)" if n > 5 else ""
+            lbl_count.configure(text=f"{n} imágenes seleccionadas{sufijo}")
+            for i, ruta in enumerate(archivos_state["rutas"][:8]):
                 try:
                     from PIL import Image as _PIL
                     thumb = _PIL.Image.open(ruta).copy()
                     thumb.thumbnail((60, 60))
                     img_tk = ctk.CTkImage(thumb, size=(60, 60))
-                    lbl = ctk.CTkLabel(thumbs_area, image=img_tk, text="")
-                    lbl.pack(side="left", padx=2)
+
+                    # Frame contenedor por miniatura para superponer botón ❌
+                    cont = ctk.CTkFrame(thumbs_area, fg_color="transparent",
+                                        width=64, height=70)
+                    cont.pack(side="left", padx=2)
+                    cont.pack_propagate(False)
+                    lbl = ctk.CTkLabel(cont, image=img_tk, text="")
+                    lbl.place(x=0, y=4)
+
+                    def _quitar(idx=i):
+                        try:
+                            archivos_state["rutas"].pop(idx)
+                            _actualizar_thumbs()
+                        except Exception as e:
+                            logger.debug(f"_quitar thumb: {e}")
+
+                    btn_x = ctk.CTkButton(
+                        cont, text="✕", width=18, height=18,
+                        fg_color="#7a1a1a", hover_color="#5a0f0f",
+                        font=ctk.CTkFont(size=9, weight="bold"),
+                        corner_radius=9, border_width=0,
+                        command=_quitar,
+                    )
+                    btn_x.place(x=44, y=0)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
+            if n > 8:
+                ctk.CTkLabel(thumbs_area,
+                             text=f"+{n - 8} más",
+                             font=ctk.CTkFont(size=10),
+                             text_color=c["muted_text"]).pack(side="left", padx=4)
         def _anadir_mas():
             nuevas = filedialog.askopenfilenames(
                 title="Selecciona más imágenes",

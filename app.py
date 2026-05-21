@@ -630,6 +630,58 @@ class ArquitectoApp(
                 logger.debug(f"[silent] {_e}")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+
+    def _actualizar_indicador_adn(self):
+        """Muestra/oculta el botón 🧬 ADN en el header según haya ADN activo."""
+        try:
+            if not hasattr(self, "_btn_adn"):
+                return
+            if self._anclaje_visual:
+                if not self._btn_adn.winfo_ismapped():
+                    self._btn_adn.pack(side="left", padx=(8, 0))
+            else:
+                if self._btn_adn.winfo_ismapped():
+                    self._btn_adn.pack_forget()
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def _cmd_indicador_adn(self):
+        """Menú al pulsar el indicador 🧬 ADN: ver / desactivar."""
+        if not self._anclaje_visual:
+            self._actualizar_indicador_adn()
+            return
+        from modules.gprompt_window import GPromptWindow
+        win = GPromptWindow(self)
+        win.title("🧬 ADN visual activo")
+        win.geometry("520x400")
+        win.transient(self)
+
+        ctk.CTkLabel(win, text="🧬 ADN visual activo en próximas generaciones",
+                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
+
+        txt = ctk.CTkTextbox(win, font=ctk.CTkFont(size=11), wrap="word")
+        txt.pack(fill="both", expand=True, padx=15, pady=(0, 8))
+        txt.insert("1.0", self._anclaje_visual)
+        txt.configure(state="disabled")
+
+        btn_row = ctk.CTkFrame(win, fg_color="transparent")
+        btn_row.pack(pady=10)
+
+        def _desactivar():
+            self._anclaje_visual = None
+            self._actualizar_indicador_adn()
+            try:
+                self.show_toast("🧬 ADN visual desactivado", "#888")
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+            win.destroy()
+
+        ctk.CTkButton(btn_row, text="🚫 Desactivar ADN", width=160, height=30,
+                      fg_color="#7a1a1a", hover_color="#5a0f0f",
+                      command=_desactivar).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cerrar", width=100, height=30,
+                      fg_color="#444", hover_color="#555",
+                      command=win.destroy).pack(side="left", padx=4)
     def _backup_semanal_check(self):
         """Si han pasado >7 días desde el último backup, crea uno automático.
 

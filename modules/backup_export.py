@@ -438,84 +438,148 @@ class BackupExportMixin:
             }
         }, indent=2, ensure_ascii=False)
 
-        # ── Ventana con tabs ──────────────────────────────────────────
+        # ── Ventana con filtro por modo + cards ───────────────────────
 
         vent = GPromptWindow(self)
         vent.title("📤 Export CLI — múltiples formatos")
-        vent.geometry("780x620")
+        vent.geometry("820x680")
         vent.transient(self)
 
         ctk.CTkLabel(vent, text="📤 Export en múltiples formatos",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Selecciona la plataforma destino. Click en 'Copiar' para llevar al portapapeles.",
+        ctk.CTkLabel(vent,
+                     text="Filtra por modo y pulsa 📋 en la plataforma deseada.",
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
 
-        tabs = ctk.CTkTabview(vent, height=480)
-        tabs.pack(fill="both", expand=True, padx=12, pady=(0, 8))
-
+        # Formatos: (nombre, contenido, color, modo)
         formatos = [
-            ("🎨 Midjourney v6", mj, "#1a7a3c"),
-            ("🌸 Niji 6 (anime)", niji, "#a64aa6"),
-            ("⚡ FLUX Dev", flux_dev, "#7c3aed"),
-            ("⚡ FLUX Schnell", flux_schnell, "#9333ea"),
-            ("🤖 Grok / X", grok, "#1c1c1c"),
-            ("🖌 DALL-E 3", dalle, "#10a37f"),
-            ("✨ Leonardo.AI", f"POS: {leonardo_pos}\n\nNEG: {leonardo_neg}" if leonardo_neg else leonardo_pos, "#7b3aed"),
-            ("📝 Ideogram", ideogram, "#d97706"),
-            ("⚡ ComfyUI", comfyui, "#0891b2"),
-            ("🖥 Automatic1111", a1111, "#dc2626"),
-            ("🎯 SD genérico", sd, "#475569"),
-            ("🎬 Kling (vídeo)", kling_prompt, "#f59e0b"),
-            ("🎬 Seedance (vídeo)", seedance_prompt, "#eab308"),
-            ("🎵 Suno (audio)", suno_prompt, "#ec4899"),
-            ("📦 JSON (API)", json_payload, "#6366f1"),
+            ("🎨 Midjourney v6",     mj,            "#1a7a3c", "imagen"),
+            ("🌸 Niji 6 (anime)",    niji,          "#a64aa6", "imagen"),
+            ("⚡ FLUX Dev",          flux_dev,      "#7c3aed", "imagen"),
+            ("⚡ FLUX Schnell",      flux_schnell,  "#9333ea", "imagen"),
+            ("🤖 Grok / X",          grok,          "#1c1c1c", "imagen"),
+            ("🖌 DALL-E 3",          dalle,         "#10a37f", "imagen"),
+            ("✨ Leonardo.AI",
+             (f"POS: {leonardo_pos}\n\nNEG: {leonardo_neg}" if leonardo_neg else leonardo_pos),
+             "#7b3aed", "imagen"),
+            ("📝 Ideogram",          ideogram,      "#d97706", "imagen"),
+            ("⚡ ComfyUI",           comfyui,       "#0891b2", "imagen"),
+            ("🖥 Automatic1111",     a1111,         "#dc2626", "imagen"),
+            ("🎯 SD genérico",       sd,            "#475569", "imagen"),
+            ("🎬 Kling",             kling_prompt,  "#f59e0b", "video"),
+            ("🎬 Seedance",          seedance_prompt,"#eab308", "video"),
+            ("🎵 Suno",              suno_prompt,   "#ec4899", "audio"),
+            ("📦 JSON (API)",        json_payload,  "#6366f1", "todos"),
         ]
 
-        for nombre, contenido, color in formatos:
-            tab = tabs.add(nombre)
+        # Filtro arriba
+        filtro_row = ctk.CTkFrame(vent, fg_color="transparent")
+        filtro_row.pack(fill="x", padx=12, pady=(0, 4))
+        ctk.CTkLabel(filtro_row, text="Modo:").pack(side="left", padx=(0, 8))
+        modo_activo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
+        valor_inicial = {
+            "imagen": "🖼 Imagen", "video": "🎬 Vídeo", "audio": "🎵 Audio"
+        }.get(modo_activo, "🖼 Imagen")
+        filtro_var = ctk.StringVar(value=valor_inicial)
+        seg = ctk.CTkSegmentedButton(
+            filtro_row,
+            values=["🖼 Imagen", "🎬 Vídeo", "🎵 Audio", "📦 Todos"],
+            variable=filtro_var,
+            command=lambda _v: _render(),
+        )
+        seg.pack(side="left")
+        lbl_count = ctk.CTkLabel(filtro_row, text="", font=ctk.CTkFont(size=10),
+                                  text_color="#888")
+        lbl_count.pack(side="left", padx=10)
 
-            txt = ctk.CTkTextbox(tab, font=ctk.CTkFont(family="Consolas", size=10),
-                                  wrap="word", height=380)
-            txt.pack(fill="both", expand=True, padx=8, pady=(8, 4))
-            txt.insert("1.0", contenido)
+        # Área scrollable con las cards
+        scroll = ctk.CTkScrollableFrame(vent, fg_color=("#f3f4f6"
+                                                        if ctk.get_appearance_mode().lower() == "light"
+                                                        else "#0d1117"))
+        scroll.pack(fill="both", expand=True, padx=10, pady=(0, 8))
 
-            btn_row = ctk.CTkFrame(tab, fg_color="transparent")
-            btn_row.pack(fill="x", padx=8, pady=(0, 8))
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        bg_card = "#ffffff" if is_lt else "#1a1a2e"
+        text_main = "#111827" if is_lt else "#e5e7eb"
 
-            def _make_copy(c=contenido, n=nombre):
-                def _copiar():
-                    pyperclip.copy(c)
-                    self.set_estado(f"📋 {n} copiado al portapapeles", "#2ecc71")
-                    if hasattr(self, "show_toast"):
-                        try:
-                            self.show_toast(f"📋 Copiado: {n}", color, 1800)
-                        except Exception as _e:
-                            logger.debug(f"[silent] {_e}")
-                return _copiar
+        def _make_copy(c, n, color):
+            def _copiar():
+                pyperclip.copy(c)
+                self.set_estado(f"📋 {n} copiado", "#2ecc71")
+                if hasattr(self, "show_toast"):
+                    try:
+                        self.show_toast(f"📋 Copiado: {n}", color, 1800)
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+            return _copiar
 
-            ctk.CTkButton(btn_row, text=f"📋 Copiar {nombre}", width=200, height=32,
-                          fg_color=color, font=ctk.CTkFont(size=11, weight="bold"),
-                          command=_make_copy()).pack(side="left", padx=4)
+        def _render():
+            for w in scroll.winfo_children():
+                w.destroy()
+            label = filtro_var.get()
+            modo_sel = {
+                "🖼 Imagen": "imagen",
+                "🎬 Vídeo":  "video",
+                "🎵 Audio":  "audio",
+                "📦 Todos":  None,
+            }.get(label)
 
-            ctk.CTkLabel(btn_row, text=f"   {len(contenido)} chars",
-                          font=ctk.CTkFont(size=10), text_color="#888888").pack(side="left", padx=8)
+            filtrados = [f for f in formatos
+                         if modo_sel is None or f[3] in (modo_sel, "todos")]
+            lbl_count.configure(text=f"{len(filtrados)} formatos disponibles")
 
-        # Seleccionar Midjourney por defecto
-        try:
-            tabs.set("🎨 Midjourney v6")
-        except Exception as _e:
-            logger.debug(f"[silent] {_e}")
-        # ── Botón Copiar Todo ──────────────────────────────────────────
-        def _copiar_todo():
-            todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont, _ in formatos])
+            if not filtrados:
+                ctk.CTkLabel(scroll, text="(sin formatos para este modo)",
+                             text_color="#888").pack(pady=20)
+                return
+
+            for nombre, contenido, color, modo_fmt in filtrados:
+                card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=8)
+                card.pack(fill="x", padx=4, pady=4)
+
+                hdr = ctk.CTkFrame(card, fg_color="transparent")
+                hdr.pack(fill="x", padx=12, pady=(8, 4))
+                ctk.CTkLabel(hdr, text=nombre,
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=text_main).pack(side="left")
+                ctk.CTkLabel(hdr, text=f"{len(contenido)} chars",
+                             font=ctk.CTkFont(size=10),
+                             text_color="#888").pack(side="left", padx=10)
+                ctk.CTkButton(hdr, text="📋 Copiar", width=100, height=26,
+                              fg_color=color,
+                              font=ctk.CTkFont(size=10, weight="bold"),
+                              command=_make_copy(contenido, nombre, color)
+                              ).pack(side="right")
+
+                txt = ctk.CTkTextbox(card,
+                                     font=ctk.CTkFont(family="Consolas", size=10),
+                                     wrap="word", height=110,
+                                     fg_color=("#f9fafb" if is_lt else "#0f172a"),
+                                     text_color=text_main)
+                txt.pack(fill="x", padx=12, pady=(0, 10))
+                txt.insert("1.0", contenido)
+                txt.configure(state="disabled")
+
+        _render()
+
+        # ── Botón Copiar Todos (solo del filtro actual) ──
+        def _copiar_filtrados():
+            label = filtro_var.get()
+            modo_sel = {
+                "🖼 Imagen": "imagen", "🎬 Vídeo": "video",
+                "🎵 Audio": "audio", "📦 Todos": None
+            }.get(label)
+            filtrados = [(n, c) for n, c, _col, m in formatos
+                         if modo_sel is None or m in (modo_sel, "todos")]
+            todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
-            self.set_estado(f"📋 {len(formatos)} formatos copiados al portapapeles", "#2ecc71")
+            self.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
+                            "#2ecc71")
 
-        ctk.CTkButton(vent, text=f"📋 Copiar todos los formatos ({len(formatos)})",
-                      width=280, height=36, fg_color="#0f172a", hover_color="#1e293b",
-                      font=ctk.CTkFont(size=11, weight="bold"),
+        ctk.CTkButton(vent, text="📋 Copiar todos los del filtro actual",
+                      width=280, height=34, fg_color="#0f172a", hover_color="#1e293b",
                       text_color="#e2e8f0",
-                      command=_copiar_todo).pack(pady=(4, 12))
+                      command=_copiar_filtrados).pack(pady=(4, 12))
 
     def _cmd_busqueda_global(self):
         """Busca un término en TODAS las colecciones: historial, favoritos, estrellas, seeds, snippets, fórmulas."""
