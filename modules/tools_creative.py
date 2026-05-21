@@ -485,9 +485,6 @@ class ToolsCreativeMixin:
         prefs = self.store.cargar_preferencias()
         adns = prefs.get("adns_guardados", [])
 
-        if not adns:
-            return self.set_estado("⚠️ No hay ADNs guardados.", "#e67e22")
-
         vent = GPromptWindow(self)
         vent.title("📚 Biblioteca de ADNs")
         vent.geometry("720x540")
@@ -568,13 +565,18 @@ class ToolsCreativeMixin:
                 motor = item.get("motor", "")
                 adn_data = item.get("adn", {})
 
-                sujeto = adn_data.get("sujeto", {})
-                if isinstance(sujeto, list):
-                    sujeto = sujeto[0] if sujeto else {}
-                tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
-
-                estilo = adn_data.get("estilo", {})
-                estetica = estilo.get("estetica", "") if isinstance(estilo, dict) else ""
+                # ADN texto libre (guardado desde _cmd_anclaje_visual) vs ADN estructurado
+                es_texto_libre = isinstance(adn_data, dict) and "texto_libre" in adn_data
+                if es_texto_libre:
+                    texto_preview = (adn_data.get("texto_libre", "") or "").strip()[:80]
+                    tipo, estetica = "📝 Texto libre", texto_preview
+                else:
+                    sujeto = adn_data.get("sujeto", {}) if isinstance(adn_data, dict) else {}
+                    if isinstance(sujeto, list):
+                        sujeto = sujeto[0] if sujeto else {}
+                    tipo = sujeto.get("tipo", "") if isinstance(sujeto, dict) else ""
+                    estilo = adn_data.get("estilo", {}) if isinstance(adn_data, dict) else {}
+                    estetica = estilo.get("estetica", "") if isinstance(estilo, dict) else ""
 
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
                 card.pack(fill="x", pady=5)
@@ -609,8 +611,18 @@ class ToolsCreativeMixin:
                     txt.configure(state="disabled")
 
                     def _usar_en_idea():
-                        # Construir prompt aprovechando más campos del ADN
+                        # ADN texto libre: inserta el texto tal cual
                         adn_obj = item_l.get("adn", {})
+                        if isinstance(adn_obj, dict) and "texto_libre" in adn_obj:
+                            txt_libre = (adn_obj.get("texto_libre", "") or "").strip()
+                            if hasattr(self, "txt_idea") and txt_libre:
+                                self.txt_idea.delete("1.0", "end")
+                                self.txt_idea.insert("1.0", txt_libre)
+                            ver.destroy()
+                            self.set_estado(f"🧬 '{nombre_l}' cargado en idea (texto libre)",
+                                            "#2ecc71")
+                            return
+                        # ADN estructurado: construir prompt aprovechando campos
                         partes = []
                         def _add(seccion, campos):
                             sec = adn_obj.get(seccion, {})
@@ -663,9 +675,31 @@ class ToolsCreativeMixin:
                               command=_borrar).pack(side="right", padx=2)
 
         _refrescar()
-        
-        # Cerrar
-        ctk.CTkButton(vent, text="Cerrar", command=vent.destroy).pack(pady=10)
+
+        # ── Botones de acción ──
+        accion_frame = ctk.CTkFrame(vent, fg_color="transparent")
+        accion_frame.pack(pady=10)
+
+        def _crear_nuevo_adn():
+            # ADN se extrae de imagen: requiere imagen cargada.
+            if not getattr(self, "imagen_cargada", None):
+                self.set_estado(
+                    "⚠️ Carga una imagen en la pantalla principal y vuelve.",
+                    "#e67e22",
+                )
+                return
+            vent.destroy()
+            # _cmd_adn_visual abre su propio modal con botón "💾 Guardar".
+            self._cmd_adn_visual()
+
+        ctk.CTkButton(accion_frame, text="➕ Crear nuevo ADN",
+                      width=180, height=28, fg_color="#1a5a8a",
+                      command=_crear_nuevo_adn).pack(side="left", padx=4)
+        ctk.CTkButton(accion_frame, text="🔄 Refrescar", width=110, height=28,
+                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                      command=_refrescar).pack(side="left", padx=4)
+        ctk.CTkButton(accion_frame, text="Cerrar", width=110, height=28,
+                      command=vent.destroy).pack(side="left", padx=4)
 
     def _cmd_adn_visual(self):
         """Extrae ADN visual JSON estructurado de la imagen cargada."""
@@ -940,6 +974,10 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                                   fg_color="#1a7a3c", command=_usar_en_prompt).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="💾 Guardar ADN", width=110, height=30,
                                   command=_guardar_adn).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_frame, text="📚 Mi biblioteca", width=130, height=30,
+                                  fg_color="#4a1a6a", hover_color="#3a1050",
+                                  command=self._cmd_ver_biblioteca_adn
+                                  ).pack(side="left", padx=4)
 
                     # Botones de conversión por plataforma
                     plat_frame = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1269,18 +1307,42 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                         self.set_estado("🧬 ADN visual desactivado")
 
                     def _guardar_biblioteca():
-                        nombre = f"ADN {len(getattr(self.store, 'adns', []) or []) + 1}"
-                        adn_data = {"nombre": nombre, "adn": adn, "fecha": str(datetime.datetime.now())[:16]}
-                        if not hasattr(self.store, "adns"):
-                            self.store.adns = []
-                        self.store.adns.append(adn_data)
-                        self.store.guardar()
+                        # Persiste el ADN-texto en preferencias bajo
+                        # `adns_guardados` con marcador texto_libre, para que
+                        # la biblioteca pueda renderizarlo.
+                        from tkinter import simpledialog
+                        prefs_b = self.store.cargar_preferencias()
+                        adns_b = prefs_b.get("adns_guardados", []) or []
+                        if not isinstance(adns_b, list):
+                            adns_b = []
+                        sugerencia = f"ADN rasgos {len(adns_b) + 1}"
+                        nombre = simpledialog.askstring(
+                            "💾 Guardar ADN",
+                            "Nombre para este ADN:",
+                            initialvalue=sugerencia,
+                            parent=vent2,
+                        )
+                        if not nombre:
+                            return
+                        adn_text = txt.get("1.0", "end").strip()
+                        adns_b.append({
+                            "nombre": nombre.strip(),
+                            "adn": {"texto_libre": adn_text},
+                            "motor": motor,
+                            "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
+                        })
+                        prefs_b["adns_guardados"] = adns_b
+                        self.store.guardar_preferencias(prefs_b)
                         self.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="✅ Guardar y activar", width=150, height=30, fg_color="#1a7a3c",
                                   command=_guardar_editado).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="💾 Guardar en biblioteca", width=160, height=30, fg_color="#4a1a6a",
                                   command=_guardar_biblioteca).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_frame, text="📚 Ver biblioteca", width=130, height=30,
+                                  fg_color="#6a4a8a", hover_color="#503870",
+                                  command=self._cmd_ver_biblioteca_adn
+                                  ).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="🚫 Desactivar", width=100, height=30, fg_color="#5a1a1a",
                                   command=_desactivar).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="📋 Copiar", width=80, height=30,
@@ -2773,9 +2835,33 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 title="Selecciona más imágenes",
                 filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
             )
-            if nuevas:
-                archivos_state["rutas"].extend(nuevas)
+            if not nuevas:
+                return
+            # Validar cada archivo antes de añadirlo: las corruptas no entran
+            # silenciosamente, sino que se reportan al usuario.
+            from PIL import Image as _PIL_val, UnidentifiedImageError
+            import os
+            buenas, fallos = [], []
+            for ruta in nuevas:
+                try:
+                    with _PIL_val.open(ruta) as _im:
+                        _im.verify()
+                    buenas.append(ruta)
+                except (UnidentifiedImageError, OSError, Exception) as _e:
+                    fallos.append((os.path.basename(ruta), str(_e)[:60]))
+                    logger.debug(f"moodboard: imagen rechazada {ruta}: {_e}")
+            if buenas:
+                archivos_state["rutas"].extend(buenas)
                 _actualizar_thumbs()
+            if fallos:
+                detalle = "\n".join(f"• {n}: {err}" for n, err in fallos[:5])
+                mas = f"\n+{len(fallos)-5} más" if len(fallos) > 5 else ""
+                from tkinter import messagebox as _mb
+                _mb.showwarning(
+                    "Imágenes rechazadas",
+                    f"{len(fallos)} imagen(es) no se pudieron leer:\n\n{detalle}{mas}",
+                    parent=vent,
+                )
 
         def _limpiar():
             archivos_state["rutas"] = []
@@ -2801,17 +2887,30 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         lbl_prog.pack_forget()
 
         def _ejecutar_moodboard():
-            # Construir lista de imágenes
+            # Construir lista de imágenes. Si alguna falla al abrir (corrupta o
+            # ruta inválida) lo reportamos en vez de tragarlo silenciosamente.
             todas_imagenes = []
             if self.imagen_cargada:
                 todas_imagenes.append(self.imagen_cargada)
+            fallos_open = []
             if archivos_state["rutas"]:
-                try:
-                    from PIL import Image as _PIL2
-                    for ruta in archivos_state["rutas"][:5]:
+                from PIL import Image as _PIL2, UnidentifiedImageError
+                import os
+                for ruta in archivos_state["rutas"][:5]:
+                    try:
                         todas_imagenes.append(_PIL2.open(ruta))
-                except Exception as _e:
-                    logger.debug(f"[silent] {_e}")
+                    except (UnidentifiedImageError, OSError, Exception) as _e:
+                        fallos_open.append((os.path.basename(ruta), str(_e)[:60]))
+                        logger.debug(f"moodboard open {ruta}: {_e}")
+            if fallos_open:
+                detalle = "\n".join(f"• {n}: {err}" for n, err in fallos_open[:5])
+                from tkinter import messagebox as _mb
+                _mb.showwarning(
+                    "Imágenes no leídas",
+                    f"{len(fallos_open)} imagen(es) no se pudieron abrir y se "
+                    f"omitirán del análisis:\n\n{detalle}",
+                    parent=vent,
+                )
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
                 return self.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
@@ -2877,13 +2976,38 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                                 self.set_estado("🎭 Template aplicado", "#2ecc71")
 
                         def _guardar_estilo():
-                            nombre = f"Estilo Moodboard {len(self.store.personajes or []) + 1}"
-                            estilo_guardado = {"nombre": nombre, "descripcion": resp}
-                            if not hasattr(self.store, "estilos_guardados"):
-                                self.store.estilos_guardados = []
-                            self.store.estilos_guardados.append(estilo_guardado)
-                            self.store.guardar()
-                            self.set_estado(f"💾 Estilo '{nombre}' guardado", "#2ecc71")
+                            from tkinter import simpledialog
+                            import re as _re
+                            prefs_g = self.store.cargar_preferencias()
+                            estilos_g = prefs_g.get("estilos_moodboard", []) or []
+                            if not isinstance(estilos_g, list):
+                                estilos_g = []
+                            sugerencia = f"Estilo Moodboard {len(estilos_g) + 1}"
+                            nombre = simpledialog.askstring(
+                                "💾 Guardar estilo",
+                                "Nombre del estilo (lo verás en 📚 Mis estilos):",
+                                initialvalue=sugerencia,
+                                parent=vent2,
+                            )
+                            if not nombre:
+                                return
+                            nombre = nombre.strip()
+                            # Extraer template inglés para poder reaplicarlo después
+                            m_t = _re.search(
+                                r'PROMPT\s+TEMPLATE[^:]*:\s*(.+?)(?=\Z)',
+                                resp, _re.DOTALL | _re.IGNORECASE,
+                            )
+                            template = m_t.group(1).strip() if m_t else ""
+                            estilos_g.append({
+                                "nombre": nombre,
+                                "descripcion": resp,
+                                "template": template,
+                                "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
+                                "n_imagenes": len(descripciones),
+                            })
+                            prefs_g["estilos_moodboard"] = estilos_g
+                            self.store.guardar_preferencias(prefs_g)
+                            self.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
 
                         ctk.CTkButton(btn_row2, text="✅ Aplicar template", width=140, height=28,
                                       fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
@@ -2903,7 +3027,125 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
             threading.Thread(target=_trabajar, daemon=True).start()
 
-        ctk.CTkButton(vent, text="🎭 Analizar estilo común", width=240, height=38,
+        botones_finales = ctk.CTkFrame(vent, fg_color="transparent")
+        botones_finales.pack(pady=8)
+        ctk.CTkButton(botones_finales, text="🎭 Analizar estilo común",
+                      width=240, height=38,
                       fg_color="#a64aa6", hover_color="#7a2a7a",
                       font=ctk.CTkFont(size=12, weight="bold"),
-                      text_color="#ffffff", command=_ejecutar_moodboard).pack(pady=8)
+                      text_color="#ffffff",
+                      command=_ejecutar_moodboard).pack(side="left", padx=4)
+        ctk.CTkButton(botones_finales, text="📚 Mis estilos",
+                      width=140, height=38,
+                      fg_color="#4a1a6a", hover_color="#3a1050",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      text_color="#ffffff",
+                      command=lambda: self._abrir_biblioteca_estilos_moodboard(vent)
+                      ).pack(side="left", padx=4)
+
+    def _abrir_biblioteca_estilos_moodboard(self, parent_window=None):
+        """Biblioteca de estilos detectados con moodboard: aplicar / ver / borrar."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        win = GPromptWindow(parent_window or self)
+        win.title("📚 Mis estilos de moodboard")
+        win.geometry("640x560")
+        win.transient(parent_window or self)
+
+        ctk.CTkLabel(win, text="📚 Estilos detectados con moodboard",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+        cont_var = ctk.StringVar(value="")
+        ctk.CTkLabel(win, textvariable=cont_var,
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 6))
+
+        scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        def _refrescar():
+            for w in scroll.winfo_children():
+                w.destroy()
+            prefs_l = self.store.cargar_preferencias()
+            estilos = prefs_l.get("estilos_moodboard", []) or []
+            cont_var.set(f"{len(estilos)} estilo(s) guardado(s)")
+            if not estilos:
+                ctk.CTkLabel(
+                    scroll,
+                    text="No has guardado ningún estilo todavía.\n"
+                         "Analiza un moodboard y pulsa '💾 Guardar estilo'.",
+                    text_color=c["muted_text"], justify="center",
+                ).pack(pady=30)
+                return
+            for idx, est in enumerate(estilos):
+                card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
+                card.pack(fill="x", pady=4)
+                hdr = ctk.CTkFrame(card, fg_color="transparent")
+                hdr.pack(fill="x", padx=10, pady=(6, 2))
+                ctk.CTkLabel(hdr, text=est.get("nombre", f"Estilo {idx+1}"),
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=c["hdr_text"]).pack(side="left")
+                meta = f"  · {est.get('fecha','')}"
+                if est.get("n_imagenes"):
+                    meta += f"  · {est['n_imagenes']} img"
+                ctk.CTkLabel(hdr, text=meta,
+                             font=ctk.CTkFont(size=9),
+                             text_color=c["muted_text"]).pack(side="left")
+
+                tiene_template = bool(est.get("template", "").strip())
+
+                def _aplicar(e=est):
+                    tpl = e.get("template", "").strip()
+                    if not tpl:
+                        self.set_estado("⚠️ Este estilo no tiene template aplicable",
+                                        "#e67e22")
+                        return
+                    self.actualizar_salida(tpl)
+                    self.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
+                                    "#2ecc71")
+
+                def _ver(e=est):
+                    ver = GPromptWindow(win)
+                    ver.title(f"🎭 {e.get('nombre','Estilo')}")
+                    ver.geometry("680x500")
+                    ver.transient(win)
+                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(size=11), wrap="word")
+                    txt.pack(fill="both", expand=True, padx=10, pady=10)
+                    txt.insert("1.0", e.get("descripcion", ""))
+                    txt.configure(state="disabled")
+                    ctk.CTkButton(ver, text="Cerrar", command=ver.destroy
+                                  ).pack(pady=8)
+
+                def _borrar(i=idx, nombre=est.get("nombre","?")):
+                    from tkinter import messagebox as _mb
+                    if not _mb.askyesno("Confirmar",
+                                        f"¿Borrar estilo '{nombre}'?",
+                                        parent=win):
+                        return
+                    prefs_b = self.store.cargar_preferencias()
+                    lst = prefs_b.get("estilos_moodboard", []) or []
+                    if 0 <= i < len(lst):
+                        lst.pop(i)
+                        prefs_b["estilos_moodboard"] = lst
+                        self.store.guardar_preferencias(prefs_b)
+                    _refrescar()
+
+                btn_row = ctk.CTkFrame(card, fg_color="transparent")
+                btn_row.pack(fill="x", padx=10, pady=(4, 8))
+                ctk.CTkButton(btn_row, text="✅ Aplicar template",
+                              width=160, height=26,
+                              fg_color="#1a7a3c" if tiene_template else c["fg_dark"],
+                              state="normal" if tiene_template else "disabled",
+                              font=ctk.CTkFont(size=10),
+                              command=_aplicar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="👁 Ver análisis",
+                              width=120, height=26,
+                              font=ctk.CTkFont(size=10),
+                              command=_ver).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="🗑", width=40, height=26,
+                              fg_color="#7a1a1a", hover_color="#5a0f0f",
+                              command=_borrar).pack(side="right", padx=2)
+
+        _refrescar()
+        ctk.CTkButton(win, text="Cerrar", width=110, height=28,
+                      command=win.destroy).pack(pady=(0, 12))
