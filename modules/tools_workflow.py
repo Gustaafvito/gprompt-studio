@@ -1974,8 +1974,9 @@ class ToolsWorkflowMixin:
                             def _aplicar_y_cambiar_modelo(r2=r, m2=m):
                                 # Aplica el prompt al resultado Y cambia el
                                 # modelo activo en el combo correspondiente.
-                                # Antes solo aplicaba el texto sin actualizar
-                                # el modelo seleccionado en la UI principal.
+                                # La ventana NO se cierra: el usuario puede
+                                # seguir probando otros modelos del set sin
+                                # perder las opciones.
                                 modo_act = self.modo_var.get()
                                 try:
                                     if modo_act == "imagen" and hasattr(self, 'combo_modelo_imagen'):
@@ -1995,9 +1996,8 @@ class ToolsWorkflowMixin:
                                 except Exception as _e:
                                     logger.debug(f"[silent compar usar] {_e}")
                                 self.actualizar_salida(r2)
-                                vent.destroy()
                                 self.set_estado(
-                                    f"🏆 '{m2}' aplicado: modelo + prompt cargados",
+                                    f"🏆 '{m2}' aplicado — la ventana sigue abierta para probar otros",
                                     "#2ecc71")
 
                             cards[m]["btn_usar"].configure(

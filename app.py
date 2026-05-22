@@ -1498,6 +1498,10 @@ class ArquitectoApp(
         colores_header = ["#1a4a7a", "#1a7a3c", "#4a1a7a", "#7a3c1a", "#3a5a1a", "#7a1a4a", "#5a3c1a", "#1a5a5a"]
         tiene_neg = self._debe_mostrar_negatives()
 
+        # Refs compartidas entre todas las cards: cuando se aplica una,
+        # las demás se desmarcan visualmente.
+        cols_aplicadas_refs = {"all": []}
+
         for i, var in enumerate(variaciones):
             col = ctk.CTkFrame(frame_cols, fg_color=c["fg_frame"], corner_radius=8, width=col_width)
             col.pack(side="left", fill="y", padx=3, pady=2)
@@ -1546,10 +1550,54 @@ class ArquitectoApp(
                     pyperclip.copy(ng)
                     self.set_estado(f"✅ NEGATIVE #{n} copiado", "#2ecc71")
 
-            def _usar(v=var, n=i+1):
+            # Registrar esta card en el set compartido
+            cols_aplicadas_refs["all"].append((col, hdr, colores_header[i % len(colores_header)]))
+
+            def _usar(v=var, n=i+1, label=label_txt, col_ref=col, hdr_ref=hdr,
+                      hdr_color=colores_header[i % len(colores_header)]):
+                """Aplica al editor SIN cerrar la ventana del comparador.
+
+                - Cambia el combo del modelo activo si el label trae el
+                  nombre (formato "🏆 nombre" o el propio nombre limpio).
+                - Sobrescribe el resultado con el prompt de esta variante.
+                - Marca visualmente la card como "aplicada" y desmarca las
+                  demás. La ventana sigue abierta para que el usuario
+                  pueda probar otros modelos sin perder las opciones.
+                """
+                # Cambiar modelo activo si label es de tipo "🏆 ModeloX"
+                nombre_modelo = label
+                for prefijo in ("🏆 ", "🥇 ", "🥈 ", "🥉 "):
+                    if nombre_modelo.startswith(prefijo):
+                        nombre_modelo = nombre_modelo[len(prefijo):]
+                        break
+                modelo_aplicado = self._intentar_cambiar_modelo(nombre_modelo)
+
+                # Aplicar prompt al resultado
                 self.actualizar_salida(v)
-                vent.destroy()
-                self.set_estado(f"✅ Variación #{n} cargada", "#2ecc71")
+
+                # Marcar visualmente: cabecera dorada en la card aplicada
+                for prev_col, prev_hdr, prev_color in cols_aplicadas_refs.get("all", []):
+                    try:
+                        prev_col.configure(border_width=0)
+                        prev_hdr.configure(fg_color=prev_color)
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+                try:
+                    col_ref.configure(border_color="#fbbf24", border_width=3)
+                    hdr_ref.configure(fg_color="#fbbf24")
+                except Exception as _e:
+                    logger.debug(f"[silent] {_e}")
+
+                # Mensaje según si cambió el modelo o no
+                if modelo_aplicado:
+                    self.set_estado(
+                        f"🏆 Modelo '{modelo_aplicado}' + prompt cargados — "
+                        f"la ventana sigue abierta",
+                        "#2ecc71")
+                else:
+                    self.set_estado(
+                        f"✅ '{label}' cargada — la ventana sigue abierta",
+                        "#2ecc71")
 
             def _traducir(p=pos_text, lbl=lbl_trad):
                 lbl.pack(fill="x", pady=(6, 4))
@@ -1568,6 +1616,45 @@ class ArquitectoApp(
                 ctk.CTkButton(btn_row, text="🔴", width=30, height=24, fg_color="#5a1a1a", hover_color="#3a0f0f", command=_copiar_neg).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="🇪🇸", width=30, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
+
+        # Botón "Cerrar" en pie de ventana (la ventana ya no se cierra
+        # al pulsar "Usar" — el usuario decide cuándo cerrar).
+        ctk.CTkButton(vent, text="Cerrar comparador", width=180, height=32,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      command=vent.destroy).pack(pady=(0, 10))
+
+    def _intentar_cambiar_modelo(self, nombre_modelo):
+        """Cambia el combo del modelo activo si `nombre_modelo` existe en
+        la lista del modo actual. Devuelve el nombre aplicado o None.
+        Usado por el comparador para sincronizar modelo + prompt al pulsar
+        "Usar" en una card que pertenezca a un modelo específico.
+        """
+        if not nombre_modelo:
+            return None
+        nombre = nombre_modelo.strip()
+        modo = self.modo_var.get()
+        try:
+            if modo == "imagen" and hasattr(self, 'combo_modelo_imagen'):
+                valores = list(self.combo_modelo_imagen.cget("values") or [])
+                if nombre in valores:
+                    self.combo_modelo_imagen.set(nombre)
+                    if hasattr(self, '_on_modelo_imagen_cambio'):
+                        self._on_modelo_imagen_cambio()
+                    return nombre
+            elif modo == "video" and hasattr(self, 'combo_modelo_video'):
+                valores = list(self.combo_modelo_video.cget("values") or [])
+                if nombre in valores:
+                    self.combo_modelo_video.set(nombre)
+                    return nombre
+            elif modo == "audio" and hasattr(self, 'combo_modelo_audio'):
+                valores = list(self.combo_modelo_audio.cget("values") or [])
+                if nombre in valores:
+                    self.combo_modelo_audio.set(nombre)
+                    return nombre
+        except Exception as _e:
+            logger.debug(f"[silent _intentar_cambiar_modelo] {_e}")
+        return None
 
     def _setup_wizard(self):
         """Wizard de primera vez cuando faltan API keys. Devuelve True si se configuraron.
