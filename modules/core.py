@@ -1021,6 +1021,26 @@ class CoreMixin:
             self._construir_checkboxes(ESTILOS_IMAGEN)
             self._on_modelo_imagen_cambio()
 
+        # Habilitar/deshabilitar Story (solo IMAGEN) y Board (solo VÍDEO)
+        # según el modo activo, en lugar de mostrar un aviso después del click.
+        try:
+            if hasattr(self, 'btn_story'):
+                if modo == "imagen":
+                    self.btn_story.configure(state="normal", fg_color="#be185d",
+                                              text="🎞 Story")
+                else:
+                    self.btn_story.configure(state="disabled", fg_color="#3a3a3a",
+                                              text="🎞 Story")
+            if hasattr(self, 'btn_board'):
+                if modo == "video":
+                    self.btn_board.configure(state="normal", fg_color="#be185d",
+                                              text="📽 Board")
+                else:
+                    self.btn_board.configure(state="disabled", fg_color="#3a3a3a",
+                                              text="📽 Board")
+        except Exception as _e:
+            logger.debug(f"[silent on_modo_cambio btns] {_e}")
+
         self._on_plataforma_cambio()
         self._ocultar_ideas()
         self.reiniciar_memoria()

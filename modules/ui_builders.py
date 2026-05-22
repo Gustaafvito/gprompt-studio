@@ -1252,63 +1252,87 @@ class UIBuildersMixin:
                                 width=1, height=22)
             line.place(relx=0.5, rely=0.5, anchor="center")
 
+        # ═══ SISTEMA DE COLORES SEMÁNTICOS ═══
+        # 🟢 Verde:   genera output (Ideas, Generar, Quick, Variaciones, Regenerar)
+        # 🔵 Azul:    analiza input (Analizar, Img→Prompt, Análisis Inv)
+        # 🟣 Morado:  ADN visual (caso único, color propio)
+        # 🟣 Violeta: edita el output actual (Refinar, Copiloto)
+        # 🟠 Naranja: variantes múltiples del mismo prompt (Iterar, Pulse, Sugerir)
+        # 💗 Rosa:    multi-prompt narrativo (Mood, Story, Board, Walk)
+        # 🌐 Cyan:    conversiones entre formatos (→Vídeo, Compar modelos)
+        # ⚫ Gris:    outputs masivos / utilidades (Batch, Preview)
+        VERDE_INSP   = "#2a6a4a"   # Inspiración (variante apagada)
+        VERDE_FUERTE = "#1a8a3c"   # Generar principal
+        VERDE_SUB    = "#1a5a3c"   # Sub-acciones de Generar (←, →, etc.)
+        VERDE_CLARO  = "#2a8a4a"   # Variantes de Generar (Quick, Variaciones)
+        AZUL_ANAL    = "#1e3a8a"   # Análisis
+        AZUL_ANAL_2  = "#1e3a5f"   # Análisis Inverso (variante)
+        MORADO_ADN   = "#7c3aed"   # ADN Visual y edición
+        NARANJA_VAR  = "#d97706"   # Variantes naranja
+        ROSA_NARR    = "#be185d"   # Multi-prompt narrativo
+        CYAN_CONV    = "#0891b2"   # Conversiones
+        GRIS_UTIL    = "#475569"   # Utilidades
+
         # ═══ FILA 1 — grupos: Inspiración · Generación · Análisis · ADN ═══
-        # Cada sublista es un grupo visualmente separado.
-        # Quick va aquí (no en fila 2) porque es una variante de Generar.
         grupos_r1 = [
-            # Inspiración (verde claro)
+            # Inspiración (verde apagado)
             [
-                ("💡 Ideas",          100, "#2a6a4a", self.cmd_ideas,             "3 ideas creativas · Ctrl+I"),
-                ("🎲",                40,  "#3a6a4a", self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
+                ("💡 Ideas",          100, VERDE_INSP,   self.cmd_ideas,             "3 ideas creativas · Ctrl+I"),
+                ("🎲",                40,  VERDE_INSP,   self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
             ],
-            # Generación (verde fuerte = acción principal)
+            # Generación (verde fuerte principal · verde claro variantes · verde sub)
             [
-                ("✨ Generar",         110, "#1a8a3c", self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
-                ("🔄",                40,  "#1a8a3c", self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
-                ("←",                30,  "#1a5a3c", self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
-                ("→",                30,  "#1a5a3c", self._cmd_regenerar_adelante,"→ Versión siguiente de la regeneración"),
-                ("📊",               36,  "#1a5a3c", self._cmd_diff_versiones,   "Diff visual entre versiones (verde=añadido, rojo=quitado)"),
-                ("🔀 Variaciones",    115, "#2563eb", self.cmd_variaciones,       "3 versiones · Ctrl+Shift+Enter"),
-                ("🚀 Quick",           80, "#d97706", self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
+                ("✨ Generar",         110, VERDE_FUERTE, self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
+                ("🔄",                40,  VERDE_FUERTE, self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
+                ("←",                30,  VERDE_SUB,    self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
+                ("→",                30,  VERDE_SUB,    self._cmd_regenerar_adelante,"→ Versión siguiente de la regeneración"),
+                ("📊",               36,  VERDE_SUB,    self._cmd_diff_versiones,   "Diff visual entre versiones (verde=añadido, rojo=quitado)"),
+                ("🔀 Variaciones",    115, VERDE_CLARO,  self.cmd_variaciones,       "3 versiones · Ctrl+Shift+Enter"),
+                ("🚀 Quick",           80, VERDE_CLARO,  self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
             ],
             # Análisis (azul oscuro)
             [
-                ("👁 Analizar",       100, "#1e3a8a", self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
-                ("🎯 Img→Prompt",     110, "#1e3a8a", self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
-                ("🔍 Análisis Inv",   115, "#1e3a5f", self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
+                ("👁 Analizar",       100, AZUL_ANAL,    self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
+                ("🎯 Img→Prompt",     110, AZUL_ANAL,    self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
+                ("🔍 Análisis Inv",   115, AZUL_ANAL_2,  self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
             ],
             # ADN (morado)
             [
-                ("🧬 ADN Visual",     100, "#7c3aed", self._cmd_adn_visual,       "Análisis JSON estructurado"),
+                ("🧬 ADN Visual",     100, MORADO_ADN,   self._cmd_adn_visual,       "Análisis JSON estructurado"),
             ],
         ]
 
-        # ═══ FILA 2 — grupos: Edición · Variantes · Multi-prompt · Outputs ═══
+        # ═══ FILA 2 — grupos: Edición · Variantes · Multi-prompt narrativo · Conversiones · Utilidades ═══
+        # Iterar movido al grupo Variantes (junto a Pulse/Sugerir) porque
+        # también genera variantes múltiples del mismo prompt.
         grupos_r2 = [
-            # Edición (violeta)
+            # Edición del output actual (violeta)
             [
-                ("🔁 Refinar",         90, "#7c3aed", self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
-                ("💬 Copiloto",        95, "#7c3aed", self.cmd_copiloto,           "Chat para editar"),
-                ("🔂 Iterar",          80, "#d97706", self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
+                ("🔁 Refinar",         90, MORADO_ADN,   self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
+                ("💬 Copiloto",        95, MORADO_ADN,   self.cmd_copiloto,           "Chat para editar"),
             ],
-            # Variantes rápidas (naranja)
+            # Variantes múltiples (naranja)
             [
-                ("⚡ Pulse",           75, "#d97706", self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
-                ("🤖 Sugerir",         85, "#d97706", self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
+                ("🔂 Iterar",          80, NARANJA_VAR,  self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
+                ("⚡ Pulse",           75, NARANJA_VAR,  self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
+                ("🤖 Sugerir",         85, NARANJA_VAR,  self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             ],
-            # Multi-prompt creativo (rosa-fucsia)
+            # Multi-prompt narrativo (rosa)
             [
-                ("🎭 Mood",            70, "#be185d", self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
-                ("🎬 Story",           70, "#be185d", self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
-                ("📽 Board",           70, "#be185d", self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
-                ("🌀 Walk",            70, "#be185d", self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+                ("🎭 Mood",            70, ROSA_NARR,    self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
+                ("🎞 Story",           70, ROSA_NARR,    self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("📽 Board",           70, ROSA_NARR,    self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("🌀 Walk",            70, ROSA_NARR,    self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
             ],
-            # Outputs y conversiones (azul-gris / cyan)
+            # Conversiones (cyan)
             [
-                ("📦 Batch",           80, "#475569", self.cmd_batch,              "Generación masiva"),
-                ("👁️ Preview",        90, "#475569", self.cmd_previsualizar,      "Boceto rápido"),
-                ("🎬 →Vídeo",          85, "#0891b2", self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
-                ("🆚 Compar",          80, "#0891b2", self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
+                ("🎬 →Vídeo",          85, CYAN_CONV,    self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
+                ("🆚 Compar",          80, CYAN_CONV,    self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
+            ],
+            # Utilidades / outputs masivos (gris)
+            [
+                ("📦 Batch",           80, GRIS_UTIL,    self.cmd_batch,              "Generación masiva"),
+                ("🖼 Preview",         90, GRIS_UTIL,    self.cmd_previsualizar,      "Boceto rápido"),
             ],
         ]
 
@@ -1325,9 +1349,14 @@ class UIBuildersMixin:
                     btn.pack(side="left", padx=2)
                     CTkToolTip(btn, delay=0.5, message=tooltip)
                     self.action_btns.append(btn)
-                    # Click derecho en Refinar → menú específico
+                    # Refs por nombre para que _on_modo_cambio pueda
+                    # habilitar/deshabilitar botones según modo activo.
                     if text == "🔁 Refinar":
                         btn.bind("<Button-3>", self._menu_refinar_especifico)
+                    elif text == "🎞 Story":
+                        self.btn_story = btn
+                    elif text == "📽 Board":
+                        self.btn_board = btn
 
         _render_grupos(row1, grupos_r1)
 
