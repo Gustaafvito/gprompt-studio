@@ -1869,6 +1869,16 @@ class ArquitectoApp(
         ventana.destroy()
 
     def cmd_previsualizar(self):
+        """Preview con caché en memoria, URL Pollinations copiable y
+        botón para abrir en navegador.
+
+        Mejoras v2:
+        - Caché in-memory (max 20 entradas). Misma prompt → respuesta
+          instantánea sin llamar a la API.
+        - Ventana de preview muestra la URL Pollinations.
+        - Botones "🔗 Copiar URL" y "🌐 Abrir en navegador".
+        - Indica si viene de caché.
+        """
         prompt_actual = self.txt_salida.get("1.0", "end").strip()
 
         if not prompt_actual:
@@ -1880,43 +1890,50 @@ class ArquitectoApp(
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
+        # Inicializar caché si no existe
+        if not hasattr(self, "_preview_cache"):
+            self._preview_cache = {}  # key=hash → (image_pil, url, ts)
+
+        import urllib.parse
+        import hashlib
+
+        # Limpieza del prompt (idéntica a la original, necesaria también
+        # para el cache-key y la URL)
+        texto_limpio = prompt_actual.split("NEGATIVE PROMPT:")[0]
+        texto_limpio = texto_limpio.replace("PROMPT:", "").replace("POSITIVE PROMPT:", "")
+        texto_limpio = texto_limpio.replace("\n", " ").replace("\r", " ").replace("*", "")
+        texto_limpio = " ".join(texto_limpio.split())
+        if len(texto_limpio) > 400:
+            texto_limpio = texto_limpio[:400]
+        cache_key = hashlib.md5(texto_limpio.encode("utf-8")).hexdigest()
+
+        # Cache hit → mostrar instantáneamente
+        if cache_key in self._preview_cache:
+            image_pil, url_imagen, _ = self._preview_cache[cache_key]
+            from PIL import Image
+            img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
+            self._mostrar_preview_window(image_pil, img_ctk, url_imagen, desde_cache=True)
+            self.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
+            return
+
         self.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
         self.toggle_botones(False)
 
         def _worker():
             try:
-                import urllib.parse
                 import urllib.request
                 import io
                 import time
                 from PIL import Image
 
-                # 2. Limpieza EXTREMA del prompt para evitar que rompa la URL
-                texto_limpio = prompt_actual.split("NEGATIVE PROMPT:")[0]
-                texto_limpio = texto_limpio.replace("PROMPT:", "").replace("POSITIVE PROMPT:", "")
-
-                # Quitamos saltos de línea, retornos y asteriscos
-                texto_limpio = texto_limpio.replace("\n", " ").replace("\r", " ").replace("*", "")
-
-                # Quitamos espacios dobles
-                texto_limpio = " ".join(texto_limpio.split())
-
-                # Recortamos drásticamente a 400 caracteres. Para un boceto es más que suficiente 
-                # y evitamos que los servidores web colapsen por enlaces muy largos.
-                if len(texto_limpio) > 400:
-                    texto_limpio = texto_limpio[:400]
-
                 semilla = int(time.time())
                 prompt_codificado = urllib.parse.quote(texto_limpio)
-
                 url_imagen = f"https://image.pollinations.ai/prompt/{prompt_codificado}?width=512&height=512&nologo=true&seed={semilla}"
 
-                # Usamos un User-Agent estándar para que no nos bloqueen
                 req = urllib.request.Request(url_imagen, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=30) as response:
                     image_data = response.read()
 
-                # Verificamos que realmente sea una imagen y no una página de error
                 content_type = response.info().get_content_type()
                 if content_type not in ["image/jpeg", "image/png", "image/webp"]:
                     raise Exception("La API devolvió un formato incorrecto o está saturada.")
@@ -1924,22 +1941,17 @@ class ArquitectoApp(
                 image_pil = Image.open(io.BytesIO(image_data))
                 img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
 
+                # Guardar en caché — limitar a 20 entradas
+                if len(self._preview_cache) >= 20:
+                    oldest = min(self._preview_cache.items(), key=lambda kv: kv[1][2])
+                    del self._preview_cache[oldest[0]]
+                self._preview_cache[cache_key] = (image_pil, url_imagen, time.time())
+
                 def _mostrar_imagen():
-                    vent_previa = GPromptWindow(self)
-                    vent_previa.title("🎨 Previsualización Rápida")
-                    vent_previa.geometry("540x600")
-                    vent_previa.transient(self)
-
-                    lbl_img = ctk.CTkLabel(vent_previa, text="", image=img_ctk)
-                    lbl_img.pack(pady=(15, 10))
-
-                    btn_guardar = ctk.CTkButton(vent_previa, text="💾 Guardar Boceto", fg_color="#2ecc71", hover_color="#27ae60", 
-                                                command=lambda: self._guardar_boceto(image_pil))
-                    btn_guardar.pack(pady=5)
-
+                    self._mostrar_preview_window(image_pil, img_ctk, url_imagen,
+                                                  desde_cache=False)
                     self.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
                     self.toggle_botones(True)
-
                 self.after(0, _mostrar_imagen)
 
             except Exception as e:
@@ -1950,6 +1962,47 @@ class ArquitectoApp(
                 self.after(0, _mostrar_error)
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def _mostrar_preview_window(self, image_pil, img_ctk, url_imagen, desde_cache=False):
+        """Ventana de preview con imagen + URL + botones Guardar/Copiar/Abrir."""
+        import webbrowser
+        vent_previa = GPromptWindow(self)
+        vent_previa.title("🖼 Preview" + (" (caché)" if desde_cache else ""))
+        vent_previa.geometry("560x680")
+        vent_previa.transient(self)
+
+        lbl_img = ctk.CTkLabel(vent_previa, text="", image=img_ctk)
+        lbl_img.pack(pady=(15, 6))
+
+        if desde_cache:
+            ctk.CTkLabel(vent_previa, text="📥 Servido desde caché — instantáneo, sin llamada a la API",
+                         font=ctk.CTkFont(size=10, slant="italic"),
+                         text_color="#2ecc71").pack(pady=(0, 4))
+
+        # URL Pollinations (truncada para no romper layout)
+        url_corta = url_imagen if len(url_imagen) <= 80 else url_imagen[:77] + "..."
+        ctk.CTkLabel(vent_previa,
+                     text=f"🔗 URL: {url_corta}",
+                     font=ctk.CTkFont(family="Consolas", size=9),
+                     text_color="#888",
+                     wraplength=520, justify="left"
+                     ).pack(pady=(2, 8), padx=15)
+
+        btn_row = ctk.CTkFrame(vent_previa, fg_color="transparent")
+        btn_row.pack(pady=5)
+        ctk.CTkButton(btn_row, text="💾 Guardar boceto", width=140, height=30,
+                      fg_color="#2ecc71", hover_color="#27ae60",
+                      command=lambda: self._guardar_boceto(image_pil)
+                      ).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="🔗 Copiar URL", width=120, height=30,
+                      fg_color="#3498db", hover_color="#2876b8",
+                      command=lambda: (pyperclip.copy(url_imagen),
+                                       self.set_estado("📋 URL copiada", "#2ecc71"))
+                      ).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="🌐 Abrir en navegador", width=160, height=30,
+                      fg_color="#7c3aed", hover_color="#5d2ab5",
+                      command=lambda: webbrowser.open(url_imagen)
+                      ).pack(side="left", padx=4)
 
     def _guardar_boceto(self, image_pil):
         ruta = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg"), ("PNG files", "*.png")], title="Guardar boceto")

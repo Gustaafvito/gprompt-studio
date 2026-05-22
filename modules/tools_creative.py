@@ -58,23 +58,130 @@ class ToolsCreativeMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    PULSE_PRESET_3 = [
+        (0.3, "🎯 Conservador (T=0.3)"),
+        (0.6, "⚖️ Equilibrado (T=0.6)"),
+        (0.9, "🎨 Creativo (T=0.9)"),
+    ]
+    PULSE_PRESET_5 = [
+        (0.2, "🧊 Ultra estable (T=0.2)"),
+        (0.4, "🎯 Conservador (T=0.4)"),
+        (0.6, "⚖️ Equilibrado (T=0.6)"),
+        (0.8, "🎨 Creativo (T=0.8)"),
+        (1.0, "🔥 Máximo riesgo (T=1.0)"),
+    ]
+
     def _cmd_pulse(self):
-        """Modo Pulse: genera 3 prompts con distinta temperatura (0.3, 0.6, 0.9)."""
+        """Modo Pulse: configura N versiones con temperaturas distintas.
+
+        Mejoras v2:
+        - 3 modos: 3 niveles (default), 5 niveles, Personalizado (sliders).
+        - Recuerda la última configuración usada en preferencias.
+        """
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
-        try: self._sesion_log("⚡ Pulse: generó 3 versiones (conservador/equilibrado/creativo)")
+
+        # Cargar última configuración
+        prefs = self.store.cargar_preferencias()
+        ultima = prefs.get("pulse_config", {"modo": "3", "custom_temps": [0.3, 0.6, 0.9]})
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+        cfg = GPromptWindow(self)
+        cfg.title("⚡ Pulse — Configuración")
+        cfg.geometry("440x520")
+        cfg.transient(self)
+        cfg.grab_set()
+
+        ctk.CTkLabel(cfg, text="⚡ Pulse — Configuración",
+                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 4))
+        ctk.CTkLabel(cfg,
+                     text="Cada nivel = un prompt con distinta temperatura.\nMenor T = más consistente, mayor T = más creativo.",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     justify="center").pack(pady=(0, 12))
+
+        modo_var = ctk.StringVar(value=ultima.get("modo", "3"))
+
+        # Frame para sliders custom (visible solo si modo=custom)
+        custom_frame = ctk.CTkFrame(cfg, fg_color=c["fg_dark"], corner_radius=6)
+        custom_sliders = []
+
+        def _toggle_custom():
+            if modo_var.get() == "custom":
+                custom_frame.pack(fill="x", padx=20, pady=8)
+            else:
+                custom_frame.pack_forget()
+
+        for valor, label in [("3", "3 niveles (rápido): 0.3 · 0.6 · 0.9"),
+                              ("5", "5 niveles (completo): 0.2 → 1.0"),
+                              ("custom", "🎚 Personalizado (sliders abajo)")]:
+            ctk.CTkRadioButton(cfg, text=label, variable=modo_var, value=valor,
+                               command=_toggle_custom,
+                               font=ctk.CTkFont(size=11)
+                               ).pack(anchor="w", padx=30, pady=4)
+
+        # Sliders custom (3 sliders)
+        ctk.CTkLabel(custom_frame, text="Temperaturas custom (3 niveles):",
+                     font=ctk.CTkFont(size=10, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
+        temps_init = ultima.get("custom_temps", [0.3, 0.6, 0.9])
+        for i in range(3):
+            row = ctk.CTkFrame(custom_frame, fg_color="transparent")
+            row.pack(fill="x", padx=10, pady=2)
+            lbl_val = ctk.CTkLabel(row, text=f"T{i+1}: {temps_init[i]:.2f}",
+                                    width=70, font=ctk.CTkFont(family="Consolas", size=10))
+            lbl_val.pack(side="left", padx=(0, 6))
+            sl = ctk.CTkSlider(row, from_=0.1, to=1.5, number_of_steps=28)
+            sl.set(temps_init[i])
+            sl.configure(command=lambda v, l=lbl_val, idx=i:
+                          l.configure(text=f"T{idx+1}: {float(v):.2f}"))
+            sl.pack(side="left", fill="x", expand=True)
+            custom_sliders.append(sl)
+
+        _toggle_custom()
+
+        def _ejecutar():
+            modo_sel = modo_var.get()
+            if modo_sel == "3":
+                temperaturas = list(self.PULSE_PRESET_3)
+            elif modo_sel == "5":
+                temperaturas = list(self.PULSE_PRESET_5)
+            else:
+                temps_custom = [round(sl.get(), 2) for sl in custom_sliders]
+                temperaturas = [(t, f"🎚 Custom (T={t:.2f})") for t in temps_custom]
+            # Guardar config
+            prefs_g = self.store.cargar_preferencias()
+            prefs_g["pulse_config"] = {
+                "modo": modo_sel,
+                "custom_temps": [round(sl.get(), 2) for sl in custom_sliders],
+            }
+            self.store.guardar_preferencias(prefs_g)
+            cfg.destroy()
+            self._lanzar_pulse(idea, temperaturas)
+
+        btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
+        btn_row.pack(side="bottom", pady=(0, 15))
+        ctk.CTkButton(btn_row, text="▶ Generar", width=140, height=34,
+                      fg_color="#1a8a3c", hover_color="#127a30",
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      command=_ejecutar).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cancelar", width=100, height=34,
+                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                      command=cfg.destroy).pack(side="left", padx=4)
+
+        # Enter dispara generar
+        cfg.bind("<Return>", lambda _e: _ejecutar())
+
+    def _lanzar_pulse(self, idea, temperaturas):
+        """Ejecuta Pulse con la lista de (temp, label) elegida."""
+        try: self._sesion_log(f"⚡ Pulse: generó {len(temperaturas)} versiones")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("⚡ Pulse: generando 3 versiones (conservadora → creativa)...", "#f39c12")
+        self.set_estado(f"⚡ Pulse: generando {len(temperaturas)} versiones (T={temperaturas[0][0]:.1f} → T={temperaturas[-1][0]:.1f})...",
+                        "#f39c12")
         self.toggle_botones(False)
 
-        temperaturas = [
-            (0.3, "🎯 Conservador (T=0.3)"),
-            (0.6, "⚖️ Equilibrado (T=0.6)"),
-            (0.9, "🎨 Creativo (T=0.9)"),
-        ]
         resultados = {}
 
         def _generar(temp, label):
@@ -118,10 +225,12 @@ class ToolsCreativeMixin:
                     if label in resultados:
                         variantes.append(f"### {label} ###\n{resultados[label]}")
                 self._abrir_comparador(variantes)
-                self.set_estado("⚡ Pulse: 3 versiones listas — compara y elige", "#2ecc71")
+                n = len(temperaturas)
+                self.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
                 self.toggle_botones(True)
                 self._sonar_completado()
-                self._notificar_sistema("⚡ Pulse completado", "3 versiones del prompt listas para comparar")
+                self._notificar_sistema(f"⚡ Pulse completado",
+                                         f"{n} versiones del prompt listas para comparar")
             self.after(0, _mostrar)
 
         threading.Thread(target=_worker_all, daemon=True).start()

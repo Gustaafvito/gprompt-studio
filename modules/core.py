@@ -1394,6 +1394,13 @@ class CoreMixin:
                 setattr(self, attr, None)
 
     def _mostrar_ideas(self, ideas):
+        """Muestra las ideas como cards clicables.
+
+        Mejoras v2:
+        - Click en cualquier parte de la card = Apply (acción más esperada).
+        - Botón "🔁 Más" en el header → genera otras 3 ideas distintas.
+        - Botón "✨ Más como esta" por card → 3 ideas similares a esa.
+        """
         self._ocultar_ideas()
         if not ideas:
             return
@@ -1401,38 +1408,73 @@ class CoreMixin:
         ideas_frame = ctk.CTkFrame(self, fg_color="#e8e8e8" if is_lt else "#0f1318")
         ideas_frame.pack(pady=(6, 0), padx=16, fill="x", before=self.frame_entrada)
 
-        hdr = ctk.CTkFrame(ideas_frame, fg_color="#e0e0e0" if is_lt else "#1a2a1a", corner_radius=6, height=26)
+        hdr = ctk.CTkFrame(ideas_frame, fg_color="#e0e0e0" if is_lt else "#1a2a1a",
+                            corner_radius=6, height=30)
         hdr.pack(fill="x", pady=(0, 4), padx=4)
         hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text="Ideas — pulsa para copiar o generar:",
-                     font=ctk.CTkFont(size=11, weight="bold"), text_color="#f39c12").pack(side="left", padx=8)
-        btn_cerrar = ctk.CTkButton(hdr, text="X", width=22, height=20, fg_color="transparent",
+        ctk.CTkLabel(hdr, text="💡 Ideas — click en una para aplicarla",
+                     font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color="#f39c12").pack(side="left", padx=8)
+
+        # Botón "🔁 Más" — regenera otras 3 ideas distintas
+        ctk.CTkButton(hdr, text="🔁 Más", width=70, height=22,
+                      fg_color="#2a6a4a", hover_color="#1f5037",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=self.cmd_ideas).pack(side="right", padx=4)
+
+        btn_cerrar = ctk.CTkButton(hdr, text="✕", width=24, height=22,
+                                     fg_color="transparent",
                                      hover_color="#dc2626" if is_lt else "#3a1a1a",
                                      text_color="#6b7280" if is_lt else "#888888",
-                                     font=ctk.CTkFont(size=11), command=self._ocultar_ideas)
+                                     font=ctk.CTkFont(size=11),
+                                     command=self._ocultar_ideas)
         btn_cerrar.pack(side="right", padx=4)
-        btn_cerrar.bind("<Button-1>", lambda e: self._ocultar_ideas())
 
         for i, idea in enumerate(ideas):
             idea_texto = idea.strip()
-            card = ctk.CTkFrame(ideas_frame, fg_color="#f0f0f0" if is_lt else "#0f1620", corner_radius=6)
+            card_bg = "#f0f0f0" if is_lt else "#0f1620"
+            card_hover = "#e0e8f0" if is_lt else "#1a2438"
+            card = ctk.CTkFrame(ideas_frame, fg_color=card_bg, corner_radius=6,
+                                 cursor="hand2")
             card.pack(fill="x", pady=2, padx=4)
-            lbl = ctk.CTkLabel(card, text=f"#{i+1}: {idea_texto}", font=ctk.CTkFont(size=11),
+
+            lbl = ctk.CTkLabel(card, text=f"#{i+1}: {idea_texto}",
+                                font=ctk.CTkFont(size=11),
                                 anchor="w", justify="left", wraplength=900,
-                                text_color="#1f2937" if is_lt else "#e5e7eb")
+                                text_color="#1f2937" if is_lt else "#e5e7eb",
+                                cursor="hand2")
             lbl.pack(side="left", fill="x", expand=True, padx=8, pady=6)
             btn_frame = ctk.CTkFrame(card, fg_color="transparent")
             btn_frame.pack(side="right", padx=4, pady=4)
-
-            def _copiar(t=idea_texto, n=i+1):
-                pyperclip.copy(t)
-                self.set_estado(f" Idea #{n} copiada", "#2ecc71")
 
             def _aplicar(t=idea_texto, n=i+1):
                 self.txt_idea.delete("1.0", "end")
                 self.txt_idea.insert("1.0", t)
                 self._ocultar_ideas()
-                self.set_estado(f" Idea #{n} aplicada", "#3498db")
+                self.set_estado(f"💡 Idea #{n} aplicada — pulsa ✨ Generar", "#3498db")
+
+            def _copiar(t=idea_texto, n=i+1):
+                pyperclip.copy(t)
+                self.set_estado(f"📋 Idea #{n} copiada", "#2ecc71")
+
+            def _mas_como_esta(t=idea_texto):
+                """Pide 3 ideas SIMILARES a esta."""
+                self.set_estado("✨ Generando 3 ideas similares...", "#f39c12")
+                self.toggle_botones(False)
+                modo = self.modo_var.get()
+                tipo = "canción" if modo == "audio" else "vídeo" if modo == "video" else "imagen"
+                peticion = (
+                    f"Genera 3 IDEAS NUEVAS para {tipo} que sean SIMILARES en mood/temática a esta:\n\n"
+                    f"IDEA BASE: {t}\n\n"
+                    f"REGLAS:\n"
+                    f"- Mantén el mismo género/atmósfera/temática.\n"
+                    f"- Cambia detalles (sujeto exacto, escena, hora, paleta, encuadre).\n"
+                    f"- Estilos activos: {self.estilos_texto()}\n\n"
+                    f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
+                )
+                self._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
+                threading.Thread(target=self._worker_ia,
+                                 args=(peticion, True), daemon=True).start()
 
             def _generar(t=idea_texto):
                 self.txt_idea.delete("1.0", "end")
@@ -1440,14 +1482,29 @@ class CoreMixin:
                 self._ocultar_ideas()
                 self.cmd_prompt()
 
-            ctk.CTkButton(btn_frame, text="Copy", width=55, height=28, fg_color="#2563eb" if is_lt else "#1e3a8a",
-                          hover_color="#1d4ed8" if is_lt else "#162d49", font=ctk.CTkFont(size=10),
+            # Click en la card (label o frame) = Apply directo
+            for w in (card, lbl):
+                w.bind("<Button-1>",
+                       lambda _e, t=idea_texto, n=i+1: _aplicar(t, n))
+                # Hover sutil para indicar clickable
+                w.bind("<Enter>",
+                       lambda _e, cd=card: cd.configure(fg_color=card_hover))
+                w.bind("<Leave>",
+                       lambda _e, cd=card: cd.configure(fg_color=card_bg))
+
+            ctk.CTkButton(btn_frame, text="✨ Similares", width=85, height=26,
+                          fg_color="#7c3aed", hover_color="#5d2ab5",
+                          font=ctk.CTkFont(size=10),
+                          command=_mas_como_esta).pack(side="left", padx=2)
+            ctk.CTkButton(btn_frame, text="📋", width=32, height=26,
+                          fg_color="#2563eb" if is_lt else "#1e3a8a",
+                          hover_color="#1d4ed8" if is_lt else "#162d49",
+                          font=ctk.CTkFont(size=10),
                           command=_copiar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="Apply", width=55, height=28, fg_color="#7c3aed",
-                          hover_color="#5d2ab5", font=ctk.CTkFont(size=10),
-                          command=_aplicar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="Generate", width=70, height=28, fg_color="#15803d",
-                          hover_color="#166534" if is_lt else "#0d5026", font=ctk.CTkFont(size=10, weight="bold"),
+            ctk.CTkButton(btn_frame, text="🚀 Generar", width=85, height=26,
+                          fg_color="#15803d",
+                          hover_color="#166534" if is_lt else "#0d5026",
+                          font=ctk.CTkFont(size=10, weight="bold"),
                           command=_generar).pack(side="left", padx=2)
 
         self._ideas_frame = ideas_frame
