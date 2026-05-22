@@ -1528,76 +1528,131 @@ class CoreMixin:
         return resultado if len(resultado) > 1 else []
 
     def _mostrar_variaciones(self, variaciones):
-        if hasattr(self, '_variaciones_frame'):
-            try:
-                self._variaciones_frame.pack_forget()
-                for w in self._variaciones_frame.winfo_children(): w.destroy()
-                self._variaciones_frame.destroy()
-            except: pass
-            self._variaciones_frame = None
+        """Muestra las variaciones en un modal con cards visibles.
 
+        v2 — antes era un panel inline que comprimía `txt_salida` a 1 línea
+        ("se ve solo '1'") porque empujaba el layout. Ahora es un Toplevel
+        independiente con preview del contenido de cada variación + botones
+        Aplicar al resultado / Copiar todo / Copiar POS / Copiar NEG.
+        """
         if not variaciones:
             return
+        # Limpiar legacy panel inline si quedaba colgado de una versión anterior
+        if hasattr(self, '_variaciones_frame') and self._variaciones_frame:
+            try:
+                self._variaciones_frame.destroy()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+            self._variaciones_frame = None
+
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        vf = ctk.CTkFrame(self, fg_color="#e8e8e8" if is_lt else "#0f1318")
-        vf.pack(pady=(6, 0), padx=16, fill="x", before=self.frame_entrada)
+        from config import get_theme_colors
+        c = get_theme_colors(is_lt)
 
-        hdr = ctk.CTkFrame(vf, fg_color="#e0e0e0" if is_lt else "#1a2a1a", corner_radius=6, height=26)
-        hdr.pack(fill="x", pady=(0, 4), padx=4)
-        hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text="Variaciones — copia completo, solo POS o solo NEG:",
-                     font=ctk.CTkFont(size=11, weight="bold"), text_color="#f39c12").pack(side="left", padx=8)
-        btn_cerrar = ctk.CTkButton(hdr, text="X", width=22, height=20, fg_color="transparent",
-                                     hover_color="#dc2626" if is_lt else "#3a1a1a",
-                                     text_color="#6b7280" if is_lt else "#888888",
-                                     font=ctk.CTkFont(size=11), command=self._ocultar_ideas)
-        btn_cerrar.pack(side="right", padx=4)
+        vent = GPromptWindow(self)
+        vent.title("🔀 Variaciones — elige cuál usar")
+        vent.geometry("900x720")
+        vent.transient(self)
 
-        row1 = ctk.CTkFrame(vf, fg_color="transparent")
-        row1.pack(fill="x", pady=(0, 2), padx=4)
-        ctk.CTkLabel(row1, text="Copiar completo:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#f39c12").pack(side="left", padx=(4, 6))
-        colores = (
+        ctk.CTkLabel(vent, text="🔀 3 variaciones generadas",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 3))
+        ctk.CTkLabel(vent,
+                     text="Compara las 3 versiones · Pulsa ✅ Aplicar al resultado en la que más te guste",
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=12, pady=5)
+
+        # Colores para distinguir las cards
+        accent_colors = (
             ["#2563eb", "#15803d", "#7c3aed"] if is_lt else
-            ["#1a4a7a", "#1a7a3c", "#4a1a7a"]
+            ["#3b82f6", "#22c55e", "#a855f7"]
         )
-        for i, var in enumerate(variaciones):
-            def ct(v=var, n=i+1):
-                pyperclip.copy(v)
-                self.set_estado(f" Variacion #{n} copiada", "#2ecc71")
-            ctk.CTkButton(row1, text=f"#{i+1}", width=50, height=24, fg_color=colores[i % len(colores)],
-                          hover_color="#d1d5db" if is_lt else "#333333", font=ctk.CTkFont(size=11, weight="bold"), command=ct).pack(side="left", padx=2)
 
-        row2 = ctk.CTkFrame(vf, fg_color="transparent")
-        row2.pack(fill="x", pady=(0, 2), padx=4)
-        ctk.CTkLabel(row2, text="Solo POSITIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#2ecc71").pack(side="left", padx=(4, 6))
+        debe_mostrar_neg = self._debe_mostrar_negatives()
+
         for i, var in enumerate(variaciones):
-            def cp(v=var, n=i+1):
+            accent = accent_colors[i % len(accent_colors)]
+            card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8,
+                                 border_color=accent, border_width=2)
+            card.pack(fill="x", pady=6, padx=2)
+
+            hdr = ctk.CTkFrame(card, fg_color="transparent")
+            hdr.pack(fill="x", padx=10, pady=(8, 2))
+            ctk.CTkLabel(hdr, text=f"  Variación #{i+1}",
+                         font=ctk.CTkFont(size=12, weight="bold"),
+                         text_color=accent).pack(side="left")
+
+            # Stats: longitud y si tiene POSITIVE/NEGATIVE
+            pos_text = self._extraer_pos_de_bloque(var) or ""
+            neg_text = self._extraer_neg_de_bloque(var) or ""
+            stats = f"POS: {len(pos_text)} chars"
+            if neg_text:
+                stats += f" · NEG: {len(neg_text)} chars"
+            ctk.CTkLabel(hdr, text=stats,
+                         font=ctk.CTkFont(size=9, slant="italic"),
+                         text_color=c["muted_text"]).pack(side="left", padx=(10, 0))
+
+            # Preview del contenido (textbox con scroll propio)
+            preview = ctk.CTkTextbox(card,
+                                      font=ctk.CTkFont(family="Consolas", size=10),
+                                      wrap="word", height=120)
+            preview.pack(fill="x", padx=10, pady=(2, 6))
+            preview.insert("1.0", var)
+            preview.configure(state="disabled")
+
+            # Botones de acción por card
+            btn_row = ctk.CTkFrame(card, fg_color="transparent")
+            btn_row.pack(fill="x", padx=10, pady=(0, 8))
+
+            def _aplicar(v=var, n=i+1):
+                self.actualizar_salida(v)
+                vent.destroy()
+                self.set_estado(f"✅ Variación #{n} aplicada al resultado", "#2ecc71")
+
+            def _copiar_todo(v=var, n=i+1):
+                pyperclip.copy(v)
+                self.set_estado(f"📋 Variación #{n} copiada completa", "#2ecc71")
+
+            def _copiar_pos(v=var, n=i+1):
                 p = self._extraer_pos_de_bloque(v)
                 if p:
                     pyperclip.copy(p)
-                    self.set_estado(f" POSITIVE #{n} copiado", "#2ecc71")
+                    self.set_estado(f"📋 POSITIVE #{n} copiado", "#2ecc71")
                 else:
-                    self.set_estado(f" No se encontro POSITIVE en #{n}", "#e74c3c")
-            ctk.CTkButton(row2, text=f"#{i+1}", width=50, height=24, fg_color="#15803d" if is_lt else "#1a5a2a",
-                          hover_color="#166534" if is_lt else "#0f3a1a", font=ctk.CTkFont(size=11, weight="bold"), command=cp).pack(side="left", padx=2)
+                    self.set_estado(f"⚠️ No se encontró POSITIVE en #{n}", "#e74c3c")
 
-        if self._debe_mostrar_negatives():
-            row3 = ctk.CTkFrame(vf, fg_color="transparent")
-            row3.pack(fill="x", padx=4)
-            ctk.CTkLabel(row3, text="Solo NEGATIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#e74c3c").pack(side="left", padx=(4, 6))
-            for i, var in enumerate(variaciones):
-                def cn(v=var, n=i+1):
-                    n_text = self._extraer_neg_de_bloque(v)
-                    if n_text:
-                        pyperclip.copy(n_text)
-                        self.set_estado(f" NEGATIVE #{n} copiado", "#2ecc71")
-                    else:
-                        self.set_estado(f" No se encontro NEGATIVE en #{n}", "#e74c3c")
-                ctk.CTkButton(row3, text=f"#{i+1}", width=50, height=24, fg_color="#dc2626" if is_lt else "#5a1a1a",
-                              hover_color="#b91c1c" if is_lt else "#3a0f0f", font=ctk.CTkFont(size=11, weight="bold"), command=cn).pack(side="left", padx=2)
+            def _copiar_neg(v=var, n=i+1):
+                n_text = self._extraer_neg_de_bloque(v)
+                if n_text:
+                    pyperclip.copy(n_text)
+                    self.set_estado(f"📋 NEGATIVE #{n} copiado", "#2ecc71")
+                else:
+                    self.set_estado(f"⚠️ No se encontró NEGATIVE en #{n}", "#e74c3c")
 
-        self._variaciones_frame = vf
-        self.update()
+            ctk.CTkButton(btn_row, text="✅ Aplicar al resultado",
+                          width=170, height=28,
+                          fg_color="#1a8a3c", hover_color="#127a30",
+                          font=ctk.CTkFont(size=11, weight="bold"),
+                          command=_aplicar).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="📋 Todo", width=80, height=28,
+                          fg_color=accent, hover_color=self._darker(accent),
+                          font=ctk.CTkFont(size=10),
+                          command=_copiar_todo).pack(side="left", padx=2)
+            ctk.CTkButton(btn_row, text="📋 POS", width=80, height=28,
+                          fg_color="#15803d", hover_color="#0f5f29",
+                          font=ctk.CTkFont(size=10),
+                          command=_copiar_pos).pack(side="left", padx=2)
+            if debe_mostrar_neg:
+                ctk.CTkButton(btn_row, text="📋 NEG", width=80, height=28,
+                              fg_color="#dc2626", hover_color="#b91c1c",
+                              font=ctk.CTkFont(size=10),
+                              command=_copiar_neg).pack(side="left", padx=2)
+
+        # Cerrar
+        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+                      command=vent.destroy).pack(pady=(0, 12))
 
     def _extraer_pos_de_bloque(self, bloque):
         limpio = limpiar_marcadores(bloque)
@@ -1709,7 +1764,9 @@ class CoreMixin:
                     self.after(0, lambda: self.set_estado(f"⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)", "#f39c12"))
 
             self.guardar_en_historial(texto)
-            if not es_ideas:
+            # No sobrescribir el resultado con el texto crudo de las
+            # variaciones — esas se muestran en un modal con cards.
+            if not es_ideas and not es_variaciones:
                 self.after(0, lambda: self.actualizar_salida(texto))
             self.after(0, lambda: self.set_estado(f"✅ Completado ({cerebro_elegido}).", "#2ecc71"))
             self.after(0, lambda: self.toggle_botones(True))
