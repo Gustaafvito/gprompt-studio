@@ -2154,37 +2154,53 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                       command=_copiar).pack(side="left", padx=4)
 
     def _cmd_moodboard(self):
-        """Genera 6 prompts complementarios con mismo mood pero distintos sujetos."""
+        """Genera N prompts complementarios con mismo mood pero distintos sujetos.
+
+        v2: N configurable (4-10, default 6). Antes hardcoded a 6 sujetos
+        fijos (persona/paisaje/objeto/animal/arquitectura/macro). Ahora el
+        LLM elige los N sujetos diversos.
+        """
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
-        try: self._sesion_log("🎨 Mood: generó 6 prompts (mismo mood, distintos sujetos)")
+
+        n = self._pedir_n_modal(
+            "🎭 Mood — número de prompts",
+            "¿Cuántos prompts en el moodboard?\n"
+            "Comparten mood/atmósfera pero con sujetos distintos.",
+            n_min=4, n_max=10, default=6,
+            key_pref="moodboard_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"🎨 Mood: generó {n} prompts (mismo mood, distintos sujetos)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🎨 Generando moodboard de 6 prompts...", "#f39c12")
+        self.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
         self.toggle_botones(False)
 
+        formato_lineas = "\n---\n".join(
+            f"PROMPT {i+1}: [sujeto diverso] — POSITIVE: ... NEGATIVE: ..."
+            for i in range(n)
+        )
         peticion = (
-            f"Genera UN MOODBOARD: 6 prompts que comparten el MISMO MOOD/atmósfera pero con SUJETOS distintos.\n\n"
+            f"Genera UN MOODBOARD: {n} prompts que comparten el MISMO MOOD/atmósfera pero con SUJETOS distintos.\n\n"
             f"CONCEPTO/MOOD BASE: {idea}\n"
             f"ESTILOS: {self.estilos_texto()}\n\n"
             f"REGLAS:\n"
-            f"- Mantén la MISMA paleta, iluminación, atmósfera y estilo en todos.\n"
-            f"- Cambia el SUJETO en cada uno (1: persona, 2: paisaje, 3: objeto, 4: animal, 5: arquitectura, 6: detalle macro).\n"
+            f"- Mantén la MISMA paleta, iluminación, atmósfera y estilo en TODOS los {n}.\n"
+            f"- Cambia el SUJETO en cada uno (elige {n} categorías diversas: persona, "
+            f"paisaje, objeto, animal, arquitectura, detalle macro, vehículo, comida, etc.).\n"
             f"- Todos juntos deben formar una serie visualmente coherente.\n\n"
-            f"FORMATO:\n"
-            f"PROMPT 1: [persona] — POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"PROMPT 2: [paisaje] — POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"PROMPT 3: [objeto] — POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"PROMPT 4: [animal] — POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"PROMPT 5: [arquitectura] — POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"PROMPT 6: [macro/detalle] — POSITIVE: ... NEGATIVE: ..."
+            f"FORMATO ({n} prompts):\n{formato_lineas}"
         )
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=4000)
+                max_tok = min(8000, 1500 + n * 600)
+                resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
                 if len(bloques) < 2:
@@ -2193,7 +2209,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     return
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:6])
+                    self._abrir_comparador(bloques[:n])
                     self.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
@@ -2205,41 +2221,60 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_story_sequence(self):
-        """Genera 3 shots cinematográficos: Wide → Medium → Close-Up. Solo modo imagen."""
+        """Genera N shots cinematográficos coherentes. Solo modo imagen.
+
+        v2: N configurable (2-6, default 3). El LLM elige los tipos de
+        shot (W/M/C, plus POV, OTS, top-down, etc. si N>3).
+        """
         if self.modo_var.get() != "imagen":
             return self.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena base.", "#e67e22")
-        try: self._sesion_log("🎬 Story: generó 3 shots Wide/Medium/Close-Up")
+
+        n = self._pedir_n_modal(
+            "🎞 Story — número de shots",
+            "¿Cuántos shots cinematográficos de la misma escena?\n"
+            "Misma iluminación/paleta/sujeto · cambia solo el encuadre.",
+            n_min=2, n_max=6, default=3,
+            key_pref="story_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"🎬 Story: generó {n} shots cinematográficos")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🎬 Generando secuencia cinematográfica (Wide/Medium/Close)...", "#f39c12")
+        self.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
         self.toggle_botones(False)
 
+        formato_lineas = "\n---\n".join(
+            f"SHOT {i+1} (tipo de plano): POSITIVE: ... NEGATIVE: ... — Descripción del encuadre"
+            for i in range(n)
+        )
         peticion = (
-            f"Genera 3 SHOTS CINEMATOGRÁFICOS de la misma escena, manteniendo coherencia entre ellos.\n\n"
+            f"Genera {n} SHOTS CINEMATOGRÁFICOS de la misma escena, manteniendo coherencia.\n\n"
             f"ESCENA: {idea}\n"
             f"ESTILOS: {self.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- MISMO sujeto, MISMA iluminación, MISMA paleta, MISMA atmósfera.\n"
-            f"- Solo cambia el ENCUADRE/PLANO.\n\n"
-            f"FORMATO:\n"
-            f"SHOT 1 (WIDE / Plano amplio): POSITIVE: ... NEGATIVE: ... — Establece el lugar, sujeto pequeño en el frame, contexto amplio\n---\n"
-            f"SHOT 2 (MEDIUM / Plano medio): POSITIVE: ... NEGATIVE: ... — Sujeto de cintura para arriba, equilibrio sujeto-fondo\n---\n"
-            f"SHOT 3 (CLOSE-UP / Primer plano): POSITIVE: ... NEGATIVE: ... — Cara o detalle clave, máxima intimidad y emoción"
+            f"- Solo cambia el ENCUADRE/PLANO en cada uno.\n"
+            f"- Tipos sugeridos: Wide / Medium / Close-Up / POV / OTS / "
+            f"top-down / Dutch angle / Aerial. Elige {n} diversos.\n\n"
+            f"FORMATO ({n} shots):\n{formato_lineas}"
         )
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=3000)
+                max_tok = min(6000, 1200 + n * 600)
+                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:3])
-                    self.set_estado("🎬 Secuencia Wide/Medium/Close lista", "#2ecc71")
+                    self._abrir_comparador(bloques[:n])
+                    self.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
@@ -2250,43 +2285,61 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_storyboard_video(self):
-        """Para vídeo: 4 shots clave de la secuencia (apertura/mid/climax/cierre). Solo modo vídeo."""
+        """Para vídeo: N shots clave de la secuencia (apertura/desarrollo/climax/cierre).
+
+        v2: N configurable (3-8, default 4). El LLM distribuye los beats
+        de la microhistoria según el N elegido.
+        """
         if self.modo_var.get() != "video":
             return self.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
-        try: self._sesion_log("📽 Board: generó storyboard 4 shots (apertura/mid/climax/cierre)")
+
+        n = self._pedir_n_modal(
+            "📽 Board — número de frames",
+            "¿Cuántos frames clave en el storyboard?\n"
+            "Cuentan una microhistoria visual coherente.",
+            n_min=3, n_max=8, default=4,
+            key_pref="board_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"📽 Board: generó storyboard de {n} shots")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("📽 Generando storyboard de 4 shots...", "#f39c12")
+        self.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
         self.toggle_botones(False)
 
+        formato_lineas = "\n---\n".join(
+            f"FRAME {i+1} (rol narrativo): POSITIVE: ... NEGATIVE: ..."
+            for i in range(n)
+        )
         peticion = (
-            f"Genera un STORYBOARD DE 4 SHOTS para una secuencia de vídeo.\n\n"
+            f"Genera un STORYBOARD DE {n} SHOTS para una secuencia de vídeo.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
             f"ESTILOS: {self.estilos_texto()}\n\n"
             f"REGLAS:\n"
-            f"- Cuenta una microhistoria visual: apertura → desarrollo → climax → cierre.\n"
+            f"- Cuenta una microhistoria visual con {n} beats: apertura → "
+            f"desarrollo → (intensidad creciente) → climax → cierre.\n"
+            f"- Distribuye proporcionalmente los beats según el número {n}.\n"
             f"- MISMA paleta, iluminación coherente entre frames.\n"
             f"- Cada shot es un prompt de IMAGEN (para usar como key frame del vídeo).\n\n"
-            f"FORMATO:\n"
-            f"FRAME 1 (Apertura/Establishing): POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"FRAME 2 (Desarrollo): POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"FRAME 3 (Climax/Punto álgido): POSITIVE: ... NEGATIVE: ...\n---\n"
-            f"FRAME 4 (Cierre/Resolución): POSITIVE: ... NEGATIVE: ..."
+            f"FORMATO ({n} frames):\n{formato_lineas}"
         )
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=3500)
+                max_tok = min(7000, 1500 + n * 600)
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp)
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:4])
-                    self.set_estado("📽 Storyboard 4 frames listo", "#2ecc71")
+                    self._abrir_comparador(bloques[:n])
+                    self.set_estado(f"📽 Storyboard de {len(bloques)} frames listo", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
@@ -2297,23 +2350,39 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_random_walk(self):
-        """Toma el prompt actual y lo deriva 5 veces (cada output base del siguiente)."""
+        """Toma el prompt actual y lo deriva N veces secuencialmente.
+
+        v2: N configurable (3-10, default 5). Cada derivación es la base
+        de la siguiente, alejándose progresivamente del original.
+        """
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
-        try: self._sesion_log("🌀 Walk: random walk de 5 derivaciones evolutivas")
+
+        n = self._pedir_n_modal(
+            "🌀 Walk — número de derivaciones",
+            "¿Cuántas derivaciones evolutivas?\n"
+            "Cada una usa la anterior como base (cadena evolutiva).",
+            n_min=3, n_max=10, default=5,
+            key_pref="walk_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"🌀 Walk: random walk de {n} derivaciones evolutivas")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🌀 Random walk: derivando 5 veces...", "#f39c12")
+        self.set_estado(f"🌀 Random walk: derivando {n} veces...", "#f39c12")
         self.toggle_botones(False)
         evoluciones = [actual]
 
         def _worker():
             try:
                 base = actual
-                for i in range(5):
-                    self.after(0, lambda i=i: self.set_estado(f"🌀 Generando derivación {i+1}/5...", "#f39c12"))
+                for i in range(n):
+                    self.after(0, lambda i=i, n_=n: self.set_estado(
+                        f"🌀 Generando derivación {i+1}/{n_}...", "#f39c12"))
                     peticion = (
                         f"Toma este prompt y EVOLUCIONA hacia algo SIMILAR pero ligeramente distinto.\n"
                         f"Cambia 1-2 elementos (objeto, color, atmósfera, ángulo) pero mantén el espíritu.\n"
@@ -2329,7 +2398,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
                 def _mostrar():
                     self._abrir_comparador(evoluciones)
-                    self.set_estado(f"🌀 Random walk: 6 evoluciones (original + 5 derivaciones)", "#2ecc71")
+                    self.set_estado(f"🌀 Random walk: {len(evoluciones)} evoluciones (original + {n} derivaciones)", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
