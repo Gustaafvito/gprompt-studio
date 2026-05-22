@@ -1951,32 +1951,78 @@ class ToolsWorkflowMixin:
                     has_neg = specs.get("has_negative", True)
                     is_natural = specs.get("is_natural", False)
                     no_weights = specs.get("no_weights", False)
+                    best_for = specs.get("best_for", "")[:200] if specs else ""
 
                     if is_natural:
-                        tipo_format = "lenguaje natural descriptivo"
+                        tipo_format = "lenguaje natural descriptivo en una sola línea, sin saltos de línea"
                     elif no_weights:
-                        tipo_format = "tags limpios sin pesos numéricos"
+                        tipo_format = "tags separados por comas, sin pesos numéricos"
                     else:
-                        tipo_format = "tags con pesos (tag:1.2)"
+                        tipo_format = "tags separados por comas con pesos opcionales (tag:1.2)"
 
-                    aviso_neg = "Genera POSITIVE y NEGATIVE PROMPT." if has_neg else f"⛔ {modelo} NO usa NEGATIVE — solo POSITIVE PROMPT."
+                    # Petición ESTRICTA — antes el LLM mezclaba contenido entre
+                    # respuestas y a veces devolvía "Aquí tienes prompts para
+                    # varios modelos" o concatenaba múltiples bloques.
+                    if has_neg:
+                        estructura = (
+                            "DEVUELVE EXACTAMENTE 2 LÍNEAS, nada más:\n"
+                            "POSITIVE PROMPT: <prompt en una sola línea>\n"
+                            "NEGATIVE PROMPT: <negative en una sola línea>"
+                        )
+                    else:
+                        estructura = (
+                            "DEVUELVE EXACTAMENTE 1 LÍNEA, nada más:\n"
+                            "POSITIVE PROMPT: <prompt en una sola línea>"
+                        )
 
                     peticion = (
-                        f"Genera un prompt de {modo} para el modelo {modelo}.\n"
-                        f"Formato: {tipo_format}. Límite: {max_c} chars.\n"
-                        f"Idea del usuario: {idea}\n"
-                        f"{aviso_neg}\n"
-                        f"Estilos: {self.estilos_texto()}.\n"
-                        f"Responde SOLO con el prompt formateado, sin explicaciones."
+                        f"Genera UN prompt de {modo} optimizado para este modelo concreto:\n\n"
+                        f"MODELO: {modelo}\n"
+                        f"FORTALEZAS: {best_for}\n\n"
+                        f"IDEA: {idea}\n"
+                        f"ESTILOS A INCLUIR: {self.estilos_texto()}\n\n"
+                        f"REGLAS ESTRICTAS:\n"
+                        f"- Formato: {tipo_format}\n"
+                        f"- Límite POSITIVE: {max_c} caracteres\n"
+                        f"- NO menciones otros modelos en la respuesta\n"
+                        f"- NO añadas explicaciones tipo 'Aquí tienes...'\n"
+                        f"- NO añadas prosa descriptiva extra\n"
+                        f"- NO repitas la sección POSITIVE/NEGATIVE\n"
+                        f"- Aprovecha las fortalezas del modelo {modelo}\n\n"
+                        f"{estructura}"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
+                    resp = self.deepseek.generar(peticion, temperature=0.45, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
-                    if not has_neg:
-                        import re
-                        resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?(?=\n\s*(?:POSITIVE|─|$)|\Z)', '', resp, flags=re.DOTALL | re.IGNORECASE).strip()
+
+                    # Defensa client-side: extraer SOLO el primer bloque
+                    # POSITIVE [+ NEGATIVE], descartando todo lo demás.
+                    import re as _re
+                    m_pos = _re.search(
+                        r'(?:POSITIVE\s+)?PROMPT\s*:\s*(.+?)(?=\n\s*NEGATIVE\s+PROMPT\s*:|\n\s*POSITIVE\s+PROMPT\s*:|\n\s*###|\n\s*\*\*\*|\Z)',
+                        resp, flags=_re.DOTALL | _re.IGNORECASE)
+                    m_neg = _re.search(
+                        r'NEGATIVE\s+PROMPT\s*:\s*(.+?)(?=\n\s*POSITIVE\s+PROMPT\s*:|\n\s*NEGATIVE\s+PROMPT\s*:|\n\s*###|\n\s*\*\*\*|\Z)',
+                        resp, flags=_re.DOTALL | _re.IGNORECASE)
+                    if m_pos:
+                        pos_clean = " ".join(m_pos.group(1).split())
+                        # Truncar suave al límite del modelo (con margen)
+                        if isinstance(max_c, int) and len(pos_clean) > max_c + 200:
+                            pos_clean = pos_clean[:max_c + 200].rsplit(",", 1)[0]
+                        if has_neg and m_neg:
+                            neg_clean = " ".join(m_neg.group(1).split())
+                            resp = f"POSITIVE PROMPT: {pos_clean}\nNEGATIVE PROMPT: {neg_clean}"
+                        else:
+                            resp = f"POSITIVE PROMPT: {pos_clean}"
+                    else:
+                        # Sin marcador detectable: asumir todo es POSITIVE
+                        pos_clean = " ".join(resp.split())
+                        if isinstance(max_c, int) and len(pos_clean) > max_c + 200:
+                            pos_clean = pos_clean[:max_c + 200].rsplit(",", 1)[0]
+                        resp = f"POSITIVE PROMPT: {pos_clean}"
+
+                    # Eliminar pesos si el modelo no los soporta
                     if no_weights:
-                        import re
-                        resp = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', resp)
+                        resp = _re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', resp)
 
                     def _mostrar(r=resp, m=modelo, mc=max_c):
                         try:
