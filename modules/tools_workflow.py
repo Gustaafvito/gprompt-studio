@@ -1875,31 +1875,46 @@ class ToolsWorkflowMixin:
                       command=sel_vent.destroy).pack(side="left", padx=4)
 
     def _abrir_ventana_comparacion(self, idea, modo, modelos_compare):
-        """Ventana donde se muestran los 3 prompts generados."""
+        """Ventana donde se muestran los N prompts generados (N=2..5)."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
+        n_modelos = len(modelos_compare)
         vent = GPromptWindow(self)
-        vent.title("🆚 Comparativa de modelos")
-        vent.geometry("750x600")
+        vent.title(f"🆚 Comparativa de modelos ({n_modelos})")
+        # Tamaño dinámico: más alto si hay más modelos (cards apiladas)
+        alto = min(620 + max(0, n_modelos - 3) * 120, 950)
+        vent.geometry(f"820x{alto}")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="🆚 Comparativa de modelos", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text=f"🆚 Comparativa de {n_modelos} modelos",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=f"Idea: {idea[:80]}{'...' if len(idea) > 80 else ''}",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"], wraplength=700).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"], wraplength=780).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=(0, 5))
 
-        lbl_status = ctk.CTkLabel(vent, text="🔄 Generando para 3 modelos...",
+        lbl_status = ctk.CTkLabel(vent, text=f"🔄 Generando para {n_modelos} modelos...",
                                    font=ctk.CTkFont(size=11), text_color="#f39c12")
-        lbl_status.pack(pady=(0, 8))
+        lbl_status.pack(pady=(0, 4))
+
+        # Botón "Cerrar comparativa" — la ventana ya no se cierra al pulsar
+        # "Usar este (modelo+prompt)" en una card, así que el usuario
+        # necesita un botón explícito para cerrar cuando termine.
+        ctk.CTkButton(vent, text="Cerrar comparativa", width=180, height=30,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      command=vent.destroy).pack(pady=(0, 8))
 
         cards = {}
-        colores_hdr = ["#1a3a5a", "#1a5a3a", "#5a1a3a"]
+        # 5 colores cíclicos para soportar hasta 5 cards sin IndexError.
+        # Antes la lista era solo de 3 → IndexError al elegir 4-5 modelos.
+        colores_hdr = ["#1a3a5a", "#1a5a3a", "#5a1a3a", "#5a3a1a", "#3a1a5a"]
         for i, m in enumerate(modelos_compare):
             card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
             card.pack(fill="x", pady=4, padx=2)
-            hdr = ctk.CTkFrame(card, fg_color=colores_hdr[i], corner_radius=6, height=28)
+            hdr_color = colores_hdr[i % len(colores_hdr)]
+            hdr = ctk.CTkFrame(card, fg_color=hdr_color, corner_radius=6, height=28)
             hdr.pack(fill="x", padx=5, pady=(5, 3))
             hdr.pack_propagate(False)
 
@@ -1925,7 +1940,9 @@ class ToolsWorkflowMixin:
             btn_copiar.pack(side="left", padx=2)
             lbl_chars = ctk.CTkLabel(btn_row, text="", font=ctk.CTkFont(size=9), text_color=c["muted_text"])
             lbl_chars.pack(side="right", padx=4)
-            cards[m] = {"txt": txt, "btn_usar": btn_usar, "btn_copiar": btn_copiar, "lbl_chars": lbl_chars}
+            cards[m] = {"txt": txt, "btn_usar": btn_usar, "btn_copiar": btn_copiar,
+                        "lbl_chars": lbl_chars, "card": card, "hdr": hdr,
+                        "hdr_color": hdr_color}
 
             def _generar(modelo):
                 try:
@@ -1996,6 +2013,21 @@ class ToolsWorkflowMixin:
                                 except Exception as _e:
                                     logger.debug(f"[silent compar usar] {_e}")
                                 self.actualizar_salida(r2)
+
+                                # Highlight visual: borde dorado en la card aplicada,
+                                # las demás vuelven a su color original.
+                                for _m_key, _info in cards.items():
+                                    try:
+                                        if _m_key == m2:
+                                            _info["card"].configure(border_color="#fbbf24",
+                                                                     border_width=3)
+                                            _info["hdr"].configure(fg_color="#fbbf24")
+                                        else:
+                                            _info["card"].configure(border_width=0)
+                                            _info["hdr"].configure(fg_color=_info["hdr_color"])
+                                    except Exception as _e:
+                                        logger.debug(f"[silent highlight] {_e}")
+
                                 self.set_estado(
                                     f"🏆 '{m2}' aplicado — la ventana sigue abierta para probar otros",
                                     "#2ecc71")
