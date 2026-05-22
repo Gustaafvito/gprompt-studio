@@ -1,7 +1,12 @@
-# 🧾 Handoff — G-Prompt Studio (sesión 2)
+# 🧾 Handoff — G-Prompt Studio (sesión 2 + continuación)
 
-Documento de continuación. Esta es la **segunda** sesión después del HANDOFF original.
-Generado al final, working tree limpio.
+Documento de continuación. Tras la sesión 2 hubo una continuación con:
+- 4 detalles UX restantes del Workflow (commit `39232a7`)
+- Fusión con `HANDOFF2.md` (otro doc del usuario en carpeta paralela
+  `gprompt-studio 11.1`) — extraje lo aún válido y lo añadí en
+  **sección F** abajo.
+
+Working tree limpio cuando se generó.
 
 ---
 
@@ -10,7 +15,7 @@ Generado al final, working tree limpio.
 **G-Prompt Studio** — app de escritorio Python + customtkinter para generar
 prompts de IA generativa (imagen, vídeo, audio) con 14 LLMs como motores.
 
-**Working tree limpio.** **48/48 tests pasan.** Branch: `main`, **44 commits
+**Working tree limpio.** **48/48 tests pasan.** Branch: `main`, **46 commits
 adelante de `origin/main`** (no he hecho push).
 
 Estructura: ver `ESTRUCTURA.md`.
@@ -194,22 +199,19 @@ también desde Macros (`_cmd_iteracion` y derivadas) — no romper esa ruta.
 - Encadenar Board con **🎬 →Vídeo** automáticamente (generar prompt de
   vídeo que use esos N frames como keyframes).
 
-### B) Workflow — 5 detalles UX que se dejaron pasar
+### B) Workflow — 5 detalles UX  ✅ HECHO (commit `39232a7`)
 
-El usuario eligió "solo los 2 bugs 🔴" en la revisión del menú Workflow,
-pero estos 5 detalles UX/menores siguen pendientes (de la tabla del análisis):
+Los 6 detalles que estaban pendientes ya están todos cerrados:
 
-1. **🆚 A/B Testing**: comentario en chino mezclado en `_actualizar_checkboxes`
-   (línea 1575 de `tools_workflow.py`) — copy-paste stale. Limpieza trivial.
-2. **🔄 Macros sin editor**: solo se puede borrar+recrear, no editar.
-   Tampoco se pueden reordenar pasos.
-3. **🔎 Búsqueda global sin debounce**: cada tecla busca en 8 colecciones.
-4. **🔎 Búsqueda global sin filtro por tipo**: mucho ruido.
-5. **👥 Grupo personajes**: el textbox de "Relación" lleva ejemplo pre-poblado
-   que se cuela en la idea si el usuario no lo borra. Sustituir por
-   `placeholder` real del Textbox.
-6. **🎙 Grabar sesión**: dead code en `_iniciar_grabacion` líneas 1207-1217 —
-   rama `else` que duplica el "parar" del toggle. Limpieza trivial.
+1. ✅ **🆚 A/B Testing**: comentario chino eliminado + lógica de
+   deshabilitar checkboxes con N=2 arreglada (antes era no-op)
+2. ✅ **🔄 Macros**: editor inline (`✏️ Editar` en cada card carga al
+   form) + reordenar pasos (↑ ↓ ✕ por paso)
+3. ✅ **🔎 Búsqueda global**: debounce 250ms
+4. ✅ **🔎 Búsqueda global**: 8 checkboxes de filtro por tipo
+5. ✅ **👥 Grupo personajes**: fake placeholder con `<FocusIn>` /
+   `<FocusOut>` (CTkTextbox no tiene placeholder nativo)
+6. ✅ **🎙 Grabar sesión**: dead code en `_iniciar_grabacion` eliminado
 
 ### C) Botones de barra principal (no revisados a fondo todavía)
 
@@ -235,6 +237,104 @@ pero estos 5 detalles UX/menores siguen pendientes (de la tabla del análisis):
   y la descubribilidad depende del hover.
 - **Párrafo del modelo** (la descripción larga de "GPT Image 2..." debajo
   del combo Modelo) — colapsable o tooltip, hoy ocupa 6 líneas.
+
+### F) Mejoras de fondo / arquitectura — fusionadas desde HANDOFF2
+
+El usuario tenía un segundo doc (`gprompt-studio 11.1/HANDOFF2.md`)
+con análisis arquitectónico de toda la codebase. Lo descarté lo ya
+hecho (menús UI, Workflow, tests fallando, detalles HANDOFF original)
+y aquí está lo que SIGUE siendo válido y relevante:
+
+#### F1) Tests y CI/CD  🔴 ALTA prioridad real
+
+- **D1 GitHub Actions CI** — no hay CI. Crear `.github/workflows/ci.yml`
+  que ejecute pytest en Python 3.10/3.11/3.12 + Ruff lint. ~1 día.
+- **T1 Cobertura tests** — 48 tests cubren persistencia y workers
+  bien, pero 11 de 15 módulos sin un solo test. Lo más urgente:
+  añadir tests para `core.py` (2799 líneas, sin tests) — los workers
+  IA, la generación, los atajos críticos. ~3-5 días.
+- **T2 Tests de integración** — sin tests de flujos UI→worker→API.
+  Añadir `tests/test_integration.py` con mocks. ~2-3 días.
+
+#### F2) Linting y formateo  🟡 MEDIA
+
+- **D2 Ruff** — sin linter ni formateador. Estilo inconsistente.
+  Añadir Ruff a `pyproject.toml` y correrlo en toda la base. ~1 día.
+- **D3 Type hints** — ~30-50% del código sin type hints. Configurar
+  pyright en modo alerta. Incremental.
+- **D4 Pre-commit hooks** — `.pre-commit-config.yaml` con Ruff +
+  detectar secrets + tests básicos.
+
+#### F3) Archivos demasiado grandes  🟡 MEDIA
+
+8 archivos exceden 1000 líneas:
+
+| Archivo | Líneas | Propuesta de división |
+|---|---|---|
+| `modules/core.py` | 2,799 | `core_workers.py`, `core_commands.py`, `core_state.py` |
+| `modules/tools_creative.py` | 2,442 | `creative_moodboard.py`, `creative_adn.py`, `creative_negative.py`, `creative_palette.py` |
+| `modules/tools_workflow.py` | 1,937 | `workflow_macros.py`, `workflow_abtesting.py`, `workflow_cron.py`, `workflow_projects.py` |
+| `modules/ui_builders.py` | 1,923 | `ui_main_panels.py`, `ui_tabs.py`, `ui_widgets.py` |
+| `modules/dialogs.py` | 1,887 | `dialog_apikeys.py`, `dialog_preferences.py`, `dialog_dashboard.py`, `dialog_status.py` |
+| `app.py` | 1,599 | `app.py` (orq) + `app_install.py` |
+| `modules/data_mgmt.py` | 1,335 | `data_history.py`, `data_favorites.py`, `data_stars.py`, `data_templates.py` |
+| `modules/tools_analysis.py` | 1,309 | `analysis_stats.py`, `analysis_scoring.py`, `analysis_improve.py`, `analysis_tutorial.py` |
+
+**Aviso**: la propuesta de división del HANDOFF2 puede no encajar
+siempre — algunas funciones se llaman entre sí. Validar cada partición
+con smoke tests antes de continuar. Empezar por `core.py`.
+
+#### F4) Arquitectura  🟡 MEDIA (refactor mayor, riesgo alto)
+
+- **A1 Migrar de Mixins a Composición pura** — `ArquitectoApp` hereda
+  de 8 mixins. Ya hay `components.py` con proxies, pero los mixins
+  siguen heredados. Eliminar la herencia y migrar todo el acceso a
+  componentes. ~5-10 días, alto riesgo. Hacer por fases.
+- **A2 Unificar convención** — coexisten `self.cmd_x()` y
+  `self.creative.cmd_x()`. Estandarizar a la forma componente.
+- **A5 GPromptWindow expandida** — añadir patrones comunes
+  (auto-centrado, bind Escape global, confirmación al cerrar con
+  cambios).
+
+#### F5) Seguridad  🟡 MEDIA
+
+- **S1 keys.json texto plano** — el fallback cuando no hay OS Keyring
+  guarda las API keys en texto plano. Considerar encriptación básica
+  (XOR + salt) o exigir Keyring. ~1 día.
+- **S2 Validación inputs** — sin sanitización de prompts antes de
+  enviar a APIs externas. Longitud máxima y caracteres problemáticos.
+
+#### F6) Rendimiento  🟢 BAJA
+
+- **R1 Carga lazy JSON** — `data/*.json` se cargan en `config.py` en
+  import. Cargar bajo demanda con `@cached_property`.
+- **R2 Límite workers simultáneos** — sin semáforo, threads se
+  acumulan si el usuario hace muchas generaciones rápidas. Pool de 3.
+- **R3 Virtual scrolling** — historial/favoritos/estrellas cargan
+  TODOS los elementos. Con 500+ degrada. Implementar virtualización.
+
+#### F7) UI/UX polish  🟢 BAJA
+
+- **U4 Monkey-patch CTkToolTip** — `main.py` tiene ~20 líneas de
+  monkey-patch para CTkToolTip. Crear una clase envoltorio propia
+  (`GPromptToolTip`) que herede de CTkToolTip con el fix integrado.
+- **U5 i18n** — toda la UI en español. Sistema de traducciones con
+  `.json` por idioma. Bajo prio.
+
+#### F8) Features nuevas  🟢 BAJA
+
+- **F3 Undo/Redo** en `txt_salida` — sin Ctrl+Z hoy. Tk Text widget
+  tiene `undo=True` nativo. **Fácil win**, ~30 min.
+- **F4 Exportar a más formatos** — solo CSV hoy. Aprovechar el
+  selector de colecciones de `backup_export.py` y añadir JSON,
+  Markdown, PDF. ~1-2 días.
+- **F5 Diff visual entre versiones** — ya existe `_cmd_diff_versiones`,
+  podría hacerse más visible o integrarse mejor con
+  `_versiones_prompt`.
+- **F1 Plugin system** — cargar archivos Python en
+  `~/.arquitecto_prompts/plugins/` dinámicamente. Ambicioso.
+- **F2 Modo servidor / API REST** — Flask/FastAPI en thread aparte
+  para automatizaciones desde scripts. Ambicioso.
 
 ---
 
