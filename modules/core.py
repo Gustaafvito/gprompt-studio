@@ -1959,27 +1959,119 @@ class CoreMixin:
             self.after(0, lambda: self.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
             self.after(0, lambda: self.toggle_botones(True))
 
+    def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
+                        key_pref=None):
+        """Modal pequeño con slider para elegir N. Devuelve int o None
+        si el usuario cancela.
+
+        - `key_pref`: si se pasa, recuerda la última N usada en
+          `preferencias[key_pref]`.
+        - El método bloquea con `wait_window()` para devolver el valor
+          sincrónicamente, permitiendo usar `if n is None: return`.
+        """
+        # Cargar última N de preferencias si key_pref existe
+        if key_pref:
+            try:
+                prefs = self.store.cargar_preferencias()
+                default = int(prefs.get(key_pref, default))
+            except Exception as _e:
+                logger.debug(f"[silent _pedir_n cargar] {_e}")
+        default = max(n_min, min(n_max, default))
+
+        sel = GPromptWindow(self)
+        sel.title(titulo)
+        sel.geometry("440x240")
+        sel.transient(self)
+        sel.grab_set()
+
+        ctk.CTkLabel(sel, text=titulo,
+                     font=ctk.CTkFont(size=14, weight="bold")
+                     ).pack(pady=(15, 4))
+        ctk.CTkLabel(sel, text=descripcion,
+                     font=ctk.CTkFont(size=10), text_color="#888",
+                     justify="center", wraplength=400
+                     ).pack(pady=(0, 10))
+
+        n_var = ctk.IntVar(value=default)
+        lbl_n = ctk.CTkLabel(sel, text=f"N = {default}",
+                              font=ctk.CTkFont(size=22, weight="bold"),
+                              text_color="#2ecc71")
+        lbl_n.pack(pady=(0, 6))
+
+        def _on_slide(v):
+            n = int(round(float(v)))
+            n_var.set(n)
+            lbl_n.configure(text=f"N = {n}")
+
+        slider = ctk.CTkSlider(sel, from_=n_min, to=n_max,
+                                number_of_steps=n_max - n_min,
+                                command=_on_slide, width=320)
+        slider.set(default)
+        slider.pack(pady=(0, 4))
+        ctk.CTkLabel(sel, text=f"Rango: {n_min}–{n_max}",
+                     font=ctk.CTkFont(size=9),
+                     text_color="#666").pack(pady=(0, 8))
+
+        resultado = {"n": None}
+
+        def _aceptar():
+            n = n_var.get()
+            if key_pref:
+                try:
+                    prefs_g = self.store.cargar_preferencias()
+                    prefs_g[key_pref] = n
+                    self.store.guardar_preferencias(prefs_g)
+                except Exception as _e:
+                    logger.debug(f"[silent _pedir_n guardar] {_e}")
+            resultado["n"] = n
+            sel.destroy()
+
+        btn_row = ctk.CTkFrame(sel, fg_color="transparent")
+        btn_row.pack(pady=(0, 12))
+        ctk.CTkButton(btn_row, text="▶ Generar", width=140, height=32,
+                      fg_color="#1a7a3c", hover_color="#145e2d",
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      command=_aceptar).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cancelar", width=100, height=32,
+                      fg_color="#444444", hover_color="#222222",
+                      command=sel.destroy).pack(side="left", padx=4)
+
+        sel.bind("<Return>", lambda _e: _aceptar())
+        sel.wait_window()
+        return resultado["n"]
+
     def cmd_variaciones(self):
         self._ocultar_ideas()
         idea, pos = self.txt_idea.get("1.0", "end").strip(), self.extraer_positive()
+
+        if not (pos and len(pos) > 10) and not idea:
+            return self.set_estado("⚠️ Necesitas una idea o prompt previo.", "#e67e22")
+
+        # Slider N (antes hardcoded a 3)
+        n = self._pedir_n_modal(
+            "🔀 Variaciones",
+            "¿Cuántas variaciones quieres generar?\n"
+            "Menor = más rápido · Mayor = más variedad",
+            n_min=2, n_max=6, default=3,
+            key_pref="variaciones_n",
+        )
+        if n is None:
+            return
 
         formato_extra = " OBLIGATORIO: En CADA variación escribe 'POSITIVE PROMPT:' y luego 'NEGATIVE PROMPT:'." if self._debe_mostrar_negatives() else ""
 
         # Forzar formato tag-based si aplica
         if self.modo_var.get() == "imagen" and not self.is_natural_mode():
-            formato_extra += " FORMATO: tags separados por comas con pesos (tag:1.2). NO prosa fluida. Las 3 variaciones deben usar el MISMO formato de tags."
+            formato_extra += f" FORMATO: tags separados por comas con pesos (tag:1.2). NO prosa fluida. Las {n} variaciones deben usar el MISMO formato de tags."
 
         if pos and len(pos) > 10:
-            peticion = f"MODO C: Genera 3 variaciones de este prompt. Base: '{pos}'. Estilos: {self.estilos_texto()}." + formato_extra
+            peticion = f"MODO C: Genera {n} variaciones de este prompt. Base: '{pos}'. Estilos: {self.estilos_texto()}." + formato_extra
             if idea: peticion += f" Incorpora también: {idea}."
-        elif idea:
-            peticion = self._construir_peticion(idea, "C") + formato_extra
         else:
-            self.set_estado("⚠️ Necesitas una idea o prompt previo.", "#e67e22")
-            return
+            peticion = self._construir_peticion(idea, "C") + f" Genera {n} variaciones." + formato_extra
 
-        self.set_estado("🔀 Generando 3 variaciones...", "#f39c12")
-        self._sesion_log(f"🔀 Generó 3 variaciones · base: \"{(pos or idea)[:50]}…\"")
+        self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
+        self._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
         threading.Thread(target=self._worker_ia, args=(peticion, False, True), daemon=True).start()
 
@@ -2191,24 +2283,43 @@ class CoreMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_iteracion(self):
-        """Genera 5 variantes del prompt cambiando solo 1 elemento (iluminación, encuadre, etc)."""
+        """Genera N variantes del prompt cambiando solo 1 elemento (iluminación, encuadre, etc).
+
+        v2: el usuario elige primero N (slider 3-10) y luego el elemento.
+        """
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
             return self.set_estado("⚠️ Genera un prompt primero para iterar.", "#e67e22")
-        try: self._sesion_log("🔂 Iterar: abrió ventana de variación 1 elemento")
+
+        # 1) Pedir N (antes hardcoded a 5)
+        n = self._pedir_n_modal(
+            "🔂 Iterar — número de variantes",
+            "¿Cuántas variantes quieres? Todas cambiarán SOLO el "
+            "elemento que elijas en el siguiente paso.",
+            n_min=3, n_max=10, default=5,
+            key_pref="iteracion_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"🔂 Iterar: abrió ventana de variación 1 elemento (n={n})")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        # Ventana selección elemento a variar
+        # 2) Ventana selección elemento a variar
         sel = GPromptWindow(self)
         sel.title("🔂 Iteración")
-        sel.geometry("400x300")
+        sel.geometry("400x320")
         sel.transient(self)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        ctk.CTkLabel(sel, text="🔂 Modo Iteración", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
-        ctk.CTkLabel(sel, text="Genera 5 variantes cambiando SOLO un elemento:",
-                     font=ctk.CTkFont(size=11), text_color="#6b7280" if is_lt else "#888888").pack(pady=(0, 12))
+        ctk.CTkLabel(sel, text="🔂 Modo Iteración",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel,
+                     text=f"Genera {n} variantes cambiando SOLO un elemento:",
+                     font=ctk.CTkFont(size=11),
+                     text_color="#6b7280" if is_lt else "#888888"
+                     ).pack(pady=(0, 12))
 
         opciones = [
             ("💡 Iluminación", "iluminación (tipo, dirección, color)"),
@@ -2222,36 +2333,40 @@ class CoreMixin:
                                 fg_color="#2563eb" if is_lt else "#1a3a5a",
                                 hover_color="#1d4ed8" if is_lt else "#2a4a6a",
                                 font=ctk.CTkFont(size=11),
-                                command=lambda d=descripcion: (sel.destroy(), self._iterar_elemento(d)))
+                                command=lambda d=descripcion, n_=n: (
+                                    sel.destroy(),
+                                    self._iterar_elemento(d, n_)))
             btn.pack(pady=3)
 
-    def _iterar_elemento(self, elemento):
-        """Genera 5 variantes cambiando un elemento específico."""
+    def _iterar_elemento(self, elemento, n=5):
+        """Genera N variantes cambiando un elemento específico."""
         texto = self.txt_salida.get("1.0", "end").strip()
-        self.set_estado(f"🔂 Generando 5 variantes ({elemento})...", "#f39c12")
+        self.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
         self.toggle_botones(False)
 
+        # Construir lista de líneas VARIANTE 1..N dinámicamente
+        variantes_lineas = "\n---\n".join(
+            f"VARIANTE {i + 1}: [prompt completo con cambio]" for i in range(n)
+        )
         peticion = (
-            f"Genera 5 VARIANTES de este prompt, cambiando ÚNICAMENTE el elemento: {elemento}.\n"
+            f"Genera {n} VARIANTES de este prompt, cambiando ÚNICAMENTE el elemento: {elemento}.\n"
             f"Todo lo demás (sujeto, composición, formato) debe permanecer IDÉNTICO.\n\n"
             f"PROMPT ORIGINAL:\n{texto}\n\n"
-            f"FORMATO DE RESPUESTA:\n"
-            f"VARIANTE 1: [prompt completo con cambio]\n---\n"
-            f"VARIANTE 2: [prompt completo con cambio]\n---\n"
-            f"VARIANTE 3: [prompt completo con cambio]\n---\n"
-            f"VARIANTE 4: [prompt completo con cambio]\n---\n"
-            f"VARIANTE 5: [prompt completo con cambio]"
+            f"FORMATO DE RESPUESTA:\n{variantes_lineas}"
         )
+        # Más N = necesita más tokens
+        max_tok = min(8000, 1500 + n * 700)
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
+                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
-                # Parsear las 5 variantes
+                # Parsear las N variantes
                 import re
                 variantes = re.split(r'VARIANTE\s*\d+\s*:?\s*', resp, flags=re.IGNORECASE)
-                variantes = [v.strip().strip("-").strip() for v in variantes if v.strip() and len(v.strip()) > 30]
+                variantes = [v.strip().strip("-").strip() for v in variantes
+                              if v.strip() and len(v.strip()) > 30]
 
                 if len(variantes) < 2:
                     self.after(0, lambda: self.set_estado("⚠️ Solo se generó 1 variante, intenta de nuevo", "#e67e22"))
@@ -2259,7 +2374,7 @@ class CoreMixin:
                     return
 
                 def _mostrar():
-                    self._abrir_comparador(variantes[:5])
+                    self._abrir_comparador(variantes[:n])
                     self.set_estado(f"🔂 {len(variantes)} variantes de '{elemento}' listas", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
