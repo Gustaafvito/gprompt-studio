@@ -1786,57 +1786,91 @@ class ToolsWorkflowMixin:
 
         # Asegurar que los sugeridos estén disponibles
         sugeridos = [m for m in sugeridos if m in modelos_disponibles]
-        while len(sugeridos) < 3 and modelos_disponibles:
+        while len(sugeridos) < 5 and modelos_disponibles:
             for m in modelos_disponibles:
                 if m not in sugeridos:
                     sugeridos.append(m)
-                    if len(sugeridos) >= 3:
+                    if len(sugeridos) >= 5:
                         break
 
         sel_vent = GPromptWindow(self)
-        sel_vent.title("🆚 Elige 3 modelos para comparar")
-        sel_vent.geometry("500x350")
+        sel_vent.title("🆚 Elige modelos para comparar")
+        sel_vent.geometry("520x500")
         sel_vent.transient(self)
 
-        ctk.CTkLabel(sel_vent, text="🆚 Comparador de modelos", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel_vent, text="🆚 Comparador de modelos",
+                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel_vent, text=f"Idea: {idea[:60]}{'...' if len(idea) > 60 else ''}",
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"], wraplength=470).pack(pady=(0, 5))
-        ctk.CTkLabel(sel_vent, text="Selecciona 3 modelos para generar y comparar:",
-                     font=ctk.CTkFont(size=11), text_color=c["muted_text"]).pack(pady=(8, 8))
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     wraplength=470).pack(pady=(0, 5))
+
+        # Selector de N modelos (2-5)
+        n_frame = ctk.CTkFrame(sel_vent, fg_color="transparent")
+        n_frame.pack(fill="x", padx=20, pady=(8, 4))
+        ctk.CTkLabel(n_frame, text="¿Cuántos modelos comparar?",
+                     font=ctk.CTkFont(size=11, weight="bold"),
+                     anchor="w").pack(side="left", padx=(0, 8))
+        n_var = ctk.IntVar(value=3)
+        n_lbl = ctk.CTkLabel(n_frame, text="3 modelos",
+                              font=ctk.CTkFont(size=11, weight="bold"),
+                              text_color="#2ecc71", width=90)
+        n_lbl.pack(side="right")
 
         frame_combos = ctk.CTkFrame(sel_vent, fg_color="transparent")
         frame_combos.pack(fill="x", padx=20, pady=5)
 
         combos = []
-        for i in range(3):
+        combo_rows = []
+        for i in range(5):
             f = ctk.CTkFrame(frame_combos, fg_color="transparent")
-            f.pack(fill="x", pady=4)
-            ctk.CTkLabel(f, text=f"Modelo #{i+1}:", font=ctk.CTkFont(size=11, weight="bold"),
-                         width=80, anchor="w").pack(side="left", padx=(0, 8))
-            cb = ctk.CTkComboBox(f, values=modelos_disponibles, width=350, height=30,
-                                  font=ctk.CTkFont(size=11))
+            f.pack(fill="x", pady=3)
+            ctk.CTkLabel(f, text=f"#{i+1}:",
+                         font=ctk.CTkFont(size=11, weight="bold"),
+                         width=40, anchor="w").pack(side="left", padx=(0, 8))
+            cb = ctk.CTkComboBox(f, values=modelos_disponibles, width=380,
+                                  height=28, font=ctk.CTkFont(size=11))
             cb.set(sugeridos[i] if i < len(sugeridos) else modelos_disponibles[0])
             cb.pack(side="left")
             combos.append(cb)
+            combo_rows.append(f)
+
+        def _actualizar_n(v):
+            n = int(round(float(v)))
+            n_var.set(n)
+            n_lbl.configure(text=f"{n} modelos")
+            for i, row in enumerate(combo_rows):
+                if i < n:
+                    row.pack(fill="x", pady=3)
+                else:
+                    row.pack_forget()
+
+        slider = ctk.CTkSlider(n_frame, from_=2, to=5, number_of_steps=3,
+                                width=130, command=_actualizar_n)
+        slider.set(3)
+        slider.pack(side="right", padx=(0, 8))
+
+        # Inicialmente mostrar 3 filas
+        _actualizar_n(3)
 
         # Botones
         btn_frame = ctk.CTkFrame(sel_vent, fg_color="transparent")
-        btn_frame.pack(pady=20)
+        btn_frame.pack(side="bottom", pady=(0, 20))
 
         def _comparar():
-            seleccionados = [c.get() for c in combos]
+            n = n_var.get()
+            seleccionados = [combos[i].get() for i in range(n)]
             # Validar que sean diferentes
-            if len(set(seleccionados)) < 3:
-                self.set_estado("⚠️ Elige 3 modelos diferentes.", "#e67e22")
+            if len(set(seleccionados)) < n:
+                self.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
                 return
             sel_vent.destroy()
             self._abrir_ventana_comparacion(idea, modo, seleccionados)
 
-        ctk.CTkButton(btn_frame, text="🆚 Comparar", width=140, height=32,
+        ctk.CTkButton(btn_frame, text="🆚 Comparar", width=140, height=34,
                       fg_color="#1a7a3c", hover_color="#145e2d",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_comparar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_frame, text="Cancelar", width=100, height=32,
+        ctk.CTkButton(btn_frame, text="Cancelar", width=100, height=34,
                       fg_color="#444444", hover_color="#222222",
                       command=sel_vent.destroy).pack(side="left", padx=4)
 
@@ -1936,8 +1970,47 @@ class ToolsWorkflowMixin:
                             cards[m]["txt"].insert("1.0", r)
                             cards[m]["txt"].configure(state="disabled")
                             cards[m]["lbl_chars"].configure(text=f"{len(r)} / {mc} chars")
-                            cards[m]["btn_usar"].configure(state="normal", command=lambda r=r, m=m: (self.actualizar_salida(r), vent.destroy(), self.set_estado(f"✅ Cargado prompt de {m}", "#2ecc71")))
-                            cards[m]["btn_copiar"].configure(state="normal", command=lambda r=r, m=m: (pyperclip.copy(r), self.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
+
+                            def _aplicar_y_cambiar_modelo(r2=r, m2=m):
+                                # Aplica el prompt al resultado Y cambia el
+                                # modelo activo en el combo correspondiente.
+                                # Antes solo aplicaba el texto sin actualizar
+                                # el modelo seleccionado en la UI principal.
+                                modo_act = self.modo_var.get()
+                                try:
+                                    if modo_act == "imagen" and hasattr(self, 'combo_modelo_imagen'):
+                                        valores = list(self.combo_modelo_imagen.cget("values") or [])
+                                        if m2 in valores:
+                                            self.combo_modelo_imagen.set(m2)
+                                            if hasattr(self, '_on_modelo_imagen_cambio'):
+                                                self._on_modelo_imagen_cambio()
+                                    elif modo_act == "video" and hasattr(self, 'combo_modelo_video'):
+                                        valores = list(self.combo_modelo_video.cget("values") or [])
+                                        if m2 in valores:
+                                            self.combo_modelo_video.set(m2)
+                                    elif modo_act == "audio" and hasattr(self, 'combo_modelo_audio'):
+                                        valores = list(self.combo_modelo_audio.cget("values") or [])
+                                        if m2 in valores:
+                                            self.combo_modelo_audio.set(m2)
+                                except Exception as _e:
+                                    logger.debug(f"[silent compar usar] {_e}")
+                                self.actualizar_salida(r2)
+                                vent.destroy()
+                                self.set_estado(
+                                    f"🏆 '{m2}' aplicado: modelo + prompt cargados",
+                                    "#2ecc71")
+
+                            cards[m]["btn_usar"].configure(
+                                state="normal",
+                                text="🏆 Usar este (modelo+prompt)",
+                                width=200,
+                                command=_aplicar_y_cambiar_modelo,
+                            )
+                            cards[m]["btn_copiar"].configure(
+                                state="normal",
+                                command=lambda r=r, m=m: (
+                                    pyperclip.copy(r),
+                                    self.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
                     self.after(0, _mostrar)

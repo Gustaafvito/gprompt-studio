@@ -289,7 +289,15 @@ class ToolsCreativeMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_sugerir_modelo(self):
-        """Analiza la idea y sugiere el mejor modelo según contenido."""
+        """Analiza la idea y sugiere TOP 3 modelos.
+
+        v2:
+        - Pide al LLM TOP 3 modelos rankeados (no solo 1).
+        - Muestra cada uno como card clicable con razón individual.
+        - Botón "✅ Usar este modelo" por card.
+        - Botón global "🚀 Probar los 3" → genera el prompt con cada
+          uno y abre el comparador.
+        """
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 10:
             return self.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
@@ -297,10 +305,9 @@ class ToolsCreativeMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🤖 Analizando idea para sugerir modelo...", "#f39c12")
+        self.set_estado("🤖 Analizando idea para top 3 modelos...", "#f39c12")
 
         modo = self.modo_var.get()
-        # Lista de modelos disponibles
         if modo == "imagen":
             modelos_lista = [m for m in MODELOS_IMAGEN_FLAT if not m.startswith("──")]
         elif modo == "video":
@@ -310,68 +317,203 @@ class ToolsCreativeMixin:
 
         # Resumen de specs para el LLM
         specs_resumen = []
-        for m in modelos_lista[:15]:  # limitar para no saturar
+        for m in modelos_lista[:20]:
             s = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
             specs_resumen.append(f"- {m}: {s.get('best_for', '')[:120]}")
 
         peticion = (
-            f"Analiza esta idea y sugiere el MEJOR modelo de {modo} para generarla:\n\n"
+            f"Analiza esta idea y sugiere los 3 MEJORES modelos de {modo} rankeados.\n\n"
             f"IDEA: {idea}\n\n"
             f"MODELOS DISPONIBLES:\n" + "\n".join(specs_resumen) + "\n\n"
-            f"Responde EN ESPAÑOL con este formato exacto:\n"
-            f"MODELO RECOMENDADO: [nombre exacto del modelo]\n"
-            f"RAZÓN: [1-2 frases explicando por qué]\n"
-            f"ALTERNATIVAS: [otros 1-2 modelos válidos]"
+            f"Responde EN ESPAÑOL con este formato EXACTO (importante mantener \"#1:\", \"#2:\", \"#3:\"):\n\n"
+            f"#1: [nombre exacto del modelo]\n"
+            f"RAZÓN: [1 frase concreta]\n\n"
+            f"#2: [nombre exacto del modelo]\n"
+            f"RAZÓN: [1 frase concreta]\n\n"
+            f"#3: [nombre exacto del modelo]\n"
+            f"RAZÓN: [1 frase concreta]"
         )
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400)
+                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=600)
                 resp = limpiar_marcadores(resp)
 
-                # Extraer modelo recomendado
+                # Parsear las 3 sugerencias
                 import re
-                m = re.search(r'MODELO\s+RECOMENDADO\s*:?\s*([^\n]+)', resp, re.IGNORECASE)
-                modelo_sug = m.group(1).strip().strip("[").strip("]").strip() if m else None
+                # Pattern: "#1: nombre\nRAZÓN: razón"
+                pattern = r'#(\d)\s*:\s*([^\n]+)\n+\s*RAZ[ÓO]N\s*:\s*([^\n#]+(?:\n(?!#\d)[^\n]+)*)'
+                matches = re.findall(pattern, resp, re.IGNORECASE)
+
+                # Filtrar a modelos que existen realmente en la lista
+                sugerencias = []
+                for _rank, nombre, razon in matches[:3]:
+                    nombre_limpio = nombre.strip().strip("[").strip("]").strip()
+                    razon_limpia = razon.strip()
+                    # Match exacto o por contenedor
+                    coincidencia = None
+                    if nombre_limpio in modelos_lista:
+                        coincidencia = nombre_limpio
+                    else:
+                        # Búsqueda case-insensitive
+                        nl_lower = nombre_limpio.lower()
+                        for m_real in modelos_lista:
+                            if nl_lower == m_real.lower() or nl_lower in m_real.lower():
+                                coincidencia = m_real
+                                break
+                    if coincidencia:
+                        sugerencias.append((coincidencia, razon_limpia))
+
+                if not sugerencias:
+                    self.after(0, lambda: self.set_estado(
+                        "⚠️ No se pudieron parsear las sugerencias del LLM",
+                        "#e67e22"))
+                    return
 
                 def _mostrar():
-                    vent = GPromptWindow(self)
-                    vent.title("🤖 Modelo sugerido")
-                    vent.geometry("550x350")
-                    vent.transient(self)
-
-                    ctk.CTkLabel(vent, text="🤖 Sugerencia de modelo", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 8))
-
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word", height=200)
-                    txt.pack(fill="both", expand=True, padx=15, pady=10)
-                    txt.insert("1.0", resp)
-                    txt.configure(state="disabled")
-
-                    btn_row = ctk.CTkFrame(vent, fg_color="transparent")
-                    btn_row.pack(pady=10)
-
-                    if modelo_sug and modelo_sug in modelos_lista:
-                        def _aplicar():
-                            if modo == "imagen" and hasattr(self, 'combo_modelo_imagen'):
-                                self.combo_modelo_imagen.set(modelo_sug)
-                                self._on_modelo_imagen_cambio()
-                            elif modo == "video" and hasattr(self, 'combo_modelo_video'):
-                                self.combo_modelo_video.set(modelo_sug)
-                            elif modo == "audio" and hasattr(self, 'combo_modelo_audio'):
-                                self.combo_modelo_audio.set(modelo_sug)
-                            vent.destroy()
-                            self.set_estado(f"✅ Modelo {modelo_sug} aplicado", "#2ecc71")
-                        ctk.CTkButton(btn_row, text=f"✅ Usar {modelo_sug[:25]}", width=180, height=30,
-                                      fg_color="#1a7a3c", command=_aplicar).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="Cerrar", width=80, height=30,
-                                  command=vent.destroy).pack(side="left", padx=4)
-
-                    self.set_estado("🤖 Sugerencia lista", "#2ecc71")
+                    self._mostrar_sugerencias_modelo(idea, sugerencias, modo)
                 self.after(0, _mostrar)
             except Exception as e:
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def _mostrar_sugerencias_modelo(self, idea, sugerencias, modo):
+        """Modal con las 3 sugerencias de modelo + botón para probar los 3."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        vent = GPromptWindow(self)
+        vent.title("🤖 Top 3 modelos sugeridos")
+        vent.geometry("680x520")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="🤖 Top 3 modelos para tu idea",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+        ctk.CTkLabel(vent, text=f"Idea: {idea[:80]}{'…' if len(idea) > 80 else ''}",
+                     font=ctk.CTkFont(size=10, slant="italic"),
+                     text_color=c["muted_text"]).pack(pady=(0, 10))
+
+        # Colores y rankings
+        rank_data = [
+            ("🥇", "#fbbf24", "#1a1a2e"),  # oro
+            ("🥈", "#94a3b8", "#1a1a2e"),  # plata
+            ("🥉", "#cd7f32", "#1a1a2e"),  # bronce
+        ]
+
+        def _aplicar_modelo(nombre):
+            if modo == "imagen" and hasattr(self, 'combo_modelo_imagen'):
+                self.combo_modelo_imagen.set(nombre)
+                self._on_modelo_imagen_cambio()
+            elif modo == "video" and hasattr(self, 'combo_modelo_video'):
+                self.combo_modelo_video.set(nombre)
+            elif modo == "audio" and hasattr(self, 'combo_modelo_audio'):
+                self.combo_modelo_audio.set(nombre)
+            vent.destroy()
+            self.set_estado(f"✅ Modelo '{nombre}' aplicado", "#2ecc71")
+
+        for idx, (nombre_mod, razon) in enumerate(sugerencias):
+            medalla, bg_medalla, fg_medalla = rank_data[idx] if idx < 3 else ("#", c["fg_dark"], c["hdr_text"])
+            card = ctk.CTkFrame(vent, fg_color=c["fg_frame"], corner_radius=8,
+                                 border_color=bg_medalla, border_width=2)
+            card.pack(fill="x", pady=6, padx=12)
+
+            hdr = ctk.CTkFrame(card, fg_color="transparent")
+            hdr.pack(fill="x", padx=10, pady=(8, 2))
+            ctk.CTkLabel(hdr, text=f"  {medalla} {nombre_mod}",
+                         font=ctk.CTkFont(size=13, weight="bold"),
+                         text_color=bg_medalla).pack(side="left")
+
+            ctk.CTkLabel(card, text=f"  💡 {razon}",
+                         font=ctk.CTkFont(size=10),
+                         text_color=c["muted_text"],
+                         wraplength=620, justify="left",
+                         anchor="w").pack(fill="x", padx=10, pady=(0, 6))
+
+            btn_row = ctk.CTkFrame(card, fg_color="transparent")
+            btn_row.pack(fill="x", padx=10, pady=(0, 8))
+            ctk.CTkButton(btn_row, text=f"✅ Usar este modelo",
+                          width=180, height=28,
+                          fg_color="#1a8a3c", hover_color="#127a30",
+                          font=ctk.CTkFont(size=11, weight="bold"),
+                          command=lambda n=nombre_mod: _aplicar_modelo(n)
+                          ).pack(side="left", padx=2)
+
+        # Botón "Probar los 3" — genera el prompt con cada modelo y compara
+        def _probar_los_3():
+            vent.destroy()
+            modelos_a_probar = [n for n, _ in sugerencias]
+            self._probar_modelos_y_comparar(idea, modelos_a_probar, modo)
+
+        accion_row = ctk.CTkFrame(vent, fg_color="transparent")
+        accion_row.pack(side="bottom", pady=(8, 12))
+        ctk.CTkButton(accion_row, text=f"🚀 Probar los {len(sugerencias)} en paralelo",
+                      width=240, height=34,
+                      fg_color="#7c3aed", hover_color="#5d2ab5",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      command=_probar_los_3).pack(side="left", padx=4)
+        ctk.CTkButton(accion_row, text="Cerrar", width=100, height=34,
+                      fg_color=c["fg_dark"],
+                      command=vent.destroy).pack(side="left", padx=4)
+
+    def _probar_modelos_y_comparar(self, idea, modelos, modo):
+        """Genera el prompt con cada modelo en paralelo y abre el comparador."""
+        self.set_estado(f"🚀 Generando con {len(modelos)} modelos en paralelo...",
+                        "#f39c12")
+        self.toggle_botones(False)
+
+        resultados = {}
+
+        def _gen_modelo(nombre_mod):
+            try:
+                # Construir petición con el modelo "fingido" — el LLM genera el
+                # prompt como si fuera para ese modelo.
+                from config import get_image_model_specs as _gim, get_model_specs as _gms
+                specs = _gim(nombre_mod) or _gms(nombre_mod) or {}
+                max_c = specs.get("max_chars", 1500)
+                has_neg = specs.get("has_negative", True)
+                is_natural = specs.get("is_natural", False)
+                fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
+                neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "Solo POSITIVE (sin NEGATIVE)."
+                peticion = (
+                    f"Genera un prompt de {modo} OPTIMIZADO para el modelo: {nombre_mod}\n"
+                    f"IDEA: {idea}\n"
+                    f"Formato: {fmt}. Límite: {max_c} chars. {neg_str}\n"
+                    f"Estilos: {self.estilos_texto()}.\n"
+                    f"Responde SOLO con el prompt, sin explicaciones."
+                )
+                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2000)
+                resp = limpiar_marcadores(resp)
+                if not has_neg:
+                    import re
+                    resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp,
+                                  flags=re.DOTALL | re.IGNORECASE).strip()
+                resultados[nombre_mod] = resp
+            except Exception as e:
+                resultados[nombre_mod] = f"❌ Error: {e}"
+
+        def _worker_all():
+            threads = []
+            for nombre in modelos:
+                t = threading.Thread(target=_gen_modelo, args=(nombre,), daemon=True)
+                t.start()
+                threads.append(t)
+            for t in threads:
+                t.join()
+
+            def _mostrar():
+                variantes = []
+                for nombre in modelos:
+                    if nombre in resultados:
+                        variantes.append(f"### {nombre} ###\n{resultados[nombre]}")
+                self._abrir_comparador(variantes)
+                self.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
+                                "#2ecc71")
+                self.toggle_botones(True)
+                self._sonar_completado()
+            self.after(0, _mostrar)
+
+        threading.Thread(target=_worker_all, daemon=True).start()
 
     def _cmd_solo_negative(self):
         """Genera solo el NEGATIVE PROMPT optimizado."""
