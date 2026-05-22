@@ -1,269 +1,339 @@
-# 🧾 Handoff — Sesión de revisión G-Prompt Studio
+# 🧾 Handoff — G-Prompt Studio (sesión 2)
 
-Documento para retomar la conversación en una sesión nueva sin perder contexto.
-Generado al final de una sesión larga que se acercó al límite de tokens.
+Documento de continuación. Esta es la **segunda** sesión después del HANDOFF original.
+Generado al final, working tree limpio.
 
 ---
 
 ## 📍 Estado del proyecto
 
-**G-Prompt Studio** es una app de escritorio (Python + customtkinter) para
-generar prompts de IA generativa (imagen, vídeo, audio) usando 14 LLMs
-distintos como motores.
+**G-Prompt Studio** — app de escritorio Python + customtkinter para generar
+prompts de IA generativa (imagen, vídeo, audio) con 14 LLMs como motores.
 
-**Working tree limpio** tras 36 commits en esta sesión. Tests baseline:
-46/48 pasan (los 2 que fallan son drift preexistente en
-`test_persistence.py`, no introducido en la sesión).
+**Working tree limpio.** **48/48 tests pasan.** Branch: `main`, **44 commits
+adelante de `origin/main`** (no he hecho push).
 
-Estructura: ver [ESTRUCTURA.md](ESTRUCTURA.md) — está al día.
+Estructura: ver `ESTRUCTURA.md`.
 
 ---
 
-## 🎯 Lo que se hizo (en orden)
+## 🎯 Qué se hizo en esta sesión (sesión 2)
 
-La sesión fue una revisión sistemática de toda la app, menú por menú,
-con un patrón: **análisis honesto → priorización → arreglo**.
+Continuación del HANDOFF anterior. El usuario eligió:
 
-### Fases 1-5: refactor de base (commits `877bcdf` → `0488f58`)
+1. **Primero los 7 detalles menores** pendientes del HANDOFF original ✅
+2. **Después el menú 🎨 UI** completo (5 mejoras) ✅
+3. **Después el menú ⚙️ Workflow** (solo los 2 bugs críticos) ✅
+4. **Después refactor de la barra de acciones** (colores semánticos, agrupación) ✅
+5. **Después un plan de "profundidad"** (Bloques 1-6 para hacer las funciones más completas):
+   - ✅ **Bloque 1** completo (Ideas clicables · Pulse niveles · Preview caché)
+   - ✅ **Bloque 2** completo (Sugerir top 3 · Compar con ganador) + 3 fixes posteriores
+   - ⏳ Bloques 3-6 pendientes
 
-1. **Limpieza segura**: borrado de tests muertos, mover `windows.py` a
-   `modules/`, README/ESTRUCTURA actualizados.
-2. **try/except + imports lazy**: 140 `except: pass` → `logger.debug`,
-   `openai` lazy import, descubrí que muchos `logger.X(...)` eran
-   NameError silenciados.
-3. **Partir config.py**: 4040 → 1112 líneas. 6 estructuras movidas a
-   `data/*.json` (MODEL_SPECS, estilos, biblioteca, etc.).
-4. **Quitar monkey-patches**: 75 líneas de patches a `ctk.CTkToplevel`
-   eliminadas. 69 `ctk.CTkToplevel(...)` → `GPromptWindow(...)` en 10
-   archivos.
-5. **Capa de componentes**: 8 componentes (`self.creative`,
-   `self.workflow`, …) sobre los mixins existentes. NO es composición
-   pura — los mixins siguen heredados — pero permite namespacing
-   progresivo.
+### 7 detalles menores (commits `0103dd2` → `e47f0b5`)
+- `0103dd2` fix: borrar plantilla sin cerrar ventana + confirmación al borrar fórmula
+- `08c7f9e` feat: ADN biblioteca (Crear nuevo, Refrescar, fix `_guardar_biblioteca` roto, soporte `texto_libre`) + moodboard reusable (estilos guardables, validación imágenes corruptas, biblioteca de estilos del moodboard)
+- `e47f0b5` test: arreglar 2 tests con drift en `test_persistence.py` (46/48 → 48/48)
 
-### Limpieza y assets (commit `0e50630`)
-Borrados `imagenes/` y `MODELOS_IMAGEN.md` (no usados). Trackeados
-`config/plantillas_default.json` y `GUIA_ESTILOS.md`.
+### Menú 🎨 UI (commits `3ea46a3` → `0240790`)
+- `3ea46a3` fix: eliminar `_cmd_toggle_tema` muerto en core.py (estaba en core.py:553 y dialogs.py:176, ganaba DialogsMixin por MRO), arreglo doble escaneo ComfyUI en Ajustes, auditoría de los 32 atajos hardcoded contra bindings reales (todo coincide), buscador + click-to-copy en Atajos teclado, debounce 200ms en Biblioteca
+- `0240790` feat: barra de acciones con grupos visuales y separadores verticales (`_render_grupos()` helper), Quick movido a fila 1 (es variante de Generar)
 
-### Guía de estilos (commits `3856577` → `ee19c89`)
-- Botón "📖 Guía de estilos" en menú Análisis
-- Tooltips por checkbox (256/257 estilos cubiertos)
-- Filtro por modo (Imagen/Vídeo/Audio) con auto-detección
-- Paginación + debounce (300ms)
-- **100% de cobertura** con el catálogo de la app: 257 imagen, 118
-  vídeo, 20 audio. Añadidos 97 estilos al `GUIA_ESTILOS.md`.
+### Menú ⚙️ Workflow (commit `7a3650e`)
+- `7a3650e` fix: Cron crash al cerrar ventana (cancelar `after_id` + flag `cerrada` + `protocol(WM_DELETE_WINDOW)`), confirmación al borrar macro
 
-### Menú 📊 Análisis (commits `e95f86d` → `99c63c7`)
-6 items revisados: Auto-mejora, Crítica historial, Estadísticas, Guía
-de estilos, **Modo educativo (Glosario)**, **Tutorial completo**.
+### Refactor barra acciones (commit `174ecc4`)
+- Sistema de colores semántico unificado:
+  - 🟢 Verde (4 tonos) = genera output (Ideas, Generar, Quick, Variaciones, Regenerar)
+  - 🔵 Azul = analiza input (Analizar, Img→Prompt, Análisis Inv)
+  - 🟣 Morado = ADN + edición (ADN Visual, Refinar, Copiloto)
+  - 🟠 Naranja = variantes múltiples (Iterar, Pulse, Sugerir)
+  - 💗 Rosa = multi-prompt narrativo (Mood, Story, Board, Walk)
+  - 🌐 Cyan = conversiones (→Vídeo, Compar)
+  - ⚫ Gris = utilidades (Batch, Preview)
+- Quick cambia de naranja a verde claro (antes rompía el grupo Generación)
+- Variaciones cambia de azul a verde claro
+- Iterar movido del grupo Edición al grupo Variantes (comparte lógica con Pulse/Sugerir)
+- Story (solo Imagen) y Board (solo Vídeo) ahora se **deshabilitan visualmente**
+  según el modo activo en `_on_modo_cambio()`, antes avisaban con messagebox después del click
+- Story usa 🎞 (era 🎬 que ya lo usa →Vídeo)
+- Preview usa 🖼 (era 👁️ que se confundía con 👁 Analizar)
 
-Cambios principales:
-- **Glosario**: 43 entradas extraídas a `data/glosario.json`, 5
-  categorías (ordenadas alfabéticamente), filtro segmentado, botón
-  "▶ Probar" en 17 entradas vinculadas a funciones reales.
-- **Tutorial**: 26 pasos extraídos a `data/tutorial.json`, índice
-  lateral clicable, progreso persistente en `preferencias.json`,
-  botón "▶ Probar ahora" en 24/26 pasos con mini-DSL `focus:WIDGET`,
-  `mode:imagen|video|audio`, `tab:NOMBRE`. Pre-validación para
-  acciones que necesitan prompt en salida.
-- **Auto-mejora**: el LLM devuelve JSON estructurado, render como
-  cards con botón "✨ Aplicar versión mejorada".
-- **Crítica historial**: caché en preferencias.json + selector
-  "últimos N".
-- **Estadísticas**: filtro de rango (7d/30d/90d/Todo), top estilos
-  restaurado.
+### Bloque 1 (commit `9ad60b0`)
+- **💡 Ideas clicables**: cards con cursor hand2, click en la card aplica
+  directo, botón "🔁 Más" en header, botón "✨ Similares" por idea
+- **⚡ Pulse** con modal de configuración: 3 niveles (default rápido) / 5
+  niveles (Ultra estable→Máximo riesgo) / 🎚 Personalizado con 3 sliders
+  (T de 0.1 a 1.5). Recuerda última config en `preferencias.pulse_config`.
+  Helper `_lanzar_pulse(idea, temperaturas)` reutilizable.
+- **🖼 Preview** con caché in-memory (key=md5(prompt limpio), max 20
+  entradas con LRU). Misma prompt → respuesta instantánea sin API. Ventana
+  muestra URL Pollinations + botón "🔗 Copiar URL" + "🌐 Abrir en navegador"
+  + banner "📥 Servido desde caché" cuando hay hit. Refactor a
+  `_mostrar_preview_window()` reutilizable.
 
-### Menús 💾 Backup y 📁 Datos (commits `3194fc4` → `42d9b1a`)
-- 🐛 **4 bugs críticos** arreglados: "Limpiar estrellas borraba
-  favoritos", "CSV columna Modelo vacía", "CSV estilos lista mal
-  serializada", "Backup no incluía plantillas".
-- 🛡 **Auto-backup pre-restore**: si te equivocas restaurando, tus
-  datos anteriores se guardan en
-  `~/.arquitecto_prompts/backups/pre_restore_AAAA-MM-DD_HHMM.json`.
-- Buscadores en Personajes y LoRAs (con edición inline + filtro por
-  familia en LoRAs).
-- Filtro por modo + paginación real + botón Copiar en
-  historial/favoritos/estrellas.
-- Estrellas ahora muestran su nota destacada en dorado.
-- Export CSV con selector previo (qué exportar) + columna Origen.
+### Fix Variaciones (commit `61848e1`)
+- Bug reportado: solo se veía "1" en Resultado editable al pulsar Variaciones.
+- Causa: el panel inline insertado antes de `frame_entrada` comprimía
+  `txt_salida` a 1 línea, y `_worker_ia` sobrescribía con texto crudo
+  multi-bloque ilegible.
+- Solución: ahora Variaciones abre un **Toplevel modal** con cards visibles
+  donde cada variación se muestra con preview completo + 4 botones
+  (✅ Aplicar al resultado · 📋 Todo · 📋 POS · 📋 NEG). El `txt_salida`
+  ya no se sobrescribe automáticamente (solo cuando el usuario aplica una).
 
-### Menú 🛠 Herramientas (commits `5bb7120` → `c8c0539`)
-6 items: Anclaje rasgos, Detectar estilo, Export CLI, Modo Cliente,
-Negative Builder, Paleta colores.
-
-Cambios:
-- 🐛 **3 bugs**: paleta crasheaba al guardar (`store.guardar()` no
-  existe), presets Negative Builder se perdían al cerrar, buscador
-  destruía estado de checkboxes.
-- 🐛 **NameError `_dt`** arreglado en 3 sitios (era código muerto que
-  saltó al activar el guardado de paleta).
-- 🧬 **Indicador ADN permanente** en header (aparece solo si hay ADN
-  activo, click → ver/desactivar).
-- 🎭 **Moodboard**: ❌ por thumbnail + aviso máximo 5 + "+N más".
-- 📤 **Export CLI**: filtro `🖼 Imagen / 🎬 Vídeo / 🎵 Audio / 📦 Todos`
-  con auto-selección del modo activo. Lista vertical de cards en vez
-  de 15 tabs apretadas.
-- 💾 **ADN persiste** entre reinicios (preferencias.anclaje_visual).
-- 💼 **Modo Cliente**: 5 plantillas de brief predefinidas + recuerda
-  el último brief.
-- 📚 **Biblioteca de paletas** con UI (swatches clicables, Aplicar/
-  Copiar/Borrar).
-- 🐛 **Propuestas profesionales**: las 5 salían como "Propuesta sin
-  nombre". Bug del parser corregido. Botón Guardar ahora persiste en
-  Favoritos con `origen: "modo_cliente"`.
-- 🐛 **`DataStore.borrar_entrada()` faltaba** — añadido método
-  genérico que valida índice y persiste.
-
-### Menú 📝 Plantillas (commits `6d568a0` → `e7f3f2a`)
-6 items: Añadir tags (snippets), Biblioteca ADN, Expansión rápida,
-Fórmulas, Plantillas, Seeds favoritos.
-
-- 🐛 **4 bugs**: borrar ADN cerraba ventana, borrar Seed cerraba
-  ventana, `combo_modelo_vid` mal nombrado (era `combo_modelo_video`),
-  trigger expansión rechazaba guiones.
-- 🔍 **Buscadores** en las 5 ventanas (snippets, ADN, fórmulas,
-  seeds, plantillas).
-- ✨ **Wizard de variables** al cargar plantilla: campo por variable,
-  previsualización en vivo, **recuerda los últimos valores por
-  plantilla** en `preferencias.plantilla_variables_ultimas`.
-- 📂 **Filtro por categoría en plantillas** (10 categorías ya estaban
-  en el JSON pero se descartaban al cargar).
-- ✏️ **Edición inline** en snippets y fórmulas.
-- 💡 **Tooltip de expansión rápida** en el campo "Describe tu idea"
-  para que se descubra la funcionalidad `;trigger`+Espacio.
-- 📝 Textos explicativos para clarificar Snippets vs Fórmulas (eran
-  conceptos solapados sin documentación visible).
+### Bloque 2 + sus fixes (commits `25db87b` → `2e4a54d`)
+- `25db87b` Sugerir devuelve TOP 3 modelos con razón individual (medallas
+  🥇🥈🥉), botón "✅ Usar este modelo" por card que cambia el combo del
+  modelo activo, botón "🚀 Probar los 3 en paralelo" que genera el prompt
+  optimizado para cada modelo y abre comparador. Helper
+  `_probar_modelos_y_comparar(idea, modelos, modo)` reutilizable.
+  Compar normal: slider de **2-5 modelos** (antes 3 fijos), filas
+  dinámicas. Botón "🏆 Usar este (modelo+prompt)" aplica AMBAS cosas
+  (modelo + prompt), antes solo cargaba el prompt.
+- `1ade7f8` fix: el LLM devolvía respuestas CONCATENADAS con múltiples
+  POSITIVE/NEGATIVE/prosa. Refuerzo del prompt + defensa regex client-side
+  que extrae solo el primer bloque limpio. Detecta si las N respuestas son
+  idénticas y avisa al usuario.
+- `5451292` feat: comparador persistente — al pulsar "Usar" NO se cierra
+  la ventana. La card aplicada gana borde dorado, las demás se desmarcan.
+  Botón explícito "Cerrar comparador" añadido.
+- `c1b4ef9` fix: IndexError con N>3 modelos en Compar (lista `colores_hdr`
+  hardcoded a 3 elementos, ahora cíclica con 5 colores). Layout dinámico,
+  highlight visual de card aplicada también en Compar normal.
+- `2e4a54d` fix: replicar el prompt estricto + extractor regex en
+  `_abrir_ventana_comparacion._generar()` — antes solo se aplicó en
+  Sugerir → Probar los 3, no en Compar normal, y el LLM mezclaba modelos
+  (Nano Banana incluía "counterfiet:" y "disney pixar:" en su respuesta).
 
 ---
 
-## 📜 Commits de la sesión (36 en total)
+## 📜 Commits de esta sesión (12 commits, en orden)
 
 ```
-e7f3f2a feat(plantillas): wizard de variables recuerda últimos valores
-51deba7 feat(plantillas): categorías + descubribilidad expansión + clarificar conceptos
-3322d55 feat(plantillas): buscadores + wizard variables + editar inline
-6d568a0 fix: 4 bugs en menú Plantillas
-e31f18c fix: DataStore.borrar_entrada(coleccion, idx) faltaba
-424e43a fix: propuestas Modo Cliente — nombres reales + bug guardar
-c8c0539 fix: NameError _dt no definido al guardar paleta / ADN / biblioteca
-b6e7180 feat(herramientas): persistencia ADN/brief + plantillas + biblioteca paletas
-43204dd feat(herramientas): indicador ADN permanente + moodboard borrar + CLI por modo
-fdbd84b test: añadir "paletas" al setup parcheado de DataStore
-5bb7120 fix: 3 bugs en menú Herramientas
-42d9b1a polish: messagebox de backup/restore más limpios
-bc82cda feat(backup): Exportar CSV con selector de colecciones
-3877cec feat(datos): UX en personajes, loras, historial/favoritos/estrellas
-3194fc4 fix: 4 bugs en Backup/Datos + auto-backup pre-restore
-99c63c7 fix(análisis): orden categorías glosario + tutorial diagnosticable
-ba10ef3 fix(análisis): pasos 1-6/11/13/18 del tutorial + glosario "Todas" plano
-9539fb8 fix(análisis): glosario alfabético + arregla "Probar" para funciones libres
-e95f86d feat(análisis): mejoras al menú Análisis — 5 items
-ee19c89 docs: guía de estilos — cobertura 100% de los 3 modos
-c44924e perf: guía de estilos — paginación + debounce del buscador
-73933a6 feat: guía de estilos — filtro por modo (imagen/vídeo/audio)
-3856577 feat: guía de estilos integrada en la app + ESTRUCTURA al día
-0e50630 chore: limpieza de archivos no usados + trackear assets necesarios
-0488f58 refactor: fase 5 — capa de componentes sobre mixins
-17c3d55 refactor: fase 4 — quitar monkey-patches de CTkToplevel
-9eeb756 refactor: fase 3 — partir config.py en data/*.json
-ec30dfb refactor: fase 2 — try/except + imports lazy
-877bcdf chore: fase 1 — limpieza segura
+2e4a54d fix(compar): petición estricta + extractor — antes el LLM mezclaba modelos
+c1b4ef9 fix(compar): IndexError con N>3 modelos + layout + highlight aplicado
+5451292 feat(comparador): persistente al usar — modelo+prompt+highlight visual
+1ade7f8 fix(sugerir/compar): Probar los 3 — respuestas concatenadas + labels
+25db87b feat(profundidad): Bloque 2 — Sugerir top 3 + Compar con ganador
+61848e1 fix(variaciones): modal con cards visibles — antes el resultado se comprimía
+9ad60b0 feat(profundidad): Bloque 1 — Ideas clicables · Pulse niveles · Preview caché
+0240790 feat(ui): barra de acciones con grupos visuales
+174ecc4 feat(ui): colores semánticos + Iterar reagrupado + Story/Board disabled-aware
+7a3650e fix(workflow): 2 bugs — Cron crash al cerrar + Macros sin confirmación
+3ea46a3 feat(ui): mejoras en menú UI — código muerto, escaneo doble, atajos
+e47f0b5 test: arreglar drift en test_persistence (2 tests)
+08c7f9e feat(herramientas): ADN biblioteca + moodboard reusable
+0103dd2 fix(plantillas/formulas): UX al borrar — sin parpadeo + confirmación
 ```
+
+(14 commits desde el HANDOFF anterior. Working tree limpio.)
 
 ---
 
 ## ✅ Menús ya revisados
 
-- 📊 **Análisis** — completo
-- 💾 **Backup** — completo
-- 📁 **Datos** — completo
-- 🛠 **Herramientas** — completo (con 3 detalles menores pendientes,
-  ver abajo)
-- 📝 **Plantillas** — completo (con 4 detalles menores cosméticos
-  pendientes, ver abajo)
-
-## 🚧 Menús pendientes de revisar
-
-- 🎨 **UI** (Ajustes, Atajos teclado, Biblioteca, Cambiar tema,
-  Dashboard, Modo Focus)
-- ⚙️ **Workflow** (A/B Testing, Búsqueda global, Cron prompts, Grabar
-  sesión, Grupo personajes, Macros, Proyectos, Versiones prompt)
-
-Hay también dos botones grandes en la barra del medio que merecen
-review: **ADN Visual** (en barra principal, no en menú) y **Análisis
-inverso**.
+- 📊 **Análisis** — completo (sesión 1)
+- 💾 **Backup** — completo (sesión 1)
+- 📁 **Datos** — completo (sesión 1)
+- 🛠 **Herramientas** — completo (sesión 1) + detalles menores (sesión 2)
+- 📝 **Plantillas** — completo (sesión 1) + detalles menores (sesión 2)
+- 🎨 **UI** — completo (sesión 2)
+- ⚙️ **Workflow** — solo los 2 bugs críticos en sesión 2. **5 detalles UX/menores
+  NO atacados** (ver abajo).
+- 🎬 **Barra de acciones** — refactor visual completo (sesión 2)
 
 ---
 
-## 🪶 Detalles menores pendientes (no críticos)
+## 🚧 Pendiente para la próxima sesión
 
-### En Herramientas
-1. **Anclaje rasgos**: cuando la biblioteca de ADNs crezca a 20+
-   entradas, sería útil añadir buscador. Hoy ya tiene buscador
-   (commit `3322d55`) pero la **descubribilidad de la "Biblioteca
-   ADN"** podría mejorar (botón más visible).
-2. **Moodboard**: si una imagen está corrupta o ilegible, el flujo
-   falla silenciosamente. Convendría capturar el error y mostrar
-   cuál imagen falló.
-3. **Estilo detectado del moodboard**: actualmente NO se guarda como
-   preset reusable — solo se aplica al prompt actual. Idea: guardar
-   en biblioteca de estilos.
+### A) Bloques de "profundidad" sin terminar (4 de 6)
 
-### En Plantillas
-4. **Borrar plantilla predefinida** cierra y reabre la ventana
-   (parpadea ~0.5s). En ADN y Seeds usé `_refrescar()` sin cerrar —
-   sería consistente aplicarlo aquí.
-5. **Crear ADN desde la biblioteca** no existe — Seeds tiene
-   "+ Crear nuevo seed" pero ADN no. Hoy solo se crean ADNs desde
-   "Anclaje rasgos" (carga imagen + Vision).
-6. **Confirmación al borrar snippet** — actualmente borra sin
-   `askyesno`. Un click accidental podría perder un snippet.
-7. **Snippets vs Fórmulas técnicamente solapadas** — los textos
-   explicativos ahora ayudan, pero estructuralmente son lo mismo
-   (lista de dicts con nombre + contenido). Refactor mayor sin valor
-   inmediato.
+El usuario quería implementar 6 bloques para hacer las funciones más completas.
+Hechos los Bloques 1 y 2. Pendientes:
 
-### Tests
-8. **2 tests de `test_persistence.py` fallan** desde hace tiempo
-   (drift entre tests y código, no introducido en esta sesión):
-   - `test_historial_max_100` — el código permite > 100
-   - `test_corrupt_preferences_returns_empty` — `{}` esperado pero
-     `{'_ejemplos_iniciados': True}` devuelto
-   No los he tocado para no enmascarar el drift; merece su propio
-   commit de "arreglar tests o actualizar comportamiento".
+#### Bloque 3 — Slider N en multi-prompts (~2-3h)
+Permitir N variable (en vez de N hardcoded) en estas funciones:
+- 🔀 **Variaciones** (`cmd_variaciones` en `modules/core.py:1905`) — actualmente 3 fijo
+- 🔂 **Iterar** (`_cmd_iteracion` en `modules/core.py:2059`) — actualmente 5 fijo
+- 🎭 **Mood** (`_cmd_moodboard` en `modules/tools_creative.py`) — actualmente 6 fijo
+- 🎞 **Story** (`_cmd_story_sequence` en `modules/tools_creative.py:1882`) — 3 fijo
+- 📽 **Board** (`_cmd_storyboard_video` en `modules/tools_creative.py:1927`) — 4 fijo
+- 🌀 **Walk** (`_cmd_random_walk` en `modules/tools_creative.py:1974`) — 5 fijo
+
+(Pulse ya tiene su propio sistema 3/5/custom — no tocar)
+
+**Patrón a aplicar**: similar al modal de Pulse del Bloque 1 (`_cmd_pulse` en
+tools_creative.py:73) — modal con slider, recordar última config en
+preferencias, Enter dispara generar. Cuidado con las funciones que se llaman
+también desde Macros (`_cmd_iteracion` y derivadas) — no romper esa ruta.
+
+#### Bloque 4 — Refinar con diff + undo (~2h)
+- `cmd_refinar` (`modules/core.py:2139`) sobrescribe el prompt sin avisar qué cambió.
+- Antes de aplicar, mostrar un **diff visual** verde/rojo (ya existe la
+  función `_cmd_diff_versiones` en `app.py:837` para inspiración).
+- Botón "↩️ Deshacer refinamiento" usando el sistema `_versiones_prompt` ya
+  existente (`_guardar_version_prompt` en `tools_workflow.py:452`).
+- Permitir cancelar el refinamiento antes de aplicar.
+
+#### Bloque 5 — Walk árbol visual (~3h)
+- `_cmd_random_walk` (`modules/tools_creative.py:1974`) hace 5 derivaciones
+  lineales (cada una basada en la anterior).
+- Convertir a **árbol con ramas**: el usuario puede en cualquier paso
+  "ramificar" en 3 direcciones distintas en lugar de seguir lineal.
+- Visualización tipo grafo simple (CTkCanvas o frames anidados).
+- Guardar la ruta elegida como "evolución X→Y→Z".
+
+#### Bloque 6 — Story/Board configurables (~3h)
+- 🎞 Story (`_cmd_story_sequence` en `tools_creative.py:1882`) — actualmente
+  Wide/Medium/Close fijos. Permitir elegir tipos de shot
+  (POV/OTS/Aerial/Dutch/Low/High angle/...).
+- 📽 Board (`_cmd_storyboard_video` en `tools_creative.py:1927`) —
+  apertura/desarrollo/climax/cierre fijos. Permitir elegir N frames (4/6/8)
+  y nombrar cada beat.
+- Encadenar Board con **🎬 →Vídeo** automáticamente (generar prompt de
+  vídeo que use esos N frames como keyframes).
+
+### B) Workflow — 5 detalles UX que se dejaron pasar
+
+El usuario eligió "solo los 2 bugs 🔴" en la revisión del menú Workflow,
+pero estos 5 detalles UX/menores siguen pendientes (de la tabla del análisis):
+
+1. **🆚 A/B Testing**: comentario en chino mezclado en `_actualizar_checkboxes`
+   (línea 1575 de `tools_workflow.py`) — copy-paste stale. Limpieza trivial.
+2. **🔄 Macros sin editor**: solo se puede borrar+recrear, no editar.
+   Tampoco se pueden reordenar pasos.
+3. **🔎 Búsqueda global sin debounce**: cada tecla busca en 8 colecciones.
+4. **🔎 Búsqueda global sin filtro por tipo**: mucho ruido.
+5. **👥 Grupo personajes**: el textbox de "Relación" lleva ejemplo pre-poblado
+   que se cuela en la idea si el usuario no lo borra. Sustituir por
+   `placeholder` real del Textbox.
+6. **🎙 Grabar sesión**: dead code en `_iniciar_grabacion` líneas 1207-1217 —
+   rama `else` que duplica el "parar" del toggle. Limpieza trivial.
+
+### C) Botones de barra principal (no revisados a fondo todavía)
+
+- 🧬 **ADN Visual** (`_cmd_adn_visual` en `tools_creative.py:670`) — revisión
+  pendiente, pero está bastante usado en otros sitios y ya recibió fixes
+  indirectos en sesión 1.
+- 🔍 **Análisis Inverso** (`_cmd_analisis_inverso` en `tools_creative.py:397`)
+  — revisión pendiente.
+
+### D) Comparador — mejoras opcionales que ofrecí pero no se implementaron
+
+- Botón "comparar lado a lado con diff" entre 2 cards seleccionadas
+- Botón "abrir Preview Pollinations con cada modelo" (genera bocetos en grid)
+
+### E) Mejoras de UX globales propuestas pero no implementadas
+
+- **Reorganizar barra de acciones en 3 secciones explícitas** (mencionado al
+  usuario): Generación / Análisis / Composición con divider entre cada
+  bloque. Hoy hay separadores entre grupos pero la jerarquía visual
+  podría ser más fuerte.
+- **Tooltips visibles permanentes** para los 14 botones-icono de la barra
+  inferior (POS/NEG/Todo/Comfy/Trad/etc) — algunos no tienen texto
+  y la descubribilidad depende del hover.
+- **Párrafo del modelo** (la descripción larga de "GPT Image 2..." debajo
+  del combo Modelo) — colapsable o tooltip, hoy ocupa 6 líneas.
 
 ---
 
-## 🔁 Cómo continuar (en sesión nueva)
+## 🪶 Detalles importantes para la próxima sesión
 
-Para retomar:
+### Patrón establecido para confirmar antes de borrar
+- ADN, Seeds, Snippets, Fórmulas, Plantillas, Macros — TODOS tienen
+  `messagebox.askyesno()` antes del pop().
+- Cuando añadas nuevas listas de colecciones, **NO te olvides** del askyesno.
 
-1. **Confirmar baseline**: `python main.py` debe arrancar limpio,
-   `python -m pytest tests/` debe dar 46/48.
-2. **Decidir qué tocar** entre:
-   - Los menús pendientes (UI, Workflow, botones de barra principal)
-   - Los detalles menores listados arriba
-   - Algún reporte nuevo del usuario
-3. **Patrón de trabajo de la sesión**:
-   - Antes de tocar: leer las funciones implicadas, dar análisis
-     honesto en formato tabla (bugs / UX / cosmético)
-   - Priorizar: 🔴 ALTA (bugs) / 🟡 MEDIA (UX) / 🟢 BAJA (polish)
-   - Preguntar antes de empezar refactors grandes
-   - 1 commit por bloque de cambios coherente
-   - Smoke test (`python -c "import app; print('OK')"`) tras cada bloque
-   - Si tocas estructuras del DataStore, recordar añadir el nombre a
-     `_NAMES` en `tests/test_persistence.py::_setup_store` o los tests
-     fallan con KeyError
+### Patrón establecido para modales de configuración
+Hecho en Pulse (Bloque 1) y Compar (Bloque 2). Mismo patrón para Bloque 3:
+```python
+def _cmd_X(self):
+    ...
+    prefs = self.store.cargar_preferencias()
+    ultima = prefs.get("X_config", {"n": default, ...})
+
+    cfg = GPromptWindow(self)
+    cfg.geometry(...)
+    cfg.transient(self); cfg.grab_set()
+
+    # ... sliders / radio / etc ...
+
+    def _ejecutar():
+        n = ...
+        # Guardar config
+        prefs_g["X_config"] = {...}
+        self.store.guardar_preferencias(prefs_g)
+        cfg.destroy()
+        self._lanzar_X(idea, n)  # helper reutilizable
+
+    cfg.bind("<Return>", lambda _e: _ejecutar())
+```
+
+### Patrón establecido para extraer prompt del LLM
+Cuando se generen N prompts en paralelo desde múltiples threads (Compar,
+Sugerir → Probar los 3), seguir:
+1. **Petición ESTRICTA** con estructura exacta:
+   `DEVUELVE EXACTAMENTE 2 LÍNEAS: POSITIVE PROMPT: ... / NEGATIVE PROMPT: ...`
+2. **Defensa regex client-side** tras la respuesta:
+   ```python
+   m_pos = re.search(r'(?:POSITIVE\s+)?PROMPT\s*:\s*(.+?)(?=\n\s*NEGATIVE\s+PROMPT\s*:|\n\s*POSITIVE\s+PROMPT\s*:|\n\s*###|\n\s*\*\*\*|\Z)', resp, re.DOTALL|re.IGNORECASE)
+   ```
+   Capturar solo el primer bloque. Truncar a `max_c + 200` por la última coma.
+3. **Detección de duplicados**: si las N respuestas son idénticas, avisar.
+
+### Patrón establecido para `_abrir_comparador`
+Acepta `labels=` opcional para sustituir "Variación #N". Si una variante
+empieza con `### nombre ###\n`, esa cabecera se extrae automáticamente.
+
+### Patrón establecido para "Usar" en comparadores
+NO destruir la ventana. Aplicar (modelo + prompt) y marcar la card
+aplicada con borde dorado (#fbbf24). Botón explícito "Cerrar comparador"
+en el pie.
+
+### Helper nuevo a usar
+- `_intentar_cambiar_modelo(nombre)` en `app.py` — busca el modelo en la
+  lista del modo actual y aplica al combo correspondiente. Devuelve el
+  nombre aplicado o None. Útil para integrar comparadores con la UI.
+
+### Story/Board y modo activo
+- `_on_modo_cambio()` en `modules/core.py:950` habilita/deshabilita los
+  botones `self.btn_story` y `self.btn_board` según el modo.
+- Si en Bloque 6 se renombran o se mueven, recordar actualizar las refs
+  en `_on_modo_cambio()`.
+
+---
+
+## 🔁 Cómo continuar (sesión nueva)
+
+1. **Confirmar baseline**:
+   - `python main.py` arranca limpio
+   - `python -m pytest tests/` → 48/48
+2. **Decidir entre**:
+   - Bloque 3 (Slider N) — más rápido, alto valor
+   - Bloque 4 (Refinar diff+undo) — más impactante visualmente
+   - Bloque 5 (Walk árbol) — más ambicioso
+   - Bloque 6 (Story/Board config) — útil para creadores serios
+   - O atacar los detalles UX restantes de Workflow (A.1-A.6)
+   - O revisar los botones de barra ADN Visual y Análisis Inverso (C)
+3. **Patrón de trabajo de esta sesión**:
+   - Análisis honesto en tabla antes de tocar nada
+   - Priorización 🔴 ALTA / 🟡 MEDIA / 🟢 BAJA
+   - Preguntar antes de empezar bloques grandes
+   - 1 commit por bloque coherente
+   - Smoke test (`python -c "import app; print('OK')"`) tras cada Edit
+   - Probar la app en background con `python main.py` cuando el usuario lo pida
+   - Si algo da bug en la prueba, fix inmediato + commit + relanzar app
 
 ---
 
 ## ⚙️ Atajos útiles para retomar
 
 ```powershell
-# Ver el árbol de la sesión
-git log --oneline -30
+# Árbol de commits de esta sesión
+git log --oneline 5d4a662..HEAD
 
-# Ver qué cambia un commit
+# Ver cambios de un commit
 git show <hash>
 
 # Revertir un commit aislado si rompe algo
@@ -272,11 +342,11 @@ git revert <hash>
 # Tests
 python -m pytest tests/ -v
 
-# Arrancar la app
+# Arrancar app (modo background para probar)
 python main.py
 ```
 
 ---
 
-*Generado el 2026-05-21 al final de una sesión de ~22 horas de trabajo.*
-*Working tree limpio. Branch: main.*
+*Generado al final de sesión 2 — 14 commits añadidos, 48/48 tests, working tree limpio.*
+*Branch: `main`. No se ha hecho push.*
