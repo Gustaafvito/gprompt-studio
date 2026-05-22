@@ -582,28 +582,68 @@ class BackupExportMixin:
                       command=_copiar_filtrados).pack(pady=(4, 12))
 
     def _cmd_busqueda_global(self):
-        """Busca un término en TODAS las colecciones: historial, favoritos, estrellas, seeds, snippets, fórmulas."""
+        """Búsqueda global con debounce 250ms + filtro por tipo.
+
+        Antes: `ent.bind("<KeyRelease>", buscar)` disparaba la búsqueda
+        en 8 colecciones con cada tecla → notable lag con catálogos grandes.
+        Sin filtro por tipo → mucho ruido cuando solo buscas en una
+        colección concreta.
+        """
         vent = GPromptWindow(self)
         vent.title("🔎 Búsqueda global")
-        vent.geometry("750x600")
+        vent.geometry("780x680")
         vent.transient(self)
 
         ctk.CTkLabel(vent, text="🔎 Búsqueda en todas las colecciones",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Busca en: Historial, Favoritos, Estrellas, Seeds, Snippets, Fórmulas, Personajes, LoRAs",
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 10))
 
         f_search = ctk.CTkFrame(vent, fg_color="transparent")
-        f_search.pack(fill="x", padx=15, pady=5)
-        ent = ctk.CTkEntry(f_search, placeholder_text="Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')...",
+        f_search.pack(fill="x", padx=15, pady=(0, 4))
+        ent = ctk.CTkEntry(f_search,
+                            placeholder_text="Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')...",
                             width=600, height=32, font=ctk.CTkFont(size=12))
         ent.pack(side="left", fill="x", expand=True)
         ent.focus_set()
 
+        # ── Filtros por tipo (checkboxes) ──
+        # Default: todos los tipos activos. Al desmarcar, esa colección
+        # se omite de la búsqueda → menos ruido y más rapidez.
+        filtros = {
+            "historial":  ctk.BooleanVar(value=True),
+            "favoritos":  ctk.BooleanVar(value=True),
+            "estrellas":  ctk.BooleanVar(value=True),
+            "seeds":      ctk.BooleanVar(value=True),
+            "snippets":   ctk.BooleanVar(value=True),
+            "formulas":   ctk.BooleanVar(value=True),
+            "personajes": ctk.BooleanVar(value=True),
+            "loras":      ctk.BooleanVar(value=True),
+        }
+        filtro_labels = [
+            ("historial",  "📋 Historial"),
+            ("favoritos",  "⭐ Favoritos"),
+            ("estrellas",  "🌟 Estrellas"),
+            ("seeds",      "💎 Seeds"),
+            ("snippets",   "✂️ Snippets"),
+            ("formulas",   "🧪 Fórmulas"),
+            ("personajes", "🧑 Personajes"),
+            ("loras",      "🔗 LoRAs"),
+        ]
+
+        f_filtros = ctk.CTkFrame(vent, fg_color="transparent")
+        f_filtros.pack(fill="x", padx=15, pady=(2, 6))
+        ctk.CTkLabel(f_filtros, text="Filtrar:",
+                     font=ctk.CTkFont(size=10, weight="bold"),
+                     text_color="#888").pack(side="left", padx=(0, 6))
+        for key, label in filtro_labels:
+            ctk.CTkCheckBox(f_filtros, text=label, variable=filtros[key],
+                            font=ctk.CTkFont(size=10), width=20,
+                            command=lambda: _disparar_busqueda()
+                            ).pack(side="left", padx=4)
+
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(5, 10))
 
-        def buscar(event=None):
+        def buscar():
             for w in scroll.winfo_children(): w.destroy()
             termino = ent.get().strip().lower()
             if not termino or len(termino) < 2:
@@ -614,78 +654,95 @@ class BackupExportMixin:
             resultados = []
             prefs = self.store.cargar_preferencias()
 
-            for i, item in enumerate(self.store.historial or []):
-                if isinstance(item, dict):
-                    txt_full = " ".join([
-                        str(item.get("contenido", "")),
-                        str(item.get("estilos", "")),
-                        str(item.get("personaje", "")),
-                        str(item.get("plataforma", "")),
-                    ]).lower()
-                else:
-                    txt_full = str(item).lower()
-                if termino in txt_full:
-                    contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                    resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+            if filtros["historial"].get():
+                for item in (self.store.historial or []):
+                    if isinstance(item, dict):
+                        txt_full = " ".join([
+                            str(item.get("contenido", "")),
+                            str(item.get("estilos", "")),
+                            str(item.get("personaje", "")),
+                            str(item.get("plataforma", "")),
+                        ]).lower()
+                    else:
+                        txt_full = str(item).lower()
+                    if termino in txt_full:
+                        contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
+                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
 
-            for item in (self.store.favoritos or []):
-                if isinstance(item, dict):
-                    txt = item.get("contenido", "") + " " + item.get("nombre", "")
-                else:
-                    txt = str(item)
-                if termino in txt.lower():
-                    contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                    nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                    resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+            if filtros["favoritos"].get():
+                for item in (self.store.favoritos or []):
+                    if isinstance(item, dict):
+                        txt = item.get("contenido", "") + " " + item.get("nombre", "")
+                    else:
+                        txt = str(item)
+                    if termino in txt.lower():
+                        contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
+                        nombre = item.get("nombre", "") if isinstance(item, dict) else ""
+                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
 
-            for item in (self.store.estrellas or []):
-                if isinstance(item, dict):
-                    txt = item.get("contenido", "") + " " + item.get("nombre", "")
-                else:
-                    txt = str(item)
-                if termino in txt.lower():
-                    contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                    nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                    resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+            if filtros["estrellas"].get():
+                for item in (self.store.estrellas or []):
+                    if isinstance(item, dict):
+                        txt = item.get("contenido", "") + " " + item.get("nombre", "")
+                    else:
+                        txt = str(item)
+                    if termino in txt.lower():
+                        contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
+                        nombre = item.get("nombre", "") if isinstance(item, dict) else ""
+                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
 
-            for s in (prefs.get("seeds_favoritos") or []):
-                txt = " ".join([s.get("nombre", ""), str(s.get("estilos", [])), s.get("plataforma", ""),
-                                 s.get("modelo_img", ""), s.get("modelo_vid", "")]).lower()
-                if termino in txt:
-                    desc = f"Modelo: {s.get('modelo_img') or s.get('modelo_vid', '')}, Estilos: {', '.join(s.get('estilos', [])[:3])}"
-                    resultados.append(("💎 Seed", s.get("nombre", "?"), desc, lambda seed=s: self._aplicar_seed(seed)))
+            if filtros["seeds"].get():
+                for s in (prefs.get("seeds_favoritos") or []):
+                    txt = " ".join([s.get("nombre", ""), str(s.get("estilos", [])), s.get("plataforma", ""),
+                                     s.get("modelo_img", ""), s.get("modelo_vid", "")]).lower()
+                    if termino in txt:
+                        desc = f"Modelo: {s.get('modelo_img') or s.get('modelo_vid', '')}, Estilos: {', '.join(s.get('estilos', [])[:3])}"
+                        resultados.append(("💎 Seed", s.get("nombre", "?"), desc, lambda seed=s: self._aplicar_seed(seed)))
 
-            for s in (prefs.get("snippets") or []):
-                txt = (s.get("nombre", "") + " " + s.get("tags", "")).lower()
-                if termino in txt:
-                    resultados.append(("✂️ Snippet", s.get("nombre", "?"), s.get("tags", "")[:200],
-                                        lambda tags=s.get("tags", ""): self._aplicar_atajo_tags(tags)))
+            if filtros["snippets"].get():
+                for s in (prefs.get("snippets") or []):
+                    txt = (s.get("nombre", "") + " " + s.get("tags", "")).lower()
+                    if termino in txt:
+                        resultados.append(("✂️ Snippet", s.get("nombre", "?"), s.get("tags", "")[:200],
+                                            lambda tags=s.get("tags", ""): self._aplicar_atajo_tags(tags)))
 
-            for f in (prefs.get("formulas") or []):
-                txt = (f.get("nombre", "") + " " + f.get("positive", "") + " " + f.get("negative", "")).lower()
-                if termino in txt:
-                    pos_neg = f.get("positive", "")[:200]
-                    def _cargar_formula(ff=f):
-                        txt_form = f"POSITIVE PROMPT: {ff.get('positive', '')}"
-                        if ff.get('negative'):
-                            txt_form += f"\nNEGATIVE PROMPT: {ff.get('negative')}"
-                        self.actualizar_salida(txt_form)
-                    resultados.append(("🧪 Fórmula", f.get("nombre", "?"), pos_neg, _cargar_formula))
+            if filtros["formulas"].get():
+                for f in (prefs.get("formulas") or []):
+                    txt = (f.get("nombre", "") + " " + f.get("positive", "") + " " + f.get("negative", "")).lower()
+                    if termino in txt:
+                        pos_neg = f.get("positive", "")[:200]
+                        def _cargar_formula(ff=f):
+                            txt_form = f"POSITIVE PROMPT: {ff.get('positive', '')}"
+                            if ff.get('negative'):
+                                txt_form += f"\nNEGATIVE PROMPT: {ff.get('negative')}"
+                            self.actualizar_salida(txt_form)
+                        resultados.append(("🧪 Fórmula", f.get("nombre", "?"), pos_neg, _cargar_formula))
 
-            for p in (self.store.personajes or []):
-                txt = (p.get("nombre", "") + " " + p.get("rasgos", "")).lower()
-                if termino in txt:
-                    resultados.append(("🧑 Personaje", p.get("nombre", "?"), p.get("rasgos", "")[:200],
-                                        lambda nombre=p.get("nombre", ""): self.combo_personaje.set(nombre) if hasattr(self, 'combo_personaje') else None))
+            if filtros["personajes"].get():
+                for p in (self.store.personajes or []):
+                    txt = (p.get("nombre", "") + " " + p.get("rasgos", "")).lower()
+                    if termino in txt:
+                        resultados.append(("🧑 Personaje", p.get("nombre", "?"), p.get("rasgos", "")[:200],
+                                            lambda nombre=p.get("nombre", ""): self.combo_personaje.set(nombre) if hasattr(self, 'combo_personaje') else None))
 
-            for l in (self.store.loras or []):
-                txt = (l.get("nombre", "") + " " + l.get("descripcion", "")).lower()
-                if termino in txt:
-                    resultados.append(("🔗 LoRA", l.get("nombre", "?"), l.get("descripcion", "")[:200],
-                                        lambda nombre=l.get("nombre", ""): self.combo_lora.set(nombre) if hasattr(self, 'combo_lora') else None))
+            if filtros["loras"].get():
+                for l in (self.store.loras or []):
+                    txt = (l.get("nombre", "") + " " + l.get("descripcion", "")).lower()
+                    if termino in txt:
+                        resultados.append(("🔗 LoRA", l.get("nombre", "?"), l.get("descripcion", "")[:200],
+                                            lambda nombre=l.get("nombre", ""): self.combo_lora.set(nombre) if hasattr(self, 'combo_lora') else None))
 
             if not resultados:
-                ctk.CTkLabel(scroll, text=f"Sin resultados para '{termino}'",
+                # ¿Por qué no hay resultados? Distinguir entre "filtros restrictivos"
+                # y "el término no existe en ninguna colección activa".
+                tipos_activos = sum(1 for v in filtros.values() if v.get())
+                if tipos_activos == 0:
+                    msg = "⚠️ No hay tipos seleccionados. Marca al menos uno."
+                elif tipos_activos < len(filtros):
+                    msg = f"Sin resultados para '{termino}' en los {tipos_activos} tipo(s) seleccionados."
+                else:
+                    msg = f"Sin resultados para '{termino}'"
+                ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
@@ -712,7 +769,15 @@ class BackupExportMixin:
                                       command=lambda a=accion: (a(), vent.destroy(), self.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
-        ent.bind("<KeyRelease>", buscar)
+        # Debounce: cada tecla cancela el `after` pendiente y reprograma.
+        # 250ms es suficiente para no disparar 8-collection-scan por cada letra.
+        _busqueda_pendiente = {"after_id": None}
+        def _disparar_busqueda(_e=None):
+            if _busqueda_pendiente["after_id"]:
+                try: vent.after_cancel(_busqueda_pendiente["after_id"])
+                except Exception as _e2: logger.debug(f"[silent] {_e2}")
+            _busqueda_pendiente["after_id"] = vent.after(250, buscar)
+        ent.bind("<KeyRelease>", _disparar_busqueda)
 
     def _close_menu_if_open(self, event=None):
         """Cierra el menú desplegable si está abierto."""

@@ -593,43 +593,108 @@ class ToolsWorkflowMixin:
             "🇪🇸 Traducir al español": "traducir",
         }
 
-        # Form crear nueva macro
+        # Form crear/editar macro
+        # Estado: si `editing_idx` != None, estamos editando una macro
+        # existente; el botón principal cambia a "Guardar cambios".
+        edit_state = {"idx": None}
+
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         form.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(form, text="➕ Nueva macro", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
-        ent_nombre_m = ctk.CTkEntry(form, placeholder_text="Nombre (ej: 'Pulir prompt cinematográfico')", width=580)
+        lbl_form_titulo = ctk.CTkLabel(form, text="➕ Nueva macro",
+                                        font=ctk.CTkFont(size=11, weight="bold"))
+        lbl_form_titulo.pack(anchor="w", padx=10, pady=(8, 2))
+
+        ent_nombre_m = ctk.CTkEntry(form,
+                                     placeholder_text="Nombre (ej: 'Pulir prompt cinematográfico')",
+                                     width=580)
         ent_nombre_m.pack(padx=10, pady=2)
 
-        # Lista de pasos seleccionados
+        # Lista de pasos como cards con ↑ ↓ ✕ por paso
         pasos_state = {"lista": []}
-        lbl_pasos = ctk.CTkLabel(form, text="Pasos: (ninguno aún)", font=ctk.CTkFont(size=10), text_color=c["muted_text"])
-        lbl_pasos.pack(anchor="w", padx=10, pady=2)
+        pasos_box = ctk.CTkFrame(form, fg_color="transparent")
+        pasos_box.pack(fill="x", padx=10, pady=(4, 2))
 
         def _refrescar_pasos():
-            if pasos_state["lista"]:
-                lbl_pasos.configure(text=f"Pasos: {' → '.join(pasos_state['lista'])}", text_color=c["hdr_text"])
-            else:
-                lbl_pasos.configure(text="Pasos: (ninguno aún)", text_color=c["muted_text"])
+            for w in pasos_box.winfo_children():
+                w.destroy()
+            if not pasos_state["lista"]:
+                ctk.CTkLabel(pasos_box, text="(añade pasos abajo)",
+                             font=ctk.CTkFont(size=10, slant="italic"),
+                             text_color=c["muted_text"]).pack(anchor="w")
+                return
+            for idx_p, label in enumerate(pasos_state["lista"]):
+                row = ctk.CTkFrame(pasos_box, fg_color=c["fg_frame"],
+                                    corner_radius=4)
+                row.pack(fill="x", pady=1)
+                ctk.CTkLabel(row, text=f"  {idx_p + 1}. {label}",
+                             font=ctk.CTkFont(size=10),
+                             text_color=c["hdr_text"],
+                             anchor="w").pack(side="left", fill="x",
+                                              expand=True, padx=4, pady=2)
+
+                def _subir(i=idx_p):
+                    if i > 0:
+                        lst = pasos_state["lista"]
+                        lst[i - 1], lst[i] = lst[i], lst[i - 1]
+                        _refrescar_pasos()
+
+                def _bajar(i=idx_p):
+                    lst = pasos_state["lista"]
+                    if i < len(lst) - 1:
+                        lst[i + 1], lst[i] = lst[i], lst[i + 1]
+                        _refrescar_pasos()
+
+                def _quitar(i=idx_p):
+                    if 0 <= i < len(pasos_state["lista"]):
+                        pasos_state["lista"].pop(i)
+                        _refrescar_pasos()
+
+                ctk.CTkButton(row, text="↑", width=24, height=20,
+                              fg_color=c["fg_dark"],
+                              font=ctk.CTkFont(size=10),
+                              state="normal" if idx_p > 0 else "disabled",
+                              command=_subir).pack(side="left", padx=1)
+                ctk.CTkButton(row, text="↓", width=24, height=20,
+                              fg_color=c["fg_dark"],
+                              font=ctk.CTkFont(size=10),
+                              state="normal" if idx_p < len(pasos_state["lista"]) - 1 else "disabled",
+                              command=_bajar).pack(side="left", padx=1)
+                ctk.CTkButton(row, text="✕", width=24, height=20,
+                              fg_color="#5a1a1a", hover_color="#3a0f0f",
+                              font=ctk.CTkFont(size=10, weight="bold"),
+                              command=_quitar).pack(side="left", padx=1)
 
         # Selector de acción a añadir
         f_add = ctk.CTkFrame(form, fg_color="transparent")
         f_add.pack(fill="x", padx=10, pady=2)
         var_accion = ctk.StringVar(value=list(acciones_disponibles.keys())[0])
-        cb_acc = ctk.CTkComboBox(f_add, values=list(acciones_disponibles.keys()), variable=var_accion, width=400, height=24)
+        cb_acc = ctk.CTkComboBox(f_add, values=list(acciones_disponibles.keys()),
+                                  variable=var_accion, width=400, height=24)
         cb_acc.pack(side="left", padx=(0, 5))
 
         def _add_paso():
             label = var_accion.get()
             pasos_state["lista"].append(label)
             _refrescar_pasos()
-        def _quitar_ultimo():
-            if pasos_state["lista"]:
-                pasos_state["lista"].pop()
-                _refrescar_pasos()
 
-        ctk.CTkButton(f_add, text="➕", width=28, height=24, command=_add_paso).pack(side="left", padx=2)
-        ctk.CTkButton(f_add, text="↩", width=28, height=24, fg_color="#5a1a1a",
-                      command=_quitar_ultimo).pack(side="left", padx=2)
+        ctk.CTkButton(f_add, text="➕ Añadir paso", width=120, height=24,
+                      command=_add_paso).pack(side="left", padx=2)
+
+        def _cancelar_edicion():
+            edit_state["idx"] = None
+            ent_nombre_m.delete(0, "end")
+            pasos_state["lista"] = []
+            _refrescar_pasos()
+            lbl_form_titulo.configure(text="➕ Nueva macro")
+            btn_crear.configure(text="✅ Crear macro", fg_color="#1a7a3c")
+            btn_cancelar.pack_forget()
+
+        btn_cancelar = ctk.CTkButton(f_add, text="❌ Cancelar edición",
+                                      width=160, height=24,
+                                      fg_color="#5a1a1a",
+                                      font=ctk.CTkFont(size=10),
+                                      command=_cancelar_edicion)
+        # btn_cancelar.pack(...)  ← se empaca solo cuando edit_state["idx"] != None
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
@@ -654,6 +719,25 @@ class ToolsWorkflowMixin:
                 def _ejecutar(macro=m):
                     self._ejecutar_macro(macro, acciones_disponibles)
                     vent.destroy()
+
+                def _editar(idx=i, macro=m):
+                    # Cargar la macro en el form de arriba para editarla
+                    edit_state["idx"] = idx
+                    ent_nombre_m.delete(0, "end")
+                    ent_nombre_m.insert(0, macro.get("nombre", ""))
+                    pasos_state["lista"] = list(macro.get("pasos", []))
+                    _refrescar_pasos()
+                    lbl_form_titulo.configure(
+                        text=f"✏️ Editando: {macro.get('nombre', '?')}")
+                    btn_crear.configure(text="💾 Guardar cambios",
+                                         fg_color="#1a5a8a")
+                    btn_cancelar.pack(side="left", padx=2)
+                    # Scroll al form
+                    try:
+                        ent_nombre_m.focus_set()
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+
                 def _borrar(idx=i, nombre=m.get("nombre", "?")):
                     if not messagebox.askyesno(
                         "Borrar macro",
@@ -666,29 +750,47 @@ class ToolsWorkflowMixin:
                         actual2.pop(idx)
                         prefs["macros"] = actual2
                         self.store.guardar_preferencias(prefs)
+                        # Si estábamos editando esta macro, salir del modo edición
+                        if edit_state["idx"] == idx:
+                            _cancelar_edicion()
                         refrescar()
+
                 ctk.CTkButton(btn_row, text="▶ Ejecutar", width=100, height=22, fg_color="#1a7a3c",
                               font=ctk.CTkFont(size=10), command=_ejecutar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="✏️ Editar", width=90, height=22, fg_color="#1a4a7a",
+                              font=ctk.CTkFont(size=10), command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color="#5a1a1a",
                               font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
 
-        def crear():
+        def crear_o_guardar():
             nombre = ent_nombre_m.get().strip()
             if not nombre or not pasos_state["lista"]:
                 self.set_estado("⚠️ Rellena nombre y añade al menos un paso.", "#e67e22")
                 return
             actual = prefs.get("macros", [])
-            actual.append({"nombre": nombre, "pasos": list(pasos_state["lista"])})
+            nueva = {"nombre": nombre, "pasos": list(pasos_state["lista"])}
+            if edit_state["idx"] is not None:
+                # Modo editar: reemplazar la macro existente
+                idx = edit_state["idx"]
+                if 0 <= idx < len(actual):
+                    actual[idx] = nueva
+                self.set_estado(f"💾 Macro '{nombre}' actualizada", "#2ecc71")
+            else:
+                # Modo crear: añadir nueva al final
+                actual.append(nueva)
+                self.set_estado(f"✅ Macro '{nombre}' creada", "#2ecc71")
             prefs["macros"] = actual
             self.store.guardar_preferencias(prefs)
-            ent_nombre_m.delete(0, "end")
-            pasos_state["lista"] = []
-            _refrescar_pasos()
+            _cancelar_edicion()
             refrescar()
 
-        ctk.CTkButton(form, text="✅ Crear macro", width=140, height=26, fg_color="#1a7a3c",
-                      font=ctk.CTkFont(size=10, weight="bold"), command=crear).pack(pady=(0, 8))
+        btn_crear = ctk.CTkButton(form, text="✅ Crear macro", width=160, height=28,
+                                   fg_color="#1a7a3c",
+                                   font=ctk.CTkFont(size=10, weight="bold"),
+                                   command=crear_o_guardar)
+        btn_crear.pack(pady=(4, 8))
 
+        _refrescar_pasos()
         refrescar()
 
     def _ejecutar_macro(self, macro, acciones_disponibles):
@@ -1184,8 +1286,7 @@ class ToolsWorkflowMixin:
         """Inicia / detiene la grabación de sesión (con o sin vídeo según preferencia)."""
         self._sesion_init()
         if not self._sesion_grabando:
-            # Preguntar tipo de grabación de vídeo
-            tipo_grabacion = "app"  # default
+            # Preguntar tipo de grabación de vídeo si el switch está ON
             if getattr(self, '_sesion_grabar_video', False):
                 if self._sesion_video_disponible():
                     # Ventana de selección
@@ -1226,7 +1327,12 @@ class ToolsWorkflowMixin:
             self._cmd_sesion_exportar(video_path=video_path)
 
     def _iniciar_grabacion(self, tipo_video):
-        """Inicia la grabación con el tipo de vídeo especificado."""
+        """Inicia la grabación con el tipo de vídeo especificado.
+
+        `tipo_video`: "nada" | "app" | "pantalla". (La rama `else` previa
+        replicaba el código de "parar" del toggle pero era dead code —
+        esta función solo se llama desde el flujo de inicio).
+        """
         self._sesion_eventos = []
         self._sesion_grabando = True
         self._sesion_inicio = datetime.datetime.now()
@@ -1246,17 +1352,6 @@ class ToolsWorkflowMixin:
                 self.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
             else:
                 self.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
-        else:
-            # Parar
-            self._sesion_log("⏹ GRABACIÓN DETENIDA")
-            self._sesion_grabando = False
-            # Detener vídeo si estaba activo
-            video_path = None
-            if self._sesion_video_running or self._sesion_video_writer:
-                self.set_estado("⏹ Cerrando vídeo...")
-                video_path = self._sesion_video_detener()
-            # Pasar la ruta del vídeo a la ventana de exportación
-            self._cmd_sesion_exportar(video_path=video_path)
 
     def _cmd_sesion_exportar(self, video_path=None):
         """Abre ventana con el log de la sesión y opciones de exportación.
@@ -1607,14 +1702,25 @@ class ToolsWorkflowMixin:
                                     font=ctk.CTkFont(size=10), text_color="#888")
         lbl_contador.pack(pady=(0, 5))
 
+        # Refs a los checkboxes para deshabilitar visualmente los no
+        # seleccionados cuando ya hay 2 marcados.
+        dim_checks = {}
+
         def _actualizar_checkboxes():
             total = sum(1 for v in dim_vars.values() if v.get())
-            lbl_contador.configure(text=f"Seleccionadas: {total} (máx 2)")
-            # Deshabilitar los no seleccionados si hay 2
+            lbl_contador.configure(
+                text=f"Seleccionadas: {total} (máx 2)",
+                text_color="#2ecc71" if 1 <= total <= 2 else "#e67e22",
+            )
+            # Deshabilitar visualmente los no seleccionados si ya hay 2
             for nombre, var in dim_vars.items():
+                cb = dim_checks.get(nombre)
+                if not cb:
+                    continue
                 if total >= 2 and not var.get():
-                    dim_vars[nombre].set(False)
-                    # Aquí no，我们可以 deshabilitar el checkbox pero mejoramos el mensaje
+                    cb.configure(state="disabled")
+                else:
+                    cb.configure(state="normal")
 
         for nombre, valores in self.AB_DIMENSIONES.items():
             var = ctk.BooleanVar(value=False)
@@ -1622,8 +1728,10 @@ class ToolsWorkflowMixin:
             var.trace_add("write", lambda *a: _actualizar_checkboxes())
             row = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
             row.pack(fill="x", pady=2)
-            ctk.CTkCheckBox(row, text=f"  {nombre}", variable=var,
-                            font=ctk.CTkFont(size=11)).pack(side="left", padx=10, pady=6)
+            cb = ctk.CTkCheckBox(row, text=f"  {nombre}", variable=var,
+                                  font=ctk.CTkFont(size=11))
+            cb.pack(side="left", padx=10, pady=6)
+            dim_checks[nombre] = cb
             ctk.CTkLabel(row, text=f"  ej: {valores[0]}",
                          font=ctk.CTkFont(size=9, slant="italic"),
                          text_color="#666").pack(side="left", padx=4)

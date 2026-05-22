@@ -638,11 +638,40 @@ class ToolsCreativeMixin:
 
             personajes_data.append({"combo": cb, "desc": ent_desc})
 
-        # Relación entre ellos
-        ctk.CTkLabel(vent, text="Relación / contexto entre ellos:", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=15, pady=(10, 2))
-        txt_relacion = ctk.CTkTextbox(vent, height=60, font=ctk.CTkFont(size=11))
+        # Relación entre ellos — CTkTextbox no tiene placeholder_text nativo
+        # así que simulamos uno: texto inicial gris, se borra al hacer focus.
+        # Antes el placeholder se colaba en la idea generada si el usuario
+        # no lo borraba manualmente.
+        ctk.CTkLabel(vent, text="Relación / contexto entre ellos:",
+                     font=ctk.CTkFont(size=11, weight="bold")
+                     ).pack(anchor="w", padx=15, pady=(10, 2))
+        txt_relacion = ctk.CTkTextbox(vent, height=60,
+                                       font=ctk.CTkFont(size=11))
         txt_relacion.pack(fill="x", padx=15, pady=(0, 8))
-        txt_relacion.insert("1.0", "ej: están negociando un contrato, primero plano de uno, los otros al fondo desenfocados")
+
+        _placeholder_relacion = "ej: están negociando un contrato, primero plano de uno, los otros al fondo desenfocados"
+        _relacion_state = {"placeholder_visible": True}
+        _color_normal = txt_relacion.cget("text_color")
+
+        def _mostrar_placeholder():
+            txt_relacion.delete("1.0", "end")
+            txt_relacion.insert("1.0", _placeholder_relacion)
+            txt_relacion.configure(text_color="#6b7280")
+            _relacion_state["placeholder_visible"] = True
+
+        def _on_focus_in(_e=None):
+            if _relacion_state["placeholder_visible"]:
+                txt_relacion.delete("1.0", "end")
+                txt_relacion.configure(text_color=_color_normal)
+                _relacion_state["placeholder_visible"] = False
+
+        def _on_focus_out(_e=None):
+            if not txt_relacion.get("1.0", "end").strip():
+                _mostrar_placeholder()
+
+        _mostrar_placeholder()
+        txt_relacion.bind("<FocusIn>", _on_focus_in)
+        txt_relacion.bind("<FocusOut>", _on_focus_out)
 
         def _generar_grupo():
             personajes_def = []
@@ -667,7 +696,8 @@ class ToolsCreativeMixin:
                 self.set_estado("⚠️ Define al menos 2 personajes para hacer un grupo.", "#e67e22")
                 return
 
-            relacion = txt_relacion.get("1.0", "end").strip()
+            # Si el placeholder sigue visible, la relación se considera vacía
+            relacion = "" if _relacion_state["placeholder_visible"] else txt_relacion.get("1.0", "end").strip()
 
             # Construir idea para el campo de idea
             idea_compuesta = f"Escena con {len(personajes_def)} personajes. "
