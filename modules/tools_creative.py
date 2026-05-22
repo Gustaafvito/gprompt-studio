@@ -466,29 +466,65 @@ class ToolsCreativeMixin:
 
         def _gen_modelo(nombre_mod):
             try:
-                # Construir petición con el modelo "fingido" — el LLM genera el
-                # prompt como si fuera para ese modelo.
                 from config import get_image_model_specs as _gim, get_model_specs as _gms
                 specs = _gim(nombre_mod) or _gms(nombre_mod) or {}
                 max_c = specs.get("max_chars", 1500)
                 has_neg = specs.get("has_negative", True)
                 is_natural = specs.get("is_natural", False)
-                fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
-                neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "Solo POSITIVE (sin NEGATIVE)."
+                best_for = specs.get("best_for", "")[:200] if specs else ""
+
+                fmt = "lenguaje natural descriptivo en una sola línea" if is_natural else "tags separados por comas con pesos opcionales (tag:1.2)"
+                # Petición ESTRICTA — el bug anterior era que el LLM
+                # devolvía POSITIVE+NEGATIVE+prosa+POSITIVE concatenados.
+                # Aquí forzamos UNA sola sección sin texto adicional.
+                if has_neg:
+                    estructura = (
+                        "DEVUELVE EXACTAMENTE 2 LÍNEAS y nada más:\n"
+                        "Línea 1: POSITIVE PROMPT: <prompt en una línea>\n"
+                        "Línea 2: NEGATIVE PROMPT: <negative en una línea>"
+                    )
+                else:
+                    estructura = (
+                        "DEVUELVE EXACTAMENTE 1 LÍNEA y nada más:\n"
+                        "Línea 1: POSITIVE PROMPT: <prompt en una línea>"
+                    )
                 peticion = (
-                    f"Genera un prompt de {modo} OPTIMIZADO para el modelo: {nombre_mod}\n"
+                    f"Genera UN prompt de {modo} optimizado para este modelo concreto:\n\n"
+                    f"MODELO: {nombre_mod}\n"
+                    f"FORTALEZAS: {best_for}\n\n"
                     f"IDEA: {idea}\n"
-                    f"Formato: {fmt}. Límite: {max_c} chars. {neg_str}\n"
-                    f"Estilos: {self.estilos_texto()}.\n"
-                    f"Responde SOLO con el prompt, sin explicaciones."
+                    f"ESTILOS A INCLUIR: {self.estilos_texto()}\n\n"
+                    f"REGLAS ESTRICTAS:\n"
+                    f"- Formato: {fmt}\n"
+                    f"- Límite POSITIVE: {max_c} caracteres\n"
+                    f"- Aprovecha las fortalezas del modelo {nombre_mod}\n"
+                    f"- NO añadas explicaciones, NO añadas prosa descriptiva\n"
+                    f"- NO repitas la sección POSITIVE/NEGATIVE\n\n"
+                    f"{estructura}"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2000)
+                resp = self.deepseek.generar(peticion, temperature=0.55, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
-                if not has_neg:
-                    import re
-                    resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp,
-                                  flags=re.DOTALL | re.IGNORECASE).strip()
-                resultados[nombre_mod] = resp
+
+                # Defensa contra LLMs que devuelven texto extra:
+                # cortar SOLO al primer bloque POSITIVE [+ NEGATIVE].
+                import re
+                m_pos = re.search(r'POSITIVE\s+PROMPT\s*:\s*(.+?)(?=\n\s*NEGATIVE\s+PROMPT\s*:|\n\s*POSITIVE\s+PROMPT\s*:|\Z)',
+                                  resp, flags=re.DOTALL | re.IGNORECASE)
+                m_neg = re.search(r'NEGATIVE\s+PROMPT\s*:\s*(.+?)(?=\n\s*POSITIVE\s+PROMPT\s*:|\n\s*NEGATIVE\s+PROMPT\s*:|\Z)',
+                                  resp, flags=re.DOTALL | re.IGNORECASE)
+                if m_pos:
+                    pos_clean = " ".join(m_pos.group(1).split())[:max_c * 2]  # margen de seguridad
+                    if has_neg and m_neg:
+                        neg_clean = " ".join(m_neg.group(1).split())
+                        resp_limpio = f"POSITIVE PROMPT: {pos_clean}\nNEGATIVE PROMPT: {neg_clean}"
+                    else:
+                        resp_limpio = f"POSITIVE PROMPT: {pos_clean}"
+                else:
+                    # Fallback: respuesta sin etiquetas claras — asumir todo es POSITIVE
+                    pos_clean = " ".join(resp.split())[:max_c * 2]
+                    resp_limpio = f"POSITIVE PROMPT: {pos_clean}"
+
+                resultados[nombre_mod] = resp_limpio
             except Exception as e:
                 resultados[nombre_mod] = f"❌ Error: {e}"
 
@@ -503,10 +539,18 @@ class ToolsCreativeMixin:
 
             def _mostrar():
                 variantes = []
+                labels = []
                 for nombre in modelos:
                     if nombre in resultados:
-                        variantes.append(f"### {nombre} ###\n{resultados[nombre]}")
-                self._abrir_comparador(variantes)
+                        variantes.append(resultados[nombre])
+                        labels.append(f"🏆 {nombre}")
+                # Detectar si las respuestas son sospechosamente idénticas
+                # (mismo POSITIVE → LLM no diferenció entre modelos)
+                if len(set(resultados.values())) == 1 and len(resultados) > 1:
+                    self.set_estado(
+                        "⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica.",
+                        "#e67e22")
+                self._abrir_comparador(variantes, labels=labels)
                 self.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
                                 "#2ecc71")
                 self.toggle_botones(True)

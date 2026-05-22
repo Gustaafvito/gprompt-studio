@@ -1441,10 +1441,35 @@ class ArquitectoApp(
         if entries:
             list(entries.values())[0].focus_set()
 
-    def _abrir_comparador(self, variaciones):
+    def _abrir_comparador(self, variaciones, labels=None):
+        """Comparador genérico de variantes.
+
+        `labels`: lista opcional de etiquetas (uno por variante). Si se pasa,
+        sustituye al "Variación #N" en cada columna. Útil para mostrar el
+        nombre del modelo / temperatura / etc. cuando se compara entre
+        distintos contextos (no solo variaciones del mismo prompt).
+
+        Si una variante empieza con `### algo ###\\n`, esa cabecera se
+        extrae automáticamente como label (compat con llamadores legacy).
+        """
         vent = GPromptWindow(self)
         vent.title("👁 Comparar Variaciones")
         n = len(variaciones)
+
+        # Extraer labels desde `### nombre ###\n` si no se pasaron explícitas
+        if labels is None:
+            labels = []
+            limpias = []
+            import re as _re
+            for v in variaciones:
+                m = _re.match(r'###\s*(.+?)\s*###\s*\n', v)
+                if m:
+                    labels.append(m.group(1))
+                    limpias.append(v[m.end():])
+                else:
+                    labels.append(None)
+                    limpias.append(v)
+            variaciones = limpias
 
         # Colores del tema
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1460,7 +1485,7 @@ class ArquitectoApp(
         vent.geometry(f"{ancho}x{alto}")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text=f"👁 Comparador de Variaciones ({n})  —  Scroll horizontal para ver todas",
+        ctk.CTkLabel(vent, text=f"👁 Comparador ({n})  —  Scroll horizontal para ver todas",
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(8, 3))
 
         # Scroll horizontal para columnas
@@ -1482,7 +1507,9 @@ class ArquitectoApp(
             hdr = ctk.CTkFrame(col, fg_color=colores_header[i % len(colores_header)], corner_radius=6, height=28)
             hdr.pack(fill="x", padx=5, pady=(5, 3))
             hdr.pack_propagate(False)
-            ctk.CTkLabel(hdr, text=f"  Variación #{i+1}", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
+            label_txt = labels[i] if labels and i < len(labels) and labels[i] else f"Variación #{i+1}"
+            ctk.CTkLabel(hdr, text=f"  {label_txt}",
+                         font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
 
             # Separar POSITIVE y NEGATIVE visualmente
             pos_text = self._extraer_pos_de_bloque(var) or var
