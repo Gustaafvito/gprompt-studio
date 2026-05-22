@@ -2202,7 +2202,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 max_tok = min(8000, 1500 + n * 600)
                 resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp)
+                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
                 if len(bloques) < 2:
                     self.after(0, lambda: self.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
                     self.after(0, lambda: self.toggle_botones(True))
@@ -2270,7 +2270,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 max_tok = min(6000, 1200 + n * 600)
                 resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp)
+                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
 
                 def _mostrar():
                     self._abrir_comparador(bloques[:n])
@@ -2335,7 +2335,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 max_tok = min(7000, 1500 + n * 600)
                 resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp)
+                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
 
                 def _mostrar():
                     self._abrir_comparador(bloques[:n])
@@ -2361,8 +2361,9 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         n = self._pedir_n_modal(
             "🌀 Walk — número de derivaciones",
-            "¿Cuántas derivaciones evolutivas?\n"
-            "Cada una usa la anterior como base (cadena evolutiva).",
+            "¿Cuántas derivaciones evolutivas nuevas?\n"
+            "El comparador mostrará el original + N derivaciones\n"
+            "(N+1 tarjetas en total).",
             n_min=3, n_max=10, default=5,
             key_pref="walk_n",
         )
@@ -2966,7 +2967,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
                 # Fallback: si el LLM no respetó el formato, usar el parser legacy
                 if not propuestas:
-                    bloques = self._parsear_bloques_numerados(resp)
+                    bloques = self._parsear_bloques_numerados(resp, n_esperado=5)
                     for i, b in enumerate(bloques[:5], 1):
                         mp = re.search(r'POSITIVE\s+PROMPT\s*:?\s*(.+?)(?=\n\s*NEGATIVE|\Z)',
                                        b, re.DOTALL | re.IGNORECASE)

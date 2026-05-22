@@ -978,8 +978,16 @@ class ArquitectoApp(
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
-    def _parsear_bloques_numerados(self, texto, prefijos_validos=None):
-        """Parser ROBUSTO de respuestas con bloques tipo 'PROMPT 1:', 'SHOT 2:', 'FRAME 3:', '1.', etc."""
+    def _parsear_bloques_numerados(self, texto, prefijos_validos=None, n_esperado=None):
+        """Parser ROBUSTO de respuestas con bloques tipo 'PROMPT 1:', 'SHOT 2:', 'FRAME 3:', '1.', etc.
+
+        `n_esperado`: si se pasa y el parser devuelve más bloques de los
+        esperados, filtra preámbulos del LLM (títulos, descripciones de
+        mood, etc.) priorizando bloques que contienen "POSITIVE PROMPT:"
+        o "POSITIVE:". Esto evita que un texto como
+        "MOODBOARD: 10 PROMPTS CON ATMÓSFERA COHERENTE..." salga como
+        bloque #1 antes del primer prompt real.
+        """
         if not texto: return []
         import re
         # Probar varios patrones (de más estricto a más permisivo)
@@ -989,22 +997,42 @@ class ArquitectoApp(
             r'\n---+\n',                                                              # separadores ---
             r'(?:^|\n)\s*###\s*[^#\n]+\s*###\s*\n',                                   # ### Título ###
         ]
+        partes_limpias = []
         for patron in patrones:
             partes = re.split(patron, '\n' + texto, flags=re.IGNORECASE)
             partes_limpias = [p.strip().strip("-").strip() for p in partes if p.strip() and len(p.strip()) > 30]
             if len(partes_limpias) >= 2:
-                return partes_limpias
-        # Fallback: si el texto tiene varios "POSITIVE PROMPT:" lo divide
-        coincidencias = list(re.finditer(r'POSITIVE\s+PROMPT\s*:', texto, re.IGNORECASE))
-        if len(coincidencias) >= 2:
-            bloques = []
-            for i, m in enumerate(coincidencias):
-                inicio = m.start()
-                fin = coincidencias[i+1].start() if i+1 < len(coincidencias) else len(texto)
-                bloques.append(texto[inicio:fin].strip())
-            return bloques
-        # Último fallback: devolver como un solo bloque
-        return [texto.strip()] if len(texto.strip()) > 30 else []
+                break
+
+        if not partes_limpias or len(partes_limpias) < 2:
+            # Fallback: si el texto tiene varios "POSITIVE PROMPT:" lo divide
+            coincidencias = list(re.finditer(r'POSITIVE\s+PROMPT\s*:', texto, re.IGNORECASE))
+            if len(coincidencias) >= 2:
+                bloques = []
+                for i, m in enumerate(coincidencias):
+                    inicio = m.start()
+                    fin = coincidencias[i+1].start() if i+1 < len(coincidencias) else len(texto)
+                    bloques.append(texto[inicio:fin].strip())
+                partes_limpias = bloques
+            else:
+                # Último fallback: devolver como un solo bloque
+                return [texto.strip()] if len(texto.strip()) > 30 else []
+
+        # Filtrar preámbulos cuando el LLM devuelve más bloques de los pedidos.
+        # Estrategia: si hay >= n_esperado bloques con marker de prompt
+        # ("POSITIVE PROMPT:", "POSITIVE:"), preferir esos. Si no, quedarse
+        # con los últimos n_esperado (asumiendo que el preámbulo va primero).
+        if n_esperado is not None and len(partes_limpias) > n_esperado:
+            con_marker = [
+                p for p in partes_limpias
+                if re.search(r'POSITIVE\s+PROMPT|POSITIVE\s*:', p, re.IGNORECASE)
+            ]
+            if len(con_marker) >= n_esperado:
+                partes_limpias = con_marker[:n_esperado]
+            else:
+                # Heurística: el preámbulo del LLM suele ir al principio
+                partes_limpias = partes_limpias[-n_esperado:]
+        return partes_limpias
 
     def _cargar_plantillas_desde_json(self) -> list:
         """Carga plantillas desde config/plantillas_default.json.

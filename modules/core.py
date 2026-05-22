@@ -1510,7 +1510,14 @@ class CoreMixin:
         self._ideas_frame = ideas_frame
         self.update()
 
-    def _parsear_variaciones(self, texto):
+    def _parsear_variaciones(self, texto, n_esperado=None):
+        """Parser de variaciones (cmd_variaciones).
+
+        `n_esperado`: si se pasa, filtra preámbulos del LLM cuando el
+        número de bloques parseados supera N. Prefiere bloques con
+        "POSITIVE PROMPT:" / "POSITIVE:"; si no hay suficientes, asume
+        que el preámbulo va al principio y se queda con los últimos N.
+        """
         texto_limpio = re.sub(r'[\*#]', '', texto)
         patron = r'\n\s*(?:Variaci[oó]n|Prompt)?\s*\d+[\.\)\-:]\s*|\n\s*---\s*\n'
         bloques = re.split(patron, '\n' + texto_limpio, flags=re.IGNORECASE)
@@ -1525,7 +1532,21 @@ class CoreMixin:
             bloques_alt = re.split(r'\n(?=(?:POSITIVE )?PROMPT:)', texto_limpio, flags=re.IGNORECASE)
             resultado = [b.strip() for b in bloques_alt if len(b.strip()) > 50]
 
-        return resultado if len(resultado) > 1 else []
+        if len(resultado) <= 1:
+            return []
+
+        # Filtrar preámbulos cuando hay más bloques que los pedidos
+        if n_esperado is not None and len(resultado) > n_esperado:
+            con_marker = [
+                b for b in resultado
+                if re.search(r'POSITIVE\s+PROMPT|POSITIVE\s*:', b, re.IGNORECASE)
+            ]
+            if len(con_marker) >= n_esperado:
+                resultado = con_marker[:n_esperado]
+            else:
+                resultado = resultado[-n_esperado:]
+
+        return resultado
 
     def _mostrar_variaciones(self, variaciones):
         """Muestra las variaciones en un modal con cards visibles.
@@ -1554,10 +1575,11 @@ class CoreMixin:
         vent.geometry("900x720")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text="🔀 3 variaciones generadas",
+        ctk.CTkLabel(vent, text=f"🔀 {len(variaciones)} variaciones generadas",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 3))
+        n_total = len(variaciones)
         ctk.CTkLabel(vent,
-                     text="Compara las 3 versiones · Pulsa ✅ Aplicar al resultado en la que más te guste",
+                     text=f"Compara las {n_total} versiones · Pulsa ✅ Aplicar al resultado en la que más te guste",
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -1572,11 +1594,15 @@ class CoreMixin:
 
         debe_mostrar_neg = self._debe_mostrar_negatives()
 
+        # Refs compartidas para que aplicar una desmarque las demás visualmente
+        cards_refs = []
+
         for i, var in enumerate(variaciones):
             accent = accent_colors[i % len(accent_colors)]
             card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8,
                                  border_color=accent, border_width=2)
             card.pack(fill="x", pady=6, padx=2)
+            cards_refs.append((card, accent))
 
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(8, 2))
@@ -1606,10 +1632,23 @@ class CoreMixin:
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=10, pady=(0, 8))
 
-            def _aplicar(v=var, n=i+1):
+            def _aplicar(v=var, n=i+1, card_ref=card):
+                """Aplica al editor SIN cerrar la ventana — coherente con el
+                resto de comparadores (commit 5451292). Highlight dorado en
+                la card aplicada, las demás vuelven a su color de acento."""
                 self.actualizar_salida(v)
-                vent.destroy()
-                self.set_estado(f"✅ Variación #{n} aplicada al resultado", "#2ecc71")
+                # Desmarcar todas, marcar solo la aplicada
+                for prev_card, prev_accent in cards_refs:
+                    try:
+                        if prev_card is card_ref:
+                            prev_card.configure(border_color="#fbbf24", border_width=3)
+                        else:
+                            prev_card.configure(border_color=prev_accent, border_width=2)
+                    except Exception as _e:
+                        logger.debug(f"[silent highlight] {_e}")
+                self.set_estado(
+                    f"✅ Variación #{n} aplicada — la ventana sigue abierta para probar otras",
+                    "#2ecc71")
 
             def _copiar_todo(v=var, n=i+1):
                 pyperclip.copy(v)
@@ -1724,7 +1763,7 @@ class CoreMixin:
         except Exception:
             return texto
 
-    def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False):
+    def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None):
         try:
             self.after(0, self._iniciar_progreso)
             specs = self.get_current_model_specs()
@@ -1780,7 +1819,7 @@ class CoreMixin:
                     if bloques:
                         ideas = bloques[:3]
                 self.after(0, lambda ideas=ideas: self._mostrar_ideas(ideas))
-            elif es_variaciones: self.after(0, lambda: self._mostrar_variaciones(self._parsear_variaciones(texto)))
+            elif es_variaciones: self.after(0, lambda: self._mostrar_variaciones(self._parsear_variaciones(texto, n_esperado=n_variaciones)))
         except Exception as e:
             self.after(0, lambda: self.actualizar_salida(f"❌ Error {self.llm_var.get()}: {e}"))
             self.after(0, lambda: self.set_estado("Error de conexión.", "#e74c3c"))
@@ -2073,7 +2112,9 @@ class CoreMixin:
         self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
         self._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_ia, args=(peticion, False, True), daemon=True).start()
+        threading.Thread(target=self._worker_ia,
+                          args=(peticion, False, True, n),
+                          daemon=True).start()
 
     def cmd_vision(self):
         if self.modo_var.get() == "audio": return self.set_estado("ℹ️ El análisis de imagen no aplica en modo audio.", "#3498db")
