@@ -2624,7 +2624,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
             threading.Thread(target=_worker, daemon=True).start()
 
-        # ─── Acción: usar este nodo ─────────────────────────────
+        # ─── Acción: usar este nodo (NO cierra, sigues explorando) ──
         def _usar_nodo():
             n = nodos[sel["id"]]
             self.actualizar_salida(n["texto"])
@@ -2634,9 +2634,12 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             try: self._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
-            vent.destroy()
+            lbl_status.configure(
+                text=f"📋 Aplicado al editor: {n['label']} · ventana sigue abierta para seguir explorando",
+                text_color="#2ecc71",
+            )
 
-        # ─── Acción: copiar ruta como cadena ────────────────────
+        # ─── Acción: copiar ruta — abre modal con preview ───────
         def _copiar_ruta():
             ruta = _ruta_de(sel["id"])
             cadena = " → ".join(x["label"] for x in ruta)
@@ -2644,12 +2647,49 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 f"## {x['label']} (depth {x['depth']})\n{x['texto']}" for x in ruta
             )
             texto_copia = f"# Evolución Walk: {cadena}\n\n{detalle}"
-            try:
-                pyperclip.copy(texto_copia)
-                lbl_status.configure(text=f"📂 Ruta copiada al portapapeles ({len(ruta)} nodos)",
-                                      text_color="#2ecc71")
-            except Exception as e:
-                lbl_status.configure(text=f"❌ No se pudo copiar: {e}", text_color="#e74c3c")
+
+            v = GPromptWindow(vent)
+            v.title("📂 Ruta del nodo — preview")
+            v.geometry("720x520")
+            v.transient(vent)
+
+            ctk.CTkLabel(v, text=f"📂 Ruta: {cadena}",
+                         font=ctk.CTkFont(size=13, weight="bold"),
+                         wraplength=680, justify="left").pack(padx=14, pady=(12, 4), anchor="w")
+            ctk.CTkLabel(v, text=f"{len(ruta)} nodos · profundidad {ruta[-1]['depth']}",
+                         font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(padx=14, anchor="w")
+
+            txt_ruta = ctk.CTkTextbox(v, wrap="word",
+                                       font=ctk.CTkFont(family="Consolas", size=10))
+            txt_ruta.pack(fill="both", expand=True, padx=14, pady=8)
+            txt_ruta.insert("1.0", texto_copia)
+            txt_ruta.configure(state="disabled")
+
+            estado_lbl = ctk.CTkLabel(v, text="", font=ctk.CTkFont(size=10),
+                                        text_color="#fbbf24")
+            estado_lbl.pack(pady=(0, 4))
+
+            def _copiar_clipboard():
+                try:
+                    pyperclip.copy(texto_copia)
+                    estado_lbl.configure(text="✅ Copiado al portapapeles",
+                                          text_color="#2ecc71")
+                    lbl_status.configure(text=f"📂 Ruta copiada ({len(ruta)} nodos)",
+                                          text_color="#2ecc71")
+                except Exception as e:
+                    estado_lbl.configure(text=f"❌ No se pudo copiar: {e}",
+                                          text_color="#e74c3c")
+
+            btn_bar = ctk.CTkFrame(v, fg_color="transparent")
+            btn_bar.pack(pady=(0, 12))
+            ctk.CTkButton(btn_bar, text="📋 Copiar al portapapeles", width=200, height=32,
+                          fg_color="#1a7a3c", hover_color="#15633a",
+                          font=ctk.CTkFont(size=11, weight="bold"),
+                          command=_copiar_clipboard).pack(side="left", padx=5)
+            ctk.CTkButton(btn_bar, text="Cerrar", width=110, height=32,
+                          fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                          command=v.destroy).pack(side="left", padx=5)
+            v.bind("<Escape>", lambda _e: v.destroy())
 
         # ─── Acción: borrar subárbol ────────────────────────────
         def _borrar_subarbol():
