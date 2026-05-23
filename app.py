@@ -68,6 +68,7 @@ from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
     DialogsMixin, CoreMixin, AdnVisualMixin, MultiPromptMixin,
+    SesionVideoMixin, WorkersIaMixin, ModoClienteMixin,
     EventBus, PreviewService, install_components,
 )
 
@@ -87,6 +88,9 @@ class ArquitectoApp(
     CoreMixin,
     AdnVisualMixin,
     MultiPromptMixin,
+    SesionVideoMixin,
+    WorkersIaMixin,
+    ModoClienteMixin,
 ):
 
     def __init__(self):

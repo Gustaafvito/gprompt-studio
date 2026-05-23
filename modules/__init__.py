@@ -14,6 +14,9 @@ from .dialogs import DialogsMixin
 from .core import CoreMixin
 from .adn_visual import AdnVisualMixin
 from .multiprompt import MultiPromptMixin
+from .sesion_video import SesionVideoMixin
+from .workers_ia import WorkersIaMixin
+from .modo_cliente import ModoClienteMixin
 from .gprompt_window import GPromptWindow
 from .event_bus import EventBus
 from .preview_service import PreviewService
@@ -31,6 +34,9 @@ __all__ = [
     "CoreMixin",
     "AdnVisualMixin",
     "MultiPromptMixin",
+    "SesionVideoMixin",
+    "WorkersIaMixin",
+    "ModoClienteMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",
