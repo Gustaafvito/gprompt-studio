@@ -35,7 +35,10 @@ class DialogsMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         try:
-            from api_clients import LLM_PROVIDERS, cargar_api_key, guardar_api_key
+            from api_clients import (
+                LLM_PROVIDERS, cargar_api_key, guardar_api_key,
+                borrar_api_key, ubicacion_api_key,
+            )
         except ImportError:
             self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
             return
@@ -56,30 +59,77 @@ class DialogsMixin:
 
         entries_keys = {}
 
+        # Map de íconos por origen de la key (sesión 5: mostrar dónde está guardada)
+        ICONO_ORIGEN = {
+            "keyring":             "🔐 Windows Credential Manager",
+            "keys.json (cifrado)": "🔒 keys.json (AES-256 cifrado)",
+            "env (.env)":          "📄 variable de entorno .env",
+            "":                    "",
+        }
+
+        # Helper para refrescar una card concreta sin cerrar la ventana
+        cards_refs = {}  # pid → dict con refs a labels que dependen del estado
+
+        def _refrescar_card(pid):
+            refs = cards_refs.get(pid, {})
+            current = cargar_api_key(pid) or ""
+            origen = ubicacion_api_key(pid)
+            # Estado
+            if refs.get("lbl_estado"):
+                refs["lbl_estado"].configure(
+                    text="✅ configurado" if current else "⚠️ sin configurar",
+                    text_color="#2ecc71" if current else "#e67e22",
+                )
+            # Origen
+            if refs.get("lbl_origen"):
+                refs["lbl_origen"].configure(
+                    text=ICONO_ORIGEN.get(origen, ""),
+                    text_color="#3498db" if origen else "#666",
+                )
+            # Botón borrar habilitado solo si hay key
+            if refs.get("btn_borrar"):
+                if current:
+                    refs["btn_borrar"].configure(state="normal")
+                else:
+                    refs["btn_borrar"].configure(state="disabled")
+
         for pid, info in LLM_PROVIDERS.items():
             card = ctk.CTkFrame(scroll, fg_color="#0f1820", corner_radius=8)
             card.pack(fill="x", pady=4)
 
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=12, pady=(8, 4))
-            estado_actual = "✅ configurado" if (cargar_api_key(pid) or "") else "⚠️ sin configurar"
-            color_estado = "#2ecc71" if (cargar_api_key(pid) or "") else "#e67e22"
+            current_key_init = cargar_api_key(pid) or ""
+            origen_init = ubicacion_api_key(pid)
+            estado_actual = "✅ configurado" if current_key_init else "⚠️ sin configurar"
+            color_estado = "#2ecc71" if current_key_init else "#e67e22"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
-            ctk.CTkLabel(hdr, text=estado_actual,
-                         font=ctk.CTkFont(size=10), text_color=color_estado).pack(side="right")
+            lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
+                                        font=ctk.CTkFont(size=10),
+                                        text_color=color_estado)
+            lbl_estado.pack(side="right")
 
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
                          font=ctk.CTkFont(size=10, slant="italic"), text_color="#aaaaaa",
-                         wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 6))
+                         wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
+
+            # Indicador de origen (sesión 5): keyring / keys.json cifrado / .env
+            lbl_origen = ctk.CTkLabel(
+                card,
+                text=ICONO_ORIGEN.get(origen_init, ""),
+                font=ctk.CTkFont(size=9, slant="italic"),
+                text_color="#3498db" if origen_init else "#666",
+                anchor="w",
+            )
+            lbl_origen.pack(fill="x", padx=12, pady=(0, 4))
 
             fila = ctk.CTkFrame(card, fg_color="transparent")
             fila.pack(fill="x", padx=12, pady=(0, 8))
-            current_key = cargar_api_key(pid) or ""
             placeholder = "Pega aquí tu API key…" if pid != "ollama" else "(Ollama no necesita key)"
-            ent = ctk.CTkEntry(fila, width=480, placeholder_text=placeholder, show="•")
-            if current_key:
-                ent.insert(0, current_key)
+            ent = ctk.CTkEntry(fila, width=440, placeholder_text=placeholder, show="•")
+            if current_key_init:
+                ent.insert(0, current_key_init)
             ent.pack(side="left", padx=(0, 6))
             entries_keys[pid] = ent
 
@@ -98,10 +148,46 @@ class DialogsMixin:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
-            ctk.CTkButton(fila, text="🌐 Obtener key", width=110, height=28,
+            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn()).pack(side="left", padx=2)
+
+            # Botón borrar individual (sesión 5)
+            def _crear_borrar_btn(p=pid, e=ent, info_l=info):
+                def _borrar():
+                    from tkinter import messagebox
+                    if not messagebox.askyesno(
+                        "Borrar API key",
+                        f"¿Borrar la API key de {info_l['label']}?\n\n"
+                        "Se eliminará de keyring del SO y de keys.json cifrado.\n"
+                        "Esta acción no se puede deshacer.",
+                        parent=v,
+                    ):
+                        return
+                    try:
+                        borrar_api_key(p)
+                        e.delete(0, "end")
+                        _refrescar_card(p)
+                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                    except Exception as ex:
+                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                return _borrar
+            btn_borrar = ctk.CTkButton(
+                fila, text="🗑", width=36, height=28,
+                fg_color="#7a1a1a", hover_color="#5a1010",
+                font=ctk.CTkFont(size=11),
+                command=_crear_borrar_btn(),
+                state="normal" if current_key_init else "disabled",
+            )
+            btn_borrar.pack(side="left", padx=2)
+
+            # Guardar refs para _refrescar_card
+            cards_refs[pid] = {
+                "lbl_estado": lbl_estado,
+                "lbl_origen": lbl_origen,
+                "btn_borrar": btn_borrar,
+            }
 
         btn_row = ctk.CTkFrame(v, fg_color="transparent")
         btn_row.pack(fill="x", padx=15, pady=(0, 14))

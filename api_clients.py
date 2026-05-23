@@ -477,6 +477,36 @@ def borrar_api_key(provider_id: str):
         _borrar_keys_fallback(provider_id)
     except Exception as _e:
         logger.debug(f"[silent] {_e}")
+
+
+def ubicacion_api_key(provider_id: str) -> str:
+    """Indica DÓNDE está guardada la API key sin exponer su valor.
+
+    Devuelve: "keyring" | "keys.json (cifrado)" | "env (.env)" | ""
+    Útil para la UI de gestión de keys (saber qué fuente sirve cada una).
+    """
+    # 1) keyring del SO
+    try:
+        import keyring
+        valor = keyring.get_password(KEYRING_SERVICE, f"api_key_{provider_id}")
+        if _key_valida(valor):
+            return "keyring"
+    except Exception:
+        pass
+    # 2) keys.json cifrado
+    try:
+        val = _cargar_keys_fallback(provider_id)
+        if _key_valida(val):
+            return "keys.json (cifrado)"
+    except Exception:
+        pass
+    # 3) variable de entorno
+    var_env = ENV_VAR_POR_PROVIDER.get(provider_id, "")
+    if var_env:
+        valor_env = os.getenv(var_env, "")
+        if _key_valida(valor_env):
+            return "env (.env)"
+    return ""
 def _ruta_keys_fallback() -> str:
     from config import ARCHIVOS
     ruta = str(ARCHIVOS["keys"])
