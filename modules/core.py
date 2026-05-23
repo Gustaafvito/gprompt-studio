@@ -1763,7 +1763,8 @@ class CoreMixin:
         except Exception:
             return texto
 
-    def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None):
+    def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
+                   es_refinamiento=False, texto_previo=None):
         try:
             self.after(0, self._iniciar_progreso)
             specs = self.get_current_model_specs()
@@ -1805,9 +1806,16 @@ class CoreMixin:
             self.guardar_en_historial(texto)
             # No sobrescribir el resultado con el texto crudo de las
             # variaciones — esas se muestran en un modal con cards.
-            if not es_ideas and not es_variaciones:
+            # En refinamiento, abrimos el modal de diff con Aplicar/Cancelar
+            # (Bloque 4) en vez de sobrescribir txt_salida directamente.
+            if es_refinamiento:
+                self.after(0, lambda: self._mostrar_diff_refinamiento(texto_previo or "", texto))
+            elif not es_ideas and not es_variaciones:
                 self.after(0, lambda: self.actualizar_salida(texto))
-            self.after(0, lambda: self.set_estado(f"✅ Completado ({cerebro_elegido}).", "#2ecc71"))
+            estado_msg = (f"🔍 Refinamiento listo — revisa el diff ({cerebro_elegido})."
+                          if es_refinamiento
+                          else f"✅ Completado ({cerebro_elegido}).")
+            self.after(0, lambda m=estado_msg: self.set_estado(m, "#2ecc71"))
             self.after(0, lambda: self.toggle_botones(True))
             self.after(0, self._sonar_completado)
             self.after(0, self._detener_progreso)
@@ -2469,7 +2477,97 @@ class CoreMixin:
 
         self.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_ia, args=(peticion,), daemon=True).start()
+        # Bloque 4: capturamos el texto previo para mostrar diff antes de aplicar
+        threading.Thread(
+            target=self._worker_ia,
+            args=(peticion,),
+            kwargs={"es_refinamiento": True, "texto_previo": texto},
+            daemon=True,
+        ).start()
+
+    def _mostrar_diff_refinamiento(self, texto_previo, texto_nuevo):
+        """Bloque 4 — Modal de diff visual antes de aplicar el refinamiento.
+
+        Muestra el prompt original vs refinado lado a lado con colores
+        verde (añadido) / rojo (quitado). Botones:
+          • ✅ Aplicar refinamiento → guarda el original como versión
+            "(pre-refinamiento)" en `_versiones_prompt` y aplica el nuevo.
+          • ↩️ Deshacer refinamiento previo → si existe una versión
+            "(pre-refinamiento)" en el stack, la restaura (rollback de un
+            refinamiento anterior ya aplicado).
+          • ❌ Cancelar (mantener original) → cierra sin tocar nada.
+        """
+        # Si por alguna razón no hay texto previo, fallback a aplicar directo
+        if not texto_previo or not texto_nuevo:
+            self.actualizar_salida(texto_nuevo or "")
+            return
+
+        # Si el resultado es idéntico, avisar y aplicar sin modal
+        if texto_previo.strip() == texto_nuevo.strip():
+            self.actualizar_salida(texto_nuevo)
+            self.set_estado("ℹ️ El refinamiento no produjo cambios.", "#3498db")
+            return
+
+        def _on_apply():
+            # Guarda el original como versión pre-refinamiento (rollback)
+            try:
+                if not hasattr(self, '_versiones_prompt'):
+                    self._versiones_prompt = []
+                # Evitar duplicados consecutivos
+                if not (self._versiones_prompt
+                        and self._versiones_prompt[-1].get("texto") == texto_previo):
+                    self._versiones_prompt.append({
+                        "texto": texto_previo,
+                        "fecha": datetime.datetime.now().strftime("%H:%M:%S"),
+                        "etiqueta": f"v{len(self._versiones_prompt) + 1} (pre-refinamiento)",
+                    })
+                    if len(self._versiones_prompt) > 30:
+                        self._versiones_prompt = self._versiones_prompt[-30:]
+            except Exception as e:
+                logger.debug(f"[silent] versionado pre-refinamiento: {e}")
+            self.actualizar_salida(texto_nuevo)
+            self.set_estado("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer.", "#2ecc71")
+            try: self._sesion_log("🔁 Aplicó refinamiento (diff)")
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
+
+        def _on_cancel():
+            self.set_estado("❌ Refinamiento descartado — prompt original intacto.", "#e67e22")
+            try: self._sesion_log("🔁 Canceló refinamiento (diff)")
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
+
+        # Deshacer refinamiento previo solo si hay una versión
+        # (pre-refinamiento) anterior en el stack.
+        on_undo = None
+        if hasattr(self, '_versiones_prompt') and self._versiones_prompt:
+            for ver in reversed(self._versiones_prompt):
+                if "pre-refinamiento" in (ver.get("etiqueta", "") or ""):
+                    texto_undo = ver["texto"]
+                    def _on_undo(_t=texto_undo, _v=ver):
+                        # Sacar la versión del stack para no quedar
+                        # huérfana tras restaurarla.
+                        try: self._versiones_prompt.remove(_v)
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
+                        self.actualizar_salida(_t)
+                        self.set_estado("↩️ Refinamiento previo deshecho — restaurada versión anterior.", "#f39c12")
+                        try: self._sesion_log("↩️ Deshizo refinamiento previo")
+                        except Exception as e:
+                            logger.debug(f"[silent] {e}")
+                    on_undo = _on_undo
+                    break
+
+        self._abrir_ventana_diff(
+            texto_previo, texto_nuevo,
+            label_a="🔹 Original",
+            label_b="🔸 Refinado",
+            on_apply=_on_apply,
+            on_cancel=_on_cancel,
+            on_undo=on_undo,
+            titulo="🔁 Refinamiento — revisa los cambios antes de aplicar",
+            hint="🟢 Verde = añadido por el refinamiento    🔴 Rojo = eliminado del original    ⚪ Sin color = igual",
+        )
 
     def cmd_batch(self):
         try: self._sesion_log("📦 Abrió Batch (generación masiva)")

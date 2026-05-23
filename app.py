@@ -865,29 +865,38 @@ class ArquitectoApp(
 
         self._abrir_ventana_diff(anterior_txt, actual_txt, etiqueta_anterior, etiqueta_actual)
 
-    def _abrir_ventana_diff(self, texto_a, texto_b, label_a="Anterior", label_b="Actual"):
-        """Abre ventana con diff coloreado de dos textos lado a lado."""
+    def _abrir_ventana_diff(self, texto_a, texto_b, label_a="Anterior", label_b="Actual",
+                              on_apply=None, on_cancel=None, on_undo=None,
+                              titulo=None, hint=None):
+        """Abre ventana con diff coloreado de dos textos lado a lado.
+
+        Si se pasan callbacks `on_apply`/`on_cancel`/`on_undo`, la ventana
+        se comporta como modal de confirmación (uso desde 🔁 Refinar):
+        muestra botones Aplicar/Cancelar/Deshacer en lugar de solo Cerrar.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         import difflib
         v = GPromptWindow(self)
-        v.title("📊 Diff visual entre versiones")
+        v.title(titulo or "📊 Diff visual entre versiones")
         v.geometry("1100x680")
         v.transient(self)
 
-        ctk.CTkLabel(v, text="📊 Comparar versiones",
+        ctk.CTkLabel(v, text=titulo or "📊 Comparar versiones",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
 
         # Banda de leyenda
         leyenda = ctk.CTkFrame(v, fg_color=c["fg_dark"], corner_radius=6)
         leyenda.pack(fill="x", padx=15, pady=(0, 8))
-        ctk.CTkLabel(leyenda, text="🟢 Verde = añadido en actual    🔴 Rojo = quitado del anterior    ⚪ Sin color = igual",
+        leyenda_txt = hint or "🟢 Verde = añadido en actual    🔴 Rojo = quitado del anterior    ⚪ Sin color = igual"
+        ctk.CTkLabel(leyenda, text=leyenda_txt,
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=6)
 
         # Container con dos columnas
         cols = ctk.CTkFrame(v, fg_color="transparent")
         cols.pack(fill="both", expand=True, padx=10, pady=4)
         cols.grid_columnconfigure(0, weight=1)
+        cols.grid_columnconfigure(1, weight=1)
         cols.grid_rowconfigure(0, weight=1)
 
         # Columna izquierda (anterior)
@@ -895,6 +904,8 @@ class ArquitectoApp(
         col_a.grid(row=0, column=0, padx=4, sticky="nsew")
         ctk.CTkLabel(col_a, text=f"📄 {label_a}", font=ctk.CTkFont(size=12, weight="bold"),
                      text_color=c["muted_text"]).pack(anchor="w", padx=10, pady=(8, 4))
+        txt_a = ctk.CTkTextbox(col_a, wrap="word", font=ctk.CTkFont(family="Consolas", size=11))
+        txt_a.pack(fill="both", expand=True, padx=8, pady=(0, 8))
 
         # Columna derecha (actual)
         col_b = ctk.CTkFrame(cols, fg_color=c["fg_dark"], corner_radius=8)
@@ -954,8 +965,38 @@ class ArquitectoApp(
                      text=f"  📊 {ratio:.0f}% similar  ·  🟢 +{n_add} palabras  ·  🔴 −{n_del} palabras  ·  ⚪ {n_eq} sin cambios",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=6)
 
-        ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy,
-                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(pady=(0, 12))
+        # Botones: modo confirmación (on_apply) vs modo solo-lectura
+        btn_row = ctk.CTkFrame(v, fg_color="transparent")
+        btn_row.pack(pady=(0, 12))
+        if on_apply is not None:
+            def _aplicar():
+                try: on_apply()
+                finally: v.destroy()
+            def _cancelar():
+                try:
+                    if on_cancel: on_cancel()
+                finally: v.destroy()
+            ctk.CTkButton(btn_row, text="✅ Aplicar refinamiento", width=200, height=34,
+                          fg_color="#1a7a3c", hover_color="#15633a",
+                          font=ctk.CTkFont(size=12, weight="bold"),
+                          command=_aplicar).pack(side="left", padx=5)
+            if on_undo is not None:
+                def _deshacer():
+                    try: on_undo()
+                    finally: v.destroy()
+                ctk.CTkButton(btn_row, text="↩️ Deshacer refinamiento previo", width=230, height=34,
+                              fg_color="#8a5a1a", hover_color="#6a4515",
+                              font=ctk.CTkFont(size=11),
+                              command=_deshacer).pack(side="left", padx=5)
+            ctk.CTkButton(btn_row, text="❌ Cancelar (mantener original)", width=220, height=34,
+                          fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                          font=ctk.CTkFont(size=11),
+                          command=_cancelar).pack(side="left", padx=5)
+            # Esc → cancelar
+            v.bind("<Escape>", lambda _e: _cancelar())
+        else:
+            ctk.CTkButton(btn_row, text="Cerrar", width=110, command=v.destroy,
+                          fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack()
 
     def _notificar_sistema(self, titulo, mensaje):
         """Notificación del sistema operativo (Windows / macOS / Linux)."""
