@@ -50,6 +50,46 @@ CAMPOS_AVANZADOS = {"audio", "style_tags", "camera", "lighting", "vfx_notes",
                      "composition", "color_grading", "post_processing"}
 
 
+def _limpiar_json_de_newlines(texto: str) -> str:
+    """Reemplaza saltos de línea literales DENTRO de strings JSON por espacios.
+
+    Problema típico: al copiar JSON de webs (Gemini, ChatGPT, foros) los
+    strings vienen partidos en varias líneas físicas con newlines reales
+    en lugar de '\\n' escapado. json.loads rechaza eso con
+    "Invalid control character at...".
+
+    Recorre el texto en modo state-machine respetando las comillas y
+    sustituye solo los newlines/tabs DENTRO de strings, dejando intactos
+    los del exterior (indentación, separadores entre campos, etc.).
+
+    No es un parser JSON completo — asume que las comillas dentro de
+    strings vienen escapadas (\\"), lo cual es la convención estándar.
+    """
+    out = []
+    in_string = False
+    escape = False
+    for ch in texto:
+        if escape:
+            out.append(ch)
+            escape = False
+            continue
+        if ch == "\\":
+            out.append(ch)
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            out.append(ch)
+            continue
+        if in_string and ch in "\n\r\t":
+            # Reemplazar newlines literales por espacio dentro de strings
+            out.append(" ")
+        else:
+            out.append(ch)
+    # Colapsar dobles espacios resultantes dentro de strings
+    return "".join(out)
+
+
 class JsonPromptMixin:
     """Mixin con importar / exportar prompts en JSON profesional."""
 
@@ -129,18 +169,43 @@ class JsonPromptMixin:
                 lbl_status.configure(text="⚠️ Pega un JSON primero",
                                       text_color="#e67e22")
                 return
+            limpieza_aplicada = False
             try:
                 data = json.loads(texto)
             except json.JSONDecodeError as e:
-                lbl_status.configure(text=f"❌ JSON inválido: {e}",
-                                      text_color="#e74c3c")
-                return
+                # Caso típico: JSON con saltos de línea literales dentro de
+                # strings (copy/paste de webs). Intentamos limpiar y reparsear
+                # automáticamente. Si tampoco funciona, devolvemos el error.
+                if "Invalid control character" in str(e) or "control character" in str(e).lower():
+                    texto_limpio = _limpiar_json_de_newlines(texto)
+                    try:
+                        data = json.loads(texto_limpio)
+                        limpieza_aplicada = True
+                        # Actualizamos el textbox con la versión limpia por si
+                        # el usuario quiere verla.
+                        txt_json.delete("1.0", "end")
+                        txt_json.insert("1.0", texto_limpio)
+                    except json.JSONDecodeError as e2:
+                        lbl_status.configure(
+                            text=f"❌ JSON inválido (incluso tras autolimpieza): {e2}",
+                            text_color="#e74c3c",
+                        )
+                        return
+                else:
+                    lbl_status.configure(text=f"❌ JSON inválido: {e}",
+                                          text_color="#e74c3c")
+                    return
             if not isinstance(data, dict):
                 lbl_status.configure(text="❌ El JSON debe ser un objeto {} en raíz",
                                       text_color="#e74c3c")
                 return
 
+            if limpieza_aplicada:
+                # Avisar antes de cerrar para que el usuario sepa qué pasó
+                logger.info("JSON import: autolimpieza de newlines aplicada")
+
             resumen = self._aplicar_json_a_app(data)
+            resumen["limpieza_aplicada"] = limpieza_aplicada
             vent.destroy()
             # Resumen → modal nuevo con lo aplicado + metadatos extras
             self._mostrar_resumen_import(data, resumen)
@@ -275,6 +340,17 @@ class JsonPromptMixin:
 
         ctk.CTkLabel(vent, text="📥 Importación completada",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+
+        # Aviso si se aplicó autolimpieza
+        if resumen.get("limpieza_aplicada"):
+            ctk.CTkLabel(
+                vent,
+                text="🧹 JSON con saltos de línea dentro de strings — "
+                     "autolimpieza aplicada (newlines → espacios)",
+                font=ctk.CTkFont(size=10),
+                text_color="#fbbf24",
+                wraplength=720, justify="center",
+            ).pack(pady=(0, 6), padx=15)
 
         # Resumen
         partes = []
