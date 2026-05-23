@@ -1510,7 +1510,7 @@ class ArquitectoApp(
         if entries:
             list(entries.values())[0].focus_set()
 
-    def _abrir_comparador(self, variaciones, labels=None):
+    def _abrir_comparador(self, variaciones, labels=None, extra_botones=None):
         """Comparador genérico de variantes.
 
         `labels`: lista opcional de etiquetas (uno por variante). Si se pasa,
@@ -1520,6 +1520,12 @@ class ArquitectoApp(
 
         Si una variante empieza con `### algo ###\\n`, esa cabecera se
         extrae automáticamente como label (compat con llamadores legacy).
+
+        `extra_botones`: lista opcional de `(label, fg_color, callback)`.
+        Cada uno se renderiza al pie de la ventana, junto al botón
+        Cerrar. El callback recibe (variaciones, ventana) y decide si
+        cerrar o no. Usado por Board→Vídeo (Bloque 6) para encadenar
+        el storyboard como prompt de vídeo.
         """
         vent = GPromptWindow(self)
         vent.title("👁 Comparar Variaciones")
@@ -1686,12 +1692,24 @@ class ArquitectoApp(
             ctk.CTkButton(btn_row, text="🇪🇸", width=30, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
-        # Botón "Cerrar" en pie de ventana (la ventana ya no se cierra
-        # al pulsar "Usar" — el usuario decide cuándo cerrar).
-        ctk.CTkButton(vent, text="Cerrar comparador", width=180, height=32,
+        # Pie de ventana: botones extras (Bloque 6: encadenar Board→Vídeo)
+        # + Cerrar comparador
+        pie = ctk.CTkFrame(vent, fg_color="transparent")
+        pie.pack(pady=(0, 10))
+        if extra_botones:
+            for label_btn, fg, cb in extra_botones:
+                def _wrap(_cb=cb, _v=variaciones, _vent=vent):
+                    try: _cb(_v, _vent)
+                    except Exception as _e:
+                        logger.exception(f"extra_boton {_e}")
+                ctk.CTkButton(pie, text=label_btn, width=240, height=32,
+                              fg_color=fg, hover_color=fg,
+                              font=ctk.CTkFont(size=11, weight="bold"),
+                              command=_wrap).pack(side="left", padx=6)
+        ctk.CTkButton(pie, text="Cerrar comparador", width=180, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=11, weight="bold"),
-                      command=vent.destroy).pack(pady=(0, 10))
+                      command=vent.destroy).pack(side="left", padx=6)
 
     def _intentar_cambiar_modelo(self, nombre_modelo):
         """Cambia el combo del modelo activo si `nombre_modelo` existe en

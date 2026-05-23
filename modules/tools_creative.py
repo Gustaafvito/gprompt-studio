@@ -2220,11 +2220,163 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    # Tipos de shot disponibles para Story (Bloque 6).
+    # (key, label, descripción corta)
+    STORY_SHOT_TYPES = [
+        ("wide",      "Wide",            "Plano general — sujeto entero + entorno"),
+        ("medium",    "Medium",          "Plano medio — cintura arriba"),
+        ("close",     "Close-Up",        "Primer plano — rostro o detalle"),
+        ("pov",       "POV",             "Punto de vista — cámara = ojos del sujeto"),
+        ("ots",       "Over-the-Shoulder","Sobre el hombro — sigue al personaje"),
+        ("topdown",   "Top-Down",        "Cenital — cámara desde arriba"),
+        ("dutch",     "Dutch angle",     "Plano inclinado — tensión / desequilibrio"),
+        ("aerial",    "Aerial",          "Aéreo — vista desde el cielo"),
+    ]
+
+    def _pedir_story_config(self, default_n=3):
+        """Bloque 6 — Modal de configuración de Story.
+
+        Permite elegir:
+          • N (slider 2-6)
+          • Tipos de shot explícitos (checkboxes) o "LLM elige" (toggle)
+
+        Devuelve dict {"n": int, "tipos": [str]|None, "auto": bool} o
+        None si el usuario cancela. `tipos` es lista de labels en el
+        orden que el usuario marcó (no de la lista canónica).
+        """
+        prefs = {}
+        try:
+            prefs = self.store.cargar_preferencias() or {}
+        except Exception as e:
+            logger.debug(f"[silent] prefs: {e}")
+        n_inicial = int(prefs.get("story_n", default_n) or default_n)
+        tipos_pref = prefs.get("story_tipos") or []
+        auto_pref = prefs.get("story_auto", True)
+        if auto_pref is None: auto_pref = True
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        v = GPromptWindow(self)
+        v.title("🎞 Story — configuración")
+        v.geometry("520x540")
+        v.transient(self)
+
+        ctk.CTkLabel(v, text="🎞 Story Sequence — configura tu secuencia",
+                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
+        ctk.CTkLabel(v, text="Misma iluminación/paleta/sujeto · solo cambia el encuadre",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 12))
+
+        # Slider N
+        n_var = tk.IntVar(value=n_inicial)
+        lbl_n = ctk.CTkLabel(v, text=f"N = {n_inicial} shots",
+                              font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_n.pack(pady=(2, 2))
+        def _on_slide(val):
+            n_var.set(int(float(val)))
+            lbl_n.configure(text=f"N = {int(float(val))} shots")
+        slider = ctk.CTkSlider(v, from_=2, to=6, number_of_steps=4,
+                                command=_on_slide, width=380)
+        slider.set(n_inicial)
+        slider.pack(pady=(2, 10))
+
+        # Toggle auto
+        auto_var = tk.BooleanVar(value=bool(auto_pref))
+        # Frame checkboxes (oculto si auto=True)
+        chk_frame = ctk.CTkFrame(v, fg_color=c["fg_dark"], corner_radius=8)
+        chk_vars = {}
+
+        def _redraw_checkboxes():
+            for w in chk_frame.winfo_children():
+                w.destroy()
+            ctk.CTkLabel(chk_frame, text="Marca los tipos de shot a usar (en orden de marca):",
+                          font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(anchor="w", padx=10, pady=(6, 4))
+            grid = ctk.CTkFrame(chk_frame, fg_color="transparent")
+            grid.pack(fill="x", padx=10, pady=(0, 6))
+            for i, (key, label, desc) in enumerate(self.STORY_SHOT_TYPES):
+                marcado = key in tipos_pref
+                vbool = tk.BooleanVar(value=marcado)
+                chk_vars[key] = vbool
+                cb = ctk.CTkCheckBox(grid, text=f"{label}  —  {desc}",
+                                       variable=vbool,
+                                       font=ctk.CTkFont(size=10))
+                cb.grid(row=i, column=0, sticky="w", padx=4, pady=2)
+
+        chk_toggle = ctk.CTkCheckBox(v, text="🤖 Que el LLM elija los tipos automáticamente",
+                                       variable=auto_var,
+                                       font=ctk.CTkFont(size=11, weight="bold"),
+                                       command=lambda: chk_frame.pack_forget() if auto_var.get()
+                                                       else chk_frame.pack(fill="x", padx=20, pady=4))
+        chk_toggle.pack(pady=(4, 4))
+
+        if not auto_var.get():
+            chk_frame.pack(fill="x", padx=20, pady=4)
+        _redraw_checkboxes()
+
+        # Hint de validación
+        lbl_hint = ctk.CTkLabel(v, text="", font=ctk.CTkFont(size=10),
+                                  text_color="#fbbf24")
+        lbl_hint.pack(pady=(2, 2))
+
+        resultado = {"v": None}
+
+        def _generar():
+            n = int(n_var.get())
+            if auto_var.get():
+                resultado["v"] = {"n": n, "tipos": None, "auto": True}
+                _guardar_prefs(n, [], True)
+                v.destroy()
+                return
+            # Modo manual: validar N tipos marcados
+            marcados = [self._story_label_de_key(k) for k, vb in chk_vars.items() if vb.get()]
+            marcados_keys = [k for k, vb in chk_vars.items() if vb.get()]
+            if len(marcados) != n:
+                lbl_hint.configure(
+                    text=f"⚠️ Marca exactamente {n} tipos (ahora {len(marcados)}) o activa el modo automático.",
+                    text_color="#e67e22",
+                )
+                return
+            resultado["v"] = {"n": n, "tipos": marcados, "auto": False}
+            _guardar_prefs(n, marcados_keys, False)
+            v.destroy()
+
+        def _guardar_prefs(n, tipos_keys, auto):
+            try:
+                p = self.store.cargar_preferencias() or {}
+                p["story_n"] = n
+                p["story_tipos"] = tipos_keys
+                p["story_auto"] = auto
+                self.store.guardar_preferencias(p)
+            except Exception as e:
+                logger.debug(f"[silent] guardar prefs story: {e}")
+
+        btn_row = ctk.CTkFrame(v, fg_color="transparent")
+        btn_row.pack(side="bottom", pady=10)
+        ctk.CTkButton(btn_row, text="▶ Generar", width=130, height=34,
+                       fg_color="#1a7a3c", hover_color="#15633a",
+                       font=ctk.CTkFont(size=12, weight="bold"),
+                       command=_generar).pack(side="left", padx=6)
+        ctk.CTkButton(btn_row, text="Cancelar", width=110, height=34,
+                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                       command=v.destroy).pack(side="left", padx=6)
+
+        v.bind("<Return>", lambda _e: _generar())
+        v.bind("<Escape>", lambda _e: v.destroy())
+        v.wait_window()
+        return resultado["v"]
+
+    def _story_label_de_key(self, key):
+        for k, label, _desc in self.STORY_SHOT_TYPES:
+            if k == key:
+                return label
+        return key
+
     def _cmd_story_sequence(self):
         """Genera N shots cinematográficos coherentes. Solo modo imagen.
 
-        v2: N configurable (2-6, default 3). El LLM elige los tipos de
-        shot (W/M/C, plus POV, OTS, top-down, etc. si N>3).
+        v3 (Bloque 6): N configurable + selección explícita de tipos de
+        shot (Wide/Medium/Close/POV/OTS/TopDown/Dutch/Aerial) o "auto"
+        (LLM elige).
         """
         if self.modo_var.get() != "imagen":
             return self.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
@@ -2232,27 +2384,41 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena base.", "#e67e22")
 
-        n = self._pedir_n_modal(
-            "🎞 Story — número de shots",
-            "¿Cuántos shots cinematográficos de la misma escena?\n"
-            "Misma iluminación/paleta/sujeto · cambia solo el encuadre.",
-            n_min=2, n_max=6, default=3,
-            key_pref="story_n",
-        )
-        if n is None:
+        cfg = self._pedir_story_config(default_n=3)
+        if cfg is None:
             return
+        n = cfg["n"]
+        tipos = cfg["tipos"]   # lista de labels o None
+        auto = cfg["auto"]
 
-        try: self._sesion_log(f"🎬 Story: generó {n} shots cinematográficos")
+        modo_log = "auto (LLM elige)" if auto else f"manual [{', '.join(tipos)}]"
+        try: self._sesion_log(f"🎬 Story: {n} shots · {modo_log}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
         self.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
         self.toggle_botones(False)
 
-        formato_lineas = "\n---\n".join(
-            f"SHOT {i+1} (tipo de plano): POSITIVE: ... NEGATIVE: ... — Descripción del encuadre"
-            for i in range(n)
-        )
+        if auto:
+            tipos_instr = (
+                f"- Tipos sugeridos: Wide / Medium / Close-Up / POV / OTS / "
+                f"top-down / Dutch angle / Aerial. Elige {n} diversos."
+            )
+            formato_lineas = "\n---\n".join(
+                f"SHOT {i+1} (tipo de plano): POSITIVE: ... NEGATIVE: ... — Descripción del encuadre"
+                for i in range(n)
+            )
+        else:
+            tipos_str = ", ".join(tipos)
+            tipos_instr = (
+                f"- Usa EXACTAMENTE estos {n} tipos de shot en este orden: {tipos_str}. "
+                f"No los cambies ni añadas otros."
+            )
+            formato_lineas = "\n---\n".join(
+                f"SHOT {i+1} ({tipos[i]}): POSITIVE: ... NEGATIVE: ... — Descripción del encuadre"
+                for i in range(n)
+            )
+
         peticion = (
             f"Genera {n} SHOTS CINEMATOGRÁFICOS de la misma escena, manteniendo coherencia.\n\n"
             f"ESCENA: {idea}\n"
@@ -2260,10 +2426,12 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
             f"REGLAS:\n"
             f"- MISMO sujeto, MISMA iluminación, MISMA paleta, MISMA atmósfera.\n"
             f"- Solo cambia el ENCUADRE/PLANO en cada uno.\n"
-            f"- Tipos sugeridos: Wide / Medium / Close-Up / POV / OTS / "
-            f"top-down / Dutch angle / Aerial. Elige {n} diversos.\n\n"
+            f"{tipos_instr}\n\n"
             f"FORMATO ({n} shots):\n{formato_lineas}"
         )
+
+        # Labels para el comparador (si manual, usar tipo explícito)
+        labels_comp = [f"#{i+1} {tipos[i]}" for i in range(n)] if not auto else None
 
         def _worker():
             try:
@@ -2273,7 +2441,7 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:n])
+                    self._abrir_comparador(bloques[:n], labels=labels_comp)
                     self.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
@@ -2337,14 +2505,105 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
 
+                # Bloque 6: botón extra para encadenar Board → Vídeo.
+                # Toma los N frames y pide al LLM un prompt de vídeo
+                # cinematográfico que use esos frames como keyframes.
+                def _encadenar_video(_variaciones, _vent):
+                    self._encadenar_board_a_video(bloques[:n], _vent)
+
                 def _mostrar():
-                    self._abrir_comparador(bloques[:n])
-                    self.set_estado(f"📽 Storyboard de {len(bloques)} frames listo", "#2ecc71")
+                    self._abrir_comparador(
+                        bloques[:n],
+                        extra_botones=[
+                            ("🎬 Encadenar como prompt de vídeo", "#7c3aed", _encadenar_video),
+                        ],
+                    )
+                    self.set_estado(
+                        f"📽 Storyboard de {len(bloques)} frames listo · 🎬 encadénalo a vídeo desde el comparador",
+                        "#2ecc71",
+                    )
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda: self.toggle_botones(True))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _encadenar_board_a_video(self, frames, vent_comparador):
+        """Bloque 6 — Encadenar storyboard como prompt de vídeo.
+
+        Toma los N frames del storyboard y pide al LLM un prompt único de
+        vídeo cinematográfico que use esos frames como keyframes
+        (apertura → desarrollo → climax → cierre). Aplica el resultado a
+        txt_salida y cierra el comparador.
+        """
+        if not frames:
+            return self.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
+
+        try: self._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        self.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
+        self.toggle_botones(False)
+
+        # Construir bloque con cada frame numerado
+        frames_str = "\n\n".join(
+            f"--- FRAME {i+1} ---\n{f.strip()}"
+            for i, f in enumerate(frames)
+        )
+
+        peticion = (
+            f"Tengo un STORYBOARD de {len(frames)} frames clave de una secuencia de vídeo. "
+            f"Quiero un ÚNICO prompt de VÍDEO cinematográfico que recorra los {len(frames)} frames "
+            f"como KEYFRAMES, con movimientos de cámara y transiciones coherentes entre ellos.\n\n"
+            f"FRAMES DEL STORYBOARD:\n{frames_str}\n\n"
+            f"REGLAS:\n"
+            f"- UNA sola descripción de vídeo continuo (no {len(frames)} prompts separados).\n"
+            f"- Indica explícitamente la progresión: 'opens with [frame 1] → [transición/movimiento] "
+            f"→ [frame 2] → … → closes with [frame {len(frames)}]'.\n"
+            f"- Usa lenguaje cinematográfico (dolly in, pan, tracking shot, cut to, dissolve, etc.).\n"
+            f"- MANTÉN la paleta, iluminación y atmósfera consistentes con los frames originales.\n"
+            f"- Incluye duración estimada y ritmo (ej: slow burn, fast cut, lingering close-ups).\n\n"
+            f"FORMATO:\n"
+            f"POSITIVE PROMPT: <descripción completa del vídeo de {len(frames)} keyframes>\n"
+            f"NEGATIVE PROMPT: <qué evitar>"
+        )
+
+        def _worker():
+            try:
+                max_tok = min(4500, 1500 + len(frames) * 400)
+                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
+                resp = limpiar_marcadores(resp)
+
+                def _aplicar():
+                    # Cambiar modo a vídeo si no lo estaba ya (callback real es _on_modo_cambio)
+                    if self.modo_var.get() != "video":
+                        try:
+                            self.modo_var.set("video")
+                            if hasattr(self, '_on_modo_cambio'):
+                                self._on_modo_cambio()
+                        except Exception as e:
+                            logger.debug(f"[silent] cambio modo: {e}")
+                    self.actualizar_salida(resp)
+                    self.guardar_en_historial(resp)
+                    self.set_estado(
+                        f"🎬 Vídeo encadenado de {len(frames)} keyframes aplicado al editor",
+                        "#2ecc71",
+                    )
+                    self.toggle_botones(True)
+                    self._sonar_completado()
+                    try:
+                        if vent_comparador and vent_comparador.winfo_exists():
+                            vent_comparador.destroy()
+                    except Exception as e:
+                        logger.debug(f"[silent] cerrar comparador: {e}")
+                self.after(0, _aplicar)
+            except Exception as e:
+                logger.exception("encadenar board→vídeo")
+                self.after(0, lambda: self.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
