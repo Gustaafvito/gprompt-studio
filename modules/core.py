@@ -2314,16 +2314,20 @@ class CoreMixin:
             f"- Responde SOLO con el prompt refinado, sin explicaciones.\n"
         )
 
+        # Bloque 4 — pasamos por el modal de diff igual que cmd_refinar.
+        texto_previo = texto
+
         def _worker():
             try:
                 resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 def _aplicar():
-                    self.actualizar_salida(resp)
                     self.guardar_en_historial(resp)
-                    self.set_estado("✅ Prompt refinado con instrucción específica", "#2ecc71")
+                    self.set_estado(f"🔍 Refinamiento listo ({instruccion_extra[:30]}...) — revisa el diff.", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
+                    # Abrir modal con Aplicar/Cancelar/Deshacer
+                    self._mostrar_diff_refinamiento(texto_previo, resp)
                 self.after(0, _aplicar)
             except Exception as e:
                 self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
