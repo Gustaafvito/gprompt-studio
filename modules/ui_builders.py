@@ -1498,38 +1498,54 @@ class UIBuildersMixin:
 
         pill = {"height": 28, "corner_radius": 6, "font": ctk.CTkFont(size=10)}
 
-        # ═══ FILA INFERIOR: agrupada por función ═══
-        # GRUPO 1: Copiar (verde-rojo-azul) — acciones primarias
-        # GRUPO 2: Tools rápidas (azul) — análisis/utilidades
-        # GRUPO 3: Negative (rojo) — generación negativos
-        # GRUPO 4: Guardar (amarillo dorado) — colecciones
-        # GRUPO 5: Export (verde oscuro)
-        botones_inf = [
-            # GRUPO COPIAR
-            ("🟢 POS",     60, "#15803d",  lambda: self._copiar("positivo"),     "Copiar POSITIVE · Ctrl+1"),
-            ("🔴 NEG",     60, "#991b1b",  lambda: self._copiar("negativo"),     "Copiar NEGATIVE · Ctrl+2"),
-            ("📋 Todo",    55, "#475569",  lambda: self._copiar("todo"),          "Copiar todo el prompt"),
-            # GRUPO HERRAMIENTAS
-            ("🔧 Comfy",   60, "#1e3a8a",  self._copiar_comfyui_json,             "Exportar/Importar ComfyUI JSON"),
-            ("🇪🇸 Trad",    55, "#1e3a8a",  self._traducir_salida,                  "Traducir al español"),
-            ("📊",         30, "#1e3a8a",  self._cmd_scoring,                      "Scoring del prompt"),
-            ("✨",         30, "#1e3a8a",  self._abrir_atajos_tags,                "Atajos de tags rápidos"),
-            # GRUPO NEGATIVE (rojo)
-            ("🔴+",        35, "#991b1b",  self._cmd_solo_negative,                "Regenerar SOLO el NEGATIVE"),
-            ("🛡",         30, "#991b1b",  self._cmd_negative_optimo,              "Generar NEGATIVE óptimo según modelo"),
-            # GRUPO GUARDAR (dorado/amarillo)
-            ("⭐",         30, "#a16207",  self._guardar_favorito,                 "Guardar en Favoritos"),
-            ("🌟",         30, "#b45309",  self._guardar_estrella,                 "Guardar como Estrella"),
-            ("💎",         30, "#854d0e",  self._guardar_seed_favorito,            "Guardar config como Seed favorito"),
-            # GRUPO EXPORT (verde oscuro)
-            ("💾",         30, "#15803d",  self._exportar,                         "Exportar como .txt"),
+        # ═══ FILA INFERIOR — grupos con título visible ═══
+        # Estructura: (titulo_grupo, color_titulo, [(label, w, fg, cmd, tip), …])
+        grupos_inf = [
+            ("📋 COPIAR", "#15803d", [
+                ("🟢 POS",     60, "#15803d",  lambda: self._copiar("positivo"),     "Copiar POSITIVE · Ctrl+1"),
+                ("🔴 NEG",     60, "#991b1b",  lambda: self._copiar("negativo"),     "Copiar NEGATIVE · Ctrl+2"),
+                ("📋 Todo",    55, "#475569",  lambda: self._copiar("todo"),          "Copiar todo el prompt"),
+            ]),
+            ("🔧 HERRAMIENTAS", "#1e3a8a", [
+                ("🔧 Comfy",   60, "#1e3a8a",  self._copiar_comfyui_json,             "Exportar/Importar ComfyUI JSON"),
+                ("🇪🇸 Trad",    55, "#1e3a8a",  self._traducir_salida,                  "Traducir al español"),
+                ("📊",         30, "#1e3a8a",  self._cmd_scoring,                      "Scoring del prompt"),
+                ("✨",         30, "#1e3a8a",  self._abrir_atajos_tags,                "Atajos de tags rápidos"),
+            ]),
+            ("🛡 NEGATIVE", "#991b1b", [
+                ("🔴+",        35, "#991b1b",  self._cmd_solo_negative,                "Regenerar SOLO el NEGATIVE"),
+                ("🛡",         30, "#991b1b",  self._cmd_negative_optimo,              "Generar NEGATIVE óptimo según modelo"),
+            ]),
+            ("⭐ GUARDAR", "#a16207", [
+                ("⭐",         30, "#a16207",  self._guardar_favorito,                 "Guardar en Favoritos"),
+                ("🌟",         30, "#b45309",  self._guardar_estrella,                 "Guardar como Estrella"),
+                ("💎",         30, "#854d0e",  self._guardar_seed_favorito,            "Guardar config como Seed favorito"),
+            ]),
+            ("💾 EXPORT", "#15803d", [
+                ("💾",         30, "#15803d",  self._exportar,                         "Exportar como .txt"),
+            ]),
         ]
 
-        for text, w, fg, cmd, tip in botones_inf:
-            btn = ctk.CTkButton(frame, text=text, width=w, fg_color=fg, hover_color=self._darker(fg), command=cmd, **pill)
-            btn.pack(side="left", padx=2)
-            is_lt = ctk.get_appearance_mode().lower() == "light"
-            CTkToolTip(btn, delay=0.3, message=tip, fg_color="#f0f0f0" if is_lt else "#1a1a2e", text_color="#111827" if is_lt else "#e5e7eb", font=("Segoe UI", 11))
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        tip_kwargs = dict(fg_color="#f0f0f0" if is_lt else "#1a1a2e",
+                          text_color="#111827" if is_lt else "#e5e7eb",
+                          font=("Segoe UI", 11))
+
+        for titulo, color_tit, botones in grupos_inf:
+            grp_frame = ctk.CTkFrame(frame, fg_color="transparent")
+            grp_frame.pack(side="left", padx=(0, 6))
+            ctk.CTkLabel(grp_frame, text=titulo,
+                          font=ctk.CTkFont(size=8, weight="bold"),
+                          text_color=color_tit, anchor="w").pack(
+                          anchor="w", padx=4, pady=(0, 1))
+            btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
+            btn_row.pack(side="top", anchor="w")
+            for text, w, fg, cmd, tip in botones:
+                btn = ctk.CTkButton(btn_row, text=text, width=w, fg_color=fg,
+                                     hover_color=self._darker(fg),
+                                     command=cmd, **pill)
+                btn.pack(side="left", padx=2)
+                CTkToolTip(btn, delay=0.3, message=tip, **tip_kwargs)
 
     def _mostrar_menu_contextual(self, event):
         """Menú contextual con click derecho en el resultado."""
@@ -1662,39 +1678,70 @@ class UIBuildersMixin:
             menu.grab_release()
 
     def _construir_checkboxes(self, lista):
-        # Optimización v1.1: si los checkboxes para esta misma lista ya existen,
-        # no se destruyen ni se recrean — solo se restablecen a desmarcados.
-        # Esto evita el lag al cambiar entre modos Imagen/Vídeo/Audio cuando hay
-        # cientos de estilos.
-        if hasattr(self, "_estilos_lista_actual") and self._estilos_lista_actual == lista \
-           and hasattr(self, "estilo_checks") and self.estilo_checks:
-            # Reset rápido: solo desmarcar todo, sin destruir nada
+        """Construye / muestra los checkboxes de estilos para el modo actual.
+
+        v1.2 (sesión 4): caché por modo de sub-frames anidados en
+        frame_checks. Al cambiar modo se hace pack_forget del sub-frame
+        anterior y pack del nuevo — sin destruir/reconstruir widgets.
+        Resultado: ~257 widgets de IMAGEN ya no se recrean cada vez que
+        el usuario alterna entre Imagen/Vídeo/Audio.
+
+        Compatibilidad: self.estilo_checks sigue apuntando al dict del
+        modo activo (consumido por _filtrar_estilos, _validar_estilos,
+        estilos_seleccionados, etc.).
+        """
+        # Inicializar cachés si es la primera vez
+        if not hasattr(self, '_checks_subframes_cache'):
+            self._checks_subframes_cache = {}   # id(lista) → sub-frame
+            self._checks_vars_cache = {}        # id(lista) → dict {nombre: BooleanVar}
+
+        cache_key = id(lista)
+
+        # Si ya existe sub-frame para esta lista: solo swap visibility
+        if cache_key in self._checks_subframes_cache:
+            # Ocultar todos los sub-frames anteriores
+            for k, sub in self._checks_subframes_cache.items():
+                if k != cache_key:
+                    try: sub.pack_forget()
+                    except Exception: pass
+            # Mostrar el actual
+            try: self._checks_subframes_cache[cache_key].pack(fill="both", expand=True)
+            except Exception: pass
+            # Apuntar self.estilo_checks al dict cacheado
+            self.estilo_checks = self._checks_vars_cache[cache_key]
+            # Reset visual: desmarcar todo
             for var in self.estilo_checks.values():
-                try:
-                    var.set(False)
+                try: var.set(False)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             if hasattr(self, 'lbl_estilos_sel'):
                 self.lbl_estilos_sel.configure(text="")
+            self._estilos_lista_actual = lista
             self._auto_sugerir_negativos()
             self._actualizar_contador_estilos()
             return
 
+        # Primera construcción para esta lista: ocultar otros sub-frames
+        for sub in self._checks_subframes_cache.values():
+            try: sub.pack_forget()
+            except Exception: pass
+
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
 
-        for w in self.frame_checks.winfo_children():
-            w.destroy()
-        self.estilo_checks = {}
-        if hasattr(self, 'lbl_estilos_sel'):
-            self.lbl_estilos_sel.configure(text="")
+        # Sub-frame propio para esta lista (anidado dentro de frame_checks)
+        sub_frame = ctk.CTkFrame(self.frame_checks, fg_color="transparent")
+        sub_frame.pack(fill="both", expand=True)
+        self._checks_subframes_cache[cache_key] = sub_frame
+
+        local_checks = {}
         cols = 3
 
         for i, nombre in enumerate(lista):
             # Ningún estilo marcado por defecto — el usuario debe elegir
             var = ctk.BooleanVar(value=False)
-            self.estilo_checks[nombre] = var
-            cb = ctk.CTkCheckBox(self.frame_checks, text=nombre, variable=var,
+            local_checks[nombre] = var
+            cb = ctk.CTkCheckBox(sub_frame, text=nombre, variable=var,
                                  command=self._on_estilo_cambio,
                                  font=ctk.CTkFont(size=10),
                                  checkbox_width=16, checkbox_height=16,
@@ -1712,22 +1759,32 @@ class UIBuildersMixin:
                     logger.debug(f"[silent] tooltip estilo {nombre}: {_e}")
 
         for c_i in range(cols):
-            self.frame_checks.columnconfigure(c_i, weight=1)
+            sub_frame.columnconfigure(c_i, weight=1)
 
-        # Recordar qué lista construimos para evitar recrear al volver al mismo modo
+        self._checks_vars_cache[cache_key] = local_checks
+        self.estilo_checks = local_checks
         self._estilos_lista_actual = lista
+        if hasattr(self, 'lbl_estilos_sel'):
+            self.lbl_estilos_sel.configure(text="")
 
         self._auto_sugerir_negativos()
         self._actualizar_contador_estilos()
 
     def _filtrar_estilos(self, event=None):
         termino = self.entry_busqueda.get().lower()
-        for child in self.frame_checks.winfo_children():
-            if isinstance(child, ctk.CTkCheckBox):
-                if termino in child.cget("text").lower():
-                    child.grid()
+        # v1.2: los CTkCheckBox ahora viven en un sub-frame cacheado por
+        # modo, no directamente en frame_checks. Iterar recursivamente.
+        def _filter_in(parent):
+            for child in parent.winfo_children():
+                if isinstance(child, ctk.CTkCheckBox):
+                    if termino in child.cget("text").lower():
+                        child.grid()
+                    else:
+                        child.grid_remove()
                 else:
-                    child.grid_remove()
+                    try: _filter_in(child)
+                    except Exception: pass
+        _filter_in(self.frame_checks)
 
     def _validar_estilos(self, maximo):
         marcados = [n for n, v in self.estilo_checks.items() if v.get()]

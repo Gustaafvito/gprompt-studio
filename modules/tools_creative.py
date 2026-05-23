@@ -779,21 +779,59 @@ class ToolsCreativeMixin:
 
                     btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_frame.pack(pady=10)
-                    ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=28,
-                                  command=lambda: (pyperclip.copy(resp), self.set_estado("📋 Copiado", "#2ecc71"))).pack(side="left", padx=4)
+
+                    # Helper: extraer el PROMPT CORREGIDO del análisis
+                    def _extraer_corregido():
+                        import re
+                        m = re.search(r'PROMPT\s+CORREGIDO[:\s]*\n(.+?)(?=\Z)',
+                                       resp, re.DOTALL | re.IGNORECASE)
+                        return m.group(1).strip() if m else None
+
+                    def _copiar_analisis_completo():
+                        pyperclip.copy(resp)
+                        self.set_estado("📋 Análisis completo copiado", "#2ecc71")
+
+                    def _copiar_solo_corregido():
+                        corregido = _extraer_corregido()
+                        if corregido:
+                            pyperclip.copy(corregido)
+                            self.set_estado("📋 PROMPT CORREGIDO copiado al portapapeles", "#2ecc71")
+                        else:
+                            self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
 
                     def _aplicar_corregido():
-                        import re
-                        m = re.search(r'PROMPT\s+CORREGIDO[:\s]*\n(.+?)(?=\Z)', resp, re.DOTALL | re.IGNORECASE)
-                        if m:
-                            corregido = m.group(1).strip()
+                        # Mejora sesión 4 (auditoría): pasar por el diff modal
+                        # del Bloque 4 en lugar de sobreescribir directo. El
+                        # usuario decide aplicar/cancelar tras ver los cambios.
+                        corregido = _extraer_corregido()
+                        if not corregido:
+                            self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
+                            return
+                        texto_previo = self.txt_salida.get("1.0", "end").strip()
+                        if not texto_previo:
+                            # No hay nada que comparar — aplicar directo
                             self.actualizar_salida(corregido)
                             vent.destroy()
                             self.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
+                            return
+                        # Pasamos por _mostrar_diff_refinamiento → Aplicar/Cancelar
+                        if hasattr(self, '_mostrar_diff_refinamiento'):
+                            vent.destroy()
+                            self._mostrar_diff_refinamiento(texto_previo, corregido)
                         else:
-                            self.set_estado("⚠️ No se encontró prompt corregido", "#e67e22")
+                            # Fallback si el método no existe
+                            self.actualizar_salida(corregido)
+                            vent.destroy()
+                            self.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
 
-                    ctk.CTkButton(btn_frame, text="✅ Aplicar corregido", width=140, height=28, fg_color="#1a7a3c",
+                    ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=28,
+                                  fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                                  command=_copiar_analisis_completo).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_frame, text="📋 Solo corregido", width=130, height=28,
+                                  fg_color="#475569", hover_color="#374151",
+                                  command=_copiar_solo_corregido).pack(side="left", padx=4)
+                    ctk.CTkButton(btn_frame, text="✅ Aplicar (con diff)", width=160, height=28,
+                                  fg_color="#1a7a3c", hover_color="#15633a",
                                   command=_aplicar_corregido).pack(side="left", padx=4)
 
                     self.toggle_botones(True)
