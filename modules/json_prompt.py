@@ -86,8 +86,95 @@ def _limpiar_json_de_newlines(texto: str) -> str:
             out.append(" ")
         else:
             out.append(ch)
-    # Colapsar dobles espacios resultantes dentro de strings
     return "".join(out)
+
+
+def _limpiar_json_trailing_commas(texto: str) -> str:
+    """Quita comas finales antes de ] o } (JSON estricto las prohíbe).
+
+    Maneja state machine para no tocar comas dentro de strings.
+    """
+    import re as _re
+    # Hacer el barrido respetando strings (escapadas con \\")
+    out = []
+    in_string = False
+    escape = False
+    i = 0
+    while i < len(texto):
+        ch = texto[i]
+        if escape:
+            out.append(ch)
+            escape = False
+            i += 1
+            continue
+        if ch == "\\":
+            out.append(ch)
+            escape = True
+            i += 1
+            continue
+        if ch == '"':
+            in_string = not in_string
+            out.append(ch)
+            i += 1
+            continue
+        # Detectar coma fuera de string seguida (saltando whitespace) por ] o }
+        if not in_string and ch == ",":
+            j = i + 1
+            while j < len(texto) and texto[j] in " \t\n\r":
+                j += 1
+            if j < len(texto) and texto[j] in "]}":
+                # Saltar esta coma — es trailing
+                i = j
+                continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
+def _intentar_reparar_json(texto: str):
+    """Intenta varias estrategias para reparar JSON copiado de webs.
+
+    Devuelve (data, estrategias_aplicadas) o (None, mensaje_error).
+
+    Estrategias en orden:
+      1. Parsear sin tocar nada (caso ideal).
+      2. Limpiar newlines literales dentro de strings.
+      3. Quitar trailing commas.
+      4. Ambas combinadas.
+    """
+    estrategias = []
+    # 1. Tal cual
+    try:
+        return json.loads(texto), estrategias
+    except json.JSONDecodeError as e1:
+        err1 = str(e1)
+
+    # 2. Solo newlines
+    try:
+        limpio = _limpiar_json_de_newlines(texto)
+        data = json.loads(limpio)
+        estrategias.append("newlines en strings → espacios")
+        return data, estrategias
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Solo trailing commas
+    try:
+        limpio = _limpiar_json_trailing_commas(texto)
+        data = json.loads(limpio)
+        estrategias.append("comas finales eliminadas")
+        return data, estrategias
+    except json.JSONDecodeError:
+        pass
+
+    # 4. Ambas combinadas
+    try:
+        limpio = _limpiar_json_trailing_commas(_limpiar_json_de_newlines(texto))
+        data = json.loads(limpio)
+        estrategias.extend(["newlines en strings → espacios", "comas finales eliminadas"])
+        return data, estrategias
+    except json.JSONDecodeError as e4:
+        return None, str(e4)
 
 
 class JsonPromptMixin:
@@ -169,43 +256,26 @@ class JsonPromptMixin:
                 lbl_status.configure(text="⚠️ Pega un JSON primero",
                                       text_color="#e67e22")
                 return
-            limpieza_aplicada = False
-            try:
-                data = json.loads(texto)
-            except json.JSONDecodeError as e:
-                # Caso típico: JSON con saltos de línea literales dentro de
-                # strings (copy/paste de webs). Intentamos limpiar y reparsear
-                # automáticamente. Si tampoco funciona, devolvemos el error.
-                if "Invalid control character" in str(e) or "control character" in str(e).lower():
-                    texto_limpio = _limpiar_json_de_newlines(texto)
-                    try:
-                        data = json.loads(texto_limpio)
-                        limpieza_aplicada = True
-                        # Actualizamos el textbox con la versión limpia por si
-                        # el usuario quiere verla.
-                        txt_json.delete("1.0", "end")
-                        txt_json.insert("1.0", texto_limpio)
-                    except json.JSONDecodeError as e2:
-                        lbl_status.configure(
-                            text=f"❌ JSON inválido (incluso tras autolimpieza): {e2}",
-                            text_color="#e74c3c",
-                        )
-                        return
-                else:
-                    lbl_status.configure(text=f"❌ JSON inválido: {e}",
-                                          text_color="#e74c3c")
-                    return
+            # Intenta reparar el JSON probando varias estrategias.
+            data, info = _intentar_reparar_json(texto)
+            if data is None:
+                # info contiene el último mensaje de error
+                lbl_status.configure(
+                    text=f"❌ JSON inválido tras intentar todas las reparaciones: {info}",
+                    text_color="#e74c3c",
+                )
+                return
             if not isinstance(data, dict):
                 lbl_status.configure(text="❌ El JSON debe ser un objeto {} en raíz",
                                       text_color="#e74c3c")
                 return
-
-            if limpieza_aplicada:
-                # Avisar antes de cerrar para que el usuario sepa qué pasó
-                logger.info("JSON import: autolimpieza de newlines aplicada")
+            estrategias = info  # lista de strategies aplicadas
+            if estrategias:
+                logger.info(f"JSON import: estrategias aplicadas = {estrategias}")
 
             resumen = self._aplicar_json_a_app(data)
-            resumen["limpieza_aplicada"] = limpieza_aplicada
+            resumen["limpieza_aplicada"] = bool(estrategias)
+            resumen["estrategias"] = estrategias
             vent.destroy()
             # Resumen → modal nuevo con lo aplicado + metadatos extras
             self._mostrar_resumen_import(data, resumen)
@@ -343,10 +413,11 @@ class JsonPromptMixin:
 
         # Aviso si se aplicó autolimpieza
         if resumen.get("limpieza_aplicada"):
+            estrategias = resumen.get("estrategias") or []
+            estr_txt = ", ".join(estrategias) if estrategias else "autolimpieza"
             ctk.CTkLabel(
                 vent,
-                text="🧹 JSON con saltos de línea dentro de strings — "
-                     "autolimpieza aplicada (newlines → espacios)",
+                text=f"🧹 JSON reparado automáticamente — {estr_txt}",
                 font=ctk.CTkFont(size=10),
                 text_color="#fbbf24",
                 wraplength=720, justify="center",
