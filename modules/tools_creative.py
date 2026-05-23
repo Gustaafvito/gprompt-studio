@@ -2680,13 +2680,56 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                     estado_lbl.configure(text=f"❌ No se pudo copiar: {e}",
                                           text_color="#e74c3c")
 
+            def _guardar_en_versiones():
+                """Apila cada nodo de la ruta en _versiones_prompt para
+                que se puedan recuperar desde el menú 📑 Versiones prompt."""
+                try:
+                    if not hasattr(self, '_versiones_prompt'):
+                        self._versiones_prompt = []
+                    ahora = datetime.datetime.now().strftime("%H:%M:%S")
+                    cadena_corta = " → ".join(x["label"] for x in ruta)
+                    nuevos = 0
+                    for x in ruta:
+                        # Evitar duplicados: si el texto exacto ya está
+                        # como última versión, no apilamos.
+                        if (self._versiones_prompt
+                                and self._versiones_prompt[-1].get("texto") == x["texto"]):
+                            continue
+                        self._versiones_prompt.append({
+                            "texto": x["texto"],
+                            "fecha": ahora,
+                            "etiqueta": (f"v{len(self._versiones_prompt) + 1} "
+                                         f"(Walk {cadena_corta} · nodo {x['label']})"),
+                        })
+                        nuevos += 1
+                        if len(self._versiones_prompt) > 30:
+                            self._versiones_prompt = self._versiones_prompt[-30:]
+                    estado_lbl.configure(
+                        text=f"✅ {nuevos} nodo(s) guardados en Versiones prompt — accesibles desde 📑 Versiones",
+                        text_color="#2ecc71",
+                    )
+                    lbl_status.configure(
+                        text=f"💾 Ruta guardada ({nuevos} nodos) en 📑 Versiones prompt",
+                        text_color="#2ecc71",
+                    )
+                    try: self._sesion_log(f"🌀 Walk: guardó ruta {cadena_corta} en Versiones ({nuevos} nodos)")
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
+                except Exception as e:
+                    estado_lbl.configure(text=f"❌ Error guardando: {e}",
+                                          text_color="#e74c3c")
+
             btn_bar = ctk.CTkFrame(v, fg_color="transparent")
             btn_bar.pack(pady=(0, 12))
+            ctk.CTkButton(btn_bar, text="💾 Guardar en Versiones prompt", width=230, height=32,
+                          fg_color="#1a4a7a", hover_color="#15396a",
+                          font=ctk.CTkFont(size=11, weight="bold"),
+                          command=_guardar_en_versiones).pack(side="left", padx=5)
             ctk.CTkButton(btn_bar, text="📋 Copiar al portapapeles", width=200, height=32,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_copiar_clipboard).pack(side="left", padx=5)
-            ctk.CTkButton(btn_bar, text="Cerrar", width=110, height=32,
+            ctk.CTkButton(btn_bar, text="Cerrar", width=100, height=32,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           command=v.destroy).pack(side="left", padx=5)
             v.bind("<Escape>", lambda _e: v.destroy())
@@ -2758,8 +2801,8 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                                   command=_usar_nodo)
         btn_usar.pack(side="left", padx=2, fill="x", expand=True)
 
-        ctk.CTkButton(btn_row2, text="📂 Copiar ruta", fg_color=c["fg_dark"],
-                       hover_color=c["fg_dark_hover"], font=ctk.CTkFont(size=10),
+        ctk.CTkButton(btn_row2, text="💾 Guardar ruta", fg_color="#1a4a7a",
+                       hover_color="#15396a", font=ctk.CTkFont(size=10),
                        command=_copiar_ruta).pack(side="left", padx=2, fill="x", expand=True)
         ctk.CTkButton(btn_row2, text="🗑 Borrar subárbol", fg_color="#8a1a1a",
                        hover_color="#6b1414", font=ctk.CTkFont(size=10),
