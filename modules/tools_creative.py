@@ -1090,13 +1090,18 @@ class ToolsCreativeMixin:
                         hdr.pack(fill="x", padx=8, pady=(6, 0))
 
                         # Estado de bloqueo
-                        bloqueos[cat_key] = {"bloqueado": False, "label": None}
+                        bloqueos[cat_key] = {"bloqueado": False, "label": None, "btn": None}
 
+                        # Fix: el btn_lock se captura como default-arg para
+                        # evitar late-binding del loop (antes el icono del
+                        # candado solo cambiaba en el último botón creado).
                         def _toggle_bloqueo(key=cat_key):
                             bloqueos[key]["bloqueado"] = not bloqueos[key]["bloqueado"]
                             icono = "🔒" if bloqueos[key]["bloqueado"] else "🔓"
                             color = "#c0392b" if bloqueos[key]["bloqueado"] else "#27ae60"
-                            btn_lock.configure(text=icono, fg_color=color)
+                            btn_ref = bloqueos[key].get("btn")
+                            if btn_ref is not None:
+                                btn_ref.configure(text=icono, fg_color=color)
                             estado = "🔒 BLOQUEADO" if bloqueos[key]["bloqueado"] else "🔓 DESBLOQUEADO"
                             bloqueos[key]["label"].configure(text=estado, text_color=color)
 
@@ -1104,6 +1109,7 @@ class ToolsCreativeMixin:
                                                  fg_color="#27ae60", hover_color="#2ecc71",
                                                  command=_toggle_bloqueo)
                         btn_lock.pack(side="left", padx=(0, 5))
+                        bloqueos[cat_key]["btn"] = btn_lock
 
                         # Etiqueta de estado
                         estado_lbl = ctk.CTkLabel(hdr, text="🔓 DESBLOQUEADO", text_color="#27ae60", font=ctk.CTkFont(size=9))
@@ -1381,9 +1387,12 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
                         if plantilla.get("escena"):
                             esc = adn.get("escena", {})
                             try:
+                                # Fix: antes usaba ilu.get("tipo_exacto") por
+                                # copy-paste del bloque iluminación. Ahora
+                                # toma el tipo_exacto desde esc (escena).
                                 partes.append(plantilla["escena"].format(
                                     ubicacion_exacta=esc.get("ubicacion_exacta", ""),
-                                    tipo_exacto=ilu.get("tipo_exacto", "")
+                                    tipo_exacto=esc.get("tipo_exacto", "")
                                 ))
                             except Exception as e:
                                 logger.warning(f"Conversión {plataforma} escena falló: {e}")
