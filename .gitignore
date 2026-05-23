@@ -46,3 +46,8 @@ desktop.ini
 *_temp.py
 *.tmp
 *.corrupt
+
+# PyInstaller / build artifacts
+dist/
+build/
+*.spec~
