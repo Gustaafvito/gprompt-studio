@@ -1273,15 +1273,14 @@ class UIBuildersMixin:
         CYAN_CONV    = "#0891b2"   # Conversiones
         GRIS_UTIL    = "#475569"   # Utilidades
 
-        # ═══ FILA 1 — grupos: Inspiración · Generación · Análisis · ADN ═══
+        # ═══ FILA 1 — grupos con título visible ═══
+        # Estructura: (titulo_grupo, color_titulo, [botones])
         grupos_r1 = [
-            # Inspiración (verde apagado)
-            [
+            ("💡 INSPIRACIÓN", VERDE_INSP, [
                 ("💡 Ideas",          100, VERDE_INSP,   self.cmd_ideas,             "3 ideas creativas · Ctrl+I"),
                 ("🎲",                40,  VERDE_INSP,   self._cmd_sorprendeme,      "Sorpréndeme con una idea aleatoria"),
-            ],
-            # Generación (verde fuerte principal · verde claro variantes · verde sub)
-            [
+            ]),
+            ("✨ GENERACIÓN", VERDE_FUERTE, [
                 ("✨ Generar",         110, VERDE_FUERTE, self.cmd_prompt,            "Genera prompt · Ctrl+Enter"),
                 ("🔄",                40,  VERDE_FUERTE, self._cmd_regenerar,        "Regenerar con la misma idea (mantiene historial)"),
                 ("←",                30,  VERDE_SUB,    self._cmd_regenerar_atras,  "← Versión anterior de la regeneración"),
@@ -1289,68 +1288,69 @@ class UIBuildersMixin:
                 ("📊",               36,  VERDE_SUB,    self._cmd_diff_versiones,   "Diff visual entre versiones (verde=añadido, rojo=quitado)"),
                 ("🔀 Variaciones",    115, VERDE_CLARO,  self.cmd_variaciones,       "3 versiones · Ctrl+Shift+Enter"),
                 ("🚀 Quick",           80, VERDE_CLARO,  self.cmd_prompt_quick,      "Quick Generate: prompt rápido y barato · Alt+Enter"),
-            ],
-            # Análisis (azul oscuro)
-            [
+            ]),
+            ("🔍 ANÁLISIS", AZUL_ANAL, [
                 ("👁 Analizar",       100, AZUL_ANAL,    self.cmd_vision,            "Describe imagen · Ctrl+Shift+A"),
                 ("🎯 Img→Prompt",     110, AZUL_ANAL,    self.cmd_imagen_a_prompt,   "Prompt desde imagen"),
                 ("🔍 Análisis Inv",   115, AZUL_ANAL_2,  self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
-            ],
-            # ADN (morado)
-            [
+            ]),
+            ("🧬 ADN", MORADO_ADN, [
                 ("🧬 ADN Visual",     100, MORADO_ADN,   self._cmd_adn_visual,       "Análisis JSON estructurado"),
-            ],
+            ]),
         ]
 
-        # ═══ FILA 2 — grupos: Edición · Variantes · Multi-prompt narrativo · Conversiones · Utilidades ═══
-        # Iterar movido al grupo Variantes (junto a Pulse/Sugerir) porque
-        # también genera variantes múltiples del mismo prompt.
+        # ═══ FILA 2 — grupos con título visible ═══
         grupos_r2 = [
-            # Edición del output actual (violeta)
-            [
+            ("🔁 EDICIÓN", MORADO_ADN, [
                 ("🔁 Refinar",         90, MORADO_ADN,   self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
                 ("💬 Copiloto",        95, MORADO_ADN,   self.cmd_copiloto,           "Chat para editar"),
-            ],
-            # Variantes múltiples (naranja)
-            [
+            ]),
+            ("🔂 VARIANTES", NARANJA_VAR, [
                 ("🔂 Iterar",          80, NARANJA_VAR,  self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
                 ("⚡ Pulse",           75, NARANJA_VAR,  self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
                 ("🤖 Sugerir",         85, NARANJA_VAR,  self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
-            ],
-            # Multi-prompt narrativo (rosa)
-            [
+            ]),
+            ("🎬 NARRATIVA", ROSA_NARR, [
                 ("🎭 Mood",            70, ROSA_NARR,    self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
                 ("🎞 Story",           70, ROSA_NARR,    self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
                 ("📽 Board",           70, ROSA_NARR,    self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
                 ("🌀 Walk",            70, ROSA_NARR,    self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
-            ],
-            # Conversiones (cyan)
-            [
+            ]),
+            ("🎬 CONVERSIÓN", CYAN_CONV, [
                 ("🎬 →Vídeo",          85, CYAN_CONV,    self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
                 ("🆚 Compar",          80, CYAN_CONV,    self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
-            ],
-            # Utilidades / outputs masivos (gris)
-            [
+            ]),
+            ("📦 UTILIDADES", GRIS_UTIL, [
                 ("📦 Batch",           80, GRIS_UTIL,    self.cmd_batch,              "Generación masiva"),
                 ("🖼 Preview",         90, GRIS_UTIL,    self.cmd_previsualizar,      "Boceto rápido"),
-            ],
+            ]),
         ]
 
         self.action_btns = []
 
         def _render_grupos(parent, grupos):
-            for g_idx, grupo in enumerate(grupos):
+            """Render con título visible arriba + botones abajo en cada grupo."""
+            for g_idx, item in enumerate(grupos):
+                titulo, color_tit, grupo = item
                 if g_idx > 0:
                     _sep(parent)
+                # Mini-frame vertical por grupo: título + botones
+                grp_frame = ctk.CTkFrame(parent, fg_color="transparent")
+                grp_frame.pack(side="left", padx=0)
+                # Label del título — pequeño, en color del grupo
+                ctk.CTkLabel(grp_frame, text=titulo,
+                              font=ctk.CTkFont(size=8, weight="bold"),
+                              text_color=color_tit, anchor="w").pack(
+                              anchor="w", padx=4, pady=(0, 1))
+                btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
+                btn_row.pack(side="top", anchor="w")
                 for text, w, fg, cmd, tooltip in grupo:
                     kw = {"fg_color": fg, "hover_color": self._darker(fg)} if fg else {}
-                    btn = ctk.CTkButton(parent, text=text, width=w,
+                    btn = ctk.CTkButton(btn_row, text=text, width=w,
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
                     CTkToolTip(btn, delay=0.5, message=tooltip)
                     self.action_btns.append(btn)
-                    # Refs por nombre para que _on_modo_cambio pueda
-                    # habilitar/deshabilitar botones según modo activo.
                     if text == "🔁 Refinar":
                         btn.bind("<Button-3>", self._menu_refinar_especifico)
                     elif text == "🎞 Story":
@@ -1448,6 +1448,27 @@ class UIBuildersMixin:
         self.txt_salida = ctk.CTkTextbox(frame, font=ctk.CTkFont(family="Consolas", size=12),
                                           wrap="word", height=140)
         self.txt_salida.pack(fill="both", expand=True)
+        # F3 — Undo/Redo nativo de Tk en el editor de salida.
+        # CTkTextbox envuelve un tk.Text interno (_textbox) que sí soporta
+        # undo/redo. Activamos undo + bindings explícitos por compatibilidad
+        # (Ctrl+Z, Ctrl+Y y Ctrl+Shift+Z para redo).
+        try:
+            self.txt_salida._textbox.configure(undo=True, autoseparators=True, maxundo=-1)
+            def _undo(_e=None):
+                try: self.txt_salida._textbox.edit_undo()
+                except Exception: pass
+                return "break"
+            def _redo(_e=None):
+                try: self.txt_salida._textbox.edit_redo()
+                except Exception: pass
+                return "break"
+            for seq in ("<Control-z>", "<Control-Z>"):
+                self.txt_salida.bind(seq, _undo)
+            for seq in ("<Control-y>", "<Control-Y>",
+                        "<Control-Shift-z>", "<Control-Shift-Z>"):
+                self.txt_salida.bind(seq, _redo)
+        except Exception as _e:
+            pass
         self.txt_salida.bind("<KeyRelease>", self._on_salida_editada)
         self.txt_salida.bind("<Double-Button-1>", self._on_doble_click_salida)
         self.txt_salida.bind("<Button-3>", self._mostrar_menu_contextual)

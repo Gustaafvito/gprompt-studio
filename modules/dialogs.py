@@ -294,8 +294,14 @@ class DialogsMixin:
             try: self._guardar_version_prompt()
             except Exception as e:
                 logger.debug(f"[silent] {e}")
+            # F3: marcar separador para que la escritura programática
+            # sea un solo paso de undo, distinto del que tenía el usuario.
+            try: self.txt_salida._textbox.edit_separator()
+            except Exception: pass
             self.txt_salida.delete("1.0", "end")
             self.txt_salida.insert("1.0", texto)
+            try: self.txt_salida._textbox.edit_separator()
+            except Exception: pass
             self._colorear_resultado()
             try: self._actualizar_tokens()
             except Exception as e:
