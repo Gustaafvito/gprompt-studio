@@ -2350,64 +2350,387 @@ text_color=c.get("fg_dark_text", "#ffffff"), anchor="w").pack(anchor="w", padx=1
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_random_walk(self):
-        """Toma el prompt actual y lo deriva N veces secuencialmente.
+        """Bloque 5 — Walk árbol visual.
 
-        v2: N configurable (3-10, default 5). Cada derivación es la base
-        de la siguiente, alejándose progresivamente del original.
+        Abre una ventana con un árbol interactivo: el usuario parte del
+        prompt actual (raíz) y puede ramificar en cualquier nodo para
+        generar 3 derivaciones hijas. Cada hijo puede ramificarse a su
+        vez. El usuario puede inspeccionar cualquier nodo, aplicar su
+        prompt al editor o copiar la ruta completa raíz→…→nodo.
+
+        Reemplaza el modo lineal (N derivaciones secuenciales) por una
+        exploración no lineal estilo grafo.
         """
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
 
-        n = self._pedir_n_modal(
-            "🌀 Walk — número de derivaciones",
-            "¿Cuántas derivaciones evolutivas nuevas?\n"
-            "El comparador mostrará el original + N derivaciones\n"
-            "(N+1 tarjetas en total).",
-            n_min=3, n_max=10, default=5,
-            key_pref="walk_n",
-        )
-        if n is None:
-            return
-
-        try: self._sesion_log(f"🌀 Walk: random walk de {n} derivaciones evolutivas")
+        try: self._sesion_log("🌀 Walk árbol abierto")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🌀 Random walk: derivando {n} veces...", "#f39c12")
-        self.toggle_botones(False)
-        evoluciones = [actual]
+        self._abrir_walk_arbol(actual)
 
-        def _worker():
-            try:
-                base = actual
-                for i in range(n):
-                    self.after(0, lambda i=i, n_=n: self.set_estado(
-                        f"🌀 Generando derivación {i+1}/{n_}...", "#f39c12"))
-                    peticion = (
-                        f"Toma este prompt y EVOLUCIONA hacia algo SIMILAR pero ligeramente distinto.\n"
-                        f"Cambia 1-2 elementos (objeto, color, atmósfera, ángulo) pero mantén el espíritu.\n"
-                        f"Cada paso debe alejarse un poco del anterior.\n\n"
-                        f"PROMPT BASE:\n{base}\n\n"
-                        f"Responde SOLO con el nuevo prompt, sin explicaciones.\n"
-                        f"FORMATO: POSITIVE PROMPT: ... NEGATIVE PROMPT: ..."
-                    )
-                    resp = self.deepseek.generar(peticion, temperature=0.85, max_tokens=1800)
+    def _abrir_walk_arbol(self, prompt_raiz):
+        """Bloque 5 — UI del árbol de Walk.
+
+        Estructura de datos: lista de nodos, cada uno
+            {"id": int, "parent": int|None, "texto": str,
+             "depth": int, "hijos": [int], "label": str}
+        El layout es horizontal: depth → X; hojas se reparten Y por
+        orden DFS, internos = media de Y de hijos.
+        """
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        # ─── Estado ──────────────────────────────────────────────
+        nodos = [{
+            "id": 0, "parent": None, "texto": prompt_raiz, "depth": 0,
+            "hijos": [], "label": "Raíz",
+        }]
+        sel = {"id": 0}  # nodo seleccionado actual
+        rect_refs = {}   # id_nodo → (rect_canvas_id, text_canvas_id)
+
+        # ─── Ventana ─────────────────────────────────────────────
+        vent = GPromptWindow(self)
+        vent.title("🌀 Walk árbol — Explora derivaciones")
+        vent.geometry("1240x740")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent, text="🌀 Walk árbol — Explora derivaciones evolutivas",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+        ctk.CTkLabel(vent, text="Click en un nodo para inspeccionarlo · 🌿 Ramificar genera 3 hijos vía LLM",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        main = ctk.CTkFrame(vent, fg_color="transparent")
+        main.pack(fill="both", expand=True, padx=10, pady=(0, 6))
+        main.grid_columnconfigure(0, weight=3)
+        main.grid_columnconfigure(1, weight=2)
+        main.grid_rowconfigure(0, weight=1)
+
+        # ─── Panel izquierdo: canvas con árbol ──────────────────
+        canvas_frame = ctk.CTkFrame(main, fg_color=c["fg_dark"], corner_radius=8)
+        canvas_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+
+        canvas_bg = "#0f1626" if not is_lt else "#f8fafc"
+        canvas = tk.Canvas(canvas_frame, bg=canvas_bg, highlightthickness=0)
+        scroll_y = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        scroll_x = tk.Scrollbar(canvas_frame, orient="horizontal", command=canvas.xview)
+        canvas.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+        scroll_y.pack(side="right", fill="y")
+        scroll_x.pack(side="bottom", fill="x")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # ─── Panel derecho: detalle del nodo ────────────────────
+        panel = ctk.CTkFrame(main, fg_color=c["fg_dark"], corner_radius=8)
+        panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+
+        lbl_titulo = ctk.CTkLabel(panel, text="🌿 Nodo: Raíz",
+                                   font=ctk.CTkFont(size=13, weight="bold"))
+        lbl_titulo.pack(anchor="w", padx=12, pady=(10, 2))
+        lbl_ruta = ctk.CTkLabel(panel, text="Ruta: Raíz",
+                                 font=ctk.CTkFont(size=10),
+                                 text_color=c["muted_text"], wraplength=420, justify="left")
+        lbl_ruta.pack(anchor="w", padx=12, pady=(0, 8))
+
+        txt_preview = ctk.CTkTextbox(panel, wrap="word",
+                                      font=ctk.CTkFont(family="Consolas", size=10),
+                                      height=300)
+        txt_preview.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+
+        # ─── Botones del panel ──────────────────────────────────
+        btn_row1 = ctk.CTkFrame(panel, fg_color="transparent")
+        btn_row1.pack(fill="x", padx=12, pady=2)
+        btn_row2 = ctk.CTkFrame(panel, fg_color="transparent")
+        btn_row2.pack(fill="x", padx=12, pady=(2, 12))
+
+        lbl_status = ctk.CTkLabel(panel, text="", font=ctk.CTkFont(size=10),
+                                    text_color="#fbbf24")
+        lbl_status.pack(padx=12, pady=(0, 4))
+
+        # ─── Layout del árbol ──────────────────────────────────
+        BOX_W = 200
+        BOX_H = 60
+        X_PAD = 60   # entre niveles
+        Y_PAD = 25   # entre hojas
+
+        def _calcular_layout():
+            """DFS: hojas reciben Y por orden; internos = media de hijos."""
+            leaf_y = [0]
+            def dfs(nid):
+                n = nodos[nid]
+                if not n["hijos"]:
+                    n["_y"] = leaf_y[0] * (BOX_H + Y_PAD) + 30
+                    leaf_y[0] += 1
+                else:
+                    for h in n["hijos"]:
+                        dfs(h)
+                    ys = [nodos[h]["_y"] for h in n["hijos"]]
+                    n["_y"] = sum(ys) / len(ys)
+                n["_x"] = 30 + n["depth"] * (BOX_W + X_PAD)
+            dfs(0)
+
+        def _color_nodo(nid):
+            n = nodos[nid]
+            if nid == sel["id"]:
+                return "#fbbf24", "#1f2937"  # seleccionado: dorado, texto oscuro
+            if n["depth"] == 0:
+                return "#2563eb", "#ffffff"  # raíz: azul
+            return "#7c3aed", "#ffffff"      # derivado: morado
+
+        def _redibujar():
+            _calcular_layout()
+            canvas.delete("all")
+            rect_refs.clear()
+            # Líneas padre→hijo primero (debajo de los nodos)
+            for n in nodos:
+                if n["parent"] is None:
+                    continue
+                p = nodos[n["parent"]]
+                x1, y1 = p["_x"] + BOX_W, p["_y"] + BOX_H / 2
+                x2, y2 = n["_x"], n["_y"] + BOX_H / 2
+                mx = (x1 + x2) / 2
+                canvas.create_line(x1, y1, mx, y1, mx, y2, x2, y2,
+                                    fill=c["muted_text"], width=2, smooth=False)
+            # Nodos
+            for n in nodos:
+                fill, txt_col = _color_nodo(n["id"])
+                rect = canvas.create_rectangle(
+                    n["_x"], n["_y"], n["_x"] + BOX_W, n["_y"] + BOX_H,
+                    fill=fill, outline="#fbbf24" if n["id"] == sel["id"] else "",
+                    width=3 if n["id"] == sel["id"] else 0,
+                    tags=("nodo", f"n{n['id']}"),
+                )
+                preview = (n["texto"][:90] + "…") if len(n["texto"]) > 90 else n["texto"]
+                # quitar saltos para preview compacto
+                preview = preview.replace("\n", " ")
+                label_box = f"{n['label']}\n{preview}"
+                lbl = canvas.create_text(
+                    n["_x"] + BOX_W / 2, n["_y"] + BOX_H / 2,
+                    text=label_box, fill=txt_col, width=BOX_W - 12,
+                    font=("Segoe UI", 9), tags=("nodo", f"n{n['id']}"),
+                )
+                rect_refs[n["id"]] = (rect, lbl)
+            # Ajustar scroll region
+            max_x = max(n["_x"] + BOX_W for n in nodos) + 40
+            max_y = max(n["_y"] + BOX_H for n in nodos) + 40
+            canvas.configure(scrollregion=(0, 0, max_x, max_y))
+
+        def _ruta_de(nid):
+            chain = []
+            cur = nid
+            while cur is not None:
+                chain.append(nodos[cur])
+                cur = nodos[cur]["parent"]
+            return list(reversed(chain))
+
+        def _refresh_panel():
+            n = nodos[sel["id"]]
+            lbl_titulo.configure(text=f"🌿 Nodo: {n['label']}  (profundidad {n['depth']})")
+            ruta = _ruta_de(sel["id"])
+            ruta_str = " → ".join(x["label"] for x in ruta)
+            lbl_ruta.configure(text=f"Ruta: {ruta_str}")
+            txt_preview.configure(state="normal")
+            txt_preview.delete("1.0", "end")
+            txt_preview.insert("1.0", n["texto"])
+            txt_preview.configure(state="disabled")
+
+        def _seleccionar(nid):
+            sel["id"] = nid
+            _redibujar()
+            _refresh_panel()
+
+        def _on_canvas_click(event):
+            # Convertir coords pantalla → canvas (con scroll)
+            cx = canvas.canvasx(event.x)
+            cy = canvas.canvasy(event.y)
+            for n in nodos:
+                if n["_x"] <= cx <= n["_x"] + BOX_W and n["_y"] <= cy <= n["_y"] + BOX_H:
+                    _seleccionar(n["id"])
+                    return
+        canvas.bind("<Button-1>", _on_canvas_click)
+
+        # ─── Acción: ramificar (3 hijos vía LLM) ────────────────
+        def _ramificar():
+            nid_padre = sel["id"]
+            padre = nodos[nid_padre]
+            if padre["depth"] >= 6:
+                lbl_status.configure(text="⚠️ Máxima profundidad alcanzada (6)", text_color="#e67e22")
+                return
+
+            lbl_status.configure(text="🌿 Generando 3 derivaciones...", text_color="#fbbf24")
+            btn_ramificar.configure(state="disabled")
+            btn_usar.configure(state="disabled")
+
+            peticion = (
+                f"Toma este prompt y genera EXACTAMENTE 3 derivaciones distintas, "
+                f"cada una explorando una variación diferente (objeto, atmósfera, ángulo, color, estilo). "
+                f"Cada derivación debe mantener el espíritu del original pero alejarse en una dirección distinta.\n\n"
+                f"PROMPT BASE:\n{padre['texto']}\n\n"
+                f"FORMATO ESTRICTO — devuelve EXACTAMENTE 3 bloques así:\n\n"
+                f"PROMPT 1:\nPOSITIVE PROMPT: ...\nNEGATIVE PROMPT: ...\n\n"
+                f"PROMPT 2:\nPOSITIVE PROMPT: ...\nNEGATIVE PROMPT: ...\n\n"
+                f"PROMPT 3:\nPOSITIVE PROMPT: ...\nNEGATIVE PROMPT: ...\n\n"
+                f"NO añadas explicaciones, NO añadas títulos, NO añadas un PROMPT 4."
+            )
+
+            def _worker():
+                try:
+                    resp = self.deepseek.generar(peticion, temperature=0.85, max_tokens=2400)
                     resp = limpiar_marcadores(resp)
-                    evoluciones.append(resp)
-                    base = resp
+                    bloques = self._parsear_bloques_numerados(resp, n_esperado=3)
+                    if not bloques:
+                        # Fallback: dividir por "PROMPT N:" o doble salto
+                        bloques = [b.strip() for b in resp.split("\n\n") if len(b.strip()) > 40][:3]
+                    # Asegurar 3 bloques exactos
+                    bloques = bloques[:3]
+                    if len(bloques) < 3:
+                        # Rellenar con el primero si faltan
+                        while len(bloques) < 3:
+                            bloques.append(bloques[0] if bloques else padre["texto"])
 
-                def _mostrar():
-                    self._abrir_comparador(evoluciones)
-                    self.set_estado(f"🌀 Random walk: {len(evoluciones)} evoluciones (original + {n} derivaciones)", "#2ecc71")
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    def _aplicar():
+                        # Crear 3 hijos
+                        ids_nuevos = []
+                        for i, b in enumerate(bloques):
+                            nid = len(nodos)
+                            etiq_padre = padre["label"]
+                            nodos.append({
+                                "id": nid,
+                                "parent": nid_padre,
+                                "texto": b,
+                                "depth": padre["depth"] + 1,
+                                "hijos": [],
+                                "label": f"{etiq_padre}.{i+1}" if padre["depth"] > 0 else f"D{i+1}",
+                            })
+                            padre["hijos"].append(nid)
+                            ids_nuevos.append(nid)
+                        # Seleccionar el primer hijo nuevo
+                        sel["id"] = ids_nuevos[0]
+                        _redibujar()
+                        _refresh_panel()
+                        lbl_status.configure(text=f"✅ 3 derivaciones añadidas como hijos de {padre['label']}",
+                                              text_color="#2ecc71")
+                        btn_ramificar.configure(state="normal")
+                        btn_usar.configure(state="normal")
+                    self.after(0, _aplicar)
+                except Exception as e:
+                    logger.exception("walk ramificar")
+                    def _err():
+                        lbl_status.configure(text=f"❌ Error: {e}", text_color="#e74c3c")
+                        btn_ramificar.configure(state="normal")
+                        btn_usar.configure(state="normal")
+                    self.after(0, _err)
+
+            threading.Thread(target=_worker, daemon=True).start()
+
+        # ─── Acción: usar este nodo ─────────────────────────────
+        def _usar_nodo():
+            n = nodos[sel["id"]]
+            self.actualizar_salida(n["texto"])
+            ruta = _ruta_de(sel["id"])
+            ruta_str = " → ".join(x["label"] for x in ruta)
+            self.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
+            try: self._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                logger.debug(f"[silent] {e}")
+            vent.destroy()
 
-        threading.Thread(target=_worker, daemon=True).start()
+        # ─── Acción: copiar ruta como cadena ────────────────────
+        def _copiar_ruta():
+            ruta = _ruta_de(sel["id"])
+            cadena = " → ".join(x["label"] for x in ruta)
+            detalle = "\n\n".join(
+                f"## {x['label']} (depth {x['depth']})\n{x['texto']}" for x in ruta
+            )
+            texto_copia = f"# Evolución Walk: {cadena}\n\n{detalle}"
+            try:
+                pyperclip.copy(texto_copia)
+                lbl_status.configure(text=f"📂 Ruta copiada al portapapeles ({len(ruta)} nodos)",
+                                      text_color="#2ecc71")
+            except Exception as e:
+                lbl_status.configure(text=f"❌ No se pudo copiar: {e}", text_color="#e74c3c")
+
+        # ─── Acción: borrar subárbol ────────────────────────────
+        def _borrar_subarbol():
+            nid = sel["id"]
+            if nid == 0:
+                lbl_status.configure(text="⚠️ No puedes borrar la raíz", text_color="#e67e22")
+                return
+            from tkinter import messagebox
+            n = nodos[nid]
+            cnt_descendientes = 0
+            def _contar(x):
+                nonlocal cnt_descendientes
+                for h in nodos[x]["hijos"]:
+                    cnt_descendientes += 1
+                    _contar(h)
+            _contar(nid)
+            msg = (f"¿Borrar el nodo {n['label']}"
+                   + (f" y sus {cnt_descendientes} descendientes?" if cnt_descendientes else "?"))
+            if not messagebox.askyesno("Confirmar borrado", msg, parent=vent):
+                return
+            # Marcar para borrar todos los descendientes + este
+            a_borrar = {nid}
+            def _marca(x):
+                for h in nodos[x]["hijos"]:
+                    a_borrar.add(h)
+                    _marca(h)
+            _marca(nid)
+            # Quitar de la lista de hijos del padre
+            padre_id = n["parent"]
+            if padre_id is not None:
+                nodos[padre_id]["hijos"].remove(nid)
+            # Reconstruir lista de nodos manteniendo IDs originales
+            # (los IDs son índices, así que marcamos como None en vez de quitar)
+            for i in a_borrar:
+                nodos[i] = None
+            # Limpiamos la lista compactando con remapeo
+            id_map = {}
+            nuevos = []
+            for old_n in nodos:
+                if old_n is None: continue
+                id_map[old_n["id"]] = len(nuevos)
+                nuevos.append(old_n)
+            # Remapear parent + hijos
+            for new_n in nuevos:
+                new_n["id"] = id_map[new_n["id"]]
+                if new_n["parent"] is not None:
+                    new_n["parent"] = id_map.get(new_n["parent"])
+                new_n["hijos"] = [id_map[h] for h in new_n["hijos"] if h in id_map]
+            nodos.clear()
+            nodos.extend(nuevos)
+            sel["id"] = id_map.get(padre_id, 0)
+            _redibujar()
+            _refresh_panel()
+            lbl_status.configure(text=f"🗑 Subárbol borrado ({len(a_borrar)} nodos)",
+                                  text_color="#2ecc71")
+
+        btn_ramificar = ctk.CTkButton(btn_row1, text="🌿 Ramificar (3 hijos)",
+                                        fg_color="#7c3aed", hover_color="#5b21b6",
+                                        font=ctk.CTkFont(size=11, weight="bold"),
+                                        command=_ramificar)
+        btn_ramificar.pack(side="left", padx=2, fill="x", expand=True)
+
+        btn_usar = ctk.CTkButton(btn_row1, text="📋 Usar este",
+                                  fg_color="#1a7a3c", hover_color="#15633a",
+                                  font=ctk.CTkFont(size=11, weight="bold"),
+                                  command=_usar_nodo)
+        btn_usar.pack(side="left", padx=2, fill="x", expand=True)
+
+        ctk.CTkButton(btn_row2, text="📂 Copiar ruta", fg_color=c["fg_dark"],
+                       hover_color=c["fg_dark_hover"], font=ctk.CTkFont(size=10),
+                       command=_copiar_ruta).pack(side="left", padx=2, fill="x", expand=True)
+        ctk.CTkButton(btn_row2, text="🗑 Borrar subárbol", fg_color="#8a1a1a",
+                       hover_color="#6b1414", font=ctk.CTkFont(size=10),
+                       command=_borrar_subarbol).pack(side="left", padx=2, fill="x", expand=True)
+        ctk.CTkButton(btn_row2, text="✖ Cerrar", fg_color=c["fg_dark"],
+                       hover_color=c["fg_dark_hover"], font=ctk.CTkFont(size=10),
+                       command=vent.destroy).pack(side="left", padx=2, fill="x", expand=True)
+
+        _redibujar()
+        _refresh_panel()
+        vent.bind("<Escape>", lambda _e: vent.destroy())
 
     def _cmd_color_palette(self):
         """Extrae paleta de colores de la imagen cargada.
