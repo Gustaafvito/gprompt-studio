@@ -13,6 +13,7 @@ from .backup_export import BackupExportMixin
 from .dialogs import DialogsMixin
 from .core import CoreMixin
 from .adn_visual import AdnVisualMixin
+from .multiprompt import MultiPromptMixin
 from .gprompt_window import GPromptWindow
 from .event_bus import EventBus
 from .preview_service import PreviewService
@@ -29,6 +30,7 @@ __all__ = [
     "DialogsMixin",
     "CoreMixin",
     "AdnVisualMixin",
+    "MultiPromptMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",

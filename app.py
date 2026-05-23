@@ -67,8 +67,8 @@ from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_li
 from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin, AdnVisualMixin, EventBus, PreviewService,
-    install_components,
+    DialogsMixin, CoreMixin, AdnVisualMixin, MultiPromptMixin,
+    EventBus, PreviewService, install_components,
 )
 
 # Inicializar EventBus singleton
@@ -86,6 +86,7 @@ class ArquitectoApp(
     DialogsMixin,
     CoreMixin,
     AdnVisualMixin,
+    MultiPromptMixin,
 ):
 
     def __init__(self):
