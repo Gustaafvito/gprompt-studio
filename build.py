@@ -46,6 +46,8 @@ INNO_PATHS = [
     "ISCC",
     r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
     r"C:\Program Files\Inno Setup 6\ISCC.exe",
+    # Instalación por usuario vía winget (~AppData\Local)
+    os.path.expanduser(r"~\AppData\Local\Programs\Inno Setup 6\ISCC.exe"),
 ]
 
 

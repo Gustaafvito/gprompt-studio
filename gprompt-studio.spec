@@ -94,6 +94,12 @@ a = Analysis(
         'IPython',
         'pytest',
         'pytest_anyio',
+        # ⚠️ SEGURIDAD: nunca incluir archivos con secretos.
+        # PyInstaller NO empaqueta .env/keys.json salvo que estén en `datas`,
+        # pero los listamos aquí para dejarlo explícito y blindar contra
+        # accidentes futuros si alguien los añade a datas por error.
+        '.env',
+        'keys.json',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
