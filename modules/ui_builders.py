@@ -250,6 +250,8 @@ class UIBuildersMixin:
                 ("📋  Historial", lambda: abrir_lista(self, "historial", "📋 Historial de Prompts", "#1a2a3a")),
                 ("🔗  LoRAs", lambda: abrir_loras(self)),
                 ("🧑  Personajes", lambda: abrir_personajes(self)),
+                ("📥  Importar prompt JSON pro", self._cmd_importar_json_prompt),
+                ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self._cmd_exportar_json_prompt),
             ]),
             ("🛠 Herramientas", "#c97a2e", [
                 ("🔒  Anclaje rasgos (consistencia)", self._cmd_anclaje_visual),

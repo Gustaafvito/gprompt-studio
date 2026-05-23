@@ -69,7 +69,7 @@ from modules import (
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
     DialogsMixin, CoreMixin, AdnVisualMixin, MultiPromptMixin,
     SesionVideoMixin, WorkersIaMixin, ModoClienteMixin,
-    EventBus, PreviewService, install_components,
+    JsonPromptMixin, EventBus, PreviewService, install_components,
 )
 
 # Inicializar EventBus singleton
@@ -91,6 +91,7 @@ class ArquitectoApp(
     SesionVideoMixin,
     WorkersIaMixin,
     ModoClienteMixin,
+    JsonPromptMixin,
 ):
 
     def __init__(self):

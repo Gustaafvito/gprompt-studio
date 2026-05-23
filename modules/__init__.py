@@ -17,6 +17,7 @@ from .multiprompt import MultiPromptMixin
 from .sesion_video import SesionVideoMixin
 from .workers_ia import WorkersIaMixin
 from .modo_cliente import ModoClienteMixin
+from .json_prompt import JsonPromptMixin
 from .gprompt_window import GPromptWindow
 from .event_bus import EventBus
 from .preview_service import PreviewService
@@ -37,6 +38,7 @@ __all__ = [
     "SesionVideoMixin",
     "WorkersIaMixin",
     "ModoClienteMixin",
+    "JsonPromptMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",
