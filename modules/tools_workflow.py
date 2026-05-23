@@ -528,10 +528,24 @@ class ToolsWorkflowMixin:
             num = len(self._versiones_prompt) - i
             card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
             card.pack(fill="x", pady=3)
-            hdr = ctk.CTkFrame(card, fg_color="#1a3a5a", corner_radius=4, height=24)
+            # Color del header según origen (Walk · azul-verdoso, pre-refinamiento · ámbar)
+            etiq = ver.get("etiqueta", "") or ""
+            hdr_color = "#1a3a5a"
+            origen_txt = ""
+            if "Walk" in etiq:
+                hdr_color = "#1a4a7a"
+                # Extrae el "Walk Raíz → D2 · nodo X" del paréntesis
+                import re as _re
+                m = _re.search(r"\((Walk[^)]+)\)", etiq)
+                origen_txt = f"  ·  🌀 {m.group(1)}" if m else "  ·  🌀 Walk"
+            elif "pre-refinamiento" in etiq:
+                hdr_color = "#7a5a1a"
+                origen_txt = "  ·  🔁 pre-refinamiento"
+            hdr = ctk.CTkFrame(card, fg_color=hdr_color, corner_radius=4, height=24)
             hdr.pack(fill="x", padx=4, pady=(3, 0))
             hdr.pack_propagate(False)
-            ctk.CTkLabel(hdr, text=f"  📜 Versión #{num}  ·  {ver.get('fecha', '')}",
+            ctk.CTkLabel(hdr,
+                         text=f"  📜 Versión #{num}  ·  {ver.get('fecha', '')}{origen_txt}",
                          font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(side="left", padx=4)
 
             preview = ver["texto"][:200]
