@@ -12,6 +12,7 @@ from .data_mgmt import DataMgmtMixin
 from .backup_export import BackupExportMixin
 from .dialogs import DialogsMixin
 from .core import CoreMixin
+from .adn_visual import AdnVisualMixin
 from .gprompt_window import GPromptWindow
 from .event_bus import EventBus
 from .preview_service import PreviewService
@@ -27,6 +28,7 @@ __all__ = [
     "BackupExportMixin",
     "DialogsMixin",
     "CoreMixin",
+    "AdnVisualMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",

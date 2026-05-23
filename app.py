@@ -67,7 +67,7 @@ from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_li
 from modules import (
     UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
     ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin, EventBus, PreviewService,
+    DialogsMixin, CoreMixin, AdnVisualMixin, EventBus, PreviewService,
     install_components,
 )
 
@@ -85,6 +85,7 @@ class ArquitectoApp(
     BackupExportMixin,
     DialogsMixin,
     CoreMixin,
+    AdnVisualMixin,
 ):
 
     def __init__(self):
