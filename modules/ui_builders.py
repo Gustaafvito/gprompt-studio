@@ -785,12 +785,22 @@ class UIBuildersMixin:
         seg_sel = "#2563eb" if is_light else "#3b82f6"
         seg_hov = "#dbeafe" if is_light else "#374151"
 
-        # Sin height fijo — CTkTabview lo ignora si algún tab tiene
-        # widgets con expand=True. En su lugar limitamos cada tab por
-        # dentro: frame_checks (Estilos) con height=130 fijo + spacers
-        # al final de Ajustes Extra y Negativos para empujar arriba.
+        # CTkTabview no respeta `pack(fill="x")` y crece libremente
+        # según el contenido del tab activo (con o sin expand=True
+        # interno). Para forzar una altura máxima predecible, lo
+        # envolvemos en un CTkFrame con height fijo + pack_propagate(False).
+        # Así el tabview NUNCA se sale de los 230px reservados, y el
+        # "Resultado editable" abajo siempre tiene el resto de la ventana.
+        self._tabview_container = ctk.CTkFrame(self, fg_color=tab_bg,
+                                                height=230)
+        self._tabview_container.pack(pady=2, padx=20, fill="x")
+        # pack_propagate(False) impide que el frame se ajuste a su
+        # contenido — fuerza el height=230 aunque dentro haya widgets
+        # que pidan más. Sin esto, el frame crece con el tabview.
+        self._tabview_container.pack_propagate(False)
+
         self.tabview = ctk.CTkTabview(
-            self,
+            self._tabview_container,
             fg_color=tab_bg, bg_color=tab_bg,
             segmented_button_fg_color=seg_bg,
             segmented_button_selected_color=seg_sel,
@@ -799,7 +809,9 @@ class UIBuildersMixin:
             segmented_button_unselected_hover_color=seg_hov,
             text_color=c["panel_text"],
         )
-        self.tabview.pack(pady=2, padx=20, fill="x")
+        # fill="both" + expand=True para que el tabview llene el
+        # container (que ya tiene la altura limitada).
+        self.tabview.pack(fill="both", expand=True)
 
         self.tabview.add("⚙️ Ajustes Extra")
         self.tabview.add("🎨 Estilos")

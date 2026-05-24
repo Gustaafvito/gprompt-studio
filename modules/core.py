@@ -808,7 +808,7 @@ class CoreMixin:
             self.combo_plataforma.configure(values=PLATAFORMAS_VIDEO_LISTA)
             self.plataforma_var.set("SeaArt Video")
 
-            self._safe_pack(self.frame_video, pady=3, padx=20, fill="x", before=self.tabview)
+            self._safe_pack(self.frame_video, pady=3, padx=20, fill="x", before=self._tabview_container)
             if hasattr(self, 'frame_audio'): self.frame_audio.pack_forget()
             self.frame_modelo_imagen.pack_forget()
             self.frame_destino.pack_forget()  # Ya integrado en frame_video
@@ -823,7 +823,7 @@ class CoreMixin:
             self.combo_plataforma.configure(values=PLATAFORMAS_AUDIO_LISTA)
             self.plataforma_var.set("Suno")
 
-            self._safe_pack(self.frame_audio, pady=3, padx=20, fill="x", before=self.tabview)
+            self._safe_pack(self.frame_audio, pady=3, padx=20, fill="x", before=self._tabview_container)
             self.frame_video.pack_forget()
             self.frame_modelo_imagen.pack_forget()
             self.frame_destino.pack_forget()  # Ya integrado en frame_audio
@@ -840,7 +840,7 @@ class CoreMixin:
 
             self.frame_video.pack_forget()
             if hasattr(self, 'frame_audio'): self.frame_audio.pack_forget()
-            self._safe_pack(self.frame_modelo_imagen, pady=3, padx=20, fill="x", before=self.tabview)
+            self._safe_pack(self.frame_modelo_imagen, pady=3, padx=20, fill="x", before=self._tabview_container)
             self.frame_destino.pack_forget()  # Ya integrado en frame_modelo_imagen
 
             self.switch_nsfw.pack(side="right", padx=20)
@@ -911,7 +911,7 @@ class CoreMixin:
                 if primer_modelo:
                     self.combo_modelo_imagen.set(primer_modelo)
 
-            self._safe_pack(self.frame_modelo_imagen, pady=3, padx=20, fill="x", before=self.tabview)
+            self._safe_pack(self.frame_modelo_imagen, pady=3, padx=20, fill="x", before=self._tabview_container)
             self._on_modelo_imagen_cambio()
         else:
             self.frame_modelo_imagen.pack_forget()
@@ -948,7 +948,7 @@ class CoreMixin:
             self.combo_ratio_v.configure(values=specs["ratios"])
             if self.ratio_var.get() not in specs["ratios"]: self.ratio_var.set(specs["ratios"][0])
             self.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | 🎬 {specs['best_for']}", text_color="#8bb4d4")
-            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.tabview)
+            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self._tabview_container)
             self.set_estado(f"🎬 {motor_name}", "#3498db")
 
             # Tooltip rico para modelos de vídeo (similar a imagen)
@@ -1058,7 +1058,7 @@ class CoreMixin:
             self.lbl_img_model_info.configure(
                 text=f"⭐ {specs['nota']}  ·  📝 {specs['max_chars']} chars  ·  {badges_str}  —  {specs['best_for']}",
                 text_color="#8bb4d4")
-            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.tabview)
+            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self._tabview_container)
 
             # Generar consejo contextual según situación actual
             try:
@@ -1091,7 +1091,7 @@ class CoreMixin:
         specs = get_audio_model_specs(motor_name)
         if specs:
             self.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | ⏱ {specs['duracion_max_min']} min — {specs['best_for']}", text_color="#8bb4d4")
-            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.tabview)
+            self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self._tabview_container)
             self.set_estado(f"🎵 {motor_name}", "#9b59b6")
         else:
             self.lbl_img_model_info.pack_forget()
