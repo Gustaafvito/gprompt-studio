@@ -575,6 +575,43 @@ class CoreMixin:
                     _recolor_labels(fr, pt, pl, mt)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
+
+        # Recolorear los CTkCheckBox de estilos en TODOS los sub_frames
+        # cacheados. Los checkboxes se construyen UNA vez por modo (cache)
+        # con el color del tema activo en ese momento; al cambiar de tema
+        # hay que aplicarles los colores nuevos manualmente o quedan
+        # blancos sobre blanco en light (o negros sobre negro en dark).
+        if hasattr(self, "_checks_subframes_cache") and c:
+            chk_text_color = c.get("chk_text", pt)
+            chk_border_color = c.get("chk_border", "#6b7280" if is_light else "#374151")
+            chk_hover_color = c.get("chk_hover", "#bfdbfe" if is_light else "#1f2937")
+            chk_fg_color = c.get("accent_text", "#3b82f6")
+            for sub in self._checks_subframes_cache.values():
+                try:
+                    if not sub.winfo_exists():
+                        continue
+                    for child in sub.winfo_children():
+                        if isinstance(child, ctk.CTkCheckBox):
+                            try:
+                                child.configure(
+                                    text_color=chk_text_color,
+                                    border_color=chk_border_color,
+                                    hover_color=chk_hover_color,
+                                    fg_color=chk_fg_color,
+                                )
+                            except Exception as _e:
+                                logger.debug(f"[silent chk recolor] {_e}")
+                except Exception as _e:
+                    logger.debug(f"[silent subframe recolor] {_e}")
+
+        # También el fg_color del propio frame_checks (fondo del scroll)
+        if hasattr(self, "frame_checks") and c:
+            try:
+                if self.frame_checks.winfo_exists():
+                    self.frame_checks.configure(fg_color=c.get("chk_bg",
+                                                "#ffffff" if is_light else "#0d1117"))
+            except Exception as _e:
+                logger.debug(f"[silent frame_checks] {_e}")
     # EXTRAER POSITIVE / NEGATIVE
     # Nota: _cmd_toggle_tema vive en DialogsMixin — esta clase no la sobrescribe.
 
