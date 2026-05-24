@@ -206,7 +206,7 @@ class UIBuildersMixin:
                 logger.debug(f"[silent] {e}")
         except Exception:
             # Fallback al sistema antiguo si falla algo
-            lista_llms = ["DeepSeek V3", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
+            lista_llms = ["DeepSeek V4", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
             self._llm_label_to_id = {}
         self.combo_llm = ctk.CTkComboBox(frame_llm, values=lista_llms, variable=self.llm_var, width=240, height=28,
                                           fg_color=combo_bg, border_color=combo_border, button_color=combo_btn,

@@ -1380,7 +1380,7 @@ class DataMgmtMixin:
             self._sonido_activo = prefs.get("sonido", False)
 
             # --- Cargar el Cerebro (LLM) ---
-            llm = prefs.get("llm", "DeepSeek V3")
+            llm = prefs.get("llm", "DeepSeek V4")
             if hasattr(self, 'llm_var'): self.llm_var.set(llm)
 
             modo = prefs.get("modo", "imagen")
@@ -1454,7 +1454,7 @@ class DataMgmtMixin:
             prefs = {}
 
         prefs.update({
-            "llm":         self.llm_var.get() if hasattr(self, 'llm_var') else "DeepSeek V3",
+            "llm":         self.llm_var.get() if hasattr(self, 'llm_var') else "DeepSeek V4",
             "modo":        self.modo_var.get(),
             "plataforma":  self.plataforma_var.get(),
             "modelo_img":  self.combo_modelo_imagen.get(),

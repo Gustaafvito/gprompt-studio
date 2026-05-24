@@ -229,7 +229,7 @@ class ArquitectoApp(
         self._splash_estado("Construyendo interfaz...")
 
         # ── Variables Tk ──────────────────────────────────────────
-        self.llm_var             = ctk.StringVar(value="DeepSeek V3")
+        self.llm_var             = ctk.StringVar(value="DeepSeek V4")
         self.modo_var            = ctk.StringVar(value="imagen")
         self.plataforma_var      = ctk.StringVar(value="SeaArt / Tensor.Art")
         self.switch_nsfw_var     = ctk.BooleanVar(value=False)
@@ -2092,7 +2092,7 @@ class ArquitectoApp(
             from api_clients import LLM_PROVIDERS as _prefs_llm_providers
             _prefs_llm_labels = [info["label"] for info in _prefs_llm_providers.values()]
         except Exception:
-            _prefs_llm_labels = ["DeepSeek V3", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
+            _prefs_llm_labels = ["DeepSeek V4", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
 
         ctk.CTkLabel(tab_gen, text="👤 Tu nombre (saludo del Dashboard):",
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)

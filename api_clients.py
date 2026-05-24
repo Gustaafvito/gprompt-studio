@@ -53,8 +53,8 @@ LLM_PROVIDERS = {
         "is_paid": True,
     },
     "deepseek": {
-        "name": "DeepSeek V3",
-        "label": "🥈 DeepSeek V3",
+        "name": "DeepSeek V4",
+        "label": "🥈 DeepSeek V4",
         "descripcion": "Económico (~€0.14/1M tokens). Bueno para creatividad, robusto.",
         "url_obtener_key": "https://platform.deepseek.com/api_keys",
         "tipo": "openai_compatible",

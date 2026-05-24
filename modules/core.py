@@ -284,9 +284,13 @@ class CoreMixin:
         # Mapear label → provider_id
         pid = getattr(self, "_llm_label_to_id", {}).get(label)
         if not pid:
-            # Compatibilidad con etiquetas antiguas
+            # Compatibilidad con etiquetas antiguas. Mantener "V3" para
+            # usuarios con preferencias guardadas de versiones previas
+            # antes de que DeepSeek lanzara V4.
             mapeo_legado = {
                 "DeepSeek V3": "deepseek",
+                "DeepSeek V4": "deepseek",
+                "DeepSeek": "deepseek",
                 "Google Gemini": "gemini",
                 "OpenAI GPT-4o": "openai",
                 "Local (Ollama)": "ollama",
