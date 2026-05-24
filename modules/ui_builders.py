@@ -785,8 +785,11 @@ class UIBuildersMixin:
         seg_sel = "#2563eb" if is_light else "#3b82f6"
         seg_hov = "#dbeafe" if is_light else "#374151"
 
+        # Sin height fijo — antes height=140 reservaba un bloque grande
+        # aunque el contenido del tab seleccionado fuera más pequeño,
+        # robándole espacio al "Resultado editable" de abajo.
         self.tabview = ctk.CTkTabview(
-            self, height=140,
+            self,
             fg_color=tab_bg, bg_color=tab_bg,
             segmented_button_fg_color=seg_bg,
             segmented_button_selected_color=seg_sel,
@@ -1469,8 +1472,12 @@ class UIBuildersMixin:
                                               height=24)
         # No se hace pack inicialmente — se mostrará/ocultará dinámicamente
 
+        # height=240 da una altura mínima decente al "Resultado editable"
+        # cuando se carga la app. expand=True le da TODO el sobrante vertical
+        # de la ventana, pero el mínimo evita que se quede minúsculo si la
+        # zona superior (tabview, descripción del modelo) crece.
         self.txt_salida = ctk.CTkTextbox(frame, font=ctk.CTkFont(family="Consolas", size=12),
-                                          wrap="word", height=140)
+                                          wrap="word", height=240)
         self.txt_salida.pack(fill="both", expand=True)
         # F3 — Undo/Redo nativo de Tk en el editor de salida.
         # CTkTextbox envuelve un tk.Text interno (_textbox) que sí soporta
