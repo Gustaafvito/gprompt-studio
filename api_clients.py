@@ -74,7 +74,7 @@ LLM_PROVIDERS = {
     },
     "gemini": {
         "name": "Google Gemini",
-        "label": "🏆 Google Gemini (gratis)",
+        "label": "🏆 Google Gemini",
         "descripcion": "Gratis hasta 15rpm. Bueno para visión y prompts.",
         "url_obtener_key": "https://aistudio.google.com/apikey",
         "tipo": "google",
@@ -83,7 +83,7 @@ LLM_PROVIDERS = {
     },
     "github_models": {
         "name": "GitHub Models",
-        "label": "🏆 GitHub Models (gratis)",
+        "label": "🏆 GitHub Models",
         "descripcion": "Gratis con cuenta GitHub. Acceso a OpenAI/Claude/Llama. Límite generoso.",
         "url_obtener_key": "https://github.com/settings/tokens",
         "tipo": "openai_compatible",

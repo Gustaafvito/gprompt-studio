@@ -785,11 +785,11 @@ class UIBuildersMixin:
         seg_sel = "#2563eb" if is_light else "#3b82f6"
         seg_hov = "#dbeafe" if is_light else "#374151"
 
-        # Sin height fijo — antes height=140 reservaba un bloque grande
-        # aunque el contenido del tab seleccionado fuera más pequeño,
-        # robándole espacio al "Resultado editable" de abajo.
+        # Altura fija ~170px: suficiente para todos los tabs.
+        # Estilos hace scroll interno; Ajustes Extra y Negativos usan
+        # spacers al final para empujar widgets arriba (sin huecos).
         self.tabview = ctk.CTkTabview(
-            self,
+            self, height=170,
             fg_color=tab_bg, bg_color=tab_bg,
             segmented_button_fg_color=seg_bg,
             segmented_button_selected_color=seg_sel,
@@ -949,6 +949,12 @@ class UIBuildersMixin:
         self._img_history = []
         self._MAX_IMG_HISTORY = 6
 
+        # Spacer al final: el tabview tiene altura fija (170px) y el
+        # contenido de Ajustes Extra es solo ~75px. Sin este spacer,
+        # los widgets quedan separados por un hueco grande en el medio.
+        # Con expand=True absorbe el sobrante y empuja todo arriba.
+        ctk.CTkFrame(parent, fg_color="transparent", height=1).pack(fill="both", expand=True)
+
     def _build_estilos(self, parent):
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
@@ -987,13 +993,10 @@ class UIBuildersMixin:
         CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
 
         # que en modo light termine pintando blanco-sobre-blanco.
-        # height=180 + fill="x" (sin expand): el ScrollableFrame ya tiene
-        # su propio scroll interno para los 257 estilos. Si pusiéramos
-        # expand=True forzaría al tabview a crecer ilimitadamente y le
-        # robaría espacio al "Resultado editable" de abajo.
-        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"],
-                                                    height=180)
-        self.frame_checks.pack(fill="x", padx=5, pady=2)
+        # El tabview tiene altura fija (170px) — el scrollable absorbe
+        # el espacio interior y muestra scroll para los 257 estilos.
+        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"])
+        self.frame_checks.pack(fill="both", expand=True, padx=5, pady=2)
 
         # Label verde con nombres de estilos seleccionados
         # Usar verde más oscuro en light para que se lea sobre fondo claro
@@ -1081,6 +1084,9 @@ class UIBuildersMixin:
         self.lbl_negative_warning = ctk.CTkLabel(parent, text="", font=ctk.CTkFont(size=10, weight="bold"),
                                                    fg_color="transparent",
                                                    text_color=c["danger_text"], anchor="w")
+
+        # Spacer al final del tab Negativos (mismo motivo que Ajustes Extra).
+        ctk.CTkFrame(parent, fg_color="transparent", height=1).pack(fill="both", expand=True)
 
     def _toggle(self, n, fg_off):
         """Toggle helper for negative presets."""
