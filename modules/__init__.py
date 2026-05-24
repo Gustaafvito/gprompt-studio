@@ -17,6 +17,7 @@ from .json_prompt import JsonPromptMixin
 from .modo_cliente import ModoClienteMixin
 from .multiprompt import MultiPromptMixin
 from .preview_service import PreviewService
+from .prompts_inyeccion import PromptsInyeccionMixin
 from .sesion_video import SesionVideoMixin
 from .tools_analysis import ToolsAnalysisMixin
 from .tools_creative import ToolsCreativeMixin
@@ -39,6 +40,7 @@ __all__ = [
     "WorkersIaMixin",
     "ModoClienteMixin",
     "JsonPromptMixin",
+    "PromptsInyeccionMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",

@@ -94,6 +94,7 @@ from modules import (
     ModoClienteMixin,
     MultiPromptMixin,
     PreviewService,
+    PromptsInyeccionMixin,
     SesionVideoMixin,
     ToolsAnalysisMixin,
     ToolsCreativeMixin,
@@ -150,6 +151,7 @@ class ArquitectoApp(
     WorkersIaMixin,
     ModoClienteMixin,
     JsonPromptMixin,
+    PromptsInyeccionMixin,
 ):
 
     def __init__(self):
