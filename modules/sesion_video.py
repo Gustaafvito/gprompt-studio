@@ -19,13 +19,13 @@ Dependencias self (provistas por ArquitectoApp):
   after, set_estado, store (preferencias), llm_var, modo_var,
   txt_idea, txt_salida y atributos _sesion_* internos.
 """
-import os
+import datetime
 import json
 import logging
+import os
 import threading
-import datetime
+from tkinter import filedialog, messagebox
 
-from tkinter import messagebox, filedialog
 import customtkinter as ctk
 
 from config import get_theme_colors as _get_tc
@@ -70,9 +70,10 @@ class SesionVideoMixin:
             return False
         self._sesion_solo_app = solo_app
         try:
-            import mss
-            import imageio
             import os
+
+            import imageio
+            import mss
             # Crear directorio de salida si no existe
             output_dir = os.path.join(os.path.expanduser("~"), "GPromptStudio_videos")
             os.makedirs(output_dir, exist_ok=True)
@@ -103,8 +104,9 @@ class SesionVideoMixin:
     def _sesion_video_worker(self):
         """Thread worker: captura pantalla a 5 FPS y la pasa al writer."""
         try:
-            import mss
             import time
+
+            import mss
             import numpy as np
 
             solo_app = getattr(self, '_sesion_solo_app', False)
@@ -562,4 +564,3 @@ class SesionVideoMixin:
         "paleta de color": ["warm orange and red tones", "cool blue and teal palette", "monochrome black and white", "pastel pink and lavender"],
         "detalle": ["minimalist clean composition", "highly detailed intricate", "abstract impressionist", "hyperrealistic ultra-detail"],
     }
-

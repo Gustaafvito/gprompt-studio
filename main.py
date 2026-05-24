@@ -1,17 +1,19 @@
 """
 G-Prompt Studio v1.0 — Punto de entrada
 """
-import os
-import sys
 import json
 import logging
+import os
+import sys
 import traceback
+
 import customtkinter as ctk
 
 # ─── Logging ───────────────────────────────────────────────
 # Todo (datos, keys, logs, backups) vive en ~/.arquitecto_prompts/
 # Importamos LOGS_DIR de config para tener una sola fuente de verdad.
 from config import LOGS_DIR
+
 LOG_DIR = str(LOGS_DIR)
 os.makedirs(LOG_DIR, exist_ok=True)
 

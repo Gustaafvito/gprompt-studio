@@ -24,9 +24,9 @@ Dependencias self (provistas por ArquitectoApp):
   imagen_cargada, _ultimo_anclaje_visual, _on_modo_cambio,
   is_natural_mode, _construir_peticion, _inyectar_specs_*.
 """
+import datetime
 import logging
 import threading
-import datetime
 
 import customtkinter as ctk
 
@@ -278,4 +278,3 @@ class WorkersIaMixin:
         except Exception as e:
             self.after(0, lambda: self.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
             self.after(0, lambda: self.toggle_botones(True))
-

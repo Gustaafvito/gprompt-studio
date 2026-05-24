@@ -21,8 +21,8 @@ Uso:
     bus.off("LLM_CHANGED", on_llm_changed)
 """
 import logging
-from typing import Callable, Dict, List, Any
 from collections import defaultdict
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,8 @@ class EventBus:
         if self._initialized:
             return
         self._initialized = True
-        self._listeners: Dict[str, List[Callable]] = defaultdict(list)
-        self._event_history: List[Dict] = []
+        self._listeners: dict[str, list[Callable]] = defaultdict(list)
+        self._event_history: list[dict] = []
         self._max_history = 100
 
     def on(self, event: str, callback: Callable) -> None:
@@ -87,11 +87,11 @@ class EventBus:
         else:
             self._listeners.clear()
 
-    def get_listeners(self, event: str) -> List[Callable]:
+    def get_listeners(self, event: str) -> list[Callable]:
         """Devuelve la lista de callbacks suscritos a un evento."""
         return list(self._listeners.get(event, []))
 
-    def get_history(self, limit: int = 10) -> List[Dict]:
+    def get_history(self, limit: int = 10) -> list[dict]:
         """Devuelve el historial de eventos recientes."""
         return self._event_history[-limit:]
 

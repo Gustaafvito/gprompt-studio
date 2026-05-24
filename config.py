@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # viven en data/*.json para que añadir/editar modelos no requiera
 # tocar este archivo y para mantener config.py legible.
 import json as _json
+
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 
 def _load_json_data(filename: str):
@@ -281,13 +282,13 @@ def guardar_comfyui_path(ruta: str, store) -> bool:
 def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None) -> tuple:
     """
     Escanea la carpeta de ComfyUI para encontrar modelos instalados.
-    
+
     Returns:
         tuple: (grupos_img, grupos_vid) - listas de tuplas (grupo, [modelos])
     """
     if not ruta_comfyui:
         ruta_comfyui = get_comfyui_path(preferencias)
-    
+
     if not ruta_comfyui or not Path(ruta_comfyui).exists():
         return None, None
 
@@ -300,7 +301,7 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
         modelos_img = []
         # Modelos de video
         modelos_vid = []
-        
+
         for f in checkpoints.glob("*.safetensors"):
             nombre = f.stem
             # Detectar si es modelo de video
@@ -309,13 +310,13 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
                 modelos_vid.append(nombre)
             else:
                 modelos_img.append(nombre)
-        
+
         modelos_img.extend([f.stem for f in checkpoints.glob("*.ckpt")])
         modelos_img.extend([f.stem for f in checkpoints.glob("*.pth")])
-        
+
         modelos_img = sorted(modelos_img)
         modelos_vid = sorted(set(modelos_vid))
-        
+
         if modelos_img:
             grupos_img.append(("── ComfyUI Checkpoints ──", modelos_img))
         if modelos_vid:
@@ -388,10 +389,10 @@ def _cargar_modelos_locales():
                     modelos_vid_comfy.append(nombre)
                 else:
                     modelos_img_comfy.append(nombre)
-            
+
             modelos_img_comfy = sorted(set(modelos_img_comfy))
             modelos_vid_comfy = sorted(set(modelos_vid_comfy))
-            
+
             if modelos_img_comfy:
                 grupos_img.append(("── ComfyUI Local ──", modelos_img_comfy))
             if modelos_vid_comfy:
@@ -609,8 +610,8 @@ ESTILOS_VIDEO = sorted([
 
 ESTILOS_AUDIO = sorted([
     "Ambient", "Blues", "Cinematográfico", "Clásica", "Country",
-    "Electrónica", "Flamenco", "Folk", "Funk", "Hip-hop", 
-    "Indie", "Jazz", "Lo-fi", "Metal", "Música Videojuegos", 
+    "Electrónica", "Flamenco", "Folk", "Funk", "Hip-hop",
+    "Indie", "Jazz", "Lo-fi", "Metal", "Música Videojuegos",
     "Pop", "R&B", "Reggaeton", "Rock", "Synthwave",
 ])
 

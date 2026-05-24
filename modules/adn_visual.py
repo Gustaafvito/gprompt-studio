@@ -13,15 +13,15 @@ Dependencias self (provistas por ArquitectoApp):
   imagen_cargada, vision, txt_idea, store, after, set_estado,
   toggle_botones, actualizar_salida.
 """
-import json
 import datetime
+import json
 import logging
 import threading
 
-import pyperclip
 import customtkinter as ctk
+import pyperclip
 
-from config import get_theme_colors, ADN_A_PLATAFORMA
+from config import ADN_A_PLATAFORMA, get_theme_colors
 from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)

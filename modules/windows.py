@@ -2,15 +2,16 @@
 Arquitecto de Prompts v1.0 — Ventanas secundarias.
 Personajes, LoRAs, Batch, Historial, Favoritos.
 """
-import customtkinter as ctk
-from tkinter import messagebox, filedialog
 import datetime
 import logging
 import threading
 from pathlib import Path
+from tkinter import filedialog, messagebox
 
-from workers import contar_tokens_aprox
+import customtkinter as ctk
+
 from modules.gprompt_window import GPromptWindow
+from workers import contar_tokens_aprox
 
 logger = logging.getLogger(__name__)
 

@@ -6,43 +6,66 @@ v1.0:
   el provider activo se obtiene desde self.clients.get_active_provider().
 - Llamada a _actualizar_indicador_proveedor() tras cambio de LLM.
 """
-import os
-import re
+import datetime
 import json
 import logging
-import threading
-import datetime
+import os
 import random
+import re
+import threading
+
 import pyperclip
 
 logger = logging.getLogger("gprompt")
 import tkinter as tk
-import customtkinter as ctk
-from config import (
-    ESTILOS_IMAGEN, ESTILOS_VIDEO, ESTILOS_AUDIO,
-    es_separador,
-    get_model_specs, get_image_model_specs, get_audio_model_specs,
-    get_prompt_template,
-    MODEL_SPECS_IMAGEN, MODEL_SPECS,
-    MODELOS_POR_PLATAFORMA_IMAGEN, MODELOS_IMAGEN_FLAT,
-    PLATAFORMAS_IMAGEN, PLATAFORMAS_IMAGEN_LISTA,
-    PLATAFORMAS_VIDEO, PLATAFORMAS_VIDEO_LISTA,
-    PLATAFORMAS_AUDIO_LISTA,
-    MOTORES_VIDEO, MOTORES_AUDIO, MOTOR_DEFAULT,
-    RATIOS_IMAGEN, RATIOS_VIDEO,
-)
-from prompts import (
-    SYSTEM_IMAGEN_SFW, SYSTEM_IMAGEN_NSFW, SYSTEM_VIDEO,
-    SYSTEM_VIDEO_NSFW, SYSTEM_NATURAL_SFW, SYSTEM_NATURAL_NSFW,
-    SYSTEM_NATURAL_VIDEO, SYSTEM_NATURAL_VIDEO_NSFW,
-    SYSTEM_AUDIO_SUNO, SYSTEM_AUDIO_SEAART,
-    NEGATIVE_BASE_SFW, NEGATIVE_BASE_NSFW, NEGATIVE_BASE_VIDEO,
-    BRIEF_MODIFIER, REGLAS_APROVECHAR_BUDGET,
-)
-from workers import parsear_ideas, contar_tokens_aprox, limpiar_marcadores
-from modules.windows import abrir_batch
 from typing import TYPE_CHECKING
+
+import customtkinter as ctk
+
+from config import (
+    ESTILOS_AUDIO,
+    ESTILOS_IMAGEN,
+    ESTILOS_VIDEO,
+    MODEL_SPECS,
+    MODEL_SPECS_IMAGEN,
+    MODELOS_IMAGEN_FLAT,
+    MODELOS_POR_PLATAFORMA_IMAGEN,
+    MOTOR_DEFAULT,
+    MOTORES_AUDIO,
+    MOTORES_VIDEO,
+    PLATAFORMAS_AUDIO_LISTA,
+    PLATAFORMAS_IMAGEN,
+    PLATAFORMAS_IMAGEN_LISTA,
+    PLATAFORMAS_VIDEO,
+    PLATAFORMAS_VIDEO_LISTA,
+    RATIOS_IMAGEN,
+    RATIOS_VIDEO,
+    es_separador,
+    get_audio_model_specs,
+    get_image_model_specs,
+    get_model_specs,
+    get_prompt_template,
+)
 from modules.gprompt_window import GPromptWindow
+from modules.windows import abrir_batch
+from prompts import (
+    BRIEF_MODIFIER,
+    NEGATIVE_BASE_NSFW,
+    NEGATIVE_BASE_SFW,
+    NEGATIVE_BASE_VIDEO,
+    REGLAS_APROVECHAR_BUDGET,
+    SYSTEM_AUDIO_SEAART,
+    SYSTEM_AUDIO_SUNO,
+    SYSTEM_IMAGEN_NSFW,
+    SYSTEM_IMAGEN_SFW,
+    SYSTEM_NATURAL_NSFW,
+    SYSTEM_NATURAL_SFW,
+    SYSTEM_NATURAL_VIDEO,
+    SYSTEM_NATURAL_VIDEO_NSFW,
+    SYSTEM_VIDEO,
+    SYSTEM_VIDEO_NSFW,
+)
+from workers import contar_tokens_aprox, limpiar_marcadores, parsear_ideas
 
 if TYPE_CHECKING:
     from app import ArquitectoApp
@@ -555,14 +578,14 @@ class CoreMixin:
 
     def extraer_positive(self):
         texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
-        
+
         # Buscar marcador POSITIVE PROMPT:
         if "POSITIVE PROMPT:" in texto:
             bloque = texto.split("POSITIVE PROMPT:")[1]
             if "NEGATIVE PROMPT:" in bloque:
                 return bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*")
             return bloque.strip(" \n*")
-        
+
         # Buscar marcador PROMPT: (sin POSITIVE)
         if "PROMPT:" in texto:
             bloque = texto.split("PROMPT:")[1]
@@ -571,7 +594,7 @@ class CoreMixin:
             for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
                 if sep in bloque: bloque = bloque.split(sep)[0]
             return bloque.strip(" \n*")
-        
+
         # Sin marcadores: buscar bloque NEGATIVE y devolver lo anterior
         # Marcas que indican inicio del negative
         marcas_neg = ["NEGATIVE PROMPT:", "NEGATIVE:", "\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:"]
@@ -580,16 +603,16 @@ class CoreMixin:
             if marca in limpia:
                 limpia = limpia.split(marca, 1)[0]
                 break
-        
+
         # Si hay separadores de variantes al final, quitarlos
         for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
             if sep in limpia:
                 limpia = limpia.split(sep)[0]
-        
+
         limpia = limpia.strip(" \n*:")
         if limpia and len(limpia.strip()) > 5:
             return limpia
-        
+
         return None
 
     def extraer_negative(self):
@@ -2858,4 +2881,3 @@ class CoreMixin:
         """
         from modules.tutorial import abrir_tutorial
         abrir_tutorial(self)
-

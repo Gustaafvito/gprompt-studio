@@ -1,26 +1,31 @@
 """Data Management Mixin - History, Favorites, Stars, Snippets, Formulas, Templates, etc."""
-import os
-import re
-import json
 import datetime
+import json
 import logging
+import os
 import random
+import re
+
 import pyperclip
 
 logger = logging.getLogger(__name__)
-import customtkinter as ctk
 import tkinter as tk
 import tkinter.filedialog as filedialog
 import tkinter.simpledialog as simpledialog
-from PIL import Image
 from pathlib import Path
-from config import PUBLIC_VERSION, PRESET_COLORES, BIBLIOTECA_EJEMPLOS, DESTINOS, get_theme_colors
+
+import customtkinter as ctk
+from PIL import Image
+
+from config import BIBLIOTECA_EJEMPLOS, DESTINOS, PRESET_COLORES, PUBLIC_VERSION, get_theme_colors
+
 try:
     from CTkToolTip import CTkToolTip
 except ImportError:
     class CTkToolTip:
         def __init__(self, *args, **kwargs): pass
 from typing import TYPE_CHECKING
+
 from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:

@@ -33,12 +33,12 @@ import logging
 import threading
 from tkinter import filedialog, messagebox
 
-import pyperclip
 import customtkinter as ctk
+import pyperclip
 
 from config import get_theme_colors
-from workers import limpiar_marcadores
 from modules.gprompt_window import GPromptWindow
+from workers import limpiar_marcadores
 
 logger = logging.getLogger(__name__)
 

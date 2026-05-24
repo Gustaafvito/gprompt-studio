@@ -5,7 +5,7 @@ Genera archivos .json que pueden ser arrastrados directamente a ComfyUI.
 """
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +23,10 @@ class ComfyUIWorkflowExporter:
         steps: int = 30,
         cfg: float = 3.5,
         sampler: str = "euler",
-        seed: Optional[int] = None,
+        seed: int | None = None,
         loras: list = None,
         output_name: str = "prompt_export"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Genera un workflow JSON para ComfyUI.
 
         Args:
@@ -179,7 +179,7 @@ class ComfyUIWorkflowExporter:
         return workflow
 
     @staticmethod
-    def save_workflow(workflow: Dict, filepath: str) -> bool:
+    def save_workflow(workflow: dict, filepath: str) -> bool:
         """Guarda un workflow a un archivo JSON."""
         try:
             with open(filepath, 'w', encoding='utf-8') as f:
@@ -194,10 +194,10 @@ class ComfyUIWorkflowExporter:
     def export_simple_sdxl(
         positive: str,
         negative: str = "",
-        seed: Optional[int] = None,
+        seed: int | None = None,
         steps: int = 30,
         cfg: float = 7.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Genera un workflow simplificado para SDXL."""
         return ComfyUIWorkflowExporter.export_to_workflow(
             positive=positive,
@@ -215,10 +215,10 @@ class ComfyUIWorkflowExporter:
     def export_simple_flux(
         positive: str,
         negative: str = "",
-        seed: Optional[int] = None,
+        seed: int | None = None,
         steps: int = 25,
         cfg: float = 1.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Genera un workflow simplificado para Flux."""
         return ComfyUIWorkflowExporter.export_to_workflow(
             positive=positive,

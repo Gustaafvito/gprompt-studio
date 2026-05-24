@@ -2,8 +2,9 @@
 GPromptWindow: Widget personalizado que reemplaza el monkey-patching de CTkToplevel.
 Elimina la necesidad de parchear globalmente la clase CTkToplevel.
 """
-import customtkinter as ctk
 import logging
+
+import customtkinter as ctk
 
 logger = logging.getLogger(__name__)
 

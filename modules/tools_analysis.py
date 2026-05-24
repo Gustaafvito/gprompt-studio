@@ -1,18 +1,20 @@
 """Analysis Tools Mixin - Statistics, Auto-improve, Critique, Scoring, Education Mode, etc."""
-import os
-import re
+import datetime
 import json
 import logging
-import threading
-import datetime
+import os
 import random
-import pyperclip
-from collections import Counter
-import customtkinter as ctk
+import re
+import threading
 import tkinter as tk
-from workers import limpiar_marcadores
+from collections import Counter
 from typing import TYPE_CHECKING
+
+import customtkinter as ctk
+import pyperclip
+
 from modules.gprompt_window import GPromptWindow
+from workers import limpiar_marcadores
 
 logger = logging.getLogger(__name__)
 
@@ -414,8 +416,8 @@ class ToolsAnalysisMixin:
 
     def _abrir_estadisticas(self):
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
-        from collections import Counter, defaultdict
         import datetime as _dt
+        from collections import Counter, defaultdict
         prefs = self.store.cargar_preferencias()
         hist_full = self.store.historial or []
         favs = self.store.favoritos or []

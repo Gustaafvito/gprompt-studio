@@ -22,20 +22,20 @@ Dependencias self (provistas por ArquitectoApp):
   toggle_botones, actualizar_salida, _sesion_log, _sonar_completado,
   _parsear_bloques_numerados, _abrir_comparador.
 """
-import os
-import re
+import datetime
 import json
 import logging
+import os
+import re
 import threading
-import datetime
-
-import pyperclip
-import customtkinter as ctk
 import tkinter as tk
 
+import customtkinter as ctk
+import pyperclip
+
 from config import get_theme_colors
-from workers import limpiar_marcadores
 from modules.gprompt_window import GPromptWindow
+from workers import limpiar_marcadores
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +126,7 @@ class ModoClienteMixin:
 
         def _cargar_imagen_cliente():
             from tkinter import filedialog
+
             from PIL import Image
             ruta = filedialog.askopenfilename(
                 title="Selecciona imagen de referencia (logo, moodboard...)",
@@ -457,7 +458,7 @@ class ModoClienteMixin:
 
     def _cmd_companero_moodboard(self):
         """Sube imágenes y la IA detecta el estilo común.
-        
+
         v1.1: usa imagen cargada, barra de progreso, preview thumbnails,
         guarda estilo detectado y permite añadir más imágenes.
         """
@@ -557,8 +558,10 @@ class ModoClienteMixin:
                 return
             # Validar cada archivo antes de añadirlo: las corruptas no entran
             # silenciosamente, sino que se reportan al usuario.
-            from PIL import Image as _PIL_val, UnidentifiedImageError
             import os
+
+            from PIL import Image as _PIL_val
+            from PIL import UnidentifiedImageError
             buenas, fallos = [], []
             for ruta in nuevas:
                 try:
@@ -612,8 +615,10 @@ class ModoClienteMixin:
                 todas_imagenes.append(self.imagen_cargada)
             fallos_open = []
             if archivos_state["rutas"]:
-                from PIL import Image as _PIL2, UnidentifiedImageError
                 import os
+
+                from PIL import Image as _PIL2
+                from PIL import UnidentifiedImageError
                 for ruta in archivos_state["rutas"][:5]:
                     try:
                         todas_imagenes.append(_PIL2.open(ruta))
@@ -694,8 +699,8 @@ class ModoClienteMixin:
                                 self.set_estado("🎭 Template aplicado", "#2ecc71")
 
                         def _guardar_estilo():
-                            from tkinter import simpledialog
                             import re as _re
+                            from tkinter import simpledialog
                             prefs_g = self.store.cargar_preferencias()
                             estilos_g = prefs_g.get("estilos_moodboard", []) or []
                             if not isinstance(estilos_g, list):

@@ -7,9 +7,9 @@ Cada proveedor implementa la misma interfaz BaseLLMProvider:
 
 Para añadir un proveedor nuevo solo hay que crear su clase aquí.
 """
-import os
 import json
 import logging
+import os
 import urllib.request
 from typing import Optional
 
@@ -531,9 +531,11 @@ def _obtener_clave_cifrado() -> bytes:
 
 def _cifrar_aes(texto: str, clave: bytes) -> str:
     """Cifra texto con AES-256-CBC. Devuelve base64."""
-    import base64, os
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    import base64
+    import os
+
     from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
     iv = os.urandom(16)
     cipher = Cipher(algorithms.AES(clave), modes.CBC(iv), backend=default_backend())
@@ -546,8 +548,9 @@ def _cifrar_aes(texto: str, clave: bytes) -> str:
 def _descifrar_aes(texto_cifrado: str, clave: bytes) -> str:
     """Descifra texto AES-256-CBC. Devuelve texto plano."""
     import base64
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
     from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
     try:
         data = base64.b64decode(texto_cifrado.encode())

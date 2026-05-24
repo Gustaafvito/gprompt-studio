@@ -1,11 +1,12 @@
 """Tests para helpers y funciones de workers.py."""
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from workers import contar_tokens_aprox, limpiar_marcadores, parsear_ideas, detectar_idioma_es
+from workers import contar_tokens_aprox, detectar_idioma_es, limpiar_marcadores, parsear_ideas
 
 
 class TestContarTokens:

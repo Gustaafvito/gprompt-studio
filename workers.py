@@ -7,6 +7,7 @@ Refactor v1.0:
 - VisionChain con timeout configurable.
 """
 import os
+
 try:
     from dotenv import load_dotenv
     _proj_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
@@ -14,18 +15,21 @@ try:
     load_dotenv(_proj_env, override=False)
 except ImportError:
     pass
+import base64
 import io
+import json as _json
+import logging
 import re
 import time
-import base64
-import logging
 import urllib.request
-import json as _json
 from typing import TYPE_CHECKING, Callable, Optional
 
 from google.genai import types as genai_types
+
 from config import (
-    MAX_HIST_IA, MODELOS_GEMINI_CANDIDATOS, MODELOS_OLLAMA_VISION,
+    MAX_HIST_IA,
+    MODELOS_GEMINI_CANDIDATOS,
+    MODELOS_OLLAMA_VISION,
     MODELOS_OPENROUTER_VISION,
 )
 from prompts import VISION_SYSTEM_PROMPT
@@ -260,7 +264,7 @@ class VisionChain:
         self,
         imagen_pil,
         modo: str,
-        on_status: Optional[Callable[[str], None]] = None
+        on_status: Callable[[str], None] | None = None
     ) -> tuple[str, str]:
         """
         Describe una imagen usando la cadena de fallback.
@@ -321,7 +325,7 @@ class VisionChain:
     def analizar_adn(
         self,
         imagen_pil,
-        on_status: Optional[Callable[[str], None]] = None
+        on_status: Callable[[str], None] | None = None
     ) -> tuple[dict, str]:
         """
         Analiza imagen y devuelve ADN estructurado en JSON.
@@ -340,14 +344,14 @@ class VisionChain:
                     import re
                     # Limpiar wrappers comunes
                     cleaned = desc.strip()
-                    
+
                     # Intentar parsear, si falla por JSON incompleto o múltiples JSONs, intentar arreglar
                     try:
                         adn = json.loads(cleaned)
                     except json.JSONDecodeError as je:
                         error_msg = str(je)
                         partial = cleaned
-                        
+
                         # Si hay "Extra data" significa que hay más de un JSON - tomar solo el primero
                         if "Extra data" in error_msg:
                             # Encontrar el primer JSON completo
@@ -363,7 +367,7 @@ class VisionChain:
                                     partial += "}" * max(0, open_braces)
                                     partial += "]" * max(0, open_brackets)
                                     adn = json.loads(partial)
-                        
+
                         # Si es "Unterminated string" o similar, intentar completar el JSON
                         elif "Unterminated" in error_msg or "expecting" in error_msg:
                             open_braces = partial.count("{") - partial.count("}")
@@ -373,7 +377,7 @@ class VisionChain:
                             adn = json.loads(partial)
                         else:
                             raise je
-                    
+
                     return adn, motor
             except Exception as e:
                 ultimo_error = e

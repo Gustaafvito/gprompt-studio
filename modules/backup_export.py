@@ -1,15 +1,17 @@
 """Backup & Export Mixin - Backup, Restore, CSV Export, CLI Export, Global Search."""
-import os
-import re
-import json
 import csv
 import datetime
+import json
 import logging
-import pyperclip
-import customtkinter as ctk
+import os
+import re
 import tkinter as tk
-from config import VERSION
 from typing import TYPE_CHECKING
+
+import customtkinter as ctk
+import pyperclip
+
+from config import VERSION
 from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
@@ -79,6 +81,7 @@ class BackupExportMixin:
         para que el usuario pueda volver atrás si se equivoca de archivo.
         """
         from tkinter import filedialog, messagebox
+
         from config import BACKUPS_DIR
 
         archivo = filedialog.askopenfilename(
@@ -333,8 +336,8 @@ class BackupExportMixin:
         - Suno (audio)
         - JSON genérico (para automatización)
         """
-        import re
         import json as _json
+        import re
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")

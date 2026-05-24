@@ -1,14 +1,16 @@
 """Dialogs & Windows Mixin - API Keys, Preferences, Preview, Dashboard, Status, etc."""
-import os
-import re
+import datetime
 import json
 import logging
+import os
+import re
 import threading
-import datetime
-import pyperclip
-import customtkinter as ctk
 import tkinter as tk
 from typing import TYPE_CHECKING
+
+import customtkinter as ctk
+import pyperclip
+
 from config import get_theme_colors
 from logging_utils import silent
 from modules.gprompt_window import GPromptWindow
@@ -36,8 +38,11 @@ class DialogsMixin:
         c = get_theme_colors(is_lt)
         try:
             from api_clients import (
-                LLM_PROVIDERS, cargar_api_key, guardar_api_key,
-                borrar_api_key, ubicacion_api_key,
+                LLM_PROVIDERS,
+                borrar_api_key,
+                cargar_api_key,
+                guardar_api_key,
+                ubicacion_api_key,
             )
         except ImportError:
             self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
@@ -279,6 +284,7 @@ class DialogsMixin:
         derecha), todo en la última línea de la ventana.
         """
         import webbrowser
+
         from config import AUTHOR, PUBLIC_VERSION
 
         is_light = ctk.get_appearance_mode().lower() == "light"
@@ -1855,7 +1861,8 @@ class DialogsMixin:
         def _backup_ahora():
             try:
                 import time as _t
-                from config import CARPETA_APP, ARCHIVOS
+
+                from config import ARCHIVOS, CARPETA_APP
                 base = CARPETA_APP
                 marker = ARCHIVOS["autobackup_marker"]
                 self._crear_backup_automatico(base, marker, _t.time())
@@ -1976,4 +1983,3 @@ class DialogsMixin:
                       font=ctk.CTkFont(size=11, weight="bold"),
                       text_color="#ffffff",
                       command=v.destroy).pack(pady=(12, 8))
-

@@ -11,15 +11,17 @@ set_appearance_mode("light") haya disparado (diferido 200ms). Sin
 esto, los labels se construían con color de tema dark y quedaban
 invisibles sobre el fondo light tras cambiar tema.
 """
-import customtkinter as ctk
-import tkinter as tk
-import re
-import random
 import datetime
+import json
 import logging
 import os
-import json
+import random
+import re
+import tkinter as tk
+
+import customtkinter as ctk
 import pyperclip
+
 from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger(__name__)
@@ -92,25 +94,45 @@ try:
 except ImportError:
     class CTkToolTip:
         def __init__(self, *args, **kwargs): pass
-from config import (
-    PUBLIC_VERSION, VERSION,
-    ESTILOS_IMAGEN, ESTILOS_VIDEO, ESTILOS_AUDIO,
-    NEGATIVE_PRESETS, PRESET_COLORES, es_separador,
-    MODEL_SPECS_IMAGEN, MODEL_SPECS, get_image_model_specs,
-    RATIOS_IMAGEN, RATIOS_VIDEO,
-    PLATAFORMAS_IMAGEN, PLATAFORMAS_IMAGEN_LISTA,
-    PLATAFORMAS_VIDEO, PLATAFORMAS_VIDEO_LISTA,
-    PLATAFORMAS_AUDIO, PLATAFORMAS_AUDIO_LISTA,
-    MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT,
-    MODELOS_POR_PLATAFORMA_IMAGEN,
-    MOTORES_VIDEO, MOTORES_AUDIO, MOTOR_DEFAULT,
-    DESTINOS, EMOCIONES_AUDIO, VOCES_AUDIO, IDIOMAS_AUDIO,
-    ESTILO_NEGATIVO_AUTO, get_theme_colors,
-)
-from workers import detectar_idioma_es
-from modules.windows import abrir_personajes, abrir_loras, abrir_lista
-from modules.style_guide import abrir_guia_estilos, tooltip_para
 from typing import TYPE_CHECKING
+
+from config import (
+    DESTINOS,
+    EMOCIONES_AUDIO,
+    ESTILO_NEGATIVO_AUTO,
+    ESTILOS_AUDIO,
+    ESTILOS_IMAGEN,
+    ESTILOS_VIDEO,
+    IDIOMAS_AUDIO,
+    MODEL_SPECS,
+    MODEL_SPECS_IMAGEN,
+    MODELOS_AUDIO_FLAT,
+    MODELOS_IMAGEN_FLAT,
+    MODELOS_POR_PLATAFORMA_IMAGEN,
+    MODELOS_VIDEO_FLAT,
+    MOTOR_DEFAULT,
+    MOTORES_AUDIO,
+    MOTORES_VIDEO,
+    NEGATIVE_PRESETS,
+    PLATAFORMAS_AUDIO,
+    PLATAFORMAS_AUDIO_LISTA,
+    PLATAFORMAS_IMAGEN,
+    PLATAFORMAS_IMAGEN_LISTA,
+    PLATAFORMAS_VIDEO,
+    PLATAFORMAS_VIDEO_LISTA,
+    PRESET_COLORES,
+    PUBLIC_VERSION,
+    RATIOS_IMAGEN,
+    RATIOS_VIDEO,
+    VERSION,
+    VOCES_AUDIO,
+    es_separador,
+    get_image_model_specs,
+    get_theme_colors,
+)
+from modules.style_guide import abrir_guia_estilos, tooltip_para
+from modules.windows import abrir_lista, abrir_loras, abrir_personajes
+from workers import detectar_idioma_es
 
 if TYPE_CHECKING:
     from app import ArquitectoApp

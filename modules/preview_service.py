@@ -5,6 +5,7 @@ Extraído de app.py para desacoplar la lógica de red de la UI.
 """
 import io
 import logging
+
 import requests
 from PIL import Image
 

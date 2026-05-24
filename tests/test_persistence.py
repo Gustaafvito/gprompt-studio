@@ -1,8 +1,9 @@
 """Tests para persistence.py con escrituras atómicas."""
-import pytest
 import json
 import os
 import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -98,6 +99,7 @@ _NAMES = ["historial", "favoritos", "personajes", "plantillas",
 def _setup_store(tmp_path, monkeypatch):
     """Crea DataStore con paths temporales parcheando ARCHIVOS en ambos módulos."""
     from pathlib import Path
+
     import config
     tmp_files = {name: tmp_path / f"{name}.json" for name in _NAMES}
 

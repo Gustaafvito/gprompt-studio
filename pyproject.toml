@@ -48,6 +48,8 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.1",
     "mypy>=1.5",
+    "ruff>=0.6",
+    "pre-commit>=3.7",
 ]
 all = [
     "CTkToolTip>=0.8",
@@ -86,3 +88,58 @@ python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    "data",
+]
+
+[tool.ruff.lint]
+# Reglas activas — conservador inicialmente. Ampliar gradualmente
+# conforme se limpie deuda técnica (ver TODO_LINT.md si se crea).
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (orden imports)
+    "UP",  # pyupgrade (modernizar sintaxis)
+]
+ignore = [
+    # Estilo / formato — no son bugs
+    "E501",   # line too long
+    "E701",   # multiple statements on one line (patrón usado en este repo)
+    "E702",   # multiple statements on one line con ;
+    "E401",   # multiple imports en una línea
+    "E402",   # imports no al principio (monkey-patches CTkToolTip)
+    "E722",   # bare except (defensivo en IA, se decide caso a caso)
+    "E731",   # lambda assignment
+    "E741",   # ambiguous variable name (l/I/O)
+    "W291",   # trailing whitespace
+    "W292",   # missing newline at EOF
+    "W293",   # blank line whitespace
+    # Pyflakes que requieren cleanup grande
+    "F401",   # unused imports (171 ocurrencias — limpiar gradualmente)
+    "F811",   # redefined while unused
+    "F821",   # undefined name (imports condicionales CTkToolTip/messagebox + lambdas con `e`)
+    "F841",   # unused local variable
+    "F541",   # f-string sin placeholders
+    # Pyupgrade muy agresivos
+    "UP015",  # redundant open modes
+    "UP035",  # deprecated imports (typing)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F401", "F811", "E402"]
+"main.py" = ["E402"]  # imports tras monkey-patch CTkToolTip
+"modules/__init__.py" = ["F401"]  # re-exports intencionados
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

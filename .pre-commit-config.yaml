@@ -1,0 +1,30 @@
+# Pre-commit hooks — quick checks antes de cada commit.
+# Instalar:  pre-commit install
+# Ejecutar manualmente:  pre-commit run --all-files
+# Saltar puntualmente:   git commit --no-verify
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^data/.*\.json$
+      - id: end-of-file-fixer
+        exclude: ^data/.*\.json$
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.14
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      # ruff-format desactivado por ahora — reformatearía todo el repo.
+      # Activar tras una sesión dedicada a normalizar estilo.
+      # - id: ruff-format

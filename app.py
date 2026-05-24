@@ -3,21 +3,32 @@
 Generador de prompts para creadores de imágenes con IA.
 Las ventanas secundarias usan GPromptWindow (modules.gprompt_window).
 """
-import sys, os, re, json, time, threading, traceback, logging, inspect
+import inspect
+import json
+import logging
+import os
+import re
+import sys
+import threading
+import time
+import traceback
 from pathlib import Path
+
 import customtkinter as ctk
 
 logger = logging.getLogger(__name__)
 
-from modules.gprompt_window import GPromptWindow
-from tkinter import filedialog, messagebox, simpledialog
-from PIL import Image
-import pyperclip
-import threading
 import datetime
 import random
 import re
+import threading
 from pathlib import Path
+from tkinter import filedialog, messagebox, simpledialog
+
+import pyperclip
+from PIL import Image
+
+from modules.gprompt_window import GPromptWindow
 
 # Importación segura de Tooltips
 try:
@@ -26,50 +37,97 @@ except ImportError:
     class CTkToolTip:
         def __init__(self, *args, **kwargs): pass
 
+from api_clients import APIClients
 from config import (
-    APP_TITLE, VERSION, PUBLIC_VERSION,
-    MODELOS_IMAGEN_FLAT, MODELOS_VIDEO_FLAT, MODELOS_AUDIO_FLAT,
-    MODELOS_IMAGEN_COMFYUI_FLAT, MODELOS_VIDEO_COMFYUI_FLAT,
+    APP_TITLE,
+    AUTHOR,
+    BIBLIOTECA_EJEMPLOS,
+    DESTINOS,
+    EMOCIONES_AUDIO,
+    ESTILO_NEGATIVO_AUTO,
+    ESTILOS_AUDIO,
+    ESTILOS_IMAGEN,
+    ESTILOS_VIDEO,
+    IDIOMAS_AUDIO,
+    MODEL_SPECS,
+    MODEL_SPECS_AUDIO,
+    MODEL_SPECS_IMAGEN,
+    MODELOS_AUDIO_FLAT,
+    MODELOS_IMAGEN_COMFYUI_FLAT,
+    MODELOS_IMAGEN_FLAT,
     MODELOS_POR_PLATAFORMA_IMAGEN,
-    RATIOS_IMAGEN, RATIOS_VIDEO,
-    ESTILOS_IMAGEN, ESTILOS_VIDEO, ESTILOS_AUDIO,
-    NEGATIVE_PRESETS, PRESET_COLORES, es_separador,
-    PLATAFORMAS_IMAGEN, PLATAFORMAS_IMAGEN_LISTA,
-    PLATAFORMAS_VIDEO, PLATAFORMAS_VIDEO_LISTA,
-    PLATAFORMAS_AUDIO, PLATAFORMAS_AUDIO_LISTA,
-    MOTORES_VIDEO, MOTORES_AUDIO, MOTOR_DEFAULT,
-    AUTHOR, ESTILO_NEGATIVO_AUTO,
-    TOKEN_LIMITS, MODEL_SPECS, MODEL_SPECS_IMAGEN, MODEL_SPECS_AUDIO,
-    get_model_specs, get_image_model_specs, get_audio_model_specs,
+    MODELOS_VIDEO_COMFYUI_FLAT,
+    MODELOS_VIDEO_FLAT,
+    MOTOR_DEFAULT,
+    MOTORES_AUDIO,
+    MOTORES_VIDEO,
+    NEGATIVE_PRESETS,
+    PLATAFORMAS_AUDIO,
+    PLATAFORMAS_AUDIO_LISTA,
+    PLATAFORMAS_IMAGEN,
+    PLATAFORMAS_IMAGEN_LISTA,
+    PLATAFORMAS_VIDEO,
+    PLATAFORMAS_VIDEO_LISTA,
+    PRESET_COLORES,
+    PROMPT_TEMPLATES,
+    PUBLIC_VERSION,
+    RATIOS_IMAGEN,
+    RATIOS_VIDEO,
+    TOKEN_LIMITS,
+    VERSION,
+    VOCES_AUDIO,
+    es_separador,
+    get_audio_model_specs,
+    get_image_model_specs,
+    get_model_specs,
     get_prompt_template,
     get_theme_colors,
-    DESTINOS, EMOCIONES_AUDIO, VOCES_AUDIO, IDIOMAS_AUDIO,
-    PROMPT_TEMPLATES, BIBLIOTECA_EJEMPLOS,
 )
-from prompts import (
-    SYSTEM_IMAGEN_SFW, SYSTEM_IMAGEN_NSFW, SYSTEM_VIDEO,
-    SYSTEM_VIDEO_NSFW,
-    SYSTEM_NATURAL_SFW, SYSTEM_NATURAL_NSFW, SYSTEM_NATURAL_VIDEO,
-    SYSTEM_NATURAL_VIDEO_NSFW,
-    SYSTEM_AUDIO_SUNO, SYSTEM_AUDIO_SEAART,
-    NEGATIVE_BASE_SFW, NEGATIVE_BASE_NSFW, NEGATIVE_BASE_VIDEO,
-    BRIEF_MODIFIER, REGLAS_APROVECHAR_BUDGET,
-)
-from persistence import DataStore
-from api_clients import APIClients
-from workers import (
-    DeepSeekWorker, VisionChain, contar_tokens_aprox,
-    limpiar_marcadores, parsear_ideas, detectar_idioma_es,
-)
-from modules.windows import abrir_personajes, abrir_loras, abrir_batch, abrir_lista
-
-
 from modules import (
-    UIBuildersMixin, ToolsCreativeMixin, ToolsWorkflowMixin,
-    ToolsAnalysisMixin, DataMgmtMixin, BackupExportMixin,
-    DialogsMixin, CoreMixin, AdnVisualMixin, MultiPromptMixin,
-    SesionVideoMixin, WorkersIaMixin, ModoClienteMixin,
-    JsonPromptMixin, EventBus, PreviewService, install_components,
+    AdnVisualMixin,
+    BackupExportMixin,
+    CoreMixin,
+    DataMgmtMixin,
+    DialogsMixin,
+    EventBus,
+    JsonPromptMixin,
+    ModoClienteMixin,
+    MultiPromptMixin,
+    PreviewService,
+    SesionVideoMixin,
+    ToolsAnalysisMixin,
+    ToolsCreativeMixin,
+    ToolsWorkflowMixin,
+    UIBuildersMixin,
+    WorkersIaMixin,
+    install_components,
+)
+from modules.windows import abrir_batch, abrir_lista, abrir_loras, abrir_personajes
+from persistence import DataStore
+from prompts import (
+    BRIEF_MODIFIER,
+    NEGATIVE_BASE_NSFW,
+    NEGATIVE_BASE_SFW,
+    NEGATIVE_BASE_VIDEO,
+    REGLAS_APROVECHAR_BUDGET,
+    SYSTEM_AUDIO_SEAART,
+    SYSTEM_AUDIO_SUNO,
+    SYSTEM_IMAGEN_NSFW,
+    SYSTEM_IMAGEN_SFW,
+    SYSTEM_NATURAL_NSFW,
+    SYSTEM_NATURAL_SFW,
+    SYSTEM_NATURAL_VIDEO,
+    SYSTEM_NATURAL_VIDEO_NSFW,
+    SYSTEM_VIDEO,
+    SYSTEM_VIDEO_NSFW,
+)
+from workers import (
+    DeepSeekWorker,
+    VisionChain,
+    contar_tokens_aprox,
+    detectar_idioma_es,
+    limpiar_marcadores,
+    parsear_ideas,
 )
 
 # Inicializar EventBus singleton
@@ -714,7 +772,8 @@ class ArquitectoApp(
         """
         try:
             import time
-            from config import CARPETA_APP, BACKUPS_DIR, ARCHIVOS
+
+            from config import ARCHIVOS, BACKUPS_DIR, CARPETA_APP
             base = CARPETA_APP
             if not base.exists():
                 return
@@ -741,8 +800,9 @@ class ArquitectoApp(
         personajes, loras, estrellas, preferencias, keys). Excluye la propia
         subcarpeta backups/ y logs/ para no recursivar.
         """
-        import zipfile
         import datetime as _dt
+        import zipfile
+
         from config import BACKUPS_DIR
         backups_dir = BACKUPS_DIR
         backups_dir.mkdir(parents=True, exist_ok=True)
@@ -1088,7 +1148,8 @@ class ArquitectoApp(
         Devuelve lista de tuplas (nombre, positive, negative, categoria).
         La categoría puede ser "" si la plantilla no la define.
         """
-        import json, os
+        import json
+        import os
         try:
             ruta_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      "config", "plantillas_default.json")
@@ -1755,6 +1816,7 @@ class ArquitectoApp(
 
         v1.0: validación de formato, botón de test de conexión real."""
         import os
+
         from dotenv import set_key
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -1905,8 +1967,8 @@ class ArquitectoApp(
         ventana = GPromptWindow(self)
         ventana.title("⚙️ Ajustes del Sistema")
         ventana.geometry("500x400")
-        ventana.transient(self) 
-        ventana.grab_set()      
+        ventana.transient(self)
+        ventana.grab_set()
 
         # --- Sin tabs, solo un panel directo (API Keys ya están en 🔑 del header) ---
         tab_gen = ventana
@@ -2102,8 +2164,8 @@ class ArquitectoApp(
         if not hasattr(self, "_preview_cache"):
             self._preview_cache = {}  # key=hash → (image_pil, url, ts)
 
-        import urllib.parse
         import hashlib
+        import urllib.parse
 
         # Limpieza del prompt (idéntica a la original, necesaria también
         # para el cache-key y la URL)
@@ -2129,9 +2191,10 @@ class ArquitectoApp(
 
         def _worker():
             try:
-                import urllib.request
                 import io
                 import time
+                import urllib.request
+
                 from PIL import Image
 
                 semilla = int(time.time())
