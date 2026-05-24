@@ -66,7 +66,46 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; \
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
     Flags: nowait postinstall skipifsilent
 
-[UninstallDelete]
-; Limpiar carpeta de usuario al desinstalar (datos, no las keys)
-; Comentado por defecto — descomenta si quieres limpieza total al desinstalar:
-; Type: filesandordirs; Name: "{userappdata}\arquitecto_prompts"
+[Messages]
+; Texto del prompt en español para la pregunta de limpieza.
+spanish.ConfirmUninstall=¿Desea desinstalar G-Prompt Studio y todos sus componentes?
+
+[CustomMessages]
+spanish.AskWipeData=¿Quieres borrar TAMBIÉN tus datos personales?%n%nEsto eliminará:%n  • API keys cifradas%n  • Historial de prompts%n  • Favoritos y estrellas%n  • Plantillas y backups%n  • Personajes y LoRAs%n%nUbicación: %s%n%nResponde NO si vas a reinstalar más tarde y quieres conservar tu configuración.
+english.AskWipeData=Do you want to ALSO delete your personal data?%n%nThis will remove:%n  • Encrypted API keys%n  • Prompt history%n  • Favorites and stars%n  • Templates and backups%n  • Characters and LoRAs%n%nLocation: %s%n%nAnswer NO if you plan to reinstall later and want to keep your settings.
+
+spanish.WipeDone=Datos personales eliminados.
+english.WipeDone=Personal data removed.
+
+spanish.WipeKeyringHint=Tip: si configuraste API keys vía Windows Credential Manager, ábrelo y borra las entradas que empiecen por "GPromptStudio_" o "arquitecto_prompts".
+english.WipeKeyringHint=Tip: if you stored API keys in Windows Credential Manager, open it and delete entries starting with "GPromptStudio_" or "arquitecto_prompts".
+
+[Code]
+function GetUserDataDir(Param: String): String;
+begin
+  Result := ExpandConstant('{%USERPROFILE}\.arquitecto_prompts');
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  UserDataDir: String;
+  Response: Integer;
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    UserDataDir := GetUserDataDir('');
+    if DirExists(UserDataDir) then
+    begin
+      Response := MsgBox(
+        Format(CustomMessage('AskWipeData'), [UserDataDir]),
+        mbConfirmation,
+        MB_YESNO or MB_DEFBUTTON2);
+      if Response = IDYES then
+      begin
+        DelTree(UserDataDir, True, True, True);
+        MsgBox(CustomMessage('WipeDone') + #13#10#13#10 + CustomMessage('WipeKeyringHint'),
+               mbInformation, MB_OK);
+      end;
+    end;
+  end;
+end;
