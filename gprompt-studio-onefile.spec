@@ -1,16 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec para G-Prompt Studio.
+"""PyInstaller spec para G-Prompt Studio en modo ONEFILE.
 
-Genera un .exe Windows con todos los recursos y dependencias.
+Genera UN solo .exe Windows autocontenido que se autoextrae a
+%TEMP% al arrancar. Inicio más lento (~3-5 seg) pero un solo
+archivo para distribuir.
+
 Uso:
-    pyinstaller gprompt-studio.spec
-    # → dist/GPromptStudio/  (onedir, recomendado)
-    # o
-    pyinstaller --onefile gprompt-studio.spec
-    # → dist/GPromptStudio.exe  (un solo archivo, inicio más lento)
+    pyinstaller gprompt-studio-onefile.spec
+    # → dist/GPromptStudio.exe  (~88 MB)
 
-Después puedes lanzar Inno Setup con installer.iss para empaquetar el
-instalador completo.
+Para el modo onedir (más rápido al arrancar, recomendado para
+instalación con Inno Setup), usa gprompt-studio.spec.
 """
 import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
@@ -18,22 +18,18 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 block_cipher = None
 
 # ─── Recursos a incluir ────────────────────────────────────────────
+# IMPORTANTE: misma lista que el spec onedir — mantener en sync.
 datas = [
-    # Datos JSON del proyecto (specs de modelos, estilos, etc.)
     ('data',          'data'),
-    # CustomTkinter incluye themes y assets internos que no se detectan
     *collect_data_files('customtkinter'),
-    # Pillow tiene plugins por formato
     *collect_data_files('PIL'),
-    # Documentación opcional (útil para que el usuario tenga a mano)
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
     ('ESTRUCTURA.md', '.'),
 ]
 
-# ─── Hidden imports (módulos que PyInstaller no detecta solo) ────
+# ─── Hidden imports (mismos que onedir) ──────────────────────────
 hiddenimports = [
-    # Mixins del proyecto — todos cargados desde modules/__init__.py
     'modules.ui_builders',
     'modules.tools_creative',
     'modules.tools_workflow',
@@ -60,25 +56,17 @@ hiddenimports = [
     'modules.ab_testing',
     'modules.prompts_inyeccion',
     'modules.tooltip',
-    # Keyring backends por plataforma (PyInstaller suele perder éstos)
     'keyring.backends.Windows',
     'keyring.backends.SecretService',
     'keyring.backends.macOS',
     'keyring.backends.fail',
-    # Cryptography (cifrado AES de keys.json)
     'cryptography.hazmat.backends.openssl',
     'cryptography.hazmat.primitives.ciphers',
-    # Pillow extras
     'PIL._tkinter_finder',
-    # Para sesión vídeo (opcional - no falla si no está)
-    # 'cv2',
-    # 'mss',
 ]
 
-# Incluir todos los submódulos de keyring para evitar sorpresas
 hiddenimports += collect_submodules('keyring')
 
-# ─── Análisis ──────────────────────────────────────────────────────
 a = Analysis(
     ['main.py'],
     pathex=[os.path.abspath('.')],
@@ -89,7 +77,6 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # Excluir cosas pesadas que no se usan
         'matplotlib',
         'scipy',
         'pandas',
@@ -98,9 +85,6 @@ a = Analysis(
         'pytest',
         'pytest_anyio',
         # ⚠️ SEGURIDAD: nunca incluir archivos con secretos.
-        # PyInstaller NO empaqueta .env/keys.json salvo que estén en `datas`,
-        # pero los listamos aquí para dejarlo explícito y blindar contra
-        # accidentes futuros si alguien los añade a datas por error.
         '.env',
         'keys.json',
     ],
@@ -112,34 +96,29 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# ─── Modo ONEDIR (recomendado para iniciar más rápido) ───────────
+# ─── Modo ONEFILE ────────────────────────────────────────────────
+# Diferencia clave vs onedir: incluimos a.binaries + a.zipfiles +
+# a.datas directamente en el EXE, no en un COLLECT separado.
+# Resultado: un solo archivo .exe que se autoextrae al ejecutarse.
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='GPromptStudio',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,           # comprimir con UPX si está disponible (más pequeño)
-    console=False,       # ventana sin consola (GUI app)
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # Si tienes un icono .ico, pónlo aquí:
     # icon='assets/icon.ico',
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='GPromptStudio',
 )

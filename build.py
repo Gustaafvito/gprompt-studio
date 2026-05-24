@@ -106,17 +106,18 @@ def clean():
 
 
 def build_pyinstaller(onefile=False):
-    """Lanza PyInstaller con nuestro spec."""
-    if not SPEC.exists():
-        log(f"✗ No encuentro {SPEC}", "red")
+    """Lanza PyInstaller con el spec correspondiente al modo."""
+    spec_name = "gprompt-studio-onefile.spec" if onefile else "gprompt-studio.spec"
+    spec_path = ROOT / spec_name
+    if not spec_path.exists():
+        log(f"✗ No encuentro {spec_path}", "red")
         sys.exit(1)
 
-    log(f"📦 Ejecutando PyInstaller…", "blue")
+    log(f"📦 Ejecutando PyInstaller ({spec_name})…", "blue")
     t0 = time.time()
-    cmd = ["pyinstaller", "--noconfirm", str(SPEC)]
-    if onefile:
-        # Sobrescribir el modo onedir con --onefile via argv
-        cmd.insert(-1, "--onefile")
+    # NOTA: cuando se pasa un .spec, PyInstaller IGNORA flags como --onefile
+    # (el modo está hardcoded en el .spec). Por eso usamos dos specs distintos.
+    cmd = ["pyinstaller", "--noconfirm", str(spec_path)]
     run(cmd)
     dt = time.time() - t0
     log(f"✓ PyInstaller completado en {dt:.1f}s", "green")
