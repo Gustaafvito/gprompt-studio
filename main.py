@@ -144,7 +144,24 @@ def main():
         # ("invalid command name"). La app arranca rápido y no lo necesita.
         app = ArquitectoApp()
         logger.info("App inicializada correctamente.")
-        app.mainloop()
+        try:
+            app.mainloop()
+        except Exception as e:
+            # Errores de cleanup durante el cierre — esperados, no son fatales.
+            # Pasa cuando customtkinter intenta focus_get() o titlebar_color
+            # sobre una ventana que ya fue destruida (race condition al cerrar,
+            # típica si había dos instancias abiertas).
+            msg = str(e).lower()
+            cleanup_signatures = (
+                "application has been destroyed",
+                "can't invoke \"focus\"",
+                "invalid command name",
+                "bad window path",
+            )
+            if any(sig in msg for sig in cleanup_signatures):
+                logger.info(f"App cerrada (cleanup esperado: {e})")
+            else:
+                raise
 
     except Exception as e:
         logger.critical(f"Error fatal al arrancar: {e}", exc_info=True)
