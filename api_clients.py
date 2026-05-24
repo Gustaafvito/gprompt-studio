@@ -148,7 +148,9 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://openrouter.ai/keys",
         "tipo": "openai_compatible",
         "base_url": "https://openrouter.ai/api/v1",
-        "model_default": "deepseek/deepseek-chat",
+        # Modelo gratis y siempre disponible en OpenRouter. Antes era
+        # "deepseek/deepseek-chat" pero ese ID legacy devuelve 404.
+        "model_default": "meta-llama/llama-3.1-8b-instruct:free",
         "is_paid": True,
     },
     "perplexity": {

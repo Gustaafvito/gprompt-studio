@@ -2024,6 +2024,12 @@ class ArquitectoApp(
             try:
                 for env_var, valor in keys.items():
                     set_key(env_path, env_var, valor)
+                # set_key() escribe en .env pero NO refresca os.environ.
+                # Recargamos el archivo con override=True para que
+                # cargar_api_key() vea los nuevos valores ya en el mismo
+                # arranque, sin obligar a reiniciar la app.
+                from dotenv import load_dotenv as _reload_env
+                _reload_env(env_path, override=True)
             except Exception as e:
                 lbl_estado.configure(text=f"❌ Error guardando: {e}", text_color="#e74c3c")
                 return
