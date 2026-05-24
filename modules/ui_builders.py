@@ -1000,11 +1000,12 @@ class UIBuildersMixin:
 
         # CTkTabview IGNORA el height fijo del tabview cuando hay un tab
         # con expand=True. Por eso limitamos frame_checks a altura fija
-        # (130px ≈ 4-5 filas de checkboxes) y dejamos que el scroll
-        # interno gestione los 257 estilos. Así el tab Estilos NO empuja
-        # el tabview a crecer, dejando espacio al Resultado editable.
+        # (220px ≈ 8-9 filas de checkboxes) y dejamos que el scroll
+        # interno gestione los 257 estilos. Balance entre ver suficientes
+        # estilos de un vistazo y dejar espacio razonable al Resultado
+        # editable cuando este tab está activo.
         self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"],
-                                                    height=130)
+                                                    height=220)
         self.frame_checks.pack(fill="x", padx=5, pady=2)
 
         # Label verde con nombres de estilos seleccionados
