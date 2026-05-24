@@ -987,8 +987,13 @@ class UIBuildersMixin:
         CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
 
         # que en modo light termine pintando blanco-sobre-blanco.
-        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"])
-        self.frame_checks.pack(fill="both", expand=True, padx=5, pady=2)
+        # height=180 + fill="x" (sin expand): el ScrollableFrame ya tiene
+        # su propio scroll interno para los 257 estilos. Si pusiéramos
+        # expand=True forzaría al tabview a crecer ilimitadamente y le
+        # robaría espacio al "Resultado editable" de abajo.
+        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"],
+                                                    height=180)
+        self.frame_checks.pack(fill="x", padx=5, pady=2)
 
         # Label verde con nombres de estilos seleccionados
         # Usar verde más oscuro en light para que se lea sobre fondo claro
