@@ -1825,10 +1825,13 @@ class ArquitectoApp(
 
         Con que el usuario rellene UNA, la app puede arrancar. El resto
         se pueden añadir luego desde el botón 🔑 del header.
-        """
-        import os
 
-        from dotenv import set_key
+        Las keys se guardan vía guardar_api_key() (api_clients.py):
+        keyring del SO si está disponible, sino keys.json cifrado AES-256
+        en ~/.arquitecto_prompts/. NO usamos .env porque el cwd del .exe
+        es impredecible (especialmente en sandboxes / VMs).
+        """
+        from api_clients import guardar_api_key
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
@@ -1869,10 +1872,13 @@ class ArquitectoApp(
                      font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
 
         # ── Definición declarativa de los 5 proveedores del wizard ──
-        # (env_var, label, placeholder, ayuda, formato_check_fn)
+        # (provider_id, label, placeholder, ayuda, formato_check_fn, nombre_legible)
+        # provider_id se usa para guardar vía guardar_api_key() y luego
+        # leer vía cargar_api_key() — mismo mecanismo que el botón 🔑 del
+        # header, no dependiente de .env.
         PROVEEDORES_WIZARD = [
             (
-                "GEMINI_API_KEY",
+                "gemini",
                 "🏆 Gemini API Key (Google — GRATIS, 15 req/min):",
                 "AIza...",
                 "Consíguela en: aistudio.google.com/apikey  ·  formato: AIzaXXXXXX...",
@@ -1880,7 +1886,7 @@ class ArquitectoApp(
                 "Gemini",
             ),
             (
-                "GROQ_API_KEY",
+                "groq",
                 "🏆 Groq API Key (GRATIS, 14.400 req/día):",
                 "gsk_...",
                 "Consíguela en: console.groq.com/keys  ·  Llama 3.3 70B muy rápido",
@@ -1888,7 +1894,7 @@ class ArquitectoApp(
                 "Groq",
             ),
             (
-                "GITHUB_TOKEN",
+                "github_models",
                 "🏆 GitHub Token (GRATIS con cuenta GitHub):",
                 "ghp_... o github_pat_...",
                 "Consíguelo en: github.com/settings/tokens  ·  Acceso a OpenAI/Claude/Llama",
@@ -1896,7 +1902,7 @@ class ArquitectoApp(
                 "GitHub Models",
             ),
             (
-                "DEEPSEEK_API_KEY",
+                "deepseek",
                 "🥈 DeepSeek API Key (~€0.14/1M tokens):",
                 "sk-...",
                 "Consíguela en: platform.deepseek.com  ·  formato: sk-XXXXXX...",
@@ -1904,7 +1910,7 @@ class ArquitectoApp(
                 "DeepSeek",
             ),
             (
-                "OPENROUTER_API_KEY",
+                "openrouter",
                 "💎 OpenRouter API Key (opcional, 100+ modelos):",
                 "sk-or-...",
                 "Consíguela en: openrouter.ai/keys  ·  100+ modelos con una sola key",
@@ -1914,8 +1920,8 @@ class ArquitectoApp(
         ]
 
         # Crear un Entry por proveedor y guardar referencia
-        entries = {}  # env_var -> (entry, check_fn, name)
-        for env_var, label, placeholder, ayuda, check_fn, nombre in PROVEEDORES_WIZARD:
+        entries = {}  # provider_id -> (entry, check_fn, name)
+        for provider_id, label, placeholder, ayuda, check_fn, nombre in PROVEEDORES_WIZARD:
             ctk.CTkLabel(frame, text=label,
                          font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
             entry = ctk.CTkEntry(frame, width=520, placeholder_text=placeholder, show="*")
@@ -1923,21 +1929,21 @@ class ArquitectoApp(
             ctk.CTkLabel(frame, text=ayuda,
                          font=ctk.CTkFont(size=10),
                          text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 4))
-            entries[env_var] = (entry, check_fn, nombre)
+            entries[provider_id] = (entry, check_fn, nombre)
 
         lbl_estado = ctk.CTkLabel(wizard, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
         lbl_estado.pack(pady=4)
 
         def _recoger_keys() -> dict[str, str]:
-            """Devuelve {env_var: valor} solo con las keys no vacías."""
-            return {ev: e.get().strip() for ev, (e, _, _) in entries.items() if e.get().strip()}
+            """Devuelve {provider_id: valor} solo con las keys no vacías."""
+            return {pid: e.get().strip() for pid, (e, _, _) in entries.items() if e.get().strip()}
 
         def _validar_formato(keys: dict[str, str]) -> tuple[bool, str]:
             """Valida que al menos haya una key y que las introducidas tengan formato razonable."""
             if not keys:
                 return False, "⚠️ Introduce al menos una API key."
-            for env_var, valor in keys.items():
-                _, check_fn, nombre = entries[env_var]
+            for pid, valor in keys.items():
+                _, check_fn, nombre = entries[pid]
                 if not check_fn(valor):
                     return False, f"❌ La key de {nombre} parece incorrecta. Revisa el formato."
             return True, ""
@@ -1956,55 +1962,55 @@ class ArquitectoApp(
                 return
 
             # Toma la primera key del orden declarado
-            primera_env = next((ev for ev, *_ in PROVEEDORES_WIZARD if ev in keys), None)
-            if not primera_env:
+            primer_pid = next((pid for pid, *_ in PROVEEDORES_WIZARD if pid in keys), None)
+            if not primer_pid:
                 return
-            primera_valor = keys[primera_env]
-            _, _, primera_nombre = entries[primera_env]
+            primer_valor = keys[primer_pid]
+            _, _, primer_nombre = entries[primer_pid]
 
-            lbl_estado.configure(text=f"⏳ Probando conexión a {primera_nombre}...", text_color="#3498db")
+            lbl_estado.configure(text=f"⏳ Probando conexión a {primer_nombre}...", text_color="#3498db")
             wizard.update_idletasks()
 
             def _worker():
                 try:
-                    if primera_env == "GEMINI_API_KEY":
+                    if primer_pid == "gemini":
                         from google import genai as _genai
-                        cli = _genai.Client(api_key=primera_valor)
+                        cli = _genai.Client(api_key=primer_valor)
                         cli.models.generate_content(model="gemini-2.0-flash-exp",
                                                     contents="Responde solo 'ok'")
-                    elif primera_env == "DEEPSEEK_API_KEY":
+                    elif primer_pid == "deepseek":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primera_valor, base_url="https://api.deepseek.com")
+                        cli = OpenAI(api_key=primer_valor, base_url="https://api.deepseek.com")
                         cli.chat.completions.create(model="deepseek-chat",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
-                    elif primera_env == "GROQ_API_KEY":
+                    elif primer_pid == "groq":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primera_valor, base_url="https://api.groq.com/openai/v1")
+                        cli = OpenAI(api_key=primer_valor, base_url="https://api.groq.com/openai/v1")
                         cli.chat.completions.create(model="llama-3.3-70b-versatile",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
-                    elif primera_env == "GITHUB_TOKEN":
+                    elif primer_pid == "github_models":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primera_valor,
+                        cli = OpenAI(api_key=primer_valor,
                                      base_url="https://models.inference.ai.azure.com")
                         cli.chat.completions.create(model="gpt-4o-mini",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
-                    elif primera_env == "OPENROUTER_API_KEY":
+                    elif primer_pid == "openrouter":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primera_valor, base_url="https://openrouter.ai/api/v1")
+                        cli = OpenAI(api_key=primer_valor, base_url="https://openrouter.ai/api/v1")
                         cli.chat.completions.create(model="meta-llama/llama-3.1-8b-instruct:free",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
 
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"✅ Conexión OK con {primera_nombre} — la key funciona.",
+                        text=f"✅ Conexión OK con {primer_nombre} — la key funciona.",
                         text_color="#2ecc71"))
                 except Exception as e:
                     err = str(e)[:100]
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"❌ Falló {primera_nombre}: {err}",
+                        text=f"❌ Falló {primer_nombre}: {err}",
                         text_color="#e74c3c"))
 
             threading.Thread(target=_worker, daemon=True).start()
@@ -2016,22 +2022,22 @@ class ArquitectoApp(
                 lbl_estado.configure(text=msg, text_color="#e74c3c")
                 return
 
-            env_path = ".env"
-            if not os.path.exists(env_path):
-                with open(env_path, "w") as f:
-                    f.write("")
+            # Guarda en keyring del SO (si está) o en keys.json cifrado
+            # AES-256 en ~/.arquitecto_prompts/. Ubicación FIJA, no
+            # depende del cwd del proceso (importante para .exe en
+            # sandbox / VM donde el cwd es impredecible).
+            guardadas = []
+            for pid, valor in keys.items():
+                _, _, nombre = entries[pid]
+                try:
+                    if guardar_api_key(pid, valor):
+                        guardadas.append(nombre)
+                except Exception as e:
+                    lbl_estado.configure(text=f"❌ Error guardando {nombre}: {e}", text_color="#e74c3c")
+                    return
 
-            try:
-                for env_var, valor in keys.items():
-                    set_key(env_path, env_var, valor)
-                # set_key() escribe en .env pero NO refresca os.environ.
-                # Recargamos el archivo con override=True para que
-                # cargar_api_key() vea los nuevos valores ya en el mismo
-                # arranque, sin obligar a reiniciar la app.
-                from dotenv import load_dotenv as _reload_env
-                _reload_env(env_path, override=True)
-            except Exception as e:
-                lbl_estado.configure(text=f"❌ Error guardando: {e}", text_color="#e74c3c")
+            if not guardadas:
+                lbl_estado.configure(text="❌ No se pudo guardar ninguna key.", text_color="#e74c3c")
                 return
 
             try:
