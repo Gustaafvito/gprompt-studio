@@ -1492,8 +1492,13 @@ class UIBuildersMixin:
         # cuando se carga la app. expand=True le da TODO el sobrante vertical
         # de la ventana, pero el mínimo evita que se quede minúsculo si la
         # zona superior (tabview, descripción del modelo) crece.
+        # border + corner_radius para que tenga el mismo marco que txt_idea
+        # (especialmente visible en modo light).
+        border_col = c["combo_border"] if "combo_border" in c else "#9ca3af"
         self.txt_salida = ctk.CTkTextbox(frame, font=ctk.CTkFont(family="Consolas", size=12),
-                                          wrap="word", height=240)
+                                          wrap="word", height=240,
+                                          border_width=2, border_color=border_col,
+                                          corner_radius=8)
         self.txt_salida.pack(fill="both", expand=True)
         # F3 — Undo/Redo nativo de Tk en el editor de salida.
         # CTkTextbox envuelve un tk.Text interno (_textbox) que sí soporta
