@@ -553,12 +553,3 @@ class SesionVideoMixin:
             "Otras acciones": "Realizamos varias acciones sueltas.",
         }
         return narrativas.get(titulo, "")
-
-    AB_DIMENSIONES = {
-        "iluminación": ["soft natural light", "harsh dramatic lighting", "neon glow", "golden hour sunset"],
-        "mood": ["serene and peaceful", "tense and ominous", "joyful and energetic", "melancholic and quiet"],
-        "ángulo": ["close-up portrait", "wide establishing shot", "low-angle hero shot", "overhead bird's-eye"],
-        "estilo artístico": ["photorealistic", "oil painting style", "cyberpunk aesthetic", "watercolor illustration"],
-        "paleta de color": ["warm orange and red tones", "cool blue and teal palette", "monochrome black and white", "pastel pink and lavender"],
-        "detalle": ["minimalist clean composition", "highly detailed intricate", "abstract impressionist", "hyperrealistic ultra-detail"],
-    }

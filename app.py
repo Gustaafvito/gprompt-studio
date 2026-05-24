@@ -84,6 +84,7 @@ from config import (
     get_theme_colors,
 )
 from modules import (
+    AbTestingMixin,
     AdnVisualMixin,
     BackupExportMixin,
     CoreMixin,
@@ -152,6 +153,7 @@ class ArquitectoApp(
     ModoClienteMixin,
     JsonPromptMixin,
     PromptsInyeccionMixin,
+    AbTestingMixin,
 ):
 
     def __init__(self):

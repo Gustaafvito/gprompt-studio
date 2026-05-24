@@ -4,6 +4,7 @@ Cada módulo define una mixin class que GPromptApp hereda.
 También incluye servicios y utilidades independientes.
 """
 
+from .ab_testing import AbTestingMixin
 from .adn_visual import AdnVisualMixin
 from .backup_export import BackupExportMixin
 from .comfyui_exporter import ComfyUIWorkflowExporter
@@ -41,6 +42,7 @@ __all__ = [
     "ModoClienteMixin",
     "JsonPromptMixin",
     "PromptsInyeccionMixin",
+    "AbTestingMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",
