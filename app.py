@@ -1972,6 +1972,10 @@ class ArquitectoApp(
             wizard.update_idletasks()
 
             def _worker():
+                # Timeout corto (15s) en todas las llamadas — si la sandbox/VM
+                # o la red están lentas, el usuario no quiere esperar 10 min
+                # (default del SDK de OpenAI).
+                TEST_TIMEOUT = 15.0
                 try:
                     if primer_pid == "gemini":
                         from google import genai as _genai
@@ -1980,26 +1984,33 @@ class ArquitectoApp(
                                                     contents="Responde solo 'ok'")
                     elif primer_pid == "deepseek":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primer_valor, base_url="https://api.deepseek.com")
+                        cli = OpenAI(api_key=primer_valor,
+                                     base_url="https://api.deepseek.com",
+                                     timeout=TEST_TIMEOUT)
                         cli.chat.completions.create(model="deepseek-chat",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "groq":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primer_valor, base_url="https://api.groq.com/openai/v1")
+                        cli = OpenAI(api_key=primer_valor,
+                                     base_url="https://api.groq.com/openai/v1",
+                                     timeout=TEST_TIMEOUT)
                         cli.chat.completions.create(model="llama-3.3-70b-versatile",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "github_models":
                         from openai import OpenAI
                         cli = OpenAI(api_key=primer_valor,
-                                     base_url="https://models.inference.ai.azure.com")
+                                     base_url="https://models.inference.ai.azure.com",
+                                     timeout=TEST_TIMEOUT)
                         cli.chat.completions.create(model="gpt-4o-mini",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "openrouter":
                         from openai import OpenAI
-                        cli = OpenAI(api_key=primer_valor, base_url="https://openrouter.ai/api/v1")
+                        cli = OpenAI(api_key=primer_valor,
+                                     base_url="https://openrouter.ai/api/v1",
+                                     timeout=TEST_TIMEOUT)
                         cli.chat.completions.create(model="meta-llama/llama-3.1-8b-instruct:free",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
