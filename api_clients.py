@@ -670,9 +670,26 @@ class APIClients:
         self.error = None
         active = self.get_active_provider()
         if not active or not active.disponible():
-            info = LLM_PROVIDERS.get(self.provider_activo_id, {})
-            self.error = (f"No hay API key configurada para {info.get('name', self.provider_activo_id)}. "
-                          f"Abre Ajustes para configurarla.")
+            # El provider activo (de preferencias o default) no tiene key.
+            # Si HAY otro provider configurado, auto-cambiar a él en lugar
+            # de bloquear la app. Solo fallar si NADIE tiene key.
+            fallback_id = next(
+                (pid for pid, prov in self.providers.items()
+                 if prov is not None and prov.disponible()),
+                None,
+            )
+            if fallback_id:
+                old_id = self.provider_activo_id
+                self.provider_activo_id = fallback_id
+                logger.info(
+                    f"Auto-switch: '{old_id}' sin key → usando '{fallback_id}' "
+                    "(tiene key configurada)"
+                )
+            else:
+                self.error = (
+                    "No hay ninguna API key configurada. "
+                    "Abre Ajustes para añadir al menos una."
+                )
 
     def _cliente_raw(self, provider_id: str):
         info = LLM_PROVIDERS.get(provider_id, {})

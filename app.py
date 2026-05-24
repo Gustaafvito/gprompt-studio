@@ -189,8 +189,9 @@ class ArquitectoApp(
         self.clients = APIClients()
         if self.clients.error:
             self._cerrar_splash()
-            self.deiconify()
-            # En vez de cerrar, mostrar wizard de configuración
+            # Mantenemos el root oculto: el wizard es Toplevel y se ve
+            # solo. Mostrar el root vacío aquí causa una ventana "CTk"
+            # fantasma en la captura.
             if not self._setup_wizard():
                 self.destroy()
                 return
@@ -1818,7 +1819,13 @@ class ArquitectoApp(
     def _setup_wizard(self):
         """Wizard de primera vez cuando faltan API keys. Devuelve True si se configuraron.
 
-        v1.0: validación de formato, botón de test de conexión real."""
+        Pide cualquiera de los 5 proveedores soportados de entrada:
+          • Gemini, Groq, GitHub Models — GRATIS
+          • DeepSeek (~€0.14/1M), OpenRouter (100+ modelos)
+
+        Con que el usuario rellene UNA, la app puede arrancar. El resto
+        se pueden añadir luego desde el botón 🔑 del header.
+        """
         import os
 
         from dotenv import set_key
@@ -1827,100 +1834,184 @@ class ArquitectoApp(
 
         wizard = GPromptWindow(self)
         wizard.title("🧠 G-Prompt Studio — Configuración Inicial")
-        wizard.geometry("580x560")
+        wizard.geometry("620x720")
         wizard.transient(self)
         wizard.grab_set()
 
         resultado = [False]
 
-        ctk.CTkLabel(wizard, text="🧠 ¡Bienvenido a G-Prompt Studio!",
-                     font=ctk.CTkFont(size=20, weight="bold")).pack(pady=(20, 5))
-        ctk.CTkLabel(wizard, text="Para empezar necesitas al menos una API key.\nPuedes empezar gratis con Gemini (Google) o DeepSeek (~€0.14/1M tokens).",
-                     font=ctk.CTkFont(size=11), text_color=c["muted_text"], justify="center").pack(pady=(0, 12))
+        ctk.CTkLabel(
+            wizard,
+            text="🧠 ¡Bienvenido a G-Prompt Studio!",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        ).pack(pady=(18, 4))
+        ctk.CTkLabel(
+            wizard,
+            text="Necesitas SOLO 1 API key para empezar.\n"
+                 "Las marcadas 🏆 son completamente GRATIS.",
+            font=ctk.CTkFont(size=11),
+            text_color=c["muted_text"],
+            justify="center",
+        ).pack(pady=(0, 10))
 
-        frame = ctk.CTkFrame(wizard)
-        frame.pack(fill="x", padx=30, pady=5)
+        # Scroll: 5 proveedores + nombre = mucho contenido vertical
+        scroll = ctk.CTkScrollableFrame(wizard, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=20, pady=4)
+
+        frame = ctk.CTkFrame(scroll)
+        frame.pack(fill="x", padx=4, pady=4)
 
         ctk.CTkLabel(frame, text="👤 ¿Cómo quieres que te llamemos?",
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
-        entry_nombre = ctk.CTkEntry(frame, width=480, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
+        entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
         entry_nombre.pack(padx=10)
         ctk.CTkLabel(frame, text="Aparecerá en el saludo del dashboard. Puedes dejarlo vacío.",
                      font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
 
-        ctk.CTkLabel(frame, text="🔑 DeepSeek API Key:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
-        entry_ds = ctk.CTkEntry(frame, width=480, placeholder_text="sk-...", show="*")
-        entry_ds.pack(padx=10)
-        ctk.CTkLabel(frame, text="Consíguela en: platform.deepseek.com  ·  formato: sk-XXXXXX...", font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
+        # ── Definición declarativa de los 5 proveedores del wizard ──
+        # (env_var, label, placeholder, ayuda, formato_check_fn)
+        PROVEEDORES_WIZARD = [
+            (
+                "GEMINI_API_KEY",
+                "🏆 Gemini API Key (Google — GRATIS, 15 req/min):",
+                "AIza...",
+                "Consíguela en: aistudio.google.com/apikey  ·  formato: AIzaXXXXXX...",
+                lambda k: k.startswith("AIza") and len(k) > 20,
+                "Gemini",
+            ),
+            (
+                "GROQ_API_KEY",
+                "🏆 Groq API Key (GRATIS, 14.400 req/día):",
+                "gsk_...",
+                "Consíguela en: console.groq.com/keys  ·  Llama 3.3 70B muy rápido",
+                lambda k: len(k) > 20,
+                "Groq",
+            ),
+            (
+                "GITHUB_TOKEN",
+                "🏆 GitHub Token (GRATIS con cuenta GitHub):",
+                "ghp_... o github_pat_...",
+                "Consíguelo en: github.com/settings/tokens  ·  Acceso a OpenAI/Claude/Llama",
+                lambda k: len(k) > 20,
+                "GitHub Models",
+            ),
+            (
+                "DEEPSEEK_API_KEY",
+                "🥈 DeepSeek API Key (~€0.14/1M tokens):",
+                "sk-...",
+                "Consíguela en: platform.deepseek.com  ·  formato: sk-XXXXXX...",
+                lambda k: k.startswith("sk-") and len(k) > 12,
+                "DeepSeek",
+            ),
+            (
+                "OPENROUTER_API_KEY",
+                "💎 OpenRouter API Key (opcional, 100+ modelos):",
+                "sk-or-...",
+                "Consíguela en: openrouter.ai/keys  ·  100+ modelos con una sola key",
+                lambda k: k.startswith("sk-or-") and len(k) > 12,
+                "OpenRouter",
+            ),
+        ]
 
-        ctk.CTkLabel(frame, text="🔑 Gemini API Key:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
-        entry_gm = ctk.CTkEntry(frame, width=480, placeholder_text="AIza...", show="*")
-        entry_gm.pack(padx=10)
-        ctk.CTkLabel(frame, text="Consíguela en: aistudio.google.com/apikey  ·  formato: AIzaXXXXXX...", font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
-
-        ctk.CTkLabel(frame, text="🔑 OpenRouter API Key (opcional):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
-        entry_or = ctk.CTkEntry(frame, width=480, placeholder_text="sk-or-...", show="*")
-        entry_or.pack(padx=10)
-        ctk.CTkLabel(frame, text="Consíguela en: openrouter.ai/keys  ·  100+ modelos con una sola key", font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 10))
+        # Crear un Entry por proveedor y guardar referencia
+        entries = {}  # env_var -> (entry, check_fn, name)
+        for env_var, label, placeholder, ayuda, check_fn, nombre in PROVEEDORES_WIZARD:
+            ctk.CTkLabel(frame, text=label,
+                         font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
+            entry = ctk.CTkEntry(frame, width=520, placeholder_text=placeholder, show="*")
+            entry.pack(padx=10)
+            ctk.CTkLabel(frame, text=ayuda,
+                         font=ctk.CTkFont(size=10),
+                         text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 4))
+            entries[env_var] = (entry, check_fn, nombre)
 
         lbl_estado = ctk.CTkLabel(wizard, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
         lbl_estado.pack(pady=4)
 
-        def _validar_formato(ds: str, gm: str, or_k: str) -> tuple[bool, str]:
-            """Validación básica de formato de keys (no contacto a la API)."""
-            if not ds and not gm and not or_k:
+        def _recoger_keys() -> dict[str, str]:
+            """Devuelve {env_var: valor} solo con las keys no vacías."""
+            return {ev: e.get().strip() for ev, (e, _, _) in entries.items() if e.get().strip()}
+
+        def _validar_formato(keys: dict[str, str]) -> tuple[bool, str]:
+            """Valida que al menos haya una key y que las introducidas tengan formato razonable."""
+            if not keys:
                 return False, "⚠️ Introduce al menos una API key."
-            if ds and not (ds.startswith("sk-") and len(ds) > 12):
-                return False, "❌ La key de DeepSeek parece incorrecta (debe empezar por 'sk-')."
-            if gm and not (gm.startswith("AIza") and len(gm) > 20):
-                return False, "❌ La key de Gemini parece incorrecta (debe empezar por 'AIza')."
-            if or_k and not (or_k.startswith("sk-or-") and len(or_k) > 12):
-                return False, "❌ La key de OpenRouter parece incorrecta (debe empezar por 'sk-or-')."
+            for env_var, valor in keys.items():
+                _, check_fn, nombre = entries[env_var]
+                if not check_fn(valor):
+                    return False, f"❌ La key de {nombre} parece incorrecta. Revisa el formato."
             return True, ""
 
         def _test_keys():
-            """Hace una mini-llamada a la API con la key de DeepSeek para verificar."""
-            ds = entry_ds.get().strip()
-            if not ds:
-                lbl_estado.configure(text="⚠️ Introduce al menos la key de DeepSeek para testear.", text_color="#e67e22")
-                return
-            ok, msg = _validar_formato(ds, entry_gm.get().strip(), entry_or.get().strip())
+            """Test rápido contra la PRIMERA key que el usuario haya rellenado.
+
+            Por orden: Gemini → Groq → GitHub → DeepSeek → OpenRouter. Si la
+            primera key funciona, el usuario sabe que tiene al menos un
+            proveedor operativo.
+            """
+            keys = _recoger_keys()
+            ok, msg = _validar_formato(keys)
             if not ok:
                 lbl_estado.configure(text=msg, text_color="#e74c3c")
                 return
 
-            lbl_estado.configure(text="⏳ Probando conexión a DeepSeek...", text_color="#3498db")
+            # Toma la primera key del orden declarado
+            primera_env = next((ev for ev, *_ in PROVEEDORES_WIZARD if ev in keys), None)
+            if not primera_env:
+                return
+            primera_valor = keys[primera_env]
+            _, _, primera_nombre = entries[primera_env]
+
+            lbl_estado.configure(text=f"⏳ Probando conexión a {primera_nombre}...", text_color="#3498db")
             wizard.update_idletasks()
 
             def _worker():
                 try:
-                    from openai import OpenAI
-                    cli = OpenAI(api_key=ds, base_url="https://api.deepseek.com")
-                    res = cli.chat.completions.create(
-                        model="deepseek-chat",
-                        messages=[{"role": "user", "content": "Responde solo 'ok'"}],
-                        max_tokens=5,
-                    )
-                    txt = (res.choices[0].message.content or "").strip().lower()
-                    if "ok" in txt or txt:
-                        wizard.after(0, lambda: lbl_estado.configure(
-                            text="✅ Conexión OK — la key funciona.", text_color="#2ecc71"))
-                    else:
-                        wizard.after(0, lambda: lbl_estado.configure(
-                            text="⚠️ Respuesta inesperada — pero la key parece válida.", text_color="#e67e22"))
-                except Exception as e:
-                    err = str(e)[:80]
+                    if primera_env == "GEMINI_API_KEY":
+                        from google import genai as _genai
+                        cli = _genai.Client(api_key=primera_valor)
+                        cli.models.generate_content(model="gemini-2.0-flash-exp",
+                                                    contents="Responde solo 'ok'")
+                    elif primera_env == "DEEPSEEK_API_KEY":
+                        from openai import OpenAI
+                        cli = OpenAI(api_key=primera_valor, base_url="https://api.deepseek.com")
+                        cli.chat.completions.create(model="deepseek-chat",
+                                                    messages=[{"role": "user", "content": "ok"}],
+                                                    max_tokens=5)
+                    elif primera_env == "GROQ_API_KEY":
+                        from openai import OpenAI
+                        cli = OpenAI(api_key=primera_valor, base_url="https://api.groq.com/openai/v1")
+                        cli.chat.completions.create(model="llama-3.3-70b-versatile",
+                                                    messages=[{"role": "user", "content": "ok"}],
+                                                    max_tokens=5)
+                    elif primera_env == "GITHUB_TOKEN":
+                        from openai import OpenAI
+                        cli = OpenAI(api_key=primera_valor,
+                                     base_url="https://models.inference.ai.azure.com")
+                        cli.chat.completions.create(model="gpt-4o-mini",
+                                                    messages=[{"role": "user", "content": "ok"}],
+                                                    max_tokens=5)
+                    elif primera_env == "OPENROUTER_API_KEY":
+                        from openai import OpenAI
+                        cli = OpenAI(api_key=primera_valor, base_url="https://openrouter.ai/api/v1")
+                        cli.chat.completions.create(model="meta-llama/llama-3.1-8b-instruct:free",
+                                                    messages=[{"role": "user", "content": "ok"}],
+                                                    max_tokens=5)
+
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"❌ Falló: {err}", text_color="#e74c3c"))
+                        text=f"✅ Conexión OK con {primera_nombre} — la key funciona.",
+                        text_color="#2ecc71"))
+                except Exception as e:
+                    err = str(e)[:100]
+                    wizard.after(0, lambda: lbl_estado.configure(
+                        text=f"❌ Falló {primera_nombre}: {err}",
+                        text_color="#e74c3c"))
 
             threading.Thread(target=_worker, daemon=True).start()
 
         def guardar():
-            ds = entry_ds.get().strip()
-            gm = entry_gm.get().strip()
-            or_key = entry_or.get().strip()
-
-            ok, msg = _validar_formato(ds, gm, or_key)
+            keys = _recoger_keys()
+            ok, msg = _validar_formato(keys)
             if not ok:
                 lbl_estado.configure(text=msg, text_color="#e74c3c")
                 return
@@ -1931,12 +2022,8 @@ class ArquitectoApp(
                     f.write("")
 
             try:
-                if ds:
-                    set_key(env_path, "DEEPSEEK_API_KEY", ds)
-                if gm:
-                    set_key(env_path, "GEMINI_API_KEY", gm)
-                if or_key:
-                    set_key(env_path, "OPENROUTER_API_KEY", or_key)
+                for env_var, valor in keys.items():
+                    set_key(env_path, env_var, valor)
             except Exception as e:
                 lbl_estado.configure(text=f"❌ Error guardando: {e}", text_color="#e74c3c")
                 return
