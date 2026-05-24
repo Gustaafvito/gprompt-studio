@@ -27,68 +27,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger("gprompt.main")
 
-# CTkToolTip 0.9 hace `StringVar().set(None)` en DOS sitios:
-#   - __init__ línea 78  (cuando message=None al crear)
-#   - configure() línea 253  (cuando se llama configure() sin message)
-# Tkinter convierte None en la cadena literal "None" — apareciendo
-# como tooltip al pasar el ratón. Parcheamos los dos métodos en
-# main.py para que se aplique ANTES que cualquier import de la app.
-try:
-    from CTkToolTip.ctk_tooltip import CTkToolTip as _CTkToolTip_class
+from modules.tooltip import install_ctk_tooltip_patches
 
-    # Parche 1: __init__
-    # - Si message=None → "" (evita "None" literal)
-    # - Si no se pasan colores → forzar par adaptativo al tema actual,
-    #   con buen contraste tanto en dark como en light.
-    _CTkToolTip_orig_init = _CTkToolTip_class.__init__
-    def _CTkToolTip_safe_init(self, widget=None, message=None, **kwargs):
-        if message is None:
-            message = ""
-
-        # Detectar tema actual al crear el tooltip (mismo enfoque que los
-        # tooltips inferiores POS/NEG/Comfy que ya se ven bien).
-        try:
-            _is_lt = ctk.get_appearance_mode().lower() == "light"
-        except Exception:
-            _is_lt = False
-
-        # Si no se especifica fg_color del label, usar par claro/oscuro
-        # legible. fg_color en message_kwargs colorea el FONDO del label.
-        if "fg_color" not in kwargs:
-            kwargs["fg_color"] = "#f0f0f0" if _is_lt else "#1a1a2e"
-        if "text_color" not in kwargs:
-            kwargs["text_color"] = "#111827" if _is_lt else "#e5e7eb"
-        if "bg_color" not in kwargs or kwargs.get("bg_color") is None:
-            kwargs["bg_color"] = "#f0f0f0" if _is_lt else "#1a1a2e"
-        if "padding" not in kwargs:
-            kwargs["padding"] = (10, 4)
-        if "corner_radius" not in kwargs:
-            kwargs["corner_radius"] = 6
-        if "border_width" not in kwargs:
-            kwargs["border_width"] = 1
-        if "border_color" not in kwargs or kwargs.get("border_color") is None:
-            kwargs["border_color"] = "#cbd5e1" if _is_lt else "#3b82f6"
-
-        _CTkToolTip_orig_init(self, widget=widget, message=message, **kwargs)
-    _CTkToolTip_class.__init__ = _CTkToolTip_safe_init
-
-    # Parche 2: configure() — sino al reconfigurar un tooltip se rompe
-    _CTkToolTip_orig_configure = _CTkToolTip_class.configure
-    def _CTkToolTip_safe_configure(self, message=None, **kwargs):
-        if message is None:
-            try: message = self.messageVar.get()
-            except Exception: message = ""
-            # Evitar el bucle "None" si ya estaba mal
-            if message == "None":
-                message = ""
-        _CTkToolTip_orig_configure(self, message=message, **kwargs)
-    _CTkToolTip_class.configure = _CTkToolTip_safe_configure
-
-    logger.info("CTkToolTip patched OK (None → \"\", colores adaptativos al tema)")
-except ImportError:
-    logger.info("CTkToolTip no instalado, sin parche")
-except Exception as _e_patch:
-    logger.warning(f"CTkToolTip patch falló: {_e_patch}")
+install_ctk_tooltip_patches(logger)
 
 # ─── Validación y recuperación de preferencias ─────────────
 
