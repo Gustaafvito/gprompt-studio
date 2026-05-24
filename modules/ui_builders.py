@@ -998,14 +998,13 @@ class UIBuildersMixin:
         btn_limpiar_est.pack(side="right", padx=(0, 5))
         CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
 
-        # CTkTabview IGNORA el height fijo del tabview cuando hay un tab
-        # con expand=True. Por eso limitamos frame_checks a altura fija
-        # (220px ≈ 8-9 filas de checkboxes) y dejamos que el scroll
-        # interno gestione los 257 estilos. Balance entre ver suficientes
-        # estilos de un vistazo y dejar espacio razonable al Resultado
-        # editable cuando este tab está activo.
+        # CTkTabview reserva la altura del tab MÁS grande. height=160
+        # → ~5 filas × 3 columnas = 15 estilos visibles. Suficiente
+        # para un vistazo rápido, el scroll del CTkScrollableFrame
+        # gestiona los 257 estilos restantes. Manteniendo el tab
+        # compacto le dejamos mucho más espacio al "Resultado editable".
         self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"],
-                                                    height=220)
+                                                    height=160)
         self.frame_checks.pack(fill="x", padx=5, pady=2)
 
         # Label verde con nombres de estilos seleccionados
