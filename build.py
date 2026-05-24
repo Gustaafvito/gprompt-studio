@@ -22,6 +22,7 @@ Para el instalador necesitas Inno Setup 6 instalado:
 """
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -51,6 +52,49 @@ INNO_PATHS = [
 ]
 
 
+# Regex que captura "C:\Users\<algo>\..." o "/home/<algo>/..." en cualquier
+# parte de un string — usado para limpiar el output de subprocesos.
+_ABS_PATH_RE = re.compile(r"([A-Z]:\\Users\\[^\\\s'\"]+|/home/[^/\s'\"]+|/Users/[^/\s'\"]+)\\?")
+
+
+def _print_scrubbed(text):
+    """Imprime `text` con paths personales reemplazados por '~'.
+
+    Convierte 'C:\\Users\\gusta\\AppData\\...\\foo.py' en '~\\AppData\\...\\foo.py'.
+    Si el path está dentro del proyecto, lo deja relativo al proyecto.
+    """
+    if not text:
+        return
+    cleaned = text
+    # 1. Reemplazar el ROOT del proyecto por nada (path queda relativo)
+    root_str = str(ROOT)
+    cleaned = cleaned.replace(root_str + "\\", "")
+    cleaned = cleaned.replace(root_str + "/", "")
+    cleaned = cleaned.replace(root_str, ".")
+    # 2. Reemplazar C:\Users\<nombre> por ~ (anonimiza al usuario)
+    cleaned = _ABS_PATH_RE.sub("~", cleaned)
+    print(cleaned, end="" if cleaned.endswith("\n") else "\n")
+
+
+def rel(path):
+    """Devuelve `path` relativo a ROOT si está dentro del proyecto, o el
+    último componente del path si está fuera (típico: ejecutables externos
+    como pyinstaller o ISCC.exe instalados en %APPDATA% o Program Files).
+
+    Mantiene la consola limpia sin paths absolutos tipo
+    "C:\\Users\\<nombre>\\...\\proyecto\\..." que delatan datos personales.
+    """
+    try:
+        p = Path(path)
+        # Si es un path al ejecutable de un comando externo, devolver
+        # solo el nombre (pyinstaller.exe, ISCC.exe, python.exe)
+        if not p.is_absolute() or ROOT in p.parents or p == ROOT:
+            return str(p.relative_to(ROOT)) if p.is_absolute() else str(p)
+        return p.name
+    except (ValueError, TypeError):
+        return str(path)
+
+
 def log(msg, color=""):
     """Imprime mensaje con color ANSI (si terminal lo soporta)."""
     colors = {"green": "\033[92m", "red": "\033[91m", "yellow": "\033[93m",
@@ -61,13 +105,34 @@ def log(msg, color=""):
         print(msg)
 
 
-def run(cmd, check=True, cwd=None):
-    """Ejecuta un comando shell, mostrándolo antes."""
+def _looks_like_path(arg):
+    """True si arg parece un path (no una opción CLI tipo /Q o --foo)."""
+    if not isinstance(arg, str):
+        return False
+    # Opciones CLI: empiezan por - o son /X / /XX cortas tipo /Q de Inno
+    if arg.startswith("-"):
+        return False
+    if arg.startswith("/") and len(arg) <= 4:
+        return False
+    return "\\" in arg or "/" in arg
+
+
+def run(cmd, check=True, cwd=None, env_extra=None):
+    """Ejecuta un comando shell, mostrándolo antes con paths relativos.
+
+    env_extra: dict opcional con variables de entorno extra para el child
+    (típicamente PYTHONWARNINGS=ignore para silenciar warnings de libs).
+    """
     if isinstance(cmd, list):
-        log(f"  $ {' '.join(cmd)}", "blue")
+        display = [rel(arg) if _looks_like_path(arg) else arg for arg in cmd]
+        log(f"  $ {' '.join(display)}", "blue")
     else:
         log(f"  $ {cmd}", "blue")
-    return subprocess.run(cmd, check=check, cwd=cwd or ROOT, shell=isinstance(cmd, str))
+    env = os.environ.copy()
+    if env_extra:
+        env.update(env_extra)
+    return subprocess.run(cmd, check=check, cwd=cwd or ROOT,
+                          shell=isinstance(cmd, str), env=env)
 
 
 def check_dependencies():
@@ -96,11 +161,11 @@ def clean():
     """Borra dist/ y build/ para empezar de cero."""
     for p in (DIST, BUILD):
         if p.exists():
-            log(f"🗑  Borrando {p}", "yellow")
+            log(f"🗑  Borrando {rel(p)}/", "yellow")
             shutil.rmtree(p)
     # Borrar el spec generado por PyInstaller si existe (queremos usar el nuestro)
     for f in ROOT.glob("*.spec"):
-        if f.name != "gprompt-studio.spec":
+        if f.name not in ("gprompt-studio.spec", "gprompt-studio-onefile.spec"):
             log(f"🗑  Borrando {f.name}", "yellow")
             f.unlink()
 
@@ -110,15 +175,29 @@ def build_pyinstaller(onefile=False):
     spec_name = "gprompt-studio-onefile.spec" if onefile else "gprompt-studio.spec"
     spec_path = ROOT / spec_name
     if not spec_path.exists():
-        log(f"✗ No encuentro {spec_path}", "red")
+        log(f"✗ No encuentro {spec_name}", "red")
         sys.exit(1)
 
     log(f"📦 Ejecutando PyInstaller ({spec_name})…", "blue")
     t0 = time.time()
     # NOTA: cuando se pasa un .spec, PyInstaller IGNORA flags como --onefile
     # (el modo está hardcoded en el .spec). Por eso usamos dos specs distintos.
-    cmd = ["pyinstaller", "--noconfirm", str(spec_path)]
-    run(cmd)
+    # --log-level=WARN silencia los INFO de PyInstaller que imprimen paths
+    # absolutos. PYTHONWARNINGS=ignore silencia los DeprecationWarnings de
+    # pydantic/darkdetect (que también muestran paths de site-packages).
+    cmd = ["pyinstaller", "--noconfirm", "--log-level=WARN", spec_name]
+    log(f"  $ pyinstaller --noconfirm --log-level=WARN {spec_name}", "blue")
+    env = os.environ.copy()
+    env["PYTHONWARNINGS"] = "ignore"
+    # Capturamos stdout/stderr para reescribir paths absolutos a relativos
+    # antes de mostrarlos. Los pocos WARNINGs que quedan vienen con rutas
+    # de site-packages que delatan el nombre del usuario.
+    proc = subprocess.run(cmd, cwd=ROOT, env=env, capture_output=True, text=True)
+    _print_scrubbed(proc.stdout)
+    _print_scrubbed(proc.stderr)
+    if proc.returncode != 0:
+        log("✗ PyInstaller falló", "red")
+        sys.exit(proc.returncode)
     dt = time.time() - t0
     log(f"✓ PyInstaller completado en {dt:.1f}s", "green")
 
@@ -129,9 +208,9 @@ def build_pyinstaller(onefile=False):
         out = DIST / "GPromptStudio" / "GPromptStudio.exe"
     if out.exists():
         size_mb = out.stat().st_size / (1024 * 1024)
-        log(f"  → {out}  ({size_mb:.1f} MB)", "green")
+        log(f"  → {rel(out)}  ({size_mb:.1f} MB)", "green")
     else:
-        log(f"✗ No encuentro el ejecutable en {out}", "red")
+        log(f"✗ No encuentro el ejecutable en {rel(out)}", "red")
         sys.exit(1)
     return out
 
@@ -139,7 +218,7 @@ def build_pyinstaller(onefile=False):
 def build_installer():
     """Lanza Inno Setup con installer.iss."""
     if not ISS.exists():
-        log(f"✗ No encuentro {ISS}", "red")
+        log("✗ No encuentro installer.iss", "red")
         log("  El instalador requiere installer.iss en la raíz del proyecto.",
             "yellow")
         return False
@@ -153,8 +232,18 @@ def build_installer():
         return False
 
     log(f"📦 Ejecutando Inno Setup…", "blue")
+    log(f"  $ ISCC.exe /Q installer.iss", "blue")
     t0 = time.time()
-    run([iscc, str(ISS)])
+    # /Q = quiet mode (solo errores). Sin esto Inno Setup imprime cada
+    # archivo comprimido con su path absoluto. También capturamos y
+    # limpiamos por si /Q deja escapar alguna línea.
+    proc = subprocess.run([iscc, "/Q", "installer.iss"], cwd=ROOT,
+                          capture_output=True, text=True)
+    _print_scrubbed(proc.stdout)
+    _print_scrubbed(proc.stderr)
+    if proc.returncode != 0:
+        log("✗ Inno Setup falló", "red")
+        return False
     dt = time.time() - t0
     log(f"✓ Inno Setup completado en {dt:.1f}s", "green")
 
@@ -165,7 +254,7 @@ def build_installer():
         if instaladores:
             inst = instaladores[0]
             size_mb = inst.stat().st_size / (1024 * 1024)
-            log(f"  → {inst}  ({size_mb:.1f} MB)", "green")
+            log(f"  → {rel(inst)}  ({size_mb:.1f} MB)", "green")
             return True
     log("⚠ Inno Setup terminó pero no encuentro el instalador", "yellow")
     return False
@@ -211,7 +300,7 @@ def main():
 
     log("═══════════════════════════════════════════════════════════", "green")
     log(" ✓ Build completado", "green")
-    log(f"   Ejecutable: {exe}", "green")
+    log(f"   Ejecutable: {rel(exe)}", "green")
     log("═══════════════════════════════════════════════════════════", "green")
 
 
