@@ -1,8 +1,6 @@
 """Sesión vídeo — grabar/exportar/tutorial-mode + log de eventos.
 
-Particionado desde tools_workflow.py (~526 líneas).
-
-Contiene los métodos relacionados con la "sesión" del usuario:
+Métodos relacionados con la "sesión" del usuario:
   • _sesion_init / _sesion_log              — inicializar log + registrar
                                               eventos (texto plano).
   • _sesion_video_disponible / _iniciar     — chequeo de dependencias.

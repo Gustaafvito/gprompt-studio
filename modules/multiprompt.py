@@ -1,18 +1,15 @@
 """Multi-prompt narrativo — Moodboard / Story / Board / Walk.
 
-Particionado desde tools_creative.py (~920 líneas) en la sesión 4
-tras completar los Bloques 3+5+6 que dejaron este cluster cohesivo.
-Contiene 4 comandos principales + sus helpers:
+Cuatro comandos para generar variaciones narrativas a partir de una idea:
 
   • _cmd_moodboard          — N prompts mismo mood, distintos sujetos.
-  • _cmd_story_sequence     — N shots cinematográficos (con tipos
-                              configurables por checkboxes — Bloque 6).
-  • _cmd_storyboard_video   — N frames clave para vídeo (+ botón
-                              "🎬 Encadenar como prompt de vídeo" del
-                              Bloque 6 → _encadenar_board_a_video).
-  • _cmd_random_walk        — abre el árbol interactivo de derivaciones
-                              (Bloque 5 → _abrir_walk_arbol con
-                              canvas + panel detalle).
+  • _cmd_story_sequence     — N shots cinematográficos (tipos configurables
+                              por checkboxes).
+  • _cmd_storyboard_video   — N frames clave para vídeo, con botón
+                              "🎬 Encadenar como prompt de vídeo"
+                              (_encadenar_board_a_video).
+  • _cmd_random_walk        — árbol interactivo de derivaciones
+                              (_abrir_walk_arbol con canvas + panel detalle).
 
 Helpers internos:
   • _pedir_story_config / _story_label_de_key — modal de config Story.
@@ -114,7 +111,7 @@ class MultiPromptMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    # Tipos de shot disponibles para Story (Bloque 6).
+    # Tipos de shot disponibles para Story.
     # (key, label, descripción corta)
     STORY_SHOT_TYPES = [
         ("wide",      "Wide",            "Plano general — sujeto entero + entorno"),
@@ -128,7 +125,7 @@ class MultiPromptMixin:
     ]
 
     def _pedir_story_config(self, default_n=3):
-        """Bloque 6 — Modal de configuración de Story.
+        """Modal de configuración de Story.
 
         Permite elegir:
           • N (slider 2-6)
@@ -268,8 +265,8 @@ class MultiPromptMixin:
     def _cmd_story_sequence(self):
         """Genera N shots cinematográficos coherentes. Solo modo imagen.
 
-        v3 (Bloque 6): N configurable + selección explícita de tipos de
-        shot (Wide/Medium/Close/POV/OTS/TopDown/Dutch/Aerial) o "auto"
+        N configurable + selección explícita de tipos de shot
+        (Wide/Medium/Close/POV/OTS/TopDown/Dutch/Aerial) o "auto"
         (LLM elige).
         """
         if self.modo_var.get() != "imagen":
@@ -399,9 +396,9 @@ class MultiPromptMixin:
                 resp = limpiar_marcadores(resp)
                 bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
 
-                # Bloque 6: botón extra para encadenar Board → Vídeo.
-                # Toma los N frames y pide al LLM un prompt de vídeo
-                # cinematográfico que use esos frames como keyframes.
+                # Botón extra para encadenar Board → Vídeo: toma los N
+                # frames y pide al LLM un prompt de vídeo cinematográfico
+                # que use esos frames como keyframes.
                 def _encadenar_video(_variaciones, _vent):
                     self._encadenar_board_a_video(bloques[:n], _vent)
 
@@ -426,7 +423,7 @@ class MultiPromptMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _encadenar_board_a_video(self, frames, vent_comparador):
-        """Bloque 6 — Encadenar storyboard como prompt de vídeo.
+        """Encadenar storyboard como prompt de vídeo.
 
         Toma los N frames del storyboard y pide al LLM un prompt único de
         vídeo cinematográfico que use esos frames como keyframes
@@ -503,7 +500,7 @@ class MultiPromptMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_random_walk(self):
-        """Bloque 5 — Walk árbol visual.
+        """Walk árbol visual.
 
         Abre una ventana con un árbol interactivo: el usuario parte del
         prompt actual (raíz) y puede ramificar en cualquier nodo para
@@ -525,7 +522,7 @@ class MultiPromptMixin:
         self._abrir_walk_arbol(actual)
 
     def _abrir_walk_arbol(self, prompt_raiz):
-        """Bloque 5 — UI del árbol de Walk.
+        """UI del árbol de Walk.
 
         Estructura de datos: lista de nodos, cada uno
             {"id": int, "parent": int|None, "texto": str,

@@ -1,7 +1,5 @@
 """Workers IA — threads de generación, visión, traducción.
 
-Particionado desde core.py (~240 líneas).
-
 Métodos:
   • _worker_ia                 — worker principal: deepseek.generar +
                                  historial + apertura de comparador
@@ -81,8 +79,8 @@ class WorkersIaMixin:
             self.guardar_en_historial(texto)
             # No sobrescribir el resultado con el texto crudo de las
             # variaciones — esas se muestran en un modal con cards.
-            # En refinamiento, abrimos el modal de diff con Aplicar/Cancelar
-            # (Bloque 4) en vez de sobrescribir txt_salida directamente.
+            # En refinamiento, abrimos el modal de diff con
+            # Aplicar/Cancelar en vez de sobrescribir txt_salida directamente.
             if es_refinamiento:
                 self.after(0, lambda: self._mostrar_diff_refinamiento(texto_previo or "", texto))
             elif not es_ideas and not es_variaciones:

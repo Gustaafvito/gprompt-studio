@@ -1,9 +1,7 @@
 """Modo Cliente — brief profesional + 5 propuestas + Compañero Moodboard.
 
-Particionado desde tools_creative.py (~824 líneas) como tercer paso
-del plan de partición. Es el cluster funcionalmente más independiente
-del archivo: trabaja con brief de cliente y propuestas múltiples,
-no se solapa con los demás bloques de profundidad.
+Cluster funcional independiente: trabaja con brief de cliente y
+propuestas múltiples para presentación profesional.
 
 Métodos:
   • _cmd_modo_cliente                  — modal de brief + plantillas +

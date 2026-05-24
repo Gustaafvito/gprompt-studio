@@ -1,11 +1,11 @@
-# 🧠 G-Prompt Studio v1.0.9
+# 🧠 G-Prompt Studio v1.0.0
 
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
-[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen.svg)](https://github.com/gusta/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](https://github.com/gusta/gprompt-studio)
 
 ---
 

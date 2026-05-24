@@ -1,13 +1,12 @@
 """ADN Visual — extracción JSON estructurado de imagen + biblioteca de ADNs.
 
-Particionado desde tools_creative.py (~640 líneas) para reducir el módulo
-más grande de la codebase. Contiene:
+Comandos principales:
 
   • _cmd_adn_visual           — extrae ADN de la imagen cargada y abre
                                 modal con categorías bloqueables +
                                 conversión por plataforma.
   • _cmd_ver_biblioteca_adn   — biblioteca de ADNs guardados en
-                                preferencias (search, cargar, borrar).
+                                preferencias (buscar, cargar, borrar).
 
 Dependencias self (provistas por ArquitectoApp):
   imagen_cargada, vision, txt_idea, store, after, set_estado,

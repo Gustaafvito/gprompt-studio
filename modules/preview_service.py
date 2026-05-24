@@ -1,7 +1,6 @@
-"""
-PreviewService: Servicio para previsualización de prompts via Pollinations.ai.
+"""PreviewService: previsualización de prompts vía Pollinations.ai.
 
-Extraído de app.py para desacoplar la lógica de red de la UI.
+Desacopla la lógica de red de la UI.
 """
 import io
 import logging

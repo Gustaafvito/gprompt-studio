@@ -2098,7 +2098,7 @@ class CoreMixin:
             f"- Responde SOLO con el prompt refinado, sin explicaciones.\n"
         )
 
-        # Bloque 4 — pasamos por el modal de diff igual que cmd_refinar.
+        # Pasamos por el modal de diff igual que cmd_refinar.
         texto_previo = texto
 
         def _worker():
@@ -2265,7 +2265,7 @@ class CoreMixin:
 
         self.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
         self.toggle_botones(False)
-        # Bloque 4: capturamos el texto previo para mostrar diff antes de aplicar
+        # Capturamos el texto previo para mostrar diff antes de aplicar
         threading.Thread(
             target=self._worker_ia,
             args=(peticion,),
@@ -2274,7 +2274,7 @@ class CoreMixin:
         ).start()
 
     def _mostrar_diff_refinamiento(self, texto_previo, texto_nuevo):
-        """Bloque 4 — Modal de diff visual antes de aplicar el refinamiento.
+        """Modal de diff visual antes de aplicar el refinamiento.
 
         Muestra el prompt original vs refinado lado a lado con colores
         verde (añadido) / rojo (quitado). Botones:

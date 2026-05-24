@@ -64,7 +64,7 @@ class DialogsMixin:
 
         entries_keys = {}
 
-        # Map de íconos por origen de la key (sesión 5: mostrar dónde está guardada)
+        # Map de íconos por origen de la key (dónde está guardada)
         ICONO_ORIGEN = {
             "keyring":             "🔐 Windows Credential Manager",
             "keys.json (cifrado)": "🔒 keys.json (AES-256 cifrado)",
@@ -119,7 +119,7 @@ class DialogsMixin:
                          font=ctk.CTkFont(size=10, slant="italic"), text_color="#aaaaaa",
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
 
-            # Indicador de origen (sesión 5): keyring / keys.json cifrado / .env
+            # Indicador de origen: keyring / keys.json cifrado / .env
             lbl_origen = ctk.CTkLabel(
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
@@ -158,7 +158,7 @@ class DialogsMixin:
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn()).pack(side="left", padx=2)
 
-            # Botón borrar individual (sesión 5)
+            # Botón borrar individual
             def _crear_borrar_btn(p=pid, e=ent, info_l=info):
                 def _borrar():
                     from tkinter import messagebox

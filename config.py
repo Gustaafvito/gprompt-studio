@@ -23,8 +23,8 @@ def _load_json_data(filename: str):
         return _json.load(f)
 
 # ── Versión ───────────────────────────────────────────────────────
-VERSION = "1.0.9"
-PUBLIC_VERSION = "1.0"
+VERSION = "1.0.0"
+PUBLIC_VERSION = "1.0.0"
 APP_TITLE = f"🧠 G-Prompt Studio v{PUBLIC_VERSION}"
 
 # ── Persistencia ──────────────────────────────────────────────────

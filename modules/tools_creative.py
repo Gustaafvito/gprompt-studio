@@ -813,9 +813,9 @@ class ToolsCreativeMixin:
                             self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
 
                     def _aplicar_corregido():
-                        # Mejora sesión 4 (auditoría): pasar por el diff modal
-                        # del Bloque 4 en lugar de sobreescribir directo. El
-                        # usuario decide aplicar/cancelar tras ver los cambios.
+                        # Pasa por el diff modal en lugar de sobreescribir
+                        # directo: el usuario decide aplicar/cancelar tras
+                        # ver los cambios.
                         corregido = _extraer_corregido()
                         if not corregido:
                             self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")

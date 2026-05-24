@@ -1592,8 +1592,8 @@ class ArquitectoApp(
         `extra_botones`: lista opcional de `(label, fg_color, callback)`.
         Cada uno se renderiza al pie de la ventana, junto al botón
         Cerrar. El callback recibe (variaciones, ventana) y decide si
-        cerrar o no. Usado por Board→Vídeo (Bloque 6) para encadenar
-        el storyboard como prompt de vídeo.
+        cerrar o no. Usado por Board→Vídeo para encadenar el
+        storyboard como prompt de vídeo.
         """
         vent = GPromptWindow(self)
         vent.title("👁 Comparar Variaciones")
@@ -1760,7 +1760,7 @@ class ArquitectoApp(
             ctk.CTkButton(btn_row, text="🇪🇸", width=30, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
-        # Pie de ventana: botones extras (Bloque 6: encadenar Board→Vídeo)
+        # Pie de ventana: botones extras (encadenar Board→Vídeo)
         # + Cerrar comparador
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(pady=(0, 10))

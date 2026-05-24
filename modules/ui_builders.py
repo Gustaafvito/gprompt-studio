@@ -1704,11 +1704,10 @@ class UIBuildersMixin:
     def _construir_checkboxes(self, lista):
         """Construye / muestra los checkboxes de estilos para el modo actual.
 
-        v1.2 (sesión 4): caché por modo de sub-frames anidados en
-        frame_checks. Al cambiar modo se hace pack_forget del sub-frame
-        anterior y pack del nuevo — sin destruir/reconstruir widgets.
-        Resultado: ~257 widgets de IMAGEN ya no se recrean cada vez que
-        el usuario alterna entre Imagen/Vídeo/Audio.
+        Cachea sub-frames por modo dentro de frame_checks. Al cambiar
+        modo hace pack_forget del anterior y pack del nuevo — sin
+        destruir/reconstruir widgets. Evita recrear ~257 widgets de
+        IMAGEN cada vez que el usuario alterna Imagen/Vídeo/Audio.
 
         Compatibilidad: self.estilo_checks sigue apuntando al dict del
         modo activo (consumido por _filtrar_estilos, _validar_estilos,
