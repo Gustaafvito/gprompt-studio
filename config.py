@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 # Datos grandes (MODEL_SPECS, ESTILOS_GRUPOS, BIBLIOTECA_EJEMPLOS...)
 # viven en data/*.json para que añadir/editar modelos no requiera
 # tocar este archivo y para mantener config.py legible.
+#
+# Lazy loading: los datasets se cargan la primera vez que se accede
+# a ellos vía __getattr__ (PEP 562). Esto reduce el tiempo de arranque
+# cuando un módulo solo necesita parte de las constantes.
 import json as _json
 
 _DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -21,6 +25,34 @@ def _load_json_data(filename: str):
     path = _DATA_DIR / filename
     with open(path, "r", encoding="utf-8") as f:
         return _json.load(f)
+
+# Mapa de constantes lazy → archivo en data/. Solo cuando se accede al
+# atributo por primera vez (vía __getattr__) se hace I/O y se cachea.
+_LAZY_DATASETS = {
+    "MODEL_SPECS":          "model_specs_video.json",
+    "MODEL_SPECS_IMAGEN":   "model_specs_imagen.json",
+    "MODEL_SPECS_AUDIO":    "model_specs_audio.json",
+    "ESTILO_NEGATIVO_AUTO": "estilo_negativo_auto.json",
+    "BIBLIOTECA_EJEMPLOS":  "biblioteca_ejemplos.json",
+}
+_lazy_cache: dict = {}
+
+def _get_dataset(name: str):
+    """Devuelve el dataset cargado bajo demanda y cacheado."""
+    if name not in _lazy_cache:
+        _lazy_cache[name] = _load_json_data(_LAZY_DATASETS[name])
+    return _lazy_cache[name]
+
+def __getattr__(name):
+    """PEP 562 — resuelve atributos lazy del módulo.
+
+    Se invoca solo cuando un atributo no existe en globals(). Permite
+    que `from config import MODEL_SPECS_IMAGEN` siga funcionando, pero
+    sin cargar el JSON hasta el primer acceso.
+    """
+    if name in _LAZY_DATASETS:
+        return _get_dataset(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # ── Versión ───────────────────────────────────────────────────────
 VERSION = "1.0.0"
@@ -753,19 +785,11 @@ TOKEN_LIMITS = {
 }
 
 # ══════════════════════════════════════════════════════════════════
-# ESPECIFICACIONES DE MODELOS DE VÍDEO
+# ESPECIFICACIONES DE MODELOS (vídeo / imagen / audio)
 # ══════════════════════════════════════════════════════════════════
-MODEL_SPECS = _load_json_data("model_specs_video.json")
-
-# ══════════════════════════════════════════════════════════════════
-# ESPECIFICACIONES DE MODELOS DE IMAGEN
-# ══════════════════════════════════════════════════════════════════
-MODEL_SPECS_IMAGEN = _load_json_data("model_specs_imagen.json")
-
-# ══════════════════════════════════════════════════════════════════
-# ESPECIFICACIONES DE MODELOS DE AUDIO (Mayo 2026)
-# ══════════════════════════════════════════════════════════════════
-MODEL_SPECS_AUDIO = _load_json_data("model_specs_audio.json")
+# MODEL_SPECS, MODEL_SPECS_IMAGEN y MODEL_SPECS_AUDIO se cargan
+# bajo demanda — ver _LAZY_DATASETS arriba. El acceso sigue siendo
+# el mismo: from config import MODEL_SPECS_IMAGEN, etc.
 
 # ══════════════════════════════════════════════════════════════════
 # PRESETS DE PROMPT POR MODELO (plantillas base probadas)
@@ -820,20 +844,20 @@ AUTHOR = {
 }
 
 # ── Auto-sugerir Negativos por Estilo ─────────────────────────────
-ESTILO_NEGATIVO_AUTO = _load_json_data("estilo_negativo_auto.json")
+# ESTILO_NEGATIVO_AUTO se carga lazy — ver _LAZY_DATASETS arriba.
 
 # ── Helpers ───────────────────────────────────────────────────────
 def es_separador(valor):
     return valor.startswith("──")
 
 def get_model_specs(motor_name):
-    return MODEL_SPECS.get(motor_name, None)
+    return _get_dataset("MODEL_SPECS").get(motor_name, None)
 
 def get_image_model_specs(modelo_name):
-    return MODEL_SPECS_IMAGEN.get(modelo_name, None)
+    return _get_dataset("MODEL_SPECS_IMAGEN").get(modelo_name, None)
 
 def get_audio_model_specs(modelo_name):
-    return MODEL_SPECS_AUDIO.get(modelo_name, None)
+    return _get_dataset("MODEL_SPECS_AUDIO").get(modelo_name, None)
 
 def get_prompt_template(modelo_name):
     """Busca el template de prompt que aplica a este modelo."""
@@ -928,7 +952,7 @@ def get_theme_colors(is_light: bool) -> dict:
 #   prompt (str)       — el prompt completo (POSITIVE + NEGATIVE si aplica)
 #   estilos (list[str])— estilos visibles en el catálogo
 # ══════════════════════════════════════════════════════════════════
-BIBLIOTECA_EJEMPLOS = _load_json_data("biblioteca_ejemplos.json")
+# BIBLIOTECA_EJEMPLOS se carga lazy — ver _LAZY_DATASETS arriba.
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -969,8 +993,8 @@ def validar_biblioteca(estricto: bool = False) -> list[str]:
 
     # Construir conjunto de modelos válidos (de los tres MODEL_SPECS)
     modelos_validos = set()
-    for spec in (MODEL_SPECS, MODEL_SPECS_IMAGEN, MODEL_SPECS_AUDIO):
-        modelos_validos.update(spec.keys())
+    for nombre in ("MODEL_SPECS", "MODEL_SPECS_IMAGEN", "MODEL_SPECS_AUDIO"):
+        modelos_validos.update(_get_dataset(nombre).keys())
 
     # Construir conjunto de plataformas válidas
     plataformas_validas = (
@@ -981,7 +1005,7 @@ def validar_biblioteca(estricto: bool = False) -> list[str]:
 
     # Detectar títulos duplicados
     titulos_vistos = {}
-    for i, entrada in enumerate(BIBLIOTECA_EJEMPLOS):
+    for i, entrada in enumerate(_get_dataset("BIBLIOTECA_EJEMPLOS")):
         prefijo = f"#{i+1}"
         titulo = entrada.get("titulo", "")
         if titulo in titulos_vistos:
@@ -1071,7 +1095,7 @@ def validar_modelos() -> list[str]:
         for m in ms:
             modelos_en_listas.add(m)
 
-    modelos_en_specs = set(MODEL_SPECS_IMAGEN.keys())
+    modelos_en_specs = set(_get_dataset("MODEL_SPECS_IMAGEN").keys())
 
     # Modelos en listas sin spec
     for m in modelos_en_listas:
@@ -1092,7 +1116,7 @@ def validar_modelos() -> list[str]:
         for m in ms:
             modelos_video_lista.add(m)
 
-    modelos_video_specs = set(MODEL_SPECS.keys())
+    modelos_video_specs = set(_get_dataset("MODEL_SPECS").keys())
 
     for m in modelos_video_lista:
         if m not in modelos_video_specs:
@@ -1104,7 +1128,7 @@ def validar_modelos() -> list[str]:
         for m in ms:
             modelos_audio_lista.add(m)
 
-    modelos_audio_specs = set(MODEL_SPECS_AUDIO.keys())
+    modelos_audio_specs = set(_get_dataset("MODEL_SPECS_AUDIO").keys())
 
     for m in modelos_audio_lista:
         if m not in modelos_audio_specs:
