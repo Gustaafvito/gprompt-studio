@@ -62,6 +62,60 @@ class TestParsearIdeas:
     def test_vacio(self):
         assert parsear_ideas("") == []
 
+    def test_corta_a_tres_si_hay_mas(self):
+        # Solo soporta 1-3, los siguientes no matchean ^[1-3]
+        texto = "1. una\n2. dos\n3. tres\n4. cuatro"
+        result = parsear_ideas(texto)
+        assert len(result) == 3
+        assert result == ["una", "dos", "tres"]
+
+    def test_formato_prompt_n_dos_puntos(self):
+        # Modo alternativo: "PROMPT 1: ...", "PROMPT 2: ..."
+        texto = "PROMPT 1: idea uno\nPROMPT 2: idea dos\nPROMPT 3: idea tres"
+        result = parsear_ideas(texto)
+        assert result == ["idea uno", "idea dos", "idea tres"]
+
+    def test_caracteres_unicode_y_emojis(self):
+        texto = "1. una chica con 🌸 flores\n2. mañana en el café\n3. niño jugando"
+        assert parsear_ideas(texto) == [
+            "una chica con 🌸 flores",
+            "mañana en el café",
+            "niño jugando",
+        ]
+
+    def test_espacios_y_tabs_alrededor(self):
+        texto = "  1.   idea con espacios  \n  2. otra  "
+        result = parsear_ideas(texto)
+        assert result == ["idea con espacios", "otra"]
+
+
+class TestDeepSeekWorker:
+    """Tests para la clase DeepSeekWorker (parte API pública sin red)."""
+
+    def test_reiniciar_pone_system_prompt(self):
+        from workers import DeepSeekWorker
+
+        w = DeepSeekWorker(clients=None)
+        w.reiniciar("Eres un asistente.")
+        assert w.historial == [{"role": "system", "content": "Eres un asistente."}]
+
+    def test_historial_inicial_vacio(self):
+        from workers import DeepSeekWorker
+
+        w = DeepSeekWorker(clients=None)
+        assert w.historial == []
+
+    def test_reiniciar_borra_historial_previo(self):
+        from workers import DeepSeekWorker
+
+        w = DeepSeekWorker(clients=None)
+        w.historial = [
+            {"role": "system", "content": "viejo"},
+            {"role": "user", "content": "hola"},
+        ]
+        w.reiniciar("nuevo system")
+        assert w.historial == [{"role": "system", "content": "nuevo system"}]
+
 
 class TestDetectarIdiomaEs:
     def test_espanol_claro(self):
