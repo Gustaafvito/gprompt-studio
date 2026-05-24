@@ -785,11 +785,12 @@ class UIBuildersMixin:
         seg_sel = "#2563eb" if is_light else "#3b82f6"
         seg_hov = "#dbeafe" if is_light else "#374151"
 
-        # Altura fija ~170px: suficiente para todos los tabs.
-        # Estilos hace scroll interno; Ajustes Extra y Negativos usan
-        # spacers al final para empujar widgets arriba (sin huecos).
+        # Sin height fijo — CTkTabview lo ignora si algún tab tiene
+        # widgets con expand=True. En su lugar limitamos cada tab por
+        # dentro: frame_checks (Estilos) con height=130 fijo + spacers
+        # al final de Ajustes Extra y Negativos para empujar arriba.
         self.tabview = ctk.CTkTabview(
-            self, height=170,
+            self,
             fg_color=tab_bg, bg_color=tab_bg,
             segmented_button_fg_color=seg_bg,
             segmented_button_selected_color=seg_sel,
@@ -997,11 +998,14 @@ class UIBuildersMixin:
         btn_limpiar_est.pack(side="right", padx=(0, 5))
         CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
 
-        # que en modo light termine pintando blanco-sobre-blanco.
-        # El tabview tiene altura fija (170px) — el scrollable absorbe
-        # el espacio interior y muestra scroll para los 257 estilos.
-        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"])
-        self.frame_checks.pack(fill="both", expand=True, padx=5, pady=2)
+        # CTkTabview IGNORA el height fijo del tabview cuando hay un tab
+        # con expand=True. Por eso limitamos frame_checks a altura fija
+        # (130px ≈ 4-5 filas de checkboxes) y dejamos que el scroll
+        # interno gestione los 257 estilos. Así el tab Estilos NO empuja
+        # el tabview a crecer, dejando espacio al Resultado editable.
+        self.frame_checks = ctk.CTkScrollableFrame(parent, fg_color=c["chk_bg"],
+                                                    height=130)
+        self.frame_checks.pack(fill="x", padx=5, pady=2)
 
         # Label verde con nombres de estilos seleccionados
         # Usar verde más oscuro en light para que se lea sobre fondo claro

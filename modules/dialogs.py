@@ -326,7 +326,7 @@ class DialogsMixin:
             ("▶ YouTube",     f"https://www.youtube.com/{AUTHOR['youtube']}",      yt_color),
         ]
         if x_handle:
-            redes.append(("𝕏 X / Twitter", f"https://x.com/{x_handle}", x_color))
+            redes.append(("𝕏 Twitter", f"https://x.com/{x_handle}", x_color))
         redes.append(("🐙 GitHub", AUTHOR['github'], gh_color))
 
         def _abrir(url):
