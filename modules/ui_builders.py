@@ -953,7 +953,12 @@ class UIBuildersMixin:
         # contenido de Ajustes Extra es solo ~75px. Sin este spacer,
         # los widgets quedan separados por un hueco grande en el medio.
         # Con expand=True absorbe el sobrante y empuja todo arriba.
-        ctk.CTkFrame(parent, fg_color="transparent", height=1).pack(fill="both", expand=True)
+        # IMPORTANTE: guardamos referencia para que _on_modo_cambio en
+        # core.py pueda usar `before=self._spacer_ajustes` al re-packar
+        # frame_imgref_inner (sino el imgref va al final y el spacer
+        # queda EN EL MEDIO, recreando el hueco que queríamos evitar).
+        self._spacer_ajustes = ctk.CTkFrame(parent, fg_color="transparent", height=1)
+        self._spacer_ajustes.pack(fill="both", expand=True)
 
     def _build_estilos(self, parent):
         is_light = _get_real_is_light()

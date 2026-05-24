@@ -1121,10 +1121,18 @@ class CoreMixin:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
-        # Imagen ref: visible en imagen y vídeo, oculto en audio
+        # Imagen ref: visible en imagen y vídeo, oculto en audio.
+        # IMPORTANTE: usamos before=self._spacer_ajustes para que el
+        # imgref se mantenga en su posición original (antes del spacer)
+        # y no salte al final del tab Ajustes Extra al cambiar de modo.
         if hasattr(self, 'frame_imgref_inner'):
             if modo != "audio":
-                try: self.frame_imgref_inner.pack(fill="x", pady=(1, 2))
+                try:
+                    if hasattr(self, '_spacer_ajustes') and self._spacer_ajustes.winfo_exists():
+                        self.frame_imgref_inner.pack(fill="x", pady=(1, 2),
+                                                     before=self._spacer_ajustes)
+                    else:
+                        self.frame_imgref_inner.pack(fill="x", pady=(1, 2))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             else:
