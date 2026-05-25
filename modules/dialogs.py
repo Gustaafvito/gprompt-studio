@@ -288,18 +288,7 @@ class DialogsMixin:
         )
         ctk.CTkLabel(v, text=descripcion, font=ctk.CTkFont(size=11),
                      text_color=c["panel_text"], justify="center",
-                     wraplength=460).pack(pady=(0, 16))
-
-        # Stats
-        try:
-            n_historial = len(self.store.historial or [])
-            n_fav = len(self.store.favoritos or [])
-            n_estrellas = len(self.store.estrellas or [])
-            stats = f"📋 {n_historial} prompts · ⭐ {n_fav} favoritos · 🌟 {n_estrellas} estrellas"
-            ctk.CTkLabel(v, text=stats, font=ctk.CTkFont(size=10),
-                         text_color=c["muted_text"]).pack(pady=(0, 16))
-        except Exception as _e:
-            logger.debug(f"[silent acerca stats] {_e}")
+                     wraplength=460).pack(pady=(0, 24))
 
         # Autor
         ctk.CTkLabel(v, text=f"Creado por {AUTHOR}",
@@ -310,16 +299,15 @@ class DialogsMixin:
         links_frame = ctk.CTkFrame(v, fg_color="transparent")
         links_frame.pack(pady=(0, 14))
         enlaces = [
-            ("🐙 GitHub", "https://github.com/Gustaafvito/gprompt-studio"),
-            ("💖 Patreon", "https://www.patreon.com/Gustaafvito"),
-            ("📺 YouTube", "https://www.youtube.com/@gustaafvito"),
+            ("🐙 GitHub", "https://github.com/Gustaafvito/"),
+            ("📺 YouTube", "https://www.youtube.com/@GustaafvitocreadorIA"),
             ("🐦 X / Twitter", "https://x.com/gustaafvito"),
         ]
         for label, url in enlaces:
-            ctk.CTkButton(links_frame, text=label, width=130, height=28,
+            ctk.CTkButton(links_frame, text=label, width=140, height=30,
                           fg_color=c["fg_dark"],
                           font=ctk.CTkFont(size=10),
-                          command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=4)
+                          command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=5)
 
         # Botón cerrar
         ctk.CTkButton(v, text="Cerrar", width=120, height=32,
