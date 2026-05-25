@@ -15,7 +15,7 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **189/189** ✅ |
+| Tests | **210/210** ✅ |
 | Working tree | Limpio |
 | Branch | `main` (sincronizado con `origin/main`) |
 | Bloques de profundidad | **6/6** ✅ |
@@ -23,7 +23,7 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | F401 (imports muertos) | **0** (antes 171 silenciados) |
-| Type hints en mixins nuevos | ✅ 35 firmas anotadas |
+| Type hints | ✅ 68 firmas anotadas (mixins nuevos + viejos) |
 | Build `.exe` | Reconstruido + verificado arrancando |
 | Installer | Con diálogo **Reparar / Desinstalar / Cancelar** |
 | Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` al día |
@@ -194,9 +194,35 @@ diálogo nunca aparecía. Fix: `GetRegKeyLegacy` busca la forma real
 
 ---
 
-## 📜 Commits de sesión 6 (13 commits)
+### Extras post-cierre (commits adicionales):
+
+- `41185de` **test(ab_testing)**: 11 tests para AbTestingMixin (estructura
+  AB_DIMENSIONES, guardas de comandos, sugeridos por modo).
+- `3dbadc7` **docs(installer)**: documentado que el escape `{{...}}`
+  del AppId es sintaxis obligatoria de Inno (no es bug). El "limpieza
+  AppId" del HANDOFF se cierra como no-actionable.
+- `3eeaa71` **types**: 33 type hints en mixins viejos (backup_export,
+  dashboard, tools_analysis).
+- `e562182` **refactor(dashboard)**: extraída `_dashboard_palette()`
+  a helper testeable + 10 tests.
+
+### Investigación A2: `self.cmd_x` vs `self.creative.cmd_x`
+
+`grep` confirma **0 usos** de los componentes (`self.creative`,
+`self.workflow`, etc.) fuera de `components.py` mismo. La capa de
+namespace existe pero no se está usando. **No es un problema actual**,
+solo debt latente para cuando se inicie A1 (Mixins → Composición).
+
+---
+
+## 📜 Commits de sesión 6 (17 commits)
 
 ```
+e562182 refactor(dashboard): extraer paleta de colores a helper testeable + 10 tests
+3eeaa71 types: type hints en mixins viejos (backup_export, dashboard, tools_analysis)
+3dbadc7 docs(installer): documentar por qué el AppId usa escape {{...}} (no bug)
+41185de test(ab_testing): cobertura básica de AbTestingMixin (11 tests)
+cc2e1de docs: actualizar HANDOFF con cierre de sesión 6
 6075ba1 fix(installer): detectar AppId con doble llave (escape histórico Inno)
 d20a376 installer: detección de instalación previa con Reparar/Desinstalar/Cancelar
 403bb1a types: añadir type hints a los 4 mixins de sesión 6
@@ -268,19 +294,18 @@ partición agrava esto. Refactor mayor ~5-10 días. Hace falta:
 - Actualizar tests.
 
 #### T1 Cobertura de tests
-9 archivos cubren `api_clients`, `config`, `json_prompt`,
+11 archivos cubren `api_clients`, `config`, `json_prompt`,
 `parsear_variaciones`, `persistence`, `workers`, `prompts_inyeccion`
-(37 tests), `refinamiento` (32 tests) y `workers_ia` (29 tests).
+(37 tests), `refinamiento` (32 tests), `workers_ia` (29 tests),
+`ab_testing` (11 tests) y `dashboard` (10 tests, solo paleta).
 
 **Sin tests todavía**: `adn_visual`, `multiprompt`, `sesion_video`,
-`modo_cliente`, `ab_testing`, `ui_events`, `atajos_ayuda`, `dashboard`,
-`dialogs`, `core`.
+`modo_cliente`, `ui_events`, `atajos_ayuda`, `dialogs`, `core`.
 
 Próximos candidatos limpios:
-- `ab_testing.py` (lógica de scoring/comparación, mocks fáciles).
 - `ui_events.py` (decisiones de packeo según modo, mockear widgets).
-- `atajos_ayuda.py` (handlers con lógica testeable, ventanas modales
-  mockeables).
+- `atajos_ayuda.py` (handlers con lógica testeable).
+- `adn_visual.py` (gestión de rasgos, autocontenido).
 
 #### Verificar `.exe` real arranca — ✅ HECHO en sesión 6
 Verificado múltiples veces durante la sesión. Build final del 19:35
@@ -313,22 +338,24 @@ de datos).
 192 imports muertos eliminados. F401 activo en ruff sin ignore.
 
 #### Type hints incrementales
-4 mixins nuevos ya anotados (sesión 6: prompts_inyeccion,
-refinamiento, atajos_ayuda, ui_events). Quedan los mixins viejos
-(core, dialogs, tools_*, ui_builders, dashboard, etc.). ~30-50% del
-código todavía sin anotar.
+7 mixins ya anotados (mixins nuevos: prompts_inyeccion, refinamiento,
+atajos_ayuda, ui_events; mixins viejos: backup_export, dashboard,
+tools_analysis). Quedan: core, dialogs, tools_creative, tools_workflow,
+data_mgmt, ui_builders, adn_visual, multiprompt, sesion_video,
+modo_cliente, json_prompt, ab_testing, workers_ia, prompts_inyeccion.
 
-#### A2 Unificar `self.cmd_x` vs `self.creative.cmd_x`
-Acceso inconsistente a comandos según si se llama desde botón
-(self.cmd_x) o via subnamespace.
+#### ~~A2 Unificar `self.cmd_x` vs `self.creative.cmd_x`~~ — No es un problema actual
+`grep` confirma **0 usos** de los componentes (`self.creative`, etc.)
+fuera de `components.py`. La capa de namespace existe pero nadie la
+usa, así que no hay inconsistencia real. Solo es debt latente para
+cuando se inicie A1 (Mixins → Composición).
 
-#### Limpieza AppId del installer (a futuro)
-El `#define MyAppId "{{...}}"` con doble llave genera una clave de
-registro con `}}_is1` (forma malformada). El código de detección ya
-maneja ambas formas (legacy + clean), pero limpiarlo del todo requiere:
-1. Cambiar `#define MyAppId "{...}"` (sin doble llave).
-2. Migración automática que mueva la entrada legacy a la clean al
-   detectar la primera (para no perder instalaciones existentes).
+#### ~~Limpieza AppId del installer~~ — No es bug, está documentado
+Investigado en sesión 6: el escape `{{...}}` es sintaxis OBLIGATORIA
+de Inno Setup cuando el AppId contiene llaves. Sin escape, Inno
+intenta interpretar `{...}` como constante y rompe. Que el registro
+quede con `}}_is1` es comportamiento normal. Documentado en
+`installer.iss`.
 
 ### 🟢 BAJA
 
@@ -369,7 +396,7 @@ para corregir `data/model_specs_imagen.json`.
    python -c "import app; print('OK')"
    python -m pytest tests/ -q
    ```
-   Debe dar `OK` y `189 passed`.
+   Debe dar `OK` y `210 passed`.
 
 2. **Verificar mixins enchufados**:
    ```powershell
@@ -467,14 +494,15 @@ troubleshooting + `.gitignore` con `dist/` y `build/`.
 
 ---
 
-*Generado al final de sesión 6 — **13 commits añadidos**, **189/189 tests**
-(+98 nuevos, +108% respecto al inicio), working tree limpio y sincronizado
+*Generado al final de sesión 6 — **17 commits añadidos**, **210/210 tests**
+(+119 nuevos, +131% respecto al inicio), working tree limpio y sincronizado
 con origin/main. core.py reducido a 1665 líneas (-38.3% en esta sesión),
-dialogs.py reducido a 543 líneas (-72%). **10 particiones totales** del
-proyecto. **0 imports F401** (eran 171 silenciados). Type hints añadidos
-a 4 mixins (35 firmas). 2 bugs latentes corregidos (`re` import en
-workers_ia, AppId con doble llave en installer). Bloques de profundidad
-**6/6** ✅. Build `.exe` listo, verificado y redistribuido con installer
-que ahora ofrece Reparar/Desinstalar/Cancelar. CI activo. Pendiente
-principal: A1 Mixins → Composición (20 mixins ya, refactor cada vez más
-urgente) y T1 cobertura de tests para los 10 mixins restantes.*
+dialogs.py reducido a 543 líneas (-72%). **10 particiones + 1 helper
+extraído** (_dashboard_palette). **0 imports F401**. Type hints añadidos
+a 7 mixins (68 firmas). 2 bugs latentes corregidos (`re` en workers_ia,
+AppId en installer). 2 puntos del HANDOFF cerrados como no-actionable
+(A2 sin uso, limpieza AppId es sintaxis Inno obligatoria). Bloques de
+profundidad **6/6** ✅. Build `.exe` listo, verificado y redistribuido
+con installer que ofrece Reparar/Desinstalar/Cancelar. CI activo.
+Pendiente principal: A1 Mixins → Composición (20 mixins ya) y T1
+cobertura de tests para los 8 mixins restantes sin cubrir.*
