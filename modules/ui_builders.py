@@ -529,10 +529,14 @@ class UIBuildersMixin:
         self._sw_trad = self.switch_trad
         self._sw_trad_callback = _toggle_trad_visual
 
-        # Ejecutar el callback inicial para que el estado visual coincida
-        # con el estado del var (importante cuando se restauran desde prefs).
-        _toggle_nsfw_visual()
-        _toggle_trad_visual()
+        # Aplicar estilo inicial coherente con el estado del var (importante
+        # cuando se restauran desde prefs). NO usamos _toggle_*_visual()
+        # porque _toggle_nsfw_visual llama a reiniciar_memoria() que asume
+        # que la app está completamente construida (combos de modelo, etc).
+        if self.switch_nsfw_var.get():
+            self.switch_nsfw.configure(text_color=nsfw_text_on, border_color=nsfw_border_on)
+        if self.switch_traduccion_var.get():
+            self.switch_trad.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
 
     def _on_segmento_modo(self, valor):
         mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}
