@@ -285,13 +285,35 @@ Orden en `class ArquitectoApp(ctk.CTk, ...)`:
 
 ### 🔴 ALTA
 
-#### A1 Mixins → Composición pura
-`ArquitectoApp` heredaba 14 mixins en sesión 5, ahora **19**. Cada
-partición agrava esto. Refactor mayor ~5-10 días. Hace falta:
-- Decidir patrón: namespace objects (`self.atajos.bind()`,
-  `self.refinamiento.cmd_refinar()`) vs servicios inyectados.
-- Migrar mixin por mixin manteniendo retrocompatibilidad.
-- Actualizar tests.
+#### A1 Mixins → Composición pura — 🟡 EN MARCHA (1/20 migrado)
+
+**Primer paso completado (commit `e60b5f9`)**: `PromptsComponent`
+añadido a `modules/components.py` con API pública explícita
+(`inyectar_specs_*`, `inyectar_destino`, `construir_modelo_info` sin
+underscore). Los 9 call sites en `core.py` (7) + `workers_ia.py` (2)
+migrados a `self.prompts.X()`.
+
+`PromptsInyeccionMixin` sigue heredado en `ArquitectoApp` por
+compatibilidad — cuando NO queden llamadas directas a sus métodos
+(`self._inyectar_*`, `self.construir_modelo_info()`), se podrá
+quitar del MRO (20 → 19 mixins).
+
+**Patrón establecido**:
+1. Crear `XxxComponent(_Component)` en `components.py` con métodos
+   públicos que delegan a `self.app._método_privado()`.
+2. Registrar en `install_components(app)`.
+3. Migrar call sites de `self._método()` → `self.xxx.metodo()`.
+4. Actualizar tests (añadir `prompts=SimpleNamespace(...)` al `_host()`).
+5. Cuando todo migrado: quitar mixin del MRO de `ArquitectoApp`.
+
+**Próximos candidatos** (orden de menor a mayor complejidad):
+- `AbTestingMixin` (5 métodos, ya con 11 tests).
+- `JsonPromptMixin` (modal-heavy pero autocontenido).
+- `RefinamientoMixin` (6 métodos, ya con 32 tests).
+- `WorkersIaMixin` (5 workers, ya con 29 tests).
+- `AtajosAyudaMixin` (13 métodos, ya con 0 tests).
+
+Refactor mayor restante: ~5-9 días para los 19 mixins restantes.
 
 #### T1 Cobertura de tests
 11 archivos cubren `api_clients`, `config`, `json_prompt`,
