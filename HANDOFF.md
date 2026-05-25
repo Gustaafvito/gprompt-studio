@@ -15,13 +15,13 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **91/91** ✅ |
+| Tests | **160/160** ✅ |
 | Working tree | Limpio |
-| Branch | `main` |
+| Branch | `main` (sincronizado con `origin/main`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **19** |
-| Build `.exe` | Generado en `dist/GPromptStudio.exe` |
-| Installer | Generado en `dist/installer/GPromptStudio-Setup-1.0.0.exe` |
+| Build `.exe` | Reconstruido `dist/GPromptStudio/GPromptStudio.exe` + onefile + installer |
+| Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` actualizado con los 3 artefactos |
 | CI | GitHub Actions (Ruff + tests 3.10/3.11/3.12) |
 | Lint | Ruff configurado (pyproject.toml) |
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
@@ -88,9 +88,61 @@ hechas** en sesiones intermedias sin documentar:
 
 ---
 
-## 📜 Commits de sesión 6 (2 commits)
+### Cobertura unitaria de los módulos extraídos
+
+**`tests/test_prompts_inyeccion.py` — 37 tests** (commit `9dd4e1e`):
+- `_inyectar_destino` (6): vacío, Personal, Instagram, Anthum,
+  desconocido, sin atributo.
+- `_inyectar_specs_modelo` (3): dispatcher audio/video/imagen.
+- `_inyectar_specs_video` (6): sin specs, max_chars grande/pequeño,
+  has_audio sí/no, nombre en mayúsculas.
+- `_inyectar_template` (3): sin/con template, sin negative.
+- `_inyectar_specs_formato` (7): natural con/sin neg, tags con pesos,
+  ComfyUI Turbo (prohibe pesos+neg), tags sin neg, trigger words,
+  sampler.
+- `_inyectar_specs_audio` (7): combo ausente, separador, sin specs,
+  instrumental/vocal, emoción/voz/idioma, placeholders.
+- `construir_modelo_info` (5): composición, Personal, cache hit/miss,
+  audio con emoción.
+
+**`tests/test_refinamiento.py` — 32 tests** (commit `1c4ceff`):
+- `_mostrar_diff_refinamiento` (12): textos vacíos/iguales/distintos,
+  on_apply guarda pre-refinamiento + no duplica + limita a 30,
+  on_undo disponible según stack + restaura la más reciente.
+- `cmd_refinar` (13): sin texto / sin marcadores → warning; reglas
+  por modo (imagen tag-based/natural, video, audio); incluye
+  idea/personaje/lora/anclaje; límite chars desde specs o fallback;
+  pasa es_refinamiento + texto_previo al worker.
+- `_iterar_elemento` (5): parsing VARIANTE N, filtro de strings
+  cortos, <2 variantes → avisa, respeta N, case-insensitive.
+- `_menu_refinar_especifico` (2): guardas texto vacío/corto.
+
+**Patrón establecido**: mockear `threading.Thread` con un
+`SimpleNamespace` que ejecuta `target` sincrónicamente. Permite
+testear workers IA sin red ni hilos reales.
+
+### Rebuild .exe + distribución
+
+- `python build.py` (onedir, ~1 min)
+- `python build.py --installer` (onedir + Inno Setup, ~2-3 min)
+- `python build.py --onefile` (onefile, ~2 min)
+- Copia de los 3 a `~/OneDrive/Desktop/GPromptStudio-Distribuible/`:
+  - `GPromptStudio-Portable/` (onedir, 13.4 MB)
+  - `GPromptStudio-Portable-Onefile.exe` (124 MB)
+  - `GPromptStudio-Setup-1.0.0.exe` (88 MB)
+
+`gprompt-studio.spec` + `gprompt-studio-onefile.spec` actualizados con
+los 3 mixins nuevos en `hiddenimports` (commit `bcbc1d5`).
+
+---
+
+## 📜 Commits de sesión 6 (6 commits)
 
 ```
+1c4ceff test: cobertura de RefinamientoMixin (32 tests)
+bcbc1d5 build: añadir hiddenimports de los 3 mixins nuevos
+9dd4e1e test: cobertura unitaria de PromptsInyeccionMixin (37 tests)
+f4a5733 docs: actualizar HANDOFF a sesión 6
 4c04ce2 refactor(core): extraer ui_events + refinamiento (particiones #8 y #9)
 2bf3e74 refactor(core): extraer atajos + ayuda a modules/atajos_ayuda.py
 ```
@@ -149,25 +201,26 @@ partición agrava esto. Refactor mayor ~5-10 días. Hace falta:
 - Actualizar tests.
 
 #### T1 Cobertura de tests
-6 archivos cubren `api_clients`, `config`, `json_prompt`,
-`parsear_variaciones`, `persistence`, `workers`. **Sin tests**:
-`workers_ia`, `adn_visual`, `multiprompt`, `sesion_video`,
-`modo_cliente`, `ab_testing`, `refinamiento`, `ui_events`,
-`atajos_ayuda`, `prompts_inyeccion`, `dialogs`, `core`.
+8 archivos cubren `api_clients`, `config`, `json_prompt`,
+`parsear_variaciones`, `persistence`, `workers`, `prompts_inyeccion`
+(37 tests, sesión 6) y `refinamiento` (32 tests, sesión 6).
 
-Los módulos extraídos en sesiones 4-6 son los mejores candidatos
-(interfaz limpia). Empezar por:
-- `refinamiento.py` (mocks: `deepseek`, `txt_salida`, `_versiones_prompt`).
-- `prompts_inyeccion.py` (puramente funcional sobre strings).
-- `workers_ia.py` (interfaz limpia con mocks).
+**Sin tests todavía**: `workers_ia`, `adn_visual`, `multiprompt`,
+`sesion_video`, `modo_cliente`, `ab_testing`, `ui_events`,
+`atajos_ayuda`, `dialogs`, `core`.
 
-#### Verificar `.exe` real arranca
-El build está en `dist/GPromptStudio.exe`. Falta:
-1. Lanzar el `.exe` (doble click o `& "./dist/GPromptStudio.exe"`).
-2. Probar flujos básicos (generar prompt, cambiar modo, abrir tutorial).
-3. Si falla algún `hiddenimport`, añadirlo al `.spec` y rebuild.
-4. Probar el installer (`dist/installer/GPromptStudio-Setup-1.0.0.exe`)
-   en una VM o usuario nuevo.
+Próximos candidatos limpios:
+- `workers_ia.py` (interfaz IA con mocks fáciles).
+- `ab_testing.py` (lógica de scoring/comparación).
+- `ui_events.py` (decisiones de packeo según modo, mockear widgets).
+
+#### Verificar `.exe` real arranca — ✅ HECHO en sesión 6
+Verificado: `dist/GPromptStudio/GPromptStudio.exe` arranca correctamente
+(PID 25332, Responding=True tras 14s, 192 MB RAM). Los 3 specs
+incluyen ya los 3 mixins nuevos. Rebuild + redistribución completados.
+
+Pendiente menor: probar el installer end-to-end en una VM/usuario
+nuevo (instalación → arranque → desinstalación con borrado de datos).
 
 ### 🟡 MEDIA
 
@@ -235,7 +288,7 @@ para corregir `data/model_specs_imagen.json`.
    python -c "import app; print('OK')"
    python -m pytest tests/ -q
    ```
-   Debe dar `OK` y `91 passed`.
+   Debe dar `OK` y `160 passed`.
 
 2. **Verificar mixins enchufados**:
    ```powershell
@@ -250,12 +303,16 @@ para corregir `data/model_specs_imagen.json`.
 
 4. **Decidir entre**:
    - **A1 Mixins → Composición** (~5-10 días, refactor mayor).
-   - **T1 Cobertura tests** empezando por `refinamiento.py` o
-     `prompts_inyeccion.py` (interfaces limpias, alto ROI).
-   - **Verificar `.exe` real** (quick win, 5-10 min).
-   - **Más particiones** de archivos grandes (`app.py`, `ui_builders.py`,
-     `dialogs.py`).
-   - **Lint debt cleanup** (quitar `ignore` y arreglar gradualmente).
+   - **T1 Cobertura tests** — quedan `workers_ia`, `ab_testing`,
+     `ui_events`, `atajos_ayuda`, `adn_visual`, `multiprompt`,
+     `sesion_video`, `modo_cliente`, `dialogs`, `core`. Próximo
+     candidato limpio: `workers_ia.py`.
+   - **Más particiones** de archivos grandes (`app.py` 2406,
+     `ui_builders.py` 2167, `dialogs.py` 1985, `tools_creative.py` 1881,
+     `core.py` 1665).
+   - **Lint debt cleanup** — quitar `F401` del `ignore` en
+     `pyproject.toml` y arreglar módulo por módulo.
+   - **Code-signing del .exe** (evitar SmartScreen).
    - **SeaArt char limits** (necesita info del usuario).
 
 5. **Patrón de trabajo establecido**:
@@ -329,9 +386,11 @@ troubleshooting + `.gitignore` con `dist/` y `build/`.
 
 ---
 
-*Generado al final de sesión 6 — 2 commits añadidos, 91/91 tests,
-working tree limpio. core.py reducido a 1665 líneas (-38.3% en esta
-sesión, -42% acumulado desde sesión 5). 9 particiones totales del
-proyecto. Bloques de profundidad **6/6** ✅. Build `.exe` listo y
-funcional. CI activo. Pendiente principal: A1 Mixins → Composición
-(19 mixins ya, refactor cada vez más urgente) y T1 cobertura de tests.*
+*Generado al final de sesión 6 — 6 commits añadidos, **160/160 tests**
+(+69 nuevos), working tree limpio y sincronizado con origin/main.
+core.py reducido a 1665 líneas (-38.3% en esta sesión, -42% acumulado
+desde sesión 5). 9 particiones totales del proyecto. Bloques de
+profundidad **6/6** ✅. Build `.exe` listo, verificado y redistribuido.
+CI activo. Pendiente principal: A1 Mixins → Composición (19 mixins ya,
+refactor cada vez más urgente) y T1 cobertura de tests para los
+mixins restantes.*
