@@ -487,25 +487,26 @@ class UIBuildersMixin:
             "border_width": 2,
         }
 
+        # Estilo OFF unificado: ambos switches (NSFW y Auto-trad) usan los
+        # mismos colores cuando están apagados para que se vean idénticos.
+        # Solo el color "ON" (progress_color + text_color/border_color al
+        # encenderse) los diferencia: NSFW rojo, Auto-trad azul.
         nsfw_text_on = c["nsfw_text_on"]
-        nsfw_text_off = c["nsfw_text_off"]
         nsfw_border_on = c["nsfw_border_on"]
-        nsfw_border_off = c["nsfw_border_off"]
-        nsfw_fg = c["nsfw_fg"]
 
         def _toggle_nsfw_visual():
             self.reiniciar_memoria()
             if self.switch_nsfw_var.get():
                 self.switch_nsfw.configure(text_color=nsfw_text_on, border_color=nsfw_border_on)
             else:
-                self.switch_nsfw.configure(text_color=nsfw_text_off, border_color=nsfw_border_off)
+                self.switch_nsfw.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
 
         self.switch_nsfw = ctk.CTkSwitch(inner, text="🔞 NSFW", variable=self.switch_nsfw_var,
                                           command=_toggle_nsfw_visual,
                                           progress_color="#dc2626",
-                                          fg_color=nsfw_fg,
-                                          border_color=nsfw_border_off,
-                                          text_color=nsfw_text_off,
+                                          fg_color=c["fg_dark"],
+                                          border_color=c["fg_dark_border"],
+                                          text_color=c["fg_dark_text"],
                                           **sw_style)
         self.switch_nsfw.pack(side="right", padx=6)
         CTkToolTip(self.switch_nsfw, message="Activa contenido adulto en los prompts.", delay=0.5)
@@ -527,6 +528,11 @@ class UIBuildersMixin:
         CTkToolTip(self.switch_trad, message="Traduce tu idea al inglés antes de procesarla.", delay=0.5)
         self._sw_trad = self.switch_trad
         self._sw_trad_callback = _toggle_trad_visual
+
+        # Ejecutar el callback inicial para que el estado visual coincida
+        # con el estado del var (importante cuando se restauran desde prefs).
+        _toggle_nsfw_visual()
+        _toggle_trad_visual()
 
     def _on_segmento_modo(self, valor):
         mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}
