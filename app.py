@@ -162,18 +162,49 @@ class ArquitectoApp(
         self._splash_estado("Construyendo interfaz...")
 
         # ── Variables Tk ──────────────────────────────────────────
+        # Cargamos prefs guardadas para que los switches conserven el
+        # último estado del usuario (NSFW, Auto-trad, Brief).
+        try:
+            _switches_prefs = self.store.cargar_preferencias() or {}
+        except Exception as _e:
+            logger.debug(f"[silent] cargar switches prefs: {_e}")
+            _switches_prefs = {}
+
         self.llm_var             = ctk.StringVar(value="DeepSeek V4")
         self.modo_var            = ctk.StringVar(value="imagen")
         self.plataforma_var      = ctk.StringVar(value="SeaArt / Tensor.Art")
-        self.switch_nsfw_var     = ctk.BooleanVar(value=False)
+        self.switch_nsfw_var     = ctk.BooleanVar(value=_switches_prefs.get("switch_nsfw", False))
         self.duracion_var        = ctk.StringVar(value="10s")
         self.ratio_var           = ctk.StringVar(value="1:1")
-        self.switch_traduccion_var = ctk.BooleanVar(value=True)
+        self.switch_traduccion_var = ctk.BooleanVar(value=_switches_prefs.get("switch_traduccion", True))
         self.destino_var         = ctk.StringVar(value="— Personal —")
-        self.brief_var           = ctk.BooleanVar(value=False)
+        self.brief_var           = ctk.BooleanVar(value=_switches_prefs.get("brief", False))
         self.estilo_checks       = {}
         self.preset_vars         = {}
         self.preset_btns         = {}
+
+        # ── Persistencia automática de switches ───────────────────
+        # Cada cambio en estos switches se guarda en preferences.json
+        # para que el estado se mantenga entre sesiones.
+        def _persistir_switch(key, getter):
+            def _trace(*_a):
+                try:
+                    p = self.store.cargar_preferencias() or {}
+                    p[key] = getter()
+                    self.store.guardar_preferencias(p)
+                except Exception as _e:
+                    logger.debug(f"[silent] persistir {key}: {_e}")
+            return _trace
+
+        try:
+            self.switch_nsfw_var.trace_add(
+                "write", _persistir_switch("switch_nsfw", self.switch_nsfw_var.get))
+            self.switch_traduccion_var.trace_add(
+                "write", _persistir_switch("switch_traduccion", self.switch_traduccion_var.get))
+            self.brief_var.trace_add(
+                "write", _persistir_switch("brief", self.brief_var.get))
+        except Exception as _e:
+            logger.debug(f"[silent] trace switches: {_e}")
 
         # ── Mejora 14: traces para sesión grabada (ratio/destino/NSFW/brief) ──
         try:
