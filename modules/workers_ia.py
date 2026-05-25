@@ -23,6 +23,7 @@ Dependencias self (provistas por ArquitectoApp):
   is_natural_mode, _construir_peticion, _inyectar_specs_*.
 """
 import logging
+import re
 
 from workers import limpiar_marcadores, parsear_ideas
 
@@ -57,7 +58,6 @@ class WorkersIaMixin:
                 es_comfyui_turbo = self._es_comfyui_turbo()
             quitar_negative = (specs and not specs.get("has_negative", True)) or es_comfyui_turbo
             if quitar_negative and not es_ideas:
-                import re
                 if re.search(r'NEGATIVE\s+PROMPT', texto, re.IGNORECASE):
                     texto = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?(?=\n\s*(?:POSITIVE|─|$)|\Z)', '', texto, flags=re.DOTALL | re.IGNORECASE)
                     texto = texto.strip()
@@ -66,7 +66,6 @@ class WorkersIaMixin:
 
             # ELIMINAR PESOS NUMÉRICOS solo en ComfyUI con modelos Turbo
             if es_comfyui_turbo and not es_ideas:
-                import re
                 if re.search(r'\([^)]+:[0-9.]+\)', texto):
                     # (word:1.2) → word   |   (word word:0.8) → word word
                     texto = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', texto)
