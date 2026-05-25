@@ -158,14 +158,29 @@ class RefinamientoMixin:
         self.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
         self.toggle_botones(False)
 
+        # ¿El prompt original tiene NEGATIVE PROMPT? Le pedimos al LLM
+        # que respete ese formato (POSITIVE/NEGATIVE) en cada variante.
+        tiene_neg = bool(self._extraer_neg_de_bloque(texto))
+        bloque_ejemplo = (
+            "POSITIVE PROMPT: [tags del positivo con el cambio aplicado]\n"
+            "NEGATIVE PROMPT: [tags del negativo, idénticos al original]"
+            if tiene_neg
+            else "POSITIVE PROMPT: [tags del positivo con el cambio aplicado]"
+        )
         variantes_lineas = "\n---\n".join(
-            f"VARIANTE {i + 1}: [prompt completo con cambio]" for i in range(n)
+            f"VARIANTE {i + 1}:\n{bloque_ejemplo}" for i in range(n)
+        )
+        regla_neg = (
+            "- MANTÉN el NEGATIVE PROMPT del original IDÉNTICO en cada variante.\n"
+            if tiene_neg else ""
         )
         peticion = (
             f"Genera {n} VARIANTES de este prompt, cambiando ÚNICAMENTE el elemento: {elemento}.\n"
-            f"Todo lo demás (sujeto, composición, formato) debe permanecer IDÉNTICO.\n\n"
+            f"Todo lo demás (sujeto, composición, formato) debe permanecer IDÉNTICO.\n"
+            f"{regla_neg}"
+            f"- USA exactamente las etiquetas 'POSITIVE PROMPT:' (y 'NEGATIVE PROMPT:' si aplica) en cada variante.\n\n"
             f"PROMPT ORIGINAL:\n{texto}\n\n"
-            f"FORMATO DE RESPUESTA:\n{variantes_lineas}"
+            f"FORMATO DE RESPUESTA (sigue EXACTAMENTE esta estructura, una variante tras otra):\n{variantes_lineas}"
         )
         max_tok = min(8000, 1500 + n * 700)
 

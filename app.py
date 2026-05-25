@@ -1635,7 +1635,8 @@ class ArquitectoApp(
             cols_aplicadas_refs["all"].append((col, hdr, colores_header[i % len(colores_header)]))
 
             def _usar(v=var, n=i+1, label=label_txt, col_ref=col, hdr_ref=hdr,
-                      hdr_color=colores_header[i % len(colores_header)]):
+                      hdr_color=colores_header[i % len(colores_header)],
+                      pos=pos_text, neg=neg_text):
                 """Aplica al editor SIN cerrar la ventana del comparador.
 
                 - Cambia el combo del modelo activo si el label trae el
@@ -1653,8 +1654,21 @@ class ArquitectoApp(
                         break
                 modelo_aplicado = self._intentar_cambiar_modelo(nombre_modelo)
 
+                # Reconstruir formato POSITIVE/NEGATIVE si la variante venía
+                # "pelada" (sin etiquetas). Sin esto, al pulsar Usar el
+                # txt_salida pierde el formato esperado por el resto de la app.
+                if "POSITIVE PROMPT:" in v.upper() or "POSITIVE:" in v.upper():
+                    # Ya viene formateado, aplicar tal cual
+                    texto_aplicar = v
+                elif pos and neg and tiene_neg:
+                    texto_aplicar = f"POSITIVE PROMPT: {pos}\n\nNEGATIVE PROMPT: {neg}"
+                elif pos:
+                    texto_aplicar = f"POSITIVE PROMPT: {pos}"
+                else:
+                    texto_aplicar = v
+
                 # Aplicar prompt al resultado
-                self.actualizar_salida(v)
+                self.actualizar_salida(texto_aplicar)
 
                 # Marcar visualmente: cabecera dorada en la card aplicada
                 for prev_col, prev_hdr, prev_color in cols_aplicadas_refs.get("all", []):

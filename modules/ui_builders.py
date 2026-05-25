@@ -239,6 +239,10 @@ class UIBuildersMixin:
                 ("🚀  Auto-mejora", self._cmd_automejora_periodica),
                 ("📝  Crítica historial", self._cmd_critica_historial),
                 ("📈  Estadísticas", self._abrir_estadisticas),
+            ]),
+            ("📚 Aprender", "#2e8a9e", [
+                ("ℹ️  Acerca de G-Prompt", self._cmd_acerca_de),
+                ("⌨️  Atajos teclado", self.atajos.cmd_mostrar_atajos),
                 ("📖  Guía de estilos", lambda: abrir_guia_estilos(self, self.modo_var.get() if hasattr(self, "modo_var") else None)),
                 ("📖  Modo educativo", self._cmd_modo_educativo),
                 ("📚  Tutorial completo", self.atajos.abrir_tutorial),
@@ -275,7 +279,6 @@ class UIBuildersMixin:
             ]),
             ("🎨 UI", "#7a7a8a", [
                 ("⚙️  Ajustes", self.cmd_preferencias),
-                ("⌨️  Atajos teclado", self.atajos.cmd_mostrar_atajos),
                 ("📚  Biblioteca", self._abrir_biblioteca),
                 ("🌗  Cambiar tema", self._cmd_toggle_tema),
                 ("🏠  Dashboard", self._cmd_dashboard),

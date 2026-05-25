@@ -322,6 +322,9 @@ class TestIterarElemento:
         h = _host(
             txt_salida=_txt(txt_actual),
             deepseek=deepseek,
+            # _iterar_elemento usa _extraer_neg_de_bloque del CoreMixin para
+            # decidir si pedir formato POSITIVE/NEGATIVE al LLM
+            _extraer_neg_de_bloque=lambda bloque: None,
         )
         return h
 

@@ -257,6 +257,75 @@ class DialogsMixin:
             logger.debug(f"[silent] {_e}")
         self._active_menu_popup = None
 
+    def _cmd_acerca_de(self) -> None:
+        """Modal 'Acerca de' con info de la app, versión, autor y enlaces."""
+        import webbrowser
+
+        from config import APP_TITLE, AUTHOR, PUBLIC_VERSION
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+
+        v = GPromptWindow(self)
+        v.title("ℹ️ Acerca de G-Prompt Studio")
+        v.geometry("520x520")
+        v.transient(self)
+
+        # Cabecera
+        ctk.CTkLabel(v, text=APP_TITLE, font=ctk.CTkFont(size=20, weight="bold"),
+                     text_color=c["hdr_text"]).pack(pady=(20, 4))
+        ctk.CTkLabel(v, text=f"Versión {PUBLIC_VERSION}",
+                     font=ctk.CTkFont(size=11, slant="italic"),
+                     text_color=c["muted_text"]).pack(pady=(0, 16))
+
+        # Descripción
+        descripcion = (
+            "Suite profesional de ingeniería de prompts para IA generativa\n"
+            "(imagen, vídeo, audio) con 14+ LLMs como motores.\n\n"
+            "Incluye comparador de modelos, A/B testing, ADN visual,\n"
+            "import/export JSON pro (Veo/Sora/Kling), dashboard,\n"
+            "atajos de teclado y mucho más."
+        )
+        ctk.CTkLabel(v, text=descripcion, font=ctk.CTkFont(size=11),
+                     text_color=c["panel_text"], justify="center",
+                     wraplength=460).pack(pady=(0, 16))
+
+        # Stats
+        try:
+            n_historial = len(self.store.historial or [])
+            n_fav = len(self.store.favoritos or [])
+            n_estrellas = len(self.store.estrellas or [])
+            stats = f"📋 {n_historial} prompts · ⭐ {n_fav} favoritos · 🌟 {n_estrellas} estrellas"
+            ctk.CTkLabel(v, text=stats, font=ctk.CTkFont(size=10),
+                         text_color=c["muted_text"]).pack(pady=(0, 16))
+        except Exception as _e:
+            logger.debug(f"[silent acerca stats] {_e}")
+
+        # Autor
+        ctk.CTkLabel(v, text=f"Creado por {AUTHOR}",
+                     font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=c["panel_text"]).pack(pady=(8, 6))
+
+        # Enlaces
+        links_frame = ctk.CTkFrame(v, fg_color="transparent")
+        links_frame.pack(pady=(0, 14))
+        enlaces = [
+            ("🐙 GitHub", "https://github.com/Gustaafvito/gprompt-studio"),
+            ("💖 Patreon", "https://www.patreon.com/Gustaafvito"),
+            ("📺 YouTube", "https://www.youtube.com/@gustaafvito"),
+            ("🐦 X / Twitter", "https://x.com/gustaafvito"),
+        ]
+        for label, url in enlaces:
+            ctk.CTkButton(links_frame, text=label, width=130, height=28,
+                          fg_color=c["fg_dark"],
+                          font=ctk.CTkFont(size=10),
+                          command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=4)
+
+        # Botón cerrar
+        ctk.CTkButton(v, text="Cerrar", width=120, height=32,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      command=v.destroy).pack(pady=(8, 16))
+
     def _cmd_toggle_tema(self):
         """Cambia entre tema claro y oscuro."""
         actual = ctk.get_appearance_mode()
