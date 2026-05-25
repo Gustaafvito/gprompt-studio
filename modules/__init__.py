@@ -20,11 +20,13 @@ from .modo_cliente import ModoClienteMixin
 from .multiprompt import MultiPromptMixin
 from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionMixin
+from .refinamiento import RefinamientoMixin
 from .sesion_video import SesionVideoMixin
 from .tools_analysis import ToolsAnalysisMixin
 from .tools_creative import ToolsCreativeMixin
 from .tools_workflow import ToolsWorkflowMixin
 from .ui_builders import UIBuildersMixin
+from .ui_events import UiEventsMixin
 from .workers_ia import WorkersIaMixin
 
 __all__ = [
@@ -43,6 +45,8 @@ __all__ = [
     "ModoClienteMixin",
     "JsonPromptMixin",
     "PromptsInyeccionMixin",
+    "RefinamientoMixin",
+    "UiEventsMixin",
     "AbTestingMixin",
     "AtajosAyudaMixin",
     "GPromptWindow",

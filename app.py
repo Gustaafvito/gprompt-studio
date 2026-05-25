@@ -97,11 +97,13 @@ from modules import (
     MultiPromptMixin,
     PreviewService,
     PromptsInyeccionMixin,
+    RefinamientoMixin,
     SesionVideoMixin,
     ToolsAnalysisMixin,
     ToolsCreativeMixin,
     ToolsWorkflowMixin,
     UIBuildersMixin,
+    UiEventsMixin,
     WorkersIaMixin,
     install_components,
 )
@@ -156,6 +158,8 @@ class ArquitectoApp(
     PromptsInyeccionMixin,
     AbTestingMixin,
     AtajosAyudaMixin,
+    UiEventsMixin,
+    RefinamientoMixin,
 ):
 
     def __init__(self):
