@@ -250,13 +250,13 @@ class WorkersIaMixin:
                     f"para que el prompt reproduzca FIELMENTE lo que se ve en la imagen. "
                     f"MANTÉN la estructura y estilo del prompt original. {formato}\n"
                     f"⛔ Límite: {limite_chars} caracteres.\n"
-                    f"Estilos: {self.estilos_texto()}." + self.construir_modelo_info()
+                    f"Estilos: {self.estilos_texto()}." + self.prompts.construir_modelo_info()
                 )
             else:
                 # MODO GENERAR: crear prompt nuevo desde imagen
                 formato = " FORMATO OBLIGATORIO: tags separados por comas con pesos (tag:1.2). NO prosa fluida." if es_tag_based else ""
                 regla_longitud = f" ⛔ REGLA ESTRICTA: El prompt FINAL no debe superar los {limite_chars} caracteres en total."
-                peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.estilos_texto()}.{formato}{regla_longitud}" + self.construir_modelo_info()
+                peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.estilos_texto()}.{formato}{regla_longitud}" + self.prompts.construir_modelo_info()
 
             texto = self.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
             texto = limpiar_marcadores(texto)

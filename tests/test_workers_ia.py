@@ -65,6 +65,13 @@ def _host(*, deepseek_resp="POSITIVE PROMPT: nice\nNEGATIVE PROMPT: bad",
         # Construcción de petición
         _construir_peticion=lambda idea, letra: f"P[{letra}]:{idea}",
         construir_modelo_info=lambda: " Modelo: TestModel.",
+        # Componente prompts (PromptsComponent) — delega al host
+        prompts=SimpleNamespace(
+            construir_modelo_info=lambda: " Modelo: TestModel.",
+            inyectar_specs_modelo=lambda sp: sp,
+            inyectar_specs_audio=lambda sp: sp,
+            inyectar_destino=lambda sp: sp,
+        ),
         estilos_texto=lambda: "cinematic, dramatic",
         # UI methods
         after=lambda _delay, fn=None: fn() if callable(fn) else None,

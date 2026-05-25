@@ -86,8 +86,38 @@ class DialogsComponent(_Component):
     _name = "dialogs"
 
 
+class PromptsComponent(_Component):
+    """Inyección de specs del modelo en system prompts (PromptsInyeccionMixin).
+
+    Primer servicio "real" con API pública explícita (nombres sin underscore).
+    Patrón piloto para A1 (Mixins → Composición pura). El mixin sigue
+    heredado en ArquitectoApp por compatibilidad, pero los call sites se
+    pueden migrar gradualmente a `self.prompts.X()`. Cuando todos estén
+    migrados, se puede quitar el mixin del MRO.
+    """
+    _name = "prompts"
+
+    def inyectar_specs_modelo(self, system_prompt: str) -> str:
+        return self.app._inyectar_specs_modelo(system_prompt)
+
+    def inyectar_specs_video(self, system_prompt: str) -> str:
+        return self.app._inyectar_specs_video(system_prompt)
+
+    def inyectar_specs_imagen(self, system_prompt: str) -> str:
+        return self.app._inyectar_specs_imagen(system_prompt)
+
+    def inyectar_specs_audio(self, system_prompt: str) -> str:
+        return self.app._inyectar_specs_audio(system_prompt)
+
+    def inyectar_destino(self, system_prompt: str) -> str:
+        return self.app._inyectar_destino(system_prompt)
+
+    def construir_modelo_info(self) -> str:
+        return self.app.construir_modelo_info()
+
+
 def install_components(app) -> None:
-    """Instala los 8 componentes como atributos del app."""
+    """Instala los 9 componentes como atributos del app."""
     app.core = CoreComponent(app)
     app.ui = UIComponent(app)
     app.creative = CreativeComponent(app)
@@ -96,4 +126,5 @@ def install_components(app) -> None:
     app.data = DataComponent(app)
     app.backup = BackupComponent(app)
     app.dialogs = DialogsComponent(app)
-    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs")
+    app.prompts = PromptsComponent(app)
+    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts")

@@ -686,9 +686,9 @@ class CoreMixin:
         if modo == "audio":
             motor = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "Suno v5"
             sys_p = SYSTEM_AUDIO_SUNO if motor.startswith("Suno") else SYSTEM_AUDIO_SEAART
-            sys_p = self._inyectar_specs_audio(sys_p)
+            sys_p = self.prompts.inyectar_specs_audio(sys_p)
             if brief: sys_p = sys_p + BRIEF_MODIFIER
-            sys_p = self._inyectar_destino(sys_p)
+            sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
             return
 
@@ -699,9 +699,9 @@ class CoreMixin:
                 sys_p = SYSTEM_NATURAL_NSFW
             else:
                 sys_p = SYSTEM_NATURAL_SFW
-            sys_p = self._inyectar_specs_modelo(sys_p)
+            sys_p = self.prompts.inyectar_specs_modelo(sys_p)
             if brief: sys_p = sys_p + BRIEF_MODIFIER
-            sys_p = self._inyectar_destino(sys_p)
+            sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
         else:
             if modo == "video":
@@ -716,9 +716,9 @@ class CoreMixin:
 
             neg_final = neg_base + (", " + neg_custom if neg_custom else "")
             sys_p = sys_p.replace("[negative tags]", neg_final)
-            sys_p = self._inyectar_specs_modelo(sys_p)
+            sys_p = self.prompts.inyectar_specs_modelo(sys_p)
             if brief: sys_p = sys_p + BRIEF_MODIFIER
-            sys_p = self._inyectar_destino(sys_p)
+            sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
 
     # Inyección de specs por modo, plantillas y construcción de modelo info:
@@ -737,7 +737,7 @@ class CoreMixin:
                      f"{self._anclaje_visual}\n"
                      f"⚠️ Estos rasgos son OBLIGATORIOS y deben aparecer en el output.")
 
-        return base + self.construir_modelo_info()
+        return base + self.prompts.construir_modelo_info()
 
     def _safe_pack(self, widget, **kwargs):
         """Empaqueta widget con 'before' solo si la referencia no está oculta por Focus."""
