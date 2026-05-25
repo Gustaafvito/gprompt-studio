@@ -22,7 +22,7 @@ logger = logging.getLogger("gprompt")
 
 
 class DashboardMixin:
-    def _cmd_dashboard(self):
+    def _cmd_dashboard(self) -> None:
         """🏠 Dashboard v2 — Panel de control completo con estadísticas, accesos
         rápidos, gráficos y herramientas.
 

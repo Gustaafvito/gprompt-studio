@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class ToolsAnalysisMixin:
     """Mixin containing all analysis tool methods."""
 
-    def _cmd_modo_educativo(self):
+    def _cmd_modo_educativo(self) -> None:
         """Abre el glosario de términos AI desde data/glosario.json.
 
         47 entradas en 5 categorías, con buscador, filtro y botón "▶ Probar"
@@ -28,7 +28,7 @@ class ToolsAnalysisMixin:
         from modules.glosario import abrir_glosario
         abrir_glosario(self)
 
-    def _cmd_critica_historial(self):
+    def _cmd_critica_historial(self) -> None:
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""
         items = self.store.historial or []
         if len(items) < 5:
@@ -83,7 +83,7 @@ class ToolsAnalysisMixin:
                       fg_color="#444", hover_color="#555",
                       command=vent_sel.destroy).pack(pady=2)
 
-    def _critica_ejecutar(self, ultimos: list):
+    def _critica_ejecutar(self, ultimos: list) -> None:
         self.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
 
         modelos_usados = Counter()
@@ -164,7 +164,7 @@ class ToolsAnalysisMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False):
+    def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False) -> None:
         """Ventana de resultados de la crítica."""
         vent = GPromptWindow(self)
         vent.title("🔍 Análisis de tus patrones" + (" (caché)" if cacheado else ""))
@@ -223,7 +223,7 @@ class ToolsAnalysisMixin:
 
         self.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
 
-    def _cmd_automejora_periodica(self):
+    def _cmd_automejora_periodica(self) -> None:
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
         items = self.store.historial or []
         if len(items) < 3:
@@ -262,7 +262,7 @@ class ToolsAnalysisMixin:
                       fg_color="#444", hover_color="#555",
                       command=vent_sel.destroy).pack(pady=2)
 
-    def _auto_mejora_ejecutar(self, ultimos: list):
+    def _auto_mejora_ejecutar(self, ultimos: list) -> None:
         """Lanza la auto-mejora con un set concreto de prompts."""
         self.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
 
@@ -302,7 +302,7 @@ class ToolsAnalysisMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str):
+    def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str) -> None:
         """Render cards colapsables con originales/sugerencias y botón Aplicar."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         bg_card = "#ffffff" if is_lt else "#1a1a2e"
@@ -409,7 +409,7 @@ class ToolsAnalysisMixin:
 
         self.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
 
-    def _abrir_estadisticas(self):
+    def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
         import datetime as _dt
         from collections import Counter, defaultdict
@@ -670,7 +670,7 @@ class ToolsAnalysisMixin:
 
         _render()
 
-    def _cmd_scoring(self):
+    def _cmd_scoring(self) -> None:
         """Puntúa el prompt actual y genera versión mejorada.
 
         Renderizado con código de colores: cada score se detecta con
@@ -906,7 +906,7 @@ class ToolsAnalysisMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _detectar_nsfw_auto(self, idea=None):
+    def _detectar_nsfw_auto(self, idea: str | None = None) -> bool:
         """Detecta si el prompt actual tiene elementos NSFW y avisa."""
         texto = idea if idea else self.txt_salida.get("1.0", "end").strip()
         actual = texto.lower()
@@ -916,7 +916,7 @@ class ToolsAnalysisMixin:
                 self.nsfw_var.set(True)
             self.set_estado("⚠️ Contenido NSFW detectado — activado modo NSFW", "#e74c3c")
 
-    def _guardar_seed_favorito(self):
+    def _guardar_seed_favorito(self) -> None:
         """Guarda la configuración actual como seed favorito."""
         from tkinter import simpledialog
         prefs = self.store.cargar_preferencias()
@@ -940,7 +940,7 @@ class ToolsAnalysisMixin:
         self.store.guardar_preferencias(prefs)
         self.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
 
-    def _abrir_seeds_favoritos(self):
+    def _abrir_seeds_favoritos(self) -> None:
         """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
         from tkinter import messagebox
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1071,7 +1071,7 @@ class ToolsAnalysisMixin:
                                        vent.after(300, _refrescar))
                       ).pack(pady=(5, 12))
 
-    def _aplicar_seed(self, seed):
+    def _aplicar_seed(self, seed) -> None:
         """Aplica una configuración guardada como seed."""
         mensajes = []
         aplicado = False
@@ -1134,7 +1134,7 @@ class ToolsAnalysisMixin:
         else:
             self.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
 
-    def _autocompletar_tags(self, event=None):
+    def _autocompletar_tags(self, event=None) -> None:
         """Auto-completar tags mientras escribe."""
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto:
@@ -1151,7 +1151,7 @@ class ToolsAnalysisMixin:
             if palabra in texto and tag not in texto:
                 pass  # Podría sugerir pero no es crítico
 
-    def _abrir_atajos_tags(self):
+    def _abrir_atajos_tags(self) -> None:
         """Ventana para gestionar atajos de tags (snippets)."""
         prefs = self.store.cargar_preferencias()
         atajos = prefs.get("atajos_tags", [])
@@ -1232,7 +1232,7 @@ class ToolsAnalysisMixin:
 
         refrescar()
 
-    def _copiar_comfyui_json(self):
+    def _copiar_comfyui_json(self) -> None:
         """Crea y exporta un workflow completo de ComfyUI."""
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual:
@@ -1314,7 +1314,7 @@ class ToolsAnalysisMixin:
         json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo)
 
-    def _mostrar_ventana_comfyui(self, json_str, modelo):
+    def _mostrar_ventana_comfyui(self, json_str: str, modelo: str) -> None:
         """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar."""
         from config import get_theme_colors
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1373,7 +1373,7 @@ class ToolsAnalysisMixin:
         ctk.CTkButton(frame_btn, text="❌ Cerrar", width=80, fg_color="#991b1b",
                       hover_color="#7f1d1d", command=vent.destroy).pack(side="right")
 
-    def _traducir_salida(self):
+    def _traducir_salida(self) -> None:
         """Traduce el prompt actual al español en una ventana aparte."""
         actual = self.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 10:
@@ -1391,7 +1391,7 @@ class ToolsAnalysisMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _mostrar_ventana_traduccion(self, texto):
+    def _mostrar_ventana_traduccion(self, texto: str) -> None:
         """Ventana con la traducción y opciones: Usar / Copiar."""
         from config import get_theme_colors
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1439,7 +1439,7 @@ class ToolsAnalysisMixin:
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=vent.destroy).pack(side="right")
 
-    def _mostrar_consejo_contextual(self, modelo_name, specs):
+    def _mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:
         """Muestra consejos rápidos en la barra de estado según el contexto del modelo seleccionado."""
         consejos = []
         nota = specs.get("nota", 0)
@@ -1461,7 +1461,7 @@ class ToolsAnalysisMixin:
             consejo = random.choice(consejos)
             self.set_estado(consejo, "#3498db")
 
-    def _validar_compatibilidad_modelo(self):
+    def _validar_compatibilidad_modelo(self) -> None:
         """Valida la compatibilidad del modelo con la configuración actual."""
         modelo = self.modelo_img_var.get() if hasattr(self, 'modelo_img_var') else ""
         if not modelo:
@@ -1469,7 +1469,7 @@ class ToolsAnalysisMixin:
         # Aquí iría la lógica de validación
         return True, ""
 
-    def _actualizar_compat_inline(self):
+    def _actualizar_compat_inline(self) -> None:
         """Actualiza la compatibilidad inline en la UI."""
         valido, msg = self._validar_compatibilidad_modelo()
         if hasattr(self, 'lbl_compat'):
@@ -1478,7 +1478,7 @@ class ToolsAnalysisMixin:
             else:
                 self.lbl_compat.configure(text=f"⚠️ {msg}", text_color="#e67e22")
 
-    def _cmd_modal_compatibilidad(self):
+    def _cmd_modal_compatibilidad(self) -> None:
         """Abre modal de compatibilidad de modelos."""
         vent = GPromptWindow(self)
         vent.title("🔍 Compatibilidad de modelos")

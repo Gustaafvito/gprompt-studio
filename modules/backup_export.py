@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class BackupExportMixin:
     """Mixin containing all backup, export, and search methods."""
 
-    def _cmd_backup_completo(self):
+    def _cmd_backup_completo(self) -> None:
         """Exporta TODOS los datos del usuario a un único archivo JSON de respaldo."""
         from tkinter import filedialog, messagebox
         archivo = filedialog.asksaveasfilename(
@@ -72,7 +72,7 @@ class BackupExportMixin:
             "preferencias": self.store.cargar_preferencias() or {},
         }
 
-    def _cmd_restore_completo(self):
+    def _cmd_restore_completo(self) -> None:
         """Restaura un backup JSON completo. ANTES de sobreescribir, guarda
         automáticamente un backup de seguridad de los datos actuales en
         ~/.arquitecto_prompts/backups/pre_restore_AAAA-MM-DD_HHMM.json
@@ -187,7 +187,7 @@ class BackupExportMixin:
             self.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self)
 
-    def _cmd_exportar_csv(self):
+    def _cmd_exportar_csv(self) -> None:
         """Selector previo de qué exportar: historial / favoritos / estrellas /
         todos juntos. Después abre filedialog y vuelca a CSV.
         """
@@ -248,7 +248,7 @@ class BackupExportMixin:
                       fg_color="#444", hover_color="#555",
                       command=sel.destroy).pack(pady=2)
 
-    def _exportar_csv_ejecutar(self, colecciones: list):
+    def _exportar_csv_ejecutar(self, colecciones: list) -> None:
         """Exporta las colecciones seleccionadas a un CSV único.
 
         Args:
@@ -321,7 +321,7 @@ class BackupExportMixin:
             self.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self)
 
-    def _cmd_export_cli(self):
+    def _cmd_export_cli(self) -> None:
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.
 
         15 formatos disponibles:
@@ -582,7 +582,7 @@ class BackupExportMixin:
                       text_color="#e2e8f0",
                       command=_copiar_filtrados).pack(pady=(4, 12))
 
-    def _cmd_busqueda_global(self):
+    def _cmd_busqueda_global(self) -> None:
         """Búsqueda global con debounce 250ms + filtro por tipo.
 
         Antes: `ent.bind("<KeyRelease>", buscar)` disparaba la búsqueda
@@ -780,7 +780,7 @@ class BackupExportMixin:
             _busqueda_pendiente["after_id"] = vent.after(250, buscar)
         ent.bind("<KeyRelease>", _disparar_busqueda)
 
-    def _close_menu_if_open(self, event=None):
+    def _close_menu_if_open(self, event=None) -> None:
         """Cierra el menú desplegable si está abierto."""
         if hasattr(self, '_menu_activo') and self._menu_activo:
             try:
