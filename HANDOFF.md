@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Generado al final de la **sesión 6** (continuación de las sesiones 1-5).
+Generado al final de la **sesión 7** (continuación de las sesiones 1-6).
 Working tree limpio cuando se generó.
 
 ---
@@ -17,9 +17,10 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **210/210** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main`) |
+| Branch | `main` (sincronizado con `origin/main` en `5294de0`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **20** |
+| **Componentes (A1)** | **6/20 migrados** — `prompts`, `ab`, `json`, `refinar`, `workers`, `atajos` |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | F401 (imports muertos) | **0** (antes 171 silenciados) |
@@ -408,6 +409,136 @@ para corregir `data/model_specs_imagen.json`.
 - F5 Diff entre versiones más visible (existe `_cmd_diff_versiones`).
 - F1 Plugin system (ambicioso).
 - F2 API REST (ambicioso).
+
+---
+
+## ✅ Sesión 7 — A1 iniciado + bug fixes UI
+
+### Refactor A1: 6/20 mixins migrados a Composición
+
+Patrón establecido: `XxxComponent(_Component)` en `components.py` con
+API pública sin underscore, registrado en `install_components(app)`,
+call sites migrados de `self._método()` → `self.xxx.metodo()`.
+
+| # | Mixin → Componente | Acceso | Entry points | Call sites migrados |
+|---|---|---|---:|---:|
+| 1 | `PromptsInyeccionMixin` → `PromptsComponent` | `self.prompts` | 6 | 9 |
+| 2 | `AbTestingMixin` → `AbTestingComponent` | `self.ab` | 2 | 2 |
+| 3 | `JsonPromptMixin` → `JsonPromptComponent` | `self.json` | 2 | 2 |
+| 4 | `RefinamientoMixin` → `RefinamientoComponent` | `self.refinar` | 5 | 11 |
+| 5 | `WorkersIaMixin` → `WorkersIaComponent` | `self.workers` | 5 | 8 |
+| 6 | `AtajosAyudaMixin` → `AtajosAyudaComponent` | `self.atajos` | 3 | 3 |
+
+**Total**: 23 entry points expuestos, **35 call sites migrados** en 7
+archivos (core.py, workers_ia.py, ui_builders.py, tools_creative.py,
+tools_workflow.py, refinamiento.py, app.py).
+
+Los mixins siguen heredados en `ArquitectoApp` (sin cambios de MRO)
+por compatibilidad — cuando 0 call sites llamen al método legacy,
+se podrá quitar del MRO (objetivo: 20 → 14 mixins tras completar A1).
+
+### Bug fixes y mejoras UI
+
+- **Bug Iterar/Usar perdía formato POSITIVE/NEGATIVE**: el LLM no
+  incluía las etiquetas. Fix: el prompt al LLM ahora pide
+  EXPLÍCITAMENTE el formato en cada variante, y el callback `_usar`
+  reconstruye el texto formateado si la variante viene "pelada".
+- **GPT Image 2 generaba sin etiqueta `PROMPT:`**: en
+  `_inyectar_specs_formato`, modelos `is_natural=True + has_negative=False`
+  no tenían instrucción explícita. Fix: incluir bloque
+  "⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️ PROMPT: ...".
+- **`PROMPT:` no se coloreaba en verde**: `_colorear_resultado` solo
+  buscaba `POSITIVE PROMPT:` / `NEGATIVE PROMPT:`. Fix: añadidas
+  variantes `POSITIVE:`, `NEGATIVE:` y `PROMPT:`.
+
+### UI reorganización (feedback usuario)
+
+- **Nuevo menú `📚 Aprender`**: agrupado contenido formativo:
+  - ℹ️ Acerca de G-Prompt (nuevo `_cmd_acerca_de` en DialogsMixin)
+  - ⌨️ Atajos teclado (movido desde `🎨 UI`)
+  - 📖 Guía de estilos (movido desde `📊 Análisis`)
+  - 📖 Modo educativo (movido desde `📊 Análisis`)
+  - 📚 Tutorial completo (movido desde `📊 Análisis`)
+- **`📊 Análisis`**: ahora solo contiene análisis real
+  (Auto-mejora, Crítica historial, Estadísticas).
+- **`🎨 UI`**: limpio (sin Atajos).
+- **"Acerca de"**: modal con descripción, autor y 3 enlaces
+  (GitHub, YouTube, X). Sin stats personales.
+
+### Persistencia y unificación de switches
+
+- **Persistencia automática**: NSFW, Auto-trad, Brief se guardan en
+  `preferences.json` al cambiar y se restauran al arrancar.
+- **Estilo unificado en los 5 switches** del proyecto (NSFW,
+  Auto-trad, Instrumental, Modo Brief, Sonido, Grabar vídeo sesión):
+  - `width: 50 → 42` / `height: 26 → 20` / `corner_radius: 13 → 10`
+  - `button_length: 8` (pelota más pequeña, antes default ~16)
+  - `border_width: 2 → 1`
+  - `button_color: #ffffff → #e5e7eb` (gris claro, no blanco puro)
+
+### Rebuild + redistribución (final del día)
+
+3 artefactos en `~/OneDrive/Desktop/GPromptStudio-Distribuible/`
+con timestamps del último build (23:03):
+- `GPromptStudio-Portable/GPromptStudio.exe` (13.4 MB) — onedir
+- `GPromptStudio-Portable-Onefile.exe` (124 MB) — onefile
+- `GPromptStudio-Setup-1.0.0.exe` (88.5 MB) — installer
+
+### Commits de sesión 7 (14 commits)
+
+```
+5294de0 fix(ui): pelota más pequeña + unificar estilo en los 5 switches
+1599da5 fix(ui): switches más proporcionados + coloreado de etiqueta PROMPT
+79ceea2 fix(prompt-natural): forzar etiqueta PROMPT: en modelos natural sin negative
+5220eb3 revert(ui): restaurar colores originales del switch NSFW
+602c5d8 fix(ui): no llamar reiniciar_memoria al sincronizar visual inicial de switches
+681a453 fix(ui): unificar estilo de switches NSFW y Auto-trad cuando están OFF
+769e40a feat(prefs): persistir estado de switches NSFW/Auto-trad/Brief entre sesiones
+37353fa fix(acerca-de): URLs correctas + quitar stats personales
+57be3ff fix(refinar) + ui: bug Iterar/Usar + nuevo menú "Aprender"
+daf70a5 refactor(A1): pasos 4-6 — Refinamiento + WorkersIa + AtajosAyuda (6/20)
+4ad15ed refactor(A1): tercer paso — JsonPromptComponent (3/20 migrados)
+a72b750 refactor(A1): segundo paso — AbTestingComponent (2/20 migrados)
+426cdd8 docs: actualizar HANDOFF con A1 en marcha (1/20 mixins migrados)
+e60b5f9 refactor(A1): primer paso Mixins → Composición — PromptsComponent
+```
+
+### 🚧 Pendiente para sesión 8
+
+#### 🔴 ALTA
+- **A1 continuar (14/20 mixins restantes)** — orden sugerido por
+  facilidad:
+  1. `ModoClienteMixin` (brief profesional + 5 propuestas)
+  2. `MultiPromptMixin` (Mood/Story/Board/Walk)
+  3. `SesionVideoMixin` (grabación + tutorial)
+  4. `AdnVisualMixin` (rasgos visuales inmutables)
+  5. `UiEventsMixin` (event handlers UI)
+  6. `DashboardMixin` (1 método grande)
+  7. `ToolsAnalysisMixin` (22 métodos)
+  8. `DataMgmtMixin`
+  9. `BackupExportMixin`
+  10. `DialogsMixin` (sin _cmd_dashboard)
+  11. `ToolsCreativeMixin`
+  12. `ToolsWorkflowMixin`
+  13. `UIBuildersMixin` (muy grande)
+  14. `CoreMixin` (el más complejo, último)
+
+  Tras completar todos: quitar mixins del MRO de `ArquitectoApp`
+  (20 → ?, dejando solo lo imprescindible).
+
+- **T1 Tests pendientes** (8 módulos sin tests):
+  `adn_visual`, `multiprompt`, `sesion_video`, `modo_cliente`,
+  `ui_events`, `atajos_ayuda`, `dialogs`, `core`.
+
+#### 🟡 MEDIA
+- **Particiones restantes**: `app.py` 2391, `ui_builders.py` 2167,
+  `tools_creative.py` 1881, `core.py` 1665, `dashboard.py` 1457.
+- **Type hints en mixins viejos** restantes (13 sin anotar).
+
+#### 🟢 BAJA
+- Code-signing del `.exe` (SmartScreen warning).
+- SeaArt char limits (necesita info del usuario).
+- Performance: lazy load JSON, semáforo workers, virtual scrolling.
 
 ---
 
