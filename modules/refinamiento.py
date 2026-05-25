@@ -238,7 +238,7 @@ class RefinamientoMixin:
         self.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
         self.toggle_botones(False)
         threading.Thread(
-            target=self._worker_ia,
+            target=self.workers.worker_ia,
             args=(peticion,),
             kwargs={"es_refinamiento": True, "texto_previo": texto},
             daemon=True,

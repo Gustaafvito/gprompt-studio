@@ -241,7 +241,7 @@ class UIBuildersMixin:
                 ("📈  Estadísticas", self._abrir_estadisticas),
                 ("📖  Guía de estilos", lambda: abrir_guia_estilos(self, self.modo_var.get() if hasattr(self, "modo_var") else None)),
                 ("📖  Modo educativo", self._cmd_modo_educativo),
-                ("📚  Tutorial completo", self._abrir_tutorial),
+                ("📚  Tutorial completo", self.atajos.abrir_tutorial),
             ]),
             ("💾 Backup", "#a04545", [
                 ("💼  Backup completo", self._cmd_backup_completo),
@@ -275,7 +275,7 @@ class UIBuildersMixin:
             ]),
             ("🎨 UI", "#7a7a8a", [
                 ("⚙️  Ajustes", self.cmd_preferencias),
-                ("⌨️  Atajos teclado", self._cmd_mostrar_atajos),
+                ("⌨️  Atajos teclado", self.atajos.cmd_mostrar_atajos),
                 ("📚  Biblioteca", self._abrir_biblioteca),
                 ("🌗  Cambiar tema", self._cmd_toggle_tema),
                 ("🏠  Dashboard", self._cmd_dashboard),
@@ -1343,11 +1343,11 @@ class UIBuildersMixin:
         # ═══ FILA 2 — grupos con título visible ═══
         grupos_r2 = [
             ("🔁 EDICIÓN", MORADO_ADN, [
-                ("🔁 Refinar",         90, MORADO_ADN,   self.cmd_refinar,            "Mejora el prompt (click der: opciones específicas)"),
+                ("🔁 Refinar",         90, MORADO_ADN,   self.refinar.cmd_refinar,    "Mejora el prompt (click der: opciones específicas)"),
                 ("💬 Copiloto",        95, MORADO_ADN,   self.cmd_copiloto,           "Chat para editar"),
             ]),
             ("🔂 VARIANTES", NARANJA_VAR, [
-                ("🔂 Iterar",          80, NARANJA_VAR,  self._cmd_iteracion,         "5 variantes cambiando 1 elemento"),
+                ("🔂 Iterar",          80, NARANJA_VAR,  self.refinar.cmd_iterar,     "5 variantes cambiando 1 elemento"),
                 ("⚡ Pulse",           75, NARANJA_VAR,  self._cmd_pulse,             "3 versiones: conservador/equilibrado/creativo"),
                 ("🤖 Sugerir",         85, NARANJA_VAR,  self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             ]),
@@ -1393,7 +1393,7 @@ class UIBuildersMixin:
                     CTkToolTip(btn, delay=0.5, message=tooltip)
                     self.action_btns.append(btn)
                     if text == "🔁 Refinar":
-                        btn.bind("<Button-3>", self._menu_refinar_especifico)
+                        btn.bind("<Button-3>", self.refinar.menu_refinar_especifico)
                     elif text == "🎞 Story":
                         self.btn_story = btn
                     elif text == "📽 Board":

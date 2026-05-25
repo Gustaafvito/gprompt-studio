@@ -213,7 +213,7 @@ class ArquitectoApp(
         self._build_salida()
 
         # ── Atajos ────────────────────────────────────────────────
-        self._bind_shortcuts()
+        self.atajos.bind_shortcuts()
 
         # ── Inicializar ───────────────────────────────────────────
         self.actualizar_combo_personajes()

@@ -179,6 +179,7 @@ class TestCmdRefinar:
     def _setup(self, *, txt="POSITIVE PROMPT: a cat", modo="imagen",
                is_natural=False, specs=None, anclaje="",
                idea="", pers="", lora="", monkeypatch_thread=None):
+        worker_mock = MagicMock()
         h = _host(
             txt_salida=_txt(txt),
             txt_idea=_txt(idea),
@@ -188,7 +189,9 @@ class TestCmdRefinar:
             is_natural_mode=lambda: is_natural,
             get_current_model_specs=lambda: specs,
             _ultimo_anclaje_visual=anclaje,
-            _worker_ia=MagicMock(),
+            _worker_ia=worker_mock,
+            # cmd_refinar usa self.workers.worker_ia tras migración A1
+            workers=SimpleNamespace(worker_ia=worker_mock),
         )
         if monkeypatch_thread is not None:
             monkeypatch_thread.setattr(

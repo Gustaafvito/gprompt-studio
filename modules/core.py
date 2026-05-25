@@ -946,7 +946,7 @@ class CoreMixin:
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
                 self._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
-                threading.Thread(target=self._worker_ia,
+                threading.Thread(target=self.workers.worker_ia,
                                  args=(peticion, True), daemon=True).start()
 
             def _generar(t=idea_texto):
@@ -1248,7 +1248,7 @@ class CoreMixin:
         self.set_estado("⏳ Generando ideas...", "#f39c12")
         self._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_ia, args=(peticion, True), daemon=True).start()
+        threading.Thread(target=self.workers.worker_ia, args=(peticion, True), daemon=True).start()
 
     def cmd_prompt(self):
         self._ocultar_ideas()
@@ -1268,7 +1268,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⏳ Compilando prompt...", "#f39c12")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_prompt_traduccion, args=(idea,), daemon=True).start()
+        threading.Thread(target=self.workers.worker_prompt_traduccion, args=(idea,), daemon=True).start()
 
     # ⚡ QUICK GENERATE
 
@@ -1301,7 +1301,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⚡ Quick generate...", "#d97706")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_prompt_quick, args=(idea,), daemon=True).start()
+        threading.Thread(target=self.workers.worker_prompt_quick, args=(idea,), daemon=True).start()
 
     def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
                         key_pref=None):
@@ -1417,7 +1417,7 @@ class CoreMixin:
         self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
         self._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_ia,
+        threading.Thread(target=self.workers.worker_ia,
                           args=(peticion, False, True, n),
                           daemon=True).start()
 
@@ -1427,7 +1427,7 @@ class CoreMixin:
         self._ocultar_ideas()
         self._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_vision, daemon=True).start()
+        threading.Thread(target=self.workers.worker_vision, daemon=True).start()
 
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
@@ -1436,7 +1436,7 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.toggle_botones(False)
-        threading.Thread(target=self._worker_imagen_a_prompt, daemon=True).start()
+        threading.Thread(target=self.workers.worker_imagen_a_prompt, daemon=True).start()
 
     def _cmd_convertir_a_video(self):
         """Convierte un prompt de imagen a formato de vídeo."""

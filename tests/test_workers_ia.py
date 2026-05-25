@@ -91,6 +91,12 @@ def _host(*, deepseek_resp="POSITIVE PROMPT: nice\nNEGATIVE PROMPT: bad",
     defaults.update(overrides)
     for k, v in defaults.items():
         setattr(h, k, v)
+    # _worker_ia llama a self.refinar.mostrar_diff_refinamiento en
+    # modo refinamiento tras la migración A1. Apuntamos al mismo mock
+    # que _mostrar_diff_refinamiento para mantener las aserciones de tests.
+    h.refinar = SimpleNamespace(
+        mostrar_diff_refinamiento=h._mostrar_diff_refinamiento,
+    )
     return h
 
 

@@ -826,17 +826,17 @@ class ToolsWorkflowMixin:
                 elif accion_id == "variacion_auto":
                     self._cmd_variacion_auto_en_macro()
                 elif accion_id == "refinar":
-                    self.cmd_refinar()
+                    self.refinar.cmd_refinar()
                 elif accion_id == "refinar_cinematografico":
-                    self._refinar_con_instruccion("más cinematográfico, con encuadre épico, movimientos de cámara dramáticos, iluminación de película")
+                    self.refinar.refinar_con_instruccion("más cinematográfico, con encuadre épico, movimientos de cámara dramáticos, iluminación de película")
                 elif accion_id == "refinar_facial":
-                    self._refinar_con_instruccion("más detalle facial, ojos detallados, textura de piel realista, expresión emotiva")
+                    self.refinar.refinar_con_instruccion("más detalle facial, ojos detallados, textura de piel realista, expresión emotiva")
                 elif accion_id == "refinar_iluminacion":
-                    self._refinar_con_instruccion("iluminación más profesional, luces volumétricas, ambiente atmosférico, dirección de luz definida")
+                    self.refinar.refinar_con_instruccion("iluminación más profesional, luces volumétricas, ambiente atmosférico, dirección de luz definida")
                 elif accion_id == "refinar_simplificar":
-                    self._refinar_con_instruccion("más simple y conciso. Elimina redundancias, tags innecesarios.")
+                    self.refinar.refinar_con_instruccion("más simple y conciso. Elimina redundancias, tags innecesarios.")
                 elif accion_id == "refinar_mejorado":
-                    self._refinar_con_instruccion("mejorar calidad general, añadir más detalle, optimizar estructura del prompt")
+                    self.refinar.refinar_con_instruccion("mejorar calidad general, añadir más detalle, optimizar estructura del prompt")
                 elif accion_id == "negative_optimo":
                     self._cmd_negative_optimo()
                 elif accion_id == "negative_builder":

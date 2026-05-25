@@ -77,7 +77,7 @@ class WorkersIaMixin:
             # En refinamiento, abrimos el modal de diff con
             # Aplicar/Cancelar en vez de sobrescribir txt_salida directamente.
             if es_refinamiento:
-                self.after(0, lambda: self._mostrar_diff_refinamiento(texto_previo or "", texto))
+                self.after(0, lambda: self.refinar.mostrar_diff_refinamiento(texto_previo or "", texto))
             elif not es_ideas and not es_variaciones:
                 self.after(0, lambda: self.actualizar_salida(texto))
             estado_msg = (f"🔍 Refinamiento listo — revisa el diff ({cerebro_elegido})."

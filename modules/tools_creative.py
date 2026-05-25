@@ -818,10 +818,10 @@ class ToolsCreativeMixin:
                             vent.destroy()
                             self.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
                             return
-                        # Pasamos por _mostrar_diff_refinamiento → Aplicar/Cancelar
+                        # Pasamos por refinar.mostrar_diff_refinamiento → Aplicar/Cancelar
                         if hasattr(self, '_mostrar_diff_refinamiento'):
                             vent.destroy()
-                            self._mostrar_diff_refinamiento(texto_previo, corregido)
+                            self.refinar.mostrar_diff_refinamiento(texto_previo, corregido)
                         else:
                             # Fallback si el método no existe
                             self.actualizar_salida(corregido)

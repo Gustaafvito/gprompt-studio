@@ -86,6 +86,87 @@ class DialogsComponent(_Component):
     _name = "dialogs"
 
 
+class RefinamientoComponent(_Component):
+    """Refinamiento de prompts + iteración + diff (RefinamientoMixin).
+
+    Cuarto servicio del refactor A1. Expone los entry points usados
+    desde otros mixins/UI:
+      - cmd_refinar
+      - cmd_iterar
+      - refinar_con_instruccion(instruccion)
+      - menu_refinar_especifico(event=None)
+      - mostrar_diff_refinamiento(previo, nuevo)
+    """
+    _name = "refinar"
+
+    def cmd_refinar(self) -> None:
+        return self.app.cmd_refinar()
+
+    def cmd_iterar(self) -> None:
+        return self.app._cmd_iteracion()
+
+    def refinar_con_instruccion(self, instruccion: str) -> None:
+        return self.app._refinar_con_instruccion(instruccion)
+
+    def menu_refinar_especifico(self, event=None) -> None:
+        return self.app._menu_refinar_especifico(event)
+
+    def mostrar_diff_refinamiento(self, texto_previo: str, texto_nuevo: str) -> None:
+        return self.app._mostrar_diff_refinamiento(texto_previo, texto_nuevo)
+
+
+class WorkersIaComponent(_Component):
+    """Workers IA en threads (WorkersIaMixin).
+
+    Quinto servicio del refactor A1. Los workers se invocan via
+    threading.Thread(target=...); exponemos referencias a los métodos
+    para que el caller use self.workers.worker_ia en vez de
+    self._worker_ia.
+    """
+    _name = "workers"
+
+    @property
+    def worker_ia(self):
+        return self.app._worker_ia
+
+    @property
+    def worker_vision(self):
+        return self.app._worker_vision
+
+    @property
+    def worker_prompt_traduccion(self):
+        return self.app._worker_prompt_traduccion
+
+    @property
+    def worker_prompt_quick(self):
+        return self.app._worker_prompt_quick
+
+    @property
+    def worker_imagen_a_prompt(self):
+        return self.app._worker_imagen_a_prompt
+
+
+class AtajosAyudaComponent(_Component):
+    """Atajos de teclado + ventana de ayuda + búsqueda global + tutorial
+    (AtajosAyudaMixin).
+
+    Sexto servicio del refactor A1. Solo exponemos los 3 entry points
+    externos (bind, mostrar_atajos, abrir_tutorial). Los handlers
+    individuales de atajos se invocan internamente desde lambdas
+    registradas en bind_shortcuts.
+    """
+    _name = "atajos"
+
+    def bind_shortcuts(self) -> None:
+        return self.app._bind_shortcuts()
+
+    def cmd_mostrar_atajos(self) -> str:
+        return self.app._cmd_mostrar_atajos()
+
+    def abrir_tutorial(self) -> None:
+        return self.app._abrir_tutorial()
+
+
 class JsonPromptComponent(_Component):
     """Import/export JSON profesional Veo/Sora/Kling (JsonPromptMixin).
 
@@ -162,4 +243,10 @@ def install_components(app) -> None:
     app.prompts = PromptsComponent(app)
     app.ab = AbTestingComponent(app)
     app.json = JsonPromptComponent(app)
-    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts, ab, json")
+    app.refinar = RefinamientoComponent(app)
+    app.workers = WorkersIaComponent(app)
+    app.atajos = AtajosAyudaComponent(app)
+    logger.debug(
+        "Componentes instalados: core, ui, creative, workflow, analysis, data, "
+        "backup, dialogs, prompts, ab, json, refinar, workers, atajos"
+    )
