@@ -122,7 +122,7 @@ class PromptsInyeccionMixin:
             if specs["has_negative"]:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\nNEGATIVE PROMPT: [tags a evitar]\n"
             else:
-                extra += "• Solo formato PROMPT: (sin negative)\n"
+                extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\n(No generes NEGATIVE PROMPT — este modelo no lo soporta)\n"
         else:
             extra += "• TIPO: tag-based Danbooru/SD. Usa comas, orden de tags SD.\n"
             es_comfyui_turbo = self._es_comfyui_turbo(self.plataforma_var.get(), modelo)

@@ -208,7 +208,9 @@ class TestInyectarSpecsFormato:
     def test_natural_sin_negative(self):
         h = _host(plataforma_var=_var("X"), _es_comfyui_turbo=lambda *_: False)
         out = h._inyectar_specs_formato("modelo", self.SPECS_NATURAL_SIN_NEG, "")
-        assert "Solo formato PROMPT:" in out
+        # Pedimos al LLM que use 'PROMPT:' literal + aviso de no generar NEGATIVE
+        assert "PROMPT:" in out
+        assert "No generes NEGATIVE" in out
 
     def test_tags_con_pesos_si_no_es_comfyui_turbo(self):
         h = _host(plataforma_var=_var("SeaArt"),
