@@ -18,9 +18,7 @@ Dependencias self (provistas por ArquitectoApp):
   txt_idea, txt_salida y atributos _sesion_* internos.
 """
 import datetime
-import json
 import logging
-import os
 import threading
 from tkinter import filedialog, messagebox
 
@@ -71,7 +69,6 @@ class SesionVideoMixin:
             import os
 
             import imageio
-            import mss
             # Crear directorio de salida si no existe
             output_dir = os.path.join(os.path.expanduser("~"), "GPromptStudio_videos")
             os.makedirs(output_dir, exist_ok=True)

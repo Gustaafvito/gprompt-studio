@@ -22,7 +22,7 @@ import logging
 import re
 import time
 import urllib.request
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 from google.genai import types as genai_types
 

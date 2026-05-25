@@ -1,12 +1,7 @@
 """Analysis Tools Mixin - Statistics, Auto-improve, Critique, Scoring, Education Mode, etc."""
-import datetime
-import json
 import logging
-import os
-import random
 import re
 import threading
-import tkinter as tk
 from collections import Counter
 from typing import TYPE_CHECKING
 
@@ -19,7 +14,7 @@ from workers import limpiar_marcadores
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class ToolsAnalysisMixin:
     """Mixin containing all analysis tool methods."""
@@ -1248,7 +1243,6 @@ class ToolsAnalysisMixin:
         modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
 
         import json
-        import uuid
 
         workflow = {
             "version": "1.0",
@@ -1360,7 +1354,7 @@ class ToolsAnalysisMixin:
             self.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
 
         def _guardar():
-            from tkinter import filedialog, messagebox
+            from tkinter import filedialog
             ruta = filedialog.asksaveasfilename(
                 title="Guardar workflow ComfyUI",
                 defaultextension=".json",

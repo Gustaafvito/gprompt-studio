@@ -21,12 +21,8 @@ Dependencias self (provistas por ArquitectoApp):
   _parsear_bloques_numerados, _abrir_comparador.
 """
 import datetime
-import json
 import logging
-import os
-import re
 import threading
-import tkinter as tk
 
 import customtkinter as ctk
 import pyperclip

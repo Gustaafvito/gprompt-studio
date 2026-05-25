@@ -1,15 +1,10 @@
 """Data Management Mixin - History, Favorites, Stars, Snippets, Formulas, Templates, etc."""
 import datetime
-import json
 import logging
-import os
-import random
-import re
 
 import pyperclip
 
 logger = logging.getLogger(__name__)
-import tkinter as tk
 import tkinter.filedialog as filedialog
 import tkinter.simpledialog as simpledialog
 from pathlib import Path
@@ -29,7 +24,7 @@ from typing import TYPE_CHECKING
 from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class DataMgmtMixin:
     """Mixin containing all data management methods."""

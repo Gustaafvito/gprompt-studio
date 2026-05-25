@@ -31,7 +31,7 @@ Dependencias self (provistas por ArquitectoApp):
 import json
 import logging
 import threading
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 
 import customtkinter as ctk
 import pyperclip
@@ -94,7 +94,6 @@ def _limpiar_json_trailing_commas(texto: str) -> str:
 
     Maneja state machine para no tocar comas dentro de strings.
     """
-    import re as _re
     # Hacer el barrido respetando strings (escapadas con \\")
     out = []
     in_string = False

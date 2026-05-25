@@ -11,7 +11,6 @@ import json
 import logging
 import os
 import urllib.request
-from typing import Optional
 
 try:
     from openai import OpenAI

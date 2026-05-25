@@ -3,30 +3,19 @@
 Generador de prompts para creadores de imágenes con IA.
 Las ventanas secundarias usan GPromptWindow (modules.gprompt_window).
 """
-import inspect
-import json
 import logging
-import os
-import re
-import sys
 import threading
-import time
-import traceback
 from pathlib import Path
 
 import customtkinter as ctk
 
 logger = logging.getLogger(__name__)
 
-import datetime
-import random
-import re
 import threading
 from pathlib import Path
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox
 
 import pyperclip
-from PIL import Image
 
 from modules.gprompt_window import GPromptWindow
 
@@ -40,47 +29,6 @@ except ImportError:
 from api_clients import APIClients
 from config import (
     APP_TITLE,
-    AUTHOR,
-    BIBLIOTECA_EJEMPLOS,
-    DESTINOS,
-    EMOCIONES_AUDIO,
-    ESTILO_NEGATIVO_AUTO,
-    ESTILOS_AUDIO,
-    ESTILOS_IMAGEN,
-    ESTILOS_VIDEO,
-    IDIOMAS_AUDIO,
-    MODEL_SPECS,
-    MODEL_SPECS_AUDIO,
-    MODEL_SPECS_IMAGEN,
-    MODELOS_AUDIO_FLAT,
-    MODELOS_IMAGEN_COMFYUI_FLAT,
-    MODELOS_IMAGEN_FLAT,
-    MODELOS_POR_PLATAFORMA_IMAGEN,
-    MODELOS_VIDEO_COMFYUI_FLAT,
-    MODELOS_VIDEO_FLAT,
-    MOTOR_DEFAULT,
-    MOTORES_AUDIO,
-    MOTORES_VIDEO,
-    NEGATIVE_PRESETS,
-    PLATAFORMAS_AUDIO,
-    PLATAFORMAS_AUDIO_LISTA,
-    PLATAFORMAS_IMAGEN,
-    PLATAFORMAS_IMAGEN_LISTA,
-    PLATAFORMAS_VIDEO,
-    PLATAFORMAS_VIDEO_LISTA,
-    PRESET_COLORES,
-    PROMPT_TEMPLATES,
-    PUBLIC_VERSION,
-    RATIOS_IMAGEN,
-    RATIOS_VIDEO,
-    TOKEN_LIMITS,
-    VERSION,
-    VOCES_AUDIO,
-    es_separador,
-    get_audio_model_specs,
-    get_image_model_specs,
-    get_model_specs,
-    get_prompt_template,
     get_theme_colors,
 )
 from modules import (
@@ -95,7 +43,6 @@ from modules import (
     JsonPromptMixin,
     ModoClienteMixin,
     MultiPromptMixin,
-    PreviewService,
     PromptsInyeccionMixin,
     RefinamientoMixin,
     SesionVideoMixin,
@@ -107,32 +54,10 @@ from modules import (
     WorkersIaMixin,
     install_components,
 )
-from modules.windows import abrir_batch, abrir_lista, abrir_loras, abrir_personajes
 from persistence import DataStore
-from prompts import (
-    BRIEF_MODIFIER,
-    NEGATIVE_BASE_NSFW,
-    NEGATIVE_BASE_SFW,
-    NEGATIVE_BASE_VIDEO,
-    REGLAS_APROVECHAR_BUDGET,
-    SYSTEM_AUDIO_SEAART,
-    SYSTEM_AUDIO_SUNO,
-    SYSTEM_IMAGEN_NSFW,
-    SYSTEM_IMAGEN_SFW,
-    SYSTEM_NATURAL_NSFW,
-    SYSTEM_NATURAL_SFW,
-    SYSTEM_NATURAL_VIDEO,
-    SYSTEM_NATURAL_VIDEO_NSFW,
-    SYSTEM_VIDEO,
-    SYSTEM_VIDEO_NSFW,
-)
 from workers import (
     DeepSeekWorker,
     VisionChain,
-    contar_tokens_aprox,
-    detectar_idioma_es,
-    limpiar_marcadores,
-    parsear_ideas,
 )
 
 # Inicializar EventBus singleton
@@ -784,7 +709,7 @@ class ArquitectoApp(
         try:
             import time
 
-            from config import ARCHIVOS, BACKUPS_DIR, CARPETA_APP
+            from config import ARCHIVOS, CARPETA_APP
             base = CARPETA_APP
             if not base.exists():
                 return
@@ -2285,7 +2210,6 @@ class ArquitectoApp(
             self._preview_cache = {}  # key=hash → (image_pil, url, ts)
 
         import hashlib
-        import urllib.parse
 
         # Limpieza del prompt (idéntica a la original, necesaria también
         # para el cache-key y la URL)
@@ -2300,7 +2224,6 @@ class ArquitectoApp(
         # Cache hit → mostrar instantáneamente
         if cache_key in self._preview_cache:
             image_pil, url_imagen, _ = self._preview_cache[cache_key]
-            from PIL import Image
             img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
             self._mostrar_preview_window(image_pil, img_ctk, url_imagen, desde_cache=True)
             self.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")

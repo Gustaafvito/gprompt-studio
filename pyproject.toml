@@ -124,7 +124,6 @@ ignore = [
     "W292",   # missing newline at EOF
     "W293",   # blank line whitespace
     # Pyflakes que requieren cleanup grande
-    "F401",   # unused imports (171 ocurrencias — limpiar gradualmente)
     "F811",   # redefined while unused
     "F821",   # undefined name (imports condicionales CTkToolTip/messagebox + lambdas con `e`)
     "F841",   # unused local variable

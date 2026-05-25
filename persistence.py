@@ -5,8 +5,6 @@ DataStore centraliza toda la lectura/escritura de JSON con escrituras atómicas.
 import json
 import logging
 import os
-import pathlib
-import tempfile
 
 from config import ARCHIVOS
 from logging_utils import log_operation

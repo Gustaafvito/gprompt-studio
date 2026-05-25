@@ -11,13 +11,10 @@ set_appearance_mode("light") haya disparado (diferido 200ms). Sin
 esto, los labels se construían con color de tema dark y quedaban
 invisibles sobre el fondo light tras cambiar tema.
 """
-import datetime
 import json
 import logging
 import os
-import random
 import re
-import tkinter as tk
 
 import customtkinter as ctk
 import pyperclip
@@ -100,34 +97,19 @@ from config import (
     DESTINOS,
     EMOCIONES_AUDIO,
     ESTILO_NEGATIVO_AUTO,
-    ESTILOS_AUDIO,
     ESTILOS_IMAGEN,
-    ESTILOS_VIDEO,
     IDIOMAS_AUDIO,
-    MODEL_SPECS,
-    MODEL_SPECS_IMAGEN,
     MODELOS_AUDIO_FLAT,
     MODELOS_IMAGEN_FLAT,
-    MODELOS_POR_PLATAFORMA_IMAGEN,
     MODELOS_VIDEO_FLAT,
     MOTOR_DEFAULT,
-    MOTORES_AUDIO,
-    MOTORES_VIDEO,
     NEGATIVE_PRESETS,
-    PLATAFORMAS_AUDIO,
-    PLATAFORMAS_AUDIO_LISTA,
-    PLATAFORMAS_IMAGEN,
     PLATAFORMAS_IMAGEN_LISTA,
-    PLATAFORMAS_VIDEO,
-    PLATAFORMAS_VIDEO_LISTA,
     PRESET_COLORES,
-    PUBLIC_VERSION,
     RATIOS_IMAGEN,
     RATIOS_VIDEO,
-    VERSION,
     VOCES_AUDIO,
     es_separador,
-    get_image_model_specs,
     get_theme_colors,
 )
 from modules.style_guide import abrir_guia_estilos, tooltip_para
@@ -135,7 +117,7 @@ from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 from workers import detectar_idioma_es
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class UIBuildersMixin:
     """Mixin containing all UI construction methods."""

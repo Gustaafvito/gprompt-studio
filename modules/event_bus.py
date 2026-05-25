@@ -22,7 +22,7 @@ Uso:
 """
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 

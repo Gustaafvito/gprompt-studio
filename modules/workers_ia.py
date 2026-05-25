@@ -22,11 +22,7 @@ Dependencias self (provistas por ArquitectoApp):
   imagen_cargada, _ultimo_anclaje_visual, _on_modo_cambio,
   is_natural_mode, _construir_peticion, _inyectar_specs_*.
 """
-import datetime
 import logging
-import threading
-
-import customtkinter as ctk
 
 from workers import limpiar_marcadores, parsear_ideas
 

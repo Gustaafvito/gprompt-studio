@@ -1,18 +1,12 @@
 ﻿"""Workflow Tools Mixin - Setup management, Macros, A/B Testing, Cron, Projects, Session Recording, etc."""
 import datetime
-import json
 import logging
-import os
-import random
-import re
 import threading
 
 import pyperclip
 
 logger = logging.getLogger(__name__)
-import tkinter as tk
-from collections import Counter
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -22,7 +16,7 @@ from modules.gprompt_window import GPromptWindow
 from workers import limpiar_marcadores
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class ToolsWorkflowMixin:
     """Mixin containing all workflow tool methods."""

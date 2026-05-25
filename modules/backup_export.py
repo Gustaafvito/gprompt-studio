@@ -4,8 +4,6 @@ import datetime
 import json
 import logging
 import os
-import re
-import tkinter as tk
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -17,7 +15,7 @@ from modules.gprompt_window import GPromptWindow
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class BackupExportMixin:
     """Mixin containing all backup, export, and search methods."""

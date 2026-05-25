@@ -1,18 +1,11 @@
 """Dialogs & Windows Mixin - API Keys, Preferences, Preview, Dashboard, Status, etc."""
-import datetime
-import json
 import logging
-import os
-import re
-import threading
-import tkinter as tk
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
-from logging_utils import silent
 from modules.gprompt_window import GPromptWindow
 
 logger = logging.getLogger("gprompt")
@@ -27,7 +20,7 @@ except ImportError:
             pass
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class DialogsMixin:
     """Mixin containing all dialog, window, and special UI panel methods."""
@@ -572,9 +565,7 @@ class DialogsMixin:
         - Botón cerrar
         """
         import datetime as _dt
-        import os as _os
         import random as _rnd
-        import re as _re
         from collections import Counter
 
         is_light = ctk.get_appearance_mode().lower() == "light"

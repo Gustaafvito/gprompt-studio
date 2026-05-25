@@ -16,8 +16,6 @@ buttons del panel superior:
 """
 import logging
 
-import customtkinter as ctk
-
 try:
     from CTkToolTip import CTkToolTip
 except ImportError:

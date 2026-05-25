@@ -1,21 +1,12 @@
 """Creative Tools Mixin - Moodboard, Client Mode, ADN Visual, Negative Builder, etc."""
 import datetime
-import json
 import logging
-import os
-import random
-import re
 import threading
-import tkinter as tk
-import webbrowser
-from collections import Counter
 
 import customtkinter as ctk
 import pyperclip
-from PIL import Image
 
 from config import (
-    ADN_A_PLATAFORMA,
     MODELOS_AUDIO_FLAT,
     MODELOS_IMAGEN_FLAT,
     MODELOS_VIDEO_FLAT,
@@ -32,7 +23,7 @@ from typing import TYPE_CHECKING
 from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 class ToolsCreativeMixin:
     """Mixin containing all creative tool methods."""
@@ -965,7 +956,6 @@ class ToolsCreativeMixin:
         img_preview = ctk.CTkLabel(prev_frame, text="")
         img_preview.pack(padx=10, pady=(0, 4))
         try:
-            from PIL import Image as _PIL
             img_copy = self.imagen_cargada.copy()
             img_copy.thumbnail((160, 120))
             img_tk = ctk.CTkImage(img_copy, size=(img_copy.width, img_copy.height))
@@ -1581,10 +1571,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                import math
-                from collections import Counter
 
-                from PIL import Image
 
                 img = self.imagen_cargada.copy()
                 img.thumbnail((200, 200))

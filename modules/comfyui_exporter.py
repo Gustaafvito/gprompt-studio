@@ -5,7 +5,7 @@ Genera archivos .json que pueden ser arrastrados directamente a ComfyUI.
 """
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

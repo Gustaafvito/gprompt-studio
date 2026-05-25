@@ -6,40 +6,20 @@ v1.0:
   el provider activo se obtiene desde self.clients.get_active_provider().
 - Llamada a _actualizar_indicador_proveedor() tras cambio de LLM.
 """
-import datetime
-import json
 import logging
-import os
-import random
 import re
 import threading
 
 import pyperclip
 
 logger = logging.getLogger("gprompt")
-import tkinter as tk
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
 from config import (
-    ESTILOS_AUDIO,
-    ESTILOS_IMAGEN,
-    ESTILOS_VIDEO,
-    MODEL_SPECS,
-    MODEL_SPECS_IMAGEN,
-    MODELOS_IMAGEN_FLAT,
-    MODELOS_POR_PLATAFORMA_IMAGEN,
-    MOTOR_DEFAULT,
-    MOTORES_AUDIO,
-    MOTORES_VIDEO,
-    PLATAFORMAS_AUDIO_LISTA,
     PLATAFORMAS_IMAGEN,
-    PLATAFORMAS_IMAGEN_LISTA,
     PLATAFORMAS_VIDEO,
-    PLATAFORMAS_VIDEO_LISTA,
-    RATIOS_IMAGEN,
-    RATIOS_VIDEO,
     es_separador,
     get_audio_model_specs,
     get_image_model_specs,
@@ -63,10 +43,10 @@ from prompts import (
     SYSTEM_VIDEO,
     SYSTEM_VIDEO_NSFW,
 )
-from workers import contar_tokens_aprox, limpiar_marcadores, parsear_ideas
+from workers import limpiar_marcadores
 
 if TYPE_CHECKING:
-    from app import ArquitectoApp
+    pass
 
 
 def _recolor_labels(container, primary_color, secondary_color, muted_color):
