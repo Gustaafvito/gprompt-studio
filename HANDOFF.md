@@ -15,15 +15,20 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **160/160** ✅ |
+| Tests | **189/189** ✅ |
 | Working tree | Limpio |
 | Branch | `main` (sincronizado con `origin/main`) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **19** |
-| Build `.exe` | Reconstruido `dist/GPromptStudio/GPromptStudio.exe` + onefile + installer |
-| Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` actualizado con los 3 artefactos |
+| Mixins en `ArquitectoApp` | **20** |
+| `core.py` | 1665 líneas (era 2698, **−38%**) |
+| `dialogs.py` | 543 líneas (era 1976, **−72%**) |
+| F401 (imports muertos) | **0** (antes 171 silenciados) |
+| Type hints en mixins nuevos | ✅ 35 firmas anotadas |
+| Build `.exe` | Reconstruido + verificado arrancando |
+| Installer | Con diálogo **Reparar / Desinstalar / Cancelar** |
+| Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` al día |
 | CI | GitHub Actions (Ruff + tests 3.10/3.11/3.12) |
-| Lint | Ruff configurado (pyproject.toml) |
+| Lint | Ruff con F401 activo (sin imports muertos) |
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 
 Estructura: ver `ESTRUCTURA.md`. Empaquetado: ver `BUILD.md`.
@@ -136,9 +141,69 @@ los 3 mixins nuevos en `hiddenimports` (commit `bcbc1d5`).
 
 ---
 
-## 📜 Commits de sesión 6 (6 commits)
+### Lint cleanup masivo (commit `a503a07`)
+
+Activado `F401` en ruff (estaba silenciado con 171 ocurrencias).
+Auto-fix eliminó **192 imports muertos en 20 archivos** (-189 líneas
+netas). Archivos más afectados: `app.py`, `modules/core.py` (-23),
+`modules/ui_builders.py` (-16), y otros 17 archivos.
+
+### Tests de `WorkersIaMixin` + fix bug latente (commit `7930ae0`)
+
+**29 tests** para los 5 workers IA con mocks ligeros (after, deepseek,
+vision). Cobertura: `_worker_ia` (14 tests con recorte, NEGATIVE,
+ComfyUI Turbo, error handling), `_worker_vision` (3), `_worker_prompt_
+traduccion` (2), `_worker_prompt_quick` (6), `_worker_imagen_a_prompt` (4).
+
+**Bug fix incluido**: línea 195 de `_worker_prompt_quick` usaba `re.sub`
+sin importar `re` (NameError silenciado por `except`). Movido
+`import re` al top del módulo + eliminados 2 imports locales redundantes.
+Quick Generate ahora funciona en el `.exe` distribuido.
+
+### Partición #10: `dashboard.py` extraído de `dialogs.py` (commit `3d2e71d`)
+
+`_cmd_dashboard` ocupaba 1433 líneas (72% de `dialogs.py`). Movido a
+`modules/dashboard.py` (DashboardMixin) sin cambios funcionales.
+`dialogs.py` ahora 543 líneas, enfocado en diálogos pequeños.
+Specs actualizados con `modules.dashboard` en hiddenimports.
+
+### Type hints en 4 mixins (commit `403bb1a`)
+
+Anotadas 35 firmas públicas en:
+- `prompts_inyeccion.py` (8): todos los `_inyectar_*` → `str`.
+- `refinamiento.py` (6): comandos → `None`; `_iterar_elemento(elemento: str, n: int = 5)`.
+- `atajos_ayuda.py` (13): atajos → `str` ("break"); `_abrir_*` → `None`.
+- `ui_events.py` (8): `_on_*` → `None`; usa sintaxis PEP 604 (`str | None`).
+
+### Installer con diálogo Reparar/Desinstalar/Cancelar (commits `d20a376`, `6075ba1`)
+
+Antes el installer reinstalaba encima sin avisar. Ahora `InitializeSetup`
+detecta la instalación previa vía registro y muestra:
+- **Sí** = REINSTALAR / REPARAR (conserva datos)
+- **No** = DESINSTALAR (lanza `unins000.exe /SILENT`)
+- **Cancelar** = Salir sin tocar nada
+
+Plus: `CloseApplications=force` cierra la app si está corriendo antes
+de instalar (evita "archivo en uso").
+
+**Bug fix**: el `#define MyAppId "{{...}}"` con escape doble de Inno
+quedaba registrado en HKCU como `{...}}_is1` (1 llave inicial, **2 finales**).
+Mi función de detección buscaba `{...}_is1` y no encontraba nada → el
+diálogo nunca aparecía. Fix: `GetRegKeyLegacy` busca la forma real
+(con `}}`) y `GetRegKeyClean` cubriría una entrada futura limpia.
+
+---
+
+## 📜 Commits de sesión 6 (13 commits)
 
 ```
+6075ba1 fix(installer): detectar AppId con doble llave (escape histórico Inno)
+d20a376 installer: detección de instalación previa con Reparar/Desinstalar/Cancelar
+403bb1a types: añadir type hints a los 4 mixins de sesión 6
+3d2e71d refactor(dialogs): extraer _cmd_dashboard a modules/dashboard.py (#10)
+7930ae0 test(workers_ia): cobertura de los 5 workers IA (29 tests) + fix re bug
+a503a07 lint: quitar F401 del ignore + eliminar 192 imports sin usar
+d62a620 docs: actualizar HANDOFF con tests + rebuild + distribución
 1c4ceff test: cobertura de RefinamientoMixin (32 tests)
 bcbc1d5 build: añadir hiddenimports de los 3 mixins nuevos
 9dd4e1e test: cobertura unitaria de PromptsInyeccionMixin (37 tests)
@@ -149,7 +214,7 @@ f4a5733 docs: actualizar HANDOFF a sesión 6
 
 ---
 
-## 📦 Mixins en `ArquitectoApp` (19 en total tras sesión 6)
+## 📦 Mixins en `ArquitectoApp` (20 en total tras sesión 6)
 
 Orden en `class ArquitectoApp(ctk.CTk, ...)`:
 
@@ -172,6 +237,7 @@ Orden en `class ArquitectoApp(ctk.CTk, ...)`:
 17. `AtajosAyudaMixin` (sesión 6)
 18. `UiEventsMixin` (sesión 6)
 19. `RefinamientoMixin` (sesión 6)
+20. `DashboardMixin` (sesión 6)
 
 ---
 
@@ -179,12 +245,13 @@ Orden en `class ArquitectoApp(ctk.CTk, ...)`:
 
 | Archivo | Líneas | Cambio vs HANDOFF v5 |
 |---|---:|---|
-| `app.py` | 2406 | +181 |
+| `app.py` | 2391 | +166 (limpieza F401 redujo algo) |
 | `modules/ui_builders.py` | 2167 | +99 |
-| `modules/dialogs.py` | 1985 | +78 |
 | `modules/tools_creative.py` | 1881 | +51 |
 | `modules/core.py` | **1665** | **−1033** (-38.3%) ⭐ |
-| `modules/tools_workflow.py` | 1178 | −548 (particionado a `ab_testing.py` previamente) |
+| `modules/dashboard.py` | 1457 | nuevo (extraído de dialogs.py) |
+| `modules/tools_workflow.py` | 1178 | −548 |
+| `modules/dialogs.py` | **543** | **−1433** (-72%) ⭐
 
 ---
 
@@ -201,53 +268,67 @@ partición agrava esto. Refactor mayor ~5-10 días. Hace falta:
 - Actualizar tests.
 
 #### T1 Cobertura de tests
-8 archivos cubren `api_clients`, `config`, `json_prompt`,
+9 archivos cubren `api_clients`, `config`, `json_prompt`,
 `parsear_variaciones`, `persistence`, `workers`, `prompts_inyeccion`
-(37 tests, sesión 6) y `refinamiento` (32 tests, sesión 6).
+(37 tests), `refinamiento` (32 tests) y `workers_ia` (29 tests).
 
-**Sin tests todavía**: `workers_ia`, `adn_visual`, `multiprompt`,
-`sesion_video`, `modo_cliente`, `ab_testing`, `ui_events`,
-`atajos_ayuda`, `dialogs`, `core`.
+**Sin tests todavía**: `adn_visual`, `multiprompt`, `sesion_video`,
+`modo_cliente`, `ab_testing`, `ui_events`, `atajos_ayuda`, `dashboard`,
+`dialogs`, `core`.
 
 Próximos candidatos limpios:
-- `workers_ia.py` (interfaz IA con mocks fáciles).
-- `ab_testing.py` (lógica de scoring/comparación).
+- `ab_testing.py` (lógica de scoring/comparación, mocks fáciles).
 - `ui_events.py` (decisiones de packeo según modo, mockear widgets).
+- `atajos_ayuda.py` (handlers con lógica testeable, ventanas modales
+  mockeables).
 
 #### Verificar `.exe` real arranca — ✅ HECHO en sesión 6
-Verificado: `dist/GPromptStudio/GPromptStudio.exe` arranca correctamente
-(PID 25332, Responding=True tras 14s, 192 MB RAM). Los 3 specs
-incluyen ya los 3 mixins nuevos. Rebuild + redistribución completados.
+Verificado múltiples veces durante la sesión. Build final del 19:35
+con todos los cambios:
+- Bug fix de `re` en workers_ia (Quick Generate funciona).
+- Partición dashboard.py empaquetada.
+- Type hints aplicados.
+- Installer con detección y diálogo Reparar/Desinstalar/Cancelar.
 
-Pendiente menor: probar el installer end-to-end en una VM/usuario
-nuevo (instalación → arranque → desinstalación con borrado de datos).
+Pendiente menor: probar el installer end-to-end en una VM o usuario
+nuevo (instalación limpia → arranque → desinstalación con borrado
+de datos).
 
 ### 🟡 MEDIA
 
 #### Particiones restantes de archivos grandes
-- **`app.py` (2406)** — clase principal, difícil. Posible: extraer
+- **`app.py` (2391)** — clase principal, difícil. Posible: extraer
   inicialización de UI (`__init__`) en helpers.
 - **`ui_builders.py` (2167)** — constructores UI. Posible: separar
   barra superior, barra inferior, panel central.
-- **`dialogs.py` (1985)** — mezcla editor + diálogos. Posible: extraer
-  utilidades de editor → `editor.py`.
 - **`tools_creative.py` (1881)** — buscar bloques cohesivos.
 - **`core.py` (1665)** — todavía grande. Candidatos: parsers
   (`_parsear_variaciones`, `_extraer_*`, `_recortar_si_excede`),
   commands top-level (`cmd_ideas`, `cmd_prompt`, etc.).
+- **`dashboard.py` (1457)** — extraído recientemente como una sola
+  función monolítica `_cmd_dashboard`. Podría partirse internamente
+  en helpers (saludo, stats cards, gráfico, logros, etc.).
 
-#### Lint debt
-171 ocurrencias de `F401` (imports sin usar) silenciadas en ruff.
-Limpiar gradualmente: quitar `ignore = ["F401", ...]` y arreglar
-en módulos pequeños primero.
+#### ~~Lint debt F401~~ — ✅ HECHO en sesión 6
+192 imports muertos eliminados. F401 activo en ruff sin ignore.
 
 #### Type hints incrementales
-~30-50% del código sin anotar. Empezar por interfaces públicas de
-los módulos nuevos (mixins extraídos).
+4 mixins nuevos ya anotados (sesión 6: prompts_inyeccion,
+refinamiento, atajos_ayuda, ui_events). Quedan los mixins viejos
+(core, dialogs, tools_*, ui_builders, dashboard, etc.). ~30-50% del
+código todavía sin anotar.
 
 #### A2 Unificar `self.cmd_x` vs `self.creative.cmd_x`
 Acceso inconsistente a comandos según si se llama desde botón
 (self.cmd_x) o via subnamespace.
+
+#### Limpieza AppId del installer (a futuro)
+El `#define MyAppId "{{...}}"` con doble llave genera una clave de
+registro con `}}_is1` (forma malformada). El código de detección ya
+maneja ambas formas (legacy + clean), pero limpiarlo del todo requiere:
+1. Cambiar `#define MyAppId "{...}"` (sin doble llave).
+2. Migración automática que mueva la entrada legacy a la clean al
+   detectar la primera (para no perder instalaciones existentes).
 
 ### 🟢 BAJA
 
@@ -288,13 +369,13 @@ para corregir `data/model_specs_imagen.json`.
    python -c "import app; print('OK')"
    python -m pytest tests/ -q
    ```
-   Debe dar `OK` y `160 passed`.
+   Debe dar `OK` y `189 passed`.
 
 2. **Verificar mixins enchufados**:
    ```powershell
    python -c "import app; print(len([m for m in app.ArquitectoApp.__mro__ if 'Mixin' in m.__name__]))"
    ```
-   Debe imprimir `19`.
+   Debe imprimir `20`.
 
 3. **Verificar build system**:
    ```powershell
@@ -303,17 +384,17 @@ para corregir `data/model_specs_imagen.json`.
 
 4. **Decidir entre**:
    - **A1 Mixins → Composición** (~5-10 días, refactor mayor).
-   - **T1 Cobertura tests** — quedan `workers_ia`, `ab_testing`,
-     `ui_events`, `atajos_ayuda`, `adn_visual`, `multiprompt`,
+   - **T1 Cobertura tests** — quedan `ab_testing`, `ui_events`,
+     `atajos_ayuda`, `dashboard`, `adn_visual`, `multiprompt`,
      `sesion_video`, `modo_cliente`, `dialogs`, `core`. Próximo
-     candidato limpio: `workers_ia.py`.
-   - **Más particiones** de archivos grandes (`app.py` 2406,
-     `ui_builders.py` 2167, `dialogs.py` 1985, `tools_creative.py` 1881,
-     `core.py` 1665).
-   - **Lint debt cleanup** — quitar `F401` del `ignore` en
-     `pyproject.toml` y arreglar módulo por módulo.
+     candidato limpio: `ab_testing.py`.
+   - **Más particiones** de archivos grandes (`app.py` 2391,
+     `ui_builders.py` 2167, `tools_creative.py` 1881, `core.py` 1665,
+     `dashboard.py` 1457).
+   - **Type hints en mixins viejos** (core, dialogs, tools_*, etc).
    - **Code-signing del .exe** (evitar SmartScreen).
    - **SeaArt char limits** (necesita info del usuario).
+   - **Limpieza AppId installer** (con migración del registro).
 
 5. **Patrón de trabajo establecido**:
    - Análisis honesto en tabla antes de tocar.
@@ -386,11 +467,14 @@ troubleshooting + `.gitignore` con `dist/` y `build/`.
 
 ---
 
-*Generado al final de sesión 6 — 6 commits añadidos, **160/160 tests**
-(+69 nuevos), working tree limpio y sincronizado con origin/main.
-core.py reducido a 1665 líneas (-38.3% en esta sesión, -42% acumulado
-desde sesión 5). 9 particiones totales del proyecto. Bloques de
-profundidad **6/6** ✅. Build `.exe` listo, verificado y redistribuido.
-CI activo. Pendiente principal: A1 Mixins → Composición (19 mixins ya,
-refactor cada vez más urgente) y T1 cobertura de tests para los
-mixins restantes.*
+*Generado al final de sesión 6 — **13 commits añadidos**, **189/189 tests**
+(+98 nuevos, +108% respecto al inicio), working tree limpio y sincronizado
+con origin/main. core.py reducido a 1665 líneas (-38.3% en esta sesión),
+dialogs.py reducido a 543 líneas (-72%). **10 particiones totales** del
+proyecto. **0 imports F401** (eran 171 silenciados). Type hints añadidos
+a 4 mixins (35 firmas). 2 bugs latentes corregidos (`re` import en
+workers_ia, AppId con doble llave en installer). Bloques de profundidad
+**6/6** ✅. Build `.exe` listo, verificado y redistribuido con installer
+que ahora ofrece Reparar/Desinstalar/Cancelar. CI activo. Pendiente
+principal: A1 Mixins → Composición (20 mixins ya, refactor cada vez más
+urgente) y T1 cobertura de tests para los 10 mixins restantes.*
