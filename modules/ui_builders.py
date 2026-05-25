@@ -250,10 +250,10 @@ class UIBuildersMixin:
             ]),
             ("📁 Datos", "#3d7a9c", [
                 ("🌟  Estrellas", lambda: abrir_lista(self, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
-                ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self._cmd_exportar_json_prompt),
+                ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self.json.cmd_exportar),
                 ("⭐  Favoritos", lambda: abrir_lista(self, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
                 ("📋  Historial", lambda: abrir_lista(self, "historial", "📋 Historial de Prompts", "#1a2a3a")),
-                ("📥  Importar prompt JSON pro", self._cmd_importar_json_prompt),
+                ("📥  Importar prompt JSON pro", self.json.cmd_importar),
                 ("🔗  LoRAs", lambda: abrir_loras(self)),
                 ("🧑  Personajes", lambda: abrir_personajes(self)),
             ]),

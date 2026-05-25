@@ -86,6 +86,22 @@ class DialogsComponent(_Component):
     _name = "dialogs"
 
 
+class JsonPromptComponent(_Component):
+    """Import/export JSON profesional Veo/Sora/Kling (JsonPromptMixin).
+
+    Tercer servicio del refactor A1. Solo expone los 2 entry points
+    (los 3 métodos internos _aplicar_json_a_app / _mostrar_resumen_import
+    / _mostrar_modal_export son privados del mixin).
+    """
+    _name = "json"
+
+    def cmd_importar(self) -> None:
+        return self.app._cmd_importar_json_prompt()
+
+    def cmd_exportar(self) -> None:
+        return self.app._cmd_exportar_json_prompt()
+
+
 class AbTestingComponent(_Component):
     """A/B testing 2x2 + comparador de modelos (AbTestingMixin).
 
@@ -145,4 +161,5 @@ def install_components(app) -> None:
     app.dialogs = DialogsComponent(app)
     app.prompts = PromptsComponent(app)
     app.ab = AbTestingComponent(app)
-    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts, ab")
+    app.json = JsonPromptComponent(app)
+    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts, ab, json")
