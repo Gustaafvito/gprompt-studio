@@ -21,6 +21,50 @@ from modules.gprompt_window import GPromptWindow
 logger = logging.getLogger("gprompt")
 
 
+def _dashboard_palette(is_light: bool) -> dict:
+    """Paleta de colores del dashboard según tema (light/dark).
+
+    Extraído de _cmd_dashboard para reducir líneas locales y permitir
+    pruebas unitarias del esquema de colores. Devuelve un dict con
+    14 claves: bg, card_bg, card_bg_alt, card_border, text_primary,
+    text_secondary, text_muted, accent_blue, accent_green, accent_amber,
+    accent_red, accent_purple, accent_pink, bar_bg.
+    """
+    if is_light:
+        return {
+            "bg":               "#f5f5f5",
+            "card_bg":          "#ffffff",
+            "card_bg_alt":      "#f9fafb",
+            "card_border":      "#e5e7eb",
+            "text_primary":     "#111827",
+            "text_secondary":   "#6b7280",
+            "text_muted":       "#9ca3af",
+            "accent_blue":      "#2563eb",
+            "accent_green":     "#16a34a",
+            "accent_amber":     "#d97706",
+            "accent_red":       "#dc2626",
+            "accent_purple":    "#7c3aed",
+            "accent_pink":      "#db2777",
+            "bar_bg":           "#e5e7eb",
+        }
+    return {
+        "bg":               "#0a0e14",
+        "card_bg":          "#111820",
+        "card_bg_alt":      "#0f1620",
+        "card_border":      "#1e2d3d",
+        "text_primary":     "#e5e7eb",
+        "text_secondary":   "#9ca3af",
+        "text_muted":       "#6b7280",
+        "accent_blue":      "#3b82f6",
+        "accent_green":     "#22c55e",
+        "accent_amber":     "#f59e0b",
+        "accent_red":       "#ef4444",
+        "accent_purple":    "#a855f7",
+        "accent_pink":      "#ec4899",
+        "bar_bg":           "#1f2937",
+    }
+
+
 class DashboardMixin:
     def _cmd_dashboard(self) -> None:
         """🏠 Dashboard v2 — Panel de control completo con estadísticas, accesos
@@ -50,20 +94,21 @@ class DashboardMixin:
         from collections import Counter
 
         is_light = ctk.get_appearance_mode().lower() == "light"
-        bg = "#f5f5f5" if is_light else "#0a0e14"
-        card_bg = "#ffffff" if is_light else "#111820"
-        card_bg_alt = "#f9fafb" if is_light else "#0f1620"
-        card_border = "#e5e7eb" if is_light else "#1e2d3d"
-        text_primary = "#111827" if is_light else "#e5e7eb"
-        text_secondary = "#6b7280" if is_light else "#9ca3af"
-        text_muted = "#9ca3af" if is_light else "#6b7280"
-        accent_blue = "#2563eb" if is_light else "#3b82f6"
-        accent_green = "#16a34a" if is_light else "#22c55e"
-        accent_amber = "#d97706" if is_light else "#f59e0b"
-        accent_red = "#dc2626" if is_light else "#ef4444"
-        accent_purple = "#7c3aed" if is_light else "#a855f7"
-        accent_pink = "#db2777" if is_light else "#ec4899"
-        bar_bg = "#e5e7eb" if is_light else "#1f2937"
+        _pal = _dashboard_palette(is_light)
+        bg              = _pal["bg"]
+        card_bg         = _pal["card_bg"]
+        card_bg_alt     = _pal["card_bg_alt"]
+        card_border     = _pal["card_border"]
+        text_primary    = _pal["text_primary"]
+        text_secondary  = _pal["text_secondary"]
+        text_muted      = _pal["text_muted"]
+        accent_blue     = _pal["accent_blue"]
+        accent_green    = _pal["accent_green"]
+        accent_amber    = _pal["accent_amber"]
+        accent_red      = _pal["accent_red"]
+        accent_purple   = _pal["accent_purple"]
+        accent_pink     = _pal["accent_pink"]
+        bar_bg          = _pal["bar_bg"]
 
         v = GPromptWindow(self)
         v.title("🏠 Dashboard")
