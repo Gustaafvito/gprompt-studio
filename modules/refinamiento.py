@@ -25,7 +25,7 @@ logger = logging.getLogger("gprompt")
 
 
 class RefinamientoMixin:
-    def _menu_refinar_especifico(self, event=None):
+    def _menu_refinar_especifico(self, event=None) -> None:
         """Menú con 5 opciones de refinamiento específico."""
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
@@ -58,7 +58,7 @@ class RefinamientoMixin:
         finally:
             menu.grab_release()
 
-    def _refinar_con_instruccion(self, instruccion_extra):
+    def _refinar_con_instruccion(self, instruccion_extra: str) -> None:
         """Refina el prompt con una instrucción específica."""
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto: return
@@ -98,7 +98,7 @@ class RefinamientoMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _cmd_iteracion(self):
+    def _cmd_iteracion(self) -> None:
         """Genera N variantes del prompt cambiando solo 1 elemento (iluminación, encuadre, etc).
 
         v2: el usuario elige primero N (slider 3-10) y luego el elemento.
@@ -152,7 +152,7 @@ class RefinamientoMixin:
                                     self._iterar_elemento(d, n_)))
             btn.pack(pady=3)
 
-    def _iterar_elemento(self, elemento, n=5):
+    def _iterar_elemento(self, elemento: str, n: int = 5) -> None:
         """Genera N variantes cambiando un elemento específico."""
         texto = self.txt_salida.get("1.0", "end").strip()
         self.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
@@ -195,7 +195,7 @@ class RefinamientoMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def cmd_refinar(self):
+    def cmd_refinar(self) -> None:
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto or not (("PROMPT:" in limpiar_marcadores(texto)) or ("ESTILO:" in limpiar_marcadores(texto))):
             return self.set_estado("⚠️ Genera un prompt primero para refinarlo.", "#e67e22")
@@ -244,7 +244,7 @@ class RefinamientoMixin:
             daemon=True,
         ).start()
 
-    def _mostrar_diff_refinamiento(self, texto_previo, texto_nuevo):
+    def _mostrar_diff_refinamiento(self, texto_previo: str, texto_nuevo: str) -> None:
         """Modal de diff visual antes de aplicar el refinamiento.
 
         Muestra el prompt original vs refinado lado a lado con colores

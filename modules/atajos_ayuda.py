@@ -31,7 +31,7 @@ logger = logging.getLogger("gprompt")
 
 
 class AtajosAyudaMixin:
-    def _bind_shortcuts(self):
+    def _bind_shortcuts(self) -> None:
         for widget in [self, self.txt_idea]:
             widget.bind("<Control-Return>",       lambda e: self.cmd_prompt())
             widget.bind("<Control-Shift-Return>", lambda e: self.cmd_variaciones())
@@ -70,7 +70,7 @@ class AtajosAyudaMixin:
         self.bind("<F11>", lambda e: self._toggle_fullscreen())
         self.bind("<Escape>", lambda e: self._cerrar_popup_activo())
 
-    def _cmd_cambiar_modo(self, modo_destino):
+    def _cmd_cambiar_modo(self, modo_destino: str) -> str:
         """Cambia el modo (imagen/video/audio) por atajo Alt+1/2/3."""
         if modo_destino not in ("imagen", "video", "audio"): return "break"
         try:
@@ -82,7 +82,7 @@ class AtajosAyudaMixin:
             logger.debug(f"[silent] {e}")
         return "break"
 
-    def _cmd_exportar_rapido(self):
+    def _cmd_exportar_rapido(self) -> str:
         """Atajo Ctrl+E - Exportar rápidamente el prompt actual."""
         if hasattr(self, '_exportar'):
             self._exportar()
@@ -92,7 +92,7 @@ class AtajosAyudaMixin:
             self.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
         return "break"
 
-    def _atajo_guardar_estrella(self):
+    def _atajo_guardar_estrella(self) -> str:
         """Atajo Ctrl+Shift+S - Guardar como estrella."""
         try:
             if hasattr(self, '_guardar_estrella'):
@@ -103,7 +103,7 @@ class AtajosAyudaMixin:
             self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
-    def _cmd_buscar_global(self):
+    def _cmd_buscar_global(self) -> str:
         """Atajo Ctrl+F - Buscar en historial, favoritos, estrellas."""
         try:
             self._abrir_busqueda_global()
@@ -111,7 +111,7 @@ class AtajosAyudaMixin:
             self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
-    def _atajo_buscar_global(self):
+    def _atajo_buscar_global(self) -> str:
         """Helper para Ctrl+F con manejo de errores."""
         try:
             self._cmd_buscar_global()
@@ -119,7 +119,7 @@ class AtajosAyudaMixin:
             self.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
         return "break"
 
-    def _atajo_traducir_idea(self):
+    def _atajo_traducir_idea(self) -> str:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
@@ -137,7 +137,7 @@ class AtajosAyudaMixin:
             self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
-    def _toggle_fullscreen(self):
+    def _toggle_fullscreen(self) -> str:
         """F11 - Alternar pantalla completa."""
         if hasattr(self, '_toggle_fullscreen_principal'):
             self._toggle_fullscreen_principal()
@@ -146,7 +146,7 @@ class AtajosAyudaMixin:
             self.attributes('-fullscreen', not current)
         return "break"
 
-    def _cerrar_popup_activo(self):
+    def _cerrar_popup_activo(self) -> str:
         """Escape - Cerrar popup activo (Toplevel más reciente)."""
         try:
             popups = [w for w in self.winfo_children() if isinstance(w, ctk.CTkToplevel)]
@@ -160,7 +160,7 @@ class AtajosAyudaMixin:
             return "break"
         return "break"
 
-    def _cmd_abrir_loras(self):
+    def _cmd_abrir_loras(self) -> str:
         """Atajo Ctrl+L - Abrir gestión de LoRAs."""
         try:
             abrir_loras(self)
@@ -168,7 +168,7 @@ class AtajosAyudaMixin:
             self.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
         return "break"
 
-    def _cmd_mostrar_atajos(self):
+    def _cmd_mostrar_atajos(self) -> str:
         """Ctrl+? - Muestra ventana con todos los atajos de teclado.
 
         Buscador filtra por tecla o acción. Click sobre un atajo lo copia
@@ -316,7 +316,7 @@ class AtajosAyudaMixin:
         entry_buscar.focus_set()
         return "break"
 
-    def _abrir_busqueda_global(self):
+    def _abrir_busqueda_global(self) -> None:
         """Abre ventana de búsqueda global en historial, favoritos, estrellas."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -382,7 +382,7 @@ class AtajosAyudaMixin:
 
         ctk.CTkButton(vent, text="Cerrar", width=100, height=28, command=vent.destroy).pack(pady=8)
 
-    def _abrir_tutorial(self):
+    def _abrir_tutorial(self) -> None:
         """Abre el tutorial interactivo (data/tutorial.json) con índice
         lateral, progreso persistente y botón "Probar ahora".
         """

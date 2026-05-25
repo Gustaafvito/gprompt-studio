@@ -47,7 +47,7 @@ logger = logging.getLogger("gprompt")
 
 
 class UiEventsMixin:
-    def _on_modo_cambio(self):
+    def _on_modo_cambio(self) -> None:
         """Cambia la UI según modo (imagen/video/audio). No opera si Focus está activo."""
         if getattr(self, '_modo_focus_activo', False):
             return
@@ -139,7 +139,7 @@ class UiEventsMixin:
         self._ocultar_ideas()
         self.reiniciar_memoria()
 
-    def _on_plataforma_cambio(self, valor=None):
+    def _on_plataforma_cambio(self, valor: str | None = None) -> None:
         modo = self.modo_var.get()
         plat = self.plataforma_var.get()
         try: self._sesion_log(f"🌐 Cambió plataforma → {plat}")
@@ -186,7 +186,7 @@ class UiEventsMixin:
         else: self.set_estado(f"🎯 {self.plataforma_var.get()} — tags + pesos + negatives", "#3498db")
         self.reiniciar_memoria()
 
-    def _actualizar_motores_video(self):
+    def _actualizar_motores_video(self) -> None:
         plat = self.plataforma_var.get()
         motores = MOTORES_VIDEO.get(plat, [])
         default = MOTOR_DEFAULT.get(plat, "")
@@ -199,7 +199,7 @@ class UiEventsMixin:
             self.combo_modelo_video.configure(values=[plat])
         self._on_motor_cambio(self.combo_modelo_video.get())
 
-    def _on_motor_cambio(self, motor_name=None):
+    def _on_motor_cambio(self, motor_name: str | None = None) -> None:
         if not motor_name: motor_name = self.combo_modelo_video.get()
         try: self._sesion_log(f"🎬 Cambió modelo vídeo → {motor_name}")
         except Exception as e:
@@ -255,7 +255,7 @@ class UiEventsMixin:
         try: self._actualizar_tokens()
         except: pass
 
-    def _on_modelo_imagen_cambio(self, modelo_name=None):
+    def _on_modelo_imagen_cambio(self, modelo_name: str | None = None) -> None:
         if not modelo_name: modelo_name = self.combo_modelo_imagen.get()
         try: self._sesion_log(f"🎨 Cambió modelo imagen → {modelo_name}")
         except Exception as e:
@@ -333,7 +333,7 @@ class UiEventsMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-    def _on_motor_audio_cambio(self, motor_name=None):
+    def _on_motor_audio_cambio(self, motor_name: str | None = None) -> None:
         if not motor_name: motor_name = self.combo_modelo_audio.get()
         try: self._sesion_log(f"🎵 Cambió modelo audio → {motor_name}")
         except Exception as e:
@@ -351,7 +351,7 @@ class UiEventsMixin:
             self.lbl_img_model_info.pack_forget()
         self.reiniciar_memoria()
 
-    def _on_audio_filtro_cambio(self, valor=None):
+    def _on_audio_filtro_cambio(self, valor: str | None = None) -> None:
         """Feedback visual cuando cambian emoción, voz o idioma en audio."""
         partes = []
         em = self.emocion_var.get() if hasattr(self, 'emocion_var') else ""
@@ -367,7 +367,7 @@ class UiEventsMixin:
             self.set_estado("🎵 Sin filtros de audio adicionales")
         self.reiniciar_memoria()
 
-    def _on_brief_cambio(self):
+    def _on_brief_cambio(self) -> None:
         if self.brief_var.get():
             self.set_estado("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios", "#f39c12")
         else:

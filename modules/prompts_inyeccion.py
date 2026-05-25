@@ -35,7 +35,7 @@ from prompts import REGLAS_APROVECHAR_BUDGET
 
 class PromptsInyeccionMixin:
 
-    def _inyectar_specs_modelo(self, system_prompt):
+    def _inyectar_specs_modelo(self, system_prompt: str) -> str:
         modo = self.modo_var.get()
         if modo == "video":
             return self._inyectar_specs_video(system_prompt)
@@ -43,7 +43,7 @@ class PromptsInyeccionMixin:
             return self._inyectar_specs_imagen(system_prompt)
         return system_prompt
 
-    def _inyectar_specs_video(self, system_prompt):
+    def _inyectar_specs_video(self, system_prompt: str) -> str:
         specs = get_model_specs(self.combo_modelo_video.get())
         if not specs:
             return system_prompt
@@ -84,7 +84,7 @@ class PromptsInyeccionMixin:
         extra += REGLAS_APROVECHAR_BUDGET
         return system_prompt + extra
 
-    def _inyectar_specs_imagen(self, system_prompt):
+    def _inyectar_specs_imagen(self, system_prompt: str) -> str:
         modelo = self.combo_modelo_imagen.get()
         if es_separador(modelo):
             return system_prompt
@@ -116,7 +116,7 @@ class PromptsInyeccionMixin:
         extra += REGLAS_APROVECHAR_BUDGET
         return system_prompt + extra
 
-    def _inyectar_specs_formato(self, modelo, specs, extra):
+    def _inyectar_specs_formato(self, modelo: str, specs: dict, extra: str) -> str:
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
             if specs["has_negative"]:
@@ -143,7 +143,7 @@ class PromptsInyeccionMixin:
                 extra += "• ⛔ Este modelo NO SOPORTA NEGATIVE PROMPT. Solo genera POSITIVE PROMPT.\n"
         return extra
 
-    def _inyectar_template(self, motor, extra):
+    def _inyectar_template(self, motor: str, extra: str) -> str:
         tmpl = get_prompt_template(motor)
         if tmpl:
             extra += "\n📋 PLANTILLA BASE RECOMENDADA:\n"
@@ -153,7 +153,7 @@ class PromptsInyeccionMixin:
             extra += "Usa esta plantilla como ESQUELETO. Rellena los campos {{entre llaves}} con los detalles.\n"
         return extra
 
-    def _inyectar_specs_audio(self, system_prompt):
+    def _inyectar_specs_audio(self, system_prompt: str) -> str:
         if not hasattr(self, "combo_modelo_audio"):
             return system_prompt
         motor = self.combo_modelo_audio.get()
@@ -215,7 +215,7 @@ class PromptsInyeccionMixin:
         "Cliente": "DESTINO CLIENTE: Máxima calidad técnica y profesionalismo. Composición versátil. Adaptable a múltiples usos.",
     }
 
-    def _inyectar_destino(self, system_prompt):
+    def _inyectar_destino(self, system_prompt: str) -> str:
         dest = self.destino_var.get() if hasattr(self, "destino_var") else ""
         if not dest or dest == "— Personal —":
             return system_prompt
@@ -225,7 +225,7 @@ class PromptsInyeccionMixin:
             return system_prompt + f"\n\n📢 {regla}\n"
         return system_prompt
 
-    def construir_modelo_info(self):
+    def construir_modelo_info(self) -> str:
         # Cacheo simple: si no cambió la config, devolver cache
         clave_cache = (
             self.modo_var.get(),
