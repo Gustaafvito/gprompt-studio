@@ -450,12 +450,24 @@ class DialogsMixin:
                 logger.debug(f"[silent] {e}")
 
     def _colorear_resultado(self):
-        """Colorea las etiquetas POSITIVE/NEGATIVE en el resultado."""
+        """Colorea las etiquetas POSITIVE/NEGATIVE/PROMPT en el resultado.
+
+        Cubre variantes según el tipo de modelo:
+          • Tag-based (SD/Flux): POSITIVE PROMPT: / NEGATIVE PROMPT:
+          • Natural (GPT Image, Nano Banana, etc.): PROMPT: (sin negative)
+          • Legado:                                 POSITIVE: / NEGATIVE:
+        """
         if not hasattr(self, 'txt_salida'): return
         self.txt_salida.tag_config("pos_label", foreground="#2ecc71")
         self.txt_salida.tag_config("neg_label", foreground="#e74c3c")
-        contenido = self.txt_salida.get("1.0", "end")
-        for tag, label in [("pos_label", "POSITIVE PROMPT:"), ("neg_label", "NEGATIVE PROMPT:")]:
+        labels = [
+            ("pos_label", "POSITIVE PROMPT:"),
+            ("neg_label", "NEGATIVE PROMPT:"),
+            ("pos_label", "POSITIVE:"),
+            ("neg_label", "NEGATIVE:"),
+            ("pos_label", "PROMPT:"),  # Modelos natural sin negative
+        ]
+        for tag, label in labels:
             start = "1.0"
             while True:
                 pos = self.txt_salida.search(label, start, stopindex="end")
