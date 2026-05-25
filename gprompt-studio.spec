@@ -62,6 +62,7 @@ hiddenimports = [
     'modules.atajos_ayuda',
     'modules.ui_events',
     'modules.refinamiento',
+    'modules.dashboard',
     'modules.tooltip',
     # Keyring backends por plataforma (PyInstaller suele perder éstos)
     'keyring.backends.Windows',

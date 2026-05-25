@@ -37,6 +37,7 @@ from modules import (
     AtajosAyudaMixin,
     BackupExportMixin,
     CoreMixin,
+    DashboardMixin,
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
@@ -85,6 +86,7 @@ class ArquitectoApp(
     AtajosAyudaMixin,
     UiEventsMixin,
     RefinamientoMixin,
+    DashboardMixin,
 ):
 
     def __init__(self):
