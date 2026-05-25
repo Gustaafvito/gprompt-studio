@@ -12,11 +12,17 @@
 #define MyAppPublisher "Gustaafvito"
 #define MyAppURL "https://github.com/gustaafvito/gprompt-studio"
 #define MyAppExeName "GPromptStudio.exe"
-; AppId histórico — mantenemos las llaves dobles tal cual estaban
-; (un Inno legacy con escape `{{...}}` se ha quedado registrado con
-; `{...}}_is1` en HKCU para usuarios que ya instalaron). Cambiarlo
-; rompería la detección de instalaciones existentes. Si en el futuro
-; quieres limpiar, hay que migrar también la entrada del registro.
+; AppId con escape doble `{{...}}` — sintaxis OBLIGATORIA de Inno Setup
+; cuando el AppId contiene llaves (GUID). Sin el escape, Inno intenta
+; interpretar `{...}` como constante (tipo {app}/{group}) y rompe la
+; compilación.
+;
+; Consecuencia: la clave de registro queda como `{...}}_is1` (1 llave
+; inicial, 2 finales). No es un bug, es comportamiento documentado de
+; Inno. El código de detección en [Code] busca esa forma directamente
+; vía GetRegKeyLegacy (con `}}_is1`), y también la forma alternativa
+; GetRegKeyClean por si Inno cambia su comportamiento en una futura
+; versión.
 #define MyAppId "{{B3F8E2A1-7C4D-4F90-8B12-D5E9C3A6F841}}"
 
 [Setup]
