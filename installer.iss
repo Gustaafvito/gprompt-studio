@@ -12,6 +12,11 @@
 #define MyAppPublisher "Gustaafvito"
 #define MyAppURL "https://github.com/gustaafvito/gprompt-studio"
 #define MyAppExeName "GPromptStudio.exe"
+; AppId histórico — mantenemos las llaves dobles tal cual estaban
+; (un Inno legacy con escape `{{...}}` se ha quedado registrado con
+; `{...}}_is1` en HKCU para usuarios que ya instalaron). Cambiarlo
+; rompería la detección de instalaciones existentes. Si en el futuro
+; quieres limpiar, hay que migrar también la entrada del registro.
 #define MyAppId "{{B3F8E2A1-7C4D-4F90-8B12-D5E9C3A6F841}}"
 
 [Setup]
@@ -100,55 +105,63 @@ end;
 
 // ─────────────────────────────────────────────────────────────────────
 // Detección de instalación previa
+//
 // Inno Setup registra cada instalación bajo
 //   HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\{AppId}_is1
-// o en HKCU si se instaló sin privilegios. Buscamos en ambos.
+// o en HKCU si se instaló sin privilegios (PrivilegesRequired=lowest).
+//
+// IMPORTANTE: este installer tiene un AppId histórico que en el preprocesador
+// usa escape `{{...}}` y Inno lo registra como `{...}}_is1` (UNA llave inicial,
+// DOS finales). Buscamos AMBOS por compatibilidad: la entrada con doble llave
+// final (legacy) y la entrada limpia con una sola (si algún día se arregla).
 // ─────────────────────────────────────────────────────────────────────
 
-function GetUninstallRegKey(): String;
+function GetRegKeyLegacy(): String;
 begin
+  // Hardcoded con la forma que aparece realmente en el registro
   Result := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' +
-            '{#MyAppId}_is1';
+            '{B3F8E2A1-7C4D-4F90-8B12-D5E9C3A6F841}}_is1';
+end;
+
+function GetRegKeyClean(): String;
+begin
+  // Forma "limpia" que tendría una entrada nueva sin el escape problemático
+  Result := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' +
+            '{B3F8E2A1-7C4D-4F90-8B12-D5E9C3A6F841}_is1';
+end;
+
+function TryReadStringFromAllRoots(Key, ValueName: String; var OutVal: String): Boolean;
+begin
+  Result := True;
+  if RegQueryStringValue(HKCU, Key, ValueName, OutVal) then Exit;
+  if RegQueryStringValue(HKLM, Key, ValueName, OutVal) then Exit;
+  if IsWin64() then
+    if RegQueryStringValue(HKLM64, Key, ValueName, OutVal) then Exit;
+  Result := False;
+end;
+
+function ReadInstalledValue(ValueName: String): String;
+begin
+  Result := '';
+  // Probar primero la forma legacy (la que está realmente en el registro hoy)
+  if TryReadStringFromAllRoots(GetRegKeyLegacy(), ValueName, Result) then Exit;
+  // Fallback a la forma limpia
+  TryReadStringFromAllRoots(GetRegKeyClean(), ValueName, Result);
 end;
 
 function GetInstalledVersion(): String;
-var
-  Key: String;
 begin
-  Result := '';
-  Key := GetUninstallRegKey();
-  // Probar HKCU primero (PrivilegesRequired=lowest suele instalar ahí)
-  if RegQueryStringValue(HKCU, Key, 'DisplayVersion', Result) then
-    Exit;
-  if RegQueryStringValue(HKLM, Key, 'DisplayVersion', Result) then
-    Exit;
-  if IsWin64() then
-    if RegQueryStringValue(HKLM64, Key, 'DisplayVersion', Result) then
-      Exit;
+  Result := ReadInstalledValue('DisplayVersion');
 end;
 
 function GetInstalledPath(): String;
 begin
-  Result := '';
-  if RegQueryStringValue(HKCU, GetUninstallRegKey(), 'InstallLocation', Result) then
-    Exit;
-  if RegQueryStringValue(HKLM, GetUninstallRegKey(), 'InstallLocation', Result) then
-    Exit;
-  if IsWin64() then
-    if RegQueryStringValue(HKLM64, GetUninstallRegKey(), 'InstallLocation', Result) then
-      Exit;
+  Result := ReadInstalledValue('InstallLocation');
 end;
 
 function GetUninstallerPath(): String;
 begin
-  Result := '';
-  if RegQueryStringValue(HKCU, GetUninstallRegKey(), 'UninstallString', Result) then
-    Exit;
-  if RegQueryStringValue(HKLM, GetUninstallRegKey(), 'UninstallString', Result) then
-    Exit;
-  if IsWin64() then
-    if RegQueryStringValue(HKLM64, GetUninstallRegKey(), 'UninstallString', Result) then
-      Exit;
+  Result := ReadInstalledValue('UninstallString');
 end;
 
 function RunUninstaller(): Boolean;
