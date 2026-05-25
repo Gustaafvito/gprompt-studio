@@ -479,14 +479,12 @@ class UIBuildersMixin:
                                                  command=self._on_plataforma_cambio)
         self.combo_plataforma.pack(side="left", padx=(0, 10))
 
-        # Dimensiones tipo "iOS pill": body más ancho que alto y pelota
-        # interna proporcionada. Antes width=50/height=26 con border_width=2
-        # dejaba la pelota dominando visualmente (#ffffff sobre body oscuro
-        # se veía como un círculo blanco gigante con muy poco body alrededor).
+        # Dimensiones tipo "iOS pill" — pelota más pequeña que el body para
+        # que se vea claramente la diferencia entre encendido/apagado.
         sw_style = {
             "font": ctk.CTkFont(size=11, weight="bold"),
-            "height": 22, "width": 44, "corner_radius": 11,
-            "button_length": 12,
+            "height": 20, "width": 42, "corner_radius": 10,
+            "button_length": 8,
             "button_color": "#374151" if is_light else "#e5e7eb",
             "button_hover_color": "#1f2937" if is_light else "#f3f4f6",
             "border_width": 1,
@@ -629,11 +627,12 @@ class UIBuildersMixin:
                                                    progress_color="#7c3aed",
                                                    fg_color=c["fg_dark"],
                                                    border_color=c["fg_dark_border"],
-                                                   border_width=2,
+                                                   border_width=1,
                                                    text_color=c["fg_dark_text"],
                                                    font=ctk.CTkFont(size=11, weight="bold"),
-                                                   height=26, width=50, corner_radius=13,
-                                                   button_color="#374151" if is_light else "#ffffff",
+                                                   height=20, width=42, corner_radius=10,
+                                                   button_length=8,
+                                                   button_color="#374151" if is_light else "#e5e7eb",
                                                    button_hover_color="#1f2937" if is_light else "#f3f4f6")
         self.switch_instrumental.pack(side="left", padx=15)
 
@@ -918,8 +917,8 @@ class UIBuildersMixin:
             text_color=sw_text_off,
             border_width=1,
             font=ctk.CTkFont(size=11, weight="bold"),
-            height=22, width=44, corner_radius=11,
-            button_length=12,
+            height=20, width=42, corner_radius=10,
+            button_length=8,
             button_color="#374151" if is_light else "#e5e7eb",
             button_hover_color="#1f2937" if is_light else "#f3f4f6")
         self.switch_brief.pack(side="right", padx=15)

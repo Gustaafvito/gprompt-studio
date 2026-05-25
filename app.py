@@ -2115,9 +2115,11 @@ class ArquitectoApp(
                       variable=self.switch_sonido_var,
                       progress_color="#3498db",
                       font=ctk.CTkFont(size=11, weight="bold"),
-                      height=26, width=50, corner_radius=13,
+                      height=20, width=42, corner_radius=10,
+                      button_length=8,
+                      button_color="#e5e7eb",
                       button_hover_color="#f3f4f6",
-                      border_width=2).pack(anchor="w", padx=10, pady=(15, 5))
+                      border_width=1).pack(anchor="w", padx=10, pady=(15, 5))
 
         # ── Toggle: grabar vídeo de la sesión ──
         self.switch_video_sesion_var = ctk.BooleanVar(value=self._sesion_grabar_video if hasattr(self, '_sesion_grabar_video') else False)
@@ -2125,9 +2127,11 @@ class ArquitectoApp(
                       variable=self.switch_video_sesion_var,
                       progress_color="#e74c3c",
                       font=ctk.CTkFont(size=11, weight="bold"),
-                      height=26, width=50, corner_radius=13,
+                      height=20, width=42, corner_radius=10,
+                      button_length=8,
+                      button_color="#e5e7eb",
                       button_hover_color="#f3f4f6",
-                      border_width=2).pack(anchor="w", padx=10, pady=(5, 2))
+                      border_width=1).pack(anchor="w", padx=10, pady=(5, 2))
         ctk.CTkLabel(tab_gen,
                      text="    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]",
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
