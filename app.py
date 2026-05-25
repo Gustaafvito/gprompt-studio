@@ -86,6 +86,7 @@ from config import (
 from modules import (
     AbTestingMixin,
     AdnVisualMixin,
+    AtajosAyudaMixin,
     BackupExportMixin,
     CoreMixin,
     DataMgmtMixin,
@@ -154,6 +155,7 @@ class ArquitectoApp(
     JsonPromptMixin,
     PromptsInyeccionMixin,
     AbTestingMixin,
+    AtajosAyudaMixin,
 ):
 
     def __init__(self):

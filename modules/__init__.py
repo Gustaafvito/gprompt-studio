@@ -6,6 +6,7 @@ También incluye servicios y utilidades independientes.
 
 from .ab_testing import AbTestingMixin
 from .adn_visual import AdnVisualMixin
+from .atajos_ayuda import AtajosAyudaMixin
 from .backup_export import BackupExportMixin
 from .comfyui_exporter import ComfyUIWorkflowExporter
 from .components import install_components
@@ -43,6 +44,7 @@ __all__ = [
     "JsonPromptMixin",
     "PromptsInyeccionMixin",
     "AbTestingMixin",
+    "AtajosAyudaMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",
