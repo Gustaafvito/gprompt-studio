@@ -282,7 +282,7 @@ class UIBuildersMixin:
                 ("🎯  Modo Focus", self._cmd_modo_focus),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
-                ("🆚  A/B Testing", self._cmd_ab_testing),
+                ("🆚  A/B Testing", self.ab.cmd_ab_testing),
                 ("🔎  Búsqueda global", self._cmd_busqueda_global),
                 ("⏰  Cron prompts", self._cmd_cron_prompts),
                 ("🎙 Grabar sesión", self._cmd_sesion_grabar_toggle),
@@ -1359,7 +1359,7 @@ class UIBuildersMixin:
             ]),
             ("🎬 CONVERSIÓN", CYAN_CONV, [
                 ("🎬 →Vídeo",          85, CYAN_CONV,    self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
-                ("🆚 Compar",          80, CYAN_CONV,    self._cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
+                ("🆚 Compar",          80, CYAN_CONV,    self.ab.cmd_comparar_modelos,  "Compara prompt en 3 modelos"),
             ]),
             ("📦 UTILIDADES", GRIS_UTIL, [
                 ("📦 Batch",           80, GRIS_UTIL,    self.cmd_batch,              "Generación masiva"),

@@ -86,6 +86,23 @@ class DialogsComponent(_Component):
     _name = "dialogs"
 
 
+class AbTestingComponent(_Component):
+    """A/B testing 2x2 + comparador de modelos (AbTestingMixin).
+
+    Segundo servicio del refactor A1. Solo expone los 2 puntos de
+    entrada (los métodos internos _ab_lanzar / _mostrar_ab_grid /
+    _abrir_ventana_comparacion siguen llamándose vía self.X desde
+    dentro del mixin).
+    """
+    _name = "ab"
+
+    def cmd_ab_testing(self) -> None:
+        return self.app._cmd_ab_testing()
+
+    def cmd_comparar_modelos(self) -> None:
+        return self.app._cmd_comparar_modelos()
+
+
 class PromptsComponent(_Component):
     """Inyección de specs del modelo en system prompts (PromptsInyeccionMixin).
 
@@ -117,7 +134,7 @@ class PromptsComponent(_Component):
 
 
 def install_components(app) -> None:
-    """Instala los 9 componentes como atributos del app."""
+    """Instala los 10 componentes como atributos del app."""
     app.core = CoreComponent(app)
     app.ui = UIComponent(app)
     app.creative = CreativeComponent(app)
@@ -127,4 +144,5 @@ def install_components(app) -> None:
     app.backup = BackupComponent(app)
     app.dialogs = DialogsComponent(app)
     app.prompts = PromptsComponent(app)
-    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts")
+    app.ab = AbTestingComponent(app)
+    logger.debug("Componentes instalados: core, ui, creative, workflow, analysis, data, backup, dialogs, prompts, ab")
