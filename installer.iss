@@ -39,6 +39,9 @@ UninstallDisplayName={#MyAppName} {#MyAppVersion}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+; Cerrar la app si está corriendo antes de instalar (evita "archivo en uso")
+CloseApplications=force
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -80,10 +83,124 @@ english.WipeDone=Personal data removed.
 spanish.WipeKeyringHint=Tip: si configuraste API keys vía Windows Credential Manager, ábrelo y borra las entradas que empiecen por "GPromptStudio_" o "arquitecto_prompts".
 english.WipeKeyringHint=Tip: if you stored API keys in Windows Credential Manager, open it and delete entries starting with "GPromptStudio_" or "arquitecto_prompts".
 
+; Mensaje del diálogo "ya está instalado" — 3 opciones (Reparar/Desinstalar/Cancelar)
+spanish.AlreadyInstalledTitle=G-Prompt Studio ya está instalado
+english.AlreadyInstalledTitle=G-Prompt Studio is already installed
+spanish.AlreadyInstalled=Ya tienes G-Prompt Studio %s instalado en:%n  %s%n%n¿Qué quieres hacer?%n%n  • Sí = REINSTALAR / REPARAR (sobre la instalación actual, conserva tus datos)%n  • No = DESINSTALAR (te llevará al desinstalador)%n  • Cancelar = Salir sin tocar nada
+english.AlreadyInstalled=G-Prompt Studio %s is already installed in:%n  %s%n%nWhat do you want to do?%n%n  • Yes = REINSTALL / REPAIR (over current install, keeps your data)%n  • No = UNINSTALL (launches the uninstaller)%n  • Cancel = Exit without changes
+
+spanish.LaunchingUninstaller=Lanzando el desinstalador…
+english.LaunchingUninstaller=Launching uninstaller…
+
 [Code]
 function GetUserDataDir(Param: String): String;
 begin
   Result := ExpandConstant('{%USERPROFILE}\.arquitecto_prompts');
+end;
+
+// ─────────────────────────────────────────────────────────────────────
+// Detección de instalación previa
+// Inno Setup registra cada instalación bajo
+//   HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\{AppId}_is1
+// o en HKCU si se instaló sin privilegios. Buscamos en ambos.
+// ─────────────────────────────────────────────────────────────────────
+
+function GetUninstallRegKey(): String;
+begin
+  Result := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' +
+            '{#MyAppId}_is1';
+end;
+
+function GetInstalledVersion(): String;
+var
+  Key: String;
+begin
+  Result := '';
+  Key := GetUninstallRegKey();
+  // Probar HKCU primero (PrivilegesRequired=lowest suele instalar ahí)
+  if RegQueryStringValue(HKCU, Key, 'DisplayVersion', Result) then
+    Exit;
+  if RegQueryStringValue(HKLM, Key, 'DisplayVersion', Result) then
+    Exit;
+  if IsWin64() then
+    if RegQueryStringValue(HKLM64, Key, 'DisplayVersion', Result) then
+      Exit;
+end;
+
+function GetInstalledPath(): String;
+begin
+  Result := '';
+  if RegQueryStringValue(HKCU, GetUninstallRegKey(), 'InstallLocation', Result) then
+    Exit;
+  if RegQueryStringValue(HKLM, GetUninstallRegKey(), 'InstallLocation', Result) then
+    Exit;
+  if IsWin64() then
+    if RegQueryStringValue(HKLM64, GetUninstallRegKey(), 'InstallLocation', Result) then
+      Exit;
+end;
+
+function GetUninstallerPath(): String;
+begin
+  Result := '';
+  if RegQueryStringValue(HKCU, GetUninstallRegKey(), 'UninstallString', Result) then
+    Exit;
+  if RegQueryStringValue(HKLM, GetUninstallRegKey(), 'UninstallString', Result) then
+    Exit;
+  if IsWin64() then
+    if RegQueryStringValue(HKLM64, GetUninstallRegKey(), 'UninstallString', Result) then
+      Exit;
+end;
+
+function RunUninstaller(): Boolean;
+var
+  UninstStr: String;
+  ResultCode: Integer;
+begin
+  Result := False;
+  UninstStr := GetUninstallerPath();
+  if UninstStr = '' then
+    Exit;
+  // Quitar comillas si las tiene
+  UninstStr := RemoveQuotes(UninstStr);
+  // Lanza el desinstalador y espera a que termine
+  if Exec(UninstStr, '/SILENT', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+    Result := (ResultCode = 0);
+end;
+
+function InitializeSetup(): Boolean;
+var
+  InstalledVer: String;
+  InstalledPath: String;
+  Msg: String;
+  Response: Integer;
+begin
+  Result := True;
+  InstalledVer := GetInstalledVersion();
+  if InstalledVer = '' then
+    Exit;  // No hay instalación previa, continuar setup normal
+
+  InstalledPath := GetInstalledPath();
+  if InstalledPath = '' then
+    InstalledPath := '?';
+
+  Msg := Format(CustomMessage('AlreadyInstalled'), [InstalledVer, InstalledPath]);
+  Response := MsgBox(Msg, mbConfirmation, MB_YESNOCANCEL or MB_DEFBUTTON1);
+
+  case Response of
+    IDYES:
+      // Reinstalar / reparar: continuar con el setup normal
+      Result := True;
+    IDNO:
+      begin
+        // Desinstalar
+        MsgBox(CustomMessage('LaunchingUninstaller'), mbInformation, MB_OK);
+        RunUninstaller();
+        Result := False;  // Salir del setup tras lanzar el uninstaller
+      end;
+    IDCANCEL:
+      // Cancelar: salir sin tocar nada
+      Result := False;
+  end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
