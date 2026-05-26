@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Generado al final de la **sesión 7** (continuación de las sesiones 1-6).
+Generado al final de la **sesión 8** (continuación de las sesiones 1-7).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,17 +15,18 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **210/210** ✅ |
+| Tests | **228/228** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `5294de0`) |
+| Branch | `main` (sincronizado con `origin/main` en `96fe7c2`) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **20** |
-| **Componentes (A1)** | **6/20 migrados** — `prompts`, `ab`, `json`, `refinar`, `workers`, `atajos` |
+| Mixins en `ArquitectoApp` | **21** |
+| **Componentes (A1)** | **20/20 COMPLETO** ✅ — todos accesibles vía `self.X.metodo()` |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
+| `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
 | F401 (imports muertos) | **0** (antes 171 silenciados) |
-| Type hints | ✅ 68 firmas anotadas (mixins nuevos + viejos) |
-| Build `.exe` | Reconstruido + verificado arrancando |
+| Type hints | ✅ 104 firmas anotadas en 10 mixins |
+| Build `.exe` | Distribuible al día (11:29 hoy) |
 | Installer | Con diálogo **Reparar / Desinstalar / Cancelar** |
 | Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` al día |
 | CI | GitHub Actions (Ruff + tests 3.10/3.11/3.12) |
@@ -542,6 +543,120 @@ e60b5f9 refactor(A1): primer paso Mixins → Composición — PromptsComponent
 
 ---
 
+## ✅ Sesión 8 — A1 COMPLETO + más tests + más particiones
+
+### A1 (Mixins → Composición): 20/20 COMPLETO ✅
+
+Tabla completa de los 20 componentes accesibles:
+
+| # | Mixin → Componente | Acceso | Métodos públicos |
+|---|---|---|---:|
+| 1 | PromptsInyeccionMixin → PromptsComponent | `self.prompts` | 6 |
+| 2 | AbTestingMixin → AbTestingComponent | `self.ab` | 2 |
+| 3 | JsonPromptMixin → JsonPromptComponent | `self.json` | 2 |
+| 4 | RefinamientoMixin → RefinamientoComponent | `self.refinar` | 5 |
+| 5 | WorkersIaMixin → WorkersIaComponent | `self.workers` | 5 |
+| 6 | AtajosAyudaMixin → AtajosAyudaComponent | `self.atajos` | 3 |
+| 7 | ModoClienteMixin → ModoClienteComponent | `self.cliente` | 2 |
+| 8 | MultiPromptMixin → MultiPromptComponent | `self.multi` | 4 |
+| 9 | AdnVisualMixin → AdnVisualComponent | `self.adn` | 2 |
+| 10 | SesionVideoMixin → SesionVideoComponent | `self.sesion` | 1 |
+| 11 | DashboardMixin → DashboardComponent | `self.dashboard` | 1 |
+| 12 | UiEventsMixin → UiEventsComponent | `self.events` | 8 |
+| 13 | ToolsCreativeMixin → CreativeComponent | `self.creative` | 7 |
+| 14 | ToolsWorkflowMixin → WorkflowComponent | `self.workflow` | 6 |
+| 15 | ToolsAnalysisMixin → AnalysisComponent | `self.analysis` | 14 |
+| 16 | DataMgmtMixin → DataComponent | `self.data` | 11 |
+| 17 | BackupExportMixin → BackupComponent | `self.backup` | 5 |
+| 18 | DialogsMixin → DialogsComponent | `self.dialogs` | 4 |
+| 19 | CoreMixin → CoreComponent | `self.core` | delegación pura |
+| 20 | UIBuildersMixin → UIComponent | `self.ui` | delegación pura |
+
+**Total: 88 métodos públicos declarados + delegación por `__getattr__`.**
+
+### Bonus técnico
+
+`_Component.__getattr__` relajado en sesión 8: ahora delega TAMBIÉN
+nombres con underscore. Permite acceder a cualquier método del mixin
+vía componente sin restricciones (`self.analysis._método_interno` funciona).
+
+### Migración de call sites — masiva en sesión 8
+
+- **ui_builders.py**: TODOS los items de los 8 menús del header
+  migrados (`Análisis`, `Aprender`, `Backup`, `Datos`, `Herramientas`,
+  `Plantillas`, `UI`, `Workflow`).
+- **ui_footer.py**: barras inferiores (`HERRAMIENTAS`, `NEGATIVE`,
+  `GUARDAR`) migradas + menú contextual del editor.
+- **dashboard.py**: 3 botones de quick actions migrados.
+- **core.py**: `_detectar_nsfw_auto` → `self.analysis`.
+- **ui_events.py**: `_mostrar_consejo_contextual` → `self.analysis`.
+- **tools_workflow.py**: `_traducir_salida` → `self.analysis`.
+
+### Particiones
+
+- **ui_footer.py** extraído de ui_builders.py:
+  `_build_footer` (616 líneas, 28% del archivo) → `modules/ui_footer.py`
+  como `UiFooterMixin`. ui_builders.py 2169 → 1553 líneas.
+
+### Tests añadidos
+
+- `tests/test_ui_events.py` (+18 tests): on_brief_cambio,
+  on_audio_filtro_cambio, actualizar_motores_video, on_motor_cambio,
+  on_motor_audio_cambio, on_plataforma_cambio. 210 → 228 tests.
+
+### Type hints
+
+- `data_mgmt.py`: +22 firmas
+- `dialogs.py`: +8 firmas
+- `sesion_video.py`: +6 firmas
+- **Total acumulado: 104 firmas en 10 mixins**
+
+### Commits de sesión 8 (6 commits)
+
+```
+96fe7c2 refactor(A1): completar 20/20 mixins — Creative, Workflow,
+        Analysis, Data, Backup, Dialogs con métodos públicos + migración
+7083b32 types: type hints automáticos en 3 mixins viejos (+36 firmas)
+7e9cfae refactor(ui): extraer _build_footer a modules/ui_footer.py (#11)
+2cfac51 test(ui_events): cobertura de UiEventsMixin (18 tests)
+a1b910f refactor(A1): pasos 7-12 — Cliente + Multi + ADN + Sesión +
+        Dashboard + Events (12/20)
+```
+
+### 🚧 Pendiente para sesión 9
+
+#### 🔴 ALTA — Cerrar A1 de verdad
+**Quitar mixins del MRO de `ArquitectoApp`**. Ahora hay 21 mixins
+heredados Y 20 componentes que delegan al mismo app. El verdadero
+beneficio de A1 viene cuando se quitan los mixins del MRO (queda
+solo `ctk.CTk` + tal vez `CoreMixin` por intricación).
+
+Pasos:
+1. Verificar que NINGÚN call site usa `self._método()` directo
+   (todo va vía `self.X.metodo()`).
+2. Quitar mixin por mixin del MRO, ejecutando tests entre cada uno.
+3. Cuando se quitan, los métodos siguen siendo accesibles vía
+   componente — no por herencia.
+
+Estimación: ~1-2 días con tests verdes en cada paso.
+
+#### 🔴 ALTA — T1 cobertura tests
+Quedan 7 módulos sin tests: `adn_visual`, `multiprompt`,
+`sesion_video`, `modo_cliente`, `atajos_ayuda`, `dialogs`, `core`.
+
+#### 🟡 MEDIA
+- **Particiones**: `app.py` 2391, `tools_creative.py` 1881,
+  `core.py` 1665, `ui_builders.py` 1553, `dashboard.py` 1457.
+- **Type hints** en mixins restantes (~10 sin anotar).
+
+#### 🟢 BAJA
+- Code-signing del `.exe` (SmartScreen warning).
+- SeaArt char limits (necesita info usuario).
+- UX: comparador lado-a-lado, grid Pollinations.
+- Performance: lazy load JSON, semáforo workers.
+
+---
+
 ## 🔁 Cómo continuar (sesión nueva)
 
 1. **Confirmar baseline**:
@@ -549,7 +664,7 @@ e60b5f9 refactor(A1): primer paso Mixins → Composición — PromptsComponent
    python -c "import app; print('OK')"
    python -m pytest tests/ -q
    ```
-   Debe dar `OK` y `210 passed`.
+   Debe dar `OK` y `228 passed`.
 
 2. **Verificar mixins enchufados**:
    ```powershell
