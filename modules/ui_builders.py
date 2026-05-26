@@ -263,15 +263,15 @@ class UIBuildersMixin:
             ]),
             ("🛠 Herramientas", "#c97a2e", [
                 ("🔒  Anclaje rasgos (consistencia)", self._cmd_anclaje_visual),
-                ("🎭  Detectar estilo (3 imágenes)", self._cmd_companero_moodboard),
+                ("🎭  Detectar estilo (3 imágenes)", self.cliente.cmd_companero_moodboard),
                 ("📤  Export CLI", self._cmd_export_cli),
-                ("💼  Modo Cliente", self._cmd_modo_cliente),
+                ("💼  Modo Cliente", self.cliente.cmd_modo_cliente),
                 ("🧰  Negative builder", self._cmd_negative_builder),
                 ("🎨  Paleta colores", self._cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
                 ("🏷 Añadir tags (al prompt)", self._abrir_snippets),
-                ("🧬  Biblioteca ADN", self._cmd_ver_biblioteca_adn),
+                ("🧬  Biblioteca ADN", self.adn.cmd_ver_biblioteca),
                 ("⚡  Expansión rápida (en idea)", self._cmd_gestionar_snippets),
                 ("📐  Fórmulas", self._abrir_formulas),
                 ("📋  Plantillas", self._cmd_plantillas_populares),
@@ -281,14 +281,14 @@ class UIBuildersMixin:
                 ("⚙️  Ajustes", self.cmd_preferencias),
                 ("📚  Biblioteca", self._abrir_biblioteca),
                 ("🌗  Cambiar tema", self._cmd_toggle_tema),
-                ("🏠  Dashboard", self._cmd_dashboard),
+                ("🏠  Dashboard", self.dashboard.cmd_abrir),
                 ("🎯  Modo Focus", self._cmd_modo_focus),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
                 ("🆚  A/B Testing", self.ab.cmd_ab_testing),
                 ("🔎  Búsqueda global", self._cmd_busqueda_global),
                 ("⏰  Cron prompts", self._cmd_cron_prompts),
-                ("🎙 Grabar sesión", self._cmd_sesion_grabar_toggle),
+                ("🎙 Grabar sesión", self.sesion.cmd_grabar_toggle),
                 ("👥  Grupo personajes", self._cmd_grupo_personajes),
                 ("🔄  Macros", self._abrir_macros),
                 ("📁  Proyectos", self._cmd_proyectos),
@@ -1356,7 +1356,7 @@ class UIBuildersMixin:
                 ("🔍 Análisis Inv",   115, AZUL_ANAL_2,  self._cmd_analisis_inverso, "Compara imagen con prompt actual"),
             ]),
             ("🧬 ADN", MORADO_ADN, [
-                ("🧬 ADN Visual",     100, MORADO_ADN,   self._cmd_adn_visual,       "Análisis JSON estructurado"),
+                ("🧬 ADN Visual",     100, MORADO_ADN,   self.adn.cmd_adn_visual,    "Análisis JSON estructurado"),
             ]),
         ]
 
@@ -1372,10 +1372,10 @@ class UIBuildersMixin:
                 ("🤖 Sugerir",         85, NARANJA_VAR,  self._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             ]),
             ("🎬 NARRATIVA", ROSA_NARR, [
-                ("🎭 Mood",            70, ROSA_NARR,    self._cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
-                ("🎞 Story",           70, ROSA_NARR,    self._cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
-                ("📽 Board",           70, ROSA_NARR,    self._cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
-                ("🌀 Walk",            70, ROSA_NARR,    self._cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+                ("🎭 Mood",            70, ROSA_NARR,    self.multi.cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
+                ("🎞 Story",           70, ROSA_NARR,    self.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("📽 Board",           70, ROSA_NARR,    self.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("🌀 Walk",            70, ROSA_NARR,    self.multi.cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
             ]),
             ("🎬 CONVERSIÓN", CYAN_CONV, [
                 ("🎬 →Vídeo",          85, CYAN_CONV,    self._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),

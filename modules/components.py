@@ -86,6 +86,111 @@ class DialogsComponent(_Component):
     _name = "dialogs"
 
 
+class AdnVisualComponent(_Component):
+    """ADN Visual + biblioteca de rasgos (AdnVisualMixin).
+    Noveno servicio del refactor A1.
+    """
+    _name = "adn"
+
+    def cmd_adn_visual(self) -> None:
+        return self.app._cmd_adn_visual()
+
+    def cmd_ver_biblioteca(self) -> None:
+        return self.app._cmd_ver_biblioteca_adn()
+
+
+class SesionVideoComponent(_Component):
+    """Grabación de sesión + tutorial vídeo (SesionVideoMixin).
+    Décimo servicio del refactor A1.
+
+    NOTA: _sesion_log se usa desde decenas de mixins como helper de
+    logging. NO migrado a este componente para evitar refactor masivo.
+    Solo expone el entry point principal (toggle de grabación).
+    """
+    _name = "sesion"
+
+    def cmd_grabar_toggle(self) -> None:
+        return self.app._cmd_sesion_grabar_toggle()
+
+
+class DashboardComponent(_Component):
+    """Dashboard panel — pantalla de bienvenida (DashboardMixin).
+    Decimoprimer servicio del refactor A1.
+    """
+    _name = "dashboard"
+
+    def cmd_abrir(self) -> None:
+        return self.app._cmd_dashboard()
+
+
+class UiEventsComponent(_Component):
+    """Event handlers UI (UiEventsMixin) — _on_modo_cambio, etc.
+    Decimosegundo servicio del refactor A1.
+
+    Estos handlers se invocan desde MUY muchos sitios (>30 call sites
+    en 8+ archivos). El componente se expone para CÓDIGO NUEVO pero
+    los call sites existentes se mantienen con `self._on_*` (migración
+    incremental cuando se toque cada archivo).
+    """
+    _name = "events"
+
+    def on_modo_cambio(self) -> None:
+        return self.app._on_modo_cambio()
+
+    def on_plataforma_cambio(self, valor=None) -> None:
+        return self.app._on_plataforma_cambio(valor)
+
+    def on_motor_cambio(self, motor_name=None) -> None:
+        return self.app._on_motor_cambio(motor_name)
+
+    def on_modelo_imagen_cambio(self, modelo_name=None) -> None:
+        return self.app._on_modelo_imagen_cambio(modelo_name)
+
+    def on_motor_audio_cambio(self, motor_name=None) -> None:
+        return self.app._on_motor_audio_cambio(motor_name)
+
+    def on_audio_filtro_cambio(self, valor=None) -> None:
+        return self.app._on_audio_filtro_cambio(valor)
+
+    def on_brief_cambio(self) -> None:
+        return self.app._on_brief_cambio()
+
+    def actualizar_motores_video(self) -> None:
+        return self.app._actualizar_motores_video()
+
+
+class MultiPromptComponent(_Component):
+    """Mood/Story/Board/Walk — generadores multi-prompt (MultiPromptMixin).
+    Octavo servicio del refactor A1.
+    """
+    _name = "multi"
+
+    def cmd_moodboard(self) -> None:
+        return self.app._cmd_moodboard()
+
+    def cmd_story_sequence(self) -> None:
+        return self.app._cmd_story_sequence()
+
+    def cmd_storyboard_video(self) -> None:
+        return self.app._cmd_storyboard_video()
+
+    def cmd_random_walk(self) -> None:
+        return self.app._cmd_random_walk()
+
+
+class ModoClienteComponent(_Component):
+    """Modo Cliente (brief + 5 propuestas) + Compañero Moodboard
+    (ModoClienteMixin). Séptimo servicio del refactor A1.
+    """
+    _name = "cliente"
+
+    def cmd_modo_cliente(self) -> None:
+        return self.app._cmd_modo_cliente()
+
+    def cmd_companero_moodboard(self) -> None:
+        return self.app._cmd_companero_moodboard()
+
+
 class RefinamientoComponent(_Component):
     """Refinamiento de prompts + iteración + diff (RefinamientoMixin).
 
@@ -246,7 +351,14 @@ def install_components(app) -> None:
     app.refinar = RefinamientoComponent(app)
     app.workers = WorkersIaComponent(app)
     app.atajos = AtajosAyudaComponent(app)
+    app.cliente = ModoClienteComponent(app)
+    app.multi = MultiPromptComponent(app)
+    app.adn = AdnVisualComponent(app)
+    app.sesion = SesionVideoComponent(app)
+    app.dashboard = DashboardComponent(app)
+    app.events = UiEventsComponent(app)
     logger.debug(
         "Componentes instalados: core, ui, creative, workflow, analysis, data, "
-        "backup, dialogs, prompts, ab, json, refinar, workers, atajos"
+        "backup, dialogs, prompts, ab, json, refinar, workers, atajos, cliente, "
+        "multi, adn, sesion, dashboard, events"
     )

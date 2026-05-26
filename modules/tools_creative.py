@@ -1070,7 +1070,7 @@ class ToolsCreativeMixin:
                                   command=_guardar_biblioteca).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="📚 Ver biblioteca", width=130, height=30,
                                   fg_color="#6a4a8a", hover_color="#503870",
-                                  command=self._cmd_ver_biblioteca_adn
+                                  command=self.adn.cmd_ver_biblioteca
                                   ).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="🚫 Desactivar", width=100, height=30, fg_color="#5a1a1a",
                                   command=_desactivar).pack(side="left", padx=4)
