@@ -34,7 +34,6 @@ from config import (
 from modules import (
     AbTestingMixin,
     AdnVisualMixin,
-    AtajosAyudaMixin,
     BackupExportMixin,
     CoreMixin,
     DashboardMixin,
@@ -84,7 +83,7 @@ class ArquitectoApp(
     # PromptsInyeccionMixin removido (A1 fase 2): ahora PromptsInyeccionService
     # accesible via self.prompts.inyectar_specs_modelo() / .construir_modelo_info()
     AbTestingMixin,
-    AtajosAyudaMixin,
+    # AtajosAyudaMixin removido (A1 fase 2) → self.atajos.* (AtajosAyudaService)
     UiEventsMixin,
     RefinamientoMixin,
     DashboardMixin,

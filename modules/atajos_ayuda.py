@@ -30,77 +30,81 @@ from modules.windows import abrir_loras
 logger = logging.getLogger("gprompt")
 
 
-class AtajosAyudaMixin:
+class AtajosAyudaService:
+    """A1 fase 2: convertido de mixin a servicio aislado."""
+
+    def __init__(self, app):
+        self.app = app
     def _bind_shortcuts(self) -> None:
-        for widget in [self, self.txt_idea]:
-            widget.bind("<Control-Return>",       lambda e: self.cmd_prompt())
-            widget.bind("<Control-Shift-Return>", lambda e: self.cmd_variaciones())
+        for widget in [self.app, self.app.txt_idea]:
+            widget.bind("<Control-Return>",       lambda e: self.app.cmd_prompt())
+            widget.bind("<Control-Shift-Return>", lambda e: self.app.cmd_variaciones())
             # ⚡ Quick Generate · Alt+Enter
-            widget.bind("<Alt-Return>",           lambda e: self.cmd_prompt_quick())
-            widget.bind("<Control-i>",            lambda e: self.cmd_ideas())
-            widget.bind("<Control-1>",            lambda e: self._copiar("positivo"))
-            widget.bind("<Control-2>",            lambda e: self._copiar("negativo"))
-            widget.bind("<Control-Shift-a>",      lambda e: self.cmd_vision())
-            widget.bind("<Control-r>",            lambda e: self._idea_aleatoria_historial())
+            widget.bind("<Alt-Return>",           lambda e: self.app.cmd_prompt_quick())
+            widget.bind("<Control-i>",            lambda e: self.app.cmd_ideas())
+            widget.bind("<Control-1>",            lambda e: self.app._copiar("positivo"))
+            widget.bind("<Control-2>",            lambda e: self.app._copiar("negativo"))
+            widget.bind("<Control-Shift-a>",      lambda e: self.app.cmd_vision())
+            widget.bind("<Control-r>",            lambda e: self.app._idea_aleatoria_historial())
             # ── MEJORA 4: Ctrl+D = duplicar prompt actual al historial ──
-            widget.bind("<Control-d>",            lambda e: self._cmd_duplicar_a_historial())
+            widget.bind("<Control-d>",            lambda e: self.app._cmd_duplicar_a_historial())
             # ── TANDA 5: Atajos nuevos ──
-            widget.bind("<Control-s>",            lambda e: (self._guardar_favorito(), "break")[1])
+            widget.bind("<Control-s>",            lambda e: (self.app._guardar_favorito(), "break")[1])
             widget.bind("<Control-Shift-S>",      lambda e: self._atajo_guardar_estrella())
             # Alt+1/2/3: cambiar modo
             widget.bind("<Alt-Key-1>",            lambda e: self._cmd_cambiar_modo("imagen"))
             widget.bind("<Alt-Key-2>",            lambda e: self._cmd_cambiar_modo("video"))
             widget.bind("<Alt-Key-3>",            lambda e: self._cmd_cambiar_modo("audio"))
             # Nuevos atajos (MEJORA #14) - con return "break" para evitar duplicados
-            widget.bind("<Control-Shift-P>",      lambda e: (self.cmd_previsualizar(), "break")[1])
+            widget.bind("<Control-Shift-P>",      lambda e: (self.app.cmd_previsualizar(), "break")[1])
             widget.bind("<Control-e>",            lambda e: (self._cmd_exportar_rapido(), "break")[1])
             widget.bind("<Control-f>",            lambda e: self._atajo_buscar_global())
             widget.bind("<Control-l>",            lambda e: (self._cmd_abrir_loras(), "break")[1])
-            widget.bind("<Control-p>",            lambda e: (self._cmd_grupo_personajes(), "break")[1])
+            widget.bind("<Control-p>",            lambda e: (self.app._cmd_grupo_personajes(), "break")[1])
             widget.bind("<Control-t>",            lambda e: (self._abrir_tutorial(), "break")[1])
-            widget.bind("<Control-Shift-N>",      lambda e: (self._cmd_negative_builder(), "break")[1])
-            widget.bind("<Control-h>",            lambda e: (self._cmd_modo_focus(), "break")[1])
-            widget.bind("<Control-Shift-L>",      lambda e: (self._cmd_toggle_tema(), "break")[1])
+            widget.bind("<Control-Shift-N>",      lambda e: (self.app._cmd_negative_builder(), "break")[1])
+            widget.bind("<Control-h>",            lambda e: (self.app._cmd_modo_focus(), "break")[1])
+            widget.bind("<Control-Shift-L>",      lambda e: (self.app._cmd_toggle_tema(), "break")[1])
             widget.bind("<Control-Shift-T>",      lambda e: (self._atajo_traducir_idea(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
-        self.bind("<Control-v>", self._pegar_inteligente_clipboard)
+        self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
-        self.bind("<Control-question>", lambda e: self._cmd_mostrar_atajos())
+        self.app.bind("<Control-question>", lambda e: self._cmd_mostrar_atajos())
         # F11 y Escape para pantalla completa
-        self.bind("<F11>", lambda e: self._toggle_fullscreen())
-        self.bind("<Escape>", lambda e: self._cerrar_popup_activo())
+        self.app.bind("<F11>", lambda e: self._toggle_fullscreen())
+        self.app.bind("<Escape>", lambda e: self._cerrar_popup_activo())
 
     def _cmd_cambiar_modo(self, modo_destino: str) -> str:
         """Cambia el modo (imagen/video/audio) por atajo Alt+1/2/3."""
         if modo_destino not in ("imagen", "video", "audio"): return "break"
         try:
-            self.modo_var.set(modo_destino)
-            self._on_modo_cambio()
+            self.app.modo_var.set(modo_destino)
+            self.app._on_modo_cambio()
             etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
-            self.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
+            self.app.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         return "break"
 
     def _cmd_exportar_rapido(self) -> str:
         """Atajo Ctrl+E - Exportar rápidamente el prompt actual."""
-        if hasattr(self, '_exportar'):
-            self._exportar()
-        elif hasattr(self, 'cmd_exportar'):
-            self.cmd_exportar()
+        if hasattr(self.app, "_exportar"):
+            self.app._exportar()
+        elif hasattr(self.app, "cmd_exportar"):
+            self.app.cmd_exportar()
         else:
-            self.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
+            self.app.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
         return "break"
 
     def _atajo_guardar_estrella(self) -> str:
         """Atajo Ctrl+Shift+S - Guardar como estrella."""
         try:
-            if hasattr(self, '_guardar_estrella'):
-                self._guardar_estrella()
+            if hasattr(self.app, "_guardar_estrella"):
+                self.app._guardar_estrella()
             else:
-                self.set_estado("⚠️ Función no disponible", "#e74c3c")
+                self.app.set_estado("⚠️ Función no disponible", "#e74c3c")
         except Exception as e:
-            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _cmd_buscar_global(self) -> str:
@@ -108,7 +112,7 @@ class AtajosAyudaMixin:
         try:
             self._abrir_busqueda_global()
         except Exception as e:
-            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _atajo_buscar_global(self) -> str:
@@ -116,47 +120,47 @@ class AtajosAyudaMixin:
         try:
             self._cmd_buscar_global()
         except Exception as e:
-            self.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
         return "break"
 
     def _atajo_traducir_idea(self) -> str:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
+            self.app.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
             return "break"
         try:
-            texto_traducido = self.deepseek.traducir(idea)
+            texto_traducido = self.app.deepseek.traducir(idea)
             if texto_traducido and texto_traducido != idea:
-                self.txt_idea.delete("1.0", "end")
-                self.txt_idea.insert("1.0", texto_traducido)
-                self.set_estado("🌐 Idea traducida al inglés", "#3498db")
+                self.app.txt_idea.delete("1.0", "end")
+                self.app.txt_idea.insert("1.0", texto_traducido)
+                self.app.set_estado("🌐 Idea traducida al inglés", "#3498db")
             else:
-                self.set_estado("⚠️ No se pudo traducir", "#e67e22")
+                self.app.set_estado("⚠️ No se pudo traducir", "#e67e22")
         except Exception as e:
-            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _toggle_fullscreen(self) -> str:
         """F11 - Alternar pantalla completa."""
-        if hasattr(self, '_toggle_fullscreen_principal'):
-            self._toggle_fullscreen_principal()
+        if hasattr(self.app, "_toggle_fullscreen_principal"):
+            self.app._toggle_fullscreen_principal()
         else:
-            current = self.attributes('-fullscreen')
-            self.attributes('-fullscreen', not current)
+            current = self.app.attributes('-fullscreen')
+            self.app.attributes('-fullscreen', not current)
         return "break"
 
     def _cerrar_popup_activo(self) -> str:
         """Escape - Cerrar popup activo (Toplevel más reciente)."""
         try:
-            popups = [w for w in self.winfo_children() if isinstance(w, ctk.CTkToplevel)]
+            popups = [w for w in self.app.winfo_children() if isinstance(w, ctk.CTkToplevel)]
             if popups:
                 popups[-1].destroy()
                 return "break"
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-        if self.attributes('-fullscreen'):
-            self.attributes('-fullscreen', False)
+        if self.app.attributes('-fullscreen'):
+            self.app.attributes('-fullscreen', False)
             return "break"
         return "break"
 
@@ -165,7 +169,7 @@ class AtajosAyudaMixin:
         try:
             abrir_loras(self)
         except Exception as e:
-            self.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
         return "break"
 
     def _cmd_mostrar_atajos(self) -> str:
@@ -252,7 +256,7 @@ class AtajosAyudaMixin:
         def _copiar_tecla(tecla):
             try:
                 pyperclip.copy(tecla)
-                self.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
+                self.app.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 
@@ -345,19 +349,19 @@ class AtajosAyudaMixin:
 
             resultados = []
 
-            for item in (self.store.historial or [])[:50]:
+            for item in (self.app.store.historial or [])[:50]:
                 if isinstance(item, dict):
                     contenido = item.get("contenido", "")
                     if termino in contenido.lower():
                         resultados.append(("📋 Historial", contenido[:100]))
 
-            for item in (self.store.favoritos or []):
+            for item in (self.app.store.favoritos or []):
                 if isinstance(item, dict):
                     contenido = item.get("contenido", "")
                     if termino in contenido.lower():
                         resultados.append(("⭐ Favorito", contenido[:100]))
 
-            for item in (self.store.estrellas or []):
+            for item in (self.app.store.estrellas or []):
                 if isinstance(item, dict):
                     contenido = item.get("contenido", "")
                     if termino in contenido.lower():

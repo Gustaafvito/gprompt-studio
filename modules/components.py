@@ -436,24 +436,26 @@ class WorkersIaComponent(_Component):
 
 
 class AtajosAyudaComponent(_Component):
-    """Atajos de teclado + ventana de ayuda + búsqueda global + tutorial
-    (AtajosAyudaMixin).
+    """Atajos de teclado + ventana de ayuda + búsqueda global + tutorial.
 
-    Sexto servicio del refactor A1. Solo exponemos los 3 entry points
-    externos (bind, mostrar_atajos, abrir_tutorial). Los handlers
-    individuales de atajos se invocan internamente desde lambdas
-    registradas en bind_shortcuts.
+    A1 fase 2: convertido a servicio aislado (AtajosAyudaService).
     """
     _name = "atajos"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.atajos_ayuda import AtajosAyudaService
+        self._service = AtajosAyudaService(app)
 
     def bind_shortcuts(self) -> None:
-        return self.app._bind_shortcuts()
+        return self._service._bind_shortcuts()
 
     def cmd_mostrar_atajos(self) -> str:
-        return self.app._cmd_mostrar_atajos()
+        return self._service._cmd_mostrar_atajos()
 
     def abrir_tutorial(self) -> None:
-        return self.app._abrir_tutorial()
+        return self._service._abrir_tutorial()
 
 
 class JsonPromptComponent(_Component):
