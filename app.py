@@ -41,10 +41,8 @@ from modules import (
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
-    JsonPromptMixin,
     ModoClienteMixin,
     MultiPromptMixin,
-    PromptsInyeccionMixin,
     RefinamientoMixin,
     SesionVideoMixin,
     ToolsAnalysisMixin,
@@ -81,8 +79,10 @@ class ArquitectoApp(
     SesionVideoMixin,
     WorkersIaMixin,
     ModoClienteMixin,
-    JsonPromptMixin,
-    PromptsInyeccionMixin,
+    # JsonPromptMixin removido del MRO (A1 fase 2): ahora es JsonPromptService
+    # accesible via self.json.cmd_importar() / self.json.cmd_exportar()
+    # PromptsInyeccionMixin removido (A1 fase 2): ahora PromptsInyeccionService
+    # accesible via self.prompts.inyectar_specs_modelo() / .construir_modelo_info()
     AbTestingMixin,
     AtajosAyudaMixin,
     UiEventsMixin,

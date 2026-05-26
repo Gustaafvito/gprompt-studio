@@ -33,10 +33,19 @@ from config import (
 from prompts import REGLAS_APROVECHAR_BUDGET
 
 
-class PromptsInyeccionMixin:
+class PromptsInyeccionService:
+    """Servicio aislado de inyección de specs (A1 fase 2).
+
+    Convertido de mixin a clase con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
+        self._cache_modelo_info = None
+        self._cache_modelo_clave = None
 
     def _inyectar_specs_modelo(self, system_prompt: str) -> str:
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
         if modo == "video":
             return self._inyectar_specs_video(system_prompt)
         if modo == "imagen":
@@ -44,10 +53,10 @@ class PromptsInyeccionMixin:
         return system_prompt
 
     def _inyectar_specs_video(self, system_prompt: str) -> str:
-        specs = get_model_specs(self.combo_modelo_video.get())
+        specs = get_model_specs(self.app.combo_modelo_video.get())
         if not specs:
             return system_prompt
-        motor = self.combo_modelo_video.get()
+        motor = self.app.combo_modelo_video.get()
         max_c = specs["max_chars"]
 
         if max_c >= 4000:
@@ -85,7 +94,7 @@ class PromptsInyeccionMixin:
         return system_prompt + extra
 
     def _inyectar_specs_imagen(self, system_prompt: str) -> str:
-        modelo = self.combo_modelo_imagen.get()
+        modelo = self.app.combo_modelo_imagen.get()
         if es_separador(modelo):
             return system_prompt
         specs = get_image_model_specs(modelo)
@@ -125,7 +134,7 @@ class PromptsInyeccionMixin:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\n(No generes NEGATIVE PROMPT — este modelo no lo soporta)\n"
         else:
             extra += "• TIPO: tag-based Danbooru/SD. Usa comas, orden de tags SD.\n"
-            es_comfyui_turbo = self._es_comfyui_turbo(self.plataforma_var.get(), modelo)
+            es_comfyui_turbo = self.app._es_comfyui_turbo(self.app.plataforma_var.get(), modelo)
             if es_comfyui_turbo:
                 extra += "• ⛔ PLATAFORMA ComfyUI + MODELO TURBO: NO USES PESOS NUMÉRICOS tipo (tag:1.2). Solo tags limpios separados por comas. El CFG bajo (~1.0) hace que los pesos sean IGNORADOS o produzcan ruido. Ejemplo CORRECTO: 'close-up portrait, silver hair, detailed skin' | INCORRECTO: '(close-up portrait:1.3), (silver hair:1.2)'.\n"
                 extra += "• ⛔ NO generes NEGATIVE PROMPT. En ComfyUI los modelos Turbo lo ignoran.\n"
@@ -154,16 +163,16 @@ class PromptsInyeccionMixin:
         return extra
 
     def _inyectar_specs_audio(self, system_prompt: str) -> str:
-        if not hasattr(self, "combo_modelo_audio"):
+        if not hasattr(self.app, "combo_modelo_audio"):
             return system_prompt
-        motor = self.combo_modelo_audio.get()
+        motor = self.app.combo_modelo_audio.get()
         if es_separador(motor):
             return system_prompt
         specs = get_audio_model_specs(motor)
         if not specs:
             return system_prompt
 
-        instrumental = self.switch_instrumental_var.get() if hasattr(self, "switch_instrumental_var") else False
+        instrumental = self.app.switch_instrumental_var.get() if hasattr(self.app, "switch_instrumental_var") else False
 
         extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
@@ -187,13 +196,13 @@ class PromptsInyeccionMixin:
             extra += f"• Limitaciones: {specs['limitaciones']}\n"
 
         # Inyectar preferencias de emoción, voz e idioma del usuario
-        emocion = self.emocion_var.get() if hasattr(self, "emocion_var") else ""
+        emocion = self.app.emocion_var.get() if hasattr(self.app, "emocion_var") else ""
         if emocion and emocion != "— Emoción —":
             extra += f"• 🎭 EMOCIÓN SOLICITADA: {emocion}. Adapta el mood, tempo y tonalidad a esta emoción.\n"
-        voz = self.voz_var.get() if hasattr(self, "voz_var") else ""
+        voz = self.app.voz_var.get() if hasattr(self.app, "voz_var") else ""
         if voz and voz != "— Voz —":
             extra += f"• 🎤 VOZ SOLICITADA: {voz}. Especifica este tipo de voz en el campo de estilo.\n"
-        idioma = self.idioma_audio_var.get() if hasattr(self, "idioma_audio_var") else ""
+        idioma = self.app.idioma_audio_var.get() if hasattr(self.app, "idioma_audio_var") else ""
         if idioma and idioma != "— Idioma —":
             extra += f"• 🌐 IDIOMA DE LA LETRA: {idioma}. Escribe TODA la letra en este idioma.\n"
 
@@ -216,7 +225,7 @@ class PromptsInyeccionMixin:
     }
 
     def _inyectar_destino(self, system_prompt: str) -> str:
-        dest = self.destino_var.get() if hasattr(self, "destino_var") else ""
+        dest = self.app.destino_var.get() if hasattr(self.app, "destino_var") else ""
         if not dest or dest == "— Personal —":
             return system_prompt
 
@@ -228,14 +237,14 @@ class PromptsInyeccionMixin:
     def construir_modelo_info(self) -> str:
         # Cacheo simple: si no cambió la config, devolver cache
         clave_cache = (
-            self.modo_var.get(),
-            self.modelo_imagen_valido() if self.modo_var.get() == "imagen" else "",
-            self.modelo_video_valido() if self.modo_var.get() == "video" else "",
-            self.combo_modelo_audio.get() if self.modo_var.get() == "audio" and hasattr(self, "combo_modelo_audio") else "",
-            self.ratio_actual(),
-            self.personaje_activo(),
-            self.lora_activo(),
-            self.destino_var.get(),
+            self.app.modo_var.get(),
+            self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else "",
+            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "",
+            self.app.combo_modelo_audio.get() if self.app.modo_var.get() == "audio" and hasattr(self.app, "combo_modelo_audio") else "",
+            self.app.ratio_actual(),
+            self.app.personaje_activo(),
+            self.app.lora_activo(),
+            self.app.destino_var.get(),
         )
 
         # Si no ha cambiado, devolver cache
@@ -243,40 +252,40 @@ class PromptsInyeccionMixin:
             return self._cache_modelo_info
 
         info = ""
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
         if modo == "video":
-            info = f" Motor: {self.modelo_video_valido()}. Duración: {self.duracion_var.get()}."
+            info = f" Motor: {self.app.modelo_video_valido()}. Duración: {self.app.duracion_var.get()}."
         elif modo == "audio":
-            motor_a = self.combo_modelo_audio.get() if hasattr(self, "combo_modelo_audio") else ""
+            motor_a = self.app.combo_modelo_audio.get() if hasattr(self.app, "combo_modelo_audio") else ""
             if motor_a and not es_separador(motor_a):
                 info = f" Motor audio: {motor_a}."
         else:
-            m = self.modelo_imagen_valido()
+            m = self.app.modelo_imagen_valido()
             if m:
                 info = f" Modelo: {m}."
 
-        ratio = self.ratio_actual()
+        ratio = self.app.ratio_actual()
         if ratio:
             info += f" Ratio: {ratio}."
-        pers = self.personaje_activo()
+        pers = self.app.personaje_activo()
         if pers:
             info += f" Personaje: {pers}."
-        lora = self.lora_activo()
+        lora = self.app.lora_activo()
         if lora:
             info += f" LoRA: {lora}."
-        dest = self.destino_var.get()
+        dest = self.app.destino_var.get()
         if dest and dest != "— Personal —":
             info += f" Destino: {dest}."
 
         # Audio: añadir emoción, voz, idioma si están seleccionados
         if modo == "audio":
-            em = self.emocion_var.get() if hasattr(self, "emocion_var") else ""
+            em = self.app.emocion_var.get() if hasattr(self.app, "emocion_var") else ""
             if em and em != "— Emoción —":
                 info += f" Emoción: {em}."
-            vz = self.voz_var.get() if hasattr(self, "voz_var") else ""
+            vz = self.app.voz_var.get() if hasattr(self.app, "voz_var") else ""
             if vz and vz != "— Voz —":
                 info += f" Voz: {vz}."
-            id_a = self.idioma_audio_var.get() if hasattr(self, "idioma_audio_var") else ""
+            id_a = self.app.idioma_audio_var.get() if hasattr(self.app, "idioma_audio_var") else ""
             if id_a and id_a != "— Idioma —":
                 info += f" Idioma letra: {id_a}."
 

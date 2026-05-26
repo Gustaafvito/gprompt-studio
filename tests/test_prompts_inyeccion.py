@@ -1,15 +1,17 @@
-"""Tests para PromptsInyeccionMixin (modules/prompts_inyeccion.py).
+"""Tests para PromptsInyeccionService (modules/prompts_inyeccion.py).
+
+A1 fase 2 (sesión 9): el mixin fue convertido a clase con app por
+composición. Los tests ahora crean un fake_app con SimpleNamespace y
+pasan al constructor del service.
 
 Funciones puras sobre strings: dado un system_prompt base, devuelve uno
-enriquecido con reglas del modelo activo y del destino. Mockeamos
-get_model_specs / get_image_model_specs / get_audio_model_specs para no
-acoplar a los JSON reales de config.
+enriquecido con reglas del modelo activo y del destino.
 """
 from types import SimpleNamespace
 
 import pytest
 
-from modules.prompts_inyeccion import PromptsInyeccionMixin
+from modules.prompts_inyeccion import PromptsInyeccionService
 
 
 def _var(value):
@@ -18,12 +20,16 @@ def _var(value):
 
 
 def _host(**attrs):
-    """Construye un host con PromptsInyeccionMixin y los atributos dados."""
-    cls = type("Host", (PromptsInyeccionMixin,), {})
-    h = cls()
+    """Construye un PromptsInyeccionService con app simulado.
+
+    Mantiene la misma API que el helper antiguo: setattr en `app` con
+    los atributos pasados. Compatible con todos los tests existentes
+    (que esperan h.modo_var, h.combo_modelo_imagen, etc.).
+    """
+    app = SimpleNamespace()
     for k, v in attrs.items():
-        setattr(h, k, v)
-    return h
+        setattr(app, k, v)
+    return PromptsInyeccionService(app)
 
 
 class TestInyectarDestino:
@@ -382,7 +388,7 @@ class TestConstruirModeloInfo:
 
     def test_destino_personal_no_se_incluye(self):
         h = self._host_imagen()
-        h.destino_var = _var("— Personal —")
+        h.app.destino_var = _var("— Personal —")  # A1 fase 2: el atributo vive en app
         info = h.construir_modelo_info()
         assert "Destino" not in info
 
@@ -396,7 +402,7 @@ class TestConstruirModeloInfo:
         h = self._host_imagen()
         info1 = h.construir_modelo_info()
         # Cambiar el modelo invalida la caché
-        h.modelo_imagen_valido = lambda: "SDXL"
+        h.app.modelo_imagen_valido = lambda: "SDXL"  # A1 fase 2
         info2 = h.construir_modelo_info()
         assert info1 != info2
         assert "SDXL" in info2

@@ -176,8 +176,15 @@ def _intentar_reparar_json(texto: str):
         return None, str(e4)
 
 
-class JsonPromptMixin:
-    """Mixin con importar / exportar prompts en JSON profesional."""
+class JsonPromptService:
+    """Servicio aislado de importar/exportar JSON profesional.
+
+    A1 fase 2: convertido de mixin a clase con app por composición.
+    Recibe ArquitectoApp en __init__ y delega self.X → self.app.X.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     # ─────────────────────────────────────────────────────────────
     # IMPORTAR
@@ -188,10 +195,10 @@ class JsonPromptMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📥 Importar prompt JSON profesional")
         vent.geometry("780x640")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="📥 Importar prompt JSON profesional",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
@@ -319,7 +326,7 @@ class JsonPromptMixin:
             else:
                 texto_final = f"POSITIVE PROMPT: {prompt.strip()}"
             try:
-                self.actualizar_salida(texto_final)
+                self.app.actualizar_salida(texto_final)
                 resumen["prompt"] = True
             except Exception as e:
                 logger.warning(f"actualizar_salida desde JSON falló: {e}")
@@ -336,11 +343,11 @@ class JsonPromptMixin:
         # Cambiar modo si difiere del actual
         if modo_detectado and hasattr(self, "modo_var"):
             try:
-                modo_actual = self.modo_var.get()
+                modo_actual = self.app.modo_var.get()
                 if modo_actual != modo_detectado:
-                    self.modo_var.set(modo_detectado)
+                    self.app.modo_var.set(modo_detectado)
                     if hasattr(self, "_on_modo_cambio"):
-                        self._on_modo_cambio()
+                        self.app._on_modo_cambio()
                     resumen["modo"] = modo_detectado
             except Exception as e:
                 logger.debug(f"[silent] cambio modo: {e}")
@@ -350,9 +357,9 @@ class JsonPromptMixin:
         if isinstance(ratio, str) and ratio.strip():
             try:
                 if hasattr(self, "ratio_var"):
-                    self.ratio_var.set(ratio.strip())
+                    self.app.ratio_var.set(ratio.strip())
                 if hasattr(self, "combo_ratio"):
-                    self.combo_ratio.set(ratio.strip())
+                    self.app.combo_ratio.set(ratio.strip())
                 resumen["ratio"] = ratio.strip()
             except Exception as e:
                 logger.debug(f"[silent] ratio: {e}")
@@ -371,7 +378,7 @@ class JsonPromptMixin:
                     except Exception:
                         pass
 
-        # 5. Cualquier otro campo "avanzado" → guardar en self._json_import_extras
+        # 5. Cualquier otro campo "avanzado" → guardar en self.app._json_import_extras
         # para que el resumen lo muestre y el usuario lo tenga a mano.
         extras = {}
         for k, v in data.items():
@@ -379,17 +386,17 @@ class JsonPromptMixin:
                 continue
             extras[k] = v
         if extras:
-            self._json_import_extras = extras
+            self.app._json_import_extras = extras
             resumen["extras"] = list(extras.keys())
 
         # 6. Sesión log
         try:
             origen = "Veo/Sora/Kling JSON"
-            self._sesion_log(f"📥 Importó prompt JSON ({origen}, {len(data)} campos)")
+            self.app._sesion_log(f"📥 Importó prompt JSON ({origen}, {len(data)} campos)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(
+        self.app.set_estado(
             f"📥 JSON importado — prompt aplicado"
             + (f" · modo→{resumen['modo']}" if resumen["modo"] else "")
             + (f" · ratio={resumen['ratio']}" if resumen["ratio"] else ""),
@@ -402,10 +409,10 @@ class JsonPromptMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📥 Importación completada")
         vent.geometry("760x640")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="📥 Importación completada",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
@@ -494,9 +501,9 @@ class JsonPromptMixin:
             extras_dict = {k: data.get(k) for k in extras}
             try:
                 pyperclip.copy(json.dumps(extras_dict, indent=2, ensure_ascii=False))
-                self.set_estado("📋 Metadatos extras copiados al portapapeles", "#2ecc71")
+                self.app.set_estado("📋 Metadatos extras copiados al portapapeles", "#2ecc71")
             except Exception as e:
-                self.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
+                self.app.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
 
         if extras:
             ctk.CTkButton(btn_row, text="📋 Copiar metadatos extras", width=210, height=32,
@@ -518,27 +525,27 @@ class JsonPromptMixin:
         audio.sound_effects, style_tags, duration, aspect_ratio.
         Muestra modal con el JSON listo para copiar o guardar.
         """
-        prompt_actual = self.txt_salida.get("1.0", "end").strip()
+        prompt_actual = self.app.txt_salida.get("1.0", "end").strip()
         if not prompt_actual or len(prompt_actual) < 20:
-            self.set_estado(
+            self.app.set_estado(
                 "⚠️ Genera primero un prompt para exportarlo como JSON profesional.",
                 "#e67e22",
             )
             return
 
-        modo = self.modo_var.get() if hasattr(self, "modo_var") else "video"
+        modo = self.app.modo_var.get() if hasattr(self, "modo_var") else "video"
         ratio = ""
         if hasattr(self, "ratio_var"):
-            try: ratio = self.ratio_var.get() or ""
+            try: ratio = self.app.ratio_var.get() or ""
             except Exception: ratio = ""
 
-        try: self._sesion_log(f"📤 Exportó prompt JSON profesional ({modo})")
+        try: self.app._sesion_log(f"📤 Exportó prompt JSON profesional ({modo})")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("📤 Enriqueciendo prompt a JSON profesional vía LLM...",
+        self.app.set_estado("📤 Enriqueciendo prompt a JSON profesional vía LLM...",
                          "#f39c12")
-        self.toggle_botones(False)
+        self.app.toggle_botones(False)
 
         # Construir petición al LLM para producir el JSON
         guia_modo = {
@@ -587,7 +594,7 @@ class JsonPromptMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2800)
+                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=2800)
                 resp = limpiar_marcadores(resp).strip()
 
                 # Limpiar posibles fences markdown
@@ -611,20 +618,20 @@ class JsonPromptMixin:
                     logger.warning(f"JSON pro inválido: {e}")
 
                 def _mostrar():
-                    self.toggle_botones(True)
+                    self.app.toggle_botones(True)
                     self._mostrar_modal_export(json_pretty, parsed is not None)
-                    self.set_estado(
+                    self.app.set_estado(
                         "📤 JSON profesional listo"
                         + ("" if parsed is not None else " ⚠️ (puede tener errores de sintaxis)"),
                         "#2ecc71" if parsed is not None else "#e67e22",
                     )
 
-                self.after(0, _mostrar)
+                self.app.after(0, _mostrar)
             except Exception as e:
                 logger.exception("exportar json")
-                self.after(0, lambda: self.set_estado(f"❌ Error exportando: {e}",
+                self.app.after(0, lambda: self.app.set_estado(f"❌ Error exportando: {e}",
                                                        "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -633,10 +640,10 @@ class JsonPromptMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📤 JSON profesional exportado")
         vent.geometry("840x680")
-        vent.transient(self)
+        vent.transient(self.app)
 
         titulo = "📤 JSON profesional exportado"
         if not json_valido:

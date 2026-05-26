@@ -457,19 +457,31 @@ class AtajosAyudaComponent(_Component):
 
 
 class JsonPromptComponent(_Component):
-    """Import/export JSON profesional Veo/Sora/Kling (JsonPromptMixin).
+    """Import/export JSON profesional Veo/Sora/Kling.
 
-    Tercer servicio del refactor A1. Solo expone los 2 entry points
-    (los 3 métodos internos _aplicar_json_a_app / _mostrar_resumen_import
-    / _mostrar_modal_export son privados del mixin).
+    A1 fase 2 (sesión 9): el mixin se ha convertido en JsonPromptService,
+    una clase aislada que recibe app por composición. Este componente
+    instancia el service en su __init__ y delega al él, NO al app.
+
+    Primera demostración del refactor "verdadero A1" — el mixin ya NO
+    está heredado en ArquitectoApp, sino que vive como servicio
+    independiente accesible vía self.json.
     """
     _name = "json"
 
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        # Importación tardía para evitar ciclos
+        from modules.json_prompt import JsonPromptService
+        self._service = JsonPromptService(app)
+
     def cmd_importar(self) -> None:
-        return self.app._cmd_importar_json_prompt()
+        return self._service._cmd_importar_json_prompt()
 
     def cmd_exportar(self) -> None:
-        return self.app._cmd_exportar_json_prompt()
+        return self._service._cmd_exportar_json_prompt()
 
 
 class AbTestingComponent(_Component):
@@ -490,33 +502,37 @@ class AbTestingComponent(_Component):
 
 
 class PromptsComponent(_Component):
-    """Inyección de specs del modelo en system prompts (PromptsInyeccionMixin).
+    """Inyección de specs del modelo en system prompts.
 
-    Primer servicio "real" con API pública explícita (nombres sin underscore).
-    Patrón piloto para A1 (Mixins → Composición pura). El mixin sigue
-    heredado en ArquitectoApp por compatibilidad, pero los call sites se
-    pueden migrar gradualmente a `self.prompts.X()`. Cuando todos estén
-    migrados, se puede quitar el mixin del MRO.
+    A1 fase 2 (sesión 9): convertido a servicio aislado. PromptsInyeccionMixin
+    ya NO heredado en ArquitectoApp; el código vive en PromptsInyeccionService.
     """
     _name = "prompts"
 
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.prompts_inyeccion import PromptsInyeccionService
+        self._service = PromptsInyeccionService(app)
+
     def inyectar_specs_modelo(self, system_prompt: str) -> str:
-        return self.app._inyectar_specs_modelo(system_prompt)
+        return self._service._inyectar_specs_modelo(system_prompt)
 
     def inyectar_specs_video(self, system_prompt: str) -> str:
-        return self.app._inyectar_specs_video(system_prompt)
+        return self._service._inyectar_specs_video(system_prompt)
 
     def inyectar_specs_imagen(self, system_prompt: str) -> str:
-        return self.app._inyectar_specs_imagen(system_prompt)
+        return self._service._inyectar_specs_imagen(system_prompt)
 
     def inyectar_specs_audio(self, system_prompt: str) -> str:
-        return self.app._inyectar_specs_audio(system_prompt)
+        return self._service._inyectar_specs_audio(system_prompt)
 
     def inyectar_destino(self, system_prompt: str) -> str:
-        return self.app._inyectar_destino(system_prompt)
+        return self._service._inyectar_destino(system_prompt)
 
     def construir_modelo_info(self) -> str:
-        return self.app.construir_modelo_info()
+        return self._service.construir_modelo_info()
 
 
 def install_components(app) -> None:

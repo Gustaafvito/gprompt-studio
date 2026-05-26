@@ -16,11 +16,11 @@ from .data_mgmt import DataMgmtMixin
 from .dialogs import DialogsMixin
 from .event_bus import EventBus
 from .gprompt_window import GPromptWindow
-from .json_prompt import JsonPromptMixin
+from .json_prompt import JsonPromptService  # A1 fase 2: era JsonPromptMixin
 from .modo_cliente import ModoClienteMixin
 from .multiprompt import MultiPromptMixin
 from .preview_service import PreviewService
-from .prompts_inyeccion import PromptsInyeccionMixin
+from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
 from .refinamiento import RefinamientoMixin
 from .sesion_video import SesionVideoMixin
 from .tools_analysis import ToolsAnalysisMixin
@@ -45,8 +45,8 @@ __all__ = [
     "SesionVideoMixin",
     "WorkersIaMixin",
     "ModoClienteMixin",
-    "JsonPromptMixin",
-    "PromptsInyeccionMixin",
+    "JsonPromptService",
+    "PromptsInyeccionService",
     "RefinamientoMixin",
     "UiEventsMixin",
     "AbTestingMixin",
