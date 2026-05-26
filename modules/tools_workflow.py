@@ -850,7 +850,7 @@ class ToolsWorkflowMixin:
                 elif accion_id == "guardar_estrella":
                     self._guardar_estrella()
                 elif accion_id == "traducir":
-                    self._traducir_salida()
+                    self.analysis.traducir_salida()
                 elif accion_id == "copiar_pos":
                     self._copiar("positivo")
                 elif accion_id == "copiar_neg":

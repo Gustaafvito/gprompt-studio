@@ -230,21 +230,21 @@ class UIBuildersMixin:
         # NOTA: ADN Visual y Análisis Inverso NO se duplican aquí: ya están como botones grandes en la barra del medio.
         grupos_menus = [
             ("📊 Análisis", "#8e4ab0", [
-                ("🚀  Auto-mejora", self._cmd_automejora_periodica),
-                ("📝  Crítica historial", self._cmd_critica_historial),
-                ("📈  Estadísticas", self._abrir_estadisticas),
+                ("🚀  Auto-mejora", self.analysis.cmd_automejora_periodica),
+                ("📝  Crítica historial", self.analysis.cmd_critica_historial),
+                ("📈  Estadísticas", self.analysis.abrir_estadisticas),
             ]),
             ("📚 Aprender", "#2e8a9e", [
-                ("ℹ️  Acerca de G-Prompt", self._cmd_acerca_de),
+                ("ℹ️  Acerca de G-Prompt", self.dialogs.cmd_acerca_de),
                 ("⌨️  Atajos teclado", self.atajos.cmd_mostrar_atajos),
                 ("📖  Guía de estilos", lambda: abrir_guia_estilos(self, self.modo_var.get() if hasattr(self, "modo_var") else None)),
-                ("📖  Modo educativo", self._cmd_modo_educativo),
+                ("📖  Modo educativo", self.analysis.cmd_modo_educativo),
                 ("📚  Tutorial completo", self.atajos.abrir_tutorial),
             ]),
             ("💾 Backup", "#a04545", [
-                ("💼  Backup completo", self._cmd_backup_completo),
-                ("📊  Exportar CSV", self._cmd_exportar_csv),
-                ("📂  Restaurar backup", self._cmd_restore_completo),
+                ("💼  Backup completo", self.backup.cmd_backup_completo),
+                ("📊  Exportar CSV", self.backup.cmd_exportar_csv),
+                ("📂  Restaurar backup", self.backup.cmd_restore_completo),
             ]),
             ("📁 Datos", "#3d7a9c", [
                 ("🌟  Estrellas", lambda: abrir_lista(self, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
@@ -256,37 +256,37 @@ class UIBuildersMixin:
                 ("🧑  Personajes", lambda: abrir_personajes(self)),
             ]),
             ("🛠 Herramientas", "#c97a2e", [
-                ("🔒  Anclaje rasgos (consistencia)", self._cmd_anclaje_visual),
+                ("🔒  Anclaje rasgos (consistencia)", self.creative.cmd_anclaje_visual),
                 ("🎭  Detectar estilo (3 imágenes)", self.cliente.cmd_companero_moodboard),
-                ("📤  Export CLI", self._cmd_export_cli),
+                ("📤  Export CLI", self.backup.cmd_export_cli),
                 ("💼  Modo Cliente", self.cliente.cmd_modo_cliente),
-                ("🧰  Negative builder", self._cmd_negative_builder),
-                ("🎨  Paleta colores", self._cmd_color_palette),
+                ("🧰  Negative builder", self.creative.cmd_negative_builder),
+                ("🎨  Paleta colores", self.creative.cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
-                ("🏷 Añadir tags (al prompt)", self._abrir_snippets),
+                ("🏷 Añadir tags (al prompt)", self.data.abrir_snippets),
                 ("🧬  Biblioteca ADN", self.adn.cmd_ver_biblioteca),
-                ("⚡  Expansión rápida (en idea)", self._cmd_gestionar_snippets),
-                ("📐  Fórmulas", self._abrir_formulas),
+                ("⚡  Expansión rápida (en idea)", self.data.cmd_gestionar_snippets),
+                ("📐  Fórmulas", self.data.abrir_formulas),
                 ("📋  Plantillas", self._cmd_plantillas_populares),
-                ("💎  Seeds favoritos", self._abrir_seeds_favoritos),
+                ("💎  Seeds favoritos", self.analysis.abrir_seeds_favoritos),
             ]),
             ("🎨 UI", "#7a7a8a", [
-                ("⚙️  Ajustes", self.cmd_preferencias),
-                ("📚  Biblioteca", self._abrir_biblioteca),
-                ("🌗  Cambiar tema", self._cmd_toggle_tema),
+                ("⚙️  Ajustes", self.dialogs.cmd_preferencias),
+                ("📚  Biblioteca", self.data.abrir_biblioteca),
+                ("🌗  Cambiar tema", self.dialogs.cmd_toggle_tema),
                 ("🏠  Dashboard", self.dashboard.cmd_abrir),
-                ("🎯  Modo Focus", self._cmd_modo_focus),
+                ("🎯  Modo Focus", self.creative.cmd_modo_focus),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
                 ("🆚  A/B Testing", self.ab.cmd_ab_testing),
-                ("🔎  Búsqueda global", self._cmd_busqueda_global),
-                ("⏰  Cron prompts", self._cmd_cron_prompts),
+                ("🔎  Búsqueda global", self.backup.cmd_busqueda_global),
+                ("⏰  Cron prompts", self.workflow.cmd_cron_prompts),
                 ("🎙 Grabar sesión", self.sesion.cmd_grabar_toggle),
-                ("👥  Grupo personajes", self._cmd_grupo_personajes),
-                ("🔄  Macros", self._abrir_macros),
-                ("📁  Proyectos", self._cmd_proyectos),
-                ("📑  Versiones prompt", self._cmd_versiones_prompt),
+                ("👥  Grupo personajes", self.creative.cmd_grupo_personajes),
+                ("🔄  Macros", self.workflow.abrir_macros),
+                ("📁  Proyectos", self.workflow.cmd_proyectos),
+                ("📑  Versiones prompt", self.workflow.cmd_versiones_prompt),
             ]),
         ]
 
@@ -1187,7 +1187,7 @@ class UIBuildersMixin:
             logger.debug(f"[silent] {_e}")
         # Autocompletar
         try:
-            self._autocompletar_tags(event)
+            self.analysis.autocompletar_tags(event)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Actualizar barra visual de chars
@@ -1543,4 +1543,4 @@ class UIBuildersMixin:
                                                text_color=c["muted_text"], anchor="w", justify="left",
                                                cursor="hand2")
         self.lbl_compat_inline.pack(fill="x", pady=(2, 0))
-        self.lbl_compat_inline.bind("<Button-1>", lambda e: self._cmd_modal_compatibilidad())
+        self.lbl_compat_inline.bind("<Button-1>", lambda e: self.analysis.cmd_modal_compatibilidad())

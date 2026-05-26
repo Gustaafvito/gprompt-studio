@@ -317,7 +317,7 @@ class UiEventsMixin:
             self._safe_pack(self.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self._tabview_container)
 
             try:
-                self._mostrar_consejo_contextual(modelo_name, specs)
+                self.analysis.mostrar_consejo_contextual(modelo_name, specs)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         else:

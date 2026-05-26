@@ -52,19 +52,19 @@ class UiFooterMixin:
                 ("📋 Todo",    55, "#475569",  lambda: self._copiar("todo"),          "Copiar todo el prompt"),
             ]),
             ("🔧 HERRAMIENTAS", "#1e3a8a", [
-                ("🔧 Comfy",   60, "#1e3a8a",  self._copiar_comfyui_json,             "Exportar/Importar ComfyUI JSON"),
-                ("🇪🇸 Trad",    55, "#1e3a8a",  self._traducir_salida,                  "Traducir al español"),
-                ("📊",         30, "#1e3a8a",  self._cmd_scoring,                      "Scoring del prompt"),
-                ("✨",         30, "#1e3a8a",  self._abrir_atajos_tags,                "Atajos de tags rápidos"),
+                ("🔧 Comfy",   60, "#1e3a8a",  self.analysis.copiar_comfyui_json,     "Exportar/Importar ComfyUI JSON"),
+                ("🇪🇸 Trad",    55, "#1e3a8a",  self.analysis.traducir_salida,         "Traducir al español"),
+                ("📊",         30, "#1e3a8a",  self.analysis.cmd_scoring,             "Scoring del prompt"),
+                ("✨",         30, "#1e3a8a",  self.analysis.abrir_atajos_tags,       "Atajos de tags rápidos"),
             ]),
             ("🛡 NEGATIVE", "#991b1b", [
-                ("🔴+",        35, "#991b1b",  self._cmd_solo_negative,                "Regenerar SOLO el NEGATIVE"),
-                ("🛡",         30, "#991b1b",  self._cmd_negative_optimo,              "Generar NEGATIVE óptimo según modelo"),
+                ("🔴+",        35, "#991b1b",  self.creative.cmd_solo_negative,        "Regenerar SOLO el NEGATIVE"),
+                ("🛡",         30, "#991b1b",  self.creative.cmd_negative_optimo,      "Generar NEGATIVE óptimo según modelo"),
             ]),
             ("⭐ GUARDAR", "#a16207", [
-                ("⭐",         30, "#a16207",  self._guardar_favorito,                 "Guardar en Favoritos"),
-                ("🌟",         30, "#b45309",  self._guardar_estrella,                 "Guardar como Estrella"),
-                ("💎",         30, "#854d0e",  self._guardar_seed_favorito,            "Guardar config como Seed favorito"),
+                ("⭐",         30, "#a16207",  self.data.guardar_favorito,             "Guardar en Favoritos"),
+                ("🌟",         30, "#b45309",  self.data.guardar_estrella,             "Guardar como Estrella"),
+                ("💎",         30, "#854d0e",  self.analysis.guardar_seed_favorito,    "Guardar config como Seed favorito"),
             ]),
             ("💾 EXPORT", "#15803d", [
                 ("💾",         30, "#15803d",  self._exportar,                         "Exportar como .txt"),
@@ -135,9 +135,9 @@ class UiFooterMixin:
             menu.add_cascade(label="⭐ Pegar de favoritos", menu=submenu_fav)
 
         menu.add_separator()
-        menu.add_command(label="📊 Analizar calidad", command=self._cmd_scoring)
-        menu.add_command(label="✨ Atajos de tags", command=self._abrir_atajos_tags)
-        menu.add_command(label="🇪🇸 Traducir al español", command=self._traducir_salida)
+        menu.add_command(label="📊 Analizar calidad", command=self.analysis.cmd_scoring)
+        menu.add_command(label="✨ Atajos de tags", command=self.analysis.abrir_atajos_tags)
+        menu.add_command(label="🇪🇸 Traducir al español", command=self.analysis.traducir_salida)
         menu.add_command(label="🧬 Variar con ADN visual", command=self._cmd_variar_con_anclaje)
         menu.add_command(label="🔍 Comparar consistencia", command=self._cmd_comparar_consistencia)
         menu.add_separator()

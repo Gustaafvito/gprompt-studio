@@ -1462,12 +1462,12 @@ class DashboardMixin:
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
 
         herramientas = [
-            ("🎯 Scoring", self._cmd_scoring),
-            ("📊 Estadísticas", self._abrir_estadisticas),
+            ("🎯 Scoring", self.analysis.cmd_scoring),
+            ("📊 Estadísticas", self.analysis.abrir_estadisticas),
             ("📐 Fórmulas", self._abrir_formulas),
             ("🏷️ Añadir tags", self._abrir_snippets),
             ("📋 Plantillas", self._cmd_plantillas_populares),
-            ("💎 Seeds", self._abrir_seeds_favoritos),
+            ("💎 Seeds", self.analysis.abrir_seeds_favoritos),
             ("🔄 Macros", self._abrir_macros),
             ("📁 Proyectos", self._cmd_proyectos),
         ]

@@ -1257,7 +1257,7 @@ class CoreMixin:
             self.set_estado("⚠️ Escribe o selecciona una idea primero.", "#e67e22")
             return
         # Detectar NSFW automáticamente
-        self._detectar_nsfw_auto(idea)
+        self.analysis.detectar_nsfw_auto(idea)
         # Mejora 14: log sesión
         try:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else

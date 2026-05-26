@@ -23,7 +23,20 @@ logger = logging.getLogger(__name__)
 
 
 class _Component:
-    """Base: delega cualquier atributo no encontrado a self.app."""
+    """Base: delega cualquier atributo no encontrado a self.app.
+
+    A1 completo: __getattr__ delega TANTO métodos públicos (cmd_X)
+    como privados (_método). Esto permite que cualquier mixin sea
+    accesible vía su componente, no solo los entry points
+    declarados explícitamente como métodos del componente.
+
+    Convención:
+      - `self.X.metodo()` → llama al método público del componente
+        si está declarado, sino delega a `self.app.metodo` (o
+        `self.app._metodo` si el nombre empieza con _)
+      - Los métodos público sin underscore declarados explícitamente
+        sirven de API documentada del servicio.
+    """
 
     __slots__ = ("app",)
     _name = "component"
@@ -32,7 +45,7 @@ class _Component:
         self.app = app
 
     def __getattr__(self, name):
-        if name.startswith("_") or name == "app":
+        if name == "app":
             raise AttributeError(name)
         try:
             return getattr(self.app, name)
@@ -47,43 +60,214 @@ class _Component:
 
 
 class CoreComponent(_Component):
-    """Workers, comandos principales, estado (CoreMixin)."""
+    """Workers, comandos principales, estado (CoreMixin).
+
+    Entry points del CoreMixin: cmd_ideas, cmd_prompt, cmd_prompt_quick,
+    cmd_variaciones, cmd_vision, cmd_imagen_a_prompt, cmd_refinar,
+    cmd_batch, cmd_reset, cmd_copiloto, cmd_previsualizar. Accesibles
+    vía __getattr__ delegando al app (todos sin underscore en el mixin).
+    """
     _name = "core"
 
 
 class UIComponent(_Component):
-    """Construcción de UI: _build_* y helpers (UIBuildersMixin)."""
+    """Construcción de UI: _build_* y helpers (UIBuildersMixin).
+
+    Métodos del mixin: _build_header, _build_modo, _build_video_panel,
+    _build_audio_panel, _build_modelo_imagen_panel, _build_destino_panel,
+    _build_tabs_centrales, _build_ajustes_extra, _build_estilos,
+    _build_negative, _build_entrada, _build_acciones, _build_estado,
+    _build_salida. Todos delegados vía __getattr__.
+
+    UI no tiene "entry points" propiamente (son helpers internos del
+    constructor de la app). El componente existe para consistencia.
+    """
     _name = "ui"
 
 
 class CreativeComponent(_Component):
-    """Moodboard, ADN, Negative Builder, Paleta (ToolsCreativeMixin)."""
+    """Moodboard, ADN, Negative Builder, Paleta (ToolsCreativeMixin).
+    Decimotercer servicio del refactor A1.
+    """
     _name = "creative"
+
+    def cmd_negative_builder(self) -> None:
+        return self.app._cmd_negative_builder()
+
+    def cmd_color_palette(self) -> None:
+        return self.app._cmd_color_palette()
+
+    def cmd_anclaje_visual(self) -> None:
+        return self.app._cmd_anclaje_visual()
+
+    def cmd_negative_optimo(self) -> None:
+        return self.app._cmd_negative_optimo()
+
+    def cmd_solo_negative(self) -> None:
+        return self.app._cmd_solo_negative()
+
+    def cmd_modo_focus(self) -> None:
+        return self.app._cmd_modo_focus()
+
+    def cmd_grupo_personajes(self) -> None:
+        return self.app._cmd_grupo_personajes()
 
 
 class WorkflowComponent(_Component):
-    """Macros, A/B Testing, Cron, Proyectos, Sesión (ToolsWorkflowMixin)."""
+    """Macros, Cron, Proyectos, Versiones, Búsqueda global, etc.
+    (ToolsWorkflowMixin). Decimocuarto servicio del refactor A1.
+    """
     _name = "workflow"
+
+    def cmd_cron_prompts(self) -> None:
+        return self.app._cmd_cron_prompts()
+
+    def cmd_proyectos(self) -> None:
+        return self.app._cmd_proyectos()
+
+    def cmd_versiones_prompt(self) -> None:
+        return self.app._cmd_versiones_prompt()
+
+    def abrir_macros(self) -> None:
+        return self.app._abrir_macros()
+
+    def cmd_convertir_a_video(self) -> None:
+        return self.app._cmd_convertir_a_video()
+
+    def cmd_previsualizar(self) -> None:
+        return self.app.cmd_previsualizar()
 
 
 class AnalysisComponent(_Component):
-    """Estadísticas, Scoring, Auto-improve, Critique (ToolsAnalysisMixin)."""
+    """Estadísticas, Scoring, Auto-improve, Critique (ToolsAnalysisMixin).
+    Decimoquinto servicio del refactor A1.
+    """
     _name = "analysis"
+
+    def cmd_modo_educativo(self) -> None:
+        return self.app._cmd_modo_educativo()
+
+    def cmd_critica_historial(self) -> None:
+        return self.app._cmd_critica_historial()
+
+    def cmd_automejora_periodica(self) -> None:
+        return self.app._cmd_automejora_periodica()
+
+    def abrir_estadisticas(self) -> None:
+        return self.app._abrir_estadisticas()
+
+    def cmd_scoring(self) -> None:
+        return self.app._cmd_scoring()
+
+    def detectar_nsfw_auto(self, idea: str | None = None) -> bool:
+        return self.app._detectar_nsfw_auto(idea)
+
+    def guardar_seed_favorito(self) -> None:
+        return self.app._guardar_seed_favorito()
+
+    def abrir_seeds_favoritos(self) -> None:
+        return self.app._abrir_seeds_favoritos()
+
+    def autocompletar_tags(self, event=None) -> None:
+        return self.app._autocompletar_tags(event)
+
+    def abrir_atajos_tags(self) -> None:
+        return self.app._abrir_atajos_tags()
+
+    def copiar_comfyui_json(self) -> None:
+        return self.app._copiar_comfyui_json()
+
+    def traducir_salida(self) -> None:
+        return self.app._traducir_salida()
+
+    def mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:
+        return self.app._mostrar_consejo_contextual(modelo_name, specs)
+
+    def cmd_modal_compatibilidad(self) -> None:
+        return self.app._cmd_modal_compatibilidad()
 
 
 class DataComponent(_Component):
-    """Historial, Favoritos, Estrellas, Plantillas (DataMgmtMixin)."""
+    """Historial, Favoritos, Estrellas, Plantillas, Snippets, Imagen
+    (DataMgmtMixin). Decimosexto servicio del refactor A1.
+    """
     _name = "data"
+
+    def cmd_guardar_plantilla(self) -> None:
+        return self.app._cmd_guardar_plantilla()
+
+    def cmd_borrar_plantilla(self) -> None:
+        return self.app._cmd_borrar_plantilla()
+
+    def guardar_favorito(self) -> None:
+        return self.app._guardar_favorito()
+
+    def guardar_estrella(self) -> None:
+        return self.app._guardar_estrella()
+
+    def repetir_ultima_config(self) -> None:
+        return self.app._repetir_ultima_config()
+
+    def cmd_gestionar_snippets(self) -> None:
+        return self.app._cmd_gestionar_snippets()
+
+    def abrir_snippets(self) -> None:
+        return self.app._abrir_snippets()
+
+    def abrir_formulas(self) -> None:
+        return self.app._abrir_formulas()
+
+    def abrir_biblioteca(self) -> None:
+        return self.app._abrir_biblioteca()
+
+    def cmd_duplicar_a_historial(self, event=None) -> None:
+        return self.app._cmd_duplicar_a_historial(event)
+
+    def idea_aleatoria_historial(self) -> None:
+        return self.app._idea_aleatoria_historial()
 
 
 class BackupComponent(_Component):
-    """Backup, Restore, CSV, Export CLI, Search (BackupExportMixin)."""
+    """Backup, Restore, CSV, Export CLI, Búsqueda global
+    (BackupExportMixin). Decimoséptimo servicio del refactor A1.
+    """
     _name = "backup"
+
+    def cmd_backup_completo(self) -> None:
+        return self.app._cmd_backup_completo()
+
+    def cmd_restore_completo(self) -> None:
+        return self.app._cmd_restore_completo()
+
+    def cmd_exportar_csv(self) -> None:
+        return self.app._cmd_exportar_csv()
+
+    def cmd_export_cli(self) -> None:
+        return self.app._cmd_export_cli()
+
+    def cmd_busqueda_global(self) -> None:
+        return self.app._cmd_busqueda_global()
 
 
 class DialogsComponent(_Component):
-    """API Keys, Dashboard, Theme, Wizard (DialogsMixin)."""
+    """API Keys, Tema, Preferencias, Acerca de, Tokens
+    (DialogsMixin). Decimoctavo servicio del refactor A1.
+
+    NOTA: _cmd_dashboard ya migrado a DashboardComponent (sesión 6).
+    """
     _name = "dialogs"
+
+    def cmd_configurar_api_keys(self, provider_focus=None) -> None:
+        return self.app._cmd_configurar_api_keys(provider_focus)
+
+    def cmd_toggle_tema(self) -> None:
+        return self.app._cmd_toggle_tema()
+
+    def cmd_acerca_de(self) -> None:
+        return self.app._cmd_acerca_de()
+
+    def cmd_preferencias(self) -> None:
+        return self.app.cmd_preferencias()
 
 
 class AdnVisualComponent(_Component):
