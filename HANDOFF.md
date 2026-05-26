@@ -19,8 +19,9 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 | Working tree | Limpio |
 | Branch | `main` (sincronizado con `origin/main` en `96fe7c2`) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **21** |
-| **Componentes (A1)** | **20/20 COMPLETO** ✅ — todos accesibles vía `self.X.metodo()` |
+| Mixins en `ArquitectoApp` | **18** (era 21 — 3 removidos en A1 fase 2) |
+| **Componentes (A1)** | **20/20** ✅ accesibles vía `self.X.metodo()` |
+| **A1 fase 2** | **3/20 mixins removidos del MRO**: Json, Prompts, Atajos |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
@@ -654,6 +655,92 @@ Quedan 7 módulos sin tests: `adn_visual`, `multiprompt`,
 - SeaArt char limits (necesita info usuario).
 - UX: comparador lado-a-lado, grid Pollinations.
 - Performance: lazy load JSON, semáforo workers.
+
+---
+
+## ✅ Sesión 9 — A1 fase 2 iniciado (3 mixins removidos del MRO)
+
+### Patrón establecido: Mixin → Service aislado
+
+**3 mixins convertidos** a servicios aislados con `app: ArquitectoApp`
+por composición. Acceso vía componentes (`self.json.cmd_*`,
+`self.prompts.inyectar_*`, `self.atajos.bind_*`).
+
+| Mixin → Service | Líneas | self.X → self.app.X | Tests reescritos |
+|---|---:|---:|---|
+| JsonPromptMixin → JsonPromptService | 657 | 29 refs | 0 (tests sin mixin) |
+| PromptsInyeccionMixin → PromptsInyeccionService | 287 | ~30 refs | 2 manual |
+| AtajosAyudaMixin → AtajosAyudaService | 389 | ~40 refs | 0 |
+
+Mixins en MRO: **21 → 18 (-3)**.
+
+### Protocolo del refactor
+
+1. Script regex transforma `self.X` → `self.app.X` (excepto métodos
+   internos del service).
+2. Fix manual de patrones widget-aware:
+   - `GPromptWindow(self)` → `GPromptWindow(self.app)`
+   - `.transient(self)` → `.transient(self.app)`
+   - `hasattr(self, "X")` → `hasattr(self.app, "X")`
+   - `getattr(self, "X", d)` → `getattr(self.app, "X", d)`
+3. Componente instancia el service en `__init__` y delega métodos a él.
+4. Quitar mixin del MRO en `app.py` + actualizar `modules/__init__.py`.
+5. Actualizar tests si los usaban: `cls = type("Host", (Service,), {})()`
+   ya no funciona porque `Service.__init__` requiere `app`. El helper
+   `_host()` debe cambiar a `Service(app)` con `app: SimpleNamespace`.
+
+### Lo que NO se migró en esta sesión (intento revertido)
+
+Se intentaron migrar `RefinamientoMixin`, `WorkersIaMixin`,
+`AbTestingMixin` y `DashboardMixin` pero requerían reescritura
+significativa de sus tests (cambio de `h.X` por `h.app.X` en cientos
+de líneas de tests). Revertido para no romper el suite.
+
+**Lección**: A1 fase 2 requiere **1 mixin por commit con reescritura
+de tests** — no se puede hacer en lote.
+
+### Commits sesión 9
+
+```
+8842cef refactor(A1 fase 2): AtajosAyudaMixin removido del MRO (3/20)
+ca1435e refactor(A1 fase 2): JsonPromptMixin + PromptsInyeccionMixin
+        removidos del MRO
+96fe7c2 refactor(A1): completar 20/20 mixins (sesión 8)
+7e9cfae refactor(ui): extraer _build_footer (sesión 8)
+2cfac51 test(ui_events): cobertura de UiEventsMixin (sesión 8)
+```
+
+### 🚧 Pendiente sesión 10+
+
+#### 🔴 ALTA — A1 fase 2 (17 mixins restantes)
+Mismos mixins en orden de menor a mayor complejidad (1 por commit):
+1. UiFooterMixin (1 método, autocontenido)
+2. UiEventsMixin (8 handlers)
+3. DashboardMixin (1 método grande, ya con palette extraída)
+4. AbTestingMixin (5 métodos + 11 tests a reescribir)
+5. RefinamientoMixin (6 métodos + 32 tests)
+6. WorkersIaMixin (5 workers + 29 tests)
+7. ModoClienteMixin
+8. MultiPromptMixin (4 entry points)
+9. AdnVisualMixin
+10. SesionVideoMixin (incluye _sesion_log que usan TODOS los mixins)
+11. ToolsAnalysisMixin (22 métodos)
+12. DataMgmtMixin
+13. BackupExportMixin
+14. DialogsMixin
+15. ToolsCreativeMixin
+16. ToolsWorkflowMixin
+17. UIBuildersMixin
+18. CoreMixin (el más complejo, último)
+
+Estimación: 1-2 mixins por sesión → ~10 sesiones.
+
+#### 🔴 ALTA — T1 cobertura tests
+7 módulos sin tests todavía.
+
+#### 🟡 MEDIA
+- Particiones de archivos grandes.
+- Type hints en mixins restantes.
 
 ---
 
