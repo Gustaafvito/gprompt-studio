@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class SesionVideoMixin:
     """Mixin con grabación de sesión + log + exportación tutorial."""
 
-    def _sesion_init(self):
+    def _sesion_init(self) -> None:
         """Inicializa el registro de sesión si no existe."""
         if not hasattr(self, "_sesion_eventos"):
             self._sesion_eventos = []
@@ -51,7 +51,7 @@ class SesionVideoMixin:
         ts = datetime.datetime.now().strftime("%H:%M:%S")
         self._sesion_eventos.append((ts, evento))
 
-    def _sesion_video_disponible(self):
+    def _sesion_video_disponible(self) -> None:
         """Comprueba si las dependencias para grabar vídeo están instaladas."""
         try:
             import mss  # noqa
@@ -96,7 +96,7 @@ class SesionVideoMixin:
             self.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
             return False
 
-    def _sesion_video_worker(self):
+    def _sesion_video_worker(self) -> None:
         """Thread worker: captura pantalla a 5 FPS y la pasa al writer."""
         try:
             import time
@@ -157,7 +157,7 @@ class SesionVideoMixin:
         except Exception as e:
             self.after(0, lambda: self.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
 
-    def _sesion_video_detener(self):
+    def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""
         self._sesion_video_running = False
         # Esperar al thread (max 1.5s)
@@ -176,7 +176,7 @@ class SesionVideoMixin:
         self._sesion_video_thread = None
         return path
 
-    def _cmd_sesion_grabar_toggle(self):
+    def _cmd_sesion_grabar_toggle(self) -> None:
         """Inicia / detiene la grabación de sesión (con o sin vídeo según preferencia)."""
         self._sesion_init()
         if not self._sesion_grabando:
@@ -389,7 +389,7 @@ class SesionVideoMixin:
         ctk.CTkButton(btn_row, text="Cerrar", width=110, command=v.destroy,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="right", padx=2)
 
-    def _cmd_sesion_modo_tutorial(self):
+    def _cmd_sesion_modo_tutorial(self) -> None:
         """Modo Tutorial: convierte el log en un guion paso a paso para tutoriales de YouTube."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)

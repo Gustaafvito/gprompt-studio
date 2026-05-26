@@ -43,7 +43,7 @@ class DataMgmtMixin:
         "emergent": "{animal} powerfully breaking through a dark matte surface barrier, head is a hybrid of animal texture seamlessly integrated with geometric crystal fragments, polished chrome plates and iridized glass, intricate internal patterns, eyes intensely glowing with electric bioluminescent energy, jagged violent break with debris flying, pulsating bioluminescent filaments (electric blue, gold, purple) revealed within fracture, scattered geometric crystal and metal shards floating, dramatic directional spotlight from top combined with powerful internal light, dark infinite matte void, high-resolution photorealistic 3D conceptual art render, 8k, masterpiece",
     }
 
-    def _auto_guardar_borrador(self):
+    def _auto_guardar_borrador(self) -> None:
         """Guarda el borrador actual cada 30 segundos."""
         try:
             idea = self.txt_idea.get("1.0", "end").strip()
@@ -64,7 +64,7 @@ class DataMgmtMixin:
             self.after(30000, self._auto_guardar_borrador)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-    def _restaurar_borrador(self):
+    def _restaurar_borrador(self) -> None:
         """Si hay un borrador guardado, ofrece restaurarlo al abrir la app."""
         try:
             prefs = self.store.cargar_preferencias()
@@ -97,7 +97,7 @@ class DataMgmtMixin:
                 self.store.guardar_preferencias(prefs)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-    def _cmd_guardar_plantilla(self):
+    def _cmd_guardar_plantilla(self) -> None:
         nombre = simpledialog.askstring("Guardar Plantilla", "Nombre para la plantilla:", parent=self)
         if not nombre or not nombre.strip(): return
         nombre = nombre.strip()
@@ -126,7 +126,7 @@ class DataMgmtMixin:
         self.actualizar_combo_plantillas()
         self.set_estado(f"📐 Plantilla '{nombre}' guardada.", "#9b59b6")
 
-    def _cmd_borrar_plantilla(self):
+    def _cmd_borrar_plantilla(self) -> None:
         nombre = self.combo_plantilla.get()
         if not nombre or nombre == "— Sin plantilla —": return
         if messagebox.askyesno("Confirmar", f"¿Borrar la plantilla '{nombre}'?"):
@@ -182,7 +182,7 @@ class DataMgmtMixin:
         self.reiniciar_memoria()
         self.set_estado(f"📐 Plantilla '{nombre}' cargada.", "#9b59b6")
 
-    def _cargar_imagen(self):
+    def _cargar_imagen(self) -> None:
         ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp *.bmp")])
         if ruta:
             self._cargar_imagen_desde_pil(Image.open(ruta).convert("RGB"), Path(ruta).name)
@@ -207,7 +207,7 @@ class DataMgmtMixin:
         # Guardar en historial de imágenes
         self._agregar_img_historial(gem, nombre)
 
-    def _limpiar_imagen(self):
+    def _limpiar_imagen(self) -> None:
         self.imagen_cargada = None
         self._ultimo_anclaje_visual = None
         self.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
@@ -247,7 +247,7 @@ class DataMgmtMixin:
             if widgets:
                 widgets[0].destroy()
 
-    def _snippets_obtener(self):
+    def _snippets_obtener(self) -> None:
         """Devuelve los snippets actuales (predefinidos + custom del usuario)."""
         prefs = self.store.cargar_preferencias()
         custom = prefs.get("snippets_expand", {}) or {}
@@ -263,7 +263,7 @@ class DataMgmtMixin:
         prefs["snippets_expand"] = snippets_custom
         self.store.guardar_preferencias(prefs)
 
-    def _snippet_expand(self):
+    def _snippet_expand(self) -> None:
         """Si justo antes del cursor hay ';palabra ', expande la palabra al snippet completo."""
         try:
             # Posición actual del cursor
@@ -295,7 +295,7 @@ class DataMgmtMixin:
                 logger.debug(f"[silent] {e}")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-    def _cmd_gestionar_snippets(self):
+    def _cmd_gestionar_snippets(self) -> None:
         """Ventana de gestión de snippets: ver predefinidos + añadir/editar/borrar custom."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -484,7 +484,7 @@ class DataMgmtMixin:
             "contenido":  texto,
         })
 
-    def _repetir_ultima_config(self):
+    def _repetir_ultima_config(self) -> None:
         """Aplica la última configuración usada en el último prompt generado."""
         cfg = getattr(self, "_ultima_config", None)
         if not cfg:
@@ -526,7 +526,7 @@ class DataMgmtMixin:
         except Exception as e:
             self.set_estado(f"⚠️ No se pudo aplicar todo: {e}", "#e67e22")
 
-    def _guardar_favorito(self):
+    def _guardar_favorito(self) -> None:
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto:
             self.set_estado("⚠️ No hay prompt para guardar.", "#e67e22")
@@ -546,7 +546,7 @@ class DataMgmtMixin:
         })
         self.set_estado("⭐ Guardado en favoritos.", "#f1c40f")
 
-    def _guardar_estrella(self):
+    def _guardar_estrella(self) -> None:
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto:
             self.set_estado("⚠️ No hay prompt para guardar como estrella.", "#e67e22")
@@ -572,7 +572,7 @@ class DataMgmtMixin:
         })
         self.set_estado(f"🌟 Prompt estrella guardado{': ' + nota if nota else ''}.", "#f39c12")
 
-    def _exportar(self):
+    def _exportar(self) -> None:
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto:
             self.set_estado("⚠️ No hay contenido para exportar.", "#e67e22")
@@ -627,7 +627,7 @@ class DataMgmtMixin:
                 f.write(header + texto)
             self.set_estado(f"💾 Exportado: {Path(ruta).name}", "#2ecc71")
 
-    def _abrir_snippets(self):
+    def _abrir_snippets(self) -> None:
         """Gestor de snippets con buscador + edit inline."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -814,7 +814,7 @@ class DataMgmtMixin:
         refrescar()
         entry_buscar.focus_set()
 
-    def _abrir_formulas(self):
+    def _abrir_formulas(self) -> None:
         """Gestor de fórmulas: combinaciones de tags reutilizables (igual que snippets pero más estructurado)."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -986,7 +986,7 @@ class DataMgmtMixin:
         refrescar()
         entry_buscar.focus_set()
 
-    def _abrir_biblioteca(self):
+    def _abrir_biblioteca(self) -> None:
         """Ventana con prompts de ejemplo probados.
 
         Features:
@@ -1300,13 +1300,13 @@ class DataMgmtMixin:
         # Render inicial
         refrescar()
 
-    def actualizar_combo_personajes(self):
+    def actualizar_combo_personajes(self) -> None:
         nombres = self.store.nombres_personajes()
         self.combo_personaje.configure(values=nombres)
         if self.combo_personaje.get() not in nombres:
             self.combo_personaje.set("— Sin personaje —")
 
-    def actualizar_combo_loras(self):
+    def actualizar_combo_loras(self) -> None:
         nombres = self.store.nombres_loras()
         self.combo_lora.configure(values=nombres)
         if self.combo_lora.get() not in nombres:
@@ -1316,13 +1316,13 @@ class DataMgmtMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-    def actualizar_combo_plantillas(self):
+    def actualizar_combo_plantillas(self) -> None:
         nombres = self.store.nombres_plantillas()
         self.combo_plantilla.configure(values=nombres)
         if self.combo_plantilla.get() not in nombres:
             self.combo_plantilla.set("— Sin plantilla —")
 
-    def _cargar_preferencias(self):
+    def _cargar_preferencias(self) -> None:
         prefs = self.store.cargar_preferencias()
         if not prefs: return
         try:
@@ -1441,7 +1441,7 @@ class DataMgmtMixin:
         except Exception as _e:
 
             logger.debug(f"[silent] {_e}")
-    def _guardar_preferencias(self):
+    def _guardar_preferencias(self) -> None:
         # como `nombre` que no se gestionan en este método.
         try:
             prefs = self.store.cargar_preferencias() or {}
@@ -1511,7 +1511,7 @@ class DataMgmtMixin:
         except Exception:
             return None
 
-    def _idea_aleatoria_historial(self):
+    def _idea_aleatoria_historial(self) -> None:
         """Carga una idea aleatoria de prompts pasados (inspiración rápida)."""
         import random
         items = (self.store.historial or []) + (self.store.favoritos or []) + (self.store.estrellas or [])

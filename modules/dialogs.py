@@ -314,7 +314,7 @@ class DialogsMixin:
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=v.destroy).pack(pady=(8, 16))
 
-    def _cmd_toggle_tema(self):
+    def _cmd_toggle_tema(self) -> None:
         """Cambia entre tema claro y oscuro."""
         actual = ctk.get_appearance_mode()
         nuevo = "Light" if actual == "Dark" else "Dark"
@@ -326,7 +326,7 @@ class DialogsMixin:
         self.after(100, self._apply_theme_colors)
         self.set_estado(f"🌗 Tema: {nuevo}", "#2ecc71")
 
-    def _build_author(self):
+    def _build_author(self) -> None:
         """Barra de autor en el footer con enlaces sociales clickables.
 
         Texto de "Creado por..." y los 4 enlaces sociales comparten la
@@ -449,7 +449,7 @@ class DialogsMixin:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
-    def _colorear_resultado(self):
+    def _colorear_resultado(self) -> None:
         """Colorea las etiquetas POSITIVE/NEGATIVE/PROMPT en el resultado.
 
         Cubre variantes según el tipo de modelo:
@@ -503,7 +503,7 @@ class DialogsMixin:
         else:
             self._iniciar_progreso()
 
-    def _iniciar_progreso(self):
+    def _iniciar_progreso(self) -> None:
         """Inicia la barra de progreso."""
         if not getattr(self, '_progreso_activo', False):
             self._progreso_activo = True
@@ -512,7 +512,7 @@ class DialogsMixin:
                 bar.pack(side="right", padx=(10, 0))
                 bar.start()
 
-    def _detener_progreso(self):
+    def _detener_progreso(self) -> None:
         """Detiene y oculta la barra de progreso."""
         if getattr(self, '_progreso_activo', False):
             self._progreso_activo = False
@@ -521,7 +521,7 @@ class DialogsMixin:
                 bar.stop()
                 bar.pack_forget()
 
-    def _on_cerrar(self):
+    def _on_cerrar(self) -> None:
         """Guarda estado al cerrar la app y cierra Toplevels hijos.
 
         v1.0: cierra ventanas hijas antes de destruir la principal para
@@ -568,7 +568,7 @@ class DialogsMixin:
             self.after_cancel(self._token_pending)
         self._token_pending = self.after(300, self._actualizar_tokens)
 
-    def _actualizar_tokens(self):
+    def _actualizar_tokens(self) -> None:
         """Actualiza el contador de tokens y caracteres."""
         if not hasattr(self, 'txt_salida') or not hasattr(self, 'lbl_tokens'):
             return
@@ -603,7 +603,7 @@ class DialogsMixin:
         else:
             self.lbl_tokens.configure(text="", text_color="#555555")
 
-    def _sonar_completado(self):
+    def _sonar_completado(self) -> None:
         """Sonido de notificación al completar generación."""
         try:
             import winsound
