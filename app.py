@@ -52,6 +52,7 @@ from modules import (
     ToolsWorkflowMixin,
     UIBuildersMixin,
     UiEventsMixin,
+    UiFooterMixin,
     WorkersIaMixin,
     install_components,
 )
@@ -87,6 +88,7 @@ class ArquitectoApp(
     UiEventsMixin,
     RefinamientoMixin,
     DashboardMixin,
+    UiFooterMixin,
 ):
 
     def __init__(self):

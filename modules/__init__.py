@@ -28,6 +28,7 @@ from .tools_creative import ToolsCreativeMixin
 from .tools_workflow import ToolsWorkflowMixin
 from .ui_builders import UIBuildersMixin
 from .ui_events import UiEventsMixin
+from .ui_footer import UiFooterMixin
 from .workers_ia import WorkersIaMixin
 
 __all__ = [
@@ -51,6 +52,7 @@ __all__ = [
     "AbTestingMixin",
     "AtajosAyudaMixin",
     "DashboardMixin",
+    "UiFooterMixin",
     "GPromptWindow",
     "EventBus",
     "PreviewService",

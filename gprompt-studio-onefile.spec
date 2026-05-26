@@ -59,6 +59,7 @@ hiddenimports = [
     'modules.ui_events',
     'modules.refinamiento',
     'modules.dashboard',
+    'modules.ui_footer',
     'modules.tooltip',
     'keyring.backends.Windows',
     'keyring.backends.SecretService',
