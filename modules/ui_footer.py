@@ -9,9 +9,12 @@ Dependencias self (provistas por ArquitectoApp): muchas — el método
 usa decenas de comandos (cmd_*, _copiar, _guardar_*, _abrir_*, etc.)
 de los mixins de la app.
 """
+import logging
+
 import customtkinter as ctk
 
 from config import get_theme_colors
+from modules.style_guide import tooltip_para
 
 try:
     from CTkToolTip import CTkToolTip
@@ -19,6 +22,9 @@ except ImportError:
     class CTkToolTip:  # noqa: N801
         def __init__(self, *args, **kwargs):
             pass
+
+
+logger = logging.getLogger(__name__)
 
 
 def _get_real_is_light():
