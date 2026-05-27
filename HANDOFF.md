@@ -714,9 +714,9 @@ ca1435e refactor(A1 fase 2): JsonPromptMixin + PromptsInyeccionMixin
 
 ---
 
-## ✅ Sesión 10 — bug fixes post-distribución
+## ✅ Sesión 10 — bug fixes masivos + feature Storyboard
 
-### Bugs corregidos
+### Bugs corregidos (5 commits)
 
 - **`fea3886` fix(ui_footer)**: `NameError: tooltip_para` al construir
   checkboxes de estilos. Al extraer `_build_footer` en sesión 8, se
@@ -727,13 +727,53 @@ ca1435e refactor(A1 fase 2): JsonPromptMixin + PromptsInyeccionMixin
   pero ensuciaba el output con stack traces. Fix: `sys.stdout.
   reconfigure(encoding="utf-8", errors="replace")` al inicio de
   `main.py`, antes de instanciar handlers.
+- **`f8c252a` fix: 5 imports faltantes barridos con ruff F821**:
+  - `ui_footer.py`: `re`, `pyperclip`, `detectar_idioma_es`,
+    `ESTILO_NEGATIVO_AUTO`, `MOTOR_DEFAULT`, `NEGATIVE_PRESETS`,
+    `PRESET_COLORES`, `es_separador` (8 símbolos en total).
+    Crasheaba con Auto-trad activo.
+  - `backup_export.py`, `data_mgmt.py`: `messagebox` (tkinter).
+  - `sesion_video.py`: `pyperclip`.
+  Todos eran fallout de la limpieza F401 (sesión 6) + partición #11
+  (sesión 8) que eliminaron imports aparentemente muertos pero usados
+  en ramas no testeadas.
+- **`9cf2c40` fix: closures de `e` en except + F821 activado**:
+  35 ocurrencias del patrón roto:
+    `except Exception as e: self.after(0, lambda: f"...{e}...")`
+  Python hace `del e` al exit del except → NameError silencioso en
+  el callback. Fix con `lambda e=e:` (33 sitios) + `err = e; def _err()`
+  (2 sitios). F821 activado en `pyproject.toml` → CI detectará esta
+  clase de bugs automáticamente.
 
-### Rebuild + redistribución
+### Nueva feature: 🖼 Storyboard para imagen (`b35abc5`)
 
-3 artefactos regenerados en `~/OneDrive/Desktop/GPromptStudio-Distribuible/`:
-- `GPromptStudio-Portable/` (onedir, 13.4 MB) — 99s build
-- `GPromptStudio-Portable-Onefile.exe` (124.1 MB) — 77s build
-- `GPromptStudio-Setup-1.0.0.exe` (88.5 MB) — 41s+53s (PyInstaller+Inno)
+Botón nuevo en grupo "🎬 NARRATIVA" (fila 2 de acciones). Solo modo
+IMAGEN. Genera N paneles cinematográficos (3-12, default 9) con:
+- **SHOT type** (el LLM elige libremente: CLOSE-UP, MEDIUM, WIDE,
+  EXTREME WIDE, POV, OVER-THE-SHOULDER, OVERHEAD, LOW ANGLE, DUTCH
+  ANGLE, INSERT…), variándolos para ritmo cinematográfico.
+- **DESCRIPCIÓN narrativa** corta por panel, estilo guion técnico.
+- Coherencia visual entre paneles (paleta, iluminación, personajes).
+
+Optimizado para modelos de lenguaje natural (GPT Image, DALL-E 3,
+Imagen 3, Midjourney v6+, FLUX natural, Ideogram). Funciona también
+con SD/Comfy pero requiere refinar cada panel (botón `🔁 Refinar`)
+para convertir a formato tag-based.
+
+Botón extra en el comparador: **📋 Fusionar en 1 prompt** combina los
+N paneles en una descripción multi-panel estilo grid de cómic (útil
+para Midjourney --tile, DALL-E multi-panel).
+
+Implementación: `_cmd_storyboard_imagen` + `_fusionar_storyboard_imagen`
+en `multiprompt.py`, expuestos vía `MultiPromptComponent.cmd_storyboard_imagen`.
+
+### Rebuild + redistribución (3 rebuilds en la sesión)
+
+3 artefactos finales regenerados en `~/OneDrive/Desktop/GPromptStudio-Distribuible/`
+(timestamp ~10:23):
+- `GPromptStudio-Portable/` (onedir, 13.4 MB)
+- `GPromptStudio-Portable-Onefile.exe` (124.1 MB)
+- `GPromptStudio-Setup-1.0.0.exe` (88.5 MB)
 
 ### Auditoría de complejidad real de mixins (D)
 
@@ -792,6 +832,9 @@ los mixins TRIVIAL antes de migrarlos (ahorra reescritura después).
   `core.py` 1645, `data_mgmt.py` 1545, `ui_builders.py` 1546,
   `dashboard.py` 1502, `tools_analysis.py` 1491.
 - Type hints en mixins restantes (~10 sin anotar).
+- **Storyboard imagen + SD/Comfy**: añadir toggle "📐 Formato SD" al
+  `_cmd_storyboard_imagen` que genere los paneles ya en formato
+  tag-based POSITIVE/NEGATIVE (para no tener que refinar uno a uno).
 
 #### 🟢 BAJA
 Code-signing del `.exe`, SeaArt char limits, UX (comparador lado-a-lado),
@@ -800,9 +843,23 @@ performance (lazy load JSON, semáforo workers, virtual scrolling).
 ### Commits sesión 10
 
 ```
+b35abc5 feat(narrativa): nuevo botón "🖼 Storyboard" para modelos de imagen
+9cf2c40 fix: capturar e en closures de except + activar F821 en ruff
+f8c252a fix: imports faltantes encontrados en barrido F821 (ruff)
 d0fcc7f fix(logging): reconfigurar stdout/stderr a UTF-8 en Windows
 fea3886 fix(ui_footer): añadir imports faltantes (logger + tooltip_para)
 ```
+
+### Métricas finales sesión 10
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| Tests | 228 | 228 ✅ |
+| Mixins en MRO | 18 | 18 |
+| Componentes A1 | 20/20 | 20/20 |
+| Reglas ruff activas | base | base + **F821** ⭐ |
+| NameError latentes | ≥6 conocidos | 0 ✅ |
+| Botones acción NARRATIVA | 4 | 5 (+ 🖼 Storyboard) |
 
 ---
 
