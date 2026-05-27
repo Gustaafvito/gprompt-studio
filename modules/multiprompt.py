@@ -34,7 +34,7 @@ import tkinter as tk
 import customtkinter as ctk
 import pyperclip
 
-from config import get_theme_colors
+from config import get_image_model_specs, get_theme_colors
 from modules.gprompt_window import GPromptWindow
 from workers import limpiar_marcadores
 
@@ -500,12 +500,13 @@ class MultiPromptMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_storyboard_imagen(self):
-        """Storyboard cinematográfico para modelos de IMAGEN (GPT Image, DALL-E,
-        Imagen 3, Midjourney v6, etc.).
+        """Storyboard cinematográfico para modelos de IMAGEN.
 
-        Genera N paneles con shot type + descripción narrativa corta, con arco
-        dramático coherente (apertura → tensión → climax → cierre). El LLM
-        elige libremente los shot types según la historia (no hay lista fija).
+        Auto-detecta el formato según el modelo seleccionado:
+          • Natural (GPT Image, DALL-E, Imagen 3, Midjourney, FLUX natural):
+            SHOT + DESCRIPCIÓN narrativa cinematográfica.
+          • Tag-based (Stable Diffusion, Comfy, SeaArt, NovelAI):
+            SHOT + POSITIVE (tags con pesos) + NEGATIVE.
 
         Botón extra en el comparador: 'Fusionar en 1 prompt' que pide al LLM
         combinar los N paneles en una sola descripción multi-panel.
@@ -519,33 +520,74 @@ class MultiPromptMixin:
         if not idea or len(idea) < 5:
             return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
+        # Detectar formato del modelo actual (natural vs tag-based)
+        modelo = self.modelo_imagen_valido()
+        specs = get_image_model_specs(modelo) if modelo else None
+        is_natural = bool(specs and specs.get("is_natural"))
+        has_negative = bool(specs and specs.get("has_negative"))
+        formato_etiqueta = "natural" if is_natural else "tag-based (SD/Comfy)"
+        modelo_label = modelo or "modelo no detectado"
+
         n = self._pedir_n_modal(
             "🖼 Storyboard — número de paneles",
-            "¿Cuántos paneles en el storyboard?\n"
-            "Cada panel tendrá su shot type y descripción narrativa.",
+            f"¿Cuántos paneles en el storyboard?\n"
+            f"Cada panel tendrá su shot type y prompt cinematográfico.\n"
+            f"📐 Formato: {formato_etiqueta} · Modelo: {modelo_label}",
             n_min=3, n_max=12, default=9,
             key_pref="storyboard_img_n",
         )
         if n is None:
             return
 
-        try: self._sesion_log(f"🖼 Storyboard imagen: generó {n} paneles")
+        try: self._sesion_log(f"🖼 Storyboard imagen ({formato_etiqueta}): generó {n} paneles")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🖼 Generando storyboard de {n} paneles...", "#f39c12")
+        self.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
         self.toggle_botones(False)
 
-        formato_lineas = "\n---\n".join(
-            f"PANEL {i+1}\nSHOT: <tipo de plano>\nDESCRIPCIÓN: <una frase cinematográfica>"
-            for i in range(n)
-        )
+        if is_natural:
+            formato_lineas = "\n---\n".join(
+                f"PANEL {i+1}\nSHOT: <tipo de plano>\nDESCRIPCIÓN: <una frase cinematográfica>"
+                for i in range(n)
+            )
+            reglas_formato = (
+                f"- DESCRIPCIÓN: UNA frase narrativa, en presente, visual y "
+                f"emocional (estilo guion técnico).\n"
+                f"- Cada panel debe ser un prompt completo y autocontenido "
+                f"para pegar directamente en {modelo_label}.\n"
+            )
+        else:
+            # Formato tag-based para SD/Comfy
+            neg_block = (
+                "NEGATIVE: <tags negativos comunes (blurry, low quality, "
+                "deformed, etc.) + específicos del panel>"
+                if has_negative
+                else "(NO incluyas NEGATIVE — este modelo no lo soporta)"
+            )
+            formato_lineas = "\n---\n".join(
+                f"PANEL {i+1}\nSHOT: <tipo de plano>\n"
+                f"POSITIVE: <tags Danbooru/SD separados por comas, con pesos "
+                f"(tag:1.2) cuando importe>\n{neg_block}"
+                for i in range(n)
+            )
+            reglas_formato = (
+                f"- POSITIVE: tags estilo Danbooru/SD separados por comas, "
+                f"orden estándar (sujeto principal → acción → detalles → "
+                f"iluminación → estilo).\n"
+                f"- Usa pesos `(tag:1.2)` solo para enfatizar elementos clave.\n"
+                f"- NO uses lenguaje narrativo (nada de 'a young woman who...'), "
+                f"solo tags atomicos.\n"
+                f"- Cada panel debe ser un prompt completo y autocontenido "
+                f"para pegar directamente en {modelo_label}.\n"
+            )
+
         peticion = (
-            f"Genera un STORYBOARD DE {n} PANELES para modelos de imagen "
-            f"naturales (GPT Image, DALL-E, Imagen 3, Midjourney v6).\n\n"
+            f"Genera un STORYBOARD DE {n} PANELES en formato {formato_etiqueta} "
+            f"para el modelo {modelo_label}.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
             f"ESTILOS: {self.estilos_texto()}\n\n"
-            f"REGLAS:\n"
+            f"REGLAS COMUNES:\n"
             f"- Cuenta una microhistoria visual con {n} momentos: apertura → "
             f"desarrollo → tensión → climax → resolución (distribuido según N).\n"
             f"- Para cada panel, ELIGE el shot type que mejor cuente ese "
@@ -553,13 +595,10 @@ class MultiPromptMixin:
             f"SHOULDER, OVERHEAD, LOW ANGLE, DUTCH ANGLE, INSERT, etc.).\n"
             f"- Varía los shot types entre paneles para ritmo cinematográfico "
             f"(no repitas el mismo dos veces seguidas).\n"
-            f"- DESCRIPCIÓN: UNA frase narrativa, en presente, "
-            f"visual y emocional (estilo guion técnico).\n"
             f"- MANTÉN coherencia visual: misma paleta, iluminación, época y "
-            f"personajes entre paneles.\n"
-            f"- Cada panel debe ser un prompt completo y autocontenido para "
-            f"pegar directamente en GPT Image/DALL-E.\n\n"
-            f"FORMATO (devuelve EXACTAMENTE {n} bloques, separados por ---):\n"
+            f"personajes entre paneles.\n\n"
+            f"REGLAS DE FORMATO:\n{reglas_formato}\n"
+            f"FORMATO DE SALIDA (devuelve EXACTAMENTE {n} bloques, separados por ---):\n"
             f"{formato_lineas}"
         )
 
