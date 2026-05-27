@@ -23,6 +23,7 @@ import threading
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
+import pyperclip
 
 from config import get_theme_colors as _get_tc
 from modules.gprompt_window import GPromptWindow

@@ -10,11 +10,21 @@ usa decenas de comandos (cmd_*, _copiar, _guardar_*, _abrir_*, etc.)
 de los mixins de la app.
 """
 import logging
+import re
 
 import customtkinter as ctk
+import pyperclip
 
-from config import get_theme_colors
+from config import (
+    ESTILO_NEGATIVO_AUTO,
+    MOTOR_DEFAULT,
+    NEGATIVE_PRESETS,
+    PRESET_COLORES,
+    es_separador,
+    get_theme_colors,
+)
 from modules.style_guide import tooltip_para
+from workers import detectar_idioma_es
 
 try:
     from CTkToolTip import CTkToolTip

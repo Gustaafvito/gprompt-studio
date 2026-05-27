@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 import tkinter.filedialog as filedialog
 import tkinter.simpledialog as simpledialog
 from pathlib import Path
+from tkinter import messagebox
 
 import customtkinter as ctk
 from PIL import Image

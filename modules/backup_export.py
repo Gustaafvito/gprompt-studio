@@ -4,6 +4,7 @@ import datetime
 import json
 import logging
 import os
+from tkinter import messagebox
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
