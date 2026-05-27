@@ -7,6 +7,15 @@ import os
 import sys
 import traceback
 
+# En Windows, la consola usa cp1252 por defecto y revienta al loggear
+# caracteres como → o emojis. Forzamos UTF-8 antes de crear handlers.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 import customtkinter as ctk
 
 # ─── Logging ───────────────────────────────────────────────
