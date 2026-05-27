@@ -772,7 +772,7 @@ def abrir_batch(app):
         except Exception as e:
             if _batch_cancelado.is_set() or not _ventana_existe():
                 return
-            ventana.after(0, lambda: _safe_update_error(str(e)))
+            ventana.after(0, lambda e=e: _safe_update_error(str(e)))
 
     def _safe_update_batch(texto):
         """Actualiza la UI solo si la ventana existe y no fue cancelado."""

@@ -93,7 +93,7 @@ class RefinamientoMixin:
                     self._mostrar_diff_refinamiento(texto_previo, resp)
                 self.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -205,7 +205,7 @@ class RefinamientoMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()

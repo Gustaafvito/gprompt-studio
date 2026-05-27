@@ -156,7 +156,7 @@ class SesionVideoMixin:
                     else:
                         next_t = time.time()
         except Exception as e:
-            self.after(0, lambda: self.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
+            self.after(0, lambda e=e: self.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
 
     def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""

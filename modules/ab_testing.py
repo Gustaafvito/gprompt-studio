@@ -605,7 +605,7 @@ class AbTestingMixin:
                             cards[m]["txt"].configure(state="disabled")
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
-                    self.after(0, lambda: _err(m=modelo, exc=e))
+                    self.after(0, lambda e=e: _err(m=modelo, exc=e))
 
             def _todos():
                 for m in modelos_compare:

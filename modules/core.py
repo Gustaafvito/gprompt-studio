@@ -1488,7 +1488,7 @@ class CoreMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -1631,8 +1631,9 @@ class CoreMixin:
 
                     self.after(0, _update_ui)
                 except Exception as e:
+                    err = e
                     def _err():
-                        _add_msg("Sistema", f"❌ Error: {e}", "#e74c3c")
+                        _add_msg("Sistema", f"❌ Error: {err}", "#e74c3c")
                         txt_input.configure(state="normal")
                         btn_send.configure(state="normal")
                         self.set_estado("❌ Error en el Copiloto.", "#e74c3c")

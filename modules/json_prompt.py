@@ -629,7 +629,7 @@ class JsonPromptService:
                 self.app.after(0, _mostrar)
             except Exception as e:
                 logger.exception("exportar json")
-                self.app.after(0, lambda: self.app.set_estado(f"❌ Error exportando: {e}",
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error exportando: {e}",
                                                        "#e74c3c"))
                 self.app.after(0, lambda: self.app.toggle_botones(True))
 

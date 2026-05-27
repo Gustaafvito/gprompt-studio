@@ -659,7 +659,7 @@ class AdnVisualMixin:
                 self.after(0, _mostrar)
 
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()

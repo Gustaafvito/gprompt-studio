@@ -431,7 +431,7 @@ class ToolsWorkflowMixin:
                         self.set_estado(f"⏲ Variante {num}/{cantidad} lista", "#3498db")
                     self.after(0, _aplicar)
                 except Exception as e:
-                    self.after(0, lambda: _safe_configure(lbl_progreso,
+                    self.after(0, lambda e=e: _safe_configure(lbl_progreso,
                                                           text=f"❌ Error variante {num}: {e}",
                                                           text_color="#e74c3c"))
 
@@ -901,7 +901,7 @@ class ToolsWorkflowMixin:
                 self.after(0, lambda: self.actualizar_salida(resp))
                 self.after(0, lambda: self.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -922,7 +922,7 @@ class ToolsWorkflowMixin:
                 self.after(0, lambda: self.txt_idea.insert("1.0", resp + "\n\n"))
                 self.after(0, lambda: self.set_estado("💡 Idea generada (macro)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -945,7 +945,7 @@ class ToolsWorkflowMixin:
                 self.after(0, lambda: self.actualizar_salida(resp))
                 self.after(0, lambda: self.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 

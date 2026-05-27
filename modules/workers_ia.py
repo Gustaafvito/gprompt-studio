@@ -97,7 +97,7 @@ class WorkersIaMixin:
                 self.after(0, lambda ideas=ideas: self._mostrar_ideas(ideas))
             elif es_variaciones: self.after(0, lambda: self._mostrar_variaciones(self._parsear_variaciones(texto, n_esperado=n_variaciones)))
         except Exception as e:
-            self.after(0, lambda: self.actualizar_salida(f"❌ Error {self.llm_var.get()}: {e}"))
+            self.after(0, lambda e=e: self.actualizar_salida(f"❌ Error {self.llm_var.get()}: {e}"))
             self.after(0, lambda: self.set_estado("Error de conexión.", "#e74c3c"))
             self.after(0, lambda: self.toggle_botones(True))
             self.after(0, self._detener_progreso)
@@ -205,7 +205,7 @@ class WorkersIaMixin:
                     logger.debug(f"[silent] {e}")
             self.after(0, _aplicar)
         except Exception as e:
-            self.after(0, lambda: self.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
+            self.after(0, lambda e=e: self.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
             self.after(0, lambda: self.toggle_botones(True))
 
     # ──────────────────────────────────────────────────────────────

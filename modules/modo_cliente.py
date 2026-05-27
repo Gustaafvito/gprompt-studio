@@ -308,7 +308,7 @@ class ModoClienteMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -739,7 +739,7 @@ class ModoClienteMixin:
                 except Exception as e:
                     self.after(0, lambda: lbl_prog.pack_forget())
                     self.after(0, lambda: progress_bar.pack_forget())
-                    self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                    self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                     self.after(0, lambda: self.toggle_botones(True))
 
             threading.Thread(target=_trabajar, daemon=True).start()

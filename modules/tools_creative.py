@@ -56,7 +56,7 @@ class ToolsCreativeMixin:
                     self.toggle_botones(True)
                 self.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -286,7 +286,7 @@ class ToolsCreativeMixin:
                     self.toggle_botones(True)
                 self.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -377,7 +377,7 @@ class ToolsCreativeMixin:
                     self._mostrar_sugerencias_modelo(idea, sugerencias, modo)
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -603,7 +603,7 @@ class ToolsCreativeMixin:
                     self.toggle_botones(True)
                 self.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -842,7 +842,7 @@ class ToolsCreativeMixin:
                     self.set_estado(f"🔍 Análisis inverso completado (visión: {motor})", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -917,7 +917,7 @@ class ToolsCreativeMixin:
                     self.toggle_botones(True)
                 self.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -1082,7 +1082,7 @@ class ToolsCreativeMixin:
                 self.after(0, _mostrar)
             except Exception as e:
                 self.after(0, lambda: prog_bar.pack_forget())
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
@@ -1256,7 +1256,7 @@ class ToolsCreativeMixin:
                     self.set_estado("🔍 Consistencia analizada", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -1750,7 +1750,7 @@ class ToolsCreativeMixin:
                     self.set_estado("🎨 Paleta extraída", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 

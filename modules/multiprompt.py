@@ -106,7 +106,7 @@ class MultiPromptMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -338,7 +338,7 @@ class MultiPromptMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -417,7 +417,7 @@ class MultiPromptMixin:
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -494,7 +494,7 @@ class MultiPromptMixin:
                 self.after(0, _aplicar)
             except Exception as e:
                 logger.exception("encadenar board→vídeo")
-                self.after(0, lambda: self.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
@@ -766,8 +766,9 @@ class MultiPromptMixin:
                     self.after(0, _aplicar)
                 except Exception as e:
                     logger.exception("walk ramificar")
+                    err = e
                     def _err():
-                        lbl_status.configure(text=f"❌ Error: {e}", text_color="#e74c3c")
+                        lbl_status.configure(text=f"❌ Error: {err}", text_color="#e74c3c")
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
                     self.after(0, _err)

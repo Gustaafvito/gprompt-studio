@@ -298,7 +298,7 @@ class ToolsAnalysisMixin:
                         logger.debug(f"JSON parse falló: {e}")
                 self.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -893,7 +893,7 @@ class ToolsAnalysisMixin:
                                     self.set_estado("✨ Prompt mejorado aplicado", "#2ecc71")
                                 self.after(0, _aplicar)
                             except Exception as e:
-                                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                         threading.Thread(target=_worker_mejorar, daemon=True).start()
 
                     ctk.CTkButton(btn_frame, text="✨ Mejorar prompt", width=140, height=30,
@@ -902,7 +902,7 @@ class ToolsAnalysisMixin:
                     self.set_estado("📝 Scoring listo", "#2ecc71")
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1387,7 +1387,7 @@ class ToolsAnalysisMixin:
                 self.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
                 self.after(0, lambda: self.set_estado("🌐 Traducción lista", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
