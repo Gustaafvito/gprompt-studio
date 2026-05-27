@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Generado al final de la **sesión 8** (continuación de las sesiones 1-7).
+Actualizado al final de la **sesión 10** (continuación de las sesiones 1-9).
 Working tree limpio cuando se generó.
 
 ---
@@ -712,35 +712,97 @@ ca1435e refactor(A1 fase 2): JsonPromptMixin + PromptsInyeccionMixin
 
 ### 🚧 Pendiente sesión 10+
 
-#### 🔴 ALTA — A1 fase 2 (17 mixins restantes)
-Mismos mixins en orden de menor a mayor complejidad (1 por commit):
-1. UiFooterMixin (1 método, autocontenido)
-2. UiEventsMixin (8 handlers)
-3. DashboardMixin (1 método grande, ya con palette extraída)
-4. AbTestingMixin (5 métodos + 11 tests a reescribir)
-5. RefinamientoMixin (6 métodos + 32 tests)
-6. WorkersIaMixin (5 workers + 29 tests)
-7. ModoClienteMixin
-8. MultiPromptMixin (4 entry points)
-9. AdnVisualMixin
-10. SesionVideoMixin (incluye _sesion_log que usan TODOS los mixins)
-11. ToolsAnalysisMixin (22 métodos)
-12. DataMgmtMixin
-13. BackupExportMixin
-14. DialogsMixin
-15. ToolsCreativeMixin
-16. ToolsWorkflowMixin
-17. UIBuildersMixin
-18. CoreMixin (el más complejo, último)
+---
 
-Estimación: 1-2 mixins por sesión → ~10 sesiones.
+## ✅ Sesión 10 — bug fixes post-distribución
+
+### Bugs corregidos
+
+- **`fea3886` fix(ui_footer)**: `NameError: tooltip_para` al construir
+  checkboxes de estilos. Al extraer `_build_footer` en sesión 8, se
+  omitieron `tooltip_para` (de `modules.style_guide`) y `logger`. La
+  app crasheaba al instanciar la tab "🎨 Estilos".
+- **`d0fcc7f` fix(logging)**: `UnicodeEncodeError` del `StreamHandler`
+  en consola Windows (cp1252) al loggear `→` y emojis. No era fatal
+  pero ensuciaba el output con stack traces. Fix: `sys.stdout.
+  reconfigure(encoding="utf-8", errors="replace")` al inicio de
+  `main.py`, antes de instanciar handlers.
+
+### Rebuild + redistribución
+
+3 artefactos regenerados en `~/OneDrive/Desktop/GPromptStudio-Distribuible/`:
+- `GPromptStudio-Portable/` (onedir, 13.4 MB) — 99s build
+- `GPromptStudio-Portable-Onefile.exe` (124.1 MB) — 77s build
+- `GPromptStudio-Setup-1.0.0.exe` (88.5 MB) — 41s+53s (PyInstaller+Inno)
+
+### Auditoría de complejidad real de mixins (D)
+
+El HANDOFF v9 listaba `UiFooterMixin` como "1 método, autocontenido".
+**Falso**: tiene 29 métodos y 87 call sites externos. Auditoría
+completa de los 18 mixins pendientes con métricas reales:
+
+| # | Mixin | Líneas | Métodos | Call sites ext. | Tests | Dificultad |
+|---|---|---:|---:|---:|---:|---|
+| 1 | DashboardMixin | 1502 | 1 | 1 | 10 | 🟢 TRIVIAL |
+| 2 | AbTestingMixin | 614 | 5 | 2 | 11 | 🟢 TRIVIAL |
+| 3 | AdnVisualMixin | 665 | 2 | 2 | 0 | 🟢 TRIVIAL |
+| 4 | ModoClienteMixin | 868 | 5 | 2 | 0 | 🟢 TRIVIAL |
+| 5 | MultiPromptMixin | 966 | 8 | 4 | 0 | 🟢 EASY |
+| 6 | BackupExportMixin | 790 | 8 | 5 | 0 | 🟢 EASY |
+| 7 | WorkersIaMixin | 273 | 5 | 6 | 29 | 🟡 EASY+tests |
+| 8 | RefinamientoMixin | 336 | 6 | 7 | 32 | 🟡 EASY+tests |
+| 9 | ToolsAnalysisMixin | 1491 | 23 | 15 | 0 | 🟡 MEDIUM |
+| 10 | ToolsWorkflowMixin | 1172 | 14 | 15 | 0 | 🟡 MEDIUM |
+| 11 | ToolsCreativeMixin | 1868 | 18 | 18 | 0 | 🟡 MEDIUM |
+| 12 | UIBuildersMixin | 1546 | 26 | 22 | 0 | 🟡 MEDIUM |
+| 13 | UiEventsMixin | 375 | 8 | 51 | 18 | 🟠 MED-HIGH+tests |
+| 14 | SesionVideoMixin | 552 | 12 | 56 | 0 | 🟠 HIGH (`_sesion_log`) |
+| 15 | DataMgmtMixin | 1545 | 30 | 57 | 0 | 🟠 HIGH |
+| 16 | UiFooterMixin | 650 | 29 | 87 | 0 | 🟠 HIGH |
+| 17 | CoreMixin | 1645 | 33 | 127 | 0 | 🔴 HARD |
+| 18 | DialogsMixin | 612 | 17 | 619 (*) | 0 | 🔴 EXTREME |
+
+(*) El conteo alto de `DialogsMixin` viene de métodos con nombres
+genéricos (`cmd_*`) que colisionan con otros mixins en el grep — el
+número real probable es ~20-40, pendiente medir con AST.
+
+### 🚧 Pendiente sesión 11+
+
+#### 🔴 ALTA — A1 fase 2 (17 mixins restantes)
+
+Orden recomendado por la tabla de arriba (TRIVIAL → EXTREME):
+**Dashboard → AbTesting → AdnVisual → ModoCliente → MultiPrompt →
+Backup → Workers → Refinar → Analysis → Workflow → Creative → UI →
+UiEvents → Sesion → DataMgmt → UiFooter → Core → Dialogs**.
+
+Los 4 primeros (Dashboard, AbTesting, AdnVisual, ModoCliente) son
+TRIVIAL: 1-5 call sites externos cada uno. Se pueden hacer 2-4 por
+sesión. Los 4 últimos (DataMgmt, UiFooter, Core, Dialogs) son los
+duros — 1 por sesión cada uno.
+
+Estimación realista: ~6-8 sesiones para completar A1 fase 2.
 
 #### 🔴 ALTA — T1 cobertura tests
-7 módulos sin tests todavía.
+7 módulos sin tests: `adn_visual`, `multiprompt`, `sesion_video`,
+`modo_cliente`, `atajos_ayuda`, `dialogs`, `core`. Prioridad: cubrir
+los mixins TRIVIAL antes de migrarlos (ahorra reescritura después).
 
 #### 🟡 MEDIA
-- Particiones de archivos grandes.
-- Type hints en mixins restantes.
+- Particiones de archivos grandes (top 5):
+  `core.py` 1645, `data_mgmt.py` 1545, `ui_builders.py` 1546,
+  `dashboard.py` 1502, `tools_analysis.py` 1491.
+- Type hints en mixins restantes (~10 sin anotar).
+
+#### 🟢 BAJA
+Code-signing del `.exe`, SeaArt char limits, UX (comparador lado-a-lado),
+performance (lazy load JSON, semáforo workers, virtual scrolling).
+
+### Commits sesión 10
+
+```
+d0fcc7f fix(logging): reconfigurar stdout/stderr a UTF-8 en Windows
+fea3886 fix(ui_footer): añadir imports faltantes (logger + tooltip_para)
+```
 
 ---
 
