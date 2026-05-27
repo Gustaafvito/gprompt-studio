@@ -499,6 +499,170 @@ class MultiPromptMixin:
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    def _cmd_storyboard_imagen(self):
+        """Storyboard cinematográfico para modelos de IMAGEN (GPT Image, DALL-E,
+        Imagen 3, Midjourney v6, etc.).
+
+        Genera N paneles con shot type + descripción narrativa corta, con arco
+        dramático coherente (apertura → tensión → climax → cierre). El LLM
+        elige libremente los shot types según la historia (no hay lista fija).
+
+        Botón extra en el comparador: 'Fusionar en 1 prompt' que pide al LLM
+        combinar los N paneles en una sola descripción multi-panel.
+        """
+        if self.modo_var.get() != "imagen":
+            return self.set_estado(
+                "⚠️ Storyboard de imagen solo está disponible en modo IMAGEN.",
+                "#e67e22",
+            )
+        idea = self.txt_idea.get("1.0", "end").strip()
+        if not idea or len(idea) < 5:
+            return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+
+        n = self._pedir_n_modal(
+            "🖼 Storyboard — número de paneles",
+            "¿Cuántos paneles en el storyboard?\n"
+            "Cada panel tendrá su shot type y descripción narrativa.",
+            n_min=3, n_max=12, default=9,
+            key_pref="storyboard_img_n",
+        )
+        if n is None:
+            return
+
+        try: self._sesion_log(f"🖼 Storyboard imagen: generó {n} paneles")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        self.set_estado(f"🖼 Generando storyboard de {n} paneles...", "#f39c12")
+        self.toggle_botones(False)
+
+        formato_lineas = "\n---\n".join(
+            f"PANEL {i+1}\nSHOT: <tipo de plano>\nDESCRIPCIÓN: <una frase cinematográfica>"
+            for i in range(n)
+        )
+        peticion = (
+            f"Genera un STORYBOARD DE {n} PANELES para modelos de imagen "
+            f"naturales (GPT Image, DALL-E, Imagen 3, Midjourney v6).\n\n"
+            f"HISTORIA/ESCENA: {idea}\n"
+            f"ESTILOS: {self.estilos_texto()}\n\n"
+            f"REGLAS:\n"
+            f"- Cuenta una microhistoria visual con {n} momentos: apertura → "
+            f"desarrollo → tensión → climax → resolución (distribuido según N).\n"
+            f"- Para cada panel, ELIGE el shot type que mejor cuente ese "
+            f"momento (CLOSE-UP, MEDIUM, WIDE, EXTREME WIDE, POV, OVER-THE-"
+            f"SHOULDER, OVERHEAD, LOW ANGLE, DUTCH ANGLE, INSERT, etc.).\n"
+            f"- Varía los shot types entre paneles para ritmo cinematográfico "
+            f"(no repitas el mismo dos veces seguidas).\n"
+            f"- DESCRIPCIÓN: UNA frase narrativa, en presente, "
+            f"visual y emocional (estilo guion técnico).\n"
+            f"- MANTÉN coherencia visual: misma paleta, iluminación, época y "
+            f"personajes entre paneles.\n"
+            f"- Cada panel debe ser un prompt completo y autocontenido para "
+            f"pegar directamente en GPT Image/DALL-E.\n\n"
+            f"FORMATO (devuelve EXACTAMENTE {n} bloques, separados por ---):\n"
+            f"{formato_lineas}"
+        )
+
+        def _worker():
+            try:
+                max_tok = min(7000, 1500 + n * 500)
+                resp = self.deepseek.generar(peticion, temperature=0.75, max_tokens=max_tok)
+                resp = limpiar_marcadores(resp)
+                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
+
+                def _fusionar(_variaciones, _vent):
+                    self._fusionar_storyboard_imagen(bloques[:n], _vent)
+
+                def _mostrar():
+                    self._abrir_comparador(
+                        bloques[:n],
+                        extra_botones=[
+                            ("📋 Fusionar en 1 prompt", "#7c3aed", _fusionar),
+                        ],
+                    )
+                    self.set_estado(
+                        f"🖼 Storyboard de {len(bloques)} paneles listo · 📋 fusiona en 1 prompt desde el comparador",
+                        "#2ecc71",
+                    )
+                    self.toggle_botones(True)
+                    self._sonar_completado()
+                self.after(0, _mostrar)
+            except Exception as e:
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda: self.toggle_botones(True))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _fusionar_storyboard_imagen(self, paneles, vent_comparador):
+        """Fusiona los N paneles del storyboard en un único prompt multi-panel.
+
+        Útil para modelos que soportan generar grids o múltiples viñetas en
+        una sola imagen (Midjourney --tile, DALL-E con descripción multi-
+        panel explícita, etc.).
+        """
+        if not paneles:
+            return self.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
+
+        try: self._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        self.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
+        self.toggle_botones(False)
+
+        paneles_str = "\n\n".join(
+            f"--- PANEL {i+1} ---\n{p.strip()}"
+            for i, p in enumerate(paneles)
+        )
+
+        peticion = (
+            f"Tengo un STORYBOARD de {len(paneles)} paneles cinematográficos. "
+            f"Quiero un ÚNICO prompt para un modelo de imagen (GPT Image, "
+            f"DALL-E, Midjourney) que genere una IMAGEN ÚNICA tipo página de "
+            f"cómic / storyboard con los {len(paneles)} paneles dispuestos en "
+            f"grid.\n\n"
+            f"PANELES:\n{paneles_str}\n\n"
+            f"REGLAS:\n"
+            f"- UNA sola descripción de imagen multi-panel (no {len(paneles)} prompts).\n"
+            f"- Indica explícitamente: 'a {len(paneles)}-panel storyboard "
+            f"layout, comic book style, arranged in a grid'.\n"
+            f"- Por cada panel, resume su shot type + acción en una frase "
+            f"corta numerada dentro del prompt.\n"
+            f"- MANTÉN paleta, iluminación, época y personajes consistentes.\n"
+            f"- Estilo gráfico: pencil sketch / storyboard art / comic line "
+            f"art (no foto-realista).\n\n"
+            f"FORMATO:\n"
+            f"PROMPT: <descripción completa de la imagen multi-panel>"
+        )
+
+        def _worker():
+            try:
+                max_tok = min(4500, 1500 + len(paneles) * 300)
+                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
+                resp = limpiar_marcadores(resp)
+
+                def _aplicar():
+                    self.actualizar_salida(resp)
+                    self.guardar_en_historial(resp)
+                    self.set_estado(
+                        f"📋 Storyboard fusionado en 1 prompt ({len(paneles)} paneles) aplicado al editor",
+                        "#2ecc71",
+                    )
+                    self.toggle_botones(True)
+                    self._sonar_completado()
+                    try:
+                        if vent_comparador and vent_comparador.winfo_exists():
+                            vent_comparador.destroy()
+                    except Exception as e:
+                        logger.debug(f"[silent] cerrar comparador: {e}")
+                self.after(0, _aplicar)
+            except Exception as e:
+                logger.exception("fusionar storyboard imagen")
+                self.after(0, lambda e=e: self.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
+                self.after(0, lambda: self.toggle_botones(True))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
     def _cmd_random_walk(self):
         """Walk árbol visual.
 

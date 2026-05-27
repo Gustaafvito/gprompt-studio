@@ -358,6 +358,9 @@ class MultiPromptComponent(_Component):
     def cmd_storyboard_video(self) -> None:
         return self.app._cmd_storyboard_video()
 
+    def cmd_storyboard_imagen(self) -> None:
+        return self.app._cmd_storyboard_imagen()
+
     def cmd_random_walk(self) -> None:
         return self.app._cmd_random_walk()
 

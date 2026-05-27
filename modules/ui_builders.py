@@ -1368,6 +1368,7 @@ class UIBuildersMixin:
             ("🎬 NARRATIVA", ROSA_NARR, [
                 ("🎭 Mood",            70, ROSA_NARR,    self.multi.cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
                 ("🎞 Story",           70, ROSA_NARR,    self.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("🖼 Storyboard",      85, ROSA_NARR,    self.multi.cmd_storyboard_imagen, "Storyboard cinematográfico (solo IMAGEN): N paneles con shot+narración, para GPT Image/DALL-E"),
                 ("📽 Board",           70, ROSA_NARR,    self.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
                 ("🌀 Walk",            70, ROSA_NARR,    self.multi.cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
             ]),
