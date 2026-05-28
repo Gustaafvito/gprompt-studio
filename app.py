@@ -36,7 +36,6 @@ from modules import (
     AdnVisualMixin,
     BackupExportMixin,
     CoreMixin,
-    DashboardMixin,
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
@@ -86,7 +85,8 @@ class ArquitectoApp(
     # AtajosAyudaMixin removido (A1 fase 2) → self.atajos.* (AtajosAyudaService)
     UiEventsMixin,
     RefinamientoMixin,
-    DashboardMixin,
+    # DashboardMixin removido (A1 fase 2, sesión 11) → self.dashboard.cmd_abrir()
+    # (DashboardService)
     UiFooterMixin,
 ):
 

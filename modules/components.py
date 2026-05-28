@@ -298,13 +298,21 @@ class SesionVideoComponent(_Component):
 
 
 class DashboardComponent(_Component):
-    """Dashboard panel — pantalla de bienvenida (DashboardMixin).
-    Decimoprimer servicio del refactor A1.
+    """Dashboard panel — pantalla de bienvenida.
+
+    A1 fase 2 (sesión 11): DashboardMixin → DashboardService aislado.
+    El componente instancia el service y delega los comandos.
     """
     _name = "dashboard"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.dashboard import DashboardService
+        self._service = DashboardService(app)
 
     def cmd_abrir(self) -> None:
-        return self.app._cmd_dashboard()
+        return self._service._cmd_dashboard()
 
 
 class UiEventsComponent(_Component):

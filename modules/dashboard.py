@@ -65,7 +65,19 @@ def _dashboard_palette(is_light: bool) -> dict:
     }
 
 
-class DashboardMixin:
+class DashboardService:
+    """Dashboard panel — pantalla de bienvenida con stats, gráficos y atajos.
+
+    A1 fase 2: servicio aislado que recibe `app: ArquitectoApp` por
+    composición. Todos los accesos al estado/widgets de la app van vía
+    `self.app.X` en lugar de `self.app.X`.
+
+    Acceso: `app.dashboard.abrir()` (delega aquí).
+    """
+
+    def __init__(self, app):
+        self.app = app
+
     def _cmd_dashboard(self) -> None:
         """🏠 Dashboard v2 — Panel de control completo con estadísticas, accesos
         rápidos, gráficos y herramientas.
@@ -110,10 +122,10 @@ class DashboardMixin:
         accent_pink     = _pal["accent_pink"]
         bar_bg          = _pal["bar_bg"]
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("🏠 Dashboard")
         v.geometry("960x780")
-        v.transient(self)
+        v.transient(self.app)
         v.configure(fg_color=bg)
         try:
             v.lift()
@@ -136,7 +148,7 @@ class DashboardMixin:
 
         nombre_user = "Creador"
         try:
-            prefs_user = self.store.cargar_preferencias() or {}
+            prefs_user = self.app.store.cargar_preferencias() or {}
             nombre_guardado = prefs_user.get("nombre", "").strip()
             if nombre_guardado:
                 nombre_user = nombre_guardado
@@ -183,7 +195,7 @@ class DashboardMixin:
             # Buscar en historial, favoritos, estrellas, personajes, plantillas, loras
             resultados = []
             try:
-                for h in (self.store.historial or []):
+                for h in (self.app.store.historial or []):
                     txt = (h.get("contenido", "") or "").lower()
                     if q in txt:
                         preview = h.get("contenido", "")[:80].replace("\n", " ")
@@ -194,7 +206,7 @@ class DashboardMixin:
                 logger.debug(f"[silent] {e}")
 
             try:
-                for f in (self.store.favoritos or []):
+                for f in (self.app.store.favoritos or []):
                     txt = (f.get("contenido", "") or "").lower()
                     if q in txt:
                         preview = f.get("contenido", "")[:80].replace("\n", " ")
@@ -205,7 +217,7 @@ class DashboardMixin:
                 logger.debug(f"[silent] {e}")
 
             try:
-                for e in (self.store.estrellas or []):
+                for e in (self.app.store.estrellas or []):
                     txt = (e.get("contenido", "") or "").lower()
                     if q in txt:
                         preview = e.get("contenido", "")[:80].replace("\n", " ")
@@ -216,7 +228,7 @@ class DashboardMixin:
                 logger.debug(f"[silent] {e}")
 
             try:
-                for p in (self.store.personajes or []):
+                for p in (self.app.store.personajes or []):
                     if q in (p.get("nombre", "") or "").lower() or q in (p.get("descripcion", "") or "").lower():
                         preview = f"{p.get('nombre', '')} — {p.get('descripcion', '')[:60]}"
                         resultados.append(("🧑 Personaje", preview, p.get("descripcion", "")))
@@ -224,7 +236,7 @@ class DashboardMixin:
                 logger.debug(f"[silent] {e}")
 
             try:
-                for pl in (self.store.plantillas or []):
+                for pl in (self.app.store.plantillas or []):
                     if q in (pl.get("nombre", "") or "").lower():
                         preview = f"{pl.get('nombre', '')}"
                         resultados.append(("📐 Plantilla", preview, pl.get("nombre", "")))
@@ -232,7 +244,7 @@ class DashboardMixin:
                 logger.debug(f"[silent] {e}")
 
             try:
-                for lo in (self.store.loras or []):
+                for lo in (self.app.store.loras or []):
                     if q in (lo.get("nombre", "") or "").lower() or q in (lo.get("trigger", "") or "").lower():
                         preview = f"{lo.get('nombre', '')} → {lo.get('trigger', '')}"
                         resultados.append(("🔗 LoRA", preview, lo.get("trigger", "")))
@@ -270,14 +282,14 @@ class DashboardMixin:
                     try:
                         # Si parece prompt completo, cárgalo en salida
                         if len(c) > 30:
-                            self.actualizar_salida(c)
+                            self.app.actualizar_salida(c)
                         # Si no, mete en idea
                         else:
-                            self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", c)
+                            self.app.txt_idea.delete("1.0", "end")
+                            self.app.txt_idea.insert("1.0", c)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
-                    self.set_estado("✅ Cargado desde búsqueda", accent_green)
+                    self.app.set_estado("✅ Cargado desde búsqueda", accent_green)
                     v.destroy()
                 ctk.CTkButton(row, text="Cargar", width=60, height=22,
                               fg_color=accent_blue, hover_color="#1d4ed8",
@@ -308,12 +320,12 @@ class DashboardMixin:
                       command=_buscar_inline).pack(side="left")
 
         # Datos comunes
-        favoritos = self.store.favoritos or []
-        estrellas = self.store.estrellas or []
-        historial = self.store.historial or []
-        personajes = self.store.personajes or []
-        loras = self.store.loras or []
-        plantillas = self.store.plantillas or []
+        favoritos = self.app.store.favoritos or []
+        estrellas = self.app.store.estrellas or []
+        historial = self.app.store.historial or []
+        personajes = self.app.store.personajes or []
+        loras = self.app.store.loras or []
+        plantillas = self.app.store.plantillas or []
 
         # FEATURE 18 — LAYOUT EN 2 COLUMNAS (con grid)
         twocol = ctk.CTkFrame(main, fg_color="transparent")
@@ -561,10 +573,10 @@ class DashboardMixin:
         if tiene_borrador:
             def _restaurar():
                 try:
-                    self._restaurar_borrador()
-                    self.set_estado("📝 Borrador restaurado", accent_green)
+                    self.app._restaurar_borrador()
+                    self.app.set_estado("📝 Borrador restaurado", accent_green)
                 except Exception:
-                    self.set_estado("⚠️ No se pudo restaurar el borrador", accent_red)
+                    self.app.set_estado("⚠️ No se pudo restaurar el borrador", accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text="📝 Restaurar borrador no guardado",
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
@@ -576,8 +588,8 @@ class DashboardMixin:
             ultimo = historial[0]
             preview_corto = ultimo.get("contenido", "")[:60].replace("\n", " ")
             def _cargar_ultimo():
-                self.actualizar_salida(ultimo.get("contenido", ""))
-                self.set_estado("📋 Último prompt cargado", accent_green)
+                self.app.actualizar_salida(ultimo.get("contenido", ""))
+                self.app.set_estado("📋 Último prompt cargado", accent_green)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=f"📋 Cargar último: {preview_corto}…",
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
@@ -595,11 +607,11 @@ class DashboardMixin:
             nombre_pl = primera.get("nombre", "Sin nombre")
             def _aplicar_plantilla():
                 try:
-                    self.combo_plantilla.set(nombre_pl)
-                    self._cargar_plantilla(nombre_pl)
-                    self.set_estado(f"📐 Plantilla aplicada: {nombre_pl}", accent_green)
+                    self.app.combo_plantilla.set(nombre_pl)
+                    self.app._cargar_plantilla(nombre_pl)
+                    self.app.set_estado(f"📐 Plantilla aplicada: {nombre_pl}", accent_green)
                 except Exception:
-                    self.set_estado("⚠️ Error aplicando plantilla", accent_red)
+                    self.app.set_estado("⚠️ Error aplicando plantilla", accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=f"📐 Aplicar plantilla: {nombre_pl}",
                           height=28, fg_color=accent_purple, hover_color="#6d28d9",
@@ -640,8 +652,8 @@ class DashboardMixin:
                              fg_color="transparent", text_color=text_secondary).pack(side="left")
 
                 def _cargar_estrella(c=contenido_e):
-                    self.actualizar_salida(c)
-                    self.set_estado("🌟 Prompt estrella cargado", accent_green)
+                    self.app.actualizar_salida(c)
+                    self.app.set_estado("🌟 Prompt estrella cargado", accent_green)
                     v.destroy()
                 ctk.CTkButton(hdr_e, text="Cargar", width=60, height=20,
                               fg_color=accent_blue, hover_color="#1d4ed8",
@@ -664,12 +676,12 @@ class DashboardMixin:
 
         # Verificar si hay key configurada
         try:
-            llm_label = self.llm_var.get() if hasattr(self, "llm_var") else "—"
+            llm_label = self.app.llm_var.get() if hasattr(self.app, "llm_var") else "—"
         except Exception:
             llm_label = "—"
 
         try:
-            provider = self.clients.get_active_provider() if hasattr(self, "clients") else None
+            provider = self.app.clients.get_active_provider() if hasattr(self.app, "clients") else None
             disponible = provider.disponible() if provider and hasattr(provider, "disponible") else False
         except Exception:
             disponible = False
@@ -690,9 +702,9 @@ class DashboardMixin:
             def _abrir_keys():
                 v.destroy()
                 try:
-                    self._cmd_api_keys()
+                    self.app._cmd_api_keys()
                 except Exception:
-                    self.set_estado("Configura tu key en 🔑 (header)", accent_amber)
+                    self.app.set_estado("Configura tu key en 🔑 (header)", accent_amber)
             ctk.CTkButton(estado_row, text="🔑 Configurar", width=100, height=22,
                           fg_color=accent_purple, hover_color="#6d28d9",
                           font=ctk.CTkFont(size=9), command=_abrir_keys).pack(side="right")
@@ -1059,10 +1071,10 @@ class DashboardMixin:
             """Configura modo, modelo, ratio, estilo (si encaja), audio fields y precarga idea."""
             try:
                 # 1. Cambiar modo
-                if modo and hasattr(self, "modo_var"):
-                    self.modo_var.set(modo)
-                    if hasattr(self, "_on_modo_cambio"):
-                        try: self._on_modo_cambio()
+                if modo and hasattr(self.app, "modo_var"):
+                    self.app.modo_var.set(modo)
+                    if hasattr(self.app, "_on_modo_cambio"):
+                        try: self.app._on_modo_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
             except Exception as e:
@@ -1075,46 +1087,46 @@ class DashboardMixin:
                     # 2. Cambiar modelo según el modo
                     if modelo and modo:
                         try:
-                            if modo == "imagen" and hasattr(self, "combo_modelo_imagen"):
-                                self.combo_modelo_imagen.set(modelo)
-                                if hasattr(self, "_on_modelo_imagen_cambio"):
-                                    try: self._on_modelo_imagen_cambio()
+                            if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
+                                self.app.combo_modelo_imagen.set(modelo)
+                                if hasattr(self.app, "_on_modelo_imagen_cambio"):
+                                    try: self.app._on_modelo_imagen_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
-                            elif modo == "video" and hasattr(self, "combo_modelo_video"):
-                                self.combo_modelo_video.set(modelo)
-                                if hasattr(self, "_on_motor_cambio"):
-                                    try: self._on_motor_cambio()
+                            elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
+                                self.app.combo_modelo_video.set(modelo)
+                                if hasattr(self.app, "_on_motor_cambio"):
+                                    try: self.app._on_motor_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
-                            elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
-                                self.combo_modelo_audio.set(modelo)
-                                if hasattr(self, "_on_motor_audio_cambio"):
-                                    try: self._on_motor_audio_cambio()
+                            elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
+                                self.app.combo_modelo_audio.set(modelo)
+                                if hasattr(self.app, "_on_motor_audio_cambio"):
+                                    try: self.app._on_motor_audio_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
 
                     # 3. Cambiar ratio si es relevante (ignora None para audio)
-                    if ratio and hasattr(self, "ratio_var"):
+                    if ratio and hasattr(self.app, "ratio_var"):
                         try:
-                            self.ratio_var.set(ratio)
+                            self.app.ratio_var.set(ratio)
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
 
                     # 4. Marcar estilo (buscar match en estilo_checks)
-                    if estilo_match and hasattr(self, "estilo_checks"):
+                    if estilo_match and hasattr(self.app, "estilo_checks"):
                         # Limpiar otros estilos primero
                         try:
-                            for n_chk, v_chk in self.estilo_checks.items():
+                            for n_chk, v_chk in self.app.estilo_checks.items():
                                 v_chk.set(False)
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                         # Buscar match
                         try:
                             match_lower = estilo_match.lower()
-                            for nombre_chk, var_chk in self.estilo_checks.items():
+                            for nombre_chk, var_chk in self.app.estilo_checks.items():
                                 if (match_lower in nombre_chk.lower() or
                                         nombre_chk.lower() in match_lower):
                                     var_chk.set(True)
@@ -1125,20 +1137,20 @@ class DashboardMixin:
                     # 5. Configurar campos de audio si aplica
                     if modo == "audio":
                         try:
-                            if audio_emocion and hasattr(self, "emocion_var"):
-                                self.emocion_var.set(audio_emocion)
-                                if hasattr(self, "_on_audio_filtro_cambio"):
-                                    try: self._on_audio_filtro_cambio()
+                            if audio_emocion and hasattr(self.app, "emocion_var"):
+                                self.app.emocion_var.set(audio_emocion)
+                                if hasattr(self.app, "_on_audio_filtro_cambio"):
+                                    try: self.app._on_audio_filtro_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
-                            if audio_voz and hasattr(self, "voz_var"):
-                                self.voz_var.set(audio_voz)
-                            if audio_idioma and hasattr(self, "idioma_audio_var"):
-                                self.idioma_audio_var.set(audio_idioma)
+                            if audio_voz and hasattr(self.app, "voz_var"):
+                                self.app.voz_var.set(audio_voz)
+                            if audio_idioma and hasattr(self.app, "idioma_audio_var"):
+                                self.app.idioma_audio_var.set(audio_idioma)
                             # Si es instrumental, activar el switch
                             if audio_voz and "instrumental" in audio_voz.lower():
-                                if hasattr(self, "switch_instrumental_var"):
-                                    try: self.switch_instrumental_var.set(True)
+                                if hasattr(self.app, "switch_instrumental_var"):
+                                    try: self.app.switch_instrumental_var.set(True)
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                         except Exception as e:
@@ -1147,16 +1159,16 @@ class DashboardMixin:
                     # 6. Cargar idea
                     if idea:
                         try:
-                            self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", idea)
-                            self.txt_idea.focus_set()
+                            self.app.txt_idea.delete("1.0", "end")
+                            self.app.txt_idea.insert("1.0", idea)
+                            self.app.txt_idea.focus_set()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
 
             # Aplicar en cascada con un delay tras el cambio de modo
-            self.after(150, _continuar)
+            self.app.after(150, _continuar)
 
         # ── Reto del día ──────────────────────────────────────
         (reto_desc, reto_modo, reto_modelo, reto_ratio, reto_estilo, reto_idea,
@@ -1188,7 +1200,7 @@ class DashboardMixin:
             _aplicar_config_completa(reto_modo, reto_modelo, reto_ratio,
                                        reto_estilo, reto_idea,
                                        reto_emo, reto_voz, reto_idioma)
-            self.set_estado(f"🎯 Reto activado: {emoji_modo_r} {reto_modelo}", accent_blue)
+            self.app.set_estado(f"🎯 Reto activado: {emoji_modo_r} {reto_modelo}", accent_blue)
             v.destroy()
 
         ctk.CTkButton(reto_frame, text="🎯 Aceptar reto",
@@ -1230,7 +1242,7 @@ class DashboardMixin:
             _aplicar_config_completa(est_modo, est_modelo, est_ratio,
                                        nombre_est, est_idea,
                                        est_emo, est_voz, est_idioma)
-            self.set_estado(f"{emoji_est} Estilo «{nombre_est}» activado", accent_pink)
+            self.app.set_estado(f"{emoji_est} Estilo «{nombre_est}» activado", accent_pink)
             v.destroy()
 
         ctk.CTkButton(estilo_frame, text=f"{emoji_est} Probar este estilo",
@@ -1249,12 +1261,12 @@ class DashboardMixin:
                     return
                 muestra = _rnd.sample(estilos_validos, k=min(3, len(estilos_validos)))
                 # Aplicar al UI
-                for nombre_est, var_est in self.estilo_checks.items():
+                for nombre_est, var_est in self.app.estilo_checks.items():
                     var_est.set(nombre_est in muestra)
-                self.set_estado(f"🎲 Mood aplicado: {' + '.join(muestra)}", accent_pink)
+                self.app.set_estado(f"🎲 Mood aplicado: {' + '.join(muestra)}", accent_pink)
                 v.destroy()
             except Exception as ex:
-                self.set_estado(f"⚠️ Error en mood: {ex}", accent_red)
+                self.app.set_estado(f"⚠️ Error en mood: {ex}", accent_red)
 
         ctk.CTkButton(col_der, text="🎲 Inspírame con Mood Aleatorio",
                       height=36, fg_color=accent_pink, hover_color="#be185d",
@@ -1364,8 +1376,8 @@ class DashboardMixin:
             def _limpiar_historial():
                 v.destroy()
                 try:
-                    self.store.limpiar_historial()
-                    self.set_estado("🧹 Historial limpiado", accent_green)
+                    self.app.store.limpiar_historial()
+                    self.app.set_estado("🧹 Historial limpiado", accent_green)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             ctk.CTkButton(mant_frame, text=f"🧹 Limpiar historial ({len(historial)} prompts)",
@@ -1382,10 +1394,10 @@ class DashboardMixin:
                 from config import ARCHIVOS, CARPETA_APP
                 base = CARPETA_APP
                 marker = ARCHIVOS["autobackup_marker"]
-                self._crear_backup_automatico(base, marker, _t.time())
-                self.set_estado("💾 Backup hecho", accent_green)
+                self.app._crear_backup_automatico(base, marker, _t.time())
+                self.app.set_estado("💾 Backup hecho", accent_green)
             except Exception as ex:
-                self.set_estado(f"⚠️ Error backup: {ex}", accent_red)
+                self.app.set_estado(f"⚠️ Error backup: {ex}", accent_red)
         ctk.CTkButton(mant_frame, text="💾 Hacer backup ahora",
                       height=28, fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=9, weight="bold"),
@@ -1425,14 +1437,14 @@ class DashboardMixin:
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
 
         acciones_rapidas = [
-            ("✨ Generar Prompt", self.cmd_prompt, accent_blue, "IA genera un prompt completo"),
-            ("⚡ Quick Generate", getattr(self, "cmd_prompt_quick", self.cmd_prompt),
+            ("✨ Generar Prompt", self.app.cmd_prompt, accent_blue, "IA genera un prompt completo"),
+            ("⚡ Quick Generate", getattr(self.app, "cmd_prompt_quick", self.app.cmd_prompt),
              accent_amber, "Generación rápida y barata"),
-            ("💡 Ideas Aleatorias", self.cmd_ideas, accent_green, "Genera 3 ideas creativas"),
-            ("🔄 Variaciones", self.cmd_variaciones, "#7c3aed", "Crea variantes del prompt"),
-            ("📝 Refinar", getattr(self, "cmd_refinar", self.cmd_prompt),
+            ("💡 Ideas Aleatorias", self.app.cmd_ideas, accent_green, "Genera 3 ideas creativas"),
+            ("🔄 Variaciones", self.app.cmd_variaciones, "#7c3aed", "Crea variantes del prompt"),
+            ("📝 Refinar", getattr(self.app, "cmd_refinar", self.app.cmd_prompt),
              "#db2777", "Mejora el prompt actual"),
-            ("📦 Batch", self.cmd_batch, "#e84393", "Genera múltiples prompts"),
+            ("📦 Batch", self.app.cmd_batch, "#e84393", "Genera múltiples prompts"),
         ]
 
         quick_grid = ctk.CTkFrame(main, fg_color="transparent")
@@ -1462,14 +1474,14 @@ class DashboardMixin:
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
 
         herramientas = [
-            ("🎯 Scoring", self.analysis.cmd_scoring),
-            ("📊 Estadísticas", self.analysis.abrir_estadisticas),
-            ("📐 Fórmulas", self._abrir_formulas),
-            ("🏷️ Añadir tags", self._abrir_snippets),
-            ("📋 Plantillas", self._cmd_plantillas_populares),
-            ("💎 Seeds", self.analysis.abrir_seeds_favoritos),
-            ("🔄 Macros", self._abrir_macros),
-            ("📁 Proyectos", self._cmd_proyectos),
+            ("🎯 Scoring", self.app.analysis.cmd_scoring),
+            ("📊 Estadísticas", self.app.analysis.abrir_estadisticas),
+            ("📐 Fórmulas", self.app._abrir_formulas),
+            ("🏷️ Añadir tags", self.app._abrir_snippets),
+            ("📋 Plantillas", self.app._cmd_plantillas_populares),
+            ("💎 Seeds", self.app.analysis.abrir_seeds_favoritos),
+            ("🔄 Macros", self.app._abrir_macros),
+            ("📁 Proyectos", self.app._cmd_proyectos),
         ]
 
         tools_frame = ctk.CTkFrame(main, fg_color="transparent")

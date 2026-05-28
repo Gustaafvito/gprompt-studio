@@ -11,7 +11,7 @@ from .backup_export import BackupExportMixin
 from .comfyui_exporter import ComfyUIWorkflowExporter
 from .components import install_components
 from .core import CoreMixin
-from .dashboard import DashboardMixin
+from .dashboard import DashboardService  # A1 fase 2 (sesión 11)
 from .data_mgmt import DataMgmtMixin
 from .dialogs import DialogsMixin
 from .event_bus import EventBus
@@ -51,7 +51,7 @@ __all__ = [
     "UiEventsMixin",
     "AbTestingMixin",
     "AtajosAyudaService",
-    "DashboardMixin",
+    "DashboardService",
     "UiFooterMixin",
     "GPromptWindow",
     "EventBus",
