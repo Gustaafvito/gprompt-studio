@@ -1080,7 +1080,7 @@ class ArquitectoApp(
         import re
         # Probar varios patrones (de más estricto a más permisivo)
         patrones = [
-            r'(?:^|\n)\s*(?:PROMPT|SHOT|FRAME|VARIANTE|VERSION)\s*\d+\s*[:\-—\(]',  # "PROMPT 1:", "SHOT 2 (Wide):"
+            r'(?:^|\n)\s*(?:PROMPT|SHOT|FRAME|VARIANTE|VERSION|PANEL)\s*\d+\s*[:\-—\(\n]',  # "PROMPT 1:", "SHOT 2 (Wide):", "PANEL 1\n..."
             r'(?:^|\n)\s*\d+\s*[\.\)]\s+',                                            # "1.", "1)"
             r'\n---+\n',                                                              # separadores ---
             r'(?:^|\n)\s*###\s*[^#\n]+\s*###\s*\n',                                   # ### Título ###
