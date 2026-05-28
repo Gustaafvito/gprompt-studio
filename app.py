@@ -1625,6 +1625,27 @@ class ArquitectoApp(
         # las demás se desmarcan visualmente.
         cols_aplicadas_refs = {"all": []}
 
+        # Estado para "comparar 2 lado-a-lado": map col_index → BooleanVar
+        compare_vars = {}
+        compare_btn_ref = {"btn": None}
+
+        def _on_compare_toggle():
+            """Limita a max 2 selecciones simultáneas y actualiza el botón."""
+            seleccionadas = [i for i, v in compare_vars.items() if v.get()]
+            if len(seleccionadas) > 2:
+                # Desmarcar la PRIMERA (FIFO) para mantener solo las 2 más recientes
+                compare_vars[seleccionadas[0]].set(False)
+                seleccionadas = seleccionadas[1:]
+            btn = compare_btn_ref["btn"]
+            if btn is not None:
+                try:
+                    if len(seleccionadas) == 2:
+                        btn.configure(state="normal", fg_color="#7c3aed")
+                    else:
+                        btn.configure(state="disabled", fg_color="#4b5563")
+                except Exception as _e:
+                    logger.debug(f"[silent] compare btn: {_e}")
+
         for i, var in enumerate(variaciones):
             col = ctk.CTkFrame(frame_cols, fg_color=c["fg_frame"], corner_radius=8, width=col_width)
             col.pack(side="left", fill="y", padx=3, pady=2)
@@ -1637,6 +1658,14 @@ class ArquitectoApp(
             label_txt = labels[i] if labels and i < len(labels) and labels[i] else f"Variación #{i+1}"
             ctk.CTkLabel(hdr, text=f"  {label_txt}",
                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
+            # Checkbox 🆚 para seleccionar esta variante para comparación lado-a-lado
+            compare_vars[i] = ctk.BooleanVar(value=False)
+            ctk.CTkCheckBox(hdr, text="🆚", variable=compare_vars[i],
+                             command=_on_compare_toggle,
+                             width=22, checkbox_width=14, checkbox_height=14,
+                             font=ctk.CTkFont(size=10),
+                             fg_color="#7c3aed", hover_color="#5b21b6",
+                             border_width=1).pack(side="right", padx=6)
 
             # Separar POSITIVE y NEGATIVE visualmente
             pos_text = self._extraer_pos_de_bloque(var) or var
@@ -1755,7 +1784,7 @@ class ArquitectoApp(
             ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
         # Pie de ventana: botones extras (encadenar Board→Vídeo)
-        # + Cerrar comparador
+        # + Comparar 2 lado-a-lado + Cerrar comparador
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(pady=(0, 10))
         if extra_botones:
@@ -1768,10 +1797,140 @@ class ArquitectoApp(
                               fg_color=fg, hover_color=fg,
                               font=ctk.CTkFont(size=11, weight="bold"),
                               command=_wrap).pack(side="left", padx=6)
+
+        # Botón "🆚 Comparar 2" — solo activo cuando hay 2 seleccionadas
+        def _abrir_lado_a_lado():
+            seleccionadas = [i for i, v in compare_vars.items() if v.get()]
+            if len(seleccionadas) != 2:
+                return
+            i_a, i_b = seleccionadas
+            label_a = labels[i_a] if labels and i_a < len(labels) and labels[i_a] else f"Variación #{i_a + 1}"
+            label_b = labels[i_b] if labels and i_b < len(labels) and labels[i_b] else f"Variación #{i_b + 1}"
+            self._abrir_diff_lado_a_lado(
+                variaciones[i_a], variaciones[i_b], label_a, label_b
+            )
+
+        compare_btn_ref["btn"] = ctk.CTkButton(
+            pie, text="🆚 Comparar 2", width=160, height=32,
+            fg_color="#4b5563", hover_color="#7c3aed",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            state="disabled",
+            command=_abrir_lado_a_lado,
+        )
+        compare_btn_ref["btn"].pack(side="left", padx=6)
+
         ctk.CTkButton(pie, text="Cerrar comparador", width=180, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=6)
+
+    def _abrir_diff_lado_a_lado(self, texto_a, texto_b, label_a, label_b):
+        """Ventana 50/50 con diff palabra-por-palabra entre 2 variantes.
+
+        - Verde: tokens que están en B pero no en A (añadidos por B).
+        - Rojo: tokens que están en A pero no en B (quitados en B).
+        - Color normal: tokens comunes.
+
+        Usa difflib.SequenceMatcher con tokenización por palabras +
+        separadores conservados.
+        """
+        import re as _re
+        from difflib import SequenceMatcher
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        from config import get_theme_colors
+        c = get_theme_colors(is_lt)
+
+        vent = GPromptWindow(self)
+        vent.title(f"🆚 {label_a}  vs  {label_b}")
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        ancho = min(1400, screen_w - 100)
+        alto = min(800, screen_h - 100)
+        vent.geometry(f"{ancho}x{alto}")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent,
+                     text=f"🆚 Comparación lado a lado  ·  🟢 añadido en derecha  ·  🔴 quitado en derecha",
+                     font=ctk.CTkFont(size=12, weight="bold")
+                     ).pack(pady=(8, 4))
+
+        # Container 50/50
+        cont = ctk.CTkFrame(vent, fg_color="transparent")
+        cont.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Tokenizar conservando espacios/saltos
+        def _tokenize(t):
+            return _re.findall(r"\S+|\s+", t or "")
+
+        toks_a = _tokenize(texto_a)
+        toks_b = _tokenize(texto_b)
+        sm = SequenceMatcher(a=toks_a, b=toks_b, autojunk=False)
+        ops = sm.get_opcodes()
+
+        def _make_panel(parent, titulo, color_titulo):
+            frame = ctk.CTkFrame(parent, fg_color=c["fg_frame"], corner_radius=8)
+            frame.pack(side="left", fill="both", expand=True, padx=4)
+            hdr = ctk.CTkFrame(frame, fg_color=color_titulo, corner_radius=6, height=28)
+            hdr.pack(fill="x", padx=5, pady=(5, 3))
+            hdr.pack_propagate(False)
+            ctk.CTkLabel(hdr, text=f"  {titulo}",
+                         font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
+            tb = ctk.CTkTextbox(frame, fg_color=c["fg_frame"],
+                                 font=ctk.CTkFont(family="Consolas", size=11),
+                                 wrap="word")
+            tb.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+            tb._textbox.tag_config("eq",  foreground=c.get("muted_text", "#aaa"))
+            tb._textbox.tag_config("del", foreground="#ffffff", background="#7f1d1d")
+            tb._textbox.tag_config("ins", foreground="#ffffff", background="#166534")
+            return tb
+
+        tb_a = _make_panel(cont, label_a, "#1a4a7a")
+        tb_b = _make_panel(cont, label_b, "#1a7a3c")
+
+        for tag, i1, i2, j1, j2 in ops:
+            seg_a = "".join(toks_a[i1:i2])
+            seg_b = "".join(toks_b[j1:j2])
+            if tag == "equal":
+                tb_a._textbox.insert("end", seg_a, "eq")
+                tb_b._textbox.insert("end", seg_b, "eq")
+            elif tag == "delete":
+                tb_a._textbox.insert("end", seg_a, "del")
+                # nada en B
+            elif tag == "insert":
+                # nada en A
+                tb_b._textbox.insert("end", seg_b, "ins")
+            else:  # replace
+                tb_a._textbox.insert("end", seg_a, "del")
+                tb_b._textbox.insert("end", seg_b, "ins")
+
+        tb_a.configure(state="disabled")
+        tb_b.configure(state="disabled")
+
+        # Botones pie
+        pie = ctk.CTkFrame(vent, fg_color="transparent")
+        pie.pack(pady=(0, 10))
+
+        def _copiar_a():
+            pyperclip.copy(texto_a)
+            self.set_estado(f"✅ '{label_a}' copiada", "#2ecc71")
+
+        def _copiar_b():
+            pyperclip.copy(texto_b)
+            self.set_estado(f"✅ '{label_b}' copiada", "#2ecc71")
+
+        ctk.CTkButton(pie, text=f"📋 Copiar {label_a}", width=200, height=30,
+                      fg_color="#1a4a7a", hover_color="#0f2e4d",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=_copiar_a).pack(side="left", padx=4)
+        ctk.CTkButton(pie, text=f"📋 Copiar {label_b}", width=200, height=30,
+                      fg_color="#1a7a3c", hover_color="#0f4a22",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=_copiar_b).pack(side="left", padx=4)
+        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=vent.destroy).pack(side="left", padx=4)
 
     def _intentar_cambiar_modelo(self, nombre_modelo):
         """Cambia el combo del modelo activo si `nombre_modelo` existe en
