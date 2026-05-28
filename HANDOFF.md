@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 10** (continuación de las sesiones 1-9).
+Actualizado al final de la **sesión 11** (continuación de las sesiones 1-10).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,23 +15,24 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **228/228** ✅ |
+| Tests | **240/240** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `96fe7c2`) |
+| Branch | `main` (sincronizado con `origin/main` en `500e9ef`) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **18** (era 21 — 3 removidos en A1 fase 2) |
+| Mixins en `ArquitectoApp` | **17** (era 21 — 4 removidos en A1 fase 2) |
 | **Componentes (A1)** | **20/20** ✅ accesibles vía `self.X.metodo()` |
-| **A1 fase 2** | **3/20 mixins removidos del MRO**: Json, Prompts, Atajos |
+| **A1 fase 2** | **4/20 mixins removidos del MRO**: Json, Prompts, Atajos, Dashboard |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
 | F401 (imports muertos) | **0** (antes 171 silenciados) |
+| F821 (undefined names) | **0** activo en CI (sesión 10) |
 | Type hints | ✅ 104 firmas anotadas en 10 mixins |
-| Build `.exe` | Distribuible al día (11:29 hoy) |
+| Build `.exe` | Distribuible al día (sesión 11) |
 | Installer | Con diálogo **Reparar / Desinstalar / Cancelar** |
 | Distribuible | `~/OneDrive/Desktop/GPromptStudio-Distribuible/` al día |
 | CI | GitHub Actions (Ruff + tests 3.10/3.11/3.12) |
-| Lint | Ruff con F401 activo (sin imports muertos) |
+| Lint | Ruff con F401 + F821 activos |
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 
 Estructura: ver `ESTRUCTURA.md`. Empaquetado: ver `BUILD.md`.
@@ -860,6 +861,144 @@ fea3886 fix(ui_footer): añadir imports faltantes (logger + tooltip_para)
 | Reglas ruff activas | base | base + **F821** ⭐ |
 | NameError latentes | ≥6 conocidos | 0 ✅ |
 | Botones acción NARRATIVA | 4 | 5 (+ 🖼 Storyboard) |
+
+---
+
+## ✅ Sesión 11 — A1 paso 4/20 + workflow Storyboard→Vídeo completo
+
+### A1 fase 2: DashboardMixin → DashboardService (4/20)
+
+`DashboardMixin` removido del MRO de `ArquitectoApp`. Su único método
+`_cmd_dashboard` (1433 líneas) ahora vive como `DashboardService`
+aislado con `app` por composición.
+
+- 37 referencias `self.X` → `self.app.X` (auto-script + fix manual de
+  patrones widget-aware: `GPromptWindow`, `transient`, `hasattr`).
+- `DashboardComponent.cmd_abrir()` delega a `self._service._cmd_dashboard()`.
+- **0 call sites externos a reescribir** (ya usaban `self.dashboard.cmd_abrir()`
+  desde sesión 8, gracias a la fase 1).
+- Tests: cero reescritura (los 10 tests de `_dashboard_palette` son
+  sobre función standalone).
+
+Mixins en MRO: **18 → 17** (-1).
+
+### Workflow Storyboard → Vídeo (3 features nuevas)
+
+El usuario quería este flujo end-to-end:
+
+```
+Idea → app genera storyboard → imagen (otra plataforma) →
+app analiza imagen como referencia → prompt de vídeo → Seedance 2.0
+```
+
+Cada paso destapó un problema, los 3 corregidos:
+
+**1. `12de567` Switch "🖼 Ref" — referencia visual en Img→Prompt**
+
+Cuando subes imagen de storyboard a la app, antes describía el grid
+literalmente. Ahora con switch ON:
+- Extrae solo paleta/iluminación/personajes/estilo gráfico.
+- IGNORA composición de paneles, layout grid, viñetas.
+- Genera prompt original para una escena que mantenga esa guía visual.
+
+Ubicación: barra superior junto a NSFW/Auto-trad (púrpura, persistente).
+Detección automática vía `is_natural` del modelo seleccionado.
+
+**2. `8ca1819` Selector "Shots:" (Auto/1-6) — calibrado por duración**
+
+Bug encontrado: el LLM generaba 5 shots para vídeos de 10s, lo que
+causa errores en Seedance (mínimo ~3s por shot). Solución:
+
+Combo `Shots:` junto a Duración en el panel de vídeo:
+- "Auto" (default): regla rule-based según duración.
+    4s→1 · 5s→2 · 10s→3 · 15s→4 · >15s→ceil(dur/4) capped 6
+- "1-6": override manual exacto.
+
+Inyección en system prompt:
+```
+🎬 NÚMERO DE SHOTS: EXACTAMENTE N shots para una duración total de
+   Xs (~Y.Ys por shot). NO añadas más ni menos.
+```
+
+Helpers nuevos en `PromptsInyeccionService`:
+- `_calcular_n_shots()`
+- `_duracion_a_segundos()` (parsea "10s", "4-6s", etc.)
+
+**3. `500e9ef` Fix parser — añadir PANEL al regex**
+
+El comparador del Storyboard mostraba TODOS los paneles como una
+única "Variación #1" en lugar de N bloques separados. Causa:
+`_parsear_bloques_numerados` solo reconocía `PROMPT|SHOT|FRAME|
+VARIANTE|VERSION` como prefijos, pero el storyboard usa `PANEL 1`,
+`PANEL 2`, etc. → caía al fallback de "1 bloque completo".
+
+Fix: añadido `PANEL` a la lista + `\n` al set de chars de fin
+(porque PANEL N va seguido de newline, no `:`).
+
+### Lección de workflow externo (no es bug nuestro)
+
+El vídeo del usuario en SeaArt seguía mostrando el storyboard como
+frame 1 incluso con el prompt corregido. **Causa real**: Seedance
+2.0 en SeaArt interpreta imagen-junto-con-prompt como image-to-video
+(la imagen pasa a ser el frame 1 literal). Solución: pegar SOLO el
+texto del prompt en SeaArt (no subir la imagen del storyboard ahí).
+
+Documentado para sesión 12+: añadir nota visible en la UI cuando el
+usuario active "🖼 Ref" recordando NO subir esa imagen otra vez en
+la plataforma de vídeo destino.
+
+### Tests añadidos
+
+- **+10** en `TestCalcularNShots`: Auto en 4s/5s/10s/15s + cap a 6
+  para duraciones largas + override manual + valor inválido cae a
+  Auto + sin shots_var en app + parsing "4-6s".
+- **+2** en `TestWorkerImagenAPrompt`: modo referencia visual usa
+  prompt distinto + prioriza sobre prompt existente.
+
+Total: 228 → **240** verdes.
+
+### Commits sesión 11
+
+```
+500e9ef fix(parser): añadir PANEL al regex de _parsear_bloques_numerados
+8ca1819 feat(video): selector "Shots:" (Auto/1-6) + regla por duración
+12de567 feat: switch "🖼 Ref" — Img→Prompt como referencia visual
+436236c refactor(A1 fase 2): DashboardMixin → DashboardService (4/20)
+```
+
+### Métricas finales sesión 11
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| Tests | 228 | **240** (+12) ⭐ |
+| Mixins en MRO | 18 | **17** (-1) ⭐ |
+| A1 fase 2 progreso | 3/20 | **4/20** |
+| Componentes A1 | 20/20 | 20/20 |
+| Switches en barra superior | 3 | **4** (+ 🖼 Ref) |
+| Selectores en panel vídeo | 4 (Modelo/Dur/Ratio/Destino) | **5** (+ Shots) |
+
+### 🚧 Pendiente sesión 12+
+
+#### 🔴 ALTA — A1 fase 2 (16 mixins restantes)
+
+Próximo: **AbTestingMixin** (5 métodos, 2 call sites externos, 11
+tests existentes a reescribir). Estimación 30 min.
+
+Después por dificultad creciente:
+**AdnVisual → ModoCliente → MultiPrompt → Backup → Workers → Refinar
+→ Analysis → Workflow → Creative → UI → UiEvents → Sesion → DataMgmt
+→ UiFooter → Core → Dialogs**.
+
+#### 🟡 MEDIA
+- Nota visible en UI al activar "🖼 Ref" recordando NO subir la imagen
+  otra vez en la plataforma de vídeo destino.
+- Variante SD/Comfy del storyboard (formato tag-based, ya parcialmente
+  hecho en `e0cf1cd` de sesión 10).
+- Particiones de archivos grandes (`core.py` 1645, `data_mgmt.py` 1545,
+  `ui_builders.py` ~1600, etc.).
+
+#### 🟢 BAJA
+Code-signing del `.exe`, SeaArt char limits, performance.
 
 ---
 
