@@ -32,6 +32,52 @@ def _host(**attrs):
     return PromptsInyeccionService(app)
 
 
+class TestCalcularNShots:
+    """Helper _calcular_n_shots: Auto + override manual + duraciones largas."""
+
+    def test_auto_4s_devuelve_1(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("4s"))
+        assert h._calcular_n_shots() == 1
+
+    def test_auto_5s_devuelve_2(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("5s"))
+        assert h._calcular_n_shots() == 2
+
+    def test_auto_10s_devuelve_3(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("10s"))
+        assert h._calcular_n_shots() == 3
+
+    def test_auto_15s_devuelve_4(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("15s"))
+        assert h._calcular_n_shots() == 4
+
+    def test_auto_duracion_larga_capped_a_6(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("60s"))
+        assert h._calcular_n_shots() == 6
+
+    def test_manual_2_override_aunque_duracion_sea_15s(self):
+        h = _host(shots_var=_var("2"), duracion_var=_var("15s"))
+        assert h._calcular_n_shots() == 2
+
+    def test_manual_fuera_de_rango_se_clamp(self):
+        h = _host(shots_var=_var("10"), duracion_var=_var("10s"))
+        assert h._calcular_n_shots() == 6
+
+    def test_manual_invalido_cae_a_auto(self):
+        h = _host(shots_var=_var("abc"), duracion_var=_var("10s"))
+        assert h._calcular_n_shots() == 3
+
+    def test_sin_app_shots_var_usa_auto(self):
+        # app sin atributo shots_var → cae a Auto vía hasattr
+        h = _host(duracion_var=_var("10s"))
+        assert h._calcular_n_shots() == 3
+
+    def test_duracion_rango_4_6s_toma_primer_numero(self):
+        h = _host(shots_var=_var("Auto"), duracion_var=_var("4-6s"))
+        # 4s → 1 shot
+        assert h._calcular_n_shots() == 1
+
+
 class TestInyectarDestino:
 
     def test_destino_vacio_no_cambia(self):

@@ -44,6 +44,46 @@ class PromptsInyeccionService:
         self._cache_modelo_info = None
         self._cache_modelo_clave = None
 
+    # ─── Helpers de duración / shots ───────────────────────────────
+    def _duracion_a_segundos(self, dur_str: str) -> float:
+        """Convierte '10s', '12s', '4-6s' a float (toma el primer número)."""
+        if not dur_str:
+            return 10.0
+        s = dur_str.strip().lower().replace("s", "").split("-")[0]
+        try:
+            return float(s)
+        except (ValueError, TypeError):
+            return 10.0
+
+    def _calcular_n_shots(self) -> int:
+        """Devuelve el N de shots para el prompt de vídeo.
+
+        - Si `shots_var` es "Auto" o no existe: regla por duración.
+          4s→1, 5s→2, 10s→3, 15s→4 (y >15s → ceil(duracion/4)).
+        - Si `shots_var` es un número 1-6: ese valor exacto.
+        """
+        shots_str = (
+            self.app.shots_var.get()
+            if hasattr(self.app, "shots_var")
+            else "Auto"
+        )
+        if shots_str and shots_str != "Auto":
+            try:
+                return max(1, min(6, int(shots_str)))
+            except (ValueError, TypeError):
+                pass  # cae al cálculo automático
+        # Auto
+        dur = self._duracion_a_segundos(
+            self.app.duracion_var.get()
+            if hasattr(self.app, "duracion_var") else "10s"
+        )
+        if dur <= 4:   return 1
+        if dur <= 5:   return 2
+        if dur <= 10:  return 3
+        if dur <= 15:  return 4
+        # Para duraciones largas: ~1 shot cada 4s, máximo 6.
+        return min(6, max(1, round(dur / 4)))
+
     def _inyectar_specs_modelo(self, system_prompt: str) -> str:
         modo = self.app.modo_var.get()
         if modo == "video":
@@ -66,6 +106,11 @@ class PromptsInyeccionService:
         else:
             palabras_obj, detalle = "130-210", "DETALLADO Y CONCISO: sujeto+acción"
 
+        # Cálculo de número de shots: manual override o regla por duración
+        n_shots = self._calcular_n_shots()
+        duracion_str = self.app.duracion_var.get() if hasattr(self.app, "duracion_var") else "10s"
+        seg_por_shot = self._duracion_a_segundos(duracion_str) / max(n_shots, 1)
+
         extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
         extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -73,6 +118,12 @@ class PromptsInyeccionService:
         extra += f"• Ejemplo de referencia: {specs['prompt_ejemplo']}\n"
         extra += f"• OBJETIVO DE LONGITUD: {palabras_obj} palabras (~{max_c} caracteres máximo). {detalle}.\n"
         extra += f"• ⛔ LÍMITE ABSOLUTO INNEGOCIABLE: {max_c} caracteres totales.\n"
+        extra += (
+            f"• 🎬 NÚMERO DE SHOTS: EXACTAMENTE {n_shots} shot{'s' if n_shots != 1 else ''} "
+            f"para una duración total de {duracion_str} "
+            f"(~{seg_por_shot:.1f}s por shot). NO añadas más ni menos. "
+            f"Distribuye el arco narrativo en {n_shots} momentos clave.\n"
+        )
         extra += f"• Mejor para: {specs['best_for']}\n"
 
         if specs["has_audio"] and specs["audio_desc"]:

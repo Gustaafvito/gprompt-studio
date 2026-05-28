@@ -176,6 +176,9 @@ class ArquitectoApp(
         self.plataforma_var      = ctk.StringVar(value="SeaArt / Tensor.Art")
         self.switch_nsfw_var     = ctk.BooleanVar(value=_switches_prefs.get("switch_nsfw", False))
         self.duracion_var        = ctk.StringVar(value="10s")
+        # Número de shots en prompts de vídeo. "Auto" deduce de la duración
+        # (4s→1, 5s→2, 10s→3, 15s→4). Manual 1-6 fuerza ese N exacto.
+        self.shots_var           = ctk.StringVar(value="Auto")
         self.ratio_var           = ctk.StringVar(value="1:1")
         self.switch_traduccion_var = ctk.BooleanVar(value=_switches_prefs.get("switch_traduccion", True))
         self.destino_var         = ctk.StringVar(value="— Personal —")

@@ -592,6 +592,25 @@ class UIBuildersMixin:
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
         ctk.CTkEntry(self.frame_video, textvariable=self.duracion_var, width=70).pack(side="left", padx=5)
+        # Selector de shots: Auto (regla por duración) o manual 1-6.
+        ctk.CTkLabel(self.frame_video, text="Shots:",
+                     font=ctk.CTkFont(weight="bold"),
+                     fg_color="transparent",
+                     text_color=lbl_color).pack(side="left", padx=(10, 5))
+        self.combo_shots = ctk.CTkComboBox(self.frame_video,
+                                            values=["Auto", "1", "2", "3", "4", "5", "6"],
+                                            variable=self.shots_var, width=70,
+                                            command=lambda v: self.shots_var.set(v))
+        self.combo_shots.set("Auto")
+        self.combo_shots.pack(side="left", padx=5)
+        try:
+            CTkToolTip(self.combo_shots,
+                        message=("Número de shots/planos en el prompt de vídeo.\n"
+                                 "Auto: deduce según duración (4s=1, 5s=2, 10s=3, 15s=4).\n"
+                                 "Manual (1-6): fuerza ese número exacto."),
+                        delay=0.5)
+        except Exception as _e:
+            logger.debug(f"[silent] tooltip shots: {_e}")
         ctk.CTkLabel(self.frame_video, text="Ratio:",
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
