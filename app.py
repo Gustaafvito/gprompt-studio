@@ -1776,12 +1776,37 @@ class ArquitectoApp(
                         vent.after(0, lambda: lbl.configure(text="❌ Error al traducir"))
                 threading.Thread(target=_worker, daemon=True).start()
 
-            ctk.CTkButton(btn_row, text="📋", width=30, height=24, fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"], command=_copiar_completo).pack(side="left", padx=1)
-            ctk.CTkButton(btn_row, text="🟢", width=30, height=24, fg_color="#1a5a2a", hover_color="#0f3a1a", command=_copiar_pos).pack(side="left", padx=1)
+            # Placeholder donde irá la preview Pollinations (oculto hasta click)
+            preview_lbl = ctk.CTkLabel(scroll, text="", fg_color="transparent")
+            preview_lbl.pack(fill="x", pady=(4, 0))
+
+            def _preview_pollinations(p=pos_text, lbl=preview_lbl):
+                lbl.configure(text="👁 Generando preview...", text_color="#888")
+                def _on_img(img):
+                    try:
+                        from PIL import Image as _Image
+                        thumb = img.copy()
+                        thumb.thumbnail((col_width - 30, 280), _Image.Resampling.LANCZOS)
+                        ctk_img = ctk.CTkImage(light_image=thumb, dark_image=thumb,
+                                                size=(thumb.width, thumb.height))
+                        lbl.configure(image=ctk_img, text="")
+                        lbl.image = ctk_img  # evitar GC
+                    except Exception as _e:
+                        logger.debug(f"[silent] preview thumb: {_e}")
+                        lbl.configure(text="❌ Error mostrando", text_color="#e74c3c")
+
+                def _on_err(msg):
+                    lbl.configure(text=f"❌ {msg[:60]}", text_color="#e74c3c")
+
+                self._generar_preview_pollinations(p, _on_img, _on_err, vent)
+
+            ctk.CTkButton(btn_row, text="📋", width=28, height=24, fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"], command=_copiar_completo).pack(side="left", padx=1)
+            ctk.CTkButton(btn_row, text="🟢", width=28, height=24, fg_color="#1a5a2a", hover_color="#0f3a1a", command=_copiar_pos).pack(side="left", padx=1)
             if tiene_neg:
-                ctk.CTkButton(btn_row, text="🔴", width=30, height=24, fg_color="#5a1a1a", hover_color="#3a0f0f", command=_copiar_neg).pack(side="left", padx=1)
-            ctk.CTkButton(btn_row, text="🇪🇸", width=30, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
-            ctk.CTkButton(btn_row, text="✅ Usar", width=60, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
+                ctk.CTkButton(btn_row, text="🔴", width=28, height=24, fg_color="#5a1a1a", hover_color="#3a0f0f", command=_copiar_neg).pack(side="left", padx=1)
+            ctk.CTkButton(btn_row, text="🇪🇸", width=28, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
+            ctk.CTkButton(btn_row, text="👁", width=28, height=24, fg_color="#0891b2", hover_color="#0e7490", command=_preview_pollinations).pack(side="left", padx=1)
+            ctk.CTkButton(btn_row, text="✅ Usar", width=56, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
         # Pie de ventana: botones extras (encadenar Board→Vídeo)
         # + Comparar 2 lado-a-lado + Cerrar comparador
@@ -1818,6 +1843,15 @@ class ArquitectoApp(
             command=_abrir_lado_a_lado,
         )
         compare_btn_ref["btn"].pack(side="left", padx=6)
+
+        # Botón "👁 Grid Pollinations" — abre ventana con previews de TODOS
+        def _abrir_grid():
+            self._abrir_grid_pollinations(variaciones, labels)
+
+        ctk.CTkButton(pie, text="👁 Grid Pollinations", width=180, height=32,
+                      fg_color="#0891b2", hover_color="#0e7490",
+                      font=ctk.CTkFont(size=11, weight="bold"),
+                      command=_abrir_grid).pack(side="left", padx=6)
 
         ctk.CTkButton(pie, text="Cerrar comparador", width=180, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
@@ -1927,6 +1961,192 @@ class ArquitectoApp(
                       fg_color="#1a7a3c", hover_color="#0f4a22",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_b).pack(side="left", padx=4)
+        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=vent.destroy).pack(side="left", padx=4)
+
+    def _generar_preview_pollinations(self, prompt_text, on_imagen, on_error,
+                                       parent_widget=None, size=512):
+        """Genera preview de imagen vía Pollinations.ai API (sin auth).
+
+        - `prompt_text`: texto del prompt. Se extrae solo POSITIVE y se trunca
+          a ~500 chars (la URL no debe ser absurda).
+        - `on_imagen(PIL.Image)`: callback al obtener la imagen.
+        - `on_error(str)`: callback en caso de fallo.
+        - `parent_widget`: si se pasa, los callbacks se programan con .after()
+          para ser thread-safe sobre el Tk principal.
+        - `size`: ancho/alto de la imagen pedida (default 512).
+
+        Caché en `~/.arquitecto_prompts/preview_cache/{md5}.png` para no
+        regenerar el mismo prompt entre sesiones.
+        """
+        import hashlib
+        from io import BytesIO
+        from pathlib import Path
+        from urllib.parse import quote
+
+        import requests
+        from PIL import Image as _Image
+
+        # Limpiar prompt: solo POSITIVE, sin etiquetas, máx 500 chars
+        try:
+            pos = self._extraer_pos_de_bloque(prompt_text) or prompt_text
+        except Exception:
+            pos = prompt_text or ""
+        pos = (pos or "").strip()
+        if not pos:
+            return on_error("Prompt vacío")
+        pos = pos[:500]
+
+        # Cache
+        cache_dir = Path.home() / ".arquitecto_prompts" / "preview_cache"
+        try:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as _e:
+            logger.debug(f"[silent] cache dir: {_e}")
+        key = hashlib.md5(f"{pos}|{size}".encode()).hexdigest()[:16]
+        cache_path = cache_dir / f"{key}.png"
+
+        def _safe_cb(cb, arg):
+            if parent_widget is not None:
+                try:
+                    parent_widget.after(0, lambda: cb(arg))
+                    return
+                except Exception:
+                    pass
+            cb(arg)
+
+        if cache_path.exists():
+            try:
+                img = _Image.open(cache_path)
+                img.load()
+                return _safe_cb(on_imagen, img)
+            except Exception as _e:
+                logger.debug(f"[silent] cache load: {_e}")
+
+        def _worker():
+            try:
+                url = (
+                    f"https://image.pollinations.ai/prompt/{quote(pos)}"
+                    f"?width={size}&height={size}&model=flux&nologo=true&enhance=false"
+                )
+                resp = requests.get(url, timeout=45)
+                resp.raise_for_status()
+                img = _Image.open(BytesIO(resp.content))
+                img.load()
+                try:
+                    img.save(cache_path)
+                except Exception as _e:
+                    logger.debug(f"[silent] cache save: {_e}")
+                _safe_cb(on_imagen, img)
+            except requests.Timeout:
+                _safe_cb(on_error, "Timeout (>45s)")
+            except requests.RequestException as e:
+                _safe_cb(on_error, f"Red: {e}")
+            except Exception as e:
+                _safe_cb(on_error, str(e))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _abrir_grid_pollinations(self, variaciones, labels=None):
+        """Ventana con grid 3-col de previews Pollinations de todas las variantes.
+
+        Genera las N previews EN PARALELO (un thread por variante).
+        Click en una imagen → la abre a tamaño completo en ventana nueva.
+        """
+        import webbrowser
+        from urllib.parse import quote
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        from config import get_theme_colors
+        c = get_theme_colors(is_lt)
+
+        vent = GPromptWindow(self)
+        vent.title("👁 Grid Pollinations")
+        n = len(variaciones)
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        thumb_size = 256
+        cols = min(3, n)
+        ancho = min(thumb_size * cols + 80, screen_w - 100)
+        alto = min(800, screen_h - 100)
+        vent.geometry(f"{ancho}x{alto}")
+        vent.transient(self)
+
+        ctk.CTkLabel(vent,
+                     text=f"👁 Grid Pollinations ({n} previews)  ·  click en una imagen para verla en grande",
+                     font=ctk.CTkFont(size=12, weight="bold")
+                     ).pack(pady=(8, 4))
+
+        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=10, pady=5)
+
+        grid = ctk.CTkFrame(scroll, fg_color="transparent")
+        grid.pack(fill="both", expand=True)
+
+        for i, var in enumerate(variaciones):
+            row, col_i = divmod(i, cols)
+            cell = ctk.CTkFrame(grid, fg_color=c["fg_frame"], corner_radius=8,
+                                 width=thumb_size + 10, height=thumb_size + 60)
+            cell.grid(row=row, column=col_i, padx=4, pady=4, sticky="nsew")
+            cell.grid_propagate(False)
+
+            label_txt = (
+                labels[i] if labels and i < len(labels) and labels[i]
+                else f"Variación #{i+1}"
+            )
+            ctk.CTkLabel(cell, text=label_txt,
+                         font=ctk.CTkFont(size=10, weight="bold"),
+                         wraplength=thumb_size - 10
+                         ).pack(pady=(4, 2))
+
+            img_lbl = ctk.CTkLabel(cell, text="👁 cargando...",
+                                    width=thumb_size, height=thumb_size,
+                                    fg_color="#0a0e14", text_color="#888")
+            img_lbl.pack(pady=2)
+
+            def _on_img(image, lbl=img_lbl, prompt_text=var):
+                try:
+                    from PIL import Image as _Image
+                    thumb = image.copy()
+                    thumb.thumbnail((thumb_size, thumb_size), _Image.Resampling.LANCZOS)
+                    ctk_img = ctk.CTkImage(light_image=thumb, dark_image=thumb,
+                                            size=(thumb.width, thumb.height))
+                    lbl.configure(image=ctk_img, text="")
+                    lbl.image = ctk_img
+                    # Click → abrir en navegador con tamaño 1024
+                    def _open_large(_e=None, p=prompt_text):
+                        try:
+                            pos = self._extraer_pos_de_bloque(p) or p
+                            url = (
+                                f"https://image.pollinations.ai/prompt/{quote((pos or '')[:500])}"
+                                f"?width=1024&height=1024&model=flux&nologo=true"
+                            )
+                            webbrowser.open(url)
+                        except Exception as _e:
+                            logger.debug(f"[silent] open large: {_e}")
+                    lbl.bind("<Button-1>", _open_large)
+                except Exception as _e:
+                    logger.debug(f"[silent] grid thumb: {_e}")
+                    lbl.configure(text=f"❌ {_e}", text_color="#e74c3c")
+
+            def _on_err(msg, lbl=img_lbl):
+                lbl.configure(text=f"❌ {msg[:30]}", text_color="#e74c3c")
+
+            self._generar_preview_pollinations(var, _on_img, _on_err, vent,
+                                                size=512)
+
+        for ci in range(cols):
+            grid.columnconfigure(ci, weight=1)
+
+        # Pie
+        pie = ctk.CTkFrame(vent, fg_color="transparent")
+        pie.pack(pady=(0, 10))
+        ctk.CTkLabel(pie,
+                     text="Cache en ~/.arquitecto_prompts/preview_cache/",
+                     font=ctk.CTkFont(size=9), text_color="#666"
+                     ).pack(side="left", padx=8)
         ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=10, weight="bold"),
