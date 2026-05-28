@@ -180,6 +180,10 @@ class ArquitectoApp(
         self.switch_traduccion_var = ctk.BooleanVar(value=_switches_prefs.get("switch_traduccion", True))
         self.destino_var         = ctk.StringVar(value="— Personal —")
         self.brief_var           = ctk.BooleanVar(value=_switches_prefs.get("brief", False))
+        # Switch "Img→Prompt como referencia visual" — para storyboards/moodboards
+        # subidos que NO se deben describir literalmente sino usar como guía de
+        # estilo/paleta/personajes para el prompt resultante.
+        self.switch_ref_visual_var = ctk.BooleanVar(value=_switches_prefs.get("switch_ref_visual", False))
         self.estilo_checks       = {}
         self.preset_vars         = {}
         self.preset_btns         = {}
@@ -204,6 +208,8 @@ class ArquitectoApp(
                 "write", _persistir_switch("switch_traduccion", self.switch_traduccion_var.get))
             self.brief_var.trace_add(
                 "write", _persistir_switch("brief", self.brief_var.get))
+            self.switch_ref_visual_var.trace_add(
+                "write", _persistir_switch("switch_ref_visual", self.switch_ref_visual_var.get))
         except Exception as _e:
             logger.debug(f"[silent] trace switches: {_e}")
 
@@ -214,6 +220,7 @@ class ArquitectoApp(
             self.switch_nsfw_var.trace_add("write", lambda *a: self._sesion_log(f"🔞 NSFW → {'ON' if self.switch_nsfw_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
             self.switch_traduccion_var.trace_add("write", lambda *a: self._sesion_log(f"🌐 Auto-trad → {'ON' if self.switch_traduccion_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
             self.brief_var.trace_add("write", lambda *a: self._sesion_log(f"📋 Modo Brief → {'ON' if self.brief_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
+            self.switch_ref_visual_var.trace_add("write", lambda *a: self._sesion_log(f"🖼 Ref visual → {'ON' if self.switch_ref_visual_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # ── Construir UI Organizada ───────────────────────────────

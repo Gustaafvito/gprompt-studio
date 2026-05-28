@@ -41,6 +41,7 @@ def _host(*, deepseek_resp="POSITIVE PROMPT: nice\nNEGATIVE PROMPT: bad",
         llm_var=_var(llm),
         ratio_var=_var("16:9"),
         switch_traduccion_var=_var(False),
+        switch_ref_visual_var=_var(False),
         # Texto
         txt_idea=_txt(""),
         txt_salida=_txt(""),
@@ -389,3 +390,35 @@ class TestWorkerImagenAPrompt:
         h._worker_imagen_a_prompt()
         msgs = [c.args[0] for c in h.set_estado.call_args_list]
         assert any("Error" in m for m in msgs)
+
+    def test_modo_referencia_visual_usa_prompt_distinto(self):
+        """Switch ref_visual ON → usa el modo REFERENCIA, no MODO B ni corrector."""
+        capturado = {}
+        h = _host()
+        h.switch_ref_visual_var = _var(True)
+        h.deepseek.generar = lambda p, **k: (
+            capturado.update({"peticion": p}) or "POSITIVE PROMPT: con referencia"
+        )
+        h._worker_imagen_a_prompt()
+        p = capturado["peticion"]
+        # No usa los otros modos
+        assert "MODO B" not in p
+        assert "corrector visual" not in p.lower()
+        # Sí usa el nuevo modo
+        assert "REFERENCIA VISUAL" in p
+        assert "NO la describas literalmente" in p
+        assert "IGNORA" in p
+
+    def test_modo_referencia_prioriza_sobre_prompt_existente(self):
+        """Aunque haya prompt previo (que normalmente activaría modo MEJORAR),
+        si ref_visual está ON debe ganar el modo REFERENCIA."""
+        capturado = {}
+        h = _host(txt_salida=_txt("POSITIVE PROMPT: prompt existente " * 5))
+        h.switch_ref_visual_var = _var(True)
+        h.deepseek.generar = lambda p, **k: (
+            capturado.update({"peticion": p}) or "POSITIVE PROMPT: ref gana"
+        )
+        h._worker_imagen_a_prompt()
+        p = capturado["peticion"]
+        assert "REFERENCIA VISUAL" in p
+        assert "corrector visual" not in p.lower()

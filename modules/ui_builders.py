@@ -528,6 +528,33 @@ class UIBuildersMixin:
         self._sw_trad = self.switch_trad
         self._sw_trad_callback = _toggle_trad_visual
 
+        # Switch "🖼 Ref" — la imagen subida en Img→Prompt se tratará como
+        # referencia visual (storyboard/moodboard/style guide), NO se
+        # describirá literalmente. Extrae solo paleta/iluminación/personajes
+        # /estilo gráfico para que el prompt resultante mantenga ese aspecto
+        # visual pero genere contenido original.
+        def _toggle_ref_visual():
+            if self.switch_ref_visual_var.get():
+                self.switch_ref.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
+            else:
+                self.switch_ref.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
+
+        self.switch_ref = ctk.CTkSwitch(inner, text="🖼 Ref", variable=self.switch_ref_visual_var,
+                                         command=_toggle_ref_visual,
+                                         progress_color="#7c3aed",
+                                         fg_color=c["fg_dark"],
+                                         border_color=c["fg_dark_border"],
+                                         text_color=c["fg_dark_text"],
+                                         **sw_style)
+        self.switch_ref.pack(side="right", padx=6)
+        CTkToolTip(self.switch_ref,
+                    message=("Img→Prompt: trata la imagen como REFERENCIA VISUAL "
+                             "(storyboard, moodboard, style guide).\n"
+                             "OFF (defecto): el prompt reproduce fielmente la imagen.\n"
+                             "ON: extrae solo paleta/iluminación/personajes/estilo "
+                             "y genera prompt original con esa guía visual."),
+                    delay=0.5)
+
         # Aplicar estilo inicial coherente con el estado del var (importante
         # cuando se restauran desde prefs). NO usamos _toggle_nsfw_visual()
         # directamente porque llama a reiniciar_memoria() que asume que la
@@ -536,6 +563,8 @@ class UIBuildersMixin:
             self.switch_nsfw.configure(text_color=nsfw_text_on, border_color=nsfw_border_on)
         if self.switch_traduccion_var.get():
             self.switch_trad.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
+        if self.switch_ref_visual_var.get():
+            self.switch_ref.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
 
     def _on_segmento_modo(self, valor):
         mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}

@@ -211,7 +211,11 @@ class WorkersIaMixin:
     # ──────────────────────────────────────────────────────────────
     def _worker_imagen_a_prompt(self):
         try:
-            self.after(0, lambda: self.set_estado("👁 Analizando imagen...", "#f39c12"))
+            # ¿Tratar imagen como referencia visual (storyboard/moodboard)?
+            es_referencia = bool(self.switch_ref_visual_var.get())
+            modo_etiqueta = "🖼 REFERENCIA" if es_referencia else "👁 FIEL"
+
+            self.after(0, lambda: self.set_estado(f"{modo_etiqueta} Analizando imagen...", "#f39c12"))
             def on_status(msg): self.after(0, lambda: self.set_estado(msg, "#f39c12"))
             desc, motor = self.vision.describir(self.imagen_cargada, self.modo_var.get(), on_status)
             self._ultimo_anclaje_visual = desc
@@ -224,7 +228,9 @@ class WorkersIaMixin:
             def _poner_desc():
                 self.txt_idea.delete("1.0", "end")
                 self.txt_idea.insert("1.0", f"{desc}\n\nAdiciones del usuario: {idea_manual}" if idea_manual else desc)
-                if tiene_prompt:
+                if es_referencia:
+                    self.set_estado(f"🖼 [{motor}] → generando prompt con guía visual (estilo/paleta/personajes)...", "#7c3aed")
+                elif tiene_prompt:
                     self.set_estado(f"👁 [{motor}] → mejorando prompt existente con análisis visual...", "#f39c12")
                 else:
                     self.set_estado(f"👁 [{motor}] → generando prompt con contexto visual anclado...", "#f39c12")
@@ -238,7 +244,34 @@ class WorkersIaMixin:
             limite_chars = specs.get("max_chars") if specs else 2000
             es_tag_based = not self.is_natural_mode()
 
-            if tiene_prompt:
+            if es_referencia:
+                # MODO REFERENCIA: la imagen es una guía visual (storyboard/
+                # moodboard/style guide), NO contenido literal. Extraer solo
+                # paleta/iluminación/personajes/estilo, y generar prompt
+                # original con esa guía visual.
+                formato = " FORMATO OBLIGATORIO: tags separados por comas con pesos (tag:1.2). NO prosa fluida." if es_tag_based else ""
+                regla_longitud = f" ⛔ REGLA ESTRICTA: El prompt FINAL no debe superar los {limite_chars} caracteres en total."
+                idea_del_usuario = idea_manual if idea_manual else "(usa la propia descripción de la imagen como base, pero generando una escena original)"
+                peticion = (
+                    f"La imagen subida es una REFERENCIA VISUAL (probablemente un storyboard, "
+                    f"moodboard, page de cómic o style guide). NO la describas literalmente.\n\n"
+                    f"ANÁLISIS de la imagen (solo para extraer guía visual):\n{idea_final}\n\n"
+                    f"INSTRUCCIONES:\n"
+                    f"1. De la imagen, EXTRAE únicamente estos elementos como guía:\n"
+                    f"   - Paleta de colores dominante\n"
+                    f"   - Estilo de iluminación (hora del día, dirección, contraste)\n"
+                    f"   - Apariencia de los personajes (vestuario, rasgos, época)\n"
+                    f"   - Estilo gráfico/medio (pencil sketch, comic, pintura, foto)\n"
+                    f"   - Atmósfera / mood emocional\n"
+                    f"2. IGNORA: composición de paneles, layout de grid, viñetas, "
+                    f"distribución espacial — esos detalles NO deben aparecer en el prompt.\n"
+                    f"3. GENERA un prompt para esta escena/idea: '{idea_del_usuario}'.\n"
+                    f"4. El prompt debe representar UNA SOLA imagen (no un storyboard ni "
+                    f"un grid), pero mantener la paleta/iluminación/personajes/estilo "
+                    f"identificados en el paso 1.\n"
+                    f"Estilos extra del usuario: {self.estilos_texto()}.{formato}{regla_longitud}"
+                ) + self.prompts.construir_modelo_info()
+            elif tiene_prompt:
                 # MODO MEJORAR: analizar imagen + corregir prompt existente
                 formato = "FORMATO: tags separados por comas con pesos (tag:1.2). NO prosa fluida." if es_tag_based else ""
                 peticion = (
@@ -264,10 +297,15 @@ class WorkersIaMixin:
 
             def _mostrar_final():
                 self.actualizar_salida(texto)
-                modo_txt = "Prompt mejorado con análisis visual" if tiene_prompt else "Prompt anclado generado"
+                if es_referencia:
+                    modo_txt = "Prompt generado con imagen como referencia visual"
+                elif tiene_prompt:
+                    modo_txt = "Prompt mejorado con análisis visual"
+                else:
+                    modo_txt = "Prompt anclado generado"
                 self.set_estado(f"✅ Visión: [{motor}] · LLM: {self.llm_var.get()} · {modo_txt}", "#2ecc71")
                 self.toggle_botones(True)
             self.after(0, _mostrar_final)
         except Exception as e:
-            self.after(0, lambda: self.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
+            self.after(0, lambda e=e: self.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
             self.after(0, lambda: self.toggle_botones(True))
