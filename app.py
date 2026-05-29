@@ -2026,26 +2026,42 @@ class ArquitectoApp(
                 logger.debug(f"[silent] cache load: {_e}")
 
         def _worker():
-            try:
-                url = (
-                    f"https://image.pollinations.ai/prompt/{quote(pos)}"
-                    f"?width={size}&height={size}&model=flux&nologo=true&enhance=false"
-                )
-                resp = requests.get(url, timeout=45)
-                resp.raise_for_status()
-                img = _Image.open(BytesIO(resp.content))
-                img.load()
+            # Pollinations cambió a freemium: flux es de pago, turbo sigue
+            # libre (anónimo). Probamos turbo primero y si falla con 402
+            # caemos al modelo por defecto sin especificar.
+            modelos_a_probar = ["turbo", None]  # None = sin param model
+            last_err = None
+            for modelo in modelos_a_probar:
                 try:
-                    img.save(cache_path)
-                except Exception as _e:
-                    logger.debug(f"[silent] cache save: {_e}")
-                _safe_cb(on_imagen, img)
-            except requests.Timeout:
-                _safe_cb(on_error, "Timeout (>45s)")
-            except requests.RequestException as e:
-                _safe_cb(on_error, f"Red: {e}")
-            except Exception as e:
-                _safe_cb(on_error, str(e))
+                    extra = f"&model={modelo}" if modelo else ""
+                    url = (
+                        f"https://image.pollinations.ai/prompt/{quote(pos)}"
+                        f"?width={size}&height={size}&nologo=true&enhance=false"
+                        f"&referrer=gprompt-studio{extra}"
+                    )
+                    resp = requests.get(url, timeout=45)
+                    if resp.status_code == 402:
+                        last_err = "402 Pago requerido (modelo de pago)"
+                        continue  # probar siguiente modelo
+                    resp.raise_for_status()
+                    img = _Image.open(BytesIO(resp.content))
+                    img.load()
+                    try:
+                        img.save(cache_path)
+                    except Exception as _e:
+                        logger.debug(f"[silent] cache save: {_e}")
+                    _safe_cb(on_imagen, img)
+                    return
+                except requests.Timeout:
+                    last_err = "Timeout (>45s)"
+                    continue
+                except requests.RequestException as e:
+                    last_err = f"Red: {e}"
+                    continue
+                except Exception as e:
+                    last_err = str(e)
+                    continue
+            _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -2121,7 +2137,8 @@ class ArquitectoApp(
                             pos = self._extraer_pos_de_bloque(p) or p
                             url = (
                                 f"https://image.pollinations.ai/prompt/{quote((pos or '')[:500])}"
-                                f"?width=1024&height=1024&model=flux&nologo=true"
+                                f"?width=1024&height=1024&model=turbo&nologo=true"
+                                f"&referrer=gprompt-studio"
                             )
                             webbrowser.open(url)
                         except Exception as _e:
