@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 11** (continuación de las sesiones 1-10).
+Actualizado al final de la **sesión 12** (continuación de las sesiones 1-11).
 Working tree limpio cuando se generó.
 
 ---
@@ -17,7 +17,7 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **240/240** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `500e9ef`) |
+| Branch | `main` (sincronizado con `origin/main` en `0d7f5f1`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **17** (era 21 — 4 removidos en A1 fase 2) |
 | **Componentes (A1)** | **20/20** ✅ accesibles vía `self.X.metodo()` |
@@ -977,7 +977,104 @@ Total: 228 → **240** verdes.
 | Switches en barra superior | 3 | **4** (+ 🖼 Ref) |
 | Selectores en panel vídeo | 4 (Modelo/Dur/Ratio/Destino) | **5** (+ Shots) |
 
-### 🚧 Pendiente sesión 12+
+---
+
+## ✅ Sesión 12 — UX comparador (lado-a-lado + grid Pollinations)
+
+### Nueva UX en el comparador (ee3ad10, 0f0ed76)
+
+Dos features grandes al comparador genérico (`_abrir_comparador`):
+
+**1. 🆚 Comparar 2 lado-a-lado** (`ee3ad10`)
+- Checkbox `🆚` en la cabecera de cada columna.
+- Botón `🆚 Comparar 2` en el pie (deshabilitado por defecto, púrpura
+  cuando hay exactamente 2 seleccionadas — FIFO si marcas una 3ª).
+- Ventana 50/50 con diff palabra-por-palabra usando
+  `difflib.SequenceMatcher`:
+    - Tokens iguales → color muted normal.
+    - Tokens en A pero no en B → fondo rojo en panel izquierdo.
+    - Tokens en B pero no en A → fondo verde en panel derecho.
+- Botones pie: copiar A / copiar B / cerrar.
+
+**2. 👁 Pollinations preview** (`0f0ed76`)
+- Botón `👁` por card → genera preview Flux/Turbo 512x512 y la
+  incrusta como thumbnail dentro de la propia card.
+- Botón `👁 Grid Pollinations` en el pie → ventana nueva con grid
+  3-col mostrando previews de TODAS las variantes en paralelo.
+- En el grid, click en una imagen abre versión 1024x1024 en navegador.
+- Cache LRU en `~/.arquitecto_prompts/preview_cache/{md5}.png`
+  (keyed por prompt+size).
+
+### Saga Pollinations: 4 fixes hasta que funcionó (9ee6f8c, b7224f4, bc0e68e, 0d7f5f1)
+
+Pollinations.ai migró a freemium durante 2026:
+- **flux** → modelo de pago (HTTP 402)
+- **turbo** → sigue libre pero con **rate limit 1 request concurrente
+  por IP** para anónimos (también devuelve 402 con body JSON
+  `{"x402Version":1,"error":"Queue full for IP: X: 1 already queued..."}`)
+
+Fixes:
+- `9ee6f8c`: flux → turbo + fallback al default sin model param.
+- `b7224f4`: mensajes de error informativos (402 vs 429 vs 5xx vs
+  Content-Type no-imagen).
+- `bc0e68e`: **El fix clave**. `threading.Lock()` global en
+  `ArquitectoApp.__init__` → el worker entra en `with self.
+  _pollinations_lock:` antes de cada request. Garantiza max 1
+  simultánea aunque el grid lance N en paralelo. Retry con backoff
+  exponencial (2s/4s/8s) hasta 3 intentos por modelo. Discrimina
+  "queue full" de "cuenta de pago requerida" leyendo el body JSON.
+- `0d7f5f1`: `cmd_previsualizar` (botón "🖼 Preview" del panel
+  principal) usaba `urllib.request` directo con flux. Refactor para
+  reusar `_generar_preview_pollinations` (semáforo + retry + turbo).
+
+### Lección aprendida sobre PyInstaller
+
+Durante el debug del fix de Pollinations: los cambios en `app.py`
+parecían no llegar al `.exe` reconstruido (seguía mostrando mensajes
+de error del código viejo). Diagnóstico final:
+
+1. PyInstaller NO siempre invalida bytecode cuando solo cambia el
+   `.py` fuente — el archivo `base_library.zip` cachea los `.pyc`.
+2. `find . -name "__pycache__" -type d -exec rm -rf {} +` ANTES de
+   `python build.py` es necesario para builds 100% limpios.
+3. `rm -rf build dist` solo no es suficiente.
+
+Anotar para sesión 13: añadir `--clean-cache` flag a `build.py` que
+borre `__pycache__/` además de `build/` y `dist/`.
+
+### Trade-off del semáforo
+
+El grid de 5 previews ahora tarda ~25-30s (5 × ~5s serializado) en
+lugar de ~5-10s (paralelo, pero fallando 4 de 5). Es el precio
+necesario por el rate limit anónimo de Pollinations.
+
+Mejora UX pendiente: mostrar `⏳ En cola (3 por delante)` en lugar de
+`cargando...` para que el usuario entienda que está esperando, no
+colgado.
+
+### Commits sesión 12
+
+```
+0d7f5f1 fix(preview): cmd_previsualizar reusa el helper con semáforo/retry
+bc0e68e fix(pollinations): serializar requests (1 concurrente por IP) + retry
+b7224f4 fix(pollinations): diagnóstico de errores más informativo
+9ee6f8c fix(pollinations): cambiar de flux (de pago) a turbo + fallback
+0f0ed76 feat(comparador): preview Pollinations por card + grid 👁 de todos
+ee3ad10 feat(comparador): vista 🆚 lado-a-lado con diff palabra-por-palabra
+```
+
+### Métricas finales sesión 12
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| Tests | 240 | 240 ✅ |
+| Mixins en MRO | 17 | 17 (sin cambios A1 esta sesión) |
+| Componentes A1 | 20/20 | 20/20 |
+| Botones en comparador | 6 (📋🟢🔴🇪🇸✅) | **9** (+ 🆚 + 👁 + 👁Grid) |
+| Métodos en ArquitectoApp | — | +2 (`_abrir_diff_lado_a_lado`, `_generar_preview_pollinations`, `_abrir_grid_pollinations`) |
+| Bugs latentes Pollinations | flux 402, queue 402 | 0 ✅ |
+
+### 🚧 Pendiente sesión 13+
 
 #### 🔴 ALTA — A1 fase 2 (16 mixins restantes)
 
@@ -990,15 +1087,24 @@ Después por dificultad creciente:
 → UiFooter → Core → Dialogs**.
 
 #### 🟡 MEDIA
-- Nota visible en UI al activar "🖼 Ref" recordando NO subir la imagen
-  otra vez en la plataforma de vídeo destino.
-- Variante SD/Comfy del storyboard (formato tag-based, ya parcialmente
-  hecho en `e0cf1cd` de sesión 10).
-- Particiones de archivos grandes (`core.py` 1645, `data_mgmt.py` 1545,
-  `ui_builders.py` ~1600, etc.).
+- **UX comparador previews**: mostrar "⏳ En cola (N por delante)"
+  en lugar de "cargando..." (para que se entienda la espera del
+  semáforo Pollinations).
+- **Spinner animado** en thumbnails mientras cargan.
+- **Botón "♻ Regenerar"** sobre cada thumbnail (nuevo seed/intento).
+- **Toggle modelo Pollinations** (turbo / kontext / sdxl / anime)
+  como combo en algún sitio.
+- **`build.py --clean-cache`**: borrar `__pycache__/` antes de PyInstaller.
+- Nota visible en UI al activar "🖼 Ref" (sesión 11) recordando NO
+  subir la imagen otra vez en la plataforma de vídeo destino.
+- Variante SD/Comfy del storyboard (parcialmente hecho en `e0cf1cd`
+  de sesión 10).
+- Particiones de archivos grandes (`core.py` 1645, `data_mgmt.py`
+  1545, `ui_builders.py` ~1600, etc.).
 
 #### 🟢 BAJA
-Code-signing del `.exe`, SeaArt char limits, performance.
+Code-signing del `.exe`, SeaArt char limits, performance (lazy load
+JSON, semáforo workers, virtual scrolling).
 
 ---
 
