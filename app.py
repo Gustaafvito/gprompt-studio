@@ -2043,6 +2043,20 @@ class ArquitectoApp(
                     if resp.status_code == 402:
                         last_err = "402 Pago requerido (modelo de pago)"
                         continue  # probar siguiente modelo
+                    if resp.status_code == 429:
+                        last_err = "429 Rate limit Pollinations (espera ~30s)"
+                        continue
+                    if resp.status_code >= 500:
+                        last_err = f"{resp.status_code} Pollinations caído"
+                        continue
+                    if resp.status_code != 200:
+                        last_err = f"HTTP {resp.status_code}"
+                        continue
+                    # Verificar que la respuesta es imagen, no HTML/JSON de error
+                    ct = resp.headers.get("Content-Type", "").lower()
+                    if not ct.startswith("image/"):
+                        last_err = f"Respuesta no es imagen (Content-Type: {ct})"
+                        continue
                     resp.raise_for_status()
                     img = _Image.open(BytesIO(resp.content))
                     img.load()
@@ -2149,7 +2163,9 @@ class ArquitectoApp(
                     lbl.configure(text=f"❌ {_e}", text_color="#e74c3c")
 
             def _on_err(msg, lbl=img_lbl):
-                lbl.configure(text=f"❌ {msg[:30]}", text_color="#e74c3c")
+                # Mensaje completo (wraplength se encarga del ajuste visual)
+                lbl.configure(text=f"❌ {msg}", text_color="#e74c3c",
+                              wraplength=thumb_size - 20)
 
             self._generar_preview_pollinations(var, _on_img, _on_err, vent,
                                                 size=512)
