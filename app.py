@@ -2726,50 +2726,44 @@ class ArquitectoApp(
         self.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
         self.toggle_botones(False)
 
-        def _worker():
+        # Usa el helper unificado (turbo + semáforo + retry con backoff).
+        # URL para mostrar al usuario se reconstruye después con turbo + seed.
+        import time
+        import urllib.parse as _up
+        semilla = int(time.time())
+        url_imagen = (
+            f"https://image.pollinations.ai/prompt/{_up.quote(texto_limpio)}"
+            f"?width=512&height=512&nologo=true&model=turbo&seed={semilla}"
+            f"&referrer=gprompt-studio"
+        )
+
+        def _on_img(image_pil):
             try:
-                import io
-                import time
-                import urllib.request
-
-                from PIL import Image
-
-                semilla = int(time.time())
-                prompt_codificado = urllib.parse.quote(texto_limpio)
-                url_imagen = f"https://image.pollinations.ai/prompt/{prompt_codificado}?width=512&height=512&nologo=true&seed={semilla}"
-
-                req = urllib.request.Request(url_imagen, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req, timeout=30) as response:
-                    image_data = response.read()
-
-                content_type = response.info().get_content_type()
-                if content_type not in ["image/jpeg", "image/png", "image/webp"]:
-                    raise Exception("La API devolvió un formato incorrecto o está saturada.")
-
-                image_pil = Image.open(io.BytesIO(image_data))
                 img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
-
-                # Guardar en caché — limitar a 20 entradas
+                # Cache LRU 20 entradas
                 if len(self._preview_cache) >= 20:
                     oldest = min(self._preview_cache.items(), key=lambda kv: kv[1][2])
                     del self._preview_cache[oldest[0]]
                 self._preview_cache[cache_key] = (image_pil, url_imagen, time.time())
-
-                def _mostrar_imagen():
-                    self._mostrar_preview_window(image_pil, img_ctk, url_imagen,
-                                                  desde_cache=False)
-                    self.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
-                    self.toggle_botones(True)
-                self.after(0, _mostrar_imagen)
-
+                self._mostrar_preview_window(image_pil, img_ctk, url_imagen,
+                                              desde_cache=False)
+                self.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
             except Exception as e:
-                mensaje_error = str(e) if str(e) else "Error de conexión o timeout."
-                def _mostrar_error():
-                    self.set_estado(f"❌ Error al generar imagen: {mensaje_error}", "#e74c3c")
-                    self.toggle_botones(True)
-                self.after(0, _mostrar_error)
+                self.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
+            finally:
+                self.toggle_botones(True)
 
-        threading.Thread(target=_worker, daemon=True).start()
+        def _on_err(msg):
+            self.set_estado(f"❌ Error al generar imagen: {msg}", "#e74c3c")
+            self.toggle_botones(True)
+
+        # `texto_limpio` ya viene normalizado: usamos un proxy que pase ese
+        # texto a _generar_preview_pollinations (cuya extracción de POSITIVE
+        # ya no es necesaria porque limpiamos manualmente arriba).
+        # Wrap en una variante "ya limpio" para no re-extraer.
+        self._generar_preview_pollinations(
+            texto_limpio, _on_img, _on_err, self, size=512
+        )
 
     def _mostrar_preview_window(self, image_pil, img_ctk, url_imagen, desde_cache=False):
         """Ventana de preview con imagen + URL + botones Guardar/Copiar/Abrir."""
