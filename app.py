@@ -93,6 +93,11 @@ class ArquitectoApp(
     def __init__(self):
         super().__init__()
 
+        # Semáforo para serializar requests a Pollinations.ai (límite 1
+        # concurrente por IP para anónimos → si se exceden devuelve 402
+        # "Queue full"). Se usa en _generar_preview_pollinations.
+        self._pollinations_lock = threading.Lock()
+
         # Instala 8 componentes (self.core, self.ui, self.creative,
         # self.workflow, self.analysis, self.data, self.backup, self.dialogs)
         # que delegan al app. Namespace progresivo hacia composición sin
@@ -2026,55 +2031,70 @@ class ArquitectoApp(
                 logger.debug(f"[silent] cache load: {_e}")
 
         def _worker():
-            # Pollinations cambió a freemium: flux es de pago, turbo sigue
-            # libre (anónimo). Probamos turbo primero y si falla con 402
-            # caemos al modelo por defecto sin especificar.
+            # Pollinations limita a 1 request concurrente por IP para usuarios
+            # anónimos. Cuando se exceden, devuelve HTTP 402 con body JSON
+            # tipo:
+            #   {"x402Version":1,"error":"Queue full for IP: X: 1 requests
+            #    already queued (max: 1)..."}
+            # Por eso usamos un SEMÁFORO global para serializar las llamadas
+            # (max 1 simultánea) + retry con backoff exponencial al recibir 402.
             modelos_a_probar = ["turbo", None]  # None = sin param model
             last_err = None
-            for modelo in modelos_a_probar:
-                try:
-                    extra = f"&model={modelo}" if modelo else ""
-                    url = (
-                        f"https://image.pollinations.ai/prompt/{quote(pos)}"
-                        f"?width={size}&height={size}&nologo=true&enhance=false"
-                        f"&referrer=gprompt-studio{extra}"
-                    )
-                    resp = requests.get(url, timeout=45)
-                    if resp.status_code == 402:
-                        last_err = "402 Pago requerido (modelo de pago)"
-                        continue  # probar siguiente modelo
-                    if resp.status_code == 429:
-                        last_err = "429 Rate limit Pollinations (espera ~30s)"
-                        continue
-                    if resp.status_code >= 500:
-                        last_err = f"{resp.status_code} Pollinations caído"
-                        continue
-                    if resp.status_code != 200:
-                        last_err = f"HTTP {resp.status_code}"
-                        continue
-                    # Verificar que la respuesta es imagen, no HTML/JSON de error
-                    ct = resp.headers.get("Content-Type", "").lower()
-                    if not ct.startswith("image/"):
-                        last_err = f"Respuesta no es imagen (Content-Type: {ct})"
-                        continue
-                    resp.raise_for_status()
-                    img = _Image.open(BytesIO(resp.content))
-                    img.load()
-                    try:
-                        img.save(cache_path)
-                    except Exception as _e:
-                        logger.debug(f"[silent] cache save: {_e}")
-                    _safe_cb(on_imagen, img)
-                    return
-                except requests.Timeout:
-                    last_err = "Timeout (>45s)"
-                    continue
-                except requests.RequestException as e:
-                    last_err = f"Red: {e}"
-                    continue
-                except Exception as e:
-                    last_err = str(e)
-                    continue
+            with self._pollinations_lock:  # serializa entre threads
+                for intento in range(3):  # hasta 3 reintentos por modelo
+                    for modelo in modelos_a_probar:
+                        try:
+                            extra = f"&model={modelo}" if modelo else ""
+                            url = (
+                                f"https://image.pollinations.ai/prompt/{quote(pos)}"
+                                f"?width={size}&height={size}&nologo=true&enhance=false"
+                                f"&referrer=gprompt-studio{extra}"
+                            )
+                            resp = requests.get(url, timeout=60)
+                            sc = resp.status_code
+                            if sc == 402:
+                                # Puede ser "cola llena" o "modelo de pago"
+                                body_lower = (resp.text or "")[:200].lower()
+                                if "queue full" in body_lower or "queued" in body_lower:
+                                    last_err = "Cola Pollinations llena, reintentando..."
+                                else:
+                                    last_err = "Pollinations: cuenta de pago requerida"
+                                continue  # siguiente modelo (o retry si era el último)
+                            if sc == 429:
+                                last_err = "Rate limit (esperando)"
+                                continue
+                            if sc >= 500:
+                                last_err = f"{sc} Pollinations caído"
+                                continue
+                            if sc != 200:
+                                last_err = f"HTTP {sc}"
+                                continue
+                            ct = resp.headers.get("Content-Type", "").lower()
+                            if not ct.startswith("image/"):
+                                last_err = f"Respuesta no es imagen ({ct})"
+                                continue
+                            img = _Image.open(BytesIO(resp.content))
+                            img.load()
+                            try:
+                                img.save(cache_path)
+                            except Exception as _e:
+                                logger.debug(f"[silent] cache save: {_e}")
+                            _safe_cb(on_imagen, img)
+                            return
+                        except requests.Timeout:
+                            last_err = "Timeout (>60s)"
+                            continue
+                        except requests.RequestException as e:
+                            last_err = f"Red: {e}"
+                            continue
+                        except Exception as e:
+                            last_err = str(e)
+                            continue
+                    # Si llegamos aquí los 2 modelos fallaron este intento.
+                    # Backoff exponencial: 2s, 4s, 8s.
+                    if intento < 2:
+                        import time as _time
+                        _time.sleep(2 ** (intento + 1))
             _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
 
         threading.Thread(target=_worker, daemon=True).start()
