@@ -271,16 +271,24 @@ class DialogsComponent(_Component):
 
 
 class AdnVisualComponent(_Component):
-    """ADN Visual + biblioteca de rasgos (AdnVisualMixin).
-    Noveno servicio del refactor A1.
+    """ADN Visual + biblioteca de rasgos.
+
+    A1 fase 2 (sesión 14): AdnVisualMixin → AdnVisualService aislado.
+    El componente instancia el service y delega los 2 comandos.
     """
     _name = "adn"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.adn_visual import AdnVisualService
+        self._service = AdnVisualService(app)
 
     def cmd_adn_visual(self) -> None:
-        return self.app._cmd_adn_visual()
+        return self._service._cmd_adn_visual()
 
     def cmd_ver_biblioteca(self) -> None:
-        return self.app._cmd_ver_biblioteca_adn()
+        return self._service._cmd_ver_biblioteca_adn()
 
 
 class SesionVideoComponent(_Component):

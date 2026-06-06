@@ -26,18 +26,25 @@ from modules.gprompt_window import GPromptWindow
 logger = logging.getLogger(__name__)
 
 
-class AdnVisualMixin:
-    """Mixin con ADN Visual + biblioteca de ADNs guardados."""
+class AdnVisualService:
+    """ADN Visual + biblioteca de ADNs guardados.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    Acceso: `app.adn.cmd_ver_biblioteca()`, `app.adn.cmd_adn_visual()`.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_ver_biblioteca_adn(self):
         """Muestra la biblioteca de ADNs guardados, con refresh sin recargar."""
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         adns = prefs.get("adns_guardados", [])
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📚 Biblioteca de ADNs")
         vent.geometry("720x540")
-        vent.transient(self)
+        vent.transient(self.app)
 
         is_light = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_light)
@@ -78,7 +85,7 @@ class AdnVisualMixin:
             """Repinta la lista sin cerrar la ventana."""
             for w in scroll.winfo_children():
                 w.destroy()
-            prefs_act = self.store.cargar_preferencias()
+            prefs_act = self.app.store.cargar_preferencias()
             adns_act = prefs_act.get("adns_guardados", [])
             termino = entry_buscar.get().strip().lower()
 
@@ -145,10 +152,10 @@ class AdnVisualMixin:
                 btn_frame.pack(fill="x", padx=10, pady=(0, 8))
 
                 def _cargar(idx_l=idx, item_l=item, nombre_l=nombre):
-                    ver = GPromptWindow(self)
+                    ver = GPromptWindow(self.app)
                     ver.title(f"📋 {item_l.get('nombre', 'ADN')}")
                     ver.geometry("620x520")
-                    ver.transient(self)
+                    ver.transient(self.app)
 
                     json_str = json.dumps(item_l.get("adn", {}), indent=2, ensure_ascii=False)
 
@@ -163,11 +170,11 @@ class AdnVisualMixin:
                         adn_obj = item_l.get("adn", {})
                         if isinstance(adn_obj, dict) and "texto_libre" in adn_obj:
                             txt_libre = (adn_obj.get("texto_libre", "") or "").strip()
-                            if hasattr(self, "txt_idea") and txt_libre:
-                                self.txt_idea.delete("1.0", "end")
-                                self.txt_idea.insert("1.0", txt_libre)
+                            if hasattr(self.app, "txt_idea") and txt_libre:
+                                self.app.txt_idea.delete("1.0", "end")
+                                self.app.txt_idea.insert("1.0", txt_libre)
                             ver.destroy()
-                            self.set_estado(f"🧬 '{nombre_l}' cargado en idea (texto libre)",
+                            self.app.set_estado(f"🧬 '{nombre_l}' cargado en idea (texto libre)",
                                             "#2ecc71")
                             return
                         # ADN estructurado: construir prompt aprovechando campos
@@ -187,11 +194,11 @@ class AdnVisualMixin:
                         _add("camara", ["tipo_plano", "angulo"])
                         _add("composicion", ["regla"])
                         prompt = ", ".join(p for p in partes if p)
-                        if hasattr(self, "txt_idea"):
-                            self.txt_idea.delete("1.0", "end")
-                            self.txt_idea.insert("1.0", prompt)
+                        if hasattr(self.app, "txt_idea"):
+                            self.app.txt_idea.delete("1.0", "end")
+                            self.app.txt_idea.insert("1.0", prompt)
                         ver.destroy()
-                        self.set_estado(f"🧬 '{nombre_l}' cargado en idea ({len(partes)} campos)",
+                        self.app.set_estado(f"🧬 '{nombre_l}' cargado en idea ({len(partes)} campos)",
                                         "#2ecc71")
 
                     btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
@@ -207,14 +214,14 @@ class AdnVisualMixin:
                                                f"¿Borrar '{nombre_l}'?",
                                                parent=vent):
                         return
-                    prefs_b = self.store.cargar_preferencias()
+                    prefs_b = self.app.store.cargar_preferencias()
                     lst = prefs_b.get("adns_guardados", [])
                     if 0 <= idx_l < len(lst):
                         lst.pop(idx_l)
                         prefs_b["adns_guardados"] = lst
-                        self.store.guardar_preferencias(prefs_b)
+                        self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.set_estado(f"🧬 '{nombre_l}' eliminado", "#e67e22")
+                    self.app.set_estado(f"🧬 '{nombre_l}' eliminado", "#e67e22")
 
                 ctk.CTkButton(btn_frame, text="👁 Ver", width=70, height=25,
                               command=_cargar).pack(side="left", padx=2)
@@ -230,8 +237,8 @@ class AdnVisualMixin:
 
         def _crear_nuevo_adn():
             # ADN se extrae de imagen: requiere imagen cargada.
-            if not getattr(self, "imagen_cargada", None):
-                self.set_estado(
+            if not getattr(self.app, "imagen_cargada", None):
+                self.app.set_estado(
                     "⚠️ Carga una imagen en la pantalla principal y vuelve.",
                     "#e67e22",
                 )
@@ -251,27 +258,27 @@ class AdnVisualMixin:
 
     def _cmd_adn_visual(self):
         """Extrae ADN visual JSON estructurado de la imagen cargada."""
-        if not hasattr(self, 'imagen_cargada') or not self.imagen_cargada:
-            return self.set_estado("⚠️ Carga una imagen primero.", "#e67e22")
+        if not hasattr(self.app, 'imagen_cargada') or not self.app.imagen_cargada:
+            return self.app.set_estado("⚠️ Carga una imagen primero.", "#e67e22")
 
-        self.set_estado("🧬 Extrayendo ADN visual...", "#9b59b6")
-        self.toggle_botones(False)
+        self.app.set_estado("🧬 Extrayendo ADN visual...", "#9b59b6")
+        self.app.toggle_botones(False)
 
         def _worker():
             try:
                 def on_status(msg):
-                    self.after(0, lambda: self.set_estado(f"🧬 {msg}", "#9b59b6"))
+                    self.app.after(0, lambda: self.app.set_estado(f"🧬 {msg}", "#9b59b6"))
 
-                adn, motor = self.vision.analizar_adn(self.imagen_cargada, on_status)
+                adn, motor = self.app.vision.analizar_adn(self.app.imagen_cargada, on_status)
 
                 def _mostrar():
                     is_lt = ctk.get_appearance_mode().lower() == "light"
                     c = get_theme_colors(is_lt)
 
-                    vent = GPromptWindow(self)
+                    vent = GPromptWindow(self.app)
                     vent.title("🧬 ADN Visual - Análisis estructurado")
                     vent.geometry("700x650")
-                    vent.transient(self)
+                    vent.transient(self.app)
 
                     ctk.CTkLabel(vent, text="🧬 ADN Visual de tu imagen",
                                  font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
@@ -361,7 +368,7 @@ class AdnVisualMixin:
                     def _copiar_json():
                         json_str = json.dumps(adn, indent=2, ensure_ascii=False)
                         pyperclip.copy(json_str)
-                        self.set_estado("🧬 JSON copiado", "#2ecc71")
+                        self.app.set_estado("🧬 JSON copiado", "#2ecc71")
 
                     def _aplicar_partes_a_idea(partes, mensaje_ok):
                         """Helper compartido: junta partes y las añade al
@@ -370,12 +377,12 @@ class AdnVisualMixin:
                         prompt = ", ".join([p for p in partes if p])
                         if not prompt:
                             return False
-                        existente = self.txt_idea.get("1.0", "end").strip()
+                        existente = self.app.txt_idea.get("1.0", "end").strip()
                         nuevo = f"{existente}\n\n{prompt}" if existente else prompt
-                        self.txt_idea.delete("1.0", "end")
-                        self.txt_idea.insert("1.0", nuevo)
+                        self.app.txt_idea.delete("1.0", "end")
+                        self.app.txt_idea.insert("1.0", nuevo)
                         vent.destroy()
-                        self.set_estado(mensaje_ok, "#2ecc71")
+                        self.app.set_estado(mensaje_ok, "#2ecc71")
                         return True
 
                     def _usar_en_prompt():
@@ -478,13 +485,13 @@ class AdnVisualMixin:
                             msg_ok = "🧬 ADN en idea - pulsa Generar"
 
                         if not _aplicar_partes_a_idea(partes, msg_ok):
-                            self.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
+                            self.app.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
 
                     def _guardar_adn():
                         from tkinter import simpledialog
 
                         # Cargar ADNs primero para poder usar len(adns)
-                        prefs = self.store.cargar_preferencias()
+                        prefs = self.app.store.cargar_preferencias()
                         adns = prefs.get("adns_guardados", [])
 
                         # Generar sugerencia de nombre basada en el ADN
@@ -514,8 +521,8 @@ class AdnVisualMixin:
                             "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
                         })
                         prefs["adns_guardados"] = adns
-                        self.store.guardar_preferencias(prefs)
-                        self.set_estado(f"🧬 ADN '{nombre}' guardado", "#2ecc71")
+                        self.app.store.guardar_preferencias(prefs)
+                        self.app.set_estado(f"🧬 ADN '{nombre}' guardado", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="📋 Copiar JSON", width=110, height=30,
                                   command=_copiar_json).pack(side="left", padx=4)
@@ -639,11 +646,11 @@ class AdnVisualMixin:
                             color_ok = "#2ecc71"
 
                         if not _aplicar_partes_a_idea(partes, msg):
-                            self.set_estado(f"❌ Conversión {plataforma} falló completamente",
+                            self.app.set_estado(f"❌ Conversión {plataforma} falló completamente",
                                             "#e74c3c")
                         elif fallos:
                             # Sobrescribir color si hubo fallos parciales
-                            self.set_estado(msg, color_ok)
+                            self.app.set_estado(msg, color_ok)
 
                     for plat in ["midjourney", "stable_diffusion", "dalle", "flux"]:
                         ctk.CTkButton(plat_frame, text=plat.replace("_", " ").upper(), width=80, height=24,
@@ -653,13 +660,13 @@ class AdnVisualMixin:
                     ctk.CTkButton(vent, text="Cerrar", width=100, height=28,
                                   command=vent.destroy).pack(pady=(5, 12))
 
-                    self.toggle_botones(True)
-                    self.set_estado(f"🧬 ADN extraído ({motor})", "#2ecc71")
+                    self.app.toggle_botones(True)
+                    self.app.set_estado(f"🧬 ADN extraído ({motor})", "#2ecc71")
 
-                self.after(0, _mostrar)
+                self.app.after(0, _mostrar)
 
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()

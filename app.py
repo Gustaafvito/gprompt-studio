@@ -32,7 +32,6 @@ from config import (
     get_theme_colors,
 )
 from modules import (
-    AdnVisualMixin,
     BackupExportMixin,
     CoreMixin,
     DataMgmtMixin,
@@ -71,7 +70,7 @@ class ArquitectoApp(
     BackupExportMixin,
     DialogsMixin,
     CoreMixin,
-    AdnVisualMixin,
+    # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
     MultiPromptMixin,
     SesionVideoMixin,
     WorkersIaMixin,

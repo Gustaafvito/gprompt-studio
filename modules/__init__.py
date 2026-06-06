@@ -5,7 +5,7 @@ También incluye servicios y utilidades independientes.
 """
 
 from .ab_testing import AbTestingService  # A1 fase 2 (sesión 14)
-from .adn_visual import AdnVisualMixin
+from .adn_visual import AdnVisualService  # A1 fase 2 (sesión 14)
 from .atajos_ayuda import AtajosAyudaService  # A1 fase 2
 from .backup_export import BackupExportMixin
 from .comfyui_exporter import ComfyUIWorkflowExporter
@@ -40,7 +40,7 @@ __all__ = [
     "BackupExportMixin",
     "DialogsMixin",
     "CoreMixin",
-    "AdnVisualMixin",
+    "AdnVisualService",
     "MultiPromptMixin",
     "SesionVideoMixin",
     "WorkersIaMixin",
