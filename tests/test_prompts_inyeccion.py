@@ -145,12 +145,38 @@ class TestInyectarFormatoZImage:
         assert "FANTASÍA" in out
         assert "CIENCIA FICCIÓN" in out or "CYBERPUNK" in out
 
-    def test_incluye_bloque_fijo_universal_negativo(self):
+    def test_incluye_bloque_base_calidad_tecnica(self):
+        """Bloque base: SIEMPRE incluido, solo calidad técnica (no anatomía)."""
         h = _host()
         out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
-        for tag in ["blurry", "low-res", "extra fingers", "bad anatomy",
-                     "watermark", "out of frame"]:
-            assert tag in out, f"Falta negative universal: {tag}"
+        for tag in ["blurry", "low-res", "watermark", "signature",
+                     "out of frame", "digital noise"]:
+            assert tag in out, f"Falta tag base: {tag}"
+
+    def test_incluye_bloque_condicional_con_disparadores(self):
+        """Bloque condicional: tags marcados como dependientes de la escena."""
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        # Triggers por contenido
+        assert "PERSONAS / CRIATURAS" in out or "PERSONAS" in out
+        assert "extra fingers" in out  # solo si hay manos
+        assert "PAISAJE/ESCENARIO" in out or "PAISAJE" in out
+        assert "OMITE" in out  # instrucción de saltarse tags irrelevantes
+
+    def test_no_pinta_anatomia_como_universal(self):
+        """Anatomía debe estar en bloque condicional, NO en el base 'siempre'."""
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        # El texto del bloque base no debe contener "bad anatomy" o "extra fingers"
+        # en la sección "SIEMPRE incluir". Está en condicional.
+        base_section = out.split("CONDICIONAL")[0]
+        # En la sección base no aparecen las tags de anatomía
+        assert "extra fingers" not in base_section
+        assert "bad anatomy" not in base_section
+        # Pero después de la sección "CONDICIONAL" sí deben aparecer
+        condicional_section = out.split("CONDICIONAL")[1] if "CONDICIONAL" in out else ""
+        assert "extra fingers" in condicional_section
+        assert "bad anatomy" in condicional_section
 
     def test_menciona_settings_recomendados(self):
         h = _host()
