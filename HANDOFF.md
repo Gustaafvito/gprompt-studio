@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 12** (continuación de las sesiones 1-11).
+Actualizado al final de la **sesión 13** (continuación de las sesiones 1-12).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,9 +15,9 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **240/240** ✅ |
+| Tests | **249/249** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `0d7f5f1`) |
+| Branch | `main` (sincronizado con `origin/main` en `0ccd031`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **17** (era 21 — 4 removidos en A1 fase 2) |
 | **Componentes (A1)** | **20/20** ✅ accesibles vía `self.X.metodo()` |
@@ -1074,7 +1074,141 @@ ee3ad10 feat(comparador): vista 🆚 lado-a-lado con diff palabra-por-palabra
 | Métodos en ArquitectoApp | — | +2 (`_abrir_diff_lado_a_lado`, `_generar_preview_pollinations`, `_abrir_grid_pollinations`) |
 | Bugs latentes Pollinations | flux 402, queue 402 | 0 ✅ |
 
-### 🚧 Pendiente sesión 13+
+---
+
+## ✅ Sesión 13 — UX cola Pollinations + Z-Image-Base con bloques narrativos
+
+### Bloque 1: UX cola Pollinations (58f7d0d, db0eaa9)
+
+Feedback usuario sesión 12: el grid de 6 previews tardaba ~25s
+serializando, pero todas las cards mostraban "cargando..." sin
+indicación de turno → daba sensación de cuelgue.
+
+**`58f7d0d` feat: "⏳ En cola (N por delante)"**
+- Nuevo contador `self._pollinations_queue_size` con su propio lock
+  (`self._pollinations_queue_lock`). Cada worker incrementa al
+  entrar, decrementa al obtener el semáforo principal.
+- Parámetro `on_progress` opcional en `_generar_preview_pollinations`:
+  callback que la UI usa para mostrar `⏳ En cola (N por delante)`
+  inicialmente, luego `🎨 Generando...` cuando le toca.
+- Cableado en grid + per-card preview del comparador.
+
+**`db0eaa9` feat: retry largo + ♻ Regenerar**
+- Retries 3 → 4 por modelo. Backoffs 2/4/8s → 3/10/30s (total 43s
+  wait). Cubre el rate limit por minuto que Pollinations aplica a
+  IPs anónimas (descubierto al testear).
+- Durante backoff: muestra `⏳ Sobrecarga, esperando 30s...`
+- Mensaje de error específico: si ≥4 intentos fueron "queue full",
+  el error final es `Pollinations sobrecargado. Espera 1-2 min y
+  pulsa ♻ para reintentar.` (antes: `Cola Pollinations llena,
+  reintentando...` engañoso).
+- Botón `♻ Regenerar` por card en el grid: oculto por defecto,
+  aparece solo al fallar. Click → relanza esa card sola con
+  `force_refresh=True` (borra caché previa).
+
+### Bloque 2: Z-Image-Base con bloques narrativos (f13f11d, 0ccd031)
+
+Usuario aportó docs oficiales del modelo + ejemplos de prompts que
+estaba usando con éxito en SeaArt. Z-Image-Base es un Foundation
+checkpoint de 6B params con arquitectura S3-DiT que prefiere un
+formato HÍBRIDO específico:
+
+**`f13f11d` feat: nuevo modelo Z-Image-Base**
+- Añadido a `config.py` (grupo "Familia Z-Image").
+- Spec en `data/model_specs_imagen.json` con flags nuevos:
+  - `is_natural: true`
+  - `has_negative: true`
+  - `formato_bloques: "z_image"` ← dispara la ruta especial.
+  - `pasos: "28-50"`, `cfg: "3-5"`.
+- Dispatcher en `_inyectar_specs_formato`: si
+  `specs.formato_bloques == "z_image"`, delega a nuevo
+  `_inyectar_formato_z_image()`.
+- El método inyecta TODA la estructura:
+  - Preámbulo de quality tags con pesos: `(masterpiece, top quality,
+    raw photo:1.2), 8k, ultra-detailed, cinematic composition`
+  - 4 bloques narrativos obligatorios: `[Sujeto y Composición]`,
+    `[Acción]`, `[Entorno]`, `[Lighting & Mood]`.
+  - NEGATIVE PROMPT con bloques dinámicos por categoría
+    (Fotorrealismo / Fantasía Mística / Ciencia Ficción).
+
+**`0ccd031` feat: negative ADAPTATIVO en 3 bloques**
+- Feedback usuario: el bloque "universal" anterior era demasiado
+  rígido (metía `extra fingers` aunque no hubiera personas).
+- Refactor a 3 bloques:
+  1. **BASE** — solo calidad técnica (siempre): `blurry, low-res,
+     watermark, signature, cropped, out of frame, digital noise,
+     jpeg artifacts`.
+  2. **CONDICIONAL** — el LLM elige según contenido de la escena:
+     - Personas/criaturas con manos → anatomía
+     - Caras/retratos → asymmetric eyes, distorted face
+     - SIN texto intencional → distorted text (SI sí hay: omite)
+     - Detalle alto (close-up) → low detail, smooth
+     - Paisaje sin humanos → omite anatomía/caras
+     - Estático vs movimiento → motion blur vs static
+  3. **ESTILÍSTICO** — categoría (Fotorrealismo / Fantasía / SciFi).
+- 2 ejemplos finales en el system prompt para guiar al LLM.
+
+### Validación end-to-end con usuario
+
+Probó con idea "criatura Lovecraftian descongelándose". Output:
+- POSITIVE perfecto: 4 bloques en orden, descripción cinematográfica.
+- NEGATIVE adaptó perfectamente:
+  - ✅ Incluyó anatomía (tentáculos cuentan como extremidades).
+  - ✅ NO incluyó tags de caras humanas (no es retrato humano).
+  - ✅ Incluyó `low detail, smooth, simplified` (close-up macro).
+  - ✅ Detectó "Lovecraftian" → mezcló Fotorrealismo + Fantasía
+       Mística (decisión razonable híbrida, no estrictamente UNA
+       categoría como decían las reglas).
+
+Decisión: dejar comportamiento híbrido (más flexible para escenas
+mixtas).
+
+### Tests añadidos
+
+- `TestInyectarFormatoZImage` (sesión 13a): 7 tests verificando
+  que el método inyecta los 4 bloques, preámbulo de quality tags,
+  3 categorías, settings recomendados, y se activa via dispatcher.
+- `0ccd031`: 2 tests extra verifican que la anatomía está en bloque
+  condicional (no base) — confirma la refactorización.
+
+Total: 240 → **249** verdes.
+
+### Lección sesión 13
+
+- "Universal" en negativos es engañoso — los tags tipo `extra
+  fingers` solo aplican si hay manos en la escena. Estructurar el
+  prompt para que el LLM elija activamente cada bloque produce
+  outputs más limpios.
+- PyInstaller cachea bytecode incluso con cambios en `.py`: borrar
+  `__pycache__/` + `build/` + `dist/` antes del `python build.py`
+  es necesario para builds 100% limpios. Patrón establecido:
+  ```bash
+  find . -name "__pycache__" -type d -exec rm -rf {} +
+  rm -rf build dist
+  python build.py
+  ```
+  Confirmado por necesitar 3 intentos en sesión 13 hasta acertar.
+
+### Commits sesión 13
+
+```
+0ccd031 feat(z-image): negative ADAPTATIVO en 3 bloques (base + condicional + estilo)
+f13f11d feat(z-image): soporte Z-Image-Base con bloques narrativos + negative dinámico
+db0eaa9 feat(pollinations): retry largo + mensaje claro + ♻ Regenerar por card
+58f7d0d feat(pollinations): mostrar "⏳ En cola (N por delante)" en cargas
+```
+
+### Métricas finales sesión 13
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| Tests | 240 | **249** (+9) ⭐ |
+| Mixins en MRO | 17 | 17 (sin cambios A1 esta sesión) |
+| Modelos imagen | 99 | **100** (+ Z-Image-Base) |
+| Botones por card en grid Pollinations | 0 | **1** (+ ♻ Regenerar al fallar) |
+| Estados visibles del worker Pollinations | "cargando..." | 4 (En cola N · Generando · Sobrecarga Ns · Error claro) |
+
+### 🚧 Pendiente sesión 14+
 
 #### 🔴 ALTA — A1 fase 2 (16 mixins restantes)
 
@@ -1087,14 +1221,12 @@ Después por dificultad creciente:
 → UiFooter → Core → Dialogs**.
 
 #### 🟡 MEDIA
-- **UX comparador previews**: mostrar "⏳ En cola (N por delante)"
-  en lugar de "cargando..." (para que se entienda la espera del
-  semáforo Pollinations).
-- **Spinner animado** en thumbnails mientras cargan.
-- **Botón "♻ Regenerar"** sobre cada thumbnail (nuevo seed/intento).
 - **Toggle modelo Pollinations** (turbo / kontext / sdxl / anime)
-  como combo en algún sitio.
-- **`build.py --clean-cache`**: borrar `__pycache__/` antes de PyInstaller.
+  como combo en el comparador.
+- **Toggle "estilo creative/photoreal"** para Z-Image-Base que
+  hint-ee la categoría al LLM en lugar de dejarle elegir.
+- **`build.py --clean-cache`**: borrar `__pycache__/` automáticamente
+  antes de PyInstaller (patrón aprendido en sesión 13).
 - Nota visible en UI al activar "🖼 Ref" (sesión 11) recordando NO
   subir la imagen otra vez en la plataforma de vídeo destino.
 - Variante SD/Comfy del storyboard (parcialmente hecho en `e0cf1cd`
