@@ -1982,7 +1982,7 @@ class ArquitectoApp(
 
     def _generar_preview_pollinations(self, prompt_text, on_imagen, on_error,
                                        parent_widget=None, size=512,
-                                       on_progress=None):
+                                       on_progress=None, force_refresh=False):
         """Genera preview de imagen vía Pollinations.ai API (sin auth).
 
         - `prompt_text`: texto del prompt. Se extrae solo POSITIVE y se trunca
@@ -2032,13 +2032,19 @@ class ArquitectoApp(
                     pass
             cb(arg)
 
-        if cache_path.exists():
+        if cache_path.exists() and not force_refresh:
             try:
                 img = _Image.open(cache_path)
                 img.load()
                 return _safe_cb(on_imagen, img)
             except Exception as _e:
                 logger.debug(f"[silent] cache load: {_e}")
+        elif force_refresh and cache_path.exists():
+            # Forzar regeneración: borrar caché previa
+            try:
+                cache_path.unlink()
+            except Exception as _e:
+                logger.debug(f"[silent] cache delete: {_e}")
 
         def _worker():
             # Pollinations limita a 1 request concurrente por IP para usuarios
@@ -2075,7 +2081,14 @@ class ArquitectoApp(
                         # Antes mostraba "En cola N", actualizo a "Generando..."
                         _safe_cb(on_progress, "🎨 Generando...")
 
-                    for intento in range(3):  # hasta 3 reintentos por modelo
+                    # 4 intentos x 2 modelos = 8 requests. Backoffs entre
+                    # rondas: 3s, 10s, 30s (total 43s wait). Cubre el rate
+                    # limit por minuto que Pollinations aplica a IPs anónimas.
+                    BACKOFFS = [3, 10, 30]
+                    queue_full_hits = 0  # cuenta veces que Pollinations dijo
+                                          # "queue full" → si son la mayoría,
+                                          # mensaje final es claro.
+                    for intento in range(4):
                         for modelo in modelos_a_probar:
                             try:
                                 extra = f"&model={modelo}" if modelo else ""
@@ -2089,12 +2102,13 @@ class ArquitectoApp(
                                 if sc == 402:
                                     body_lower = (resp.text or "")[:200].lower()
                                     if "queue full" in body_lower or "queued" in body_lower:
+                                        queue_full_hits += 1
                                         last_err = "Cola Pollinations llena, reintentando..."
                                     else:
                                         last_err = "Pollinations: cuenta de pago requerida"
                                     continue
                                 if sc == 429:
-                                    last_err = "Rate limit (esperando)"
+                                    last_err = "Rate limit, reintentando..."
                                     continue
                                 if sc >= 500:
                                     last_err = f"{sc} Pollinations caído"
@@ -2123,12 +2137,20 @@ class ArquitectoApp(
                             except Exception as e:
                                 last_err = str(e)
                                 continue
-                        # Los 2 modelos fallaron este intento. Backoff
-                        # exponencial: 2s, 4s, 8s.
-                        if intento < 2:
+                        # Los 2 modelos fallaron este intento. Backoff entre
+                        # rondas: 3s, 10s, 30s.
+                        if intento < len(BACKOFFS):
                             import time as _time
-                            _time.sleep(2 ** (intento + 1))
-                # Si salimos del with sin return → todos los intentos fallaron
+                            wait_s = BACKOFFS[intento]
+                            if on_progress:
+                                _safe_cb(on_progress,
+                                         f"⏳ Sobrecarga, esperando {wait_s}s...")
+                            _time.sleep(wait_s)
+                # Si salimos del with sin return → todos los intentos fallaron.
+                # Si la mayoría fueron "queue full", mensaje específico claro.
+                if queue_full_hits >= 4:
+                    last_err = ("Pollinations sobrecargado. Espera 1-2 min "
+                                "y pulsa ♻ para reintentar.")
                 _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
             finally:
                 # Defensa: si el counter no se decrementó (excepción antes
@@ -2197,7 +2219,15 @@ class ArquitectoApp(
                                     wraplength=thumb_size - 20)
             img_lbl.pack(pady=2)
 
-            def _on_img(image, lbl=img_lbl, prompt_text=var):
+            # Botón ♻ Regenerar (oculto por defecto, aparece al fallar)
+            btn_row_cell = ctk.CTkFrame(cell, fg_color="transparent")
+            btn_regen = ctk.CTkButton(btn_row_cell, text="♻ Regenerar",
+                                       width=120, height=22,
+                                       fg_color="#7c3aed", hover_color="#5b21b6",
+                                       font=ctk.CTkFont(size=10, weight="bold"))
+            btn_regen.pack()
+
+            def _on_img(image, lbl=img_lbl, prompt_text=var, btn_frame=btn_row_cell):
                 try:
                     from PIL import Image as _Image
                     thumb = image.copy()
@@ -2219,18 +2249,38 @@ class ArquitectoApp(
                         except Exception as _e:
                             logger.debug(f"[silent] open large: {_e}")
                     lbl.bind("<Button-1>", _open_large)
+                    # Si la generación fue OK, ocultar el botón regenerar
+                    try: btn_frame.pack_forget()
+                    except Exception: pass
                 except Exception as _e:
                     logger.debug(f"[silent] grid thumb: {_e}")
                     lbl.configure(text=f"❌ {_e}", text_color="#e74c3c")
 
-            def _on_err(msg, lbl=img_lbl):
-                # Mensaje completo (wraplength se encarga del ajuste visual)
+            def _on_err(msg, lbl=img_lbl, btn_frame=btn_row_cell):
                 lbl.configure(text=f"❌ {msg}", text_color="#e74c3c",
                               wraplength=thumb_size - 20)
+                # Al fallar, mostrar el botón regenerar
+                try: btn_frame.pack(pady=(2, 4))
+                except Exception: pass
 
-            def _on_progress(msg, lbl=img_lbl):
+            def _on_progress(msg, lbl=img_lbl, btn_frame=btn_row_cell):
                 lbl.configure(text=msg, text_color="#888",
                               wraplength=thumb_size - 20)
+                # Mientras se procesa, ocultar regenerar (si estaba visible)
+                try: btn_frame.pack_forget()
+                except Exception: pass
+
+            def _regenerar(prompt_text=var, _img=_on_img, _err=_on_err,
+                            _prog=_on_progress, lbl=img_lbl, btn_frame=btn_row_cell):
+                lbl.configure(text="⏳ Preparando...", text_color="#888")
+                try: btn_frame.pack_forget()
+                except Exception: pass
+                self._generar_preview_pollinations(
+                    prompt_text, _img, _err, vent, size=512,
+                    on_progress=_prog, force_refresh=True,
+                )
+
+            btn_regen.configure(command=_regenerar)
 
             self._generar_preview_pollinations(var, _on_img, _on_err, vent,
                                                 size=512,
