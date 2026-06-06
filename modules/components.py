@@ -416,32 +416,32 @@ class ModoClienteComponent(_Component):
 
 
 class RefinamientoComponent(_Component):
-    """Refinamiento de prompts + iteración + diff (RefinamientoMixin).
+    """Refinamiento + iteración + diff.
 
-    Cuarto servicio del refactor A1. Expone los entry points usados
-    desde otros mixins/UI:
-      - cmd_refinar
-      - cmd_iterar
-      - refinar_con_instruccion(instruccion)
-      - menu_refinar_especifico(event=None)
-      - mostrar_diff_refinamiento(previo, nuevo)
+    A1 fase 2 (sesión 14): RefinamientoMixin → RefinamientoService aislado.
     """
     _name = "refinar"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.refinamiento import RefinamientoService
+        self._service = RefinamientoService(app)
 
     def cmd_refinar(self) -> None:
-        return self.app.cmd_refinar()
+        return self._service.cmd_refinar()
 
     def cmd_iterar(self) -> None:
-        return self.app._cmd_iteracion()
+        return self._service._cmd_iteracion()
 
     def refinar_con_instruccion(self, instruccion: str) -> None:
-        return self.app._refinar_con_instruccion(instruccion)
+        return self._service._refinar_con_instruccion(instruccion)
 
     def menu_refinar_especifico(self, event=None) -> None:
-        return self.app._menu_refinar_especifico(event)
+        return self._service._menu_refinar_especifico(event)
 
     def mostrar_diff_refinamiento(self, texto_previo: str, texto_nuevo: str) -> None:
-        return self.app._mostrar_diff_refinamiento(texto_previo, texto_nuevo)
+        return self._service._mostrar_diff_refinamiento(texto_previo, texto_nuevo)
 
 
 class WorkersIaComponent(_Component):

@@ -24,12 +24,20 @@ from workers import limpiar_marcadores
 logger = logging.getLogger("gprompt")
 
 
-class RefinamientoMixin:
+class RefinamientoService:
+    """Refinamiento + iteración + diff visual.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
     def _menu_refinar_especifico(self, event=None) -> None:
         """Menú con 5 opciones de refinamiento específico."""
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         menu = tk.Menu(self, tearoff=0,
@@ -52,21 +60,21 @@ class RefinamientoMixin:
             menu.add_command(label=label, command=lambda i=instruccion: self._refinar_con_instruccion(i))
 
         try:
-            x = event.x_root if event else self.winfo_pointerx()
-            y = event.y_root if event else self.winfo_pointery()
+            x = event.x_root if event else self.app.winfo_pointerx()
+            y = event.y_root if event else self.app.winfo_pointery()
             menu.tk_popup(x, y)
         finally:
             menu.grab_release()
 
     def _refinar_con_instruccion(self, instruccion_extra: str) -> None:
         """Refina el prompt con una instrucción específica."""
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto: return
 
-        self.set_estado(f"🔁 Refinando: {instruccion_extra[:40]}...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"🔁 Refinando: {instruccion_extra[:40]}...", "#f39c12")
+        self.app.toggle_botones(False)
 
-        es_tag_based = not self.is_natural_mode()
+        es_tag_based = not self.app.is_natural_mode()
         formato = "Mantén formato tags con pesos (tag:1.2)." if es_tag_based else "Mantén formato lenguaje natural descriptivo."
 
         peticion = (
@@ -83,18 +91,18 @@ class RefinamientoMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 def _aplicar():
-                    self.guardar_en_historial(resp)
-                    self.set_estado(f"🔍 Refinamiento listo ({instruccion_extra[:30]}...) — revisa el diff.", "#2ecc71")
-                    self.toggle_botones(True)
-                    self._sonar_completado()
+                    self.app.guardar_en_historial(resp)
+                    self.app.set_estado(f"🔍 Refinamiento listo ({instruccion_extra[:30]}...) — revisa el diff.", "#2ecc71")
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
                     self._mostrar_diff_refinamiento(texto_previo, resp)
-                self.after(0, _aplicar)
+                self.app.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -103,11 +111,11 @@ class RefinamientoMixin:
 
         v2: el usuario elige primero N (slider 3-10) y luego el elemento.
         """
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero para iterar.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero para iterar.", "#e67e22")
 
-        n = self._pedir_n_modal(
+        n = self.app._pedir_n_modal(
             "🔂 Iterar — número de variantes",
             "¿Cuántas variantes quieres? Todas cambiarán SOLO el "
             "elemento que elijas en el siguiente paso.",
@@ -117,14 +125,14 @@ class RefinamientoMixin:
         if n is None:
             return
 
-        try: self._sesion_log(f"🔂 Iterar: abrió ventana de variación 1 elemento (n={n})")
+        try: self.app._sesion_log(f"🔂 Iterar: abrió ventana de variación 1 elemento (n={n})")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        sel = GPromptWindow(self)
+        sel = GPromptWindow(self.app)
         sel.title("🔂 Iteración")
         sel.geometry("400x320")
-        sel.transient(self)
+        sel.transient(self.app)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         ctk.CTkLabel(sel, text="🔂 Modo Iteración",
@@ -154,13 +162,13 @@ class RefinamientoMixin:
 
     def _iterar_elemento(self, elemento: str, n: int = 5) -> None:
         """Genera N variantes cambiando un elemento específico."""
-        texto = self.txt_salida.get("1.0", "end").strip()
-        self.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
-        self.toggle_botones(False)
+        texto = self.app.txt_salida.get("1.0", "end").strip()
+        self.app.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
+        self.app.toggle_botones(False)
 
         # ¿El prompt original tiene NEGATIVE PROMPT? Le pedimos al LLM
         # que respete ese formato (POSITIVE/NEGATIVE) en cada variante.
-        tiene_neg = bool(self._extraer_neg_de_bloque(texto))
+        tiene_neg = bool(self.app._extraer_neg_de_bloque(texto))
         bloque_ejemplo = (
             "POSITIVE PROMPT: [tags del positivo con el cambio aplicado]\n"
             "NEGATIVE PROMPT: [tags del negativo, idénticos al original]"
@@ -186,7 +194,7 @@ class RefinamientoMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
                 variantes = re.split(r'VARIANTE\s*\d+\s*:?\s*', resp, flags=re.IGNORECASE)
@@ -194,34 +202,34 @@ class RefinamientoMixin:
                               if v.strip() and len(v.strip()) > 30]
 
                 if len(variantes) < 2:
-                    self.after(0, lambda: self.set_estado("⚠️ Solo se generó 1 variante, intenta de nuevo", "#e67e22"))
-                    self.after(0, lambda: self.toggle_botones(True))
+                    self.app.after(0, lambda: self.app.set_estado("⚠️ Solo se generó 1 variante, intenta de nuevo", "#e67e22"))
+                    self.app.after(0, lambda: self.app.toggle_botones(True))
                     return
 
                 def _mostrar():
-                    self._abrir_comparador(variantes[:n])
-                    self.set_estado(f"🔂 {len(variantes)} variantes de '{elemento}' listas", "#2ecc71")
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app._abrir_comparador(variantes[:n])
+                    self.app.set_estado(f"🔂 {len(variantes)} variantes de '{elemento}' listas", "#2ecc71")
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def cmd_refinar(self) -> None:
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or not (("PROMPT:" in limpiar_marcadores(texto)) or ("ESTILO:" in limpiar_marcadores(texto))):
-            return self.set_estado("⚠️ Genera un prompt primero para refinarlo.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero para refinarlo.", "#e67e22")
 
-        self._ocultar_ideas()
-        idea, pers, lora, modo = self.txt_idea.get("1.0", "end").strip(), self.personaje_activo(), self.lora_activo(), self.modo_var.get()
-        try: self._sesion_log("🔁 Refinó prompt")
+        self.app._ocultar_ideas()
+        idea, pers, lora, modo = self.app.txt_idea.get("1.0", "end").strip(), self.app.personaje_activo(), self.app.lora_activo(), self.app.modo_var.get()
+        try: self.app._sesion_log("🔁 Refinó prompt")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        es_tag_based = not self.is_natural_mode()
+        es_tag_based = not self.app.is_natural_mode()
 
         peticion = f"Refina y mejora ESTE prompt:\n\n{texto}\n\n"
         if modo == "imagen":
@@ -244,16 +252,16 @@ class RefinamientoMixin:
         if idea: peticion += f"\nIncorpora: {idea}"
         if pers: peticion += f"\nManteniendo personaje: {pers}"
         if lora: peticion += f"\nManteniendo LoRA: {lora}"
-        if self._ultimo_anclaje_visual: peticion += f"\nMANTÉN ESTRICTAMENTE LA GEOMETRÍA VISUAL: {self._ultimo_anclaje_visual}"
+        if self.app._ultimo_anclaje_visual: peticion += f"\nMANTÉN ESTRICTAMENTE LA GEOMETRÍA VISUAL: {self.app._ultimo_anclaje_visual}"
 
-        specs = self.get_current_model_specs()
+        specs = self.app.get_current_model_specs()
         limite_chars = specs.get("max_chars") or specs.get("max_chars_letra") or 2000 if specs else 2000
         peticion += f"\n\n⛔ REGLA ESTRICTA DE LONGITUD: El POSITIVE PROMPT final no debe superar los {limite_chars} caracteres. Si el prompt original ya está cerca del límite, COMPACTA en vez de expandir: usa tags más densos, elimina redundancias, prioriza calidad sobre cantidad."
 
-        self.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
+        self.app.toggle_botones(False)
         threading.Thread(
-            target=self.workers.worker_ia,
+            target=self.app.workers.worker_ia,
             args=(peticion,),
             kwargs={"es_refinamiento": True, "texto_previo": texto},
             daemon=True,
@@ -272,59 +280,59 @@ class RefinamientoMixin:
           • ❌ Cancelar (mantener original) → cierra sin tocar nada.
         """
         if not texto_previo or not texto_nuevo:
-            self.actualizar_salida(texto_nuevo or "")
+            self.app.actualizar_salida(texto_nuevo or "")
             return
 
         if texto_previo.strip() == texto_nuevo.strip():
-            self.actualizar_salida(texto_nuevo)
-            self.set_estado("ℹ️ El refinamiento no produjo cambios.", "#3498db")
+            self.app.actualizar_salida(texto_nuevo)
+            self.app.set_estado("ℹ️ El refinamiento no produjo cambios.", "#3498db")
             return
 
         def _on_apply():
             try:
-                if not hasattr(self, '_versiones_prompt'):
-                    self._versiones_prompt = []
-                if not (self._versiones_prompt
-                        and self._versiones_prompt[-1].get("texto") == texto_previo):
-                    self._versiones_prompt.append({
+                if not hasattr(self.app, '_versiones_prompt'):
+                    self.app._versiones_prompt = []
+                if not (self.app._versiones_prompt
+                        and self.app._versiones_prompt[-1].get("texto") == texto_previo):
+                    self.app._versiones_prompt.append({
                         "texto": texto_previo,
                         "fecha": datetime.datetime.now().strftime("%H:%M:%S"),
-                        "etiqueta": f"v{len(self._versiones_prompt) + 1} (pre-refinamiento)",
+                        "etiqueta": f"v{len(self.app._versiones_prompt) + 1} (pre-refinamiento)",
                     })
-                    if len(self._versiones_prompt) > 30:
-                        self._versiones_prompt = self._versiones_prompt[-30:]
+                    if len(self.app._versiones_prompt) > 30:
+                        self.app._versiones_prompt = self.app._versiones_prompt[-30:]
             except Exception as e:
                 logger.debug(f"[silent] versionado pre-refinamiento: {e}")
-            self.actualizar_salida(texto_nuevo)
-            self.set_estado("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer.", "#2ecc71")
-            try: self._sesion_log("🔁 Aplicó refinamiento (diff)")
+            self.app.actualizar_salida(texto_nuevo)
+            self.app.set_estado("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer.", "#2ecc71")
+            try: self.app._sesion_log("🔁 Aplicó refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _on_cancel():
-            self.set_estado("❌ Refinamiento descartado — prompt original intacto.", "#e67e22")
-            try: self._sesion_log("🔁 Canceló refinamiento (diff)")
+            self.app.set_estado("❌ Refinamiento descartado — prompt original intacto.", "#e67e22")
+            try: self.app._sesion_log("🔁 Canceló refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         on_undo = None
-        if hasattr(self, '_versiones_prompt') and self._versiones_prompt:
-            for ver in reversed(self._versiones_prompt):
+        if hasattr(self.app, '_versiones_prompt') and self.app._versiones_prompt:
+            for ver in reversed(self.app._versiones_prompt):
                 if "pre-refinamiento" in (ver.get("etiqueta", "") or ""):
                     texto_undo = ver["texto"]
                     def _on_undo(_t=texto_undo, _v=ver):
-                        try: self._versiones_prompt.remove(_v)
+                        try: self.app._versiones_prompt.remove(_v)
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
-                        self.actualizar_salida(_t)
-                        self.set_estado("↩️ Refinamiento previo deshecho — restaurada versión anterior.", "#f39c12")
-                        try: self._sesion_log("↩️ Deshizo refinamiento previo")
+                        self.app.actualizar_salida(_t)
+                        self.app.set_estado("↩️ Refinamiento previo deshecho — restaurada versión anterior.", "#f39c12")
+                        try: self.app._sesion_log("↩️ Deshizo refinamiento previo")
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                     on_undo = _on_undo
                     break
 
-        self._abrir_ventana_diff(
+        self.app._abrir_ventana_diff(
             texto_previo, texto_nuevo,
             label_a="🔹 Original",
             label_b="🔸 Refinado",

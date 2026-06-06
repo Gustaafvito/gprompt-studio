@@ -36,7 +36,6 @@ from modules import (
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
-    RefinamientoMixin,
     SesionVideoMixin,
     ToolsAnalysisMixin,
     ToolsCreativeMixin,
@@ -78,7 +77,7 @@ class ArquitectoApp(
     # AbTestingMixin removido (A1 fase 2, sesión 14) → self.ab.* (AbTestingService)
     # AtajosAyudaMixin removido (A1 fase 2) → self.atajos.* (AtajosAyudaService)
     UiEventsMixin,
-    RefinamientoMixin,
+    # RefinamientoMixin removido (A1 fase 2, sesión 14) → self.refinar.* (RefinamientoService)
     # DashboardMixin removido (A1 fase 2, sesión 11) → self.dashboard.cmd_abrir()
     # (DashboardService)
     UiFooterMixin,

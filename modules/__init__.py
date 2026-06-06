@@ -21,7 +21,7 @@ from .modo_cliente import ModoClienteService  # A1 fase 2 (sesión 14)
 from .multiprompt import MultiPromptService  # A1 fase 2 (sesión 14)
 from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
-from .refinamiento import RefinamientoMixin
+from .refinamiento import RefinamientoService  # A1 fase 2 (sesión 14)
 from .sesion_video import SesionVideoMixin
 from .tools_analysis import ToolsAnalysisMixin
 from .tools_creative import ToolsCreativeMixin
@@ -47,7 +47,7 @@ __all__ = [
     "ModoClienteService",
     "JsonPromptService",
     "PromptsInyeccionService",
-    "RefinamientoMixin",
+    "RefinamientoService",
     "UiEventsMixin",
     "AbTestingService",
     "AtajosAyudaService",
