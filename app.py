@@ -97,6 +97,11 @@ class ArquitectoApp(
         # concurrente por IP para anónimos → si se exceden devuelve 402
         # "Queue full"). Se usa en _generar_preview_pollinations.
         self._pollinations_lock = threading.Lock()
+        # Contador de workers en cola esperando el lock (para mostrar
+        # "⏳ En cola (N por delante)" en la UI). Protegido por su propio
+        # lock para no bloquear el principal.
+        self._pollinations_queue_lock = threading.Lock()
+        self._pollinations_queue_size = 0
 
         # Instala 8 componentes (self.core, self.ui, self.creative,
         # self.workflow, self.analysis, self.data, self.backup, self.dialogs)
@@ -1786,7 +1791,7 @@ class ArquitectoApp(
             preview_lbl.pack(fill="x", pady=(4, 0))
 
             def _preview_pollinations(p=pos_text, lbl=preview_lbl):
-                lbl.configure(text="👁 Generando preview...", text_color="#888")
+                lbl.configure(text="⏳ Preparando...", text_color="#888")
                 def _on_img(img):
                     try:
                         from PIL import Image as _Image
@@ -1803,7 +1808,11 @@ class ArquitectoApp(
                 def _on_err(msg):
                     lbl.configure(text=f"❌ {msg[:60]}", text_color="#e74c3c")
 
-                self._generar_preview_pollinations(p, _on_img, _on_err, vent)
+                def _on_progress(msg):
+                    lbl.configure(text=msg, text_color="#888")
+
+                self._generar_preview_pollinations(p, _on_img, _on_err, vent,
+                                                    on_progress=_on_progress)
 
             ctk.CTkButton(btn_row, text="📋", width=28, height=24, fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"], command=_copiar_completo).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="🟢", width=28, height=24, fg_color="#1a5a2a", hover_color="#0f3a1a", command=_copiar_pos).pack(side="left", padx=1)
@@ -1972,7 +1981,8 @@ class ArquitectoApp(
                       command=vent.destroy).pack(side="left", padx=4)
 
     def _generar_preview_pollinations(self, prompt_text, on_imagen, on_error,
-                                       parent_widget=None, size=512):
+                                       parent_widget=None, size=512,
+                                       on_progress=None):
         """Genera preview de imagen vía Pollinations.ai API (sin auth).
 
         - `prompt_text`: texto del prompt. Se extrae solo POSITIVE y se trunca
@@ -2038,64 +2048,94 @@ class ArquitectoApp(
             #    already queued (max: 1)..."}
             # Por eso usamos un SEMÁFORO global para serializar las llamadas
             # (max 1 simultánea) + retry con backoff exponencial al recibir 402.
+            # El contador `_pollinations_queue_size` permite mostrar
+            # "⏳ En cola (N por delante)" en la UI.
             modelos_a_probar = ["turbo", None]  # None = sin param model
             last_err = None
-            with self._pollinations_lock:  # serializa entre threads
-                for intento in range(3):  # hasta 3 reintentos por modelo
-                    for modelo in modelos_a_probar:
-                        try:
-                            extra = f"&model={modelo}" if modelo else ""
-                            url = (
-                                f"https://image.pollinations.ai/prompt/{quote(pos)}"
-                                f"?width={size}&height={size}&nologo=true&enhance=false"
-                                f"&referrer=gprompt-studio{extra}"
-                            )
-                            resp = requests.get(url, timeout=60)
-                            sc = resp.status_code
-                            if sc == 402:
-                                # Puede ser "cola llena" o "modelo de pago"
-                                body_lower = (resp.text or "")[:200].lower()
-                                if "queue full" in body_lower or "queued" in body_lower:
-                                    last_err = "Cola Pollinations llena, reintentando..."
-                                else:
-                                    last_err = "Pollinations: cuenta de pago requerida"
-                                continue  # siguiente modelo (o retry si era el último)
-                            if sc == 429:
-                                last_err = "Rate limit (esperando)"
-                                continue
-                            if sc >= 500:
-                                last_err = f"{sc} Pollinations caído"
-                                continue
-                            if sc != 200:
-                                last_err = f"HTTP {sc}"
-                                continue
-                            ct = resp.headers.get("Content-Type", "").lower()
-                            if not ct.startswith("image/"):
-                                last_err = f"Respuesta no es imagen ({ct})"
-                                continue
-                            img = _Image.open(BytesIO(resp.content))
-                            img.load()
+
+            # Registrarse en la cola y notificar posición inicial
+            with self._pollinations_queue_lock:
+                self._pollinations_queue_size += 1
+                position = self._pollinations_queue_size
+            decremented = False
+
+            try:
+                # Notificar posición inicial en la UI
+                if on_progress and position > 1:
+                    _safe_cb(on_progress, f"⏳ En cola ({position - 1} por delante)")
+                elif on_progress:
+                    _safe_cb(on_progress, "🎨 Generando...")
+
+                with self._pollinations_lock:  # serializa entre threads
+                    # Ya tengo el lock → dejo de estar en cola
+                    with self._pollinations_queue_lock:
+                        self._pollinations_queue_size -= 1
+                        decremented = True
+                    if on_progress and position > 1:
+                        # Antes mostraba "En cola N", actualizo a "Generando..."
+                        _safe_cb(on_progress, "🎨 Generando...")
+
+                    for intento in range(3):  # hasta 3 reintentos por modelo
+                        for modelo in modelos_a_probar:
                             try:
-                                img.save(cache_path)
-                            except Exception as _e:
-                                logger.debug(f"[silent] cache save: {_e}")
-                            _safe_cb(on_imagen, img)
-                            return
-                        except requests.Timeout:
-                            last_err = "Timeout (>60s)"
-                            continue
-                        except requests.RequestException as e:
-                            last_err = f"Red: {e}"
-                            continue
-                        except Exception as e:
-                            last_err = str(e)
-                            continue
-                    # Si llegamos aquí los 2 modelos fallaron este intento.
-                    # Backoff exponencial: 2s, 4s, 8s.
-                    if intento < 2:
-                        import time as _time
-                        _time.sleep(2 ** (intento + 1))
-            _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
+                                extra = f"&model={modelo}" if modelo else ""
+                                url = (
+                                    f"https://image.pollinations.ai/prompt/{quote(pos)}"
+                                    f"?width={size}&height={size}&nologo=true&enhance=false"
+                                    f"&referrer=gprompt-studio{extra}"
+                                )
+                                resp = requests.get(url, timeout=60)
+                                sc = resp.status_code
+                                if sc == 402:
+                                    body_lower = (resp.text or "")[:200].lower()
+                                    if "queue full" in body_lower or "queued" in body_lower:
+                                        last_err = "Cola Pollinations llena, reintentando..."
+                                    else:
+                                        last_err = "Pollinations: cuenta de pago requerida"
+                                    continue
+                                if sc == 429:
+                                    last_err = "Rate limit (esperando)"
+                                    continue
+                                if sc >= 500:
+                                    last_err = f"{sc} Pollinations caído"
+                                    continue
+                                if sc != 200:
+                                    last_err = f"HTTP {sc}"
+                                    continue
+                                ct = resp.headers.get("Content-Type", "").lower()
+                                if not ct.startswith("image/"):
+                                    last_err = f"Respuesta no es imagen ({ct})"
+                                    continue
+                                img = _Image.open(BytesIO(resp.content))
+                                img.load()
+                                try:
+                                    img.save(cache_path)
+                                except Exception as _e:
+                                    logger.debug(f"[silent] cache save: {_e}")
+                                _safe_cb(on_imagen, img)
+                                return
+                            except requests.Timeout:
+                                last_err = "Timeout (>60s)"
+                                continue
+                            except requests.RequestException as e:
+                                last_err = f"Red: {e}"
+                                continue
+                            except Exception as e:
+                                last_err = str(e)
+                                continue
+                        # Los 2 modelos fallaron este intento. Backoff
+                        # exponencial: 2s, 4s, 8s.
+                        if intento < 2:
+                            import time as _time
+                            _time.sleep(2 ** (intento + 1))
+                # Si salimos del with sin return → todos los intentos fallaron
+                _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
+            finally:
+                # Defensa: si el counter no se decrementó (excepción antes
+                # de tomar el lock), hacerlo aquí para no dejar la cuenta sesgada.
+                if not decremented:
+                    with self._pollinations_queue_lock:
+                        self._pollinations_queue_size -= 1
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -2151,9 +2191,10 @@ class ArquitectoApp(
                          wraplength=thumb_size - 10
                          ).pack(pady=(4, 2))
 
-            img_lbl = ctk.CTkLabel(cell, text="👁 cargando...",
+            img_lbl = ctk.CTkLabel(cell, text="⏳ Preparando...",
                                     width=thumb_size, height=thumb_size,
-                                    fg_color="#0a0e14", text_color="#888")
+                                    fg_color="#0a0e14", text_color="#888",
+                                    wraplength=thumb_size - 20)
             img_lbl.pack(pady=2)
 
             def _on_img(image, lbl=img_lbl, prompt_text=var):
@@ -2187,8 +2228,13 @@ class ArquitectoApp(
                 lbl.configure(text=f"❌ {msg}", text_color="#e74c3c",
                               wraplength=thumb_size - 20)
 
+            def _on_progress(msg, lbl=img_lbl):
+                lbl.configure(text=msg, text_color="#888",
+                              wraplength=thumb_size - 20)
+
             self._generar_preview_pollinations(var, _on_img, _on_err, vent,
-                                                size=512)
+                                                size=512,
+                                                on_progress=_on_progress)
 
         for ci in range(cols):
             grid.columnconfigure(ci, weight=1)
