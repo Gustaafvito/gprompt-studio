@@ -37,7 +37,6 @@ from modules import (
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
-    MultiPromptMixin,
     RefinamientoMixin,
     SesionVideoMixin,
     ToolsAnalysisMixin,
@@ -70,7 +69,7 @@ class ArquitectoApp(
     DialogsMixin,
     CoreMixin,
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
-    MultiPromptMixin,
+    # MultiPromptMixin removido (A1 fase 2, sesión 14) → self.multi.* (MultiPromptService)
     SesionVideoMixin,
     WorkersIaMixin,
     # ModoClienteMixin removido (A1 fase 2, sesión 14) → self.cliente.* (ModoClienteService)

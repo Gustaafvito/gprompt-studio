@@ -18,7 +18,7 @@ from .event_bus import EventBus
 from .gprompt_window import GPromptWindow
 from .json_prompt import JsonPromptService  # A1 fase 2: era JsonPromptMixin
 from .modo_cliente import ModoClienteService  # A1 fase 2 (sesión 14)
-from .multiprompt import MultiPromptMixin
+from .multiprompt import MultiPromptService  # A1 fase 2 (sesión 14)
 from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
 from .refinamiento import RefinamientoMixin
@@ -41,7 +41,7 @@ __all__ = [
     "DialogsMixin",
     "CoreMixin",
     "AdnVisualService",
-    "MultiPromptMixin",
+    "MultiPromptService",
     "SesionVideoMixin",
     "WorkersIaMixin",
     "ModoClienteService",

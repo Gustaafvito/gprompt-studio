@@ -360,25 +360,32 @@ class UiEventsComponent(_Component):
 
 
 class MultiPromptComponent(_Component):
-    """Mood/Story/Board/Walk — generadores multi-prompt (MultiPromptMixin).
-    Octavo servicio del refactor A1.
+    """Mood/Story/Board/Walk — generadores multi-prompt.
+
+    A1 fase 2 (sesión 14): MultiPromptMixin → MultiPromptService aislado.
     """
     _name = "multi"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.multiprompt import MultiPromptService
+        self._service = MultiPromptService(app)
 
     def cmd_moodboard(self) -> None:
-        return self.app._cmd_moodboard()
+        return self._service._cmd_moodboard()
 
     def cmd_story_sequence(self) -> None:
-        return self.app._cmd_story_sequence()
+        return self._service._cmd_story_sequence()
 
     def cmd_storyboard_video(self) -> None:
-        return self.app._cmd_storyboard_video()
+        return self._service._cmd_storyboard_video()
 
     def cmd_storyboard_imagen(self) -> None:
-        return self.app._cmd_storyboard_imagen()
+        return self._service._cmd_storyboard_imagen()
 
     def cmd_random_walk(self) -> None:
-        return self.app._cmd_random_walk()
+        return self._service._cmd_random_walk()
 
 
 class ModoClienteComponent(_Component):

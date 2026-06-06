@@ -41,8 +41,16 @@ from workers import limpiar_marcadores
 logger = logging.getLogger(__name__)
 
 
-class MultiPromptMixin:
-    """Mixin con Moodboard / Story / Board / Walk."""
+class MultiPromptService:
+    """Moodboard / Story / Board / Walk — generadores multi-prompt.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    Acceso: `app.multi.cmd_moodboard()`, `cmd_story_sequence()`,
+    `cmd_storyboard_video()`, `cmd_storyboard_imagen()`, `cmd_random_walk()`.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_moodboard(self):
         """Genera N prompts complementarios con mismo mood pero distintos sujetos.
@@ -51,11 +59,11 @@ class MultiPromptMixin:
         fijos (persona/paisaje/objeto/animal/arquitectura/macro). Ahora el
         LLM elige los N sujetos diversos.
         """
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
 
-        n = self._pedir_n_modal(
+        n = self.app._pedir_n_modal(
             "🎭 Mood — número de prompts",
             "¿Cuántos prompts en el moodboard?\n"
             "Comparten mood/atmósfera pero con sujetos distintos.",
@@ -65,12 +73,12 @@ class MultiPromptMixin:
         if n is None:
             return
 
-        try: self._sesion_log(f"🎨 Mood: generó {n} prompts (mismo mood, distintos sujetos)")
+        try: self.app._sesion_log(f"🎨 Mood: generó {n} prompts (mismo mood, distintos sujetos)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
+        self.app.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
             f"PROMPT {i+1}: [sujeto diverso] — POSITIVE: ... NEGATIVE: ..."
@@ -79,7 +87,7 @@ class MultiPromptMixin:
         peticion = (
             f"Genera UN MOODBOARD: {n} prompts que comparten el MISMO MOOD/atmósfera pero con SUJETOS distintos.\n\n"
             f"CONCEPTO/MOOD BASE: {idea}\n"
-            f"ESTILOS: {self.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- Mantén la MISMA paleta, iluminación, atmósfera y estilo en TODOS los {n}.\n"
             f"- Cambia el SUJETO en cada uno (elige {n} categorías diversas: persona, "
@@ -91,23 +99,23 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(8000, 1500 + n * 600)
-                resp = self.deepseek.generar(peticion, temperature=0.8, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.8, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
+                bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
                 if len(bloques) < 2:
-                    self.after(0, lambda: self.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
-                    self.after(0, lambda: self.toggle_botones(True))
+                    self.app.after(0, lambda: self.app.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
+                    self.app.after(0, lambda: self.app.toggle_botones(True))
                     return
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:n])
-                    self.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app._abrir_comparador(bloques[:n])
+                    self.app.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -137,7 +145,7 @@ class MultiPromptMixin:
         """
         prefs = {}
         try:
-            prefs = self.store.cargar_preferencias() or {}
+            prefs = self.app.store.cargar_preferencias() or {}
         except Exception as e:
             logger.debug(f"[silent] prefs: {e}")
         n_inicial = int(prefs.get("story_n", default_n) or default_n)
@@ -148,10 +156,10 @@ class MultiPromptMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("🎞 Story — configuración")
         v.geometry("520x540")
-        v.transient(self)
+        v.transient(self.app)
 
         ctk.CTkLabel(v, text="🎞 Story Sequence — configura tu secuencia",
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
@@ -184,7 +192,7 @@ class MultiPromptMixin:
                           font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(anchor="w", padx=10, pady=(6, 4))
             grid = ctk.CTkFrame(chk_frame, fg_color="transparent")
             grid.pack(fill="x", padx=10, pady=(0, 6))
-            for i, (key, label, desc) in enumerate(self.STORY_SHOT_TYPES):
+            for i, (key, label, desc) in enumerate(self.app.STORY_SHOT_TYPES):
                 marcado = key in tipos_pref
                 vbool = tk.BooleanVar(value=marcado)
                 chk_vars[key] = vbool
@@ -233,11 +241,11 @@ class MultiPromptMixin:
 
         def _guardar_prefs(n, tipos_keys, auto):
             try:
-                p = self.store.cargar_preferencias() or {}
+                p = self.app.store.cargar_preferencias() or {}
                 p["story_n"] = n
                 p["story_tipos"] = tipos_keys
                 p["story_auto"] = auto
-                self.store.guardar_preferencias(p)
+                self.app.store.guardar_preferencias(p)
             except Exception as e:
                 logger.debug(f"[silent] guardar prefs story: {e}")
 
@@ -257,7 +265,7 @@ class MultiPromptMixin:
         return resultado["v"]
 
     def _story_label_de_key(self, key):
-        for k, label, _desc in self.STORY_SHOT_TYPES:
+        for k, label, _desc in self.app.STORY_SHOT_TYPES:
             if k == key:
                 return label
         return key
@@ -269,11 +277,11 @@ class MultiPromptMixin:
         (Wide/Medium/Close/POV/OTS/TopDown/Dutch/Aerial) o "auto"
         (LLM elige).
         """
-        if self.modo_var.get() != "imagen":
-            return self.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
-        idea = self.txt_idea.get("1.0", "end").strip()
+        if self.app.modo_var.get() != "imagen":
+            return self.app.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe la escena base.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe la escena base.", "#e67e22")
 
         cfg = self._pedir_story_config(default_n=3)
         if cfg is None:
@@ -283,12 +291,12 @@ class MultiPromptMixin:
         auto = cfg["auto"]
 
         modo_log = "auto (LLM elige)" if auto else f"manual [{', '.join(tipos)}]"
-        try: self._sesion_log(f"🎬 Story: {n} shots · {modo_log}")
+        try: self.app._sesion_log(f"🎬 Story: {n} shots · {modo_log}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
+        self.app.toggle_botones(False)
 
         if auto:
             tipos_instr = (
@@ -313,7 +321,7 @@ class MultiPromptMixin:
         peticion = (
             f"Genera {n} SHOTS CINEMATOGRÁFICOS de la misma escena, manteniendo coherencia.\n\n"
             f"ESCENA: {idea}\n"
-            f"ESTILOS: {self.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- MISMO sujeto, MISMA iluminación, MISMA paleta, MISMA atmósfera.\n"
             f"- Solo cambia el ENCUADRE/PLANO en cada uno.\n"
@@ -327,19 +335,19 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(6000, 1200 + n * 600)
-                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
+                bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
 
                 def _mostrar():
-                    self._abrir_comparador(bloques[:n], labels=labels_comp)
-                    self.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app._abrir_comparador(bloques[:n], labels=labels_comp)
+                    self.app.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -349,13 +357,13 @@ class MultiPromptMixin:
         v2: N configurable (3-8, default 4). El LLM distribuye los beats
         de la microhistoria según el N elegido.
         """
-        if self.modo_var.get() != "video":
-            return self.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
-        idea = self.txt_idea.get("1.0", "end").strip()
+        if self.app.modo_var.get() != "video":
+            return self.app.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
-        n = self._pedir_n_modal(
+        n = self.app._pedir_n_modal(
             "📽 Board — número de frames",
             "¿Cuántos frames clave en el storyboard?\n"
             "Cuentan una microhistoria visual coherente.",
@@ -365,12 +373,12 @@ class MultiPromptMixin:
         if n is None:
             return
 
-        try: self._sesion_log(f"📽 Board: generó storyboard de {n} shots")
+        try: self.app._sesion_log(f"📽 Board: generó storyboard de {n} shots")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
+        self.app.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
             f"FRAME {i+1} (rol narrativo): POSITIVE: ... NEGATIVE: ..."
@@ -379,7 +387,7 @@ class MultiPromptMixin:
         peticion = (
             f"Genera un STORYBOARD DE {n} SHOTS para una secuencia de vídeo.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
-            f"ESTILOS: {self.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- Cuenta una microhistoria visual con {n} beats: apertura → "
             f"desarrollo → (intensidad creciente) → climax → cierre.\n"
@@ -392,9 +400,9 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(7000, 1500 + n * 600)
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
+                bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
 
                 # Botón extra para encadenar Board → Vídeo: toma los N
                 # frames y pide al LLM un prompt de vídeo cinematográfico
@@ -403,22 +411,22 @@ class MultiPromptMixin:
                     self._encadenar_board_a_video(bloques[:n], _vent)
 
                 def _mostrar():
-                    self._abrir_comparador(
+                    self.app._abrir_comparador(
                         bloques[:n],
                         extra_botones=[
                             ("🎬 Encadenar como prompt de vídeo", "#7c3aed", _encadenar_video),
                         ],
                     )
-                    self.set_estado(
+                    self.app.set_estado(
                         f"📽 Storyboard de {len(bloques)} frames listo · 🎬 encadénalo a vídeo desde el comparador",
                         "#2ecc71",
                     )
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -431,14 +439,14 @@ class MultiPromptMixin:
         txt_salida y cierra el comparador.
         """
         if not frames:
-            return self.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
+            return self.app.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
 
-        try: self._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
+        try: self.app._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
+        self.app.toggle_botones(False)
 
         # Construir bloque con cada frame numerado
         frames_str = "\n\n".join(
@@ -466,36 +474,36 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(4500, 1500 + len(frames) * 400)
-                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
                 def _aplicar():
                     # Cambiar modo a vídeo si no lo estaba ya (callback real es _on_modo_cambio)
-                    if self.modo_var.get() != "video":
+                    if self.app.modo_var.get() != "video":
                         try:
-                            self.modo_var.set("video")
-                            if hasattr(self, '_on_modo_cambio'):
-                                self._on_modo_cambio()
+                            self.app.modo_var.set("video")
+                            if hasattr(self.app, '_on_modo_cambio'):
+                                self.app._on_modo_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] cambio modo: {e}")
-                    self.actualizar_salida(resp)
-                    self.guardar_en_historial(resp)
-                    self.set_estado(
+                    self.app.actualizar_salida(resp)
+                    self.app.guardar_en_historial(resp)
+                    self.app.set_estado(
                         f"🎬 Vídeo encadenado de {len(frames)} keyframes aplicado al editor",
                         "#2ecc71",
                     )
-                    self.toggle_botones(True)
-                    self._sonar_completado()
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
                     try:
                         if vent_comparador and vent_comparador.winfo_exists():
                             vent_comparador.destroy()
                     except Exception as e:
                         logger.debug(f"[silent] cerrar comparador: {e}")
-                self.after(0, _aplicar)
+                self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("encadenar board→vídeo")
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -511,24 +519,24 @@ class MultiPromptMixin:
         Botón extra en el comparador: 'Fusionar en 1 prompt' que pide al LLM
         combinar los N paneles en una sola descripción multi-panel.
         """
-        if self.modo_var.get() != "imagen":
-            return self.set_estado(
+        if self.app.modo_var.get() != "imagen":
+            return self.app.set_estado(
                 "⚠️ Storyboard de imagen solo está disponible en modo IMAGEN.",
                 "#e67e22",
             )
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
         # Detectar formato del modelo actual (natural vs tag-based)
-        modelo = self.modelo_imagen_valido()
+        modelo = self.app.modelo_imagen_valido()
         specs = get_image_model_specs(modelo) if modelo else None
         is_natural = bool(specs and specs.get("is_natural"))
         has_negative = bool(specs and specs.get("has_negative"))
         formato_etiqueta = "natural" if is_natural else "tag-based (SD/Comfy)"
         modelo_label = modelo or "modelo no detectado"
 
-        n = self._pedir_n_modal(
+        n = self.app._pedir_n_modal(
             "🖼 Storyboard — número de paneles",
             f"¿Cuántos paneles en el storyboard?\n"
             f"Cada panel tendrá su shot type y prompt cinematográfico.\n"
@@ -539,12 +547,12 @@ class MultiPromptMixin:
         if n is None:
             return
 
-        try: self._sesion_log(f"🖼 Storyboard imagen ({formato_etiqueta}): generó {n} paneles")
+        try: self.app._sesion_log(f"🖼 Storyboard imagen ({formato_etiqueta}): generó {n} paneles")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
+        self.app.toggle_botones(False)
 
         if is_natural:
             formato_lineas = "\n---\n".join(
@@ -586,7 +594,7 @@ class MultiPromptMixin:
             f"Genera un STORYBOARD DE {n} PANELES en formato {formato_etiqueta} "
             f"para el modelo {modelo_label}.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
-            f"ESTILOS: {self.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.estilos_texto()}\n\n"
             f"REGLAS COMUNES:\n"
             f"- Cuenta una microhistoria visual con {n} momentos: apertura → "
             f"desarrollo → tensión → climax → resolución (distribuido según N).\n"
@@ -605,30 +613,30 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(7000, 1500 + n * 500)
-                resp = self.deepseek.generar(peticion, temperature=0.75, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.75, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
-                bloques = self._parsear_bloques_numerados(resp, n_esperado=n)
+                bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
 
                 def _fusionar(_variaciones, _vent):
                     self._fusionar_storyboard_imagen(bloques[:n], _vent)
 
                 def _mostrar():
-                    self._abrir_comparador(
+                    self.app._abrir_comparador(
                         bloques[:n],
                         extra_botones=[
                             ("📋 Fusionar en 1 prompt", "#7c3aed", _fusionar),
                         ],
                     )
-                    self.set_estado(
+                    self.app.set_estado(
                         f"🖼 Storyboard de {len(bloques)} paneles listo · 📋 fusiona en 1 prompt desde el comparador",
                         "#2ecc71",
                     )
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -640,14 +648,14 @@ class MultiPromptMixin:
         panel explícita, etc.).
         """
         if not paneles:
-            return self.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
+            return self.app.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
 
-        try: self._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
+        try: self.app._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
+        self.app.toggle_botones(False)
 
         paneles_str = "\n\n".join(
             f"--- PANEL {i+1} ---\n{p.strip()}"
@@ -677,28 +685,28 @@ class MultiPromptMixin:
         def _worker():
             try:
                 max_tok = min(4500, 1500 + len(paneles) * 300)
-                resp = self.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
+                resp = self.app.deepseek.generar(peticion, temperature=0.6, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
                 def _aplicar():
-                    self.actualizar_salida(resp)
-                    self.guardar_en_historial(resp)
-                    self.set_estado(
+                    self.app.actualizar_salida(resp)
+                    self.app.guardar_en_historial(resp)
+                    self.app.set_estado(
                         f"📋 Storyboard fusionado en 1 prompt ({len(paneles)} paneles) aplicado al editor",
                         "#2ecc71",
                     )
-                    self.toggle_botones(True)
-                    self._sonar_completado()
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
                     try:
                         if vent_comparador and vent_comparador.winfo_exists():
                             vent_comparador.destroy()
                     except Exception as e:
                         logger.debug(f"[silent] cerrar comparador: {e}")
-                self.after(0, _aplicar)
+                self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("fusionar storyboard imagen")
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -714,11 +722,11 @@ class MultiPromptMixin:
         Reemplaza el modo lineal (N derivaciones secuenciales) por una
         exploración no lineal estilo grafo.
         """
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
 
-        try: self._sesion_log("🌀 Walk árbol abierto")
+        try: self.app._sesion_log("🌀 Walk árbol abierto")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -745,10 +753,10 @@ class MultiPromptMixin:
         rect_refs = {}   # id_nodo → (rect_canvas_id, text_canvas_id)
 
         # ─── Ventana ─────────────────────────────────────────────
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🌀 Walk árbol — Explora derivaciones")
         vent.geometry("1240x740")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🌀 Walk árbol — Explora derivaciones evolutivas",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
@@ -929,9 +937,9 @@ class MultiPromptMixin:
 
             def _worker():
                 try:
-                    resp = self.deepseek.generar(peticion, temperature=0.85, max_tokens=2400)
+                    resp = self.app.deepseek.generar(peticion, temperature=0.85, max_tokens=2400)
                     resp = limpiar_marcadores(resp)
-                    bloques = self._parsear_bloques_numerados(resp, n_esperado=3)
+                    bloques = self.app._parsear_bloques_numerados(resp, n_esperado=3)
                     if not bloques:
                         # Fallback: dividir por "PROMPT N:" o doble salto
                         bloques = [b.strip() for b in resp.split("\n\n") if len(b.strip()) > 40][:3]
@@ -966,7 +974,7 @@ class MultiPromptMixin:
                                               text_color="#2ecc71")
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
-                    self.after(0, _aplicar)
+                    self.app.after(0, _aplicar)
                 except Exception as e:
                     logger.exception("walk ramificar")
                     err = e
@@ -974,18 +982,18 @@ class MultiPromptMixin:
                         lbl_status.configure(text=f"❌ Error: {err}", text_color="#e74c3c")
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
-                    self.after(0, _err)
+                    self.app.after(0, _err)
 
             threading.Thread(target=_worker, daemon=True).start()
 
         # ─── Acción: usar este nodo (NO cierra, sigues explorando) ──
         def _usar_nodo():
             n = nodos[sel["id"]]
-            self.actualizar_salida(n["texto"])
+            self.app.actualizar_salida(n["texto"])
             ruta = _ruta_de(sel["id"])
             ruta_str = " → ".join(x["label"] for x in ruta)
-            self.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
-            try: self._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
+            self.app.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
+            try: self.app._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             lbl_status.configure(
@@ -1038,26 +1046,26 @@ class MultiPromptMixin:
                 """Apila cada nodo de la ruta en _versiones_prompt para
                 que se puedan recuperar desde el menú 📑 Versiones prompt."""
                 try:
-                    if not hasattr(self, '_versiones_prompt'):
-                        self._versiones_prompt = []
+                    if not hasattr(self.app, '_versiones_prompt'):
+                        self.app._versiones_prompt = []
                     ahora = datetime.datetime.now().strftime("%H:%M:%S")
                     cadena_corta = " → ".join(x["label"] for x in ruta)
                     nuevos = 0
                     for x in ruta:
                         # Evitar duplicados: si el texto exacto ya está
                         # como última versión, no apilamos.
-                        if (self._versiones_prompt
-                                and self._versiones_prompt[-1].get("texto") == x["texto"]):
+                        if (self.app._versiones_prompt
+                                and self.app._versiones_prompt[-1].get("texto") == x["texto"]):
                             continue
-                        self._versiones_prompt.append({
+                        self.app._versiones_prompt.append({
                             "texto": x["texto"],
                             "fecha": ahora,
-                            "etiqueta": (f"v{len(self._versiones_prompt) + 1} "
+                            "etiqueta": (f"v{len(self.app._versiones_prompt) + 1} "
                                          f"(Walk {cadena_corta} · nodo {x['label']})"),
                         })
                         nuevos += 1
-                        if len(self._versiones_prompt) > 30:
-                            self._versiones_prompt = self._versiones_prompt[-30:]
+                        if len(self.app._versiones_prompt) > 30:
+                            self.app._versiones_prompt = self.app._versiones_prompt[-30:]
                     estado_lbl.configure(
                         text=f"✅ {nuevos} nodo(s) guardados en Versiones prompt — accesibles desde 📑 Versiones",
                         text_color="#2ecc71",
@@ -1066,7 +1074,7 @@ class MultiPromptMixin:
                         text=f"💾 Ruta guardada ({nuevos} nodos) en 📑 Versiones prompt",
                         text_color="#2ecc71",
                     )
-                    try: self._sesion_log(f"🌀 Walk: guardó ruta {cadena_corta} en Versiones ({nuevos} nodos)")
+                    try: self.app._sesion_log(f"🌀 Walk: guardó ruta {cadena_corta} en Versiones ({nuevos} nodos)")
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 except Exception as e:
