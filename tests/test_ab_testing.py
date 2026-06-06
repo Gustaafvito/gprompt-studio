@@ -1,4 +1,8 @@
-"""Tests para AbTestingMixin (modules/ab_testing.py).
+"""Tests para AbTestingService (modules/ab_testing.py).
+
+A1 fase 2 (sesión 14): el mixin fue convertido a clase con app por
+composición. Los tests crean un fake_app con SimpleNamespace y pasan
+al constructor del service.
 
 Cobertura de la lógica testeable sin abrir ventanas Tk reales:
   • AB_DIMENSIONES — estructura del catálogo de dimensiones.
@@ -13,7 +17,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from modules.ab_testing import AbTestingMixin
+from modules.ab_testing import AbTestingService
 
 
 def _var(value):
@@ -25,8 +29,12 @@ def _txt(value):
 
 
 def _host(**overrides):
-    cls = type("Host", (AbTestingMixin,), {})
-    h = cls()
+    """Construye un AbTestingService con app simulado.
+
+    Crea un SimpleNamespace como `app` con los atributos por defecto.
+    Cualquier override se aplica sobre app antes de instanciar el service.
+    """
+    app = SimpleNamespace()
     defaults = dict(
         txt_idea=_txt(""),
         modo_var=_var("imagen"),
@@ -40,8 +48,8 @@ def _host(**overrides):
     )
     defaults.update(overrides)
     for k, v in defaults.items():
-        setattr(h, k, v)
-    return h
+        setattr(app, k, v)
+    return AbTestingService(app)
 
 
 # ─────────────────────── AB_DIMENSIONES ──────────────────────────────
@@ -50,17 +58,17 @@ def _host(**overrides):
 class TestAbDimensiones:
 
     def test_tiene_dimensiones_clave(self):
-        dims = AbTestingMixin.AB_DIMENSIONES
+        dims = AbTestingService.AB_DIMENSIONES
         assert "iluminación" in dims
         assert "mood" in dims
         assert "ángulo" in dims
 
     def test_cada_dimension_tiene_exactamente_4_valores(self):
-        for nombre, valores in AbTestingMixin.AB_DIMENSIONES.items():
+        for nombre, valores in AbTestingService.AB_DIMENSIONES.items():
             assert len(valores) == 4, f"{nombre} tiene {len(valores)} valores, esperaba 4"
 
     def test_todos_los_valores_son_strings_no_vacios(self):
-        for nombre, valores in AbTestingMixin.AB_DIMENSIONES.items():
+        for nombre, valores in AbTestingService.AB_DIMENSIONES.items():
             for v in valores:
                 assert isinstance(v, str) and len(v.strip()) > 0
 
@@ -76,8 +84,8 @@ class TestCmdAbTesting:
         spy = MagicMock()
         monkeypatch.setattr("modules.ab_testing.GPromptWindow", spy)
         h._cmd_ab_testing()
-        h.set_estado.assert_called_once()
-        assert "Escribe una idea" in h.set_estado.call_args[0][0]
+        h.app.set_estado.assert_called_once()
+        assert "Escribe una idea" in h.app.set_estado.call_args[0][0]
         spy.assert_not_called()  # No se abrió ventana
 
     def test_idea_solo_espacios_es_vacia(self, monkeypatch):
@@ -85,7 +93,7 @@ class TestCmdAbTesting:
         spy = MagicMock()
         monkeypatch.setattr("modules.ab_testing.GPromptWindow", spy)
         h._cmd_ab_testing()
-        h.set_estado.assert_called_once()
+        h.app.set_estado.assert_called_once()
         spy.assert_not_called()
 
 
@@ -99,8 +107,8 @@ class TestCmdCompararModelos:
         spy = MagicMock()
         monkeypatch.setattr("modules.ab_testing.GPromptWindow", spy)
         h._cmd_comparar_modelos()
-        h.set_estado.assert_called_once()
-        assert "Escribe una idea" in h.set_estado.call_args[0][0]
+        h.app.set_estado.assert_called_once()
+        assert "Escribe una idea" in h.app.set_estado.call_args[0][0]
         spy.assert_not_called()
 
     def test_idea_muy_corta_muestra_warning(self, monkeypatch):
@@ -108,7 +116,7 @@ class TestCmdCompararModelos:
         spy = MagicMock()
         monkeypatch.setattr("modules.ab_testing.GPromptWindow", spy)
         h._cmd_comparar_modelos()
-        h.set_estado.assert_called_once()
+        h.app.set_estado.assert_called_once()
         spy.assert_not_called()
 
     def test_idea_de_5_chars_no_es_corta_y_abre_modal(self, monkeypatch):

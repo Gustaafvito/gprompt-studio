@@ -4,7 +4,7 @@ Cada módulo define una mixin class que GPromptApp hereda.
 También incluye servicios y utilidades independientes.
 """
 
-from .ab_testing import AbTestingMixin
+from .ab_testing import AbTestingService  # A1 fase 2 (sesión 14)
 from .adn_visual import AdnVisualMixin
 from .atajos_ayuda import AtajosAyudaService  # A1 fase 2
 from .backup_export import BackupExportMixin
@@ -49,7 +49,7 @@ __all__ = [
     "PromptsInyeccionService",
     "RefinamientoMixin",
     "UiEventsMixin",
-    "AbTestingMixin",
+    "AbTestingService",
     "AtajosAyudaService",
     "DashboardService",
     "UiFooterMixin",

@@ -32,7 +32,6 @@ from config import (
     get_theme_colors,
 )
 from modules import (
-    AbTestingMixin,
     AdnVisualMixin,
     BackupExportMixin,
     CoreMixin,
@@ -81,7 +80,7 @@ class ArquitectoApp(
     # accesible via self.json.cmd_importar() / self.json.cmd_exportar()
     # PromptsInyeccionMixin removido (A1 fase 2): ahora PromptsInyeccionService
     # accesible via self.prompts.inyectar_specs_modelo() / .construir_modelo_info()
-    AbTestingMixin,
+    # AbTestingMixin removido (A1 fase 2, sesión 14) → self.ab.* (AbTestingService)
     # AtajosAyudaMixin removido (A1 fase 2) → self.atajos.* (AtajosAyudaService)
     UiEventsMixin,
     RefinamientoMixin,

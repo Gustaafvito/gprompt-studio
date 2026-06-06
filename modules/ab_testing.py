@@ -48,7 +48,18 @@ from workers import limpiar_marcadores
 logger = logging.getLogger(__name__)
 
 
-class AbTestingMixin:
+class AbTestingService:
+    """A/B testing 2x2 + comparador de modelos.
+
+    A1 fase 2: servicio aislado que recibe `app: ArquitectoApp` por
+    composición. Todos los accesos al estado/widgets de la app van vía
+    `self.app.X` en lugar de `self.X`.
+
+    Acceso: `app.ab.cmd_ab_testing()`, `app.ab.cmd_comparar_modelos()`.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     # Dimensiones disponibles en A/B Testing 2x2.
     # Cada dimensión tiene 4 valores; se toman :4 (1 dim) o :2 + :2 (2 dims).
@@ -65,20 +76,20 @@ class AbTestingMixin:
         """A/B testing 2x2: configura dimensiones a variar y genera 4 variantes."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.app.set_estado("⚠️ Escribe una idea primero", "#e67e22")
             return
         try:
-            self._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
+            self.app._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
         # Ventana de configuración
-        cfg = GPromptWindow(self)
+        cfg = GPromptWindow(self.app)
         cfg.title("🧪 A/B Testing 2x2")
         cfg.geometry("520x520")
-        cfg.transient(self)
+        cfg.transient(self.app)
         cfg.grab_set()
 
         ctk.CTkLabel(cfg, text="🧪 A/B Testing 2x2",
@@ -172,15 +183,15 @@ class AbTestingMixin:
                     combos.append([(d1, a), (d2, b)])
 
         # Obtener specs del modelo actual
-        specs = self.get_current_model_specs() or {}
+        specs = self.app.get_current_model_specs() or {}
         max_chars = specs.get("max_chars", 1500)
         has_neg = specs.get("has_negative", True)
         is_natural = specs.get("is_natural", False)
         fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
         neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "No generes NEGATIVE."
 
-        self.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
-        self.toggle_botones(False)
+        self.app.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
+        self.app.toggle_botones(False)
 
         def _generar():
             prompts_generados = []
@@ -204,12 +215,12 @@ class AbTestingMixin:
                     "- Añade estilos y calidad profesional\n"
                     f"- Límite: {max_chars} caracteres\n"
                     f"- {neg_str}\n\n"
-                    f"Estilos activos: {self.estilos_texto()}\n\n"
+                    f"Estilos activos: {self.app.estilos_texto()}\n\n"
                     "Responde SOLO con el prompt."
                 )
 
                 try:
-                    resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
+                    resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
                     if not has_neg:
                         resp = _re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp, flags=_re.DOTALL | _re.IGNORECASE).strip()
@@ -217,16 +228,16 @@ class AbTestingMixin:
                 except Exception as e:
                     prompts_generados.append((etiqueta, f"❌ Error: {e}"))
 
-            self.after(0, lambda: self._mostrar_ab_grid(idea_base, dimensiones, prompts_generados, is_lt, c))
+            self.app.after(0, lambda: self._mostrar_ab_grid(idea_base, dimensiones, prompts_generados, is_lt, c))
 
         threading.Thread(target=_generar, daemon=True).start()
 
     def _mostrar_ab_grid(self, idea_base, dimensiones, prompts_generados, is_lt, c):
         """Muestra la grid de resultados."""
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title(f"🧪 A/B Testing — {' + '.join(dimensiones)}")
         v.geometry("1100x720")
-        v.transient(self)
+        v.transient(self.app)
 
         ctk.CTkLabel(v, text=f"🧪 4 variantes de: {idea_base[:60]}{'…' if len(idea_base) > 60 else ''}",
                      font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(12, 4))
@@ -251,8 +262,8 @@ class AbTestingMixin:
             txt.insert("1.0", prompt)
 
             def _usar(p=prompt):
-                self.actualizar_salida(p)
-                self.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
+                self.app.actualizar_salida(p)
+                self.app.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
                 # No cerramos la ventana para poder ver las otras opciones
 
             btn = ctk.CTkButton(cell, text="✅ Usar este", height=28, fg_color="#1a8a3c", hover_color="#127a30",
@@ -260,22 +271,22 @@ class AbTestingMixin:
             btn.pack(fill="x", padx=10, pady=(0, 8))
 
         ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy, fg_color=c["fg_dark"]).pack(pady=(5, 12))
-        self.set_estado("🧪 Elige la variante que más te guste", "#3498db")
-        self.toggle_botones(True)
+        self.app.set_estado("🧪 Elige la variante que más te guste", "#3498db")
+        self.app.toggle_botones(True)
 
     def _cmd_comparar_modelos(self):
         """Genera el prompt actual adaptado a 3 modelos a elegir por el usuario."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
         try:
-            self._sesion_log("🆚 Comparar: abrió comparador de modelos")
+            self.app._sesion_log("🆚 Comparar: abrió comparador de modelos")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
 
         # Lista de modelos disponibles según modo
         if modo == "imagen":
@@ -297,10 +308,10 @@ class AbTestingMixin:
                     if len(sugeridos) >= 5:
                         break
 
-        sel_vent = GPromptWindow(self)
+        sel_vent = GPromptWindow(self.app)
         sel_vent.title("🆚 Elige modelos para comparar")
         sel_vent.geometry("520x500")
-        sel_vent.transient(self)
+        sel_vent.transient(self.app)
 
         ctk.CTkLabel(sel_vent, text="🆚 Comparador de modelos",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
@@ -365,7 +376,7 @@ class AbTestingMixin:
             seleccionados = [combos[i].get() for i in range(n)]
             # Validar que sean diferentes
             if len(set(seleccionados)) < n:
-                self.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
+                self.app.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
                 return
             sel_vent.destroy()
             self._abrir_ventana_comparacion(idea, modo, seleccionados)
@@ -383,12 +394,12 @@ class AbTestingMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         n_modelos = len(modelos_compare)
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title(f"🆚 Comparativa de modelos ({n_modelos})")
         # Tamaño dinámico: más alto si hay más modelos (cards apiladas)
         alto = min(620 + max(0, n_modelos - 3) * 120, 950)
         vent.geometry(f"820x{alto}")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=f"🆚 Comparativa de {n_modelos} modelos",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
@@ -483,7 +494,7 @@ class AbTestingMixin:
                         f"MODELO: {modelo}\n"
                         f"FORTALEZAS: {best_for}\n\n"
                         f"IDEA: {idea}\n"
-                        f"ESTILOS A INCLUIR: {self.estilos_texto()}\n\n"
+                        f"ESTILOS A INCLUIR: {self.app.estilos_texto()}\n\n"
                         "REGLAS ESTRICTAS:\n"
                         f"- Formato: {tipo_format}\n"
                         f"- Límite POSITIVE: {max_c} caracteres\n"
@@ -494,7 +505,7 @@ class AbTestingMixin:
                         f"- Aprovecha las fortalezas del modelo {modelo}\n\n"
                         f"{estructura}"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.45, max_tokens=1500)
+                    resp = self.app.deepseek.generar(peticion, temperature=0.45, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
 
                     # Defensa client-side: extraer SOLO el primer bloque
@@ -542,25 +553,25 @@ class AbTestingMixin:
                                 # La ventana NO se cierra: el usuario puede
                                 # seguir probando otros modelos del set sin
                                 # perder las opciones.
-                                modo_act = self.modo_var.get()
+                                modo_act = self.app.modo_var.get()
                                 try:
-                                    if modo_act == "imagen" and hasattr(self, "combo_modelo_imagen"):
-                                        valores = list(self.combo_modelo_imagen.cget("values") or [])
+                                    if modo_act == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
+                                        valores = list(self.app.combo_modelo_imagen.cget("values") or [])
                                         if m2 in valores:
-                                            self.combo_modelo_imagen.set(m2)
-                                            if hasattr(self, "_on_modelo_imagen_cambio"):
-                                                self._on_modelo_imagen_cambio()
-                                    elif modo_act == "video" and hasattr(self, "combo_modelo_video"):
-                                        valores = list(self.combo_modelo_video.cget("values") or [])
+                                            self.app.combo_modelo_imagen.set(m2)
+                                            if hasattr(self.app, "_on_modelo_imagen_cambio"):
+                                                self.app._on_modelo_imagen_cambio()
+                                    elif modo_act == "video" and hasattr(self.app, "combo_modelo_video"):
+                                        valores = list(self.app.combo_modelo_video.cget("values") or [])
                                         if m2 in valores:
-                                            self.combo_modelo_video.set(m2)
-                                    elif modo_act == "audio" and hasattr(self, "combo_modelo_audio"):
-                                        valores = list(self.combo_modelo_audio.cget("values") or [])
+                                            self.app.combo_modelo_video.set(m2)
+                                    elif modo_act == "audio" and hasattr(self.app, "combo_modelo_audio"):
+                                        valores = list(self.app.combo_modelo_audio.cget("values") or [])
                                         if m2 in valores:
-                                            self.combo_modelo_audio.set(m2)
+                                            self.app.combo_modelo_audio.set(m2)
                                 except Exception as _e:
                                     logger.debug(f"[silent compar usar] {_e}")
-                                self.actualizar_salida(r2)
+                                self.app.actualizar_salida(r2)
 
                                 # Highlight visual: borde dorado en la card aplicada,
                                 # las demás vuelven a su color original.
@@ -576,7 +587,7 @@ class AbTestingMixin:
                                     except Exception as _e:
                                         logger.debug(f"[silent highlight] {_e}")
 
-                                self.set_estado(
+                                self.app.set_estado(
                                     f"🏆 '{m2}' aplicado — la ventana sigue abierta para probar otros",
                                     "#2ecc71")
 
@@ -590,10 +601,10 @@ class AbTestingMixin:
                                 state="normal",
                                 command=lambda r=r, m=m: (
                                     pyperclip.copy(r),
-                                    self.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
+                                    self.app.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
-                    self.after(0, _mostrar)
+                    self.app.after(0, _mostrar)
                 except Exception as e:
                     def _err(m=modelo, exc=e):
                         try:
@@ -605,7 +616,7 @@ class AbTestingMixin:
                             cards[m]["txt"].configure(state="disabled")
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
-                    self.after(0, lambda e=e: _err(m=modelo, exc=e))
+                    self.app.after(0, lambda e=e: _err(m=modelo, exc=e))
 
             def _todos():
                 for m in modelos_compare:

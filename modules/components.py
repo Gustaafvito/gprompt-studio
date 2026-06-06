@@ -498,20 +498,24 @@ class JsonPromptComponent(_Component):
 
 
 class AbTestingComponent(_Component):
-    """A/B testing 2x2 + comparador de modelos (AbTestingMixin).
+    """A/B testing 2x2 + comparador de modelos.
 
-    Segundo servicio del refactor A1. Solo expone los 2 puntos de
-    entrada (los métodos internos _ab_lanzar / _mostrar_ab_grid /
-    _abrir_ventana_comparacion siguen llamándose vía self.X desde
-    dentro del mixin).
+    A1 fase 2 (sesión 14): AbTestingMixin → AbTestingService aislado.
+    El componente instancia el service y delega los 2 comandos.
     """
     _name = "ab"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.ab_testing import AbTestingService
+        self._service = AbTestingService(app)
 
     def cmd_ab_testing(self) -> None:
-        return self.app._cmd_ab_testing()
+        return self._service._cmd_ab_testing()
 
     def cmd_comparar_modelos(self) -> None:
-        return self.app._cmd_comparar_modelos()
+        return self._service._cmd_comparar_modelos()
 
 
 class PromptsComponent(_Component):
