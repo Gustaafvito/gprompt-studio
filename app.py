@@ -32,7 +32,6 @@ from config import (
     get_theme_colors,
 )
 from modules import (
-    BackupExportMixin,
     CoreMixin,
     DataMgmtMixin,
     DialogsMixin,
@@ -65,7 +64,7 @@ class ArquitectoApp(
     ToolsWorkflowMixin,
     ToolsAnalysisMixin,
     DataMgmtMixin,
-    BackupExportMixin,
+    # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
     DialogsMixin,
     CoreMixin,
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)

@@ -7,7 +7,7 @@ También incluye servicios y utilidades independientes.
 from .ab_testing import AbTestingService  # A1 fase 2 (sesión 14)
 from .adn_visual import AdnVisualService  # A1 fase 2 (sesión 14)
 from .atajos_ayuda import AtajosAyudaService  # A1 fase 2
-from .backup_export import BackupExportMixin
+from .backup_export import BackupExportService  # A1 fase 2 (sesión 14)
 from .comfyui_exporter import ComfyUIWorkflowExporter
 from .components import install_components
 from .core import CoreMixin
@@ -37,7 +37,7 @@ __all__ = [
     "ToolsWorkflowMixin",
     "ToolsAnalysisMixin",
     "DataMgmtMixin",
-    "BackupExportMixin",
+    "BackupExportService",
     "DialogsMixin",
     "CoreMixin",
     "AdnVisualService",

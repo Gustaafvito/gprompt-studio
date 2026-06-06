@@ -228,25 +228,32 @@ class DataComponent(_Component):
 
 
 class BackupComponent(_Component):
-    """Backup, Restore, CSV, Export CLI, Búsqueda global
-    (BackupExportMixin). Decimoséptimo servicio del refactor A1.
+    """Backup, Restore, CSV, Export CLI, Búsqueda global.
+
+    A1 fase 2 (sesión 14): BackupExportMixin → BackupExportService aislado.
     """
     _name = "backup"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.backup_export import BackupExportService
+        self._service = BackupExportService(app)
 
     def cmd_backup_completo(self) -> None:
-        return self.app._cmd_backup_completo()
+        return self._service._cmd_backup_completo()
 
     def cmd_restore_completo(self) -> None:
-        return self.app._cmd_restore_completo()
+        return self._service._cmd_restore_completo()
 
     def cmd_exportar_csv(self) -> None:
-        return self.app._cmd_exportar_csv()
+        return self._service._cmd_exportar_csv()
 
     def cmd_export_cli(self) -> None:
-        return self.app._cmd_export_cli()
+        return self._service._cmd_export_cli()
 
     def cmd_busqueda_global(self) -> None:
-        return self.app._cmd_busqueda_global()
+        return self._service._cmd_busqueda_global()
 
 
 class DialogsComponent(_Component):

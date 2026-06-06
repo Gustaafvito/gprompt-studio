@@ -18,8 +18,14 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     pass
 
-class BackupExportMixin:
-    """Mixin containing all backup, export, and search methods."""
+class BackupExportService:
+    """Backup, Restore, Export CSV/CLI, Búsqueda Global.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_backup_completo(self) -> None:
         """Exporta TODOS los datos del usuario a un único archivo JSON de respaldo."""
@@ -53,24 +59,24 @@ class BackupExportMixin:
                 f"  - LoRAs:      {len(backup['loras'])}\n"
                 f"  - Plantillas: {len(backup['plantillas'])}"
             )
-            messagebox.showinfo("Backup completo", mensaje, parent=self)
-            self.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
+            messagebox.showinfo("Backup completo", mensaje, parent=self.app)
+            self.app.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
         except Exception as e:
-            self.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self)
+            self.app.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self.app)
 
     def _construir_backup(self) -> dict:
         """Construye el diccionario con todos los datos del usuario."""
         return {
             "version": VERSION,
             "fecha_backup": datetime.datetime.now().isoformat(),
-            "historial":   self.store.historial or [],
-            "favoritos":   self.store.favoritos or [],
-            "estrellas":   self.store.estrellas or [],
-            "personajes":  self.store.personajes or [],
-            "loras":       self.store.loras or [],
-            "plantillas":  self.store.plantillas or [],
-            "preferencias": self.store.cargar_preferencias() or {},
+            "historial":   self.app.store.historial or [],
+            "favoritos":   self.app.store.favoritos or [],
+            "estrellas":   self.app.store.estrellas or [],
+            "personajes":  self.app.store.personajes or [],
+            "loras":       self.app.store.loras or [],
+            "plantillas":  self.app.store.plantillas or [],
+            "preferencias": self.app.store.cargar_preferencias() or {},
         }
 
     def _cmd_restore_completo(self) -> None:
@@ -97,15 +103,15 @@ class BackupExportMixin:
                 messagebox.showerror("Backup inválido",
                                      "El archivo no parece un backup de G-Prompt Studio "
                                      "(falta el campo 'version').",
-                                     parent=self)
+                                     parent=self.app)
                 return
 
-            tot_actual = (len(self.store.historial or []) +
-                          len(self.store.favoritos or []) +
-                          len(self.store.estrellas or []) +
-                          len(self.store.personajes or []) +
-                          len(self.store.loras or []) +
-                          len(self.store.plantillas or []))
+            tot_actual = (len(self.app.store.historial or []) +
+                          len(self.app.store.favoritos or []) +
+                          len(self.app.store.estrellas or []) +
+                          len(self.app.store.personajes or []) +
+                          len(self.app.store.loras or []) +
+                          len(self.app.store.plantillas or []))
             tot_backup = (len(backup.get("historial", [])) +
                           len(backup.get("favoritos", [])) +
                           len(backup.get("estrellas", [])) +
@@ -133,7 +139,7 @@ class BackupExportMixin:
                 f"de tus datos ACTUALES antes de sobrescribir, así puedes volver "
                 f"atrás si te equivocas.\n\n"
                 f"¿Continuar?",
-                parent=self,
+                parent=self.app,
             ):
                 return
 
@@ -152,62 +158,62 @@ class BackupExportMixin:
                     "Error",
                     f"No se pudo crear el backup de seguridad pre-restore:\n{e}\n\n"
                     f"Restauración CANCELADA para no arriesgar tus datos actuales.",
-                    parent=self,
+                    parent=self.app,
                 )
                 return
 
             # ── RESTAURAR ──
-            self.store.historial   = backup.get("historial", [])
-            self.store.favoritos   = backup.get("favoritos", [])
-            self.store.estrellas   = backup.get("estrellas", [])
-            self.store.personajes  = backup.get("personajes", [])
-            self.store.loras       = backup.get("loras", [])
-            self.store.plantillas  = backup.get("plantillas", [])
+            self.app.store.historial   = backup.get("historial", [])
+            self.app.store.favoritos   = backup.get("favoritos", [])
+            self.app.store.estrellas   = backup.get("estrellas", [])
+            self.app.store.personajes  = backup.get("personajes", [])
+            self.app.store.loras       = backup.get("loras", [])
+            self.app.store.plantillas  = backup.get("plantillas", [])
 
             for col in ["historial", "favoritos", "estrellas",
                         "personajes", "loras", "plantillas"]:
-                self.store._guardar(col)
+                self.app.store._guardar(col)
 
             if backup.get("preferencias"):
-                self.store.guardar_preferencias(backup["preferencias"])
+                self.app.store.guardar_preferencias(backup["preferencias"])
 
-            self.actualizar_combo_personajes()
-            self.actualizar_combo_loras()
-            if hasattr(self, "actualizar_combo_plantillas"):
-                self.actualizar_combo_plantillas()
+            self.app.actualizar_combo_personajes()
+            self.app.actualizar_combo_loras()
+            if hasattr(self.app, "actualizar_combo_plantillas"):
+                self.app.actualizar_combo_plantillas()
 
             messagebox.showinfo(
                 "Restauración completada",
                 f"Backup restaurado ({tot_backup} entradas).\n\n"
                 f"Tus datos anteriores se guardaron en:\n{pre_path}\n\n"
                 f"Si te has equivocado, puedes restaurar ese archivo.",
-                parent=self,
+                parent=self.app,
             )
-            self.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
+            self.app.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
         except Exception as e:
-            self.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self)
+            self.app.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
         """Selector previo de qué exportar: historial / favoritos / estrellas /
         todos juntos. Después abre filedialog y vuelca a CSV.
         """
         # Pre-comprobación: ¿hay algo que exportar?
-        hist  = self.store.historial or []
-        favs  = self.store.favoritos or []
-        stars = self.store.estrellas or []
+        hist  = self.app.store.historial or []
+        favs  = self.app.store.favoritos or []
+        stars = self.app.store.estrellas or []
         if not (hist or favs or stars):
-            return self.set_estado(
+            return self.app.set_estado(
                 "⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos).",
                 "#e67e22",
             )
 
         # ── Selector ──
         from modules.gprompt_window import GPromptWindow
-        sel = GPromptWindow(self)
+        sel = GPromptWindow(self.app)
         sel.title("📊 Exportar a CSV")
         sel.geometry("420x300")
-        sel.transient(self)
+        sel.transient(self.app)
 
         ctk.CTkLabel(sel, text="📊 Exportar a CSV",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
@@ -312,15 +318,15 @@ class BackupExportMixin:
                             it.get("contenido", ""),
                         ])
                         n += 1
-            self.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
+            self.app.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
             messagebox.showinfo(
                 "Exportación completada",
                 f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
-                parent=self,
+                parent=self.app,
             )
         except Exception as e:
-            self.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self)
+            self.app.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
+            messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self.app)
 
     def _cmd_export_cli(self) -> None:
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.
@@ -337,13 +343,13 @@ class BackupExportMixin:
         """
         import json as _json
         import re
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        ratio = self.ratio_var.get() or "1:1"
-        pos = self.extraer_positive() or actual
-        neg = self.extraer_negative() or ""
+        ratio = self.app.ratio_var.get() or "1:1"
+        pos = self.app.extraer_positive() or actual
+        neg = self.app.extraer_negative() or ""
 
         # Limpiezas
         pos_sin_pesos = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', pos).strip().rstrip(",").strip()
@@ -421,7 +427,7 @@ class BackupExportMixin:
             "positive": pos_sin_pesos,
             "negative": neg_sin_pesos,
             "aspect_ratio": ratio,
-            "model_target": getattr(self, "combo_modelo_imagen", None).get() if hasattr(self, "combo_modelo_imagen") else "unknown",
+            "model_target": getattr(self.app, "combo_modelo_imagen", None).get() if hasattr(self.app, "combo_modelo_imagen") else "unknown",
             "formats": {
                 "midjourney": mj,
                 "niji6": niji,
@@ -442,10 +448,10 @@ class BackupExportMixin:
 
         # ── Ventana con filtro por modo + cards ───────────────────────
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📤 Export CLI — múltiples formatos")
         vent.geometry("820x680")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="📤 Export en múltiples formatos",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -478,7 +484,7 @@ class BackupExportMixin:
         filtro_row = ctk.CTkFrame(vent, fg_color="transparent")
         filtro_row.pack(fill="x", padx=12, pady=(0, 4))
         ctk.CTkLabel(filtro_row, text="Modo:").pack(side="left", padx=(0, 8))
-        modo_activo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
+        modo_activo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
         valor_inicial = {
             "imagen": "🖼 Imagen", "video": "🎬 Vídeo", "audio": "🎵 Audio"
         }.get(modo_activo, "🖼 Imagen")
@@ -507,10 +513,10 @@ class BackupExportMixin:
         def _make_copy(c, n, color):
             def _copiar():
                 pyperclip.copy(c)
-                self.set_estado(f"📋 {n} copiado", "#2ecc71")
-                if hasattr(self, "show_toast"):
+                self.app.set_estado(f"📋 {n} copiado", "#2ecc71")
+                if hasattr(self.app, "show_toast"):
                     try:
-                        self.show_toast(f"📋 Copiado: {n}", color, 1800)
+                        self.app.show_toast(f"📋 Copiado: {n}", color, 1800)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             return _copiar
@@ -575,7 +581,7 @@ class BackupExportMixin:
                          if modo_sel is None or m in (modo_sel, "todos")]
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
-            self.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
+            self.app.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
                             "#2ecc71")
 
         ctk.CTkButton(vent, text="📋 Copiar todos los del filtro actual",
@@ -591,10 +597,10 @@ class BackupExportMixin:
         Sin filtro por tipo → mucho ruido cuando solo buscas en una
         colección concreta.
         """
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🔎 Búsqueda global")
         vent.geometry("780x680")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🔎 Búsqueda en todas las colecciones",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -654,10 +660,10 @@ class BackupExportMixin:
                 return
 
             resultados = []
-            prefs = self.store.cargar_preferencias()
+            prefs = self.app.store.cargar_preferencias()
 
             if filtros["historial"].get():
-                for item in (self.store.historial or []):
+                for item in (self.app.store.historial or []):
                     if isinstance(item, dict):
                         txt_full = " ".join([
                             str(item.get("contenido", "")),
@@ -669,10 +675,10 @@ class BackupExportMixin:
                         txt_full = str(item).lower()
                     if termino in txt_full:
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
 
             if filtros["favoritos"].get():
-                for item in (self.store.favoritos or []):
+                for item in (self.app.store.favoritos or []):
                     if isinstance(item, dict):
                         txt = item.get("contenido", "") + " " + item.get("nombre", "")
                     else:
@@ -680,10 +686,10 @@ class BackupExportMixin:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
 
             if filtros["estrellas"].get():
-                for item in (self.store.estrellas or []):
+                for item in (self.app.store.estrellas or []):
                     if isinstance(item, dict):
                         txt = item.get("contenido", "") + " " + item.get("nombre", "")
                     else:
@@ -691,7 +697,7 @@ class BackupExportMixin:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.actualizar_salida(c)))
+                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
 
             if filtros["seeds"].get():
                 for s in (prefs.get("seeds_favoritos") or []):
@@ -699,14 +705,14 @@ class BackupExportMixin:
                                      s.get("modelo_img", ""), s.get("modelo_vid", "")]).lower()
                     if termino in txt:
                         desc = f"Modelo: {s.get('modelo_img') or s.get('modelo_vid', '')}, Estilos: {', '.join(s.get('estilos', [])[:3])}"
-                        resultados.append(("💎 Seed", s.get("nombre", "?"), desc, lambda seed=s: self._aplicar_seed(seed)))
+                        resultados.append(("💎 Seed", s.get("nombre", "?"), desc, lambda seed=s: self.app._aplicar_seed(seed)))
 
             if filtros["snippets"].get():
                 for s in (prefs.get("snippets") or []):
                     txt = (s.get("nombre", "") + " " + s.get("tags", "")).lower()
                     if termino in txt:
                         resultados.append(("✂️ Snippet", s.get("nombre", "?"), s.get("tags", "")[:200],
-                                            lambda tags=s.get("tags", ""): self._aplicar_atajo_tags(tags)))
+                                            lambda tags=s.get("tags", ""): self.app._aplicar_atajo_tags(tags)))
 
             if filtros["formulas"].get():
                 for f in (prefs.get("formulas") or []):
@@ -717,22 +723,22 @@ class BackupExportMixin:
                             txt_form = f"POSITIVE PROMPT: {ff.get('positive', '')}"
                             if ff.get('negative'):
                                 txt_form += f"\nNEGATIVE PROMPT: {ff.get('negative')}"
-                            self.actualizar_salida(txt_form)
+                            self.app.actualizar_salida(txt_form)
                         resultados.append(("🧪 Fórmula", f.get("nombre", "?"), pos_neg, _cargar_formula))
 
             if filtros["personajes"].get():
-                for p in (self.store.personajes or []):
+                for p in (self.app.store.personajes or []):
                     txt = (p.get("nombre", "") + " " + p.get("rasgos", "")).lower()
                     if termino in txt:
                         resultados.append(("🧑 Personaje", p.get("nombre", "?"), p.get("rasgos", "")[:200],
-                                            lambda nombre=p.get("nombre", ""): self.combo_personaje.set(nombre) if hasattr(self, 'combo_personaje') else None))
+                                            lambda nombre=p.get("nombre", ""): self.app.combo_personaje.set(nombre) if hasattr(self.app, 'combo_personaje') else None))
 
             if filtros["loras"].get():
-                for l in (self.store.loras or []):
+                for l in (self.app.store.loras or []):
                     txt = (l.get("nombre", "") + " " + l.get("descripcion", "")).lower()
                     if termino in txt:
                         resultados.append(("🔗 LoRA", l.get("nombre", "?"), l.get("descripcion", "")[:200],
-                                            lambda nombre=l.get("nombre", ""): self.combo_lora.set(nombre) if hasattr(self, 'combo_lora') else None))
+                                            lambda nombre=l.get("nombre", ""): self.app.combo_lora.set(nombre) if hasattr(self.app, 'combo_lora') else None))
 
             if not resultados:
                 # ¿Por qué no hay resultados? Distinguir entre "filtros restrictivos"
@@ -768,7 +774,7 @@ class BackupExportMixin:
 
                 btn = ctk.CTkButton(card, text="✅ Aplicar", width=90, height=22, fg_color="#1a7a3c",
                                       font=ctk.CTkFont(size=10),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
+                                      command=lambda a=accion: (a(), vent.destroy(), self.app.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.
@@ -783,9 +789,9 @@ class BackupExportMixin:
 
     def _close_menu_if_open(self, event=None) -> None:
         """Cierra el menú desplegable si está abierto."""
-        if hasattr(self, '_menu_activo') and self._menu_activo:
+        if hasattr(self.app, '_menu_activo') and self.app._menu_activo:
             try:
-                self._menu_activo.destroy()
+                self.app._menu_activo.destroy()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-            self._menu_activo = None
+            self.app._menu_activo = None
