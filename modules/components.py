@@ -445,34 +445,40 @@ class RefinamientoComponent(_Component):
 
 
 class WorkersIaComponent(_Component):
-    """Workers IA en threads (WorkersIaMixin).
+    """Workers IA en threads.
 
-    Quinto servicio del refactor A1. Los workers se invocan via
-    threading.Thread(target=...); exponemos referencias a los métodos
-    para que el caller use self.workers.worker_ia en vez de
-    self._worker_ia.
+    A1 fase 2 (sesión 14): WorkersIaMixin → WorkersIaService aislado.
+    Las @property devuelven referencias a los métodos del service para
+    que el caller pueda hacer `threading.Thread(target=self.workers.
+    worker_ia, ...)`.
     """
     _name = "workers"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.workers_ia import WorkersIaService
+        self._service = WorkersIaService(app)
 
     @property
     def worker_ia(self):
-        return self.app._worker_ia
+        return self._service._worker_ia
 
     @property
     def worker_vision(self):
-        return self.app._worker_vision
+        return self._service._worker_vision
 
     @property
     def worker_prompt_traduccion(self):
-        return self.app._worker_prompt_traduccion
+        return self._service._worker_prompt_traduccion
 
     @property
     def worker_prompt_quick(self):
-        return self.app._worker_prompt_quick
+        return self._service._worker_prompt_quick
 
     @property
     def worker_imagen_a_prompt(self):
-        return self.app._worker_imagen_a_prompt
+        return self._service._worker_imagen_a_prompt
 
 
 class AtajosAyudaComponent(_Component):

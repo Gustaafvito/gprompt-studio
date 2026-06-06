@@ -44,7 +44,6 @@ from modules import (
     UIBuildersMixin,
     UiEventsMixin,
     UiFooterMixin,
-    WorkersIaMixin,
     install_components,
 )
 from persistence import DataStore
@@ -70,7 +69,7 @@ class ArquitectoApp(
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
     # MultiPromptMixin removido (A1 fase 2, sesión 14) → self.multi.* (MultiPromptService)
     SesionVideoMixin,
-    WorkersIaMixin,
+    # WorkersIaMixin removido (A1 fase 2, sesión 14) → self.workers.* (WorkersIaService)
     # ModoClienteMixin removido (A1 fase 2, sesión 14) → self.cliente.* (ModoClienteService)
     # JsonPromptMixin removido del MRO (A1 fase 2): ahora es JsonPromptService
     # accesible via self.json.cmd_importar() / self.json.cmd_exportar()

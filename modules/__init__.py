@@ -29,7 +29,7 @@ from .tools_workflow import ToolsWorkflowMixin
 from .ui_builders import UIBuildersMixin
 from .ui_events import UiEventsMixin
 from .ui_footer import UiFooterMixin
-from .workers_ia import WorkersIaMixin
+from .workers_ia import WorkersIaService  # A1 fase 2 (sesión 14)
 
 __all__ = [
     "UIBuildersMixin",
@@ -43,7 +43,7 @@ __all__ = [
     "AdnVisualService",
     "MultiPromptService",
     "SesionVideoMixin",
-    "WorkersIaMixin",
+    "WorkersIaService",
     "ModoClienteService",
     "JsonPromptService",
     "PromptsInyeccionService",
