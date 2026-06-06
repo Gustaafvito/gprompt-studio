@@ -177,6 +177,10 @@ class PromptsInyeccionService:
         return system_prompt + extra
 
     def _inyectar_specs_formato(self, modelo: str, specs: dict, extra: str) -> str:
+        # Formato especial Z-Image-Base: bloques narrativos + negative dinámico
+        if specs.get("formato_bloques") == "z_image":
+            return self._inyectar_formato_z_image(modelo, specs, extra)
+
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
             if specs["has_negative"]:
@@ -201,6 +205,80 @@ class PromptsInyeccionService:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPOSITIVE PROMPT: [tags en inglés]\nNEGATIVE PROMPT: [tags negativos]\n"
             else:
                 extra += "• ⛔ Este modelo NO SOPORTA NEGATIVE PROMPT. Solo genera POSITIVE PROMPT.\n"
+        return extra
+
+    def _inyectar_formato_z_image(self, modelo: str, specs: dict, extra: str) -> str:
+        """Reglas específicas Z-Image-Base (S3-DiT, 6B params, formato híbrido).
+
+        Estructura forzada:
+        1. Preámbulo de quality tags con pesos: (masterpiece, top quality...).
+        2. 4 bloques narrativos: [Sujeto y Composición] [Acción] [Entorno] [Lighting & Mood].
+        3. NEGATIVE PROMPT dinámico = bloque fijo universal + bloque variable por
+           categoría (Fotorrealismo / Fantasía Mística / Ciencia Ficción).
+
+        El LLM debe ELEGIR la categoría según la idea del usuario.
+        """
+        extra += (
+            "• TIPO: Z-Image-Base — arquitectura S3-DiT (Single-Stream Diffusion "
+            "Transformer, 6B params). HÍBRIDO: tag preamble con pesos + bloques "
+            "narrativos en lenguaje natural.\n"
+            "• El modelo concatena tokens de texto + visuales en flujo unificado: "
+            "usa la estructura por BLOQUES claros para que procese instrucciones "
+            "en orden.\n"
+            "• Bilingüe EN/ZH. Strong en typography y high-frequency details.\n"
+            "• Settings óptimos: 28-50 steps, CFG 3-5.\n"
+        )
+        extra += (
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\n"
+            "\n"
+            "POSITIVE PROMPT:\n"
+            "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
+            "ultra-detailed, sharp focus, cinematic composition, "
+            "<lente sugerida: ej 35mm lens shot, wide-angle drone, macro>.\n"
+            "[Sujeto y Composición] <Sujeto principal + plano (close-up/wide/etc) "
+            "+ pose/composición. Describe rasgos físicos concretos: textura piel, "
+            "color ojos/pelo, vestuario.>\n"
+            "[Acción] <Qué está haciendo. Gestos, expresión, interacción. Si hay "
+            "destrucción/efectos: describe física (gotas, astillas, vetas de "
+            "energía, no solo 'magia').>\n"
+            "[Entorno] <Fondo, escenografía, época, props. Si es DOF: bokeh + "
+            "elementos secundarios desenfocados.>\n"
+            "[Lighting & Mood] <Iluminación específica (golden hour, volumetric, "
+            "dappled shadows, rim light) + atmósfera emocional (tense, peaceful, "
+            "epic, melancholic).>\n"
+            "\n"
+            "NEGATIVE PROMPT:\n"
+            "<Bloque fijo universal>, <Bloque variable según CATEGORÍA elegida>\n"
+            "\n"
+            "━━━ REGLAS NEGATIVE DINÁMICO ━━━\n"
+            "1️⃣ BLOQUE FIJO UNIVERSAL (siempre incluido al inicio):\n"
+            "   blurry, low-res, extra fingers, bad anatomy, deformed hands, "
+            "distorted text, text, watermark, signature, bad proportions, "
+            "cropped, out of frame, digital noise\n"
+            "\n"
+            "2️⃣ BLOQUE VARIABLE: ELIGE UNA categoría según el sujeto/escena "
+            "de la idea, y AÑADE su filtro:\n"
+            "   📷 FOTORREALISMO PURO (retratos, escenas reales, comida, "
+            "personas, productos):\n"
+            "       cartoon, illustration, painting, anime, 3d render, "
+            "smooth airbrushed skin, plastic skin, heavy makeup, "
+            "studio lighting, artificial reflections, oversaturated\n"
+            "   🐉 FANTASÍA MÍSTICA / ÉPICA (dragones, fénix, magia, "
+            "criaturas mitológicas, dioses):\n"
+            "       cute creature, friendly, mundane background, modern "
+            "elements, boring lighting, flat colors, photorealistic city\n"
+            "   🤖 CIENCIA FICCIÓN / CYBERPUNK (robots, tech, futurismo, "
+            "naves espaciales, AI):\n"
+            "       fantasy magic, medieval armor, organic monster, "
+            "rustic textures, historical setting, antique props\n"
+            "\n"
+            "📝 Ejemplo final NEGATIVE para idea de 'fénix mágico':\n"
+            "   blurry, low-res, extra fingers, bad anatomy, deformed hands, "
+            "distorted text, text, watermark, signature, bad proportions, "
+            "cropped, out of frame, digital noise, cute creature, friendly, "
+            "mundane background, modern elements, boring lighting, flat colors, "
+            "photorealistic city\n"
+        )
         return extra
 
     def _inyectar_template(self, motor: str, extra: str) -> str:

@@ -237,6 +237,7 @@ GRUPOS_IMAGEN = [
     ])),
     ("── Familia Z-Image ──", sorted([
         "Z Image Turbo",
+        "Z-Image-Base",
         "Z-Image-Base-Realistic",
     ])),
     ("── GPT Image (OpenAI en SeaArt) ──", sorted([

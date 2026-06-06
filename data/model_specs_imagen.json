@@ -149,6 +149,25 @@
     "coste_energia": "28 (Calidad) — gratis VIP",
     "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI."
   },
+  "Z-Image-Base": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": true,
+    "formato_bloques": "z_image",
+    "ratios": ["1:1", "16:9", "9:16", "3:4", "4:3", "2:3", "3:2", "4:5", "5:4"],
+    "max_chars": 1800,
+    "modos_gen": ["Estándar", "Calidad"],
+    "max_imagenes": 4,
+    "best_for": "Foundation checkpoint (6B params, arquitectura S3-DiT). HÍBRIDO: preámbulo de quality tags con pesos + bloques narrativos en lenguaje natural. Bilingüe EN/ZH. Photoreal portraits, cinematic scenes, posters. Fine-tuning friendly (Apache 2.0).",
+    "prompt_formula": "(quality tags:1.2), 8k details. [Sujeto y Composición] desc cinematográfica. [Acción] qué hace. [Entorno] fondo/época. [Lighting & Mood] luz + atmósfera.",
+    "prompt_ejemplo": "(masterpiece, top quality, raw photo:1.2), 8k, ultra-detailed, sharp focus, cinematic composition. [Sujeto y Composición] Extreme close-up on a rustic wooden floor. [Acción] On a small woven mat, a cute ceramic cat bowl with leftover crumbs. [Entorno] Background: a man asleep on a rocking chair, ginger cat curled at his feet. [Lighting & Mood] Warm afternoon sunlight, soft dappled shadows, still and peaceful.",
+    "sampler_recomendado": "Euler",
+    "pasos": "28-50",
+    "cfg": "3-5",
+    "negative_recomendado": "blurry, low-res, extra fingers, bad anatomy, deformed hands, distorted text, text, watermark, signature, bad proportions, cropped, out of frame, digital noise",
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción."
+  },
   "Z-Image-Base-Realistic": {
     "nota": 4.8,
     "has_negative": true,

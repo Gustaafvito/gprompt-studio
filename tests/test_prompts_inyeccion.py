@@ -110,6 +110,65 @@ class TestInyectarDestino:
         assert h._inyectar_destino("base") == "base"
 
 
+class TestInyectarFormatoZImage:
+    """Reglas Z-Image-Base: bloques narrativos + negative dinámico."""
+
+    SPECS_Z = {
+        "is_natural": True,
+        "has_negative": True,
+        "formato_bloques": "z_image",
+    }
+
+    def test_devuelve_string_no_vacio(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert isinstance(out, str)
+        assert len(out) > 200
+
+    def test_incluye_los_4_bloques_obligatorios(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        for bloque in ["[Sujeto y Composición]", "[Acción]",
+                        "[Entorno]", "[Lighting & Mood]"]:
+            assert bloque in out, f"Falta bloque {bloque}"
+
+    def test_incluye_preambulo_quality_tags(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert "masterpiece" in out
+        assert "raw photo:1.2" in out
+
+    def test_incluye_3_categorias_negative_dinamico(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert "FOTORREALISMO" in out
+        assert "FANTASÍA" in out
+        assert "CIENCIA FICCIÓN" in out or "CYBERPUNK" in out
+
+    def test_incluye_bloque_fijo_universal_negativo(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        for tag in ["blurry", "low-res", "extra fingers", "bad anatomy",
+                     "watermark", "out of frame"]:
+            assert tag in out, f"Falta negative universal: {tag}"
+
+    def test_menciona_settings_recomendados(self):
+        h = _host()
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert "28-50" in out
+        assert "3-5" in out
+
+    def test_se_activa_via_dispatcher_si_formato_bloques(self):
+        """Si specs.formato_bloques == 'z_image', _inyectar_specs_formato delega
+        a _inyectar_formato_z_image (no a la ruta natural normal)."""
+        h = _host()
+        out = h._inyectar_specs_formato("Z-Image-Base", self.SPECS_Z, "")
+        # La ruta normal natural escribe "TIPO: lenguaje natural descriptivo"
+        # La ruta z_image escribe "TIPO: Z-Image-Base — arquitectura S3-DiT"
+        assert "S3-DiT" in out
+        assert "lenguaje natural descriptivo. NO uses tags sueltos" not in out
+
+
 class TestInyectarSpecsModelo:
 
     def test_modo_audio_no_toca(self):
