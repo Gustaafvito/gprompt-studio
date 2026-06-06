@@ -382,16 +382,23 @@ class MultiPromptComponent(_Component):
 
 
 class ModoClienteComponent(_Component):
-    """Modo Cliente (brief + 5 propuestas) + Compañero Moodboard
-    (ModoClienteMixin). Séptimo servicio del refactor A1.
+    """Modo Cliente (brief + 5 propuestas) + Compañero Moodboard.
+
+    A1 fase 2 (sesión 14): ModoClienteMixin → ModoClienteService aislado.
     """
     _name = "cliente"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.modo_cliente import ModoClienteService
+        self._service = ModoClienteService(app)
 
     def cmd_modo_cliente(self) -> None:
-        return self.app._cmd_modo_cliente()
+        return self._service._cmd_modo_cliente()
 
     def cmd_companero_moodboard(self) -> None:
-        return self.app._cmd_companero_moodboard()
+        return self._service._cmd_companero_moodboard()
 
 
 class RefinamientoComponent(_Component):

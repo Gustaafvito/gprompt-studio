@@ -34,8 +34,15 @@ from workers import limpiar_marcadores
 logger = logging.getLogger(__name__)
 
 
-class ModoClienteMixin:
-    """Mixin con Modo Cliente + Compañero Moodboard."""
+class ModoClienteService:
+    """Modo Cliente (brief + 5 propuestas) + Compañero Moodboard.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    Acceso: `app.cliente.cmd_modo_cliente()`, `app.cliente.cmd_companero_moodboard()`.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_modo_cliente(self):
         """Modo Cliente: brief simplificado para generar 5 propuestas profesionales.
@@ -45,10 +52,10 @@ class ModoClienteMixin:
         """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("💼 Modo Cliente")
         vent.geometry("640x720")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="💼 Modo Cliente — Brief profesional",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -134,7 +141,7 @@ class ModoClienteMixin:
 
                 def _analizar():
                     try:
-                        desc, motor = self.vision.describir(img, "imagen", lambda m: None)
+                        desc, motor = self.app.vision.describir(img, "imagen", lambda m: None)
                         cliente_state["descripcion"] = desc
                         lbl_estado_img.configure(text=f"✅ Imagen analizada (vision: {motor})", text_color="#2ecc71")
                     except Exception as e:
@@ -182,7 +189,7 @@ class ModoClienteMixin:
 
         # ── Cargar último brief desde preferencias ──
         try:
-            _prefs = self.store.cargar_preferencias() or {}
+            _prefs = self.app.store.cargar_preferencias() or {}
             ultimo = _prefs.get("modo_cliente_ultimo_brief") or {}
             for k, ent in campos.items():
                 if ultimo.get(k):
@@ -193,14 +200,14 @@ class ModoClienteMixin:
         def _generar_propuestas():
             brief_dict = {k: v.get().strip() for k, v in campos.items()}
             if not any(brief_dict.values()):
-                self.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
+                self.app.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
                 return
 
             # Persistir último brief
             try:
-                _p = self.store.cargar_preferencias() or {}
+                _p = self.app.store.cargar_preferencias() or {}
                 _p["modo_cliente_ultimo_brief"] = brief_dict
-                self.store.guardar_preferencias(_p)
+                self.app.store.guardar_preferencias(_p)
             except Exception as _e:
                 logger.debug(f"[silent] persistir brief: {_e}")
 
@@ -223,10 +230,10 @@ class ModoClienteMixin:
 
     def _generar_propuestas_cliente(self, brief):
         """Genera 5 propuestas basadas en un brief."""
-        self.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
+        self.app.toggle_botones(False)
 
-        specs = self.get_current_model_specs()
+        specs = self.app.get_current_model_specs()
         has_neg = specs.get("has_negative", True) if specs else True
         is_natural = specs.get("is_natural", False) if specs else False
         fmt = "lenguaje natural descriptivo en prosa" if is_natural else "tags con pesos (tag:1.2) separados por comas"
@@ -252,7 +259,7 @@ class ModoClienteMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=4000)
                 resp = limpiar_marcadores(resp)
 
                 # ── Parseo específico de "=== PROPUESTA N: Nombre === ... ──
@@ -285,7 +292,7 @@ class ModoClienteMixin:
 
                 # Fallback: si el LLM no respetó el formato, usar el parser legacy
                 if not propuestas:
-                    bloques = self._parsear_bloques_numerados(resp, n_esperado=5)
+                    bloques = self.app._parsear_bloques_numerados(resp, n_esperado=5)
                     for i, b in enumerate(bloques[:5], 1):
                         mp = re.search(r'POSITIVE\s+PROMPT\s*:?\s*(.+?)(?=\n\s*NEGATIVE|\Z)',
                                        b, re.DOTALL | re.IGNORECASE)
@@ -300,16 +307,16 @@ class ModoClienteMixin:
 
                 def _mostrar():
                     self._abrir_comparador_propuestas(propuestas[:5], brief)
-                    self.set_estado(
+                    self.app.set_estado(
                         f"💼 {len(propuestas)} propuestas profesionales generadas",
                         "#2ecc71",
                     )
-                    self.toggle_botones(True)
-                    self._sonar_completado()
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app._sonar_completado()
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -346,10 +353,10 @@ class ModoClienteMixin:
                     "negative": mn.group(1).strip() if mn else "",
                 })
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("💼 Propuestas profesionales")
         vent.geometry("900x720")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=f"💼 {len(propuestas_norm)} Propuestas para tu brief",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
@@ -399,29 +406,29 @@ class ModoClienteMixin:
 
             def _usar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
-                self.actualizar_salida(completo)
-                self.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
+                self.app.actualizar_salida(completo)
+                self.app.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
                 vent.destroy()
 
             def _copiar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 pyperclip.copy(completo)
-                self.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
+                self.app.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
 
             def _guardar_prop(nom=titulo, p=positivo, neg=negativo):
                 """Guarda como FAVORITO con marca de origen. Antes intentaba
-                guardar en self.store.propuestas que no existe + llamaba a
-                self.store.guardar() que no existe → crasheaba."""
+                guardar en self.app.store.propuestas que no existe + llamaba a
+                self.app.store.guardar() que no existe → crasheaba."""
                 completo = f"POSITIVE PROMPT: {p}"
                 if neg:
                     completo += f"\nNEGATIVE PROMPT: {neg}"
                 try:
-                    self.store.agregar_favorito({
+                    self.app.store.agregar_favorito({
                         "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        "modo":       self.modo_var.get() if hasattr(self, "modo_var") else "imagen",
-                        "plataforma": self.plataforma_var.get() if hasattr(self, "plataforma_var") else "",
+                        "modo":       self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen",
+                        "plataforma": self.app.plataforma_var.get() if hasattr(self.app, "plataforma_var") else "",
                         "estilos":    "",
-                        "ratio":      self.ratio_var.get() if hasattr(self, "ratio_var") else "",
+                        "ratio":      self.app.ratio_var.get() if hasattr(self.app, "ratio_var") else "",
                         "nsfw":       False,
                         "personaje":  "",
                         "lora":       "",
@@ -431,9 +438,9 @@ class ModoClienteMixin:
                         "nombre":     nom,
                         "contenido":  completo,
                     })
-                    self.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
+                    self.app.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
                 except Exception as e:
-                    self.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
+                    self.app.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
 
             ctk.CTkButton(btn_row, text="✅ Usar propuesta", width=150, height=30, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
@@ -464,10 +471,10 @@ class ModoClienteMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🎭 Moodboard — Estilo común")
         vent.geometry("720x680")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🎭 Moodboard — Detecta el estilo común de tus imágenes",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -475,7 +482,7 @@ class ModoClienteMixin:
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
 
         # ── Imagen ya cargada ──
-        if self.imagen_cargada:
+        if self.app.imagen_cargada:
             frame_ref = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
             frame_ref.pack(fill="x", padx=15, pady=(0, 6))
             hdr_ref = ctk.CTkFrame(frame_ref, fg_color="transparent")
@@ -605,8 +612,8 @@ class ModoClienteMixin:
             # Construir lista de imágenes. Si alguna falla al abrir (corrupta o
             # ruta inválida) lo reportamos en vez de tragarlo silenciosamente.
             todas_imagenes = []
-            if self.imagen_cargada:
-                todas_imagenes.append(self.imagen_cargada)
+            if self.app.imagen_cargada:
+                todas_imagenes.append(self.app.imagen_cargada)
             fallos_open = []
             if archivos_state["rutas"]:
                 import os
@@ -630,10 +637,10 @@ class ModoClienteMixin:
                 )
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
-                return self.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
+                return self.app.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
 
-            self.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
-            self.toggle_botones(False)
+            self.app.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
+            self.app.toggle_botones(False)
             lbl_prog.pack(anchor="w")
             progress_bar.pack(fill="x", pady=(2, 0))
             lbl_prog.configure(text=f"Analizando imagen 1/{total_imgs}...")
@@ -644,13 +651,13 @@ class ModoClienteMixin:
                     descripciones = []
                     for i, img in enumerate(todas_imagenes):
                         progreso_state["n"] = i + 1
-                        self.after(0, lambda n=i+1, t=total_imgs:
+                        self.app.after(0, lambda n=i+1, t=total_imgs:
                                    (lbl_prog.configure(text=f"Analizando imagen {n}/{t}..."),
                                     progress_bar.set(n / t)))
-                        desc, _ = self.vision.describir(img, "imagen", lambda m: None)
+                        desc, _ = self.app.vision.describir(img, "imagen", lambda m: None)
                         descripciones.append(desc)
 
-                    self.after(0, lambda: lbl_prog.configure(text="Extrayendo estilo común..."))
+                    self.app.after(0, lambda: lbl_prog.configure(text="Extrayendo estilo común..."))
                     peticion = (
                         f"Has analizado {len(descripciones)} imágenes con estilo similar. "
                         f"Extrae el ESTILO COMÚN entre ellas.\n\n"
@@ -662,16 +669,16 @@ class ModoClienteMixin:
                         + "💡 ILUMINACIÓN: [tipo de luz común]\n\n"
                         + "🎬 PROMPT TEMPLATE EN INGLÉS (para generar imágenes en este mismo estilo):\n[prompt completo]"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.4, max_tokens=2000)
+                    resp = self.app.deepseek.generar(peticion, temperature=0.4, max_tokens=2000)
                     resp = limpiar_marcadores(resp)
 
                     def _mostrar():
                         lbl_prog.pack_forget()
                         progress_bar.pack_forget()
-                        vent2 = GPromptWindow(self)
+                        vent2 = GPromptWindow(self.app)
                         vent2.title("🎭 Estilo común detectado")
                         vent2.geometry("720x650")
-                        vent2.transient(self)
+                        vent2.transient(self.app)
                         ctk.CTkLabel(vent2, text=f"🎭 Estilo detectado en {len(descripciones)} imágenes",
                                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
 
@@ -688,14 +695,14 @@ class ModoClienteMixin:
                             m = re.search(r'PROMPT\s+TEMPLATE[^:]*:\s*(.+?)(?=\Z)', resp, re.DOTALL | re.IGNORECASE)
                             if m:
                                 template = m.group(1).strip()
-                                self.actualizar_salida(template)
+                                self.app.actualizar_salida(template)
                                 vent2.destroy()
-                                self.set_estado("🎭 Template aplicado", "#2ecc71")
+                                self.app.set_estado("🎭 Template aplicado", "#2ecc71")
 
                         def _guardar_estilo():
                             import re as _re
                             from tkinter import simpledialog
-                            prefs_g = self.store.cargar_preferencias()
+                            prefs_g = self.app.store.cargar_preferencias()
                             estilos_g = prefs_g.get("estilos_moodboard", []) or []
                             if not isinstance(estilos_g, list):
                                 estilos_g = []
@@ -723,8 +730,8 @@ class ModoClienteMixin:
                                 "n_imagenes": len(descripciones),
                             })
                             prefs_g["estilos_moodboard"] = estilos_g
-                            self.store.guardar_preferencias(prefs_g)
-                            self.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
+                            self.app.store.guardar_preferencias(prefs_g)
+                            self.app.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
 
                         ctk.CTkButton(btn_row2, text="✅ Aplicar template", width=140, height=28,
                                       fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
@@ -733,14 +740,14 @@ class ModoClienteMixin:
                         ctk.CTkButton(btn_row2, text="📋 Copiar análisis", width=140, height=28,
                                       command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
 
-                        self.toggle_botones(True)
-                        self.set_estado("🎭 Estilo común detectado", "#2ecc71")
-                    self.after(0, _mostrar)
+                        self.app.toggle_botones(True)
+                        self.app.set_estado("🎭 Estilo común detectado", "#2ecc71")
+                    self.app.after(0, _mostrar)
                 except Exception as e:
-                    self.after(0, lambda: lbl_prog.pack_forget())
-                    self.after(0, lambda: progress_bar.pack_forget())
-                    self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                    self.after(0, lambda: self.toggle_botones(True))
+                    self.app.after(0, lambda: lbl_prog.pack_forget())
+                    self.app.after(0, lambda: progress_bar.pack_forget())
+                    self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                    self.app.after(0, lambda: self.app.toggle_botones(True))
 
             threading.Thread(target=_trabajar, daemon=True).start()
 
@@ -783,7 +790,7 @@ class ModoClienteMixin:
         def _refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            prefs_l = self.store.cargar_preferencias()
+            prefs_l = self.app.store.cargar_preferencias()
             estilos = prefs_l.get("estilos_moodboard", []) or []
             cont_var.set(f"{len(estilos)} estilo(s) guardado(s)")
             if not estilos:
@@ -814,11 +821,11 @@ class ModoClienteMixin:
                 def _aplicar(e=est):
                     tpl = e.get("template", "").strip()
                     if not tpl:
-                        self.set_estado("⚠️ Este estilo no tiene template aplicable",
+                        self.app.set_estado("⚠️ Este estilo no tiene template aplicable",
                                         "#e67e22")
                         return
-                    self.actualizar_salida(tpl)
-                    self.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
+                    self.app.actualizar_salida(tpl)
+                    self.app.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
                                     "#2ecc71")
 
                 def _ver(e=est):
@@ -839,12 +846,12 @@ class ModoClienteMixin:
                                         f"¿Borrar estilo '{nombre}'?",
                                         parent=win):
                         return
-                    prefs_b = self.store.cargar_preferencias()
+                    prefs_b = self.app.store.cargar_preferencias()
                     lst = prefs_b.get("estilos_moodboard", []) or []
                     if 0 <= i < len(lst):
                         lst.pop(i)
                         prefs_b["estilos_moodboard"] = lst
-                        self.store.guardar_preferencias(prefs_b)
+                        self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()
 
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
