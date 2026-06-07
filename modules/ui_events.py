@@ -275,6 +275,20 @@ class UiEventsService:
         try: self.app.dialogs._actualizar_tokens()
         except Exception as e:
             logger.debug(f"[silent] {e}")
+        # Mostrar / ocultar combo "Estilo Z" según familia del modelo
+        try:
+            es_z_image = ("z-image" in modelo_name.lower()
+                          or "z image" in modelo_name.lower()
+                          or "z_image" in modelo_name.lower())
+            if hasattr(self.app, "frame_z_estilo"):
+                if es_z_image and not self.app.frame_z_estilo.winfo_ismapped():
+                    # Empaquetar después del frame del modelo (combo_modelo_imagen.master)
+                    self.app.frame_z_estilo.pack(side="left", padx=(4, 8),
+                                                 after=self.app.combo_modelo_imagen.master)
+                elif (not es_z_image) and self.app.frame_z_estilo.winfo_ismapped():
+                    self.app.frame_z_estilo.pack_forget()
+        except Exception as _e:
+            logger.debug(f"[silent z_estilo toggle] {_e}")
         if self.app.modo_var.get() != "imagen":
             self.app.lbl_img_model_info.pack_forget()
             return

@@ -240,6 +240,31 @@ class PromptsInyeccionService:
         except Exception:
             lora_trigger = ""
 
+        # Toggle "Estilo Z" — el usuario fuerza una categoría en lugar de
+        # dejar que el LLM elija a ciegas. Hint el bloque ESTILÍSTICO del
+        # NEGATIVE (categoría 📷/🐉/🤖) además de orientar el POSITIVE.
+        estilo_z = "Auto"
+        try:
+            if hasattr(self.app, "z_image_estilo_var"):
+                estilo_z = self.app.z_image_estilo_var.get() or "Auto"
+        except Exception:
+            estilo_z = "Auto"
+        if estilo_z != "Auto":
+            categoria_map = {
+                "Photoreal": "📷 FOTORREALISMO PURO (retratos, comida, productos, gente real)",
+                "Creative":  "🎨 CREATIVO / ILUSTRACIÓN / ARTE CONCEPTUAL (estilizado, no foto)",
+                "Fantasy":   "🐉 FANTASÍA MÍSTICA / ÉPICA (dragones, fénix, magia, dioses)",
+                "SciFi":     "🤖 CIENCIA FICCIÓN / CYBERPUNK (robots, tech, naves, AI)",
+            }
+            extra += (
+                f"\n🎯 ESTILO Z FORZADO POR EL USUARIO: {estilo_z}.\n"
+                f"  • En el POSITIVE, orienta TODA la descripción a esta categoría.\n"
+                f"  • En el NEGATIVE, usa OBLIGATORIAMENTE el bloque "
+                f"estilístico de: {categoria_map.get(estilo_z, estilo_z)}.\n"
+                f"  • NO mezcles con otras categorías. El usuario eligió "
+                f"explícitamente '{estilo_z}'.\n"
+            )
+
         if lora_trigger:
             bloques_positivos = (
                 "[Subject & Composition] <Main subject + shot type "

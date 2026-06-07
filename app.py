@@ -227,6 +227,11 @@ class ArquitectoApp(
         # subidos que NO se deben describir literalmente sino usar como guía de
         # estilo/paleta/personajes para el prompt resultante.
         self.switch_ref_visual_var = ctk.BooleanVar(value=_switches_prefs.get("switch_ref_visual", False))
+        # Toggle Z-Image — hint de categoría al LLM para que no tenga que
+        # adivinarla. Valores: Auto / Photoreal / Creative / Fantasy / SciFi.
+        # Solo aplica cuando el modelo de imagen es de la familia Z-Image.
+        self.z_image_estilo_var  = ctk.StringVar(
+            value=_switches_prefs.get("z_image_estilo", "Auto"))
         self.estilo_checks       = {}
         self.preset_vars         = {}
         self.preset_btns         = {}
@@ -253,6 +258,8 @@ class ArquitectoApp(
                 "write", _persistir_switch("brief", self.brief_var.get))
             self.switch_ref_visual_var.trace_add(
                 "write", _persistir_switch("switch_ref_visual", self.switch_ref_visual_var.get))
+            self.z_image_estilo_var.trace_add(
+                "write", _persistir_switch("z_image_estilo", self.z_image_estilo_var.get))
         except Exception as _e:
             logger.debug(f"[silent] trace switches: {_e}")
 
