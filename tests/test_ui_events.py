@@ -1,15 +1,15 @@
-"""Tests para UiEventsMixin (modules/ui_events.py).
+"""Tests para UiEventsService (modules/ui_events.py).
 
-Cobertura de la lógica testeable de los event handlers de los combos
-del panel superior. Los widgets ctk se mockean con SimpleNamespace +
-MagicMock para no requerir display tk.
+A1 fase 2 (sesión 14): el mixin fue convertido a clase con app por
+composición. Los tests crean un fake_app con SimpleNamespace y pasan
+al constructor del service.
 """
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
-from modules.ui_events import UiEventsMixin
+from modules.ui_events import UiEventsService
 
 
 def _var(value):
@@ -35,8 +35,8 @@ def _combo(value="", values=None):
 
 
 def _host(**overrides):
-    cls = type("Host", (UiEventsMixin,), {})
-    h = cls()
+    """Construye un UiEventsService(app) con app simulado."""
+    app = SimpleNamespace()
     defaults = dict(
         set_estado=MagicMock(),
         reiniciar_memoria=MagicMock(),
@@ -75,8 +75,8 @@ def _host(**overrides):
     )
     defaults.update(overrides)
     for k, v in defaults.items():
-        setattr(h, k, v)
-    return h
+        setattr(app, k, v)
+    return UiEventsService(app)
 
 
 # ────────────────────────── _on_brief_cambio ───────────────────────────────
@@ -87,17 +87,17 @@ class TestOnBriefCambio:
     def test_brief_on_muestra_mensaje_naranja(self):
         h = _host(brief_var=_var(True))
         h._on_brief_cambio()
-        msg, color = h.set_estado.call_args[0]
+        msg, color = h.app.set_estado.call_args[0]
         assert "Brief ACTIVO" in msg or "brief" in msg.lower()
         assert color == "#f39c12"
-        h.reiniciar_memoria.assert_called_once()
+        h.app.reiniciar_memoria.assert_called_once()
 
     def test_brief_off_muestra_mensaje_default(self):
         h = _host(brief_var=_var(False))
         h._on_brief_cambio()
-        msg = h.set_estado.call_args[0][0]
+        msg = h.app.set_estado.call_args[0][0]
         assert "desactivado" in msg.lower() or "artísticos" in msg.lower()
-        h.reiniciar_memoria.assert_called_once()
+        h.app.reiniciar_memoria.assert_called_once()
 
 
 # ─────────────────────── _on_audio_filtro_cambio ──────────────────────────
@@ -112,7 +112,7 @@ class TestOnAudioFiltroCambio:
             idioma_audio_var=_var("— Idioma —"),
         )
         h._on_audio_filtro_cambio()
-        msg = h.set_estado.call_args[0][0]
+        msg = h.app.set_estado.call_args[0][0]
         assert "Sin filtros" in msg
 
     def test_con_emocion_muestra_chip(self):
@@ -122,7 +122,7 @@ class TestOnAudioFiltroCambio:
             idioma_audio_var=_var("— Idioma —"),
         )
         h._on_audio_filtro_cambio()
-        msg = h.set_estado.call_args[0][0]
+        msg = h.app.set_estado.call_args[0][0]
         assert "Melancólica" in msg
         assert "🎭" in msg
 
@@ -133,7 +133,7 @@ class TestOnAudioFiltroCambio:
             idioma_audio_var=_var("Inglés"),
         )
         h._on_audio_filtro_cambio()
-        msg = h.set_estado.call_args[0][0]
+        msg = h.app.set_estado.call_args[0][0]
         assert "Triste" in msg
         assert "Femenina" in msg
         assert "Inglés" in msg
@@ -141,7 +141,7 @@ class TestOnAudioFiltroCambio:
     def test_sin_atributos_vars_no_falla(self):
         h = _host()  # sin emocion_var, voz_var, idioma_audio_var
         h._on_audio_filtro_cambio()
-        h.set_estado.assert_called_once()
+        h.app.set_estado.assert_called_once()
 
 
 # ───────────────────── _actualizar_motores_video ──────────────────────────
@@ -158,12 +158,10 @@ class TestActualizarMotoresVideo:
             "modules.ui_events.MOTOR_DEFAULT",
             {"SeaArt Video": "Veo 3.1"},
         )
-        h = _host(
-            plataforma_var=_var("SeaArt Video"),
-            _on_motor_cambio=MagicMock(),  # spy explícito
-        )
+        h = _host(plataforma_var=_var("SeaArt Video"))
+        h._on_motor_cambio = MagicMock()  # mockear método del servicio
         h._actualizar_motores_video()
-        assert h.combo_modelo_video._state["value"] == "Veo 3.1"
+        assert h.app.combo_modelo_video._state["value"] == "Veo 3.1"
         h._on_motor_cambio.assert_called_once()
 
     def test_sin_default_usa_primer_motor(self, monkeypatch):
@@ -177,14 +175,14 @@ class TestActualizarMotoresVideo:
         )
         h = _host(plataforma_var=_var("X"))
         h._actualizar_motores_video()
-        assert h.combo_modelo_video._state["value"] == "A"
+        assert h.app.combo_modelo_video._state["value"] == "A"
 
     def test_sin_motores_usa_plataforma_como_motor(self, monkeypatch):
         monkeypatch.setattr("modules.ui_events.MOTORES_VIDEO", {})
         monkeypatch.setattr("modules.ui_events.MOTOR_DEFAULT", {})
         h = _host(plataforma_var=_var("PlatX"))
         h._actualizar_motores_video()
-        assert h.combo_modelo_video._state["value"] == "PlatX"
+        assert h.app.combo_modelo_video._state["value"] == "PlatX"
 
 
 # ────────────────────────── _on_motor_cambio ──────────────────────────────
@@ -212,8 +210,8 @@ class TestOnMotorCambio:
         )
         h = _host()
         h._on_motor_cambio("DesconocidoX")
-        assert h.combo_ratio_v._state["values"] == ["16:9", "9:16"]
-        msg = h.set_estado.call_args[0][0]
+        assert h.app.combo_ratio_v._state["values"] == ["16:9", "9:16"]
+        msg = h.app.set_estado.call_args[0][0]
         assert "DesconocidoX" in msg
 
     def test_con_specs_aplica_ratios(self, monkeypatch):
@@ -222,7 +220,7 @@ class TestOnMotorCambio:
         )
         h = _host()
         h._on_motor_cambio("Veo")
-        assert h.combo_ratio_v._state["values"] == self.SPECS["ratios"]
+        assert h.app.combo_ratio_v._state["values"] == self.SPECS["ratios"]
 
     def test_ratio_fuera_de_specs_se_resetea(self, monkeypatch):
         monkeypatch.setattr(
@@ -231,7 +229,7 @@ class TestOnMotorCambio:
         h = _host(ratio_var=_var("21:9"))  # no está en specs
         h._on_motor_cambio("Veo")
         # debe resetearse al primero
-        h.ratio_var.set.assert_called_with("16:9")
+        h.app.ratio_var.set.assert_called_with("16:9")
 
     def test_motor_name_por_defecto_lee_del_combo(self, monkeypatch):
         monkeypatch.setattr(
@@ -242,7 +240,7 @@ class TestOnMotorCambio:
         )
         h = _host(combo_modelo_video=_combo("MotorActual"))
         h._on_motor_cambio()  # sin argumento
-        msg = h.set_estado.call_args[0][0]
+        msg = h.app.set_estado.call_args[0][0]
         assert "MotorActual" in msg
 
 
@@ -261,7 +259,7 @@ class TestOnMotorAudioCambio:
         monkeypatch.setattr("modules.ui_events.es_separador", lambda m: True)
         h = _host()
         h._on_motor_audio_cambio("──── Separador ────")
-        h.lbl_img_model_info.pack_forget.assert_called()
+        h.app.lbl_img_model_info.pack_forget.assert_called()
 
     def test_sin_specs_oculta_info(self, monkeypatch):
         monkeypatch.setattr("modules.ui_events.es_separador", lambda m: False)
@@ -270,7 +268,7 @@ class TestOnMotorAudioCambio:
         )
         h = _host()
         h._on_motor_audio_cambio("X")
-        h.lbl_img_model_info.pack_forget.assert_called()
+        h.app.lbl_img_model_info.pack_forget.assert_called()
 
     def test_con_specs_actualiza_info(self, monkeypatch):
         monkeypatch.setattr("modules.ui_events.es_separador", lambda m: False)
@@ -279,8 +277,8 @@ class TestOnMotorAudioCambio:
         )
         h = _host()
         h._on_motor_audio_cambio("Suno v5")
-        h.lbl_img_model_info.configure.assert_called()
-        msg = h.set_estado.call_args[0][0]
+        h.app.lbl_img_model_info.configure.assert_called()
+        msg = h.app.set_estado.call_args[0][0]
         assert "Suno v5" in msg
 
 
@@ -301,16 +299,14 @@ class TestOnPlataformaCambio:
         h = _host(
             modo_var=_var("audio"),
             plataforma_var=_var("Suno"),
-            _on_motor_audio_cambio=MagicMock(),  # spy explícito
         )
+        h._on_motor_audio_cambio = MagicMock()  # mockear método del servicio
         h._on_plataforma_cambio()
-        assert h.combo_modelo_audio._state["value"] == "Suno v5"
+        assert h.app.combo_modelo_audio._state["value"] == "Suno v5"
         h._on_motor_audio_cambio.assert_called_once()
 
     def test_modo_video_dispara_actualizar_motores(self):
-        h = _host(
-            modo_var=_var("video"),
-            _actualizar_motores_video=MagicMock(),  # spy explícito
-        )
+        h = _host(modo_var=_var("video"))
+        h._actualizar_motores_video = MagicMock()  # mockear método del servicio
         h._on_plataforma_cambio()
         h._actualizar_motores_video.assert_called_once()

@@ -90,7 +90,7 @@ class DataMgmtMixin:
                     self.actualizar_salida(salida)
                 if borrador.get("modo"):
                     self.modo_var.set(borrador["modo"])
-                    self._on_modo_cambio()
+                    self.events._on_modo_cambio()
                 self.set_estado("📝 Borrador restaurado", "#2ecc71")
             else:
                 # Limpiar borrador descartado
@@ -146,7 +146,7 @@ class DataMgmtMixin:
         modo = p.get("modo", "imagen")
         if modo != self.modo_var.get():
             self.modo_var.set(modo)
-            self._on_modo_cambio()
+            self.events._on_modo_cambio()
         if modo == "video":
             if hasattr(self, 'combo_modelo_video'): self.combo_modelo_video.set(p.get("modelo_vid", "Kling 3.0"))
         elif modo == "audio":
@@ -174,12 +174,12 @@ class DataMgmtMixin:
         dest = p.get("destino", "— Personal —")
         if dest in DESTINOS: self.destino_var.set(dest)
         self.brief_var.set(p.get("brief", False))
-        self._on_brief_cambio()
+        self.events._on_brief_cambio()
         if hasattr(self, 'switch_instrumental_var'):
             self.switch_instrumental_var.set(p.get("instrumental", False))
         plat = p.get("plataforma", "SeaArt / Tensor.Art")
         self.plataforma_var.set(plat)
-        self._on_plataforma_cambio()
+        self.events._on_plataforma_cambio()
         self.reiniciar_memoria()
         self.set_estado(f"📐 Plantilla '{nombre}' cargada.", "#9b59b6")
 
@@ -496,17 +496,17 @@ class DataMgmtMixin:
             # Modo
             if cfg.get("modo") and cfg["modo"] != self.modo_var.get():
                 self.modo_var.set(cfg["modo"])
-                self._on_modo_cambio()
+                self.events._on_modo_cambio()
 
             # Plataforma
             if cfg.get("plataforma"):
                 self.plataforma_var.set(cfg["plataforma"])
-                self._on_plataforma_cambio()
+                self.events._on_plataforma_cambio()
 
             # Modelo según modo
             if cfg["modo"] == "imagen" and cfg.get("modelo_img") and hasattr(self, 'combo_modelo_imagen'):
                 self.combo_modelo_imagen.set(cfg["modelo_img"])
-                self._on_modelo_imagen_cambio()
+                self.events._on_modelo_imagen_cambio()
             elif cfg["modo"] == "video" and cfg.get("modelo_vid") and hasattr(self, 'combo_modelo_video'):
                 self.combo_modelo_video.set(cfg["modelo_vid"])
             elif cfg["modo"] == "audio" and cfg.get("modelo_aud") and hasattr(self, 'combo_modelo_audio'):
@@ -1382,12 +1382,12 @@ class DataMgmtMixin:
             modo = prefs.get("modo", "imagen")
             if modo != self.modo_var.get():
                 self.modo_var.set(modo)
-                self._on_modo_cambio()
+                self.events._on_modo_cambio()
 
             plat = prefs.get("plataforma", "")
             if plat:
                 self.plataforma_var.set(plat)
-                self._on_plataforma_cambio()
+                self.events._on_plataforma_cambio()
 
             m_img = prefs.get("modelo_img", "")
             if m_img: self.combo_modelo_imagen.set(m_img)
@@ -1434,7 +1434,7 @@ class DataMgmtMixin:
             if dest in DESTINOS: self.destino_var.set(dest)
 
             self.brief_var.set(prefs.get("brief", False))
-            self._on_brief_cambio()
+            self.events._on_brief_cambio()
 
             # Cargar preferencia de grabación de vídeo de sesión
             self._sesion_grabar_video = prefs.get("sesion_grabar_video", False)

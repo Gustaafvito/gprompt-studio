@@ -37,7 +37,6 @@ from modules import (
     DialogsMixin,
     EventBus,
     SesionVideoMixin,
-    UiEventsMixin,
     UiFooterMixin,
     install_components,
 )
@@ -71,7 +70,7 @@ class ArquitectoApp(
     # accesible via self.prompts.inyectar_specs_modelo() / .construir_modelo_info()
     # AbTestingMixin removido (A1 fase 2, sesión 14) → self.ab.* (AbTestingService)
     # AtajosAyudaMixin removido (A1 fase 2) → self.atajos.* (AtajosAyudaService)
-    UiEventsMixin,
+    # UiEventsMixin removido (A1 fase 2, sesión 14) → self.events.* (UiEventsService)
     # RefinamientoMixin removido (A1 fase 2, sesión 14) → self.refinar.* (RefinamientoService)
     # DashboardMixin removido (A1 fase 2, sesión 11) → self.dashboard.cmd_abrir()
     # (DashboardService)
@@ -262,7 +261,7 @@ class ArquitectoApp(
 
         # Cargar estado y forzar pintado correcto
         self._cargar_preferencias()
-        self._on_modo_cambio()
+        self.events._on_modo_cambio()
         self.reiniciar_memoria()
 
         # Sin esto, si el usuario arranca con tema claro guardado, los
@@ -2305,7 +2304,7 @@ class ArquitectoApp(
                 if nombre in valores:
                     self.combo_modelo_imagen.set(nombre)
                     if hasattr(self, '_on_modelo_imagen_cambio'):
-                        self._on_modelo_imagen_cambio()
+                        self.events._on_modelo_imagen_cambio()
                     return nombre
             elif modo == "video" and hasattr(self, 'combo_modelo_video'):
                 valores = list(self.combo_modelo_video.cget("values") or [])
@@ -2705,7 +2704,7 @@ class ArquitectoApp(
         nuevo_modo = _modo_from_display.get(self.combo_default_modo.get(), "imagen")
         if self.modo_var.get() != nuevo_modo:
             self.modo_var.set(nuevo_modo)
-            self._on_modo_cambio()
+            self.events._on_modo_cambio()
 
         # Aplicar tema (mapear display → internal)
         if hasattr(self, 'combo_tema'):

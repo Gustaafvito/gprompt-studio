@@ -166,7 +166,7 @@ class CoreMixin:
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
             self.brief_var.set(True)
-            self._on_brief_cambio()
+            self.events._on_brief_cambio()
             self.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
 
         self.reiniciar_memoria()
@@ -1480,7 +1480,7 @@ class CoreMixin:
                 def _mostrar():
                     # Cambiar a modo vídeo
                     self.modo_var.set("video")
-                    self._on_modo_cambio()
+                    self.events._on_modo_cambio()
                     self.actualizar_salida(resultado)
                     self.guardar_en_historial(resultado)
                     self.set_estado(f"🔄 Prompt convertido a vídeo ({motor_vid})", "#2ecc71")

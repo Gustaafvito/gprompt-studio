@@ -367,39 +367,41 @@ class DashboardComponent(_Component):
 
 
 class UiEventsComponent(_Component):
-    """Event handlers UI (UiEventsMixin) — _on_modo_cambio, etc.
-    Decimosegundo servicio del refactor A1.
+    """Event handlers UI — _on_modo_cambio, etc.
 
-    Estos handlers se invocan desde MUY muchos sitios (>30 call sites
-    en 8+ archivos). El componente se expone para CÓDIGO NUEVO pero
-    los call sites existentes se mantienen con `self._on_*` (migración
-    incremental cuando se toque cada archivo).
+    A1 fase 2 (sesión 14): UiEventsMixin → UiEventsService aislado.
     """
     _name = "events"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.ui_events import UiEventsService
+        self._service = UiEventsService(app)
 
     def on_modo_cambio(self) -> None:
-        return self.app._on_modo_cambio()
+        return self._service._on_modo_cambio()
 
     def on_plataforma_cambio(self, valor=None) -> None:
-        return self.app._on_plataforma_cambio(valor)
+        return self._service._on_plataforma_cambio(valor)
 
     def on_motor_cambio(self, motor_name=None) -> None:
-        return self.app._on_motor_cambio(motor_name)
+        return self._service._on_motor_cambio(motor_name)
 
     def on_modelo_imagen_cambio(self, modelo_name=None) -> None:
-        return self.app._on_modelo_imagen_cambio(modelo_name)
+        return self._service._on_modelo_imagen_cambio(modelo_name)
 
     def on_motor_audio_cambio(self, motor_name=None) -> None:
-        return self.app._on_motor_audio_cambio(motor_name)
+        return self._service._on_motor_audio_cambio(motor_name)
 
     def on_audio_filtro_cambio(self, valor=None) -> None:
-        return self.app._on_audio_filtro_cambio(valor)
+        return self._service._on_audio_filtro_cambio(valor)
 
     def on_brief_cambio(self) -> None:
-        return self.app._on_brief_cambio()
+        return self._service._on_brief_cambio()
 
     def actualizar_motores_video(self) -> None:
-        return self.app._actualizar_motores_video()
+        return self._service._actualizar_motores_video()
 
 
 class MultiPromptComponent(_Component):
