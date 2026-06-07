@@ -37,7 +37,6 @@ from modules import (
     DialogsMixin,
     EventBus,
     SesionVideoMixin,
-    ToolsAnalysisMixin,
     ToolsCreativeMixin,
     ToolsWorkflowMixin,
     UIBuildersMixin,
@@ -60,7 +59,6 @@ class ArquitectoApp(
     UIBuildersMixin,
     ToolsCreativeMixin,
     ToolsWorkflowMixin,
-    ToolsAnalysisMixin,
     DataMgmtMixin,
     # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
     DialogsMixin,

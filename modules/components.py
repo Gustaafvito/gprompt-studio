@@ -139,52 +139,59 @@ class WorkflowComponent(_Component):
 
 
 class AnalysisComponent(_Component):
-    """Estadísticas, Scoring, Auto-improve, Critique (ToolsAnalysisMixin).
-    Decimoquinto servicio del refactor A1.
+    """Estadísticas, Scoring, Auto-improve, Critique.
+
+    A1 fase 2 (sesión 14): ToolsAnalysisMixin → ToolsAnalysisService aislado.
     """
     _name = "analysis"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.tools_analysis import ToolsAnalysisService
+        self._service = ToolsAnalysisService(app)
 
     def cmd_modo_educativo(self) -> None:
-        return self.app._cmd_modo_educativo()
+        return self._service._cmd_modo_educativo()
 
     def cmd_critica_historial(self) -> None:
-        return self.app._cmd_critica_historial()
+        return self._service._cmd_critica_historial()
 
     def cmd_automejora_periodica(self) -> None:
-        return self.app._cmd_automejora_periodica()
+        return self._service._cmd_automejora_periodica()
 
     def abrir_estadisticas(self) -> None:
-        return self.app._abrir_estadisticas()
+        return self._service._abrir_estadisticas()
 
     def cmd_scoring(self) -> None:
-        return self.app._cmd_scoring()
+        return self._service._cmd_scoring()
 
     def detectar_nsfw_auto(self, idea: str | None = None) -> bool:
-        return self.app._detectar_nsfw_auto(idea)
+        return self._service._detectar_nsfw_auto(idea)
 
     def guardar_seed_favorito(self) -> None:
-        return self.app._guardar_seed_favorito()
+        return self._service._guardar_seed_favorito()
 
     def abrir_seeds_favoritos(self) -> None:
-        return self.app._abrir_seeds_favoritos()
+        return self._service._abrir_seeds_favoritos()
 
     def autocompletar_tags(self, event=None) -> None:
-        return self.app._autocompletar_tags(event)
+        return self._service._autocompletar_tags(event)
 
     def abrir_atajos_tags(self) -> None:
-        return self.app._abrir_atajos_tags()
+        return self._service._abrir_atajos_tags()
 
     def copiar_comfyui_json(self) -> None:
-        return self.app._copiar_comfyui_json()
+        return self._service._copiar_comfyui_json()
 
     def traducir_salida(self) -> None:
-        return self.app._traducir_salida()
+        return self._service._traducir_salida()
 
     def mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:
-        return self.app._mostrar_consejo_contextual(modelo_name, specs)
+        return self._service._mostrar_consejo_contextual(modelo_name, specs)
 
     def cmd_modal_compatibilidad(self) -> None:
-        return self.app._cmd_modal_compatibilidad()
+        return self._service._cmd_modal_compatibilidad()
 
 
 class DataComponent(_Component):

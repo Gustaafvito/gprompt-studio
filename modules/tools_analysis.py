@@ -16,8 +16,15 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     pass
 
-class ToolsAnalysisMixin:
-    """Mixin containing all analysis tool methods."""
+class ToolsAnalysisService:
+    """23 herramientas de análisis: crítica, automejora, stats, scoring,
+    seeds, autocompletado tags, traducción, etc.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_modo_educativo(self) -> None:
         """Abre el glosario de términos AI desde data/glosario.json.
@@ -30,15 +37,15 @@ class ToolsAnalysisMixin:
 
     def _cmd_critica_historial(self) -> None:
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""
-        items = self.store.historial or []
+        items = self.app.store.historial or []
         if len(items) < 5:
-            return self.set_estado("⚠️ Necesitas al menos 5 prompts en historial.", "#e67e22")
+            return self.app.set_estado("⚠️ Necesitas al menos 5 prompts en historial.", "#e67e22")
 
         # ── Selector N + comprobar caché ──
-        vent_sel = GPromptWindow(self)
+        vent_sel = GPromptWindow(self.app)
         vent_sel.title("📝 Crítica historial — ¿Cuántos prompts analizar?")
         vent_sel.geometry("440x290")
-        vent_sel.transient(self)
+        vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text="📝 Crítica de historial",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
@@ -57,7 +64,7 @@ class ToolsAnalysisMixin:
         slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
 
         # Aviso si hay caché
-        prefs_cache = self.store.cargar_preferencias() or {}
+        prefs_cache = self.app.store.cargar_preferencias() or {}
         cache_critica = prefs_cache.get("_cache_critica_historial", {})
         cache_hash = cache_critica.get("hash_historial")
         cache_n = cache_critica.get("n", 0)
@@ -73,7 +80,7 @@ class ToolsAnalysisMixin:
             usar_cache = (cache_hash == actual_hash and cache_critica.get("resp") and cache_n == n)
             vent_sel.destroy()
             if usar_cache:
-                self.after(0, lambda: self._critica_mostrar(cache_critica["resp"], n, cacheado=True))
+                self.app.after(0, lambda: self._critica_mostrar(cache_critica["resp"], n, cacheado=True))
             else:
                 self._critica_ejecutar(items[:n])
 
@@ -84,7 +91,7 @@ class ToolsAnalysisMixin:
                       command=vent_sel.destroy).pack(pady=2)
 
     def _critica_ejecutar(self, ultimos: list) -> None:
-        self.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
+        self.app.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
 
         modelos_usados = Counter()
         plataformas_usadas = Counter()
@@ -143,33 +150,33 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=2500)
+                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=2500)
                 resp = limpiar_marcadores(resp)
                 # Persistir caché
                 try:
-                    items_all = self.store.historial or []
+                    items_all = self.app.store.historial or []
                     cache_h = f"{len(items_all)}_{items_all[0].get('fecha','') if items_all and isinstance(items_all[0], dict) else ''}"
-                    prefs_p = self.store.cargar_preferencias() or {}
+                    prefs_p = self.app.store.cargar_preferencias() or {}
                     prefs_p["_cache_critica_historial"] = {
                         "hash_historial": cache_h,
                         "n": len(ultimos),
                         "resp": resp,
                     }
-                    self.store.guardar_preferencias(prefs_p)
+                    self.app.store.guardar_preferencias(prefs_p)
                 except Exception as e:
                     logger.debug(f"Cache crítica no se pudo guardar: {e}")
-                self.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
+                self.app.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
             except Exception as e:
-                self.after(0, lambda: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False) -> None:
         """Ventana de resultados de la crítica."""
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🔍 Análisis de tus patrones" + (" (caché)" if cacheado else ""))
         vent.geometry("750x650")
-        vent.transient(self)
+        vent.transient(self.app)
         ctk.CTkLabel(vent, text="🔍 Análisis de tus patrones creativos",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         sub = f"Análisis de tus últimas {n} ideas — patrones, temas y sugerencias"
@@ -186,23 +193,23 @@ class ToolsAnalysisMixin:
 
         def _copiar_todo():
             pyperclip.copy(resp)
-            self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+            self.app.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
 
         def _copiar_seleccion():
             try:
                 sel = txt.get("sel.first", "sel.last")
                 if sel:
                     pyperclip.copy(sel)
-                    self.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+                    self.app.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
             except Exception:
-                self.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
+                self.app.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
 
         def _regenerar():
             # Borra caché y vuelve a llamar a la crítica desde cero
             try:
-                prefs_p = self.store.cargar_preferencias() or {}
+                prefs_p = self.app.store.cargar_preferencias() or {}
                 prefs_p.pop("_cache_critica_historial", None)
-                self.store.guardar_preferencias(prefs_p)
+                self.app.store.guardar_preferencias(prefs_p)
             except Exception as e:
                 logger.debug(f"Borrar caché crítica falló: {e}")
             vent.destroy()
@@ -221,19 +228,19 @@ class ToolsAnalysisMixin:
                       fg_color="#444", hover_color="#555",
                       command=vent.destroy).pack(side="left", padx=4)
 
-        self.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
+        self.app.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
 
     def _cmd_automejora_periodica(self) -> None:
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
-        items = self.store.historial or []
+        items = self.app.store.historial or []
         if len(items) < 3:
-            return self.set_estado("⚠️ Necesitas al menos 3 prompts en historial.", "#e67e22")
+            return self.app.set_estado("⚠️ Necesitas al menos 3 prompts en historial.", "#e67e22")
 
         # ── Selector "últimos N" ──
-        vent_sel = GPromptWindow(self)
+        vent_sel = GPromptWindow(self.app)
         vent_sel.title("🚀 Auto-mejora — ¿Cuántos prompts analizar?")
         vent_sel.geometry("420x230")
-        vent_sel.transient(self)
+        vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text="🚀 Auto-mejora",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
@@ -264,7 +271,7 @@ class ToolsAnalysisMixin:
 
     def _auto_mejora_ejecutar(self, ultimos: list) -> None:
         """Lanza la auto-mejora con un set concreto de prompts."""
-        self.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
+        self.app.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
 
         prompts = []
         for i, it in enumerate(ultimos, 1):
@@ -285,7 +292,7 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.5, max_tokens=6000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=6000)
                 resp = limpiar_marcadores(resp).strip()
                 # Recuperar el JSON aunque venga con cosas alrededor
                 import json as _json
@@ -296,9 +303,9 @@ class ToolsAnalysisMixin:
                         resultados = _json.loads(m.group(0))
                     except Exception as e:
                         logger.debug(f"JSON parse falló: {e}")
-                self.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
+                self.app.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -311,10 +318,10 @@ class ToolsAnalysisMixin:
         accent = "#2563eb" if is_lt else "#60a5fa"
         success = "#16a34a" if is_lt else "#22c55e"
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🚀 Auto-mejora de prompts")
         vent.geometry("900x720")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🚀 Sugerencias de mejora",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -385,16 +392,16 @@ class ToolsAnalysisMixin:
 
                     def _aplicar(texto=mejorado):
                         try:
-                            if hasattr(self, "txt_salida"):
-                                self.txt_salida.delete("1.0", "end")
-                                self.txt_salida.insert("1.0", texto)
-                                self.set_estado("✨ Versión mejorada aplicada en el área de salida", "#2ecc71")
+                            if hasattr(self.app, "txt_salida"):
+                                self.app.txt_salida.delete("1.0", "end")
+                                self.app.txt_salida.insert("1.0", texto)
+                                self.app.set_estado("✨ Versión mejorada aplicada en el área de salida", "#2ecc71")
                         except Exception as e:
-                            self.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
+                            self.app.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
 
                     def _copiar(texto=mejorado):
                         pyperclip.copy(texto)
-                        self.set_estado("📋 Versión mejorada copiada", "#2ecc71")
+                        self.app.set_estado("📋 Versión mejorada copiada", "#2ecc71")
 
                     ctk.CTkButton(fila_btn, text="✨ Aplicar versión",
                                   width=160, height=28, fg_color=success,
@@ -407,22 +414,22 @@ class ToolsAnalysisMixin:
                       fg_color="#444", hover_color="#555",
                       command=vent.destroy).pack(pady=8)
 
-        self.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
+        self.app.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
 
     def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
         import datetime as _dt
         from collections import Counter, defaultdict
-        prefs = self.store.cargar_preferencias()
-        hist_full = self.store.historial or []
-        favs = self.store.favoritos or []
-        stars = self.store.estrellas or []
+        prefs = self.app.store.cargar_preferencias()
+        hist_full = self.app.store.historial or []
+        favs = self.app.store.favoritos or []
+        stars = self.app.store.estrellas or []
         seeds = prefs.get("seeds_favoritos", [])
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📈 Estadísticas detalladas")
         vent.geometry("780x720")
-        vent.transient(self)
+        vent.transient(self.app)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c_card = "#161b22" if not is_lt else "#ffffff"
@@ -513,8 +520,8 @@ class ToolsAnalysisMixin:
                 ("⭐ Favoritos", len(favs), "#f1c40f"),
                 ("🌟 Estrellas", len(stars), "#e74c3c"),
                 ("💎 Seeds", len(seeds), "#9b59b6"),
-                ("🧑 Personajes", len(self.store.personajes or []), "#2ecc71"),
-                ("🔗 LoRAs", len(self.store.loras or []), "#e67e22"),
+                ("🧑 Personajes", len(self.app.store.personajes or []), "#2ecc71"),
+                ("🔗 LoRAs", len(self.app.store.loras or []), "#e67e22"),
                 ("🏷️ Snippets", len(prefs.get("snippets", [])), "#1abc9c"),
                 ("📐 Fórmulas", len(prefs.get("formulas", [])), "#e91e63"),
                 ("🧬 ADNs", len(prefs.get("adns_guardados", [])), "#00bcd4"),
@@ -659,7 +666,7 @@ class ToolsAnalysisMixin:
                         est_s,
                         len(str(cont).split()) if cont else 0,
                     ])
-            self.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
+            self.app.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
 
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(fill="x", padx=10, pady=8)
@@ -677,11 +684,11 @@ class ToolsAnalysisMixin:
         regex y se colorea según su valor (verde >= 80%, amarillo
         50-79%, rojo < 50%). El TOTAL se destaca en grande.
         """
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        self.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
+        self.app.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
 
         peticion = (
             f"Analiza este prompt de IA y devuelve EXACTAMENTE en este formato (mantén las etiquetas):\n\n"
@@ -714,7 +721,7 @@ class ToolsAnalysisMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
 
                 # Parsear scores con regex
@@ -761,10 +768,10 @@ class ToolsAnalysisMixin:
                              "card_bg": "#ffffff" if is_lt else "#111820",
                              "card_border": "#d1d5db" if is_lt else "#1f2937"}
 
-                    vent = GPromptWindow(self)
+                    vent = GPromptWindow(self.app)
                     vent.title("📝 Scoring de prompt")
                     vent.geometry("720x640")
-                    vent.transient(self)
+                    vent.transient(self.app)
                     vent.configure(fg_color=c.get("panel_bg"))
 
                     ctk.CTkLabel(vent, text="📝 Análisis de calidad del prompt",
@@ -867,14 +874,14 @@ class ToolsAnalysisMixin:
 
                     def _copiar_analisis():
                         pyperclip.copy(resp)
-                        self.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+                        self.app.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=30,
                                   fg_color="#1a7a3c", hover_color="#145e2d",
                                   command=_copiar_analisis).pack(side="left", padx=4)
 
                     def _generar_mejorado():
-                        self.set_estado("✨ Generando versión mejorada...", "#f39c12")
+                        self.app.set_estado("✨ Generando versión mejorada...", "#f39c12")
                         peticion_mejora = (
                             f"Mejora este prompt de IA manteniendo la idea original pero añadiendo:\n"
                             f"- Más detalle en sujeto y estilo\n"
@@ -885,60 +892,60 @@ class ToolsAnalysisMixin:
                         )
                         def _worker_mejorar():
                             try:
-                                texto_mejorado = self.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
+                                texto_mejorado = self.app.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
                                 texto_mejorado = limpiar_marcadores(texto_mejorado)
                                 def _aplicar():
-                                    self.actualizar_salida(texto_mejorado)
+                                    self.app.actualizar_salida(texto_mejorado)
                                     vent.destroy()
-                                    self.set_estado("✨ Prompt mejorado aplicado", "#2ecc71")
-                                self.after(0, _aplicar)
+                                    self.app.set_estado("✨ Prompt mejorado aplicado", "#2ecc71")
+                                self.app.after(0, _aplicar)
                             except Exception as e:
-                                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
                         threading.Thread(target=_worker_mejorar, daemon=True).start()
 
                     ctk.CTkButton(btn_frame, text="✨ Mejorar prompt", width=140, height=30,
                                   fg_color="#7c3aed", command=_generar_mejorado).pack(side="left", padx=4)
 
-                    self.set_estado("📝 Scoring listo", "#2ecc71")
-                self.after(0, _mostrar)
+                    self.app.set_estado("📝 Scoring listo", "#2ecc71")
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _detectar_nsfw_auto(self, idea: str | None = None) -> bool:
         """Detecta si el prompt actual tiene elementos NSFW y avisa."""
-        texto = idea if idea else self.txt_salida.get("1.0", "end").strip()
+        texto = idea if idea else self.app.txt_salida.get("1.0", "end").strip()
         actual = texto.lower()
         nsfw_terms = ["nude", "naked", "nsfw", "explicit", "xxx", "porn", "sex", "boobs", "butt", "ass"]
         if any(term in actual for term in nsfw_terms):
-            if hasattr(self, 'nsfw_var'):
-                self.nsfw_var.set(True)
-            self.set_estado("⚠️ Contenido NSFW detectado — activado modo NSFW", "#e74c3c")
+            if hasattr(self.app, 'nsfw_var'):
+                self.app.nsfw_var.set(True)
+            self.app.set_estado("⚠️ Contenido NSFW detectado — activado modo NSFW", "#e74c3c")
 
     def _guardar_seed_favorito(self) -> None:
         """Guarda la configuración actual como seed favorito."""
         from tkinter import simpledialog
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         seeds = prefs.get("seeds_favoritos", [])
 
         # Pedir nombre
-        nombre = simpledialog.askstring("💎 Guardar Seed", "Nombre para este seed:", parent=self)
+        nombre = simpledialog.askstring("💎 Guardar Seed", "Nombre para este seed:", parent=self.app)
         if not nombre:
             return
 
         seed = {
             "nombre": nombre,
-            "estilos": list(self.estilos_seleccionados()),
-            "plataforma": self.plataforma_var.get() if hasattr(self, 'plataforma_var') else "",
-            "modelo_img": self.modelo_img_var.get() if hasattr(self, 'modelo_img_var') else "",
-            "modelo_vid": self.modelo_vid_var.get() if hasattr(self, 'modelo_vid_var') else "",
-            "ratio": self.ratio_var.get() if hasattr(self, 'ratio_var') else "",
+            "estilos": list(self.app.estilos_seleccionados()),
+            "plataforma": self.app.plataforma_var.get() if hasattr(self.app, 'plataforma_var') else "",
+            "modelo_img": self.app.modelo_img_var.get() if hasattr(self.app, 'modelo_img_var') else "",
+            "modelo_vid": self.app.modelo_vid_var.get() if hasattr(self.app, 'modelo_vid_var') else "",
+            "ratio": self.app.ratio_var.get() if hasattr(self.app, 'ratio_var') else "",
         }
         seeds.append(seed)
         prefs["seeds_favoritos"] = seeds
-        self.store.guardar_preferencias(prefs)
-        self.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
+        self.app.store.guardar_preferencias(prefs)
+        self.app.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
 
     def _abrir_seeds_favoritos(self) -> None:
         """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
@@ -947,10 +954,10 @@ class ToolsAnalysisMixin:
         from config import get_theme_colors
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("💎 Seeds favoritos")
         vent.geometry("580x500")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="💎 Seeds favoritos",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
@@ -984,7 +991,7 @@ class ToolsAnalysisMixin:
         def _refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            prefs = self.store.cargar_preferencias()
+            prefs = self.app.store.cargar_preferencias()
             seeds = prefs.get("seeds_favoritos", [])
             termino = entry_buscar.get().strip().lower()
 
@@ -1047,14 +1054,14 @@ class ToolsAnalysisMixin:
                                                f"¿Borrar el seed '{nombre}'?",
                                                parent=vent):
                         return
-                    prefs_b = self.store.cargar_preferencias()
+                    prefs_b = self.app.store.cargar_preferencias()
                     seeds_act = prefs_b.get("seeds_favoritos", [])
                     if 0 <= idx < len(seeds_act):
                         seeds_act.pop(idx)
                         prefs_b["seeds_favoritos"] = seeds_act
-                        self.store.guardar_preferencias(prefs_b)
+                        self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
+                    self.app.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
 
                 ctk.CTkButton(btn_frame, text="✅ Aplicar", width=90, height=26,
                               fg_color="#1a7a3c", font=ctk.CTkFont(size=10),
@@ -1077,22 +1084,22 @@ class ToolsAnalysisMixin:
         aplicado = False
 
         # Cargar plataforma PRIMERO (esto recarga los modelos disponibles para esa plataforma)
-        if seed.get("plataforma") and hasattr(self, 'combo_plataforma'):
-            valores_plat = list(self.combo_plataforma.cget("values") or [])
+        if seed.get("plataforma") and hasattr(self.app, 'combo_plataforma'):
+            valores_plat = list(self.app.combo_plataforma.cget("values") or [])
             if seed["plataforma"] in valores_plat:
-                self.plataforma_var.set(seed["plataforma"])
-                if hasattr(self, '_on_plataforma_cambio'):
-                    try: self._on_plataforma_cambio()
+                self.app.plataforma_var.set(seed["plataforma"])
+                if hasattr(self.app, '_on_plataforma_cambio'):
+                    try: self.app._on_plataforma_cambio()
                     except: pass
                 aplicado = True
 
         # Ahora que la plataforma está puesta, cargar el modelo de imagen
-        if seed.get("modelo_img") and hasattr(self, 'combo_modelo_imagen'):
-            valores_modelo = list(self.combo_modelo_imagen.cget("values") or [])
+        if seed.get("modelo_img") and hasattr(self.app, 'combo_modelo_imagen'):
+            valores_modelo = list(self.app.combo_modelo_imagen.cget("values") or [])
             if seed["modelo_img"] in valores_modelo:
-                self.modelo_img_var.set(seed["modelo_img"])
-                if hasattr(self, '_on_modelo_imagen_cambio'):
-                    try: self._on_modelo_imagen_cambio()
+                self.app.modelo_img_var.set(seed["modelo_img"])
+                if hasattr(self.app, '_on_modelo_imagen_cambio'):
+                    try: self.app._on_modelo_imagen_cambio()
                     except: pass
                 aplicado = True
             elif seed["modelo_img"]:
@@ -1100,43 +1107,43 @@ class ToolsAnalysisMixin:
 
         # Cargar modelo video — FIX: el widget se llama combo_modelo_video
         # (no combo_modelo_vid), por lo que esta rama NUNCA se ejecutaba.
-        if seed.get("modelo_vid") and hasattr(self, 'combo_modelo_video'):
-            valores_vid = list(self.combo_modelo_video.cget("values") or [])
+        if seed.get("modelo_vid") and hasattr(self.app, 'combo_modelo_video'):
+            valores_vid = list(self.app.combo_modelo_video.cget("values") or [])
             if seed["modelo_vid"] in valores_vid:
-                self.combo_modelo_video.set(seed["modelo_vid"])
-                if hasattr(self, '_on_motor_cambio'):
-                    try: self._on_motor_cambio(seed["modelo_vid"])
+                self.app.combo_modelo_video.set(seed["modelo_vid"])
+                if hasattr(self.app, '_on_motor_cambio'):
+                    try: self.app._on_motor_cambio(seed["modelo_vid"])
                     except Exception as _e: logger.debug(f"[silent] {_e}")
                 aplicado = True
             elif seed["modelo_vid"]:
                 mensajes.append(f"Modelo vídeo '{seed['modelo_vid']}' no disponible")
 
         # Cargar ratio
-        if seed.get("ratio") and hasattr(self, 'combo_ratio'):
-            valores_ratio = list(self.combo_ratio.cget("values") or [])
+        if seed.get("ratio") and hasattr(self.app, 'combo_ratio'):
+            valores_ratio = list(self.app.combo_ratio.cget("values") or [])
             if seed["ratio"] in valores_ratio:
-                self.ratio_var.set(seed["ratio"])
+                self.app.ratio_var.set(seed["ratio"])
                 aplicado = True
             elif seed["ratio"]:
                 mensajes.append(f"Ratio '{seed['ratio']}' no disponible")
 
         # Cargar estilos
-        if seed.get("estilos") and hasattr(self, 'estilo_checks'):
-            for nombre, var in self.estilo_checks.items():
+        if seed.get("estilos") and hasattr(self.app, 'estilo_checks'):
+            for nombre, var in self.app.estilo_checks.items():
                 var.set(nombre in seed["estilos"])
             aplicado = True
 
         if aplicado:
             nombre = seed.get('nombre', '?')
-            self.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
+            self.app.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
             if mensajes:
-                self.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
+                self.app.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
         else:
-            self.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
+            self.app.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
 
     def _autocompletar_tags(self, event=None) -> None:
         """Auto-completar tags mientras escribe."""
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
             return
         # Sugerir tags comunes basados en lo que escribe
@@ -1153,13 +1160,13 @@ class ToolsAnalysisMixin:
 
     def _abrir_atajos_tags(self) -> None:
         """Ventana para gestionar atajos de tags (snippets)."""
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         atajos = prefs.get("atajos_tags", [])
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🏷️ Atajos de tags")
         vent.geometry("600x450")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🏷️ Atajos de tags (snippets)", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Atajos rápidos para insertar tags comunes",
@@ -1178,12 +1185,12 @@ class ToolsAnalysisMixin:
                 ctk.CTkLabel(card, text=atajo.get("tags", ""), font=ctk.CTkFont(size=9),
                              text_color="#888888", wraplength=500).pack(anchor="w", padx=10, pady=(0, 4))
                 def _aplicar(tags=atajo.get("tags", "")):
-                    self._aplicar_atajo_tags(tags)
+                    self.app._aplicar_atajo_tags(tags)
                     vent.destroy()
                 def _borrar(idx=i):
                     atajos.pop(idx)
                     prefs["atajos_tags"] = atajos
-                    self.store.guardar_preferencias(prefs)
+                    self.app.store.guardar_preferencias(prefs)
                     refrescar()
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
                 btn_frame.pack(anchor="e", padx=8, pady=(0, 4))
@@ -1209,7 +1216,7 @@ class ToolsAnalysisMixin:
                 if nombre and tags:
                     atajos.append({"nombre": nombre, "tags": tags})
                     prefs["atajos_tags"] = atajos
-                    self.store.guardar_preferencias(prefs)
+                    self.app.store.guardar_preferencias(prefs)
                     refrescar()
                     vent_add.destroy()
             ctk.CTkButton(vent_add, text="Guardar", width=120, height=28, fg_color="#1a7a3c",
@@ -1218,7 +1225,7 @@ class ToolsAnalysisMixin:
         def _copiar_ej():
             pyperclip.copy("masterpiece, best quality, ultra detailed, 8K resolution")
         def _usar_ej():
-            self._aplicar_atajo_tags("masterpiece, best quality, ultra detailed, 8K resolution")
+            self.app._aplicar_atajo_tags("masterpiece, best quality, ultra detailed, 8K resolution")
             vent.destroy()
 
         btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1234,13 +1241,13 @@ class ToolsAnalysisMixin:
 
     def _copiar_comfyui_json(self) -> None:
         """Crea y exporta un workflow completo de ComfyUI."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        pos = self.extraer_positive() or actual
-        neg = self.extraer_negative() or ""
-        modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
+        pos = self.app.extraer_positive() or actual
+        neg = self.app.extraer_negative() or ""
+        modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else ""
 
         import json
 
@@ -1320,10 +1327,10 @@ class ToolsAnalysisMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🔧 Workflow ComfyUI - G-Prompt Studio")
         vent.geometry("750x550")
-        vent.transient(self)
+        vent.transient(self.app)
 
         marco = ctk.CTkFrame(vent, fg_color=c.get("tab_bg", "#f3f4f6" if is_lt else "#0f1318"))
         marco.pack(fill="both", expand=True, padx=10, pady=10)
@@ -1351,7 +1358,7 @@ class ToolsAnalysisMixin:
 
         def _copiar():
             pyperclip.copy(json_str)
-            self.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
+            self.app.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
 
         def _guardar():
             from tkinter import filedialog
@@ -1364,7 +1371,7 @@ class ToolsAnalysisMixin:
             if ruta:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(json_str)
-                self.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
+                self.app.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
 
         ctk.CTkButton(frame_btn, text="📋 Copiar JSON", width=120, fg_color="#15803d",
                       hover_color="#166534", command=_copiar).pack(side="left", padx=(0, 6))
@@ -1375,19 +1382,19 @@ class ToolsAnalysisMixin:
 
     def _traducir_salida(self) -> None:
         """Traduce el prompt actual al español en una ventana aparte."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 10:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        self.set_estado("🌐 Traduciendo a español...", "#f39c12")
+        self.app.set_estado("🌐 Traduciendo a español...", "#f39c12")
 
         def _worker():
             try:
-                traducido = self.deepseek.traducir_a_espanol(actual)
-                self.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
-                self.after(0, lambda: self.set_estado("🌐 Traducción lista", "#2ecc71"))
+                traducido = self.app.deepseek.traducir_a_espanol(actual)
+                self.app.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
+                self.app.after(0, lambda: self.app.set_estado("🌐 Traducción lista", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1397,10 +1404,10 @@ class ToolsAnalysisMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🇪🇸 Traducción al español")
         vent.geometry("580x400")
-        vent.transient(self)
+        vent.transient(self.app)
 
         marco = ctk.CTkFrame(vent, fg_color=c.get("tab_bg", "#f3f4f6" if is_lt else "#0f1318"))
         marco.pack(fill="both", expand=True, padx=12, pady=12)
@@ -1421,13 +1428,13 @@ class ToolsAnalysisMixin:
         frame_btn.pack(fill="x")
 
         def _usar():
-            self.actualizar_salida(texto)
+            self.app.actualizar_salida(texto)
             vent.destroy()
 
         def _copiar():
             import pyperclip
             pyperclip.copy(texto)
-            self.set_estado("📋 Traducción copiada", "#2ecc71")
+            self.app.set_estado("📋 Traducción copiada", "#2ecc71")
 
         ctk.CTkButton(frame_btn, text="✅ Usar traducción", width=130,
                       fg_color="#2563eb", hover_color="#1d4ed8",
@@ -1459,11 +1466,11 @@ class ToolsAnalysisMixin:
         if consejos:
             import random
             consejo = random.choice(consejos)
-            self.set_estado(consejo, "#3498db")
+            self.app.set_estado(consejo, "#3498db")
 
     def _validar_compatibilidad_modelo(self) -> None:
         """Valida la compatibilidad del modelo con la configuración actual."""
-        modelo = self.modelo_img_var.get() if hasattr(self, 'modelo_img_var') else ""
+        modelo = self.app.modelo_img_var.get() if hasattr(self.app, 'modelo_img_var') else ""
         if not modelo:
             return True, ""
         # Aquí iría la lógica de validación
@@ -1472,18 +1479,18 @@ class ToolsAnalysisMixin:
     def _actualizar_compat_inline(self) -> None:
         """Actualiza la compatibilidad inline en la UI."""
         valido, msg = self._validar_compatibilidad_modelo()
-        if hasattr(self, 'lbl_compat'):
+        if hasattr(self.app, 'lbl_compat'):
             if valido:
-                self.lbl_compat.configure(text="✅ Compatible", text_color="#2ecc71")
+                self.app.lbl_compat.configure(text="✅ Compatible", text_color="#2ecc71")
             else:
-                self.lbl_compat.configure(text=f"⚠️ {msg}", text_color="#e67e22")
+                self.app.lbl_compat.configure(text=f"⚠️ {msg}", text_color="#e67e22")
 
     def _cmd_modal_compatibilidad(self) -> None:
         """Abre modal de compatibilidad de modelos."""
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🔍 Compatibilidad de modelos")
         vent.geometry("600x400")
-        vent.transient(self)
+        vent.transient(self.app)
         ctk.CTkLabel(vent, text="🔍 Compatibilidad de modelos", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text="Información de compatibilidad entre modelos y configuraciones",
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 10))

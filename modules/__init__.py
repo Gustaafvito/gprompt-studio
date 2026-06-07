@@ -23,7 +23,7 @@ from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
 from .refinamiento import RefinamientoService  # A1 fase 2 (sesión 14)
 from .sesion_video import SesionVideoMixin
-from .tools_analysis import ToolsAnalysisMixin
+from .tools_analysis import ToolsAnalysisService  # A1 fase 2 (sesión 14)
 from .tools_creative import ToolsCreativeMixin
 from .tools_workflow import ToolsWorkflowMixin
 from .ui_builders import UIBuildersMixin
@@ -35,7 +35,7 @@ __all__ = [
     "UIBuildersMixin",
     "ToolsCreativeMixin",
     "ToolsWorkflowMixin",
-    "ToolsAnalysisMixin",
+    "ToolsAnalysisService",
     "DataMgmtMixin",
     "BackupExportService",
     "DialogsMixin",
