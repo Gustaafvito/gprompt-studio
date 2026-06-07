@@ -228,25 +228,78 @@ class PromptsInyeccionService:
             "• Bilingüe EN/ZH. Strong en typography y high-frequency details.\n"
             "• Settings óptimos: 28-50 steps, CFG 3-5.\n"
         )
+
+        # Detectar LoRA activo para insertar bloque dedicado en la plantilla.
+        # Si hay LoRA, usamos la estructura de 4 bloques en inglés con bloque
+        # [LoRA Activation & Style] inmediatamente tras [Subject & Composition].
+        # Si no, mantenemos la estructura cinematográfica clásica (5 bloques ES).
+        lora_trigger = ""
+        try:
+            if hasattr(self.app, "footer"):
+                lora_trigger = self.app.footer.lora_activo() or ""
+        except Exception:
+            lora_trigger = ""
+
+        if lora_trigger:
+            bloques_positivos = (
+                "[Subject & Composition] <Main subject + shot type "
+                "(close-up/wide/medium/etc) + composition + pose. Describe "
+                "concrete physical traits: skin texture, eye/hair color, "
+                "wardrobe. Include depth of field cues if relevant.>\n"
+                f"[LoRA Activation & Style] {lora_trigger} style, <DESCRIPTION "
+                f"of the visual style and aesthetic this LoRA contributes — "
+                f"e.g. 'pure liminal space aesthetic, eerie and desolate "
+                f"atmosphere' / 'cyberpunk neon-noir with rain-slick streets' "
+                f"/ 'vintage 35mm film grain with muted earth tones'. Connect "
+                f"it to specific scene elements that reinforce that style.>\n"
+                "[Lighting & Environment] <Specific lighting (golden hour, "
+                "volumetric, dappled shadows, rim light, fluorescent, neon) + "
+                "environment/background details, era, props. Color grading.>\n"
+                "[Mood] <Emotional atmosphere — tense, peaceful, epic, "
+                "melancholic, haunting, etc. Plus one line about temporal/"
+                "geometric coherence and realism level.>\n"
+            )
+            preambulo = (
+                "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
+                "ultra-detailed, sharp focus, cinematic composition, "
+                "depth of field, <lente sugerida: 35mm lens shot, wide-angle "
+                "drone, macro>.\n"
+            )
+            nota_lora = (
+                f"\n🔗 LORA ACTIVO: incluye `{lora_trigger}` LITERALMENTE en "
+                f"el bloque [LoRA Activation & Style] (formato típico: "
+                f"`{lora_trigger} style, ...`). NO lo pongas en otros "
+                f"bloques. NO lo traduzcas ni modifiques.\n"
+            )
+        else:
+            bloques_positivos = (
+                "[Sujeto y Composición] <Sujeto principal + plano "
+                "(close-up/wide/etc) + pose/composición. Describe rasgos "
+                "físicos concretos: textura piel, color ojos/pelo, vestuario.>\n"
+                "[Acción] <Qué está haciendo. Gestos, expresión, interacción. "
+                "Si hay destrucción/efectos: describe física (gotas, astillas, "
+                "vetas de energía, no solo 'magia').>\n"
+                "[Entorno] <Fondo, escenografía, época, props. Si es DOF: "
+                "bokeh + elementos secundarios desenfocados.>\n"
+                "[Lighting & Mood] <Iluminación específica (golden hour, "
+                "volumetric, dappled shadows, rim light) + atmósfera "
+                "emocional (tense, peaceful, epic, melancholic).>\n"
+            )
+            preambulo = (
+                "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
+                "ultra-detailed, sharp focus, cinematic composition, "
+                "<lente sugerida: ej 35mm lens shot, wide-angle drone, macro>.\n"
+            )
+            nota_lora = ""
+
         extra += (
             "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\n"
             "\n"
             "POSITIVE PROMPT:\n"
-            "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
-            "ultra-detailed, sharp focus, cinematic composition, "
-            "<lente sugerida: ej 35mm lens shot, wide-angle drone, macro>.\n"
-            "[Sujeto y Composición] <Sujeto principal + plano (close-up/wide/etc) "
-            "+ pose/composición. Describe rasgos físicos concretos: textura piel, "
-            "color ojos/pelo, vestuario.>\n"
-            "[Acción] <Qué está haciendo. Gestos, expresión, interacción. Si hay "
-            "destrucción/efectos: describe física (gotas, astillas, vetas de "
-            "energía, no solo 'magia').>\n"
-            "[Entorno] <Fondo, escenografía, época, props. Si es DOF: bokeh + "
-            "elementos secundarios desenfocados.>\n"
-            "[Lighting & Mood] <Iluminación específica (golden hour, volumetric, "
-            "dappled shadows, rim light) + atmósfera emocional (tense, peaceful, "
-            "epic, melancholic).>\n"
-            "\n"
+            + preambulo
+            + bloques_positivos
+            + nota_lora
+            + "\n"
             "NEGATIVE PROMPT:\n"
             "<Bloque base> + <Bloque condicional según contenido> + <Bloque estilístico por categoría>\n"
             "\n"

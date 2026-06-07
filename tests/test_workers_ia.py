@@ -505,3 +505,58 @@ class TestGarantizarLoraTrigger:
         s = WorkersIaService(app)
         texto = "POSITIVE PROMPT: castle"
         assert s._garantizar_lora_trigger(texto) == texto
+
+
+# ─────────────────── _garantizar_lora_trigger con bloque ────────────
+
+
+class TestLoraTriggerConBloqueDedicado:
+    """Sesión 15: cuando el output del LLM tiene el bloque
+    [LoRA Activation & Style] (plantilla Z-Image con LoRA), el safety-net
+    inserta el trigger DENTRO del bloque, no al inicio del POSITIVE PROMPT."""
+
+    def _stub_app(self, trigger="lmnlhrr"):
+        return SimpleNamespace(
+            combo_lora=_var("Estilo terror liminal"),
+            store=SimpleNamespace(trigger_lora=lambda _n: trigger),
+        )
+
+    def test_inserta_dentro_del_bloque_lora_activation(self):
+        s = WorkersIaService(self._stub_app(trigger="lmnlhrr"))
+        texto = (
+            "POSITIVE PROMPT:\n"
+            "(masterpiece, top quality), 8k, ultra-detailed.\n"
+            "[Subject & Composition] A hospital corridor at night.\n"
+            "[LoRA Activation & Style] pure liminal space aesthetic, eerie.\n"
+            "[Lighting & Environment] flickering fluorescent.\n"
+            "[Mood] tense.\n"
+        )
+        out = s._garantizar_lora_trigger(texto)
+        # El trigger aparece DENTRO del bloque LoRA Activation
+        assert "[LoRA Activation & Style] lmnlhrr style," in out
+        # No se duplica
+        assert out.lower().count("lmnlhrr") == 1
+        # El POSITIVE PROMPT NO tiene el trigger pegado al inicio
+        assert "POSITIVE PROMPT:\nlmnlhrr" not in out
+        assert "POSITIVE PROMPT: lmnlhrr" not in out
+
+    def test_sin_bloque_lora_usa_fallback_al_inicio(self):
+        """Si el output no tiene bloque [LoRA Activation & Style] →
+        fallback al método clásico (insertar tras POSITIVE PROMPT:)."""
+        s = WorkersIaService(self._stub_app(trigger="lmnlhrr"))
+        texto = "POSITIVE PROMPT: castle on a cliff, stormy sea"
+        out = s._garantizar_lora_trigger(texto)
+        assert out.startswith("POSITIVE PROMPT: lmnlhrr,")
+
+    def test_trigger_ya_en_bloque_no_duplica(self):
+        """Si el LLM ya puso el trigger en el bloque dedicado, no insertar otra vez."""
+        s = WorkersIaService(self._stub_app(trigger="lmnlhrr"))
+        texto = (
+            "POSITIVE PROMPT:\n"
+            "[Subject & Composition] hospital.\n"
+            "[LoRA Activation & Style] lmnlhrr style, pure liminal.\n"
+        )
+        out = s._garantizar_lora_trigger(texto)
+        assert out.lower().count("lmnlhrr") == 1
+        # Y no debe haber sido modificado
+        assert out == texto

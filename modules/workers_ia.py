@@ -42,11 +42,18 @@ class WorkersIaService:
 
     def _garantizar_lora_trigger(self, texto, es_ideas=False):
         """Post-procesado: si hay LoRA activo y el trigger NO aparece en
-        el texto, lo inserta al inicio del POSITIVE PROMPT.
+        el texto, lo inserta de forma adecuada.
 
         Algunos modelos con system prompt estricto (Z-Image-Base, modelos
         natural con plantillas fijas) ignoran la instrucción de incluir
         el trigger word literal. Este safety-net garantiza que aparezca.
+
+        Estrategia de inserción (en orden de preferencia):
+          1. Si el output ya tiene bloque dedicado `[LoRA Activation & Style]`
+             → inserta el trigger al inicio del bloque (formato
+             "{trigger} style, ...").
+          2. Si NO hay bloque LoRA → fallback: lo inserta al inicio del
+             POSITIVE PROMPT como tag suelto.
 
         No se aplica a ideas (son sugerencias creativas, no prompts).
         """
@@ -69,11 +76,20 @@ class WorkersIaService:
         # Ya está en el texto (case-insensitive) → no tocar
         if trigger.lower() in texto.lower():
             return texto
-        # Insertar el trigger al inicio del POSITIVE PROMPT
+
+        # Preferido: insertar dentro del bloque dedicado [LoRA Activation & Style]
+        # (plantilla Z-Image-Base con LoRA activo).
+        m_bloque = re.search(r"(\[LoRA Activation & Style\]\s*)",
+                             texto, re.IGNORECASE)
+        if m_bloque:
+            insert_pos = m_bloque.end()
+            return (texto[:insert_pos] + f"{trigger} style, "
+                    + texto[insert_pos:].lstrip())
+
+        # Fallback: insertar tras "POSITIVE PROMPT:" como tag suelto.
         m = re.search(r"(POSITIVE\s+PROMPT\s*:|^PROMPT\s*:)", texto,
                       re.IGNORECASE | re.MULTILINE)
         if m:
-            # Tras "POSITIVE PROMPT:" inserta " trigger,"
             insert_pos = m.end()
             return texto[:insert_pos] + f" {trigger}, " + texto[insert_pos:].lstrip()
         # Sin marcador POSITIVE: prepend "POSITIVE PROMPT: trigger, ..."
