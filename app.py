@@ -37,7 +37,6 @@ from modules import (
     DialogsMixin,
     EventBus,
     SesionVideoMixin,
-    UIBuildersMixin,
     UiEventsMixin,
     UiFooterMixin,
     install_components,
@@ -54,7 +53,7 @@ bus = EventBus()
 
 class ArquitectoApp(
     ctk.CTk,
-    UIBuildersMixin,
+    # UIBuildersMixin removido (A1 fase 2, sesión 14) → self.ui.* (UIBuildersService)
     # ToolsCreativeMixin removido (A1 fase 2, sesión 14) → self.creative.* (ToolsCreativeService)
     # ToolsWorkflowMixin removido (A1 fase 2, sesión 14) → self.workflow.* (ToolsWorkflowService)
     DataMgmtMixin,
@@ -230,13 +229,13 @@ class ArquitectoApp(
         self._build_footer()
 
         # Zona 1: Contexto Global
-        self._build_header()
-        self._build_modo()
+        self.ui._build_header()
+        self.ui._build_modo()
 
-        self._build_video_panel()
-        self._build_audio_panel()
-        self._build_modelo_imagen_panel()
-        self._build_destino_panel()
+        self.ui._build_video_panel()
+        self.ui._build_audio_panel()
+        self.ui._build_modelo_imagen_panel()
+        self.ui._build_destino_panel()
 
         self.lbl_img_model_info = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=10),
                                                 text_color="#3498db",
@@ -244,14 +243,14 @@ class ArquitectoApp(
                                                 justify="left", anchor="w")
 
         # Zona 2: Modificadores y Ajustes (Pestañas Centrales)
-        self._build_tabs_centrales()
+        self.ui._build_tabs_centrales()
 
         # Zona 3: Ideación y Acción
-        self._build_imagen_ref()
-        self._build_entrada()
-        self._build_acciones()
-        self._build_estado()
-        self._build_salida()
+        self.ui._build_imagen_ref()
+        self.ui._build_entrada()
+        self.ui._build_acciones()
+        self.ui._build_estado()
+        self.ui._build_salida()
 
         # ── Atajos ────────────────────────────────────────────────
         self.atajos.bind_shortcuts()

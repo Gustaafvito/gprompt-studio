@@ -301,7 +301,7 @@ class CoreMixin:
                 logger.debug(f"[silent] {_e}")
             try:
                 if hasattr(self, "_refrescar_indicadores_llm"):
-                    self._refrescar_indicadores_llm()
+                    self.ui._refrescar_indicadores_llm()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
     # TOGGLE TEMA CLARO/OSCURO
@@ -412,7 +412,7 @@ class CoreMixin:
         # Refrescar contador (ajusta color según hay selección o no)
         try:
             if hasattr(self, "_actualizar_contador_estilos"):
-                self._actualizar_contador_estilos()
+                self.ui._actualizar_contador_estilos()
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Refrescar tabview central (Ajustes/Estilos/Negativos): el
@@ -1527,7 +1527,7 @@ class CoreMixin:
         # Limpiar estilos marcados
         for n, v in self.estilo_checks.items():
             v.set(False)
-        self._actualizar_contador_estilos()
+        self.ui._actualizar_contador_estilos()
         # Limpiar negativos
         self._limpiar_negatives()
         self.actualizar_salida("")

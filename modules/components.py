@@ -71,18 +71,30 @@ class CoreComponent(_Component):
 
 
 class UIComponent(_Component):
-    """Construcción de UI: _build_* y helpers (UIBuildersMixin).
+    """Construcción de UI: _build_* y helpers.
 
-    Métodos del mixin: _build_header, _build_modo, _build_video_panel,
-    _build_audio_panel, _build_modelo_imagen_panel, _build_destino_panel,
-    _build_tabs_centrales, _build_ajustes_extra, _build_estilos,
-    _build_negative, _build_entrada, _build_acciones, _build_estado,
-    _build_salida. Todos delegados vía __getattr__.
+    A1 fase 2 (sesión 14): UIBuildersMixin → UIBuildersService aislado.
 
-    UI no tiene "entry points" propiamente (son helpers internos del
-    constructor de la app). El componente existe para consistencia.
+    UI no tiene "entry points" cmd_* (son helpers internos del
+    constructor). El __getattr__ del componente delega cualquier
+    atributo no encontrado al service (que a su vez accede a self.app).
     """
     _name = "ui"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.ui_builders import UIBuildersService
+        self._service = UIBuildersService(app)
+
+    def __getattr__(self, name):
+        # Primero busca en el servicio (para _build_* y helpers)
+        if name in ("app", "_service"):
+            raise AttributeError(name)
+        if hasattr(self._service, name):
+            return getattr(self._service, name)
+        # Si no, delega al app (compatibilidad)
+        return super().__getattr__(name)
 
 
 class CreativeComponent(_Component):

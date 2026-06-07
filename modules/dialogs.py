@@ -207,7 +207,7 @@ class DialogsMixin:
                 # reflejen las keys recién guardadas
                 try:
                     if hasattr(self, "_refrescar_indicadores_llm"):
-                        self._refrescar_indicadores_llm()
+                        self.ui._refrescar_indicadores_llm()
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
                 try:

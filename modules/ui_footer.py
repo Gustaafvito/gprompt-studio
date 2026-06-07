@@ -207,7 +207,7 @@ class UiFooterMixin:
                     if tiene_seleccion:
                         self.txt_idea.delete("sel.first", "sel.last")
                     self.txt_idea.insert("insert", texto)
-                    self._actualizar_barra_chars()
+                    self.ui._actualizar_barra_chars()
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -221,7 +221,7 @@ class UiFooterMixin:
 
         def _limpiar():
             self.txt_idea.delete("1.0", "end")
-            self._actualizar_barra_chars()
+            self.ui._actualizar_barra_chars()
 
         menu.add_command(label="✂️ Cortar" + ("" if tiene_seleccion else "  (sin selección)"),
                          command=_cortar, state="normal" if tiene_seleccion else "disabled")
@@ -278,7 +278,7 @@ class UiFooterMixin:
                 self.lbl_estilos_sel.configure(text="")
             self._estilos_lista_actual = lista
             self._auto_sugerir_negativos()
-            self._actualizar_contador_estilos()
+            self.ui._actualizar_contador_estilos()
             return
 
         # Primera construcción para esta lista: ocultar otros sub-frames
@@ -328,7 +328,7 @@ class UiFooterMixin:
             self.lbl_estilos_sel.configure(text="")
 
         self._auto_sugerir_negativos()
-        self._actualizar_contador_estilos()
+        self.ui._actualizar_contador_estilos()
 
     def _filtrar_estilos(self, event=None):
         termino = self.entry_busqueda.get().lower()
@@ -354,7 +354,7 @@ class UiFooterMixin:
     def _on_estilo_cambio(self):
         self._validar_estilos(6)
         self._auto_sugerir_negativos()
-        self._actualizar_contador_estilos()
+        self.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
             self.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
