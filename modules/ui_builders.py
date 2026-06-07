@@ -549,6 +549,17 @@ class UIBuildersService:
         def _toggle_ref_visual():
             if self.app.switch_ref_visual_var.get():
                 self.app.switch_ref.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
+                # Aviso: en plataformas de vídeo (Seedance, Kling 2.x) si
+                # subes la MISMA imagen otra vez con el prompt, el motor
+                # la interpreta como image-to-video y el frame 1 acaba
+                # siendo la imagen literal (no la guía visual).
+                try:
+                    self.app.dialogs.set_estado(
+                        "🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí.",
+                        "#7c3aed",
+                    )
+                except Exception as _e:
+                    logger.debug(f"[silent ref toast] {_e}")
             else:
                 self.app.switch_ref.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
 

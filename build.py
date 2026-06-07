@@ -10,6 +10,9 @@ Uso:
     python build.py --onefile    # .exe portable unico (mas lento al arrancar)
     python build.py --installer  # Build + Inno Setup -> instalador
     python build.py --clean      # Borra dist/ y build/ antes
+    python build.py --clean-cache  # --clean + borra __pycache__/ recursivo
+                                   # (necesario tras cambios en .py si
+                                   # PyInstaller cachea bytecode viejo)
     python build.py --help
 
 Requisitos:
@@ -157,8 +160,15 @@ def find_inno():
     return None
 
 
-def clean():
-    """Borra dist/ y build/ para empezar de cero."""
+def clean(include_pycache=False):
+    """Borra dist/ y build/ para empezar de cero.
+
+    Si include_pycache=True también borra TODOS los __pycache__/ del
+    proyecto. Necesario tras cambios en .py si PyInstaller cachea
+    bytecode viejo (lección sesión 13: el .exe seguía mostrando código
+    antiguo aunque build/ y dist/ estuvieran borrados, porque los .pyc
+    de __pycache__/ se incrustaban en base_library.zip).
+    """
     for p in (DIST, BUILD):
         if p.exists():
             log(f"🗑  Borrando {rel(p)}/", "yellow")
@@ -168,6 +178,21 @@ def clean():
         if f.name not in ("gprompt-studio.spec", "gprompt-studio-onefile.spec"):
             log(f"🗑  Borrando {f.name}", "yellow")
             f.unlink()
+    if include_pycache:
+        n_borrados = 0
+        for pycache in ROOT.rglob("__pycache__"):
+            # Saltar los que están dentro de dist/ o build/ (ya borrados)
+            # y los de .venv si existe.
+            partes = pycache.parts
+            if any(p in partes for p in ("dist", "build", ".venv", "venv", "env")):
+                continue
+            try:
+                shutil.rmtree(pycache)
+                n_borrados += 1
+            except Exception as e:
+                log(f"⚠ No pude borrar {rel(pycache)}: {e}", "yellow")
+        if n_borrados:
+            log(f"🗑  Borrados {n_borrados} __pycache__/ del proyecto", "yellow")
 
 
 def build_pyinstaller(onefile=False):
@@ -268,6 +293,9 @@ def main():
                         help="También generar instalador con Inno Setup")
     parser.add_argument("--clean", action="store_true",
                         help="Borrar dist/ y build/ antes de empezar")
+    parser.add_argument("--clean-cache", action="store_true",
+                        help="--clean + borrar __pycache__/ recursivo "
+                             "(asegura build 100%% limpio sin .pyc cacheados)")
     args = parser.parse_args()
 
     log("═══════════════════════════════════════════════════════════", "blue")
@@ -276,7 +304,9 @@ def main():
 
     check_dependencies()
 
-    if args.clean:
+    if args.clean_cache:
+        clean(include_pycache=True)
+    elif args.clean:
         clean()
 
     # Verificar que el smoke test pasa antes de empaquetar
