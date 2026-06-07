@@ -41,19 +41,23 @@ class WorkersIaService:
         self.app = app
 
     def _garantizar_lora_trigger(self, texto, es_ideas=False):
-        """Post-procesado: si hay LoRA activo y el trigger NO aparece en
-        el texto, lo inserta de forma adecuada.
+        """Post-procesado: garantiza que el trigger del LoRA aparece UNA
+        SOLA VEZ en el output, en su posición correcta.
 
         Algunos modelos con system prompt estricto (Z-Image-Base, modelos
-        natural con plantillas fijas) ignoran la instrucción de incluir
-        el trigger word literal. Este safety-net garantiza que aparezca.
+        natural con plantillas fijas) o bien ignoran la instrucción y NO
+        ponen el trigger, o bien la cumplen demasiado y lo ponen en
+        MÚLTIPLES sitios (preámbulo + bloque dedicado).
 
-        Estrategia de inserción (en orden de preferencia):
-          1. Si el output ya tiene bloque dedicado `[LoRA Activation & Style]`
-             → inserta el trigger al inicio del bloque (formato
-             "{trigger} style, ...").
-          2. Si NO hay bloque LoRA → fallback: lo inserta al inicio del
-             POSITIVE PROMPT como tag suelto.
+        Lógica:
+          1. Si hay bloque `[LoRA Activation & Style]` Y el trigger ya
+             está allí → eliminar TODAS las demás apariciones fuera del
+             bloque (limpieza de duplicados).
+          2. Si hay bloque pero el trigger no está allí → insertarlo allí
+             (y limpiar duplicados fuera).
+          3. Si NO hay bloque y el trigger ya aparece → no tocar.
+          4. Si NO hay bloque y el trigger no aparece → fallback:
+             insertar tras "POSITIVE PROMPT:" como tag suelto.
 
         No se aplica a ideas (son sugerencias creativas, no prompts).
         """
@@ -73,26 +77,65 @@ class WorkersIaService:
         if not trigger or not trigger.strip():
             return texto
         trigger = trigger.strip()
-        # Ya está en el texto (case-insensitive) → no tocar
-        if trigger.lower() in texto.lower():
+
+        m_bloque = re.search(
+            r"\[LoRA Activation & Style\]\s*",
+            texto, re.IGNORECASE,
+        )
+
+        # CON bloque dedicado: garantizar que está dentro Y solo dentro.
+        if m_bloque:
+            bloque_inicio = m_bloque.end()
+            # Buscar el final del bloque (siguiente [Xxx] o NEGATIVE PROMPT)
+            m_next = re.search(
+                r"\n\s*(\[[A-Z][^\]]*\]|NEGATIVE\s+PROMPT\s*:)",
+                texto[bloque_inicio:],
+            )
+            bloque_fin = bloque_inicio + (m_next.start()
+                                          if m_next else len(texto) - bloque_inicio)
+            bloque_contenido = texto[bloque_inicio:bloque_fin]
+            ya_en_bloque = trigger.lower() in bloque_contenido.lower()
+
+            # 1. Asegurar el trigger DENTRO del bloque
+            if not ya_en_bloque:
+                texto = (texto[:bloque_inicio] + f"{trigger} style, "
+                         + texto[bloque_inicio:].lstrip())
+                # Recalcular posiciones tras la inserción
+                bloque_fin += len(f"{trigger} style, ")
+
+            # 2. Eliminar TODAS las apariciones del trigger FUERA del bloque
+            #    (case-insensitive, palabra completa). Una sola pasada por
+            #    texto, conservando solo las apariciones dentro del bloque.
+            antes = texto[:bloque_inicio]
+            despues = texto[bloque_fin:]
+            # Eliminar "trigger, " "trigger " ", trigger" o "trigger" suelto.
+            # Patrón: \b{trigger}\b con comas/espacios opcionales alrededor.
+            patron = re.compile(
+                rf"(?:,\s*)?\b{re.escape(trigger)}\b(?:\s*,)?",
+                re.IGNORECASE,
+            )
+            antes_limpio = patron.sub("", antes)
+            despues_limpio = patron.sub("", despues)
+            # Re-componer
+            texto = (antes_limpio
+                     + texto[bloque_inicio:bloque_fin]
+                     + despues_limpio)
+            # Limpiar comas dobles que pudieran quedar tras la eliminación
+            texto = re.sub(r",\s*,", ",", texto)
+            texto = re.sub(r"^\s*,\s*", "", texto, flags=re.MULTILINE)
+            # Limpiar espacios sobrantes al inicio de cada línea (típico
+            # tras quitar "trigger, " al principio del preámbulo).
+            texto = re.sub(r"^[ \t]+", "", texto, flags=re.MULTILINE)
             return texto
 
-        # Preferido: insertar dentro del bloque dedicado [LoRA Activation & Style]
-        # (plantilla Z-Image-Base con LoRA activo).
-        m_bloque = re.search(r"(\[LoRA Activation & Style\]\s*)",
-                             texto, re.IGNORECASE)
-        if m_bloque:
-            insert_pos = m_bloque.end()
-            return (texto[:insert_pos] + f"{trigger} style, "
-                    + texto[insert_pos:].lstrip())
-
-        # Fallback: insertar tras "POSITIVE PROMPT:" como tag suelto.
+        # SIN bloque dedicado: comportamiento clásico (solo inserción).
+        if trigger.lower() in texto.lower():
+            return texto
         m = re.search(r"(POSITIVE\s+PROMPT\s*:|^PROMPT\s*:)", texto,
                       re.IGNORECASE | re.MULTILINE)
         if m:
             insert_pos = m.end()
             return texto[:insert_pos] + f" {trigger}, " + texto[insert_pos:].lstrip()
-        # Sin marcador POSITIVE: prepend "POSITIVE PROMPT: trigger, ..."
         return f"POSITIVE PROMPT: {trigger}, {texto.lstrip()}"
 
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,

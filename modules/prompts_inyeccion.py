@@ -266,10 +266,15 @@ class PromptsInyeccionService:
                 "drone, macro>.\n"
             )
             nota_lora = (
-                f"\n🔗 LORA ACTIVO: incluye `{lora_trigger}` LITERALMENTE en "
-                f"el bloque [LoRA Activation & Style] (formato típico: "
-                f"`{lora_trigger} style, ...`). NO lo pongas en otros "
-                f"bloques. NO lo traduzcas ni modifiques.\n"
+                f"\n🔗 LORA ACTIVO — REGLAS ESTRICTAS:\n"
+                f"  • Incluye `{lora_trigger}` UNA SOLA VEZ, EXCLUSIVAMENTE "
+                f"al inicio del bloque [LoRA Activation & Style] (formato: "
+                f"`{lora_trigger} style, ...`).\n"
+                f"  • ❌ NO lo pongas en el preámbulo de quality tags.\n"
+                f"  • ❌ NO lo pongas en [Subject & Composition].\n"
+                f"  • ❌ NO lo pongas en [Lighting & Environment] ni [Mood].\n"
+                f"  • ❌ NO repitas `{lora_trigger}` en ningún otro bloque.\n"
+                f"  • NO lo traduzcas ni modifiques (es literal).\n"
             )
         else:
             bloques_positivos = (
@@ -477,16 +482,18 @@ class PromptsInyeccionService:
             info += f" Personaje: {pers}."
         lora = self.app.footer.lora_activo()
         if lora:
-            # Instrucción explícita para que el LLM incluya la trigger word
-            # LITERALMENTE al inicio del POSITIVE PROMPT. Antes era solo
-            # "LoRA: trigger." y el LLM lo interpretaba como contexto
-            # informativo, no como obligación — especialmente en modelos
-            # con system prompts estrictos como Z-Image-Base.
+            # Instrucción genérica de trigger obligatorio. Para Z-Image-Base
+            # (y otros modelos con plantilla específica), la posición exacta
+            # se decide en _inyectar_specs_formato → _inyectar_formato_z_image
+            # (que dirá: en el bloque [LoRA Activation & Style], NO en el
+            # preámbulo). Esta instrucción es para modelos sin plantilla
+            # propia, que pueden colocarlo donde encaje mejor (típicamente
+            # al inicio del POSITIVE PROMPT como tag suelto).
             info += (
                 f"\n🔗 LORA ACTIVO — TRIGGER WORD OBLIGATORIO: "
-                f"`{lora}`. Inclúyelo LITERALMENTE como PRIMER TOKEN del "
-                f"POSITIVE PROMPT (antes de cualquier preámbulo de quality "
-                f"tags). NO lo traduzcas ni modifiques."
+                f"`{lora}`. Inclúyelo LITERALMENTE UNA SOLA VEZ en el "
+                f"POSITIVE PROMPT. NO lo traduzcas ni modifiques. NO lo "
+                f"repitas en varias secciones."
             )
         dest = self.app.destino_var.get()
         if dest and dest != "— Personal —":
