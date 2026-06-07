@@ -38,7 +38,6 @@ from modules import (
     EventBus,
     SesionVideoMixin,
     ToolsCreativeMixin,
-    ToolsWorkflowMixin,
     UIBuildersMixin,
     UiEventsMixin,
     UiFooterMixin,
@@ -58,7 +57,7 @@ class ArquitectoApp(
     ctk.CTk,
     UIBuildersMixin,
     ToolsCreativeMixin,
-    ToolsWorkflowMixin,
+    # ToolsWorkflowMixin removido (A1 fase 2, sesión 14) → self.workflow.* (ToolsWorkflowService)
     DataMgmtMixin,
     # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
     DialogsMixin,

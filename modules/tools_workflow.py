@@ -18,46 +18,53 @@ from workers import limpiar_marcadores
 if TYPE_CHECKING:
     pass
 
-class ToolsWorkflowMixin:
-    """Mixin containing all workflow tool methods."""
+class ToolsWorkflowService:
+    """14 herramientas de workflow: setups, cron, versiones, macros,
+    scoring auto, proyectos, atajos de tags.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _capturar_setup_actual(self):
         """Devuelve un dict con la configuración actual (modelo, plataforma, ratio, estilos, negatives, etc.)."""
         try:
             estilos_sel = []
-            if hasattr(self, "estilo_checks"):
-                for nombre, var in self.estilo_checks.items():
+            if hasattr(self.app, "estilo_checks"):
+                for nombre, var in self.app.estilo_checks.items():
                     try:
                         if var.get(): estilos_sel.append(nombre)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             negatives_sel = []
-            if hasattr(self, "preset_vars"):
-                for nombre, var in self.preset_vars.items():
+            if hasattr(self.app, "preset_vars"):
+                for nombre, var in self.app.preset_vars.items():
                     try:
                         if var.get(): negatives_sel.append(nombre)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             modelo = ""
-            modo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
-            if modo == "imagen" and hasattr(self, "combo_modelo_imagen"):
-                modelo = self.combo_modelo_imagen.get() or ""
-            elif modo == "video" and hasattr(self, "combo_modelo_video"):
-                modelo = self.combo_modelo_video.get() or ""
-            elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
-                modelo = self.combo_modelo_audio.get() or ""
+            modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
+            if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
+                modelo = self.app.combo_modelo_imagen.get() or ""
+            elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
+                modelo = self.app.combo_modelo_video.get() or ""
+            elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
+                modelo = self.app.combo_modelo_audio.get() or ""
             setup = {
                 "modo": modo,
                 "modelo": modelo,
-                "plataforma": self.plataforma_var.get() if hasattr(self, "plataforma_var") else "",
-                "ratio": self.ratio_var.get() if hasattr(self, "ratio_var") else "",
-                "destino": self.destino_var.get() if hasattr(self, "destino_var") else "",
-                "personaje": self.combo_personaje.get() if hasattr(self, "combo_personaje") else "",
-                "lora": self.combo_lora.get() if hasattr(self, "combo_lora") else "",
+                "plataforma": self.app.plataforma_var.get() if hasattr(self.app, "plataforma_var") else "",
+                "ratio": self.app.ratio_var.get() if hasattr(self.app, "ratio_var") else "",
+                "destino": self.app.destino_var.get() if hasattr(self.app, "destino_var") else "",
+                "personaje": self.app.combo_personaje.get() if hasattr(self.app, "combo_personaje") else "",
+                "lora": self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else "",
                 "estilos": estilos_sel,
                 "negatives": negatives_sel,
-                "nsfw": bool(self.switch_nsfw_var.get()) if hasattr(self, "switch_nsfw_var") else False,
-                "auto_trad": bool(self.switch_traduccion_var.get()) if hasattr(self, "switch_traduccion_var") else False,
+                "nsfw": bool(self.app.switch_nsfw_var.get()) if hasattr(self.app, "switch_nsfw_var") else False,
+                "auto_trad": bool(self.app.switch_traduccion_var.get()) if hasattr(self.app, "switch_traduccion_var") else False,
             }
             return setup
         except Exception:
@@ -66,125 +73,125 @@ class ToolsWorkflowMixin:
     def _aplicar_setup(self, setup):
         """Aplica un setup guardado a la UI actual."""
         if not setup or not isinstance(setup, dict): return
-        try: self._sesion_log(f"🔄 Aplicó setup ({setup.get('modo', '?')} · {setup.get('plataforma', '—')} · {setup.get('modelo', '—')})")
+        try: self.app._sesion_log(f"🔄 Aplicó setup ({setup.get('modo', '?')} · {setup.get('plataforma', '—')} · {setup.get('modelo', '—')})")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         try:
             # Modo primero (cambia paneles disponibles)
-            if setup.get("modo") and hasattr(self, "modo_var"):
-                self.modo_var.set(setup["modo"])
-                if hasattr(self, "_on_modo_cambio"):
-                    try: self._on_modo_cambio()
+            if setup.get("modo") and hasattr(self.app, "modo_var"):
+                self.app.modo_var.set(setup["modo"])
+                if hasattr(self.app, "_on_modo_cambio"):
+                    try: self.app._on_modo_cambio()
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Plataforma
-            if setup.get("plataforma") and hasattr(self, "plataforma_var"):
-                self.plataforma_var.set(setup["plataforma"])
-                if hasattr(self, "_on_plataforma_cambio"):
-                    try: self._on_plataforma_cambio()
+            if setup.get("plataforma") and hasattr(self.app, "plataforma_var"):
+                self.app.plataforma_var.set(setup["plataforma"])
+                if hasattr(self.app, "_on_plataforma_cambio"):
+                    try: self.app._on_plataforma_cambio()
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Modelo (según modo)
             modo = setup.get("modo", "imagen")
             modelo = setup.get("modelo", "")
             if modelo:
-                if modo == "imagen" and hasattr(self, "combo_modelo_imagen"):
-                    self.combo_modelo_imagen.set(modelo)
-                    if hasattr(self, "_on_modelo_imagen_cambio"):
-                        try: self._on_modelo_imagen_cambio()
+                if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
+                    self.app.combo_modelo_imagen.set(modelo)
+                    if hasattr(self.app, "_on_modelo_imagen_cambio"):
+                        try: self.app._on_modelo_imagen_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
-                elif modo == "video" and hasattr(self, "combo_modelo_video"):
-                    self.combo_modelo_video.set(modelo)
-                    if hasattr(self, "_on_motor_cambio"):
-                        try: self._on_motor_cambio()
+                elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
+                    self.app.combo_modelo_video.set(modelo)
+                    if hasattr(self.app, "_on_motor_cambio"):
+                        try: self.app._on_motor_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
-                elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
-                    self.combo_modelo_audio.set(modelo)
-                    if hasattr(self, "_on_motor_audio_cambio"):
-                        try: self._on_motor_audio_cambio()
+                elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
+                    self.app.combo_modelo_audio.set(modelo)
+                    if hasattr(self.app, "_on_motor_audio_cambio"):
+                        try: self.app._on_motor_audio_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
             # Ratio, destino
             for key, attr in [("ratio", "ratio_var"), ("destino", "destino_var")]:
                 v = setup.get(key)
-                if v and hasattr(self, attr):
-                    try: getattr(self, attr).set(v)
+                if v and hasattr(self.app, attr):
+                    try: getattr(self.app, attr).set(v)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Personaje y LoRA (son combos directos)
-            if setup.get("personaje") and hasattr(self, "combo_personaje"):
-                try: self.combo_personaje.set(setup["personaje"])
+            if setup.get("personaje") and hasattr(self.app, "combo_personaje"):
+                try: self.app.combo_personaje.set(setup["personaje"])
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
-            if setup.get("lora") and hasattr(self, "combo_lora"):
-                try: self.combo_lora.set(setup["lora"])
+            if setup.get("lora") and hasattr(self.app, "combo_lora"):
+                try: self.app.combo_lora.set(setup["lora"])
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
-            if "nsfw" in setup and hasattr(self, "switch_nsfw_var"):
-                try: self.switch_nsfw_var.set(bool(setup["nsfw"]))
+            if "nsfw" in setup and hasattr(self.app, "switch_nsfw_var"):
+                try: self.app.switch_nsfw_var.set(bool(setup["nsfw"]))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
-            if "auto_trad" in setup and hasattr(self, "switch_traduccion_var"):
+            if "auto_trad" in setup and hasattr(self.app, "switch_traduccion_var"):
                 try:
-                    self.switch_traduccion_var.set(bool(setup["auto_trad"]))
-                    if hasattr(self, "_sw_trad_callback"):
-                        try: self._sw_trad_callback()
+                    self.app.switch_traduccion_var.set(bool(setup["auto_trad"]))
+                    if hasattr(self.app, "_sw_trad_callback"):
+                        try: self.app._sw_trad_callback()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             # Estilos
             estilos_sel = set(setup.get("estilos", []))
-            if hasattr(self, "estilo_checks"):
-                for nombre, var in self.estilo_checks.items():
+            if hasattr(self.app, "estilo_checks"):
+                for nombre, var in self.app.estilo_checks.items():
                     try: var.set(nombre in estilos_sel)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Negatives
             negatives_sel = set(setup.get("negatives", []))
-            if hasattr(self, "preset_vars"):
-                for nombre, var in self.preset_vars.items():
+            if hasattr(self.app, "preset_vars"):
+                for nombre, var in self.app.preset_vars.items():
                     try: var.set(nombre in negatives_sel)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Refrescar negative textbox
-            if hasattr(self, "_rebuild_negative_text"):
-                try: self._rebuild_negative_text()
+            if hasattr(self.app, "_rebuild_negative_text"):
+                try: self.app._rebuild_negative_text()
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.set_estado(f"⚠️ Error aplicando setup: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error aplicando setup: {e}", "#e74c3c")
 
     def _cmd_guardar_setup(self):
         """Abre diálogo para nombrar y guardar el setup actual."""
         from tkinter import simpledialog
         setup = self._capturar_setup_actual()
         if not setup:
-            self.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
+            self.app.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
             return
         nombre = simpledialog.askstring("💾 Guardar setup",
                                           "Nombre para este setup:\n(modelo, plataforma, ratio, estilos, negatives…)",
-                                          parent=self)
+                                          parent=self.app)
         if not nombre or not nombre.strip(): return
         nombre = nombre.strip()[:60]
         # Cargar setups existentes
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         setups = prefs.get("setups", {}) or {}
         # Confirmación si ya existe
         if nombre in setups:
             from tkinter import messagebox
             if not messagebox.askyesno("Sobrescribir",
                                          f"Ya existe un setup llamado '{nombre}'. ¿Sobrescribirlo?",
-                                         parent=self):
+                                         parent=self.app):
                 return
         setup["_fecha_guardado"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         setups[nombre] = setup
         prefs["setups"] = setups
-        self.store.guardar_preferencias(prefs)
-        self.set_estado(f"💾 Setup '{nombre}' guardado", "#2ecc71")
-        try: self._sesion_log(f"💾 Guardó setup: {nombre}")
+        self.app.store.guardar_preferencias(prefs)
+        self.app.set_estado(f"💾 Setup '{nombre}' guardado", "#2ecc71")
+        try: self.app._sesion_log(f"💾 Guardó setup: {nombre}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -192,22 +199,22 @@ class ToolsWorkflowMixin:
         """Abre ventana con la lista de setups guardados para elegir uno."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         setups = prefs.get("setups", {}) or {}
         if not setups:
-            self.set_estado("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual.", "#e67e22")
+            self.app.set_estado("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual.", "#e67e22")
             return
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("📋 Cargar setup")
         v.geometry("560x520")
-        v.transient(self)
+        v.transient(self.app)
         ctk.CTkLabel(v, text="📋 Setups guardados", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 8))
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(0, 10))
 
         def _refrescar_lista():
             for w in scroll.winfo_children(): w.destroy()
-            setups_act = self.store.cargar_preferencias().get("setups", {}) or {}
+            setups_act = self.app.store.cargar_preferencias().get("setups", {}) or {}
             if not setups_act:
                 ctk.CTkLabel(scroll, text="(sin setups)", text_color="#666").pack(pady=20)
                 return
@@ -240,17 +247,17 @@ class ToolsWorkflowMixin:
 
                 def _aplicar(s=setup, n=nombre):
                     self._aplicar_setup(s)
-                    self.set_estado(f"📋 Setup '{n}' aplicado", "#2ecc71")
+                    self.app.set_estado(f"📋 Setup '{n}' aplicado", "#2ecc71")
                     v.destroy()
 
                 def _borrar(n=nombre):
                     from tkinter import messagebox
                     if messagebox.askyesno("Borrar setup", f"¿Borrar el setup '{n}'?", parent=v):
-                        prefs2 = self.store.cargar_preferencias()
+                        prefs2 = self.app.store.cargar_preferencias()
                         setups2 = prefs2.get("setups", {}) or {}
                         setups2.pop(n, None)
                         prefs2["setups"] = setups2
-                        self.store.guardar_preferencias(prefs2)
+                        self.app.store.guardar_preferencias(prefs2)
                         _refrescar_lista()
 
                 ctk.CTkButton(btn_row, text="Aplicar", width=90, height=26,
@@ -266,15 +273,15 @@ class ToolsWorkflowMixin:
         """Genera N variantes del prompt actual espaciadas en el tiempo."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            self.app.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
             return
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("⏲ Cron de variantes")
         vent.geometry("520x620")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="⏲ Cron — Variantes programadas", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(vent, text="Genera N VARIANTES distintas espaciadas en el tiempo.\nCada una añade variación (encuadre, iluminación, paleta...) automáticamente.",
@@ -358,7 +365,7 @@ class ToolsWorkflowMixin:
                 if cantidad < 1 or cantidad > 50: raise ValueError("cantidad fuera de rango")
                 if intervalo < 0.1 or intervalo > 120: raise ValueError("intervalo fuera de rango")
             except Exception:
-                self.set_estado("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)", "#e67e22")
+                self.app.set_estado("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)", "#e67e22")
                 return
 
             cron_state["activo"] = True
@@ -366,8 +373,8 @@ class ToolsWorkflowMixin:
             cron_state["generados"] = []
             aspecto = var_aspecto.get()
             personalizado = ent_personalizado.get().strip()
-            modo = self.modo_var.get()
-            estilos = self.estilos_texto()
+            modo = self.app.modo_var.get()
+            estilos = self.app.estilos_texto()
 
             mapeo_aspecto = {
                 "Solo iluminación": "iluminación (tipo, dirección, intensidad, color)",
@@ -407,31 +414,31 @@ class ToolsWorkflowMixin:
                         f"- Sé creativo y diverso: cada llamada debe dar resultado distinto.\n\n"
                         f"FORMATO:\nPOSITIVE PROMPT: [prompt completo]\nNEGATIVE PROMPT: [si el modelo lo soporta]\n"
                     )
-                    resp = self.deepseek.generar(peticion, temperature=0.9, max_tokens=1500)
+                    resp = self.app.deepseek.generar(peticion, temperature=0.9, max_tokens=1500)
                     resp = limpiar_marcadores(resp)
 
                     # Eliminar negative si el modelo no lo soporta
-                    specs = self.get_current_model_specs()
+                    specs = self.app.get_current_model_specs()
                     if specs and not specs.get("has_negative", True):
                         import re
                         resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp, flags=re.DOTALL | re.IGNORECASE).strip()
 
                     cron_state["generados"].append(resp)
-                    self.guardar_en_historial(resp)
+                    self.app.guardar_en_historial(resp)
 
                     def _aplicar():
                         if cron_state["cerrada"]:
                             return
-                        self.actualizar_salida(resp)
+                        self.app.actualizar_salida(resp)
                         progreso = f"⏲ Variante {num}/{cantidad} generada · próxima en {int(intervalo)}min"
                         if num >= cantidad:
                             progreso = f"✅ Cron completado: {cantidad} variantes generadas"
                         _safe_configure(lbl_progreso, text=progreso,
                                         text_color="#2ecc71" if num >= cantidad else "#3498db")
-                        self.set_estado(f"⏲ Variante {num}/{cantidad} lista", "#3498db")
-                    self.after(0, _aplicar)
+                        self.app.set_estado(f"⏲ Variante {num}/{cantidad} lista", "#3498db")
+                    self.app.after(0, _aplicar)
                 except Exception as e:
-                    self.after(0, lambda e=e: _safe_configure(lbl_progreso,
+                    self.app.after(0, lambda e=e: _safe_configure(lbl_progreso,
                                                           text=f"❌ Error variante {num}: {e}",
                                                           text_color="#e74c3c"))
 
@@ -454,7 +461,7 @@ class ToolsWorkflowMixin:
                     cron_state["after_id"] = None
 
             _siguiente()
-            self.set_estado(f"⏲ Cron iniciado: {cantidad} variantes cada {intervalo}min", "#2ecc71")
+            self.app.set_estado(f"⏲ Cron iniciado: {cantidad} variantes cada {intervalo}min", "#2ecc71")
 
         def _detener():
             cron_state["activo"] = False
@@ -468,9 +475,9 @@ class ToolsWorkflowMixin:
 
         def _ver_todas():
             if cron_state["generados"]:
-                self._abrir_comparador(cron_state["generados"])
+                self.app._abrir_comparador(cron_state["generados"])
             else:
-                self.set_estado("⚠️ Aún no hay variantes generadas", "#e67e22")
+                self.app.set_estado("⚠️ Aún no hay variantes generadas", "#e67e22")
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
         btn_row.pack(pady=10)
@@ -483,35 +490,35 @@ class ToolsWorkflowMixin:
 
     def _guardar_version_prompt(self):
         """Guarda la versión actual del prompt antes de modificarlo (sistema tipo Git)."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20: return
-        if not hasattr(self, '_versiones_prompt'):
-            self._versiones_prompt = []
+        if not hasattr(self.app, '_versiones_prompt'):
+            self.app._versiones_prompt = []
         # Evitar duplicados consecutivos
-        if self._versiones_prompt and self._versiones_prompt[-1]["texto"] == actual:
+        if self.app._versiones_prompt and self.app._versiones_prompt[-1]["texto"] == actual:
             return
-        self._versiones_prompt.append({
+        self.app._versiones_prompt.append({
             "texto": actual,
             "fecha": datetime.datetime.now().strftime("%H:%M:%S"),
-            "etiqueta": f"v{len(self._versiones_prompt) + 1}",
+            "etiqueta": f"v{len(self.app._versiones_prompt) + 1}",
         })
         # Limitar historial a 30 versiones por sesión
-        if len(self._versiones_prompt) > 30:
-            self._versiones_prompt = self._versiones_prompt[-30:]
+        if len(self.app._versiones_prompt) > 30:
+            self.app._versiones_prompt = self.app._versiones_prompt[-30:]
 
     def _cmd_versiones_prompt(self):
         """Muestra el historial de versiones del prompt actual (rollback)."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        if not hasattr(self, '_versiones_prompt') or not self._versiones_prompt:
-            return self.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
+        if not hasattr(self.app, '_versiones_prompt') or not self.app._versiones_prompt:
+            return self.app.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📜 Historial de versiones del prompt")
         vent.geometry("700x500")
-        vent.transient(self)
+        vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=f"📜 {len(self._versiones_prompt)} versiones en esta sesión",
+        ctk.CTkLabel(vent, text=f"📜 {len(self.app._versiones_prompt)} versiones en esta sesión",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Click en una versión para restaurarla",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
@@ -520,8 +527,8 @@ class ToolsWorkflowMixin:
         scroll.pack(fill="both", expand=True, padx=12, pady=5)
 
         # Mostrar de más reciente a más antiguo
-        for i, ver in enumerate(reversed(self._versiones_prompt)):
-            num = len(self._versiones_prompt) - i
+        for i, ver in enumerate(reversed(self.app._versiones_prompt)):
+            num = len(self.app._versiones_prompt) - i
             card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
             card.pack(fill="x", pady=3)
             # Color del header según origen (Walk · azul-verdoso, pre-refinamiento · ámbar)
@@ -553,9 +560,9 @@ class ToolsWorkflowMixin:
             btn_row.pack(fill="x", padx=5, pady=(0, 4))
 
             def _restaurar(t=ver["texto"]):
-                self.actualizar_salida(t)
+                self.app.actualizar_salida(t)
                 vent.destroy()
-                self.set_estado(f"⏪ Versión restaurada", "#2ecc71")
+                self.app.set_estado(f"⏪ Versión restaurada", "#2ecc71")
             ctk.CTkButton(btn_row, text="⏪ Restaurar esta", width=130, height=22, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10), command=_restaurar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text="📋 Copiar", width=80, height=22, fg_color=c["fg_dark"],
@@ -566,13 +573,13 @@ class ToolsWorkflowMixin:
         """Macros: secuencias de acciones automatizadas."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         macros = prefs.get("macros", [])
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("⚡ Macros — Secuencias automatizadas")
         vent.geometry("700x600")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="⚡ Macros — Secuencias de acciones automatizadas",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -759,7 +766,7 @@ class ToolsWorkflowMixin:
                     if idx < len(actual2):
                         actual2.pop(idx)
                         prefs["macros"] = actual2
-                        self.store.guardar_preferencias(prefs)
+                        self.app.store.guardar_preferencias(prefs)
                         # Si estábamos editando esta macro, salir del modo edición
                         if edit_state["idx"] == idx:
                             _cancelar_edicion()
@@ -775,7 +782,7 @@ class ToolsWorkflowMixin:
         def crear_o_guardar():
             nombre = ent_nombre_m.get().strip()
             if not nombre or not pasos_state["lista"]:
-                self.set_estado("⚠️ Rellena nombre y añade al menos un paso.", "#e67e22")
+                self.app.set_estado("⚠️ Rellena nombre y añade al menos un paso.", "#e67e22")
                 return
             actual = prefs.get("macros", [])
             nueva = {"nombre": nombre, "pasos": list(pasos_state["lista"])}
@@ -784,13 +791,13 @@ class ToolsWorkflowMixin:
                 idx = edit_state["idx"]
                 if 0 <= idx < len(actual):
                     actual[idx] = nueva
-                self.set_estado(f"💾 Macro '{nombre}' actualizada", "#2ecc71")
+                self.app.set_estado(f"💾 Macro '{nombre}' actualizada", "#2ecc71")
             else:
                 # Modo crear: añadir nueva al final
                 actual.append(nueva)
-                self.set_estado(f"✅ Macro '{nombre}' creada", "#2ecc71")
+                self.app.set_estado(f"✅ Macro '{nombre}' creada", "#2ecc71")
             prefs["macros"] = actual
-            self.store.guardar_preferencias(prefs)
+            self.app.store.guardar_preferencias(prefs)
             _cancelar_edicion()
             refrescar()
 
@@ -808,83 +815,83 @@ class ToolsWorkflowMixin:
         pasos = macro.get("pasos", [])
         if not pasos: return
 
-        self.set_estado(f"⚡ Ejecutando macro '{macro.get('nombre', '?')}' ({len(pasos)} pasos)...", "#f39c12")
+        self.app.set_estado(f"⚡ Ejecutando macro '{macro.get('nombre', '?')}' ({len(pasos)} pasos)...", "#f39c12")
 
         def _ejecutar_paso(idx):
             if idx >= len(pasos):
-                self.set_estado(f"✅ Macro '{macro.get('nombre', '?')}' completada", "#2ecc71")
-                self._sonar_completado()
+                self.app.set_estado(f"✅ Macro '{macro.get('nombre', '?')}' completada", "#2ecc71")
+                self.app._sonar_completado()
                 return
             label = pasos[idx]
             accion_id = acciones_disponibles.get(label, "")
-            self.set_estado(f"⚡ Paso {idx+1}/{len(pasos)}: {label}", "#3498db")
+            self.app.set_estado(f"⚡ Paso {idx+1}/{len(pasos)}: {label}", "#3498db")
             try:
                 if accion_id == "generar":
-                    self.cmd_prompt()
+                    self.app.cmd_prompt()
                 elif accion_id == "idea_auto":
                     self._cmd_idea_auto_en_macro()
                 elif accion_id == "variacion_auto":
                     self._cmd_variacion_auto_en_macro()
                 elif accion_id == "refinar":
-                    self.refinar.cmd_refinar()
+                    self.app.refinar.cmd_refinar()
                 elif accion_id == "refinar_cinematografico":
-                    self.refinar.refinar_con_instruccion("más cinematográfico, con encuadre épico, movimientos de cámara dramáticos, iluminación de película")
+                    self.app.refinar.refinar_con_instruccion("más cinematográfico, con encuadre épico, movimientos de cámara dramáticos, iluminación de película")
                 elif accion_id == "refinar_facial":
-                    self.refinar.refinar_con_instruccion("más detalle facial, ojos detallados, textura de piel realista, expresión emotiva")
+                    self.app.refinar.refinar_con_instruccion("más detalle facial, ojos detallados, textura de piel realista, expresión emotiva")
                 elif accion_id == "refinar_iluminacion":
-                    self.refinar.refinar_con_instruccion("iluminación más profesional, luces volumétricas, ambiente atmosférico, dirección de luz definida")
+                    self.app.refinar.refinar_con_instruccion("iluminación más profesional, luces volumétricas, ambiente atmosférico, dirección de luz definida")
                 elif accion_id == "refinar_simplificar":
-                    self.refinar.refinar_con_instruccion("más simple y conciso. Elimina redundancias, tags innecesarios.")
+                    self.app.refinar.refinar_con_instruccion("más simple y conciso. Elimina redundancias, tags innecesarios.")
                 elif accion_id == "refinar_mejorado":
-                    self.refinar.refinar_con_instruccion("mejorar calidad general, añadir más detalle, optimizar estructura del prompt")
+                    self.app.refinar.refinar_con_instruccion("mejorar calidad general, añadir más detalle, optimizar estructura del prompt")
                 elif accion_id == "negative_optimo":
-                    self._cmd_negative_optimo()
+                    self.app._cmd_negative_optimo()
                 elif accion_id == "negative_builder":
-                    self._cmd_negative_builder()
+                    self.app._cmd_negative_builder()
                 elif accion_id == "scoring_auto":
                     self._cmd_scoring_auto_en_macro()
                 elif accion_id == "sugerir_estilos":
-                    self._cmd_sugerir_estilos()
+                    self.app._cmd_sugerir_estilos()
                 elif accion_id == "guardar_favorito":
-                    self._guardar_favorito()
+                    self.app._guardar_favorito()
                 elif accion_id == "guardar_estrella":
-                    self._guardar_estrella()
+                    self.app._guardar_estrella()
                 elif accion_id == "traducir":
-                    self.analysis.traducir_salida()
+                    self.app.analysis.traducir_salida()
                 elif accion_id == "copiar_pos":
-                    self._copiar("positivo")
+                    self.app._copiar("positivo")
                 elif accion_id == "copiar_neg":
-                    self._copiar("negativo")
+                    self.app._copiar("negativo")
                 elif accion_id == "limpiar":
-                    self.actualizar_salida("")
+                    self.app.actualizar_salida("")
                 elif accion_id == "previsualizar":
-                    self.cmd_previsualizar()
-                    self.after(18000, lambda: _ejecutar_paso(idx + 1))
+                    self.app.cmd_previsualizar()
+                    self.app.after(18000, lambda: _ejecutar_paso(idx + 1))
                     return
             except Exception as e:
-                self.set_estado(f"⚠️ Paso falló: {e}", "#e74c3c")
-            self.after(6000, lambda: _ejecutar_paso(idx + 1))
+                self.app.set_estado(f"⚠️ Paso falló: {e}", "#e74c3c")
+            self.app.after(6000, lambda: _ejecutar_paso(idx + 1))
 
         _ejecutar_paso(0)
 
     def _cmd_scoring_auto_en_macro(self):
         """Scoring automático sin abrir ventana - aplica el mejor prompt directamente."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero para scoring.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero para scoring.", "#e67e22")
 
         # Guardar versión antes de modificar (por seguridad)
         try:
-            if not hasattr(self, '_versiones_prompt'):
-                self._versiones_prompt = []
-            if not (self._versiones_prompt and self._versiones_prompt[-1]["texto"] == actual):
-                self._versiones_prompt.append({
+            if not hasattr(self.app, '_versiones_prompt'):
+                self.app._versiones_prompt = []
+            if not (self.app._versiones_prompt and self.app._versiones_prompt[-1]["texto"] == actual):
+                self.app._versiones_prompt.append({
                     "texto": actual,
-                    "etiqueta": f"v{len(self._versiones_prompt) + 1} (pre-scoring)",
+                    "etiqueta": f"v{len(self.app._versiones_prompt) + 1} (pre-scoring)",
                     "timestamp": datetime.datetime.now().isoformat(),
                 })
-                if len(self._versiones_prompt) > 30:
-                    self._versiones_prompt = self._versiones_prompt[-30:]
+                if len(self.app._versiones_prompt) > 30:
+                    self.app._versiones_prompt = self.app._versiones_prompt[-30:]
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
@@ -896,20 +903,20 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
-                self.after(0, lambda: self.actualizar_salida(resp))
-                self.after(0, lambda: self.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.actualizar_salida(resp))
+                self.app.after(0, lambda: self.app.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_idea_auto_en_macro(self):
         """Genera 1 idea directamente sin popup - para macros."""
-        idea = self.txt_idea.get("1.0", "end").strip()
-        tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
-        estilos = self.estilos_texto()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
+        tipo = "canción" if self.app.modo_var.get() == "audio" else "vídeo" if self.app.modo_var.get() == "video" else "imagen"
+        estilos = self.app.estilos_texto()
         peticion = f"Genera UNA sola idea para {tipo}. Estilos: {estilos}"
         if idea:
             peticion += f" Tema: {idea}"
@@ -917,20 +924,20 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=200)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip()
-                self.after(0, lambda: self.txt_idea.insert("1.0", resp + "\n\n"))
-                self.after(0, lambda: self.set_estado("💡 Idea generada (macro)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.txt_idea.insert("1.0", resp + "\n\n"))
+                self.app.after(0, lambda: self.app.set_estado("💡 Idea generada (macro)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_variacion_auto_en_macro(self):
         """Genera 1 variación directamente sin popup - para macros."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         peticion = (
             f"Crea una variación de este prompt manteniendo la esencia pero cambiando estilo/enfoque:\n\n"
@@ -940,12 +947,12 @@ class ToolsWorkflowMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
-                self.after(0, lambda: self.actualizar_salida(resp))
-                self.after(0, lambda: self.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.actualizar_salida(resp))
+                self.app.after(0, lambda: self.app.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -953,7 +960,7 @@ class ToolsWorkflowMixin:
         """Sistema de proyectos con setup propio: organiza prompts y guarda configuración por proyecto."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         # ── Migración automática: strings → dicts ──
         proyectos_raw = prefs.get("proyectos", [])
         proyectos = {}
@@ -967,12 +974,12 @@ class ToolsWorkflowMixin:
         # Guardar en formato nuevo si hubo migración
         if proyectos != proyectos_raw:
             prefs["proyectos"] = proyectos
-            self.store.guardar_preferencias(prefs)
+            self.app.store.guardar_preferencias(prefs)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🏷 Proyectos")
         vent.geometry("680x600")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🏷 Sistema de proyectos",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -995,7 +1002,7 @@ class ToolsWorkflowMixin:
         def _crear_proy():
             nombre = ent_proy.get().strip()
             if not nombre: return
-            prefs2 = self.store.cargar_preferencias()
+            prefs2 = self.app.store.cargar_preferencias()
             proys = prefs2.get("proyectos", {}) or {}
             if not isinstance(proys, dict): proys = {}
             if nombre not in proys:
@@ -1004,7 +1011,7 @@ class ToolsWorkflowMixin:
                     "_creado": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
                 }
                 prefs2["proyectos"] = proys
-                self.store.guardar_preferencias(prefs2)
+                self.app.store.guardar_preferencias(prefs2)
             ent_proy.delete(0, "end")
             refrescar()
 
@@ -1016,7 +1023,7 @@ class ToolsWorkflowMixin:
 
         def refrescar():
             for w in scroll.winfo_children(): w.destroy()
-            prefs_act = self.store.cargar_preferencias()
+            prefs_act = self.app.store.cargar_preferencias()
             proys = prefs_act.get("proyectos", {}) or {}
             if not isinstance(proys, dict): proys = {}
             activo_a = prefs_act.get("proyecto_activo", "")
@@ -1032,12 +1039,12 @@ class ToolsWorkflowMixin:
                          text_color=c["muted_text"]).pack(side="left", padx=10, pady=6)
 
             def _activar_ninguno():
-                p2 = self.store.cargar_preferencias()
+                p2 = self.app.store.cargar_preferencias()
                 p2["proyecto_activo"] = ""
-                self.store.guardar_preferencias(p2)
+                self.app.store.guardar_preferencias(p2)
                 lbl_activo.configure(text="📌 Proyecto activo: (ninguno)", text_color=c["muted_text"])
                 refrescar()
-                self.set_estado("📌 Sin proyecto activo")
+                self.app.set_estado("📌 Sin proyecto activo")
 
             ctk.CTkButton(card, text="✅ Activar", width=80, height=22, fg_color="#1a4a5a",
                           font=ctk.CTkFont(size=10), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
@@ -1075,63 +1082,63 @@ class ToolsWorkflowMixin:
                 btn_row.pack(fill="x", padx=10, pady=(2, 6))
 
                 def _activar(n=nombre_p):
-                    p2 = self.store.cargar_preferencias()
+                    p2 = self.app.store.cargar_preferencias()
                     p2["proyecto_activo"] = n
-                    self.store.guardar_preferencias(p2)
+                    self.app.store.guardar_preferencias(p2)
                     lbl_activo.configure(text=f"📌 Proyecto activo: {n}", text_color="#2ecc71")
                     refrescar()
-                    self.set_estado(f"🏷 Proyecto '{n}' activado", "#2ecc71")
+                    self.app.set_estado(f"🏷 Proyecto '{n}' activado", "#2ecc71")
 
                 def _guardar_setup_proy(n=nombre_p):
                     """Guarda el setup actual en este proyecto."""
                     setup = self._capturar_setup_actual()
                     if not setup:
-                        self.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
+                        self.app.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
                         return
-                    p2 = self.store.cargar_preferencias()
+                    p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
                     if not isinstance(proys2, dict): proys2 = {}
                     if n not in proys2: proys2[n] = {}
                     proys2[n]["setup"] = setup
                     proys2[n]["_setup_fecha"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                     p2["proyectos"] = proys2
-                    self.store.guardar_preferencias(p2)
-                    self.set_estado(f"💾 Setup guardado en '{n}'", "#2ecc71")
+                    self.app.store.guardar_preferencias(p2)
+                    self.app.set_estado(f"💾 Setup guardado en '{n}'", "#2ecc71")
                     refrescar()
 
                 def _aplicar_setup_proy(n=nombre_p):
                     """Aplica el setup de este proyecto a la UI actual."""
-                    p2 = self.store.cargar_preferencias()
+                    p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
                     proy = proys2.get(n) or {}
                     setup = proy.get("setup") if isinstance(proy, dict) else None
                     if not setup:
-                        self.set_estado(f"⚠️ El proyecto '{n}' no tiene setup guardado", "#e67e22")
+                        self.app.set_estado(f"⚠️ El proyecto '{n}' no tiene setup guardado", "#e67e22")
                         return
                     self._aplicar_setup(setup)
-                    self.set_estado(f"🔄 Setup de '{n}' aplicado", "#2ecc71")
+                    self.app.set_estado(f"🔄 Setup de '{n}' aplicado", "#2ecc71")
                     vent.destroy()
 
                 def _borrar_setup_proy(n=nombre_p):
-                    p2 = self.store.cargar_preferencias()
+                    p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
                     if n in proys2 and isinstance(proys2[n], dict):
                         proys2[n]["setup"] = None
                         proys2[n].pop("_setup_fecha", None)
                         p2["proyectos"] = proys2
-                        self.store.guardar_preferencias(p2)
+                        self.app.store.guardar_preferencias(p2)
                         refrescar()
 
                 def _borrar(n=nombre_p):
                     if not messagebox.askyesno("Borrar proyecto", f"¿Borrar el proyecto '{n}'?\nLa acción no se puede deshacer.", parent=vent): return
-                    p2 = self.store.cargar_preferencias()
+                    p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
                     proys2.pop(n, None)
                     if p2.get("proyecto_activo") == n:
                         p2["proyecto_activo"] = ""
                         lbl_activo.configure(text="📌 Proyecto activo: (ninguno)", text_color=c["muted_text"])
                     p2["proyectos"] = proys2
-                    self.store.guardar_preferencias(p2)
+                    self.app.store.guardar_preferencias(p2)
                     refrescar()
 
                 if not es_activo:
@@ -1155,11 +1162,11 @@ class ToolsWorkflowMixin:
 
     def _aplicar_atajo_tags(self, tags_a_anadir):
         """Añade tags al final del POSITIVE del resultado actual."""
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            return self.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
-        pos = self.extraer_positive() or texto
-        neg = self.extraer_negative()
+            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+        pos = self.app.extraer_positive() or texto
+        neg = self.app.extraer_negative()
 
         # Añadir al final del positive
         nuevo_pos = pos.rstrip(", \n")
@@ -1168,5 +1175,5 @@ class ToolsWorkflowMixin:
         nuevo = f"POSITIVE PROMPT: {nuevo_pos}"
         if neg:
             nuevo += f"\nNEGATIVE PROMPT: {neg}"
-        self.actualizar_salida(nuevo)
-        self.set_estado(f"✨ Tags añadidos: {tags_a_anadir[:50]}...", "#2ecc71")
+        self.app.actualizar_salida(nuevo)
+        self.app.set_estado(f"✨ Tags añadidos: {tags_a_anadir[:50]}...", "#2ecc71")

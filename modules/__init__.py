@@ -25,7 +25,7 @@ from .refinamiento import RefinamientoService  # A1 fase 2 (sesión 14)
 from .sesion_video import SesionVideoMixin
 from .tools_analysis import ToolsAnalysisService  # A1 fase 2 (sesión 14)
 from .tools_creative import ToolsCreativeMixin
-from .tools_workflow import ToolsWorkflowMixin
+from .tools_workflow import ToolsWorkflowService  # A1 fase 2 (sesión 14)
 from .ui_builders import UIBuildersMixin
 from .ui_events import UiEventsMixin
 from .ui_footer import UiFooterMixin
@@ -34,7 +34,7 @@ from .workers_ia import WorkersIaService  # A1 fase 2 (sesión 14)
 __all__ = [
     "UIBuildersMixin",
     "ToolsCreativeMixin",
-    "ToolsWorkflowMixin",
+    "ToolsWorkflowService",
     "ToolsAnalysisService",
     "DataMgmtMixin",
     "BackupExportService",

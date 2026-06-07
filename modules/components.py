@@ -115,22 +115,31 @@ class CreativeComponent(_Component):
 
 class WorkflowComponent(_Component):
     """Macros, Cron, Proyectos, Versiones, Búsqueda global, etc.
-    (ToolsWorkflowMixin). Decimocuarto servicio del refactor A1.
+
+    A1 fase 2 (sesión 14): ToolsWorkflowMixin → ToolsWorkflowService aislado.
     """
     _name = "workflow"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.tools_workflow import ToolsWorkflowService
+        self._service = ToolsWorkflowService(app)
 
     def cmd_cron_prompts(self) -> None:
-        return self.app._cmd_cron_prompts()
+        return self._service._cmd_cron_prompts()
 
     def cmd_proyectos(self) -> None:
-        return self.app._cmd_proyectos()
+        return self._service._cmd_proyectos()
 
     def cmd_versiones_prompt(self) -> None:
-        return self.app._cmd_versiones_prompt()
+        return self._service._cmd_versiones_prompt()
 
     def abrir_macros(self) -> None:
-        return self.app._abrir_macros()
+        return self._service._abrir_macros()
 
+    # NOTA: cmd_convertir_a_video y cmd_previsualizar viven en CoreMixin/app.py,
+    # no en ToolsWorkflowService, así que siguen delegando al app.
     def cmd_convertir_a_video(self) -> None:
         return self.app._cmd_convertir_a_video()
 
