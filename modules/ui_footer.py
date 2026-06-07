@@ -369,7 +369,7 @@ class UiFooterMixin:
             self.txt_idea.delete("1.0", "end")
             self.txt_idea.insert("1.0", desc)
             if hasattr(self, "_sesion_eventos"):
-                self._sesion_log(f"🧑 Personaje → {nombre}")
+                self.sesion._sesion_log(f"🧑 Personaje → {nombre}")
 
     def _actualizar_coste_estimado(self, event=None):
         """Calcula y muestra el coste estimado de la generación."""

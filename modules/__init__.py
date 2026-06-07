@@ -22,7 +22,7 @@ from .multiprompt import MultiPromptService  # A1 fase 2 (sesión 14)
 from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
 from .refinamiento import RefinamientoService  # A1 fase 2 (sesión 14)
-from .sesion_video import SesionVideoMixin
+from .sesion_video import SesionVideoService  # A1 fase 2 (sesión 14)
 from .tools_analysis import ToolsAnalysisService  # A1 fase 2 (sesión 14)
 from .tools_creative import ToolsCreativeService  # A1 fase 2 (sesión 14)
 from .tools_workflow import ToolsWorkflowService  # A1 fase 2 (sesión 14)
@@ -42,7 +42,7 @@ __all__ = [
     "CoreMixin",
     "AdnVisualService",
     "MultiPromptService",
-    "SesionVideoMixin",
+    "SesionVideoService",
     "WorkersIaService",
     "ModoClienteService",
     "JsonPromptService",

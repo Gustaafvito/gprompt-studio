@@ -31,26 +31,32 @@ from modules.gprompt_window import GPromptWindow
 logger = logging.getLogger(__name__)
 
 
-class SesionVideoMixin:
-    """Mixin con grabación de sesión + log + exportación tutorial."""
+class SesionVideoService:
+    """Grabación de sesión + log + exportación tutorial.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _sesion_init(self) -> None:
         """Inicializa el registro de sesión si no existe."""
-        if not hasattr(self, "_sesion_eventos"):
-            self._sesion_eventos = []
-            self._sesion_grabando = False
-            self._sesion_inicio = None
-            self._sesion_video_thread = None
-            self._sesion_video_path = None
-            self._sesion_video_writer = None
-            self._sesion_video_running = False
+        if not hasattr(self.app, "_sesion_eventos"):
+            self.app._sesion_eventos = []
+            self.app._sesion_grabando = False
+            self.app._sesion_inicio = None
+            self.app._sesion_video_thread = None
+            self.app._sesion_video_path = None
+            self.app._sesion_video_writer = None
+            self.app._sesion_video_running = False
 
     def _sesion_log(self, evento):
         """Añade un evento al registro si está grabando."""
         self._sesion_init()
-        if not self._sesion_grabando: return
+        if not self.app._sesion_grabando: return
         ts = datetime.datetime.now().strftime("%H:%M:%S")
-        self._sesion_eventos.append((ts, evento))
+        self.app._sesion_eventos.append((ts, evento))
 
     def _sesion_video_disponible(self) -> None:
         """Comprueba si las dependencias para grabar vídeo están instaladas."""
@@ -65,7 +71,7 @@ class SesionVideoMixin:
         """Arranca la grabación de vídeo en thread separado. solo_app=True captura solo la ventana."""
         if not self._sesion_video_disponible():
             return False
-        self._sesion_solo_app = solo_app
+        self.app._sesion_solo_app = solo_app
         try:
             import os
 
@@ -75,26 +81,26 @@ class SesionVideoMixin:
             os.makedirs(output_dir, exist_ok=True)
             # Path del vídeo
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            self._sesion_video_path = os.path.join(output_dir, f"sesion_{ts}.mp4")
+            self.app._sesion_video_path = os.path.join(output_dir, f"sesion_{ts}.mp4")
             # Configurar writer (5 FPS, codec H.264)
-            self._sesion_video_writer = imageio.get_writer(
-                self._sesion_video_path,
+            self.app._sesion_video_writer = imageio.get_writer(
+                self.app._sesion_video_path,
                 fps=5,
                 codec="libx264",
                 quality=7,
                 pixelformat="yuv420p",
                 macro_block_size=1,
             )
-            self._sesion_video_running = True
-            self._sesion_video_thread = threading.Thread(
+            self.app._sesion_video_running = True
+            self.app._sesion_video_thread = threading.Thread(
                 target=self._sesion_video_worker, daemon=True
             )
-            self._sesion_video_thread.start()
+            self.app._sesion_video_thread.start()
             return True
         except Exception as e:
-            self._sesion_video_writer = None
-            self._sesion_video_running = False
-            self.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
+            self.app._sesion_video_writer = None
+            self.app._sesion_video_running = False
+            self.app.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
             return False
 
     def _sesion_video_worker(self) -> None:
@@ -105,20 +111,20 @@ class SesionVideoMixin:
             import mss
             import numpy as np
 
-            solo_app = getattr(self, '_sesion_solo_app', False)
+            solo_app = getattr(self.app, '_sesion_solo_app', False)
 
             with mss.mss() as sct:
                 interval = 0.2  # 5 FPS
                 next_t = time.time()
-                while self._sesion_video_running:
+                while self.app._sesion_video_running:
                     if solo_app:
                         # Capturar solo la región de la ventana de la app
                         try:
                             # Obtener posición y tamaño de la ventana
-                            x = self.winfo_x()
-                            y = self.winfo_y()
-                            w = self.winfo_width()
-                            h = self.winfo_height()
+                            x = self.app.winfo_x()
+                            y = self.app.winfo_y()
+                            w = self.app.winfo_width()
+                            h = self.app.winfo_height()
 
                             # Ajustar a múltiplo de 2 (H.264 requiere dimensiones pares)
                             w = w if w % 2 == 0 else w - 1
@@ -145,7 +151,7 @@ class SesionVideoMixin:
                     # Convertir BGRA → RGB
                     frame = np.array(img)[:, :, [2, 1, 0]]  # BGRA→RGB
                     try:
-                        self._sesion_video_writer.append_data(frame)
+                        self.app._sesion_video_writer.append_data(frame)
                     except Exception:
                         break
                     # Mantener cadencia 5 FPS
@@ -156,46 +162,46 @@ class SesionVideoMixin:
                     else:
                         next_t = time.time()
         except Exception as e:
-            self.after(0, lambda e=e: self.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
 
     def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""
-        self._sesion_video_running = False
+        self.app._sesion_video_running = False
         # Esperar al thread (max 1.5s)
-        if self._sesion_video_thread:
-            try: self._sesion_video_thread.join(timeout=1.5)
+        if self.app._sesion_video_thread:
+            try: self.app._sesion_video_thread.join(timeout=1.5)
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         # Cerrar writer
-        if self._sesion_video_writer:
-            try: self._sesion_video_writer.close()
+        if self.app._sesion_video_writer:
+            try: self.app._sesion_video_writer.close()
             except Exception as e:
                 logger.debug(f"[silent] {e}")
-        path = self._sesion_video_path
-        self._sesion_video_writer = None
-        self._sesion_video_path = None
-        self._sesion_video_thread = None
+        path = self.app._sesion_video_path
+        self.app._sesion_video_writer = None
+        self.app._sesion_video_path = None
+        self.app._sesion_video_thread = None
         return path
 
     def _cmd_sesion_grabar_toggle(self) -> None:
         """Inicia / detiene la grabación de sesión (con o sin vídeo según preferencia)."""
         self._sesion_init()
-        if not self._sesion_grabando:
+        if not self.app._sesion_grabando:
             # Preguntar tipo de grabación de vídeo si el switch está ON
-            if getattr(self, '_sesion_grabar_video', False):
+            if getattr(self.app, '_sesion_grabar_video', False):
                 if self._sesion_video_disponible():
                     # Ventana de selección
-                    sel = GPromptWindow(self)
+                    sel = GPromptWindow(self.app)
                     sel.title("🎬 Tipo de grabación")
                     sel.geometry("350x180")
-                    sel.transient(self)
+                    sel.transient(self.app)
                     sel.grab_set()
 
                     ctk.CTkLabel(sel, text="¿Qué quieres grabar en vídeo?", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
                     ctk.CTkLabel(sel, text="(La grabación de texto siempre está activa)", font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 15))
 
                     def _iniciar(tipo):
-                        self._sesion_tipo_video = tipo
+                        self.app._sesion_tipo_video = tipo
                         sel.destroy()
                         self._iniciar_grabacion(tipo)
 
@@ -214,10 +220,10 @@ class SesionVideoMixin:
         else:
             # Parar
             self._sesion_log("⏹ GRABACIÓN DETENIDA")
-            self._sesion_grabando = False
+            self.app._sesion_grabando = False
             video_path = None
-            if self._sesion_video_running or self._sesion_video_writer:
-                self.set_estado("⏹ Cerrando vídeo...")
+            if self.app._sesion_video_running or self.app._sesion_video_writer:
+                self.app.set_estado("⏹ Cerrando vídeo...")
                 video_path = self._sesion_video_detener()
             self._cmd_sesion_exportar(video_path=video_path)
 
@@ -228,25 +234,25 @@ class SesionVideoMixin:
         replicaba el código de "parar" del toggle pero era dead code —
         esta función solo se llama desde el flujo de inicio).
         """
-        self._sesion_eventos = []
-        self._sesion_grabando = True
-        self._sesion_inicio = datetime.datetime.now()
+        self.app._sesion_eventos = []
+        self.app._sesion_grabando = True
+        self.app._sesion_inicio = datetime.datetime.now()
         self._sesion_log("🔴 GRABACIÓN INICIADA")
 
         if tipo_video == "nada":
-            self.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
+            self.app.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
         elif tipo_video == "app":
             if self._sesion_video_iniciar(solo_app=True):
                 self._sesion_log("🎥 Grabación de vídeo (solo app, 5 FPS)")
-                self.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
+                self.app.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
             else:
-                self.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
         elif tipo_video == "pantalla":
             if self._sesion_video_iniciar(solo_app=False):
                 self._sesion_log("🎥 Grabación de vídeo (pantalla completa, 5 FPS)")
-                self.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
+                self.app.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
             else:
-                self.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
 
     def _cmd_sesion_exportar(self, video_path=None):
         """Abre ventana con el log de la sesión y opciones de exportación.
@@ -254,24 +260,24 @@ class SesionVideoMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         self._sesion_init()
-        if not self._sesion_eventos:
-            self.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+        if not self.app._sesion_eventos:
+            self.app.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("🎬 Sesión grabada")
         v.geometry("780x640")
-        v.transient(self)
+        v.transient(self.app)
 
         ctk.CTkLabel(v, text="🎬 Registro de sesión",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         dur = ""
-        if self._sesion_inicio:
-            delta = datetime.datetime.now() - self._sesion_inicio
+        if self.app._sesion_inicio:
+            delta = datetime.datetime.now() - self.app._sesion_inicio
             mins = int(delta.total_seconds() // 60)
             secs = int(delta.total_seconds() % 60)
             dur = f"  ·  duración: {mins}m {secs}s"
-        ctk.CTkLabel(v, text=f"{len(self._sesion_eventos)} eventos{dur}",
+        ctk.CTkLabel(v, text=f"{len(self.app._sesion_eventos)} eventos{dur}",
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
 
         # ── Banner con info del vídeo si se grabó ──
@@ -299,7 +305,7 @@ class SesionVideoMixin:
                     else:
                         subprocess.run(["xdg-open", folder])
                 except Exception as e:
-                    self.set_estado(f"⚠️ No se pudo abrir: {e}", "#e74c3c")
+                    self.app.set_estado(f"⚠️ No se pudo abrir: {e}", "#e74c3c")
 
             def _abrir_video():
                 try:
@@ -312,7 +318,7 @@ class SesionVideoMixin:
                     else:
                         subprocess.run(["xdg-open", video_path])
                 except Exception as e:
-                    self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
             ctk.CTkButton(video_banner, text="📁 Abrir carpeta", width=120, height=24,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -330,7 +336,7 @@ class SesionVideoMixin:
         lines_txt = [f"REGISTRO DE SESIÓN",
                      f"Generado: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}",
                      "=" * 60, ""]
-        for ts, evento in self._sesion_eventos:
+        for ts, evento in self.app._sesion_eventos:
             lines_md.append(f"| {ts} | {evento} |")
             lines_txt.append(f"[{ts}]  {evento}")
 
@@ -354,9 +360,9 @@ class SesionVideoMixin:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_md)
-                    self.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _exp_txt():
             ruta = filedialog.asksaveasfilename(
@@ -367,16 +373,16 @@ class SesionVideoMixin:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_txt)
-                    self.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _limpiar():
             if messagebox.askyesno("Limpiar registro", "¿Borrar todos los eventos grabados?", parent=v):
-                self._sesion_eventos = []
-                self._sesion_inicio = None
+                self.app._sesion_eventos = []
+                self.app._sesion_inicio = None
                 v.destroy()
-                self.set_estado("🗑 Registro de sesión limpiado")
+                self.app.set_estado("🗑 Registro de sesión limpiado")
 
         ctk.CTkButton(btn_row, text="📄 Exportar .md", width=130, command=_exp_md,
                       fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
@@ -394,21 +400,21 @@ class SesionVideoMixin:
         """Modo Tutorial: convierte el log en un guion paso a paso para tutoriales de YouTube."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
-        if not self._sesion_eventos:
-            self.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+        if not self.app._sesion_eventos:
+            self.app.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
 
         # Agrupar eventos en pasos lógicos según los tipos
-        pasos = self._sesion_agrupar_pasos(self._sesion_eventos)
+        pasos = self._sesion_agrupar_pasos(self.app._sesion_eventos)
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("📚 Modo Tutorial — Guion para YouTube")
         v.geometry("900x700")
-        v.transient(self)
+        v.transient(self.app)
 
         ctk.CTkLabel(v, text="📚 Guion de tutorial",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(v, text=f"{len(pasos)} pasos · {len(self._sesion_eventos)} acciones",
+        ctk.CTkLabel(v, text=f"{len(pasos)} pasos · {len(self.app._sesion_eventos)} acciones",
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 10))
 
         # Construir el guion
@@ -450,14 +456,14 @@ class SesionVideoMixin:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(guion)
-                    self.set_estado(f"📄 Tutorial exportado: {ruta}", "#2ecc71")
+                    self.app.set_estado(f"📄 Tutorial exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _copiar():
             try:
                 pyperclip.copy(guion)
-                self.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
+                self.app.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 

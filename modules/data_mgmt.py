@@ -140,7 +140,7 @@ class DataMgmtMixin:
         if not nombre or nombre == "— Sin plantilla —": return
         p = self.store.obtener_plantilla(nombre)
         if not p: return
-        try: self._sesion_log(f"📐 Cargó plantilla: {nombre}")
+        try: self.sesion._sesion_log(f"📐 Cargó plantilla: {nombre}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         modo = p.get("modo", "imagen")
@@ -203,7 +203,7 @@ class DataMgmtMixin:
         self.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
         self.btn_cargar_img.configure(text="✅ OK", fg_color="#1a7a3c")
         self.set_estado(f"✅ Imagen: {nombre}", "#2ecc71")
-        self._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
+        self.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
 
         # Guardar en historial de imágenes
         self._agregar_img_historial(gem, nombre)
@@ -291,7 +291,7 @@ class DataMgmtMixin:
             self.txt_idea.delete(inicio, fin)
             self.txt_idea.insert(inicio, expansion)
             self.set_estado(f"✨ Snippet expandido: ;{palabra}", "#2ecc71")
-            try: self._sesion_log(f"✨ Expandió snippet: ;{palabra}")
+            try: self.sesion._sesion_log(f"✨ Expandió snippet: ;{palabra}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as _e:
@@ -446,7 +446,7 @@ class DataMgmtMixin:
             self.store.historial.insert(0, entry)
             self.store._guardar("historial")
             self.set_estado("📋 Duplicado al historial · Ctrl+D", "#2ecc71")
-            try: self._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
+            try: self.sesion._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as e:
@@ -1503,7 +1503,7 @@ class DataMgmtMixin:
                 # Cargar en txt_salida
                 self.actualizar_salida(texto_clip)
                 self.set_estado("📥 Prompt pegado en Resultado (detectado por marcadores)", "#2ecc71")
-                try: self._sesion_log("📥 Pegó prompt completo desde portapapeles")
+                try: self.sesion._sesion_log("📥 Pegó prompt completo desde portapapeles")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
                 return "break"

@@ -36,7 +36,6 @@ from modules import (
     DataMgmtMixin,
     DialogsMixin,
     EventBus,
-    SesionVideoMixin,
     UiFooterMixin,
     install_components,
 )
@@ -61,7 +60,7 @@ class ArquitectoApp(
     CoreMixin,
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
     # MultiPromptMixin removido (A1 fase 2, sesión 14) → self.multi.* (MultiPromptService)
-    SesionVideoMixin,
+    # SesionVideoMixin removido (A1 fase 2, sesión 14) → self.sesion.* (SesionVideoService)
     # WorkersIaMixin removido (A1 fase 2, sesión 14) → self.workers.* (WorkersIaService)
     # ModoClienteMixin removido (A1 fase 2, sesión 14) → self.cliente.* (ModoClienteService)
     # JsonPromptMixin removido del MRO (A1 fase 2): ahora es JsonPromptService
@@ -215,12 +214,12 @@ class ArquitectoApp(
 
         # ── Mejora 14: traces para sesión grabada (ratio/destino/NSFW/brief) ──
         try:
-            self.ratio_var.trace_add("write", lambda *a: self._sesion_log(f"📐 Cambió ratio → {self.ratio_var.get()}") if hasattr(self, "_sesion_eventos") else None)
-            self.destino_var.trace_add("write", lambda *a: self._sesion_log(f"🎯 Cambió destino → {self.destino_var.get()}") if hasattr(self, "_sesion_eventos") else None)
-            self.switch_nsfw_var.trace_add("write", lambda *a: self._sesion_log(f"🔞 NSFW → {'ON' if self.switch_nsfw_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
-            self.switch_traduccion_var.trace_add("write", lambda *a: self._sesion_log(f"🌐 Auto-trad → {'ON' if self.switch_traduccion_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
-            self.brief_var.trace_add("write", lambda *a: self._sesion_log(f"📋 Modo Brief → {'ON' if self.brief_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
-            self.switch_ref_visual_var.trace_add("write", lambda *a: self._sesion_log(f"🖼 Ref visual → {'ON' if self.switch_ref_visual_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
+            self.ratio_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"📐 Cambió ratio → {self.ratio_var.get()}") if hasattr(self, "_sesion_eventos") else None)
+            self.destino_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🎯 Cambió destino → {self.destino_var.get()}") if hasattr(self, "_sesion_eventos") else None)
+            self.switch_nsfw_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🔞 NSFW → {'ON' if self.switch_nsfw_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
+            self.switch_traduccion_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🌐 Auto-trad → {'ON' if self.switch_traduccion_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
+            self.brief_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"📋 Modo Brief → {'ON' if self.brief_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
+            self.switch_ref_visual_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🖼 Ref visual → {'ON' if self.switch_ref_visual_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # ── Construir UI Organizada ───────────────────────────────
@@ -843,7 +842,7 @@ class ArquitectoApp(
         actual = self.txt_salida.get("1.0", "end").strip()
         if actual and (not self._regen_stack or self._regen_stack[-1] != actual):
             self._regen_push(actual)
-        try: self._sesion_log("🔄 Regeneró prompt (misma idea)")
+        try: self.sesion._sesion_log("🔄 Regeneró prompt (misma idea)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         # Llamar a la generación normal
@@ -2778,7 +2777,7 @@ class ArquitectoApp(
 
         if self.modo_var.get() == "audio":
             return self.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
-        try: self._sesion_log("🎨 Previsualizó (boceto rápido)")
+        try: self.sesion._sesion_log("🎨 Previsualizó (boceto rápido)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 

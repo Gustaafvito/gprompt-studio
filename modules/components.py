@@ -335,17 +335,30 @@ class AdnVisualComponent(_Component):
 
 
 class SesionVideoComponent(_Component):
-    """Grabación de sesión + tutorial vídeo (SesionVideoMixin).
-    Décimo servicio del refactor A1.
+    """Grabación de sesión + tutorial vídeo.
 
-    NOTA: _sesion_log se usa desde decenas de mixins como helper de
-    logging. NO migrado a este componente para evitar refactor masivo.
-    Solo expone el entry point principal (toggle de grabación).
+    A1 fase 2 (sesión 14): SesionVideoMixin → SesionVideoService aislado.
+    El __getattr__ del componente delega CUALQUIER atributo al servicio
+    (que a su vez delega al app), así `self.sesion._sesion_log(...)` y
+    `self.sesion._cmd_sesion_grabar_toggle()` funcionan ambos.
     """
     _name = "sesion"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.sesion_video import SesionVideoService
+        self._service = SesionVideoService(app)
+
+    def __getattr__(self, name):
+        if name in ("app", "_service"):
+            raise AttributeError(name)
+        if hasattr(self._service, name):
+            return getattr(self._service, name)
+        return super().__getattr__(name)
 
     def cmd_grabar_toggle(self) -> None:
-        return self.app._cmd_sesion_grabar_toggle()
+        return self._service._cmd_sesion_grabar_toggle()
 
 
 class DashboardComponent(_Component):

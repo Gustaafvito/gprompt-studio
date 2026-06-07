@@ -291,7 +291,7 @@ class CoreMixin:
             self.clients.cambiar_provider(pid)
             info = LLM_PROVIDERS.get(pid, {})
             self.set_estado(f"🧠 Cerebro: {info.get('name', pid)}", "#2ecc71")
-            try: self._sesion_log(f"🧠 Cambió cerebro → {pid}")
+            try: self.sesion._sesion_log(f"🧠 Cambió cerebro → {pid}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             try:
@@ -646,7 +646,7 @@ class CoreMixin:
 
     def _copiar(self, tipo):
         try:
-            try: self._sesion_log(f"📋 Copió: {tipo}")
+            try: self.sesion._sesion_log(f"📋 Copió: {tipo}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             tiene_neg = self._debe_mostrar_negatives()
@@ -945,7 +945,7 @@ class CoreMixin:
                     f"- Estilos activos: {self.estilos_texto()}\n\n"
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
-                self._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
+                self.sesion._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
                 threading.Thread(target=self.workers.worker_ia,
                                  args=(peticion, True), daemon=True).start()
 
@@ -1246,7 +1246,7 @@ class CoreMixin:
         if idea: peticion += f" Tema: {idea}."
 
         self.set_estado("⏳ Generando ideas...", "#f39c12")
-        self._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
+        self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
         self.toggle_botones(False)
         threading.Thread(target=self.workers.worker_ia, args=(peticion, True), daemon=True).start()
 
@@ -1263,7 +1263,7 @@ class CoreMixin:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else
                       self.combo_modelo_video.get() if self.modo_var.get() == "video" else
                       self.combo_modelo_audio.get())
-            self._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
+            self.sesion._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.set_estado("⏳ Compilando prompt...", "#f39c12")
@@ -1296,7 +1296,7 @@ class CoreMixin:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else
                       self.combo_modelo_video.get() if self.modo_var.get() == "video" else
                       self.combo_modelo_audio.get())
-            self._sesion_log(f"⚡ Quick: idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
+            self.sesion._sesion_log(f"⚡ Quick: idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.set_estado("⚡ Quick generate...", "#d97706")
@@ -1415,7 +1415,7 @@ class CoreMixin:
             peticion = self._construir_peticion(idea, "C") + f" Genera {n} variaciones." + formato_extra
 
         self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
-        self._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
+        self.sesion._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
         threading.Thread(target=self.workers.worker_ia,
                           args=(peticion, False, True, n),
@@ -1425,14 +1425,14 @@ class CoreMixin:
         if self.modo_var.get() == "audio": return self.set_estado("ℹ️ El análisis de imagen no aplica en modo audio.", "#3498db")
         if not self.imagen_cargada: return self.set_estado("⚠️ Carga una imagen primero.", "#e67e22")
         self._ocultar_ideas()
-        self._sesion_log("👁 Analizó imagen de referencia")
+        self.sesion._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
         threading.Thread(target=self.workers.worker_vision, daemon=True).start()
 
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
         self._ocultar_ideas()
-        try: self._sesion_log("🎯 Img→Prompt: generó prompt desde imagen")
+        try: self.sesion._sesion_log("🎯 Img→Prompt: generó prompt desde imagen")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.toggle_botones(False)
@@ -1443,7 +1443,7 @@ class CoreMixin:
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
             return self.set_estado("⚠️ Genera un prompt de imagen primero.", "#e67e22")
-        try: self._sesion_log("🔄 Convirtió prompt imagen → vídeo")
+        try: self.sesion._sesion_log("🔄 Convirtió prompt imagen → vídeo")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -1494,7 +1494,7 @@ class CoreMixin:
         threading.Thread(target=_worker, daemon=True).start()
 
     def cmd_batch(self):
-        try: self._sesion_log("📦 Abrió Batch (generación masiva)")
+        try: self.sesion._sesion_log("📦 Abrió Batch (generación masiva)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         abrir_batch(self)
@@ -1534,7 +1534,7 @@ class CoreMixin:
         self._ocultar_ideas()
         self.reiniciar_memoria()
         self.set_estado("🔄 Sistema reseteado.", "#3498db")
-        try: self._sesion_log("🗑 Reset completo del sistema")
+        try: self.sesion._sesion_log("🗑 Reset completo del sistema")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -1544,7 +1544,7 @@ class CoreMixin:
         texto_actual = self.txt_salida.get("1.0", "end").strip()
         if not texto_actual or len(texto_actual) < 20:
             return self.set_estado("⚠️ Genera un prompt primero para poder usar el Copiloto.", "#e67e22")
-        try: self._sesion_log("💬 Abrió Copiloto de prompt")
+        try: self.sesion._sesion_log("💬 Abrió Copiloto de prompt")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
