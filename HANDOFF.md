@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 13** (continuación de las sesiones 1-12).
+Actualizado al final de la **sesión 14** (continuación de las sesiones 1-13).
 Working tree limpio cuando se generó.
 
 ---
@@ -17,11 +17,11 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **249/249** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `0ccd031`) |
+| Branch | `main` (sincronizado con `origin/main` en `d31310c`) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **17** (era 21 — 4 removidos en A1 fase 2) |
-| **Componentes (A1)** | **20/20** ✅ accesibles vía `self.X.metodo()` |
-| **A1 fase 2** | **4/20 mixins removidos del MRO**: Json, Prompts, Atajos, Dashboard |
+| Mixins en `ArquitectoApp` | **1** (era 21 — 20 removidos en A1 fase 2 ⭐⭐⭐) |
+| **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
+| **A1 fase 2** | **20/20 COMPLETO** ✅ — solo queda `CoreMixin` |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
@@ -1208,17 +1208,92 @@ db0eaa9 feat(pollinations): retry largo + mensaje claro + ♻ Regenerar por card
 | Botones por card en grid Pollinations | 0 | **1** (+ ♻ Regenerar al fallar) |
 | Estados visibles del worker Pollinations | "cargando..." | 4 (En cola N · Generando · Sobrecarga Ns · Error claro) |
 
-### 🚧 Pendiente sesión 14+
+---
 
-#### 🔴 ALTA — A1 fase 2 (16 mixins restantes)
+## ✅ Sesión 14 — A1 fase 2 COMPLETO (10 mixins migrados, 16→1 en MRO)
 
-Próximo: **AbTestingMixin** (5 métodos, 2 call sites externos, 11
-tests existentes a reescribir). Estimación 30 min.
+### Maratón A1 fase 2: 10 commits en una sesión
 
-Después por dificultad creciente:
-**AdnVisual → ModoCliente → MultiPrompt → Backup → Workers → Refinar
-→ Analysis → Workflow → Creative → UI → UiEvents → Sesion → DataMgmt
-→ UiFooter → Core → Dialogs**.
+| # | Mixin | Métodos | Call sites | Tests reescritos | Commit |
+|---|---|---:|---:|---:|---|
+| 5 | AbTestingMixin → AbTestingService | 5 | 0 | 11 | `9c20fa3` |
+| 6 | AdnVisualMixin → AdnVisualService | 2 | 0 | — | `1136d64` |
+| 7 | ModoClienteMixin → ModoClienteService | 5 | 0 | — | `62825c9` |
+| 8 | MultiPromptMixin → MultiPromptService | 10 | 0 | — | `cc0ab57` |
+| 9 | BackupExportMixin → BackupExportService | 8 | 0 | — | `fb018f3` |
+| 10 | WorkersIaMixin → WorkersIaService | 5 | 0 | 31 | `d4a76bc` |
+| 11 | RefinamientoMixin → RefinamientoService | 6 | 0 | 32 | `2e2645f` |
+| 12 | ToolsAnalysisMixin → ToolsAnalysisService | 23 | 0 | — | `cdf48e4` |
+| 13 | ToolsWorkflowMixin → ToolsWorkflowService | 14 | 0 | — | `cbdd40b` |
+| 14 | ToolsCreativeMixin → ToolsCreativeService | 18 | 0 | — | `05202d3` |
+| 15 | UIBuildersMixin → UIBuildersService | 26 | 21 | — | `da5a9d3` |
+| 16 | UiEventsMixin → UiEventsService | 8 | 15 | 18 | `3b1aad9` |
+| 17 | SesionVideoMixin → SesionVideoService | 12 | 27 | — | `c104ca1` |
+| 18 | DataMgmtMixin → DataMgmtService | 30 | 12 | — | `f8bb2e3` |
+| 19 | UiFooterMixin → UiFooterService | 29 | 75 | — | `90f9b21` |
+| 20 | DialogsMixin → DialogsService | 17 | **570** | — | `d31310c` |
+
+**Total**: ~218 métodos migrados, ~720 call sites bulk-replaced.
+
+### Patrón establecido y refinado
+
+1. Service class con `__init__(self, app)`.
+2. Script `_tmp_migrate.py` con SERVICE_ATTRS específicos para hacer
+   `self.X` → `self.app.X` (preservando métodos internos del service).
+3. Fix manual de patrones widget: `widget(self,...)` → `widget(self.app,...)`,
+   `parent=self` → `parent=self.app`, `hasattr/getattr(self, var)` →
+   `hasattr/getattr(self.app, var)`.
+4. Component con `__slots__ = ("app", "_service")` + `__init__` instanciando
+   service + delegate via `_service` para entry points + `__getattr__`
+   para métodos no listados (cuando se usan desde muchos sitios).
+5. Bulk replace de call sites externos con script Python.
+6. Tests con shortcut `app.footer = app` y `app.dialogs = app` para que
+   los mocks viejos sigan funcionando transparentemente.
+
+### Lecciones aprendidas
+
+- **Los más fáciles**: mixins con pocos call sites externos (AdnVisual,
+  ModoCliente, Backup) — directos.
+- **Los medio**: los que tienen tests (Workers, Refinamiento, UiEvents,
+  AbTesting) — reescritura mecánica del helper `_host()`.
+- **Los duros**: los con muchísimos call sites (Sesion 27, Data 12,
+  UiFooter 75, **Dialogs 570**). Estos requirieron bulk replace
+  cross-files.
+- **DialogsMixin fue el más invasivo** por `set_estado`,
+  `actualizar_salida`, `toggle_botones` usados en CIENTOS de sitios.
+  La solución: shortcut `app.dialogs = app` en los tests evitó
+  reescribir 100+ aserciones.
+
+### Métricas finales sesión 14
+
+| | Empezando | Cerrando |
+|---|---:|---:|
+| Mixins en MRO | **17** | **1** ⭐⭐⭐ (-16) |
+| A1 fase 2 progreso | 4/20 | **20/20** ✅ COMPLETO |
+| Tests | 249 | **249** (sin regresiones) |
+| Componentes A1 | 20/20 | 20/20 |
+| Working tree | Limpio | Limpio ✅ |
+
+### Estado final
+
+`ArquitectoApp` ahora hereda **únicamente** de:
+- `ctk.CTk` (la app es un widget Tk)
+- `CoreMixin` (el mixin fundamental con `__init__`, helpers de
+  prompt building, _abrir_comparador, _parsear_*, etc.)
+
+Los otros 20 mixins están como **Service classes aisladas**
+accesibles vía componentes (`app.dialogs`, `app.ui`, `app.events`,
+etc.).
+
+### 🚧 Pendiente sesión 15+
+
+#### 🔴 ALTA
+- **CoreMixin (último mixin restante)**: 33 métodos, 127 call sites
+  externos. Es el más complejo. Para abordarlo habrá que decidir si
+  vale la pena (la app necesita un esqueleto base) o dejarlo como
+  "foundation" definitiva.
+- Tests para 7 módulos sin cobertura: `adn_visual`, `multiprompt`,
+  `sesion_video`, `modo_cliente`, `atajos_ayuda`, `dialogs`, `core`.
 
 #### 🟡 MEDIA
 - **Toggle modelo Pollinations** (turbo / kontext / sdxl / anime)
@@ -1226,17 +1301,17 @@ Después por dificultad creciente:
 - **Toggle "estilo creative/photoreal"** para Z-Image-Base que
   hint-ee la categoría al LLM en lugar de dejarle elegir.
 - **`build.py --clean-cache`**: borrar `__pycache__/` automáticamente
-  antes de PyInstaller (patrón aprendido en sesión 13).
-- Nota visible en UI al activar "🖼 Ref" (sesión 11) recordando NO
-  subir la imagen otra vez en la plataforma de vídeo destino.
-- Variante SD/Comfy del storyboard (parcialmente hecho en `e0cf1cd`
-  de sesión 10).
+  antes de PyInstaller.
+- Nota visible en UI al activar "🖼 Ref" recordando NO subir la imagen
+  otra vez en la plataforma de vídeo destino.
+- Variante SD/Comfy del storyboard.
 - Particiones de archivos grandes (`core.py` 1645, `data_mgmt.py`
-  1545, `ui_builders.py` ~1600, etc.).
+  1545, `ui_builders.py` ~1600).
+- Revisar los 119 modelos imagen + 15 vídeo + 10 audio del catálogo
+  (auditoría de specs desactualizadas).
 
 #### 🟢 BAJA
-Code-signing del `.exe`, SeaArt char limits, performance (lazy load
-JSON, semáforo workers, virtual scrolling).
+Code-signing del `.exe`, SeaArt char limits, performance.
 
 ---
 
