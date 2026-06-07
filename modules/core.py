@@ -1482,7 +1482,7 @@ class CoreMixin:
                     self.modo_var.set("video")
                     self.events._on_modo_cambio()
                     self.actualizar_salida(resultado)
-                    self.guardar_en_historial(resultado)
+                    self.data.guardar_en_historial(resultado)
                     self.set_estado(f"🔄 Prompt convertido a vídeo ({motor_vid})", "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
@@ -1516,7 +1516,7 @@ class CoreMixin:
                 return
 
         self.reiniciar_memoria()
-        self._limpiar_imagen()
+        self.data._limpiar_imagen()
         self._ultimo_anclaje_visual = None
         self._anclaje_visual = None  # Limpiar ADN visual
         self.txt_idea.delete("1.0", "end")

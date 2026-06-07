@@ -27,8 +27,16 @@ from modules.gprompt_window import GPromptWindow
 if TYPE_CHECKING:
     pass
 
-class DataMgmtMixin:
-    """Mixin containing all data management methods."""
+class DataMgmtService:
+    """30 métodos de gestión de datos: borradores, plantillas, imagen
+    cargada, snippets, fórmulas, biblioteca, preferencias, combos.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
 
     SNIPPETS_DEFAULT = {
         "realism": "photorealistic, realistic, 8k, detailed, high quality",
@@ -47,28 +55,28 @@ class DataMgmtMixin:
     def _auto_guardar_borrador(self) -> None:
         """Guarda el borrador actual cada 30 segundos."""
         try:
-            idea = self.txt_idea.get("1.0", "end").strip()
-            salida = self.txt_salida.get("1.0", "end").strip()
+            idea = self.app.txt_idea.get("1.0", "end").strip()
+            salida = self.app.txt_salida.get("1.0", "end").strip()
             if idea or salida:
-                prefs = self.store.cargar_preferencias()
+                prefs = self.app.store.cargar_preferencias()
                 prefs["borrador"] = {
                     "idea": idea,
                     "salida": salida,
                     "fecha": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "modo": self.modo_var.get(),
+                    "modo": self.app.modo_var.get(),
                 }
-                self.store.guardar_preferencias(prefs)
+                self.app.store.guardar_preferencias(prefs)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Reagendar
         try:
-            self.after(30000, self._auto_guardar_borrador)
+            self.app.after(30000, self._auto_guardar_borrador)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _restaurar_borrador(self) -> None:
         """Si hay un borrador guardado, ofrece restaurarlo al abrir la app."""
         try:
-            prefs = self.store.cargar_preferencias()
+            prefs = self.app.store.cargar_preferencias()
             borrador = prefs.get("borrador")
             if not borrador: return
             idea = borrador.get("idea", "")
@@ -82,106 +90,106 @@ class DataMgmtMixin:
                                       f"Hay un borrador no guardado de la sesión anterior ({fecha}):\n\n"
                                       f"\"{preview}{'...' if len(preview) >= 100 else ''}\"\n\n"
                                       f"¿Quieres restaurarlo?",
-                                      parent=self):
+                                      parent=self.app):
                 if idea:
-                    self.txt_idea.delete("1.0", "end")
-                    self.txt_idea.insert("1.0", idea)
+                    self.app.txt_idea.delete("1.0", "end")
+                    self.app.txt_idea.insert("1.0", idea)
                 if salida:
-                    self.actualizar_salida(salida)
+                    self.app.actualizar_salida(salida)
                 if borrador.get("modo"):
-                    self.modo_var.set(borrador["modo"])
-                    self.events._on_modo_cambio()
-                self.set_estado("📝 Borrador restaurado", "#2ecc71")
+                    self.app.modo_var.set(borrador["modo"])
+                    self.app.events._on_modo_cambio()
+                self.app.set_estado("📝 Borrador restaurado", "#2ecc71")
             else:
                 # Limpiar borrador descartado
                 prefs["borrador"] = None
-                self.store.guardar_preferencias(prefs)
+                self.app.store.guardar_preferencias(prefs)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _cmd_guardar_plantilla(self) -> None:
-        nombre = simpledialog.askstring("Guardar Plantilla", "Nombre para la plantilla:", parent=self)
+        nombre = simpledialog.askstring("Guardar Plantilla", "Nombre para la plantilla:", parent=self.app)
         if not nombre or not nombre.strip(): return
         nombre = nombre.strip()
-        neg_extra = self.txt_negative.get("1.0", "end").strip() if hasattr(self, 'txt_negative') else ""
+        neg_extra = self.app.txt_negative.get("1.0", "end").strip() if hasattr(self.app, 'txt_negative') else ""
         plantilla = {
             "nombre":      nombre,
-            "modo":        self.modo_var.get(),
-            "modelo_img":  self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else "",
-            "modelo_vid":  self.combo_modelo_video.get() if hasattr(self, 'combo_modelo_video') else "",
-            "modelo_aud":  self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "",
-            "ratio":       self.ratio_var.get(),
-            "estilos":     self.estilos_seleccionados(),
-            "nsfw":        self.switch_nsfw_var.get(),
+            "modo":        self.app.modo_var.get(),
+            "modelo_img":  self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else "",
+            "modelo_vid":  self.app.combo_modelo_video.get() if hasattr(self.app, 'combo_modelo_video') else "",
+            "modelo_aud":  self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
+            "ratio":       self.app.ratio_var.get(),
+            "estilos":     self.app.estilos_seleccionados(),
+            "nsfw":        self.app.switch_nsfw_var.get(),
             "neg_extra":   neg_extra,
-            "neg_presets": [n for n, v in self.preset_vars.items() if v.get()],
-            "lora":        self.combo_lora.get(),
-            "personaje":   self.combo_personaje.get(),
-            "duracion":    self.duracion_var.get(),
-            "traduccion":  self.switch_traduccion_var.get(),
-            "plataforma":  self.plataforma_var.get(),
-            "destino":     self.destino_var.get(),
-            "brief":       self.brief_var.get(),
-            "instrumental": self.switch_instrumental_var.get() if hasattr(self, 'switch_instrumental_var') else False,
+            "neg_presets": [n for n, v in self.app.preset_vars.items() if v.get()],
+            "lora":        self.app.combo_lora.get(),
+            "personaje":   self.app.combo_personaje.get(),
+            "duracion":    self.app.duracion_var.get(),
+            "traduccion":  self.app.switch_traduccion_var.get(),
+            "plataforma":  self.app.plataforma_var.get(),
+            "destino":     self.app.destino_var.get(),
+            "brief":       self.app.brief_var.get(),
+            "instrumental": self.app.switch_instrumental_var.get() if hasattr(self.app, 'switch_instrumental_var') else False,
         }
-        self.store.guardar_plantilla(plantilla)
+        self.app.store.guardar_plantilla(plantilla)
         self.actualizar_combo_plantillas()
-        self.set_estado(f"📐 Plantilla '{nombre}' guardada.", "#9b59b6")
+        self.app.set_estado(f"📐 Plantilla '{nombre}' guardada.", "#9b59b6")
 
     def _cmd_borrar_plantilla(self) -> None:
-        nombre = self.combo_plantilla.get()
+        nombre = self.app.combo_plantilla.get()
         if not nombre or nombre == "— Sin plantilla —": return
         if messagebox.askyesno("Confirmar", f"¿Borrar la plantilla '{nombre}'?"):
-            self.store.borrar_plantilla(nombre)
-            self.combo_plantilla.set("— Sin plantilla —")
+            self.app.store.borrar_plantilla(nombre)
+            self.app.combo_plantilla.set("— Sin plantilla —")
             self.actualizar_combo_plantillas()
-            self.set_estado(f"🗑 Plantilla '{nombre}' eliminada.")
+            self.app.set_estado(f"🗑 Plantilla '{nombre}' eliminada.")
 
     def _cargar_plantilla(self, nombre):
         if not nombre or nombre == "— Sin plantilla —": return
-        p = self.store.obtener_plantilla(nombre)
+        p = self.app.store.obtener_plantilla(nombre)
         if not p: return
-        try: self.sesion._sesion_log(f"📐 Cargó plantilla: {nombre}")
+        try: self.app.sesion._sesion_log(f"📐 Cargó plantilla: {nombre}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         modo = p.get("modo", "imagen")
-        if modo != self.modo_var.get():
-            self.modo_var.set(modo)
-            self.events._on_modo_cambio()
+        if modo != self.app.modo_var.get():
+            self.app.modo_var.set(modo)
+            self.app.events._on_modo_cambio()
         if modo == "video":
-            if hasattr(self, 'combo_modelo_video'): self.combo_modelo_video.set(p.get("modelo_vid", "Kling 3.0"))
+            if hasattr(self.app, 'combo_modelo_video'): self.app.combo_modelo_video.set(p.get("modelo_vid", "Kling 3.0"))
         elif modo == "audio":
-            if hasattr(self, 'combo_modelo_audio'): self.combo_modelo_audio.set(p.get("modelo_aud", "Suno v5"))
+            if hasattr(self.app, 'combo_modelo_audio'): self.app.combo_modelo_audio.set(p.get("modelo_aud", "Suno v5"))
         else:
-            if hasattr(self, 'combo_modelo_imagen'): self.combo_modelo_imagen.set(p.get("modelo_img", "Z Image Turbo"))
-        self.ratio_var.set(p.get("ratio", "1:1"))
-        for n, v in self.estilo_checks.items():
+            if hasattr(self.app, 'combo_modelo_imagen'): self.app.combo_modelo_imagen.set(p.get("modelo_img", "Z Image Turbo"))
+        self.app.ratio_var.set(p.get("ratio", "1:1"))
+        for n, v in self.app.estilo_checks.items():
             v.set(n in p.get("estilos", []))
-        self.switch_nsfw_var.set(p.get("nsfw", False))
-        if hasattr(self, 'txt_negative'):
-            self.txt_negative.delete("1.0", "end")
+        self.app.switch_nsfw_var.set(p.get("nsfw", False))
+        if hasattr(self.app, 'txt_negative'):
+            self.app.txt_negative.delete("1.0", "end")
             neg = p.get("neg_extra", "")
-            if neg: self.txt_negative.insert("1.0", neg)
-        for pn, pv in self.preset_vars.items():
+            if neg: self.app.txt_negative.insert("1.0", neg)
+        for pn, pv in self.app.preset_vars.items():
             activo = pn in p.get("neg_presets", [])
             pv.set(activo)
-            if pn in self.preset_btns:
+            if pn in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pn, ("#333", "#555"))[0]
-                self.preset_btns[pn].configure(fg_color="#2ecc71" if activo else fg, text=f"✓ {pn}" if activo else pn)
-        self.combo_personaje.set(p.get("personaje", "— Sin personaje —"))
-        self.combo_lora.set(p.get("lora", "— Sin LoRA —"))
-        self.duracion_var.set(p.get("duracion", "10s"))
-        self.switch_traduccion_var.set(p.get("traduccion", True))
+                self.app.preset_btns[pn].configure(fg_color="#2ecc71" if activo else fg, text=f"✓ {pn}" if activo else pn)
+        self.app.combo_personaje.set(p.get("personaje", "— Sin personaje —"))
+        self.app.combo_lora.set(p.get("lora", "— Sin LoRA —"))
+        self.app.duracion_var.set(p.get("duracion", "10s"))
+        self.app.switch_traduccion_var.set(p.get("traduccion", True))
         dest = p.get("destino", "— Personal —")
-        if dest in DESTINOS: self.destino_var.set(dest)
-        self.brief_var.set(p.get("brief", False))
-        self.events._on_brief_cambio()
-        if hasattr(self, 'switch_instrumental_var'):
-            self.switch_instrumental_var.set(p.get("instrumental", False))
+        if dest in DESTINOS: self.app.destino_var.set(dest)
+        self.app.brief_var.set(p.get("brief", False))
+        self.app.events._on_brief_cambio()
+        if hasattr(self.app, 'switch_instrumental_var'):
+            self.app.switch_instrumental_var.set(p.get("instrumental", False))
         plat = p.get("plataforma", "SeaArt / Tensor.Art")
-        self.plataforma_var.set(plat)
-        self.events._on_plataforma_cambio()
-        self.reiniciar_memoria()
-        self.set_estado(f"📐 Plantilla '{nombre}' cargada.", "#9b59b6")
+        self.app.plataforma_var.set(plat)
+        self.app.events._on_plataforma_cambio()
+        self.app.reiniciar_memoria()
+        self.app.set_estado(f"📐 Plantilla '{nombre}' cargada.", "#9b59b6")
 
     def _cargar_imagen(self) -> None:
         ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp *.bmp")])
@@ -194,27 +202,27 @@ class DataMgmtMixin:
             gem.thumbnail((1024, 1024), Image.LANCZOS)
         else:
             gem = img.copy()
-        self.imagen_cargada = gem
+        self.app.imagen_cargada = gem
         thumb = img.copy()
         thumb.thumbnail((34, 34), Image.LANCZOS)
         ctk_thumb = ctk.CTkImage(light_image=thumb, dark_image=thumb, size=(34, 34))
-        self.lbl_img_preview.configure(image=ctk_thumb, text="")
-        self.lbl_img_preview._ctk_image = ctk_thumb
-        self.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
-        self.btn_cargar_img.configure(text="✅ OK", fg_color="#1a7a3c")
-        self.set_estado(f"✅ Imagen: {nombre}", "#2ecc71")
-        self.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
+        self.app.lbl_img_preview.configure(image=ctk_thumb, text="")
+        self.app.lbl_img_preview._ctk_image = ctk_thumb
+        self.app.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
+        self.app.btn_cargar_img.configure(text="✅ OK", fg_color="#1a7a3c")
+        self.app.set_estado(f"✅ Imagen: {nombre}", "#2ecc71")
+        self.app.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
 
         # Guardar en historial de imágenes
         self._agregar_img_historial(gem, nombre)
 
     def _limpiar_imagen(self) -> None:
-        self.imagen_cargada = None
-        self._ultimo_anclaje_visual = None
-        self.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
-        self.lbl_img_nombre.configure(text="Sin imagen", text_color="#666666")
-        self.btn_cargar_img.configure(text="📂 Cargar", fg_color=["#3B8ED0", "#1F6AA5"])
-        self.set_estado("Imagen eliminada.")
+        self.app.imagen_cargada = None
+        self.app._ultimo_anclaje_visual = None
+        self.app.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
+        self.app.lbl_img_nombre.configure(text="Sin imagen", text_color="#666666")
+        self.app.btn_cargar_img.configure(text="📂 Cargar", fg_color=["#3B8ED0", "#1F6AA5"])
+        self.app.set_estado("Imagen eliminada.")
 
     def _agregar_img_historial(self, pil_img, nombre):
         """Añade una imagen al historial visual de recientes."""
@@ -222,7 +230,7 @@ class DataMgmtMixin:
         c = get_theme_colors(is_lt)
 
         # Evitar duplicados por nombre
-        for h in self._img_history:
+        for h in self.app._img_history:
             if h[2] == nombre:
                 return
 
@@ -232,45 +240,45 @@ class DataMgmtMixin:
         ctk_mini = ctk.CTkImage(light_image=mini, dark_image=mini, size=(30, 30))
 
         # Crear botón clickeable
-        btn = ctk.CTkButton(self._img_history_frame, image=ctk_mini, text="", width=32, height=32,
+        btn = ctk.CTkButton(self.app._img_history_frame, image=ctk_mini, text="", width=32, height=32,
                             fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"], corner_radius=4,
                             command=lambda im=pil_img, nm=nombre: self._cargar_imagen_desde_pil(im, nm))
         btn.pack(side="left", padx=1)
         btn._ctk_image = ctk_mini
         CTkToolTip(btn, delay=0.3, message=nombre[:25])
 
-        self._img_history.append((pil_img, ctk_mini, nombre))
+        self.app._img_history.append((pil_img, ctk_mini, nombre))
 
         # Limitar historial
-        while len(self._img_history) > self._MAX_IMG_HISTORY:
-            _, _, _ = self._img_history.pop(0)
-            widgets = self._img_history_frame.winfo_children()
+        while len(self.app._img_history) > self.app._MAX_IMG_HISTORY:
+            _, _, _ = self.app._img_history.pop(0)
+            widgets = self.app._img_history_frame.winfo_children()
             if widgets:
                 widgets[0].destroy()
 
     def _snippets_obtener(self) -> None:
         """Devuelve los snippets actuales (predefinidos + custom del usuario)."""
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         custom = prefs.get("snippets_expand", {}) or {}
         # Mergear: custom sobrescribe a default si tienen el mismo trigger
-        result = dict(self.SNIPPETS_DEFAULT)
+        result = dict(self.app.SNIPPETS_DEFAULT)
         if isinstance(custom, dict):
             result.update(custom)
         return result
 
     def _snippets_guardar_custom(self, snippets_custom):
         """Guarda solo los snippets custom (no los default)."""
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         prefs["snippets_expand"] = snippets_custom
-        self.store.guardar_preferencias(prefs)
+        self.app.store.guardar_preferencias(prefs)
 
     def _snippet_expand(self) -> None:
         """Si justo antes del cursor hay ';palabra ', expande la palabra al snippet completo."""
         try:
             # Posición actual del cursor
-            cursor = self.txt_idea.index("insert")
+            cursor = self.app.txt_idea.index("insert")
             # Tomar texto desde inicio hasta el cursor
-            texto_antes = self.txt_idea.get("1.0", cursor)
+            texto_antes = self.app.txt_idea.get("1.0", cursor)
             # Buscar último ; en el texto (sin espacios entre el ; y la palabra)
             # Patrón: \s;palabra<espacio> (donde espacio es lo que se acaba de teclear)
             import re as _re
@@ -286,12 +294,12 @@ class DataMgmtMixin:
             # Calcular índices de tkinter para reemplazar ;palabra (incluye el ;) por la expansión
             # texto_antes va de "1.0" a cursor; el match dentro de texto_antes
             # convertir offset de string a índice tkinter
-            inicio = self.txt_idea.index(f"1.0+{trigger_pos}c")
-            fin = self.txt_idea.index(f"1.0+{match.end(2)}c")  # final de palabra (no incluye espacio)
-            self.txt_idea.delete(inicio, fin)
-            self.txt_idea.insert(inicio, expansion)
-            self.set_estado(f"✨ Snippet expandido: ;{palabra}", "#2ecc71")
-            try: self.sesion._sesion_log(f"✨ Expandió snippet: ;{palabra}")
+            inicio = self.app.txt_idea.index(f"1.0+{trigger_pos}c")
+            fin = self.app.txt_idea.index(f"1.0+{match.end(2)}c")  # final de palabra (no incluye espacio)
+            self.app.txt_idea.delete(inicio, fin)
+            self.app.txt_idea.insert(inicio, expansion)
+            self.app.set_estado(f"✨ Snippet expandido: ;{palabra}", "#2ecc71")
+            try: self.app.sesion._sesion_log(f"✨ Expandió snippet: ;{palabra}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as _e:
@@ -300,10 +308,10 @@ class DataMgmtMixin:
         """Ventana de gestión de snippets: ver predefinidos + añadir/editar/borrar custom."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("⚡ Expansión rápida")
         v.geometry("680x620")
-        v.transient(self)
+        v.transient(self.app)
 
         ctk.CTkLabel(v, text="⚡ Snippets de expansión rápida",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
@@ -328,16 +336,16 @@ class DataMgmtMixin:
             t = ent_trigger.get().strip().lower().lstrip(";")
             e = ent_expansion.get().strip()
             if not t or not e:
-                self.set_estado("⚠️ Trigger y expansión son obligatorios", "#e67e22")
+                self.app.set_estado("⚠️ Trigger y expansión son obligatorios", "#e67e22")
                 return
             # FIX: antes la validación rechazaba "mi-trigger" (con guion).
             # Acepto letras, dígitos, guion bajo y guion medio.
             import re as _re
             if not _re.fullmatch(r'[a-z0-9_\-]+', t):
-                self.set_estado("⚠️ Trigger solo puede tener letras, números, _ o -",
+                self.app.set_estado("⚠️ Trigger solo puede tener letras, números, _ o -",
                                 "#e67e22")
                 return
-            prefs = self.store.cargar_preferencias()
+            prefs = self.app.store.cargar_preferencias()
             custom = prefs.get("snippets_expand", {}) or {}
             if not isinstance(custom, dict): custom = {}
             custom[t] = e
@@ -353,7 +361,7 @@ class DataMgmtMixin:
 
         def refrescar():
             for w in scroll.winfo_children(): w.destroy()
-            prefs = self.store.cargar_preferencias()
+            prefs = self.app.store.cargar_preferencias()
             custom = prefs.get("snippets_expand", {}) or {}
             if not isinstance(custom, dict): custom = {}
             todos = self._snippets_obtener()
@@ -367,16 +375,16 @@ class DataMgmtMixin:
                              text_color="#2ecc71").pack(anchor="w", pady=(4, 4))
                 for trigger in sorted(custom_keys):
                     expansion = custom[trigger]
-                    es_override = trigger in self.SNIPPETS_DEFAULT
+                    es_override = trigger in self.app.SNIPPETS_DEFAULT
                     _row_snippet(trigger, expansion, custom=True, override=es_override)
 
             # Sección defaults (los que NO han sido sobrescritos)
-            ctk.CTkLabel(scroll, text=f"📦 Predefinidos ({len(self.SNIPPETS_DEFAULT) - len(custom_keys & set(self.SNIPPETS_DEFAULT.keys()))})",
+            ctk.CTkLabel(scroll, text=f"📦 Predefinidos ({len(self.app.SNIPPETS_DEFAULT) - len(custom_keys & set(self.app.SNIPPETS_DEFAULT.keys()))})",
                          font=ctk.CTkFont(size=12, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", pady=(12, 4))
-            for trigger in sorted(self.SNIPPETS_DEFAULT.keys()):
+            for trigger in sorted(self.app.SNIPPETS_DEFAULT.keys()):
                 if trigger in custom_keys: continue  # ya se mostró arriba
-                expansion = self.SNIPPETS_DEFAULT[trigger]
+                expansion = self.app.SNIPPETS_DEFAULT[trigger]
                 _row_snippet(trigger, expansion, custom=False, override=False)
 
         def _row_snippet(trigger, expansion, custom=False, override=False):
@@ -393,7 +401,7 @@ class DataMgmtMixin:
             # Botón Copiar — disponible en TODOS los snippets (custom y predefinidos)
             def _copiar(e=expansion, t=trigger):
                 pyperclip.copy(e)
-                self.set_estado(f"📋 Snippet ;{t} copiado al portapapeles", "#2ecc71")
+                self.app.set_estado(f"📋 Snippet ;{t} copiado al portapapeles", "#2ecc71")
             ctk.CTkButton(row, text="📋", width=30, height=24, fg_color=c["fg_frame"],
                           hover_color=c["fg_dark_hover"], command=_copiar).pack(side="right", padx=2, pady=4)
 
@@ -403,7 +411,7 @@ class DataMgmtMixin:
                     ent_expansion.delete(0, "end"); ent_expansion.insert(0, e)
                 def _borrar(t=trigger):
                     if not messagebox.askyesno("Borrar", f"¿Borrar snippet ;{t}?", parent=v): return
-                    prefs = self.store.cargar_preferencias()
+                    prefs = self.app.store.cargar_preferencias()
                     cust = prefs.get("snippets_expand", {}) or {}
                     cust.pop(t, None)
                     self._snippets_guardar_custom(cust)
@@ -420,171 +428,171 @@ class DataMgmtMixin:
     def _cmd_duplicar_a_historial(self, event=None):
         """Guarda el prompt actual en el historial sin generar uno nuevo."""
         try:
-            texto = self.txt_salida.get("1.0", "end").strip()
+            texto = self.app.txt_salida.get("1.0", "end").strip()
             if not texto:
-                self.set_estado("⚠️ No hay prompt para duplicar", "#e67e22")
+                self.app.set_estado("⚠️ No hay prompt para duplicar", "#e67e22")
                 return "break"
-            idea = self.txt_idea.get("1.0", "end").strip()
+            idea = self.app.txt_idea.get("1.0", "end").strip()
             modelo = ""
-            modo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
-            if modo == "imagen" and hasattr(self, "combo_modelo_imagen"):
-                modelo = self.combo_modelo_imagen.get() or ""
-            elif modo == "video" and hasattr(self, "combo_modelo_video"):
-                modelo = self.combo_modelo_video.get() or ""
-            elif modo == "audio" and hasattr(self, "combo_modelo_audio"):
-                modelo = self.combo_modelo_audio.get() or ""
+            modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
+            if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
+                modelo = self.app.combo_modelo_imagen.get() or ""
+            elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
+                modelo = self.app.combo_modelo_video.get() or ""
+            elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
+                modelo = self.app.combo_modelo_audio.get() or ""
             entry = {
                 "fecha": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "idea": idea[:300],
                 "texto": texto,
                 "contenido": texto,
-                "modo": self.modo_var.get() if hasattr(self, "modo_var") else "imagen",
+                "modo": self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen",
                 "modelo": modelo,
-                "plataforma": self.plataforma_var.get() if hasattr(self, "plataforma_var") else "",
+                "plataforma": self.app.plataforma_var.get() if hasattr(self.app, "plataforma_var") else "",
                 "duplicado": True,
             }
-            self.store.historial.insert(0, entry)
-            self.store._guardar("historial")
-            self.set_estado("📋 Duplicado al historial · Ctrl+D", "#2ecc71")
-            try: self.sesion._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
+            self.app.store.historial.insert(0, entry)
+            self.app.store._guardar("historial")
+            self.app.set_estado("📋 Duplicado al historial · Ctrl+D", "#2ecc71")
+            try: self.app.sesion._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.set_estado(f"⚠️ Error al duplicar: {e}", "#e74c3c")
+            self.app.set_estado(f"⚠️ Error al duplicar: {e}", "#e74c3c")
         return "break"
 
     def guardar_en_historial(self, texto):
         # Capturar configuración usada
         config_actual = {
-            "modo":       self.modo_var.get(),
-            "plataforma": self.plataforma_var.get(),
-            "estilos":    [n for n, v in self.estilo_checks.items() if v.get()],
-            "ratio":      self.ratio_var.get(),
-            "nsfw":       self.switch_nsfw_var.get(),
-            "personaje":  self.personaje_activo(),
-            "lora":       self.lora_activo(),
-            "destino":    self.destino_var.get(),
-            "brief":      self.brief_var.get(),
-            "modelo_img": self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else "",
-            "modelo_vid": self.combo_modelo_video.get() if hasattr(self, 'combo_modelo_video') else "",
-            "modelo_aud": self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "",
+            "modo":       self.app.modo_var.get(),
+            "plataforma": self.app.plataforma_var.get(),
+            "estilos":    [n for n, v in self.app.estilo_checks.items() if v.get()],
+            "ratio":      self.app.ratio_var.get(),
+            "nsfw":       self.app.switch_nsfw_var.get(),
+            "personaje":  self.app.personaje_activo(),
+            "lora":       self.app.lora_activo(),
+            "destino":    self.app.destino_var.get(),
+            "brief":      self.app.brief_var.get(),
+            "modelo_img": self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else "",
+            "modelo_vid": self.app.combo_modelo_video.get() if hasattr(self.app, 'combo_modelo_video') else "",
+            "modelo_aud": self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
         }
-        self._ultima_config = config_actual
+        self.app._ultima_config = config_actual
 
-        self.store.agregar_historial({
+        self.app.store.agregar_historial({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "modo":       self.modo_var.get(),
-            "plataforma": self.plataforma_var.get(),
-            "estilos":    self.estilos_texto(),
-            "ratio":      self.ratio_var.get(),
-            "nsfw":       self.switch_nsfw_var.get(),
-            "personaje":  self.personaje_activo(),
-            "lora":       self.lora_activo(),
-            "destino":    self.destino_var.get(),
-            "brief":      self.brief_var.get(),
+            "modo":       self.app.modo_var.get(),
+            "plataforma": self.app.plataforma_var.get(),
+            "estilos":    self.app.estilos_texto(),
+            "ratio":      self.app.ratio_var.get(),
+            "nsfw":       self.app.switch_nsfw_var.get(),
+            "personaje":  self.app.personaje_activo(),
+            "lora":       self.app.lora_activo(),
+            "destino":    self.app.destino_var.get(),
+            "brief":      self.app.brief_var.get(),
             "contenido":  texto,
         })
 
     def _repetir_ultima_config(self) -> None:
         """Aplica la última configuración usada en el último prompt generado."""
-        cfg = getattr(self, "_ultima_config", None)
+        cfg = getattr(self.app, "_ultima_config", None)
         if not cfg:
-            self.set_estado("⚠️ Aún no hay última configuración guardada. Genera un prompt primero.", "#e67e22")
+            self.app.set_estado("⚠️ Aún no hay última configuración guardada. Genera un prompt primero.", "#e67e22")
             return
 
         try:
             # Modo
-            if cfg.get("modo") and cfg["modo"] != self.modo_var.get():
-                self.modo_var.set(cfg["modo"])
-                self.events._on_modo_cambio()
+            if cfg.get("modo") and cfg["modo"] != self.app.modo_var.get():
+                self.app.modo_var.set(cfg["modo"])
+                self.app.events._on_modo_cambio()
 
             # Plataforma
             if cfg.get("plataforma"):
-                self.plataforma_var.set(cfg["plataforma"])
-                self.events._on_plataforma_cambio()
+                self.app.plataforma_var.set(cfg["plataforma"])
+                self.app.events._on_plataforma_cambio()
 
             # Modelo según modo
-            if cfg["modo"] == "imagen" and cfg.get("modelo_img") and hasattr(self, 'combo_modelo_imagen'):
-                self.combo_modelo_imagen.set(cfg["modelo_img"])
-                self.events._on_modelo_imagen_cambio()
-            elif cfg["modo"] == "video" and cfg.get("modelo_vid") and hasattr(self, 'combo_modelo_video'):
-                self.combo_modelo_video.set(cfg["modelo_vid"])
-            elif cfg["modo"] == "audio" and cfg.get("modelo_aud") and hasattr(self, 'combo_modelo_audio'):
-                self.combo_modelo_audio.set(cfg["modelo_aud"])
+            if cfg["modo"] == "imagen" and cfg.get("modelo_img") and hasattr(self.app, 'combo_modelo_imagen'):
+                self.app.combo_modelo_imagen.set(cfg["modelo_img"])
+                self.app.events._on_modelo_imagen_cambio()
+            elif cfg["modo"] == "video" and cfg.get("modelo_vid") and hasattr(self.app, 'combo_modelo_video'):
+                self.app.combo_modelo_video.set(cfg["modelo_vid"])
+            elif cfg["modo"] == "audio" and cfg.get("modelo_aud") and hasattr(self.app, 'combo_modelo_audio'):
+                self.app.combo_modelo_audio.set(cfg["modelo_aud"])
 
             # Ratio, destino, NSFW, brief
-            if cfg.get("ratio"): self.ratio_var.set(cfg["ratio"])
-            if cfg.get("destino"): self.destino_var.set(cfg["destino"])
-            self.switch_nsfw_var.set(cfg.get("nsfw", False))
-            self.brief_var.set(cfg.get("brief", False))
+            if cfg.get("ratio"): self.app.ratio_var.set(cfg["ratio"])
+            if cfg.get("destino"): self.app.destino_var.set(cfg["destino"])
+            self.app.switch_nsfw_var.set(cfg.get("nsfw", False))
+            self.app.brief_var.set(cfg.get("brief", False))
 
             # Estilos
             if isinstance(cfg.get("estilos"), list):
-                for n, v in self.estilo_checks.items():
+                for n, v in self.app.estilo_checks.items():
                     v.set(n in cfg["estilos"])
 
-            self.set_estado("🔁 Última configuración aplicada", "#2ecc71")
+            self.app.set_estado("🔁 Última configuración aplicada", "#2ecc71")
         except Exception as e:
-            self.set_estado(f"⚠️ No se pudo aplicar todo: {e}", "#e67e22")
+            self.app.set_estado(f"⚠️ No se pudo aplicar todo: {e}", "#e67e22")
 
     def _guardar_favorito(self) -> None:
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.set_estado("⚠️ No hay prompt para guardar.", "#e67e22")
+            self.app.set_estado("⚠️ No hay prompt para guardar.", "#e67e22")
             return
-        self.store.agregar_favorito({
+        self.app.store.agregar_favorito({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "modo":       self.modo_var.get(),
-            "plataforma": self.plataforma_var.get(),
-            "estilos":    self.estilos_texto(),
-            "ratio":      self.ratio_var.get(),
-            "nsfw":       self.switch_nsfw_var.get(),
-            "personaje":  self.personaje_activo(),
-            "lora":       self.lora_activo(),
-            "destino":    self.destino_var.get(),
-            "brief":      self.brief_var.get(),
+            "modo":       self.app.modo_var.get(),
+            "plataforma": self.app.plataforma_var.get(),
+            "estilos":    self.app.estilos_texto(),
+            "ratio":      self.app.ratio_var.get(),
+            "nsfw":       self.app.switch_nsfw_var.get(),
+            "personaje":  self.app.personaje_activo(),
+            "lora":       self.app.lora_activo(),
+            "destino":    self.app.destino_var.get(),
+            "brief":      self.app.brief_var.get(),
             "contenido":  texto,
         })
-        self.set_estado("⭐ Guardado en favoritos.", "#f1c40f")
+        self.app.set_estado("⭐ Guardado en favoritos.", "#f1c40f")
 
     def _guardar_estrella(self) -> None:
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.set_estado("⚠️ No hay prompt para guardar como estrella.", "#e67e22")
+            self.app.set_estado("⚠️ No hay prompt para guardar como estrella.", "#e67e22")
             return
-        nota = simpledialog.askstring("🌟 Prompt Estrella", "Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):", parent=self)
+        nota = simpledialog.askstring("🌟 Prompt Estrella", "Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):", parent=self.app)
         if not nota: nota = ""
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
         modelo = ""
         if modo == "video":
-            modelo = self.modelo_video_valido()
+            modelo = self.app.modelo_video_valido()
         elif modo == "audio":
-            modelo = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else ""
+            modelo = self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else ""
         else:
-            modelo = self.modelo_imagen_valido()
-        self.store.agregar_estrella({
+            modelo = self.app.modelo_imagen_valido()
+        self.app.store.agregar_estrella({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "nota":       nota.strip(),
             "modo":       modo,
             "modelo":     modelo,
-            "plataforma": self.plataforma_var.get(),
-            "estilos":    self.estilos_texto(),
+            "plataforma": self.app.plataforma_var.get(),
+            "estilos":    self.app.estilos_texto(),
             "contenido":  texto,
         })
-        self.set_estado(f"🌟 Prompt estrella guardado{': ' + nota if nota else ''}.", "#f39c12")
+        self.app.set_estado(f"🌟 Prompt estrella guardado{': ' + nota if nota else ''}.", "#f39c12")
 
     def _exportar(self) -> None:
-        texto = self.txt_salida.get("1.0", "end").strip()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.set_estado("⚠️ No hay contenido para exportar.", "#e67e22")
+            self.app.set_estado("⚠️ No hay contenido para exportar.", "#e67e22")
             return
         ruta = filedialog.asksaveasfilename(
             defaultextension=".txt", filetypes=[("Texto", "*.txt")],
             initialfile=f"prompt_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
         if ruta:
             fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-            modo = self.modo_var.get().upper()
-            plat = self.plataforma_var.get()
+            modo = self.app.modo_var.get().upper()
+            plat = self.app.plataforma_var.get()
             header = (
                 f"═══════════════════════════════════════════════\n"
                 f"  G-Prompt Studio v{PUBLIC_VERSION}\n"
@@ -594,50 +602,50 @@ class DataMgmtMixin:
                 f"  Plataforma:  {plat}\n"
             )
             if modo == "VIDEO":
-                header += f"  Motor:       {self.modelo_video_valido()}\n  Duración:    {self.duracion_var.get()}\n"
+                header += f"  Motor:       {self.app.modelo_video_valido()}\n  Duración:    {self.app.duracion_var.get()}\n"
             elif modo == "AUDIO":
-                motor_a = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else ""
+                motor_a = self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else ""
                 header += f"  Motor:       {motor_a}\n"
             else:
-                modelo = self.modelo_imagen_valido()
+                modelo = self.app.modelo_imagen_valido()
                 if modelo: header += f"  Modelo:      {modelo}\n"
-            header += f"  Ratio:       {self.ratio_var.get()}\n  Estilos:     {self.estilos_texto()}\n"
+            header += f"  Ratio:       {self.app.ratio_var.get()}\n  Estilos:     {self.app.estilos_texto()}\n"
 
-            p = self.combo_personaje.get()
+            p = self.app.combo_personaje.get()
             if p and p != "— Sin personaje —": header += f"  Personaje:   {p}\n"
-            l = self.combo_lora.get()
+            l = self.app.combo_lora.get()
             if l and l != "— Sin LoRA —": header += f"  LoRA:        {l}\n"
 
-            dest = self.destino_var.get()
+            dest = self.app.destino_var.get()
             if dest and dest != "— Personal —": header += f"  Destino:     {dest}\n"
-            if self.switch_nsfw_var.get(): header += f"  NSFW:        Sí\n"
-            if self.brief_var.get(): header += f"  Brief:       Activo\n"
+            if self.app.switch_nsfw_var.get(): header += f"  NSFW:        Sí\n"
+            if self.app.brief_var.get(): header += f"  Brief:       Activo\n"
 
             # Filtros audio
             if modo == "AUDIO":
-                em = self.emocion_var.get() if hasattr(self, 'emocion_var') else ""
+                em = self.app.emocion_var.get() if hasattr(self.app, 'emocion_var') else ""
                 if em and em != "— Emoción —": header += f"  Emoción:     {em}\n"
-                vz = self.voz_var.get() if hasattr(self, 'voz_var') else ""
+                vz = self.app.voz_var.get() if hasattr(self.app, 'voz_var') else ""
                 if vz and vz != "— Voz —": header += f"  Voz:         {vz}\n"
-                id_a = self.idioma_audio_var.get() if hasattr(self, 'idioma_audio_var') else ""
+                id_a = self.app.idioma_audio_var.get() if hasattr(self.app, 'idioma_audio_var') else ""
                 if id_a and id_a != "— Idioma —": header += f"  Idioma:      {id_a}\n"
 
             header += f"═════════════════════════════════════════════\n\n"
 
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(header + texto)
-            self.set_estado(f"💾 Exportado: {Path(ruta).name}", "#2ecc71")
+            self.app.set_estado(f"💾 Exportado: {Path(ruta).name}", "#2ecc71")
 
     def _abrir_snippets(self) -> None:
         """Gestor de snippets con buscador + edit inline."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🏷️ Snippets reutilizables")
         vent.geometry("680x600")
-        vent.transient(self)
+        vent.transient(self.app)
         ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
@@ -716,7 +724,7 @@ class DataMgmtMixin:
         def refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            prefs_act = self.store.cargar_preferencias()
+            prefs_act = self.app.store.cargar_preferencias()
             actual = prefs_act.get("snippets", [])
             termino = entry_buscar.get().strip().lower()
 
@@ -752,7 +760,7 @@ class DataMgmtMixin:
                 btn_row.pack(fill="x", padx=5, pady=(0, 4))
 
                 def _aplicar(s_l=s):
-                    self._aplicar_atajo_tags(s_l.get("tags", ""))
+                    self.app._aplicar_atajo_tags(s_l.get("tags", ""))
                     vent.destroy()
 
                 def _editar(idx_l=i, s_l=s):
@@ -764,12 +772,12 @@ class DataMgmtMixin:
                     btn_crear.configure(text="✏️ Actualizar")
 
                 def _borrar(idx_l=i):
-                    prefs_b = self.store.cargar_preferencias()
+                    prefs_b = self.app.store.cargar_preferencias()
                     snippets_b = prefs_b.get("snippets", [])
                     if 0 <= idx_l < len(snippets_b):
                         snippets_b.pop(idx_l)
                         prefs_b["snippets"] = snippets_b
-                        self.store.guardar_preferencias(prefs_b)
+                        self.app.store.guardar_preferencias(prefs_b)
                     refrescar()
 
                 ctk.CTkButton(btn_row, text="➕ Añadir", width=80, height=22,
@@ -788,9 +796,9 @@ class DataMgmtMixin:
             nombre = ent_nombre.get().strip()
             tags = ent_tags.get().strip()
             if not nombre or not tags:
-                self.set_estado("⚠️ Rellena nombre y tags.", "#e67e22")
+                self.app.set_estado("⚠️ Rellena nombre y tags.", "#e67e22")
                 return
-            prefs_c = self.store.cargar_preferencias()
+            prefs_c = self.app.store.cargar_preferencias()
             actual = prefs_c.get("snippets", [])
             if editando_idx["valor"] is not None:
                 idx_e = editando_idx["valor"]
@@ -801,7 +809,7 @@ class DataMgmtMixin:
             else:
                 actual.append({"nombre": nombre, "tags": tags})
             prefs_c["snippets"] = actual
-            self.store.guardar_preferencias(prefs_c)
+            self.app.store.guardar_preferencias(prefs_c)
             ent_nombre.delete(0, "end")
             ent_tags.delete(0, "end")
             refrescar()
@@ -820,13 +828,13 @@ class DataMgmtMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         # Reutilizar snippets pero llamarlas "fórmulas" (UI diferente sin entrada inline)
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         formulas = prefs.get("formulas", [])
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📐 Fórmulas guardadas")
         vent.geometry("680x550")
-        vent.transient(self)
+        vent.transient(self.app)
         ctk.CTkLabel(vent, text="📐 Fórmulas guardadas",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
@@ -843,9 +851,9 @@ class DataMgmtMixin:
         # Botón "Guardar el POSITIVE actual como fórmula"
         def _guardar_actual():
             from tkinter import simpledialog
-            pos = self.extraer_positive()
+            pos = self.app.extraer_positive()
             if not pos:
-                self.set_estado("⚠️ No hay POSITIVE para guardar como fórmula.", "#e67e22")
+                self.app.set_estado("⚠️ No hay POSITIVE para guardar como fórmula.", "#e67e22")
                 return
             nombre = simpledialog.askstring("📐 Nueva fórmula", "Nombre para esta fórmula:", parent=vent)
             if not nombre: return
@@ -853,13 +861,13 @@ class DataMgmtMixin:
             actual.append({
                 "nombre": nombre,
                 "positive": pos,
-                "negative": self.extraer_negative() or "",
+                "negative": self.app.extraer_negative() or "",
                 "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
             })
             prefs["formulas"] = actual
-            self.store.guardar_preferencias(prefs)
+            self.app.store.guardar_preferencias(prefs)
             refrescar()
-            self.set_estado(f"📐 Fórmula '{nombre}' guardada", "#2ecc71")
+            self.app.set_estado(f"📐 Fórmula '{nombre}' guardada", "#2ecc71")
 
         ctk.CTkButton(vent, text="💾 Guardar POSITIVE actual como fórmula", width=300, height=28,
                       fg_color="#1a7a3c", hover_color="#145e2d",
@@ -891,7 +899,7 @@ class DataMgmtMixin:
         def refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            prefs_a = self.store.cargar_preferencias()
+            prefs_a = self.app.store.cargar_preferencias()
             actual = prefs_a.get("formulas", [])
             termino = entry_buscar.get().strip().lower()
 
@@ -937,9 +945,9 @@ class DataMgmtMixin:
                     txt = f"POSITIVE PROMPT: {form.get('positive', '')}"
                     if form.get('negative'):
                         txt += f"\nNEGATIVE PROMPT: {form.get('negative')}"
-                    self.actualizar_salida(txt)
+                    self.app.actualizar_salida(txt)
                     vent.destroy()
-                    self.set_estado(f"📐 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
+                    self.app.set_estado(f"📐 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
 
                 def _renombrar(idx_l=i, form_l=f):
                     from tkinter import simpledialog
@@ -951,12 +959,12 @@ class DataMgmtMixin:
                     )
                     if not nuevo:
                         return
-                    prefs_r = self.store.cargar_preferencias()
+                    prefs_r = self.app.store.cargar_preferencias()
                     lst = prefs_r.get("formulas", [])
                     if 0 <= idx_l < len(lst):
                         lst[idx_l]["nombre"] = nuevo.strip()
                         prefs_r["formulas"] = lst
-                        self.store.guardar_preferencias(prefs_r)
+                        self.app.store.guardar_preferencias(prefs_r)
                     refrescar()
 
                 def _borrar(idx_l=i, n=f.get("nombre", "sin nombre")):
@@ -964,12 +972,12 @@ class DataMgmtMixin:
                                                f"¿Borrar la fórmula '{n}'?",
                                                parent=vent):
                         return
-                    prefs_b = self.store.cargar_preferencias()
+                    prefs_b = self.app.store.cargar_preferencias()
                     lst = prefs_b.get("formulas", [])
                     if 0 <= idx_l < len(lst):
                         lst.pop(idx_l)
                         prefs_b["formulas"] = lst
-                        self.store.guardar_preferencias(prefs_b)
+                        self.app.store.guardar_preferencias(prefs_b)
                     refrescar()
 
                 ctk.CTkButton(btn_row, text="✅ Cargar", width=80, height=22,
@@ -999,10 +1007,10 @@ class DataMgmtMixin:
         """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("📚 Biblioteca de Prompts de Ejemplo")
         vent.geometry("820x680")
-        vent.transient(self)
+        vent.transient(self.app)
 
         # ── Encabezado ───────────────────────────────────────────────
         ctk.CTkLabel(
@@ -1237,18 +1245,18 @@ class DataMgmtMixin:
                 btn_row.pack(fill="x", padx=5, pady=(0, 6))
 
                 def _usar(e=ej):
-                    self.actualizar_salida(e["prompt"])
+                    self.app.actualizar_salida(e["prompt"])
                     vent.destroy()
-                    self.set_estado(f"📚 Ejemplo cargado: {e['titulo']}", "#2ecc71")
+                    self.app.set_estado(f"📚 Ejemplo cargado: {e['titulo']}", "#2ecc71")
 
                 def _copiar(e=ej):
                     pyperclip.copy(e["prompt"])
-                    self.set_estado(f"📋 Ejemplo copiado: {e['titulo']}", "#2ecc71")
+                    self.app.set_estado(f"📋 Ejemplo copiado: {e['titulo']}", "#2ecc71")
 
                 def _favorito(e=ej):
                     """Guarda el ejemplo en favoritos del usuario."""
                     try:
-                        self.store.agregar_favorito({
+                        self.app.store.agregar_favorito({
                             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
                             "modo":       e.get("modo", "imagen"),
                             "plataforma": e.get("plataforma", ""),
@@ -1262,7 +1270,7 @@ class DataMgmtMixin:
                             "contenido":  e["prompt"],
                             "origen":     f"Biblioteca: {e.get('titulo', '')}",
                         })
-                        self.set_estado(
+                        self.app.set_estado(
                             f"⭐ Guardado en favoritos: {e['titulo']}", "#f1c40f"
                         )
                     except Exception as err:
@@ -1270,7 +1278,7 @@ class DataMgmtMixin:
                         logging.getLogger("gprompt").warning(
                             f"No se pudo guardar favorito: {err}"
                         )
-                        self.set_estado("⚠️ Error al guardar favorito", "#e67e22")
+                        self.app.set_estado("⚠️ Error al guardar favorito", "#e67e22")
 
                 ctk.CTkButton(
                     btn_row, text="✅ Usar", width=68, height=22,
@@ -1302,36 +1310,36 @@ class DataMgmtMixin:
         refrescar()
 
     def actualizar_combo_personajes(self) -> None:
-        nombres = self.store.nombres_personajes()
-        self.combo_personaje.configure(values=nombres)
-        if self.combo_personaje.get() not in nombres:
-            self.combo_personaje.set("— Sin personaje —")
+        nombres = self.app.store.nombres_personajes()
+        self.app.combo_personaje.configure(values=nombres)
+        if self.app.combo_personaje.get() not in nombres:
+            self.app.combo_personaje.set("— Sin personaje —")
 
     def actualizar_combo_loras(self) -> None:
-        nombres = self.store.nombres_loras()
-        self.combo_lora.configure(values=nombres)
-        if self.combo_lora.get() not in nombres:
-            self.combo_lora.set("— Sin LoRA —")
+        nombres = self.app.store.nombres_loras()
+        self.app.combo_lora.configure(values=nombres)
+        if self.app.combo_lora.get() not in nombres:
+            self.app.combo_lora.set("— Sin LoRA —")
         # Refrescar trigger visible y aviso de compatibilidad
-        try: self._actualizar_lora_trigger_visible()
+        try: self.app._actualizar_lora_trigger_visible()
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
     def actualizar_combo_plantillas(self) -> None:
-        nombres = self.store.nombres_plantillas()
-        self.combo_plantilla.configure(values=nombres)
-        if self.combo_plantilla.get() not in nombres:
-            self.combo_plantilla.set("— Sin plantilla —")
+        nombres = self.app.store.nombres_plantillas()
+        self.app.combo_plantilla.configure(values=nombres)
+        if self.app.combo_plantilla.get() not in nombres:
+            self.app.combo_plantilla.set("— Sin plantilla —")
 
     def _cargar_preferencias(self) -> None:
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         if not prefs: return
         try:
             # Geometría de ventana
             geo = prefs.get("geometria", "")
             if geo:
                 try:
-                    self.geometry(geo)
+                    self.app.geometry(geo)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             # Tema (cargado de forma segura: diferido y con fallback)
@@ -1348,9 +1356,9 @@ class DataMgmtMixin:
                             ctk.set_appearance_mode("dark")
                             # Persistir el reset para que no vuelva a fallar
                             try:
-                                prefs2 = self.store.cargar_preferencias()
+                                prefs2 = self.app.store.cargar_preferencias()
                                 prefs2["tema"] = "dark"
-                                self.store.guardar_preferencias(prefs2)
+                                self.app.store.guardar_preferencias(prefs2)
                             except Exception as e:
                                 logger.debug(f"[silent] {e}")
                         except Exception as e:
@@ -1363,81 +1371,81 @@ class DataMgmtMixin:
                     # pequeño delay
                     # para que CTk termine su transición interna.
                     try:
-                        if hasattr(self, "_apply_theme_colors"):
-                            self.after(50, self._apply_theme_colors)
+                        if hasattr(self.app, "_apply_theme_colors"):
+                            self.app.after(50, self.app._apply_theme_colors)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
                 try:
-                    self.after(200, _aplicar_tema_diferido)
+                    self.app.after(200, _aplicar_tema_diferido)
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
 
             # Sonido
-            self._sonido_activo = prefs.get("sonido", False)
+            self.app._sonido_activo = prefs.get("sonido", False)
 
             # --- Cargar el Cerebro (LLM) ---
             llm = prefs.get("llm", "DeepSeek V4")
-            if hasattr(self, 'llm_var'): self.llm_var.set(llm)
+            if hasattr(self.app, 'llm_var'): self.app.llm_var.set(llm)
 
             modo = prefs.get("modo", "imagen")
-            if modo != self.modo_var.get():
-                self.modo_var.set(modo)
-                self.events._on_modo_cambio()
+            if modo != self.app.modo_var.get():
+                self.app.modo_var.set(modo)
+                self.app.events._on_modo_cambio()
 
             plat = prefs.get("plataforma", "")
             if plat:
-                self.plataforma_var.set(plat)
-                self.events._on_plataforma_cambio()
+                self.app.plataforma_var.set(plat)
+                self.app.events._on_plataforma_cambio()
 
             m_img = prefs.get("modelo_img", "")
-            if m_img: self.combo_modelo_imagen.set(m_img)
+            if m_img: self.app.combo_modelo_imagen.set(m_img)
 
             m_vid = prefs.get("modelo_vid", "")
-            if m_vid: self.combo_modelo_video.set(m_vid)
+            if m_vid: self.app.combo_modelo_video.set(m_vid)
 
             ratio = prefs.get("ratio", "")
-            if ratio: self.ratio_var.set(ratio)
+            if ratio: self.app.ratio_var.set(ratio)
 
             estilos = prefs.get("estilos", [])
             if estilos:
-                for n, v in self.estilo_checks.items(): v.set(n in estilos)
+                for n, v in self.app.estilo_checks.items(): v.set(n in estilos)
 
-            self.switch_nsfw_var.set(prefs.get("nsfw", False))
-            self.switch_traduccion_var.set(prefs.get("traduccion", True))
+            self.app.switch_nsfw_var.set(prefs.get("nsfw", False))
+            self.app.switch_traduccion_var.set(prefs.get("traduccion", True))
 
             pers = prefs.get("personaje", "")
-            if pers: self.combo_personaje.set(pers)
+            if pers: self.app.combo_personaje.set(pers)
 
             lora = prefs.get("lora", "")
-            if lora: self.combo_lora.set(lora)
+            if lora: self.app.combo_lora.set(lora)
 
             dur = prefs.get("duracion", "")
-            if dur: self.duracion_var.set(dur)
+            if dur: self.app.duracion_var.set(dur)
 
             m_aud = prefs.get("modelo_aud", "")
-            if m_aud and hasattr(self, 'combo_modelo_audio'): self.combo_modelo_audio.set(m_aud)
+            if m_aud and hasattr(self.app, 'combo_modelo_audio'): self.app.combo_modelo_audio.set(m_aud)
 
-            if hasattr(self, 'switch_instrumental_var'):
-                self.switch_instrumental_var.set(prefs.get("instrumental", False))
+            if hasattr(self.app, 'switch_instrumental_var'):
+                self.app.switch_instrumental_var.set(prefs.get("instrumental", False))
 
-            if hasattr(self, 'emocion_var'):
+            if hasattr(self.app, 'emocion_var'):
                 em = prefs.get("emocion_audio", "— Emoción —")
-                self.emocion_var.set(em if em else "— Emoción —")
-            if hasattr(self, 'voz_var'):
+                self.app.emocion_var.set(em if em else "— Emoción —")
+            if hasattr(self.app, 'voz_var'):
                 vz = prefs.get("voz_audio", "— Voz —")
-                self.voz_var.set(vz if vz else "— Voz —")
-            if hasattr(self, 'idioma_audio_var'):
+                self.app.voz_var.set(vz if vz else "— Voz —")
+            if hasattr(self.app, 'idioma_audio_var'):
                 id_a = prefs.get("idioma_audio", "— Idioma —")
-                self.idioma_audio_var.set(id_a if id_a else "— Idioma —")
+                self.app.idioma_audio_var.set(id_a if id_a else "— Idioma —")
 
             dest = prefs.get("destino", "— Personal —")
-            if dest in DESTINOS: self.destino_var.set(dest)
+            if dest in DESTINOS: self.app.destino_var.set(dest)
 
-            self.brief_var.set(prefs.get("brief", False))
-            self.events._on_brief_cambio()
+            self.app.brief_var.set(prefs.get("brief", False))
+            self.app.events._on_brief_cambio()
 
             # Cargar preferencia de grabación de vídeo de sesión
-            self._sesion_grabar_video = prefs.get("sesion_grabar_video", False)
+            self.app._sesion_grabar_video = prefs.get("sesion_grabar_video", False)
 
         except Exception as _e:
 
@@ -1445,35 +1453,35 @@ class DataMgmtMixin:
     def _guardar_preferencias(self) -> None:
         # como `nombre` que no se gestionan en este método.
         try:
-            prefs = self.store.cargar_preferencias() or {}
+            prefs = self.app.store.cargar_preferencias() or {}
         except Exception:
             prefs = {}
 
         prefs.update({
-            "llm":         self.llm_var.get() if hasattr(self, 'llm_var') else "DeepSeek V4",
-            "modo":        self.modo_var.get(),
-            "plataforma":  self.plataforma_var.get(),
-            "modelo_img":  self.combo_modelo_imagen.get(),
-            "modelo_vid":  self.combo_modelo_video.get(),
-            "modelo_aud":  self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "",
-            "ratio":       self.ratio_var.get(),
-            "estilos":     self.estilos_seleccionados(),
-            "nsfw":        self.switch_nsfw_var.get(),
-            "traduccion":  self.switch_traduccion_var.get(),
-            "personaje":   self.combo_personaje.get(),
-            "lora":        self.combo_lora.get(),
-            "duracion":    self.duracion_var.get(),
-            "destino":     self.destino_var.get(),
-            "brief":       self.brief_var.get(),
-            "instrumental": self.switch_instrumental_var.get() if hasattr(self, 'switch_instrumental_var') else False,
-            "emocion_audio": self.emocion_var.get() if hasattr(self, 'emocion_var') else "",
-            "voz_audio": self.voz_var.get() if hasattr(self, 'voz_var') else "",
-            "idioma_audio": self.idioma_audio_var.get() if hasattr(self, 'idioma_audio_var') else "",
+            "llm":         self.app.llm_var.get() if hasattr(self.app, 'llm_var') else "DeepSeek V4",
+            "modo":        self.app.modo_var.get(),
+            "plataforma":  self.app.plataforma_var.get(),
+            "modelo_img":  self.app.combo_modelo_imagen.get(),
+            "modelo_vid":  self.app.combo_modelo_video.get(),
+            "modelo_aud":  self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
+            "ratio":       self.app.ratio_var.get(),
+            "estilos":     self.app.estilos_seleccionados(),
+            "nsfw":        self.app.switch_nsfw_var.get(),
+            "traduccion":  self.app.switch_traduccion_var.get(),
+            "personaje":   self.app.combo_personaje.get(),
+            "lora":        self.app.combo_lora.get(),
+            "duracion":    self.app.duracion_var.get(),
+            "destino":     self.app.destino_var.get(),
+            "brief":       self.app.brief_var.get(),
+            "instrumental": self.app.switch_instrumental_var.get() if hasattr(self.app, 'switch_instrumental_var') else False,
+            "emocion_audio": self.app.emocion_var.get() if hasattr(self.app, 'emocion_var') else "",
+            "voz_audio": self.app.voz_var.get() if hasattr(self.app, 'voz_var') else "",
+            "idioma_audio": self.app.idioma_audio_var.get() if hasattr(self.app, 'idioma_audio_var') else "",
             "tema":        ctk.get_appearance_mode().lower(),
-            "sonido":      getattr(self, '_sonido_activo', False),
-            "sesion_grabar_video": getattr(self, '_sesion_grabar_video', False),
+            "sonido":      getattr(self.app, '_sonido_activo', False),
+            "sesion_grabar_video": getattr(self.app, '_sesion_grabar_video', False),
         })
-        self.store.guardar_preferencias(prefs)
+        self.app.store.guardar_preferencias(prefs)
 
     def _pegar_inteligente_clipboard(self, event=None):
         """Pegado inteligente: si el portapapeles tiene un prompt completo (con cabecera POSITIVE PROMPT:),
@@ -1481,8 +1489,8 @@ class DataMgmtMixin:
         try:
             # Si el foco está en el textbox de idea, NO interceptar — comportamiento normal de pegar
             try:
-                foco = self.focus_get()
-                if foco is not None and hasattr(self, "txt_idea") and foco == self.txt_idea._textbox:
+                foco = self.app.focus_get()
+                if foco is not None and hasattr(self.app, "txt_idea") and foco == self.app.txt_idea._textbox:
                     return None  # dejar que tk lo maneje normalmente
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -1501,9 +1509,9 @@ class DataMgmtMixin:
 
             if es_prompt_completo:
                 # Cargar en txt_salida
-                self.actualizar_salida(texto_clip)
-                self.set_estado("📥 Prompt pegado en Resultado (detectado por marcadores)", "#2ecc71")
-                try: self.sesion._sesion_log("📥 Pegó prompt completo desde portapapeles")
+                self.app.actualizar_salida(texto_clip)
+                self.app.set_estado("📥 Prompt pegado en Resultado (detectado por marcadores)", "#2ecc71")
+                try: self.app.sesion._sesion_log("📥 Pegó prompt completo desde portapapeles")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
                 return "break"
@@ -1515,9 +1523,9 @@ class DataMgmtMixin:
     def _idea_aleatoria_historial(self) -> None:
         """Carga una idea aleatoria de prompts pasados (inspiración rápida)."""
         import random
-        items = (self.store.historial or []) + (self.store.favoritos or []) + (self.store.estrellas or [])
+        items = (self.app.store.historial or []) + (self.app.store.favoritos or []) + (self.app.store.estrellas or [])
         if not items:
-            self.set_estado("⚠️ Aún no hay prompts en historial.", "#e67e22")
+            self.app.set_estado("⚠️ Aún no hay prompts en historial.", "#e67e22")
             return "break"
         item = random.choice(items)
         if isinstance(item, dict):
@@ -1528,9 +1536,9 @@ class DataMgmtMixin:
         import re
         m = re.search(r'POSITIVE\s+PROMPT\s*:\s*(.+?)(?=\n\s*NEGATIVE|$)', txt, re.DOTALL | re.IGNORECASE)
         idea = m.group(1).strip() if m else txt[:300]
-        self.txt_idea.delete("1.0", "end")
-        self.txt_idea.insert("1.0", idea[:300])
-        self.set_estado("🎲 Idea cargada desde historial", "#3498db")
+        self.app.txt_idea.delete("1.0", "end")
+        self.app.txt_idea.insert("1.0", idea[:300])
+        self.app.set_estado("🎲 Idea cargada desde historial", "#3498db")
         return "break"
 
     def _pegar_imagen_clipboard(self, event=None):
@@ -1540,7 +1548,7 @@ class DataMgmtMixin:
             img = ImageGrab.grabclipboard()
             if img and hasattr(img, 'size'):
                 self._cargar_imagen_desde_pil(img.convert("RGB"), "clipboard_paste")
-                self.set_estado("📋 Imagen pegada desde el portapapeles", "#2ecc71")
+                self.app.set_estado("📋 Imagen pegada desde el portapapeles", "#2ecc71")
                 return "break"
         except Exception as _e:
             logger.debug(f"[silent] {_e}")

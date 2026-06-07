@@ -531,11 +531,11 @@ class DialogsMixin:
         try:
             # Auto-guardar borrador y preferencias
             try:
-                self._auto_guardar_borrador()
+                self.data._auto_guardar_borrador()
             except Exception as e:
                 logger.warning(f"_auto_guardar_borrador en cierre: {e}")
             try:
-                self._guardar_preferencias()
+                self.data._guardar_preferencias()
             except Exception as e:
                 logger.warning(f"_guardar_preferencias en cierre: {e}")
 

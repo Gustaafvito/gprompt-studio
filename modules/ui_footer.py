@@ -83,7 +83,7 @@ class UiFooterMixin:
                 ("💎",         30, "#854d0e",  self.analysis.guardar_seed_favorito,    "Guardar config como Seed favorito"),
             ]),
             ("💾 EXPORT", "#15803d", [
-                ("💾",         30, "#15803d",  self._exportar,                         "Exportar como .txt"),
+                ("💾",         30, "#15803d",  self.data._exportar,                         "Exportar como .txt"),
             ]),
         ]
 

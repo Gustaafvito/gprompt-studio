@@ -33,7 +33,6 @@ from config import (
 )
 from modules import (
     CoreMixin,
-    DataMgmtMixin,
     DialogsMixin,
     EventBus,
     UiFooterMixin,
@@ -54,7 +53,7 @@ class ArquitectoApp(
     # UIBuildersMixin removido (A1 fase 2, sesión 14) → self.ui.* (UIBuildersService)
     # ToolsCreativeMixin removido (A1 fase 2, sesión 14) → self.creative.* (ToolsCreativeService)
     # ToolsWorkflowMixin removido (A1 fase 2, sesión 14) → self.workflow.* (ToolsWorkflowService)
-    DataMgmtMixin,
+    # DataMgmtMixin removido (A1 fase 2, sesión 14) → self.data.* (DataMgmtService)
     # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
     DialogsMixin,
     CoreMixin,
@@ -254,12 +253,12 @@ class ArquitectoApp(
         self.atajos.bind_shortcuts()
 
         # ── Inicializar ───────────────────────────────────────────
-        self.actualizar_combo_personajes()
-        self.actualizar_combo_loras()
-        self.actualizar_combo_plantillas()
+        self.data.actualizar_combo_personajes()
+        self.data.actualizar_combo_loras()
+        self.data.actualizar_combo_plantillas()
 
         # Cargar estado y forzar pintado correcto
-        self._cargar_preferencias()
+        self.data._cargar_preferencias()
         self.events._on_modo_cambio()
         self.reiniciar_memoria()
 
@@ -273,9 +272,9 @@ class ArquitectoApp(
             _log.getLogger(__name__).warning(f"_apply_theme_colors inicial falló: {e}")
 
         # Restaurar borrador no guardado de sesión anterior si existe
-        self._restaurar_borrador()
+        self.data._restaurar_borrador()
         # Iniciar auto-guardado cada 30s
-        self.after(30000, self._auto_guardar_borrador)
+        self.after(30000, self.data._auto_guardar_borrador)
 
         # Backup automático semanal (v1.0)
         self.after(5000, self._backup_semanal_check)
@@ -2751,7 +2750,7 @@ class ArquitectoApp(
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Guardar las preferencias usando el sistema de persistence.py
-        self._guardar_preferencias()
+        self.data._guardar_preferencias()
 
         if total_modelos > 0:
             self.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")

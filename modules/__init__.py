@@ -12,7 +12,7 @@ from .comfyui_exporter import ComfyUIWorkflowExporter
 from .components import install_components
 from .core import CoreMixin
 from .dashboard import DashboardService  # A1 fase 2 (sesión 11)
-from .data_mgmt import DataMgmtMixin
+from .data_mgmt import DataMgmtService  # A1 fase 2 (sesión 14)
 from .dialogs import DialogsMixin
 from .event_bus import EventBus
 from .gprompt_window import GPromptWindow
@@ -36,7 +36,7 @@ __all__ = [
     "ToolsCreativeService",
     "ToolsWorkflowService",
     "ToolsAnalysisService",
-    "DataMgmtMixin",
+    "DataMgmtService",
     "BackupExportService",
     "DialogsMixin",
     "CoreMixin",

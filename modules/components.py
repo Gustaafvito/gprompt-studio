@@ -224,43 +224,61 @@ class AnalysisComponent(_Component):
 
 
 class DataComponent(_Component):
-    """Historial, Favoritos, Estrellas, Plantillas, Snippets, Imagen
-    (DataMgmtMixin). Decimosexto servicio del refactor A1.
+    """Historial, Favoritos, Estrellas, Plantillas, Snippets, Imagen.
+
+    A1 fase 2 (sesión 14): DataMgmtMixin → DataMgmtService aislado.
+    __getattr__ extendido para delegar al servicio (necesario porque
+    guardar_en_historial, actualizar_combo_*, _cargar_plantilla, etc.
+    se usan desde MUCHOS sitios y no merece la pena listar todos como
+    properties).
     """
     _name = "data"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.data_mgmt import DataMgmtService
+        self._service = DataMgmtService(app)
+
+    def __getattr__(self, name):
+        if name in ("app", "_service"):
+            raise AttributeError(name)
+        if hasattr(self._service, name):
+            return getattr(self._service, name)
+        return super().__getattr__(name)
 
     def cmd_guardar_plantilla(self) -> None:
-        return self.app._cmd_guardar_plantilla()
+        return self._service._cmd_guardar_plantilla()
 
     def cmd_borrar_plantilla(self) -> None:
-        return self.app._cmd_borrar_plantilla()
+        return self._service._cmd_borrar_plantilla()
 
     def guardar_favorito(self) -> None:
-        return self.app._guardar_favorito()
+        return self._service._guardar_favorito()
 
     def guardar_estrella(self) -> None:
-        return self.app._guardar_estrella()
+        return self._service._guardar_estrella()
 
     def repetir_ultima_config(self) -> None:
-        return self.app._repetir_ultima_config()
+        return self._service._repetir_ultima_config()
 
     def cmd_gestionar_snippets(self) -> None:
-        return self.app._cmd_gestionar_snippets()
+        return self._service._cmd_gestionar_snippets()
 
     def abrir_snippets(self) -> None:
-        return self.app._abrir_snippets()
+        return self._service._abrir_snippets()
 
     def abrir_formulas(self) -> None:
-        return self.app._abrir_formulas()
+        return self._service._abrir_formulas()
 
     def abrir_biblioteca(self) -> None:
-        return self.app._abrir_biblioteca()
+        return self._service._abrir_biblioteca()
 
     def cmd_duplicar_a_historial(self, event=None) -> None:
-        return self.app._cmd_duplicar_a_historial(event)
+        return self._service._cmd_duplicar_a_historial(event)
 
     def idea_aleatoria_historial(self) -> None:
-        return self.app._idea_aleatoria_historial()
+        return self._service._idea_aleatoria_historial()
 
 
 class BackupComponent(_Component):
