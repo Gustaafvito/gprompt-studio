@@ -86,31 +86,39 @@ class UIComponent(_Component):
 
 
 class CreativeComponent(_Component):
-    """Moodboard, ADN, Negative Builder, Paleta (ToolsCreativeMixin).
-    Decimotercer servicio del refactor A1.
+    """Moodboard, ADN, Negative Builder, Paleta, etc.
+
+    A1 fase 2 (sesión 14): ToolsCreativeMixin → ToolsCreativeService aislado.
     """
     _name = "creative"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.tools_creative import ToolsCreativeService
+        self._service = ToolsCreativeService(app)
 
     def cmd_negative_builder(self) -> None:
-        return self.app._cmd_negative_builder()
+        return self._service._cmd_negative_builder()
 
     def cmd_color_palette(self) -> None:
-        return self.app._cmd_color_palette()
+        return self._service._cmd_color_palette()
 
     def cmd_anclaje_visual(self) -> None:
-        return self.app._cmd_anclaje_visual()
+        return self._service._cmd_anclaje_visual()
 
     def cmd_negative_optimo(self) -> None:
-        return self.app._cmd_negative_optimo()
+        return self._service._cmd_negative_optimo()
 
     def cmd_solo_negative(self) -> None:
-        return self.app._cmd_solo_negative()
+        return self._service._cmd_solo_negative()
 
+    # cmd_modo_focus vive en app.py, no en ToolsCreativeService
     def cmd_modo_focus(self) -> None:
         return self.app._cmd_modo_focus()
 
     def cmd_grupo_personajes(self) -> None:
-        return self.app._cmd_grupo_personajes()
+        return self._service._cmd_grupo_personajes()
 
 
 class WorkflowComponent(_Component):

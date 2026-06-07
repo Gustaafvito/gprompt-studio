@@ -25,17 +25,25 @@ from modules.gprompt_window import GPromptWindow
 if TYPE_CHECKING:
     pass
 
-class ToolsCreativeMixin:
-    """Mixin containing all creative tool methods."""
+class ToolsCreativeService:
+    """18 herramientas creativas: sorpréndeme, pulse, sugerir modelo,
+    análisis inverso, sugerir estilos, anclaje visual, color palette,
+    negative builder/óptimo/solo, grupo personajes, etc.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_sorprendeme(self):
         """Genera una idea aleatoria interesante para inspirarse."""
-        modo = self.modo_var.get()
-        try: self._sesion_log("🎲 Sorpréndeme: pidió idea aleatoria")
+        modo = self.app.modo_var.get()
+        try: self.app._sesion_log("🎲 Sorpréndeme: pidió idea aleatoria")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.set_estado("🎲 Pensando algo creativo...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🎲 Pensando algo creativo...", "#f39c12")
+        self.app.toggle_botones(False)
 
         peticion = (
             f"Genera UNA SOLA idea creativa, original y visualmente interesante para un prompt de {modo}. "
@@ -47,17 +55,17 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=1.0, max_tokens=200)
+                resp = self.app.deepseek.generar(peticion, temperature=1.0, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip().strip('"').strip("'")
                 def _aplicar():
-                    self.txt_idea.delete("1.0", "end")
-                    self.txt_idea.insert("1.0", resp)
-                    self.set_estado("🎲 Idea sorpresa generada — pulsa ✨ Generar para crear el prompt", "#2ecc71")
-                    self.toggle_botones(True)
-                self.after(0, _aplicar)
+                    self.app.txt_idea.delete("1.0", "end")
+                    self.app.txt_idea.insert("1.0", resp)
+                    self.app.set_estado("🎲 Idea sorpresa generada — pulsa ✨ Generar para crear el prompt", "#2ecc71")
+                    self.app.toggle_botones(True)
+                self.app.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -81,20 +89,20 @@ class ToolsCreativeMixin:
         - 3 modos: 3 niveles (default), 5 niveles, Personalizado (sliders).
         - Recuerda la última configuración usada en preferencias.
         """
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
 
         # Cargar última configuración
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         ultima = prefs.get("pulse_config", {"modo": "3", "custom_temps": [0.3, 0.6, 0.9]})
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        cfg = GPromptWindow(self)
+        cfg = GPromptWindow(self.app)
         cfg.title("⚡ Pulse — Configuración")
         cfg.geometry("440x520")
-        cfg.transient(self)
+        cfg.transient(self.app)
         cfg.grab_set()
 
         ctk.CTkLabel(cfg, text="⚡ Pulse — Configuración",
@@ -146,19 +154,19 @@ class ToolsCreativeMixin:
         def _ejecutar():
             modo_sel = modo_var.get()
             if modo_sel == "3":
-                temperaturas = list(self.PULSE_PRESET_3)
+                temperaturas = list(self.app.PULSE_PRESET_3)
             elif modo_sel == "5":
-                temperaturas = list(self.PULSE_PRESET_5)
+                temperaturas = list(self.app.PULSE_PRESET_5)
             else:
                 temps_custom = [round(sl.get(), 2) for sl in custom_sliders]
                 temperaturas = [(t, f"🎚 Custom (T={t:.2f})") for t in temps_custom]
             # Guardar config
-            prefs_g = self.store.cargar_preferencias()
+            prefs_g = self.app.store.cargar_preferencias()
             prefs_g["pulse_config"] = {
                 "modo": modo_sel,
                 "custom_temps": [round(sl.get(), 2) for sl in custom_sliders],
             }
-            self.store.guardar_preferencias(prefs_g)
+            self.app.store.guardar_preferencias(prefs_g)
             cfg.destroy()
             self._lanzar_pulse(idea, temperaturas)
 
@@ -177,20 +185,20 @@ class ToolsCreativeMixin:
 
     def _lanzar_pulse(self, idea, temperaturas):
         """Ejecuta Pulse con la lista de (temp, label) elegida."""
-        try: self._sesion_log(f"⚡ Pulse: generó {len(temperaturas)} versiones")
+        try: self.app._sesion_log(f"⚡ Pulse: generó {len(temperaturas)} versiones")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado(f"⚡ Pulse: generando {len(temperaturas)} versiones (T={temperaturas[0][0]:.1f} → T={temperaturas[-1][0]:.1f})...",
+        self.app.set_estado(f"⚡ Pulse: generando {len(temperaturas)} versiones (T={temperaturas[0][0]:.1f} → T={temperaturas[-1][0]:.1f})...",
                         "#f39c12")
-        self.toggle_botones(False)
+        self.app.toggle_botones(False)
 
         resultados = {}
 
         def _generar(temp, label):
             try:
-                modo = self.modo_var.get()
-                specs = self.get_current_model_specs()
+                modo = self.app.modo_var.get()
+                specs = self.app.get_current_model_specs()
                 max_c = specs.get("max_chars", 1500) if specs else 1500
                 has_neg = specs.get("has_negative", True) if specs else True
                 is_natural = specs.get("is_natural", False) if specs else False
@@ -200,10 +208,10 @@ class ToolsCreativeMixin:
                 peticion = (
                     f"Genera un prompt de {modo} basado en: {idea}\n"
                     f"Formato: {fmt}. Límite: {max_c} chars. {neg_str}\n"
-                    f"Estilos: {self.estilos_texto()}.\n"
+                    f"Estilos: {self.app.estilos_texto()}.\n"
                     f"Responde SOLO con el prompt, sin explicaciones."
                 )
-                resp = self.deepseek.generar(peticion, temperature=temp, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=temp, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 if not has_neg:
                     import re
@@ -227,28 +235,28 @@ class ToolsCreativeMixin:
                 for _, label in temperaturas:
                     if label in resultados:
                         variantes.append(f"### {label} ###\n{resultados[label]}")
-                self._abrir_comparador(variantes)
+                self.app._abrir_comparador(variantes)
                 n = len(temperaturas)
-                self.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
-                self.toggle_botones(True)
-                self._sonar_completado()
-                self._notificar_sistema(f"⚡ Pulse completado",
+                self.app.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
+                self.app.toggle_botones(True)
+                self.app._sonar_completado()
+                self.app._notificar_sistema(f"⚡ Pulse completado",
                                          f"{n} versiones del prompt listas para comparar")
-            self.after(0, _mostrar)
+            self.app.after(0, _mostrar)
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
     def _cmd_negative_optimo(self):
         """Genera el NEGATIVE ÓPTIMO según el modelo y tipo de prompt actual."""
-        if not self._debe_mostrar_negatives():
-            return self.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
+        if not self.app._debe_mostrar_negatives():
+            return self.app.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
 
-        modelo = self.modelo_imagen_valido() if self.modo_var.get() == "imagen" else (
-            self.modelo_video_valido() if self.modo_var.get() == "video" else "")
-        pos = self.extraer_positive() or self.txt_idea.get("1.0", "end").strip() or "imagen general"
+        modelo = self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
+            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
+        pos = self.app.extraer_positive() or self.app.txt_idea.get("1.0", "end").strip() or "imagen general"
 
-        self.set_estado("🛡 Generando NEGATIVE óptimo para este modelo...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🛡 Generando NEGATIVE óptimo para este modelo...", "#f39c12")
+        self.app.toggle_botones(False)
 
         peticion = (
             f"Genera el NEGATIVE PROMPT MÁS COMPLETO Y ÓPTIMO para este modelo y contenido.\n\n"
@@ -267,27 +275,27 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.2, max_tokens=400)
+                resp = self.app.deepseek.generar(peticion, temperature=0.2, max_tokens=400)
                 resp = limpiar_marcadores(resp)
                 import re
                 m = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)$', resp, re.DOTALL | re.IGNORECASE)
                 negative = (m.group(1) if m else resp).strip()
 
                 def _aplicar():
-                    pos_actual = self.extraer_positive()
+                    pos_actual = self.app.extraer_positive()
                     if pos_actual:
                         nuevo = f"POSITIVE PROMPT: {pos_actual}\nNEGATIVE PROMPT: {negative}"
-                        self.actualizar_salida(nuevo)
-                        self.set_estado("🛡 NEGATIVE óptimo aplicado", "#2ecc71")
+                        self.app.actualizar_salida(nuevo)
+                        self.app.set_estado("🛡 NEGATIVE óptimo aplicado", "#2ecc71")
                     else:
                         # Solo poner negative si no hay positive
                         pyperclip.copy(negative)
-                        self.set_estado("🛡 NEGATIVE óptimo copiado al portapapeles", "#2ecc71")
-                    self.toggle_botones(True)
-                self.after(0, _aplicar)
+                        self.app.set_estado("🛡 NEGATIVE óptimo copiado al portapapeles", "#2ecc71")
+                    self.app.toggle_botones(True)
+                self.app.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -301,16 +309,16 @@ class ToolsCreativeMixin:
         - Botón global "🚀 Probar los 3" → genera el prompt con cada
           uno y abre el comparador.
         """
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 10:
-            return self.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
-        try: self._sesion_log("🤖 Sugerir modelo: analizó idea")
+            return self.app.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
+        try: self.app._sesion_log("🤖 Sugerir modelo: analizó idea")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🤖 Analizando idea para top 3 modelos...", "#f39c12")
+        self.app.set_estado("🤖 Analizando idea para top 3 modelos...", "#f39c12")
 
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
         if modo == "imagen":
             modelos_lista = [m for m in MODELOS_IMAGEN_FLAT if not m.startswith("──")]
         elif modo == "video":
@@ -339,7 +347,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=600)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=600)
                 resp = limpiar_marcadores(resp)
 
                 # Parsear las 3 sugerencias
@@ -368,16 +376,16 @@ class ToolsCreativeMixin:
                         sugerencias.append((coincidencia, razon_limpia))
 
                 if not sugerencias:
-                    self.after(0, lambda: self.set_estado(
+                    self.app.after(0, lambda: self.app.set_estado(
                         "⚠️ No se pudieron parsear las sugerencias del LLM",
                         "#e67e22"))
                     return
 
                 def _mostrar():
                     self._mostrar_sugerencias_modelo(idea, sugerencias, modo)
-                self.after(0, _mostrar)
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -386,10 +394,10 @@ class ToolsCreativeMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🤖 Top 3 modelos sugeridos")
         vent.geometry("680x520")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🤖 Top 3 modelos para tu idea",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
@@ -405,15 +413,15 @@ class ToolsCreativeMixin:
         ]
 
         def _aplicar_modelo(nombre):
-            if modo == "imagen" and hasattr(self, 'combo_modelo_imagen'):
-                self.combo_modelo_imagen.set(nombre)
-                self._on_modelo_imagen_cambio()
-            elif modo == "video" and hasattr(self, 'combo_modelo_video'):
-                self.combo_modelo_video.set(nombre)
-            elif modo == "audio" and hasattr(self, 'combo_modelo_audio'):
-                self.combo_modelo_audio.set(nombre)
+            if modo == "imagen" and hasattr(self.app, 'combo_modelo_imagen'):
+                self.app.combo_modelo_imagen.set(nombre)
+                self.app._on_modelo_imagen_cambio()
+            elif modo == "video" and hasattr(self.app, 'combo_modelo_video'):
+                self.app.combo_modelo_video.set(nombre)
+            elif modo == "audio" and hasattr(self.app, 'combo_modelo_audio'):
+                self.app.combo_modelo_audio.set(nombre)
             vent.destroy()
-            self.set_estado(f"✅ Modelo '{nombre}' aplicado", "#2ecc71")
+            self.app.set_estado(f"✅ Modelo '{nombre}' aplicado", "#2ecc71")
 
         for idx, (nombre_mod, razon) in enumerate(sugerencias):
             medalla, bg_medalla, fg_medalla = rank_data[idx] if idx < 3 else ("#", c["fg_dark"], c["hdr_text"])
@@ -461,9 +469,9 @@ class ToolsCreativeMixin:
 
     def _probar_modelos_y_comparar(self, idea, modelos, modo):
         """Genera el prompt con cada modelo en paralelo y abre el comparador."""
-        self.set_estado(f"🚀 Generando con {len(modelos)} modelos en paralelo...",
+        self.app.set_estado(f"🚀 Generando con {len(modelos)} modelos en paralelo...",
                         "#f39c12")
-        self.toggle_botones(False)
+        self.app.toggle_botones(False)
 
         resultados = {}
 
@@ -497,7 +505,7 @@ class ToolsCreativeMixin:
                     f"MODELO: {nombre_mod}\n"
                     f"FORTALEZAS: {best_for}\n\n"
                     f"IDEA: {idea}\n"
-                    f"ESTILOS A INCLUIR: {self.estilos_texto()}\n\n"
+                    f"ESTILOS A INCLUIR: {self.app.estilos_texto()}\n\n"
                     f"REGLAS ESTRICTAS:\n"
                     f"- Formato: {fmt}\n"
                     f"- Límite POSITIVE: {max_c} caracteres\n"
@@ -506,7 +514,7 @@ class ToolsCreativeMixin:
                     f"- NO repitas la sección POSITIVE/NEGATIVE\n\n"
                     f"{estructura}"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.55, max_tokens=1500)
+                resp = self.app.deepseek.generar(peticion, temperature=0.55, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
 
                 # Defensa contra LLMs que devuelven texto extra:
@@ -551,32 +559,32 @@ class ToolsCreativeMixin:
                 # Detectar si las respuestas son sospechosamente idénticas
                 # (mismo POSITIVE → LLM no diferenció entre modelos)
                 if len(set(resultados.values())) == 1 and len(resultados) > 1:
-                    self.set_estado(
+                    self.app.set_estado(
                         "⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica.",
                         "#e67e22")
-                self._abrir_comparador(variantes, labels=labels)
-                self.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
+                self.app._abrir_comparador(variantes, labels=labels)
+                self.app.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
                                 "#2ecc71")
-                self.toggle_botones(True)
-                self._sonar_completado()
-            self.after(0, _mostrar)
+                self.app.toggle_botones(True)
+                self.app._sonar_completado()
+            self.app.after(0, _mostrar)
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
     def _cmd_solo_negative(self):
         """Genera solo el NEGATIVE PROMPT optimizado."""
-        if not self._debe_mostrar_negatives():
-            return self.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
+        if not self.app._debe_mostrar_negatives():
+            return self.app.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
 
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            return self.app.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
 
-        self.set_estado("🛡 Generando NEGATIVE optimizado...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🛡 Generando NEGATIVE optimizado...", "#f39c12")
+        self.app.toggle_botones(False)
 
-        modelo = self.modelo_imagen_valido() if self.modo_var.get() == "imagen" else (
-            self.modelo_video_valido() if self.modo_var.get() == "video" else "")
+        modelo = self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
+            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
 
         peticion = (
             f"Genera un NEGATIVE PROMPT optimizado para este modelo y contenido.\n\n"
@@ -591,7 +599,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=400)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=400)
                 resp = limpiar_marcadores(resp)
                 import re
                 m = re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)$', resp, re.DOTALL | re.IGNORECASE)
@@ -599,12 +607,12 @@ class ToolsCreativeMixin:
 
                 def _aplicar():
                     pyperclip.copy(negative)
-                    self.set_estado("🛡 NEGATIVE copiado al portapapeles", "#2ecc71")
-                    self.toggle_botones(True)
-                self.after(0, _aplicar)
+                    self.app.set_estado("🛡 NEGATIVE copiado al portapapeles", "#2ecc71")
+                    self.app.toggle_botones(True)
+                self.app.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -612,10 +620,10 @@ class ToolsCreativeMixin:
         """Define una escena con varios personajes y sus relaciones."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("👥 Grupo de personajes")
         vent.geometry("600x500")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="👥 Definir grupo de personajes", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text="Define hasta 3 personajes que aparecerán juntos en la escena",
@@ -623,7 +631,7 @@ class ToolsCreativeMixin:
 
         personajes_data = []
         # Cargar personajes existentes
-        personajes_lista = ["— Personaje nuevo —"] + [p.get("nombre", "?") for p in (self.store.personajes or [])]
+        personajes_lista = ["— Personaje nuevo —"] + [p.get("nombre", "?") for p in (self.app.store.personajes or [])]
 
         for i in range(3):
             f = ctk.CTkFrame(vent, fg_color=c["fg_frame"], corner_radius=6)
@@ -684,7 +692,7 @@ class ToolsCreativeMixin:
                 desc_p = p["desc"].get().strip()
                 if nombre_p and nombre_p != "— Personaje nuevo —":
                     # Buscar el personaje en la base de datos
-                    pers = next((x for x in (self.store.personajes or []) if x.get("nombre") == nombre_p), None)
+                    pers = next((x for x in (self.app.store.personajes or []) if x.get("nombre") == nombre_p), None)
                     if pers:
                         personajes_def.append({
                             "nombre": nombre_p,
@@ -697,7 +705,7 @@ class ToolsCreativeMixin:
                     personajes_def.append({"nombre": f"Personaje #{i+1}", "rasgos": "", "posicion": desc_p})
 
             if len(personajes_def) < 2:
-                self.set_estado("⚠️ Define al menos 2 personajes para hacer un grupo.", "#e67e22")
+                self.app.set_estado("⚠️ Define al menos 2 personajes para hacer un grupo.", "#e67e22")
                 return
 
             # Si el placeholder sigue visible, la relación se considera vacía
@@ -713,10 +721,10 @@ class ToolsCreativeMixin:
             if relacion:
                 idea_compuesta += f"Contexto: {relacion}"
 
-            self.txt_idea.delete("1.0", "end")
-            self.txt_idea.insert("1.0", idea_compuesta)
+            self.app.txt_idea.delete("1.0", "end")
+            self.app.txt_idea.insert("1.0", idea_compuesta)
             vent.destroy()
-            self.set_estado(f"👥 {len(personajes_def)} personajes preparados — pulsa ✨ Generar", "#2ecc71")
+            self.app.set_estado(f"👥 {len(personajes_def)} personajes preparados — pulsa ✨ Generar", "#2ecc71")
 
         ctk.CTkButton(vent, text="✅ Aplicar a la idea", width=200, height=32,
                       fg_color="#1a7a3c", hover_color="#145e2d",
@@ -725,25 +733,25 @@ class ToolsCreativeMixin:
 
     def _cmd_analisis_inverso(self):
         """Compara una imagen con el prompt actual: ¿el prompt describe esa imagen?"""
-        if not self.imagen_cargada:
-            self.set_estado("⚠️ Carga una imagen primero (panel imagen ref).", "#e67e22")
+        if not self.app.imagen_cargada:
+            self.app.set_estado("⚠️ Carga una imagen primero (panel imagen ref).", "#e67e22")
             return
-        prompt_actual = self.txt_salida.get("1.0", "end").strip()
+        prompt_actual = self.app.txt_salida.get("1.0", "end").strip()
         if not prompt_actual or len(prompt_actual) < 20:
-            self.set_estado("⚠️ Necesitas un prompt en el resultado para comparar.", "#e67e22")
+            self.app.set_estado("⚠️ Necesitas un prompt en el resultado para comparar.", "#e67e22")
             return
-        try: self._sesion_log("🔍 Análisis inverso: comparó imagen con prompt actual")
+        try: self.app._sesion_log("🔍 Análisis inverso: comparó imagen con prompt actual")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.set_estado("🔍 Análisis inverso: comparando imagen y prompt...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🔍 Análisis inverso: comparando imagen y prompt...", "#f39c12")
+        self.app.toggle_botones(False)
 
         def _worker():
             try:
                 # 1. Describir la imagen primero
-                def on_status(msg): self.after(0, lambda: self.set_estado(msg, "#f39c12"))
-                desc, motor = self.vision.describir(self.imagen_cargada, "imagen", on_status)
+                def on_status(msg): self.app.after(0, lambda: self.app.set_estado(msg, "#f39c12"))
+                desc, motor = self.app.vision.describir(self.app.imagen_cargada, "imagen", on_status)
 
                 # 2. Pedir al LLM comparar prompt con descripción
                 peticion = (
@@ -763,16 +771,16 @@ class ToolsCreativeMixin:
                     f"   - Reescribe el prompt para que describa fielmente la imagen real\n"
                     f"   - Mantén el formato original (tags/natural)\n"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2500)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2500)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
                     is_lt = ctk.get_appearance_mode().lower() == "light"
                     c = get_theme_colors(is_lt)
-                    vent = GPromptWindow(self)
+                    vent = GPromptWindow(self.app)
                     vent.title("🔍 Análisis inverso")
                     vent.geometry("700x600")
-                    vent.transient(self)
+                    vent.transient(self.app)
                     ctk.CTkLabel(vent, text="🔍 Análisis inverso: imagen vs prompt", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
                     ctk.CTkLabel(vent, text=f"Visión: {motor}", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -793,15 +801,15 @@ class ToolsCreativeMixin:
 
                     def _copiar_analisis_completo():
                         pyperclip.copy(resp)
-                        self.set_estado("📋 Análisis completo copiado", "#2ecc71")
+                        self.app.set_estado("📋 Análisis completo copiado", "#2ecc71")
 
                     def _copiar_solo_corregido():
                         corregido = _extraer_corregido()
                         if corregido:
                             pyperclip.copy(corregido)
-                            self.set_estado("📋 PROMPT CORREGIDO copiado al portapapeles", "#2ecc71")
+                            self.app.set_estado("📋 PROMPT CORREGIDO copiado al portapapeles", "#2ecc71")
                         else:
-                            self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
+                            self.app.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
 
                     def _aplicar_corregido():
                         # Pasa por el diff modal en lugar de sobreescribir
@@ -809,24 +817,24 @@ class ToolsCreativeMixin:
                         # ver los cambios.
                         corregido = _extraer_corregido()
                         if not corregido:
-                            self.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
+                            self.app.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
                             return
-                        texto_previo = self.txt_salida.get("1.0", "end").strip()
+                        texto_previo = self.app.txt_salida.get("1.0", "end").strip()
                         if not texto_previo:
                             # No hay nada que comparar — aplicar directo
-                            self.actualizar_salida(corregido)
+                            self.app.actualizar_salida(corregido)
                             vent.destroy()
-                            self.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
+                            self.app.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
                             return
                         # Pasamos por refinar.mostrar_diff_refinamiento → Aplicar/Cancelar
-                        if hasattr(self, '_mostrar_diff_refinamiento'):
+                        if hasattr(self.app, '_mostrar_diff_refinamiento'):
                             vent.destroy()
-                            self.refinar.mostrar_diff_refinamiento(texto_previo, corregido)
+                            self.app.refinar.mostrar_diff_refinamiento(texto_previo, corregido)
                         else:
                             # Fallback si el método no existe
-                            self.actualizar_salida(corregido)
+                            self.app.actualizar_salida(corregido)
                             vent.destroy()
-                            self.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
+                            self.app.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=28,
                                   fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -838,37 +846,37 @@ class ToolsCreativeMixin:
                                   fg_color="#1a7a3c", hover_color="#15633a",
                                   command=_aplicar_corregido).pack(side="left", padx=4)
 
-                    self.toggle_botones(True)
-                    self.set_estado(f"🔍 Análisis inverso completado (visión: {motor})", "#2ecc71")
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app.set_estado(f"🔍 Análisis inverso completado (visión: {motor})", "#2ecc71")
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _cmd_sugerir_estilos(self):
         """Analiza la idea y marca automáticamente los estilos más apropiados."""
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
-        try: self._sesion_log("🎨 Sugerir estilos: pidió sugerencia automática")
+            return self.app.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
+        try: self.app._sesion_log("🎨 Sugerir estilos: pidió sugerencia automática")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        modo = self.modo_var.get()
+        modo = self.app.modo_var.get()
         if modo == "imagen":
-            estilos_dispo = list(self.estilo_checks.keys())
+            estilos_dispo = list(self.app.estilo_checks.keys())
         elif modo == "video":
-            estilos_dispo = list(self.estilo_checks.keys())
+            estilos_dispo = list(self.app.estilo_checks.keys())
         else:
-            return self.set_estado("⚠️ Función disponible solo para imagen y vídeo.", "#e67e22")
+            return self.app.set_estado("⚠️ Función disponible solo para imagen y vídeo.", "#e67e22")
 
         if not estilos_dispo:
-            return self.set_estado("⚠️ No hay estilos disponibles.", "#e67e22")
+            return self.app.set_estado("⚠️ No hay estilos disponibles.", "#e67e22")
 
-        self.set_estado("🎨 Analizando idea para sugerir estilos...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🎨 Analizando idea para sugerir estilos...", "#f39c12")
+        self.app.toggle_botones(False)
 
         peticion = (
             f"Analiza esta idea y sugiere LOS 3-6 ESTILOS MÁS APROPIADOS de la lista disponible.\n\n"
@@ -884,7 +892,7 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=300)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=300)
                 resp = limpiar_marcadores(resp).strip()
 
                 # Parsear lista de estilos
@@ -901,24 +909,24 @@ class ToolsCreativeMixin:
                                 break
 
                 if not validos:
-                    self.after(0, lambda: self.set_estado("⚠️ No se pudieron extraer estilos. Intenta de nuevo.", "#e67e22"))
-                    self.after(0, lambda: self.toggle_botones(True))
+                    self.app.after(0, lambda: self.app.set_estado("⚠️ No se pudieron extraer estilos. Intenta de nuevo.", "#e67e22"))
+                    self.app.after(0, lambda: self.app.toggle_botones(True))
                     return
 
                 def _aplicar():
                     # Limpiar selección actual
-                    for n, v in self.estilo_checks.items():
+                    for n, v in self.app.estilo_checks.items():
                         v.set(False)
                     # Marcar los sugeridos
                     for est in validos:
-                        if est in self.estilo_checks:
-                            self.estilo_checks[est].set(True)
-                    self.set_estado(f"🎨 Estilos aplicados: {', '.join(validos)}", "#2ecc71")
-                    self.toggle_botones(True)
-                self.after(0, _aplicar)
+                        if est in self.app.estilo_checks:
+                            self.app.estilo_checks[est].set(True)
+                    self.app.set_estado(f"🎨 Estilos aplicados: {', '.join(validos)}", "#2ecc71")
+                    self.app.toggle_botones(True)
+                self.app.after(0, _aplicar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -928,20 +936,20 @@ class ToolsCreativeMixin:
         v1.1: progreso visual, preview imagen, guardar en biblioteca ADN,
         mostrar rasgos activos, barra de estado.
         """
-        if not self.imagen_cargada:
-            self.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
+        if not self.app.imagen_cargada:
+            self.app.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
             return
 
-        self.set_estado("🧬 Extrayendo ADN visual (rasgos exactos)...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🧬 Extrayendo ADN visual (rasgos exactos)...", "#f39c12")
+        self.app.toggle_botones(False)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🧬 ADN visual — Extracción")
         vent.geometry("720x580")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🧬 Extracción de ADN visual",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
@@ -956,7 +964,7 @@ class ToolsCreativeMixin:
         img_preview = ctk.CTkLabel(prev_frame, text="")
         img_preview.pack(padx=10, pady=(0, 4))
         try:
-            img_copy = self.imagen_cargada.copy()
+            img_copy = self.app.imagen_cargada.copy()
             img_copy.thumbnail((160, 120))
             img_tk = ctk.CTkImage(img_copy, size=(img_copy.width, img_copy.height))
             img_preview.configure(image=img_tk)
@@ -976,11 +984,11 @@ class ToolsCreativeMixin:
 
         def _trabajar():
             try:
-                self.after(0, lambda: _actualizar_progreso(0.1, "🔍 Describiendo imagen..."))
-                def on_status(msg): self.after(0, lambda m=msg: _actualizar_progreso(0.2, m))
-                desc, motor = self.vision.describir(self.imagen_cargada, "imagen", on_status)
+                self.app.after(0, lambda: _actualizar_progreso(0.1, "🔍 Describiendo imagen..."))
+                def on_status(msg): self.app.after(0, lambda m=msg: _actualizar_progreso(0.2, m))
+                desc, motor = self.app.vision.describir(self.app.imagen_cargada, "imagen", on_status)
 
-                self.after(0, lambda: _actualizar_progreso(0.5, "🧬 Extrayendo rasgos visuales..."))
+                self.app.after(0, lambda: _actualizar_progreso(0.5, "🧬 Extrayendo rasgos visuales..."))
                 peticion = (
                     f"De esta descripción visual de una imagen, EXTRAE el ADN visual: rasgos físicos EXACTOS y constantes que deben mantenerse en cualquier variante futura.\n\n"
                     f"DESCRIPCIÓN VISUAL:\n{desc}\n\n"
@@ -992,25 +1000,25 @@ class ToolsCreativeMixin:
                     f"DETALLES CLAVE: [3-5 elementos que NO deben cambiar nunca]\n\n"
                     f"Sé MUY específico. 'pelo plateado plata-azulado' es mejor que 'pelo gris'. 'ojos verdes esmeralda con manchas doradas' es mejor que 'ojos verdes'."
                 )
-                adn = self.deepseek.generar(peticion, temperature=0.2, max_tokens=800)
+                adn = self.app.deepseek.generar(peticion, temperature=0.2, max_tokens=800)
                 adn = limpiar_marcadores(adn).strip()
-                self._anclaje_visual = adn
-                if hasattr(self, "_actualizar_indicador_adn"):
-                    self.after(0, self._actualizar_indicador_adn)
-                self.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
+                self.app._anclaje_visual = adn
+                if hasattr(self.app, "_actualizar_indicador_adn"):
+                    self.app.after(0, self.app._actualizar_indicador_adn)
+                self.app.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
 
                 def _mostrar():
                     prog_bar.pack_forget()
                     lbl_estado.pack_forget()
                     prev_frame.pack_forget()
 
-                    vent2 = GPromptWindow(self)
+                    vent2 = GPromptWindow(self.app)
                     vent2.title("🧬 ADN visual extraído")
                     vent2.geometry("700x500")
-                    vent2.transient(self)
+                    vent2.transient(self.app)
                     ctk.CTkLabel(vent2, text="🧬 ADN visual — Rasgos inmutables",
                                  font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    estado_activo = "🟢 ACTIVO" if self._anclaje_visual else "⚪ Inactivo"
+                    estado_activo = "🟢 ACTIVO" if self.app._anclaje_visual else "⚪ Inactivo"
                     ctk.CTkLabel(vent2, text=f"Vision: {motor}  ·  Estado: {estado_activo}",
                                   font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -1022,25 +1030,25 @@ class ToolsCreativeMixin:
                     btn_frame.pack(pady=10)
 
                     def _guardar_editado():
-                        self._anclaje_visual = txt.get("1.0", "end").strip()
-                        if hasattr(self, "_actualizar_indicador_adn"):
-                            self._actualizar_indicador_adn()
+                        self.app._anclaje_visual = txt.get("1.0", "end").strip()
+                        if hasattr(self.app, "_actualizar_indicador_adn"):
+                            self.app._actualizar_indicador_adn()
                         vent2.destroy()
-                        self.set_estado("🧬 ADN visual guardado y activo en próximas generaciones", "#2ecc71")
+                        self.app.set_estado("🧬 ADN visual guardado y activo en próximas generaciones", "#2ecc71")
 
                     def _desactivar():
-                        self._anclaje_visual = None
-                        if hasattr(self, "_actualizar_indicador_adn"):
-                            self._actualizar_indicador_adn()
+                        self.app._anclaje_visual = None
+                        if hasattr(self.app, "_actualizar_indicador_adn"):
+                            self.app._actualizar_indicador_adn()
                         vent2.destroy()
-                        self.set_estado("🧬 ADN visual desactivado")
+                        self.app.set_estado("🧬 ADN visual desactivado")
 
                     def _guardar_biblioteca():
                         # Persiste el ADN-texto en preferencias bajo
                         # `adns_guardados` con marcador texto_libre, para que
                         # la biblioteca pueda renderizarlo.
                         from tkinter import simpledialog
-                        prefs_b = self.store.cargar_preferencias()
+                        prefs_b = self.app.store.cargar_preferencias()
                         adns_b = prefs_b.get("adns_guardados", []) or []
                         if not isinstance(adns_b, list):
                             adns_b = []
@@ -1061,8 +1069,8 @@ class ToolsCreativeMixin:
                             "fecha": datetime.datetime.now().strftime("%Y-%m-%d"),
                         })
                         prefs_b["adns_guardados"] = adns_b
-                        self.store.guardar_preferencias(prefs_b)
-                        self.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
+                        self.app.store.guardar_preferencias(prefs_b)
+                        self.app.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="✅ Guardar y activar", width=150, height=30, fg_color="#1a7a3c",
                                   command=_guardar_editado).pack(side="left", padx=4)
@@ -1070,20 +1078,20 @@ class ToolsCreativeMixin:
                                   command=_guardar_biblioteca).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="📚 Ver biblioteca", width=130, height=30,
                                   fg_color="#6a4a8a", hover_color="#503870",
-                                  command=self.adn.cmd_ver_biblioteca
+                                  command=self.app.adn.cmd_ver_biblioteca
                                   ).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="🚫 Desactivar", width=100, height=30, fg_color="#5a1a1a",
                                   command=_desactivar).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text="📋 Copiar", width=80, height=30,
                                   command=lambda: pyperclip.copy(adn)).pack(side="left", padx=4)
 
-                    self.toggle_botones(True)
-                    self.set_estado("🧬 ADN visual extraído — guarda para activarlo", "#2ecc71")
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app.set_estado("🧬 ADN visual extraído — guarda para activarlo", "#2ecc71")
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda: prog_bar.pack_forget())
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda: prog_bar.pack_forget())
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
                       font=ctk.CTkFont(size=12, weight="bold"),
@@ -1094,19 +1102,19 @@ class ToolsCreativeMixin:
         """Genera variantes manteniendo el ADN visual como rasgos fijos."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        if not getattr(self, '_anclaje_visual', None):
-            self.set_estado("⚠️ Primero extrae el ADN visual con 🧬 ADN.", "#e67e22")
+        if not getattr(self.app, '_anclaje_visual', None):
+            self.app.set_estado("⚠️ Primero extrae el ADN visual con 🧬 ADN.", "#e67e22")
             return
-        idea = self.txt_idea.get("1.0", "end").strip()
+        idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            self.set_estado("⚠️ Escribe una idea base (qué quieres variar).", "#e67e22")
+            self.app.set_estado("⚠️ Escribe una idea base (qué quieres variar).", "#e67e22")
             return
 
         # Ventana selección
-        sel = GPromptWindow(self)
+        sel = GPromptWindow(self.app)
         sel.title("🧬 Variar con ADN")
         sel.geometry("520x520")
-        sel.transient(self)
+        sel.transient(self.app)
         ctk.CTkLabel(sel, text="🧬 Variar con ADN visual", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel, text="El sujeto mantendrá sus rasgos exactos. Solo cambia el contexto:",
                      font=ctk.CTkFont(size=11), text_color=c["muted_text"]).pack(pady=(0, 12))
@@ -1152,15 +1160,15 @@ class ToolsCreativeMixin:
 
     def _generar_variantes_con_anclaje(self, idea, elemento, extra, cantidad):
         """Worker para generar N variantes manteniendo ADN."""
-        self.set_estado(f"🧬 Generando {cantidad} variantes con ADN anclado...", "#f39c12")
-        self.toggle_botones(False)
-        adn = self._anclaje_visual
-        modo = self.modo_var.get()
+        self.app.set_estado(f"🧬 Generando {cantidad} variantes con ADN anclado...", "#f39c12")
+        self.app.toggle_botones(False)
+        adn = self.app._anclaje_visual
+        modo = self.app.modo_var.get()
         resultados = []
 
         def _generar_una(num):
             try:
-                specs = self.get_current_model_specs()
+                specs = self.app.get_current_model_specs()
                 has_neg = specs.get("has_negative", True) if specs else True
                 is_natural = specs.get("is_natural", False) if specs else False
                 fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos"
@@ -1179,45 +1187,45 @@ class ToolsCreativeMixin:
                     f"- {neg_str}\n\n"
                     f"FORMATO:\nPOSITIVE PROMPT: [prompt completo con ADN intacto]\nNEGATIVE PROMPT: [si aplica]\n"
                 )
-                resp = self.deepseek.generar(peticion, temperature=0.7, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 if not has_neg:
                     import re
                     resp = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', resp, flags=re.DOTALL | re.IGNORECASE).strip()
                 resultados.append(resp)
-                self.guardar_en_historial(resp)
+                self.app.guardar_en_historial(resp)
             except Exception as e:
                 resultados.append(f"❌ Error en variante {num}: {e}")
 
         def _worker_all():
             for i in range(1, cantidad + 1):
                 _generar_una(i)
-                self.after(0, lambda i=i: self.set_estado(f"🧬 Variante {i}/{cantidad} lista", "#3498db"))
+                self.app.after(0, lambda i=i: self.app.set_estado(f"🧬 Variante {i}/{cantidad} lista", "#3498db"))
             def _mostrar():
-                self._abrir_comparador(resultados)
-                self.set_estado(f"🧬 {len(resultados)} variantes con ADN listas", "#2ecc71")
-                self.toggle_botones(True)
-                self._sonar_completado()
-            self.after(0, _mostrar)
+                self.app._abrir_comparador(resultados)
+                self.app.set_estado(f"🧬 {len(resultados)} variantes con ADN listas", "#2ecc71")
+                self.app.toggle_botones(True)
+                self.app._sonar_completado()
+            self.app.after(0, _mostrar)
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
     def _cmd_comparar_consistencia(self):
         """Compara dos prompts e indica qué difiere y qué coincide."""
-        actual = self.txt_salida.get("1.0", "end").strip()
+        actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.set_estado("⚠️ Necesitas un prompt en el resultado.", "#e67e22")
+            return self.app.set_estado("⚠️ Necesitas un prompt en el resultado.", "#e67e22")
 
         # Pedir el segundo prompt
         from tkinter import simpledialog
         otro = simpledialog.askstring("🔍 Comparar consistencia",
                                         "Pega aquí el otro prompt a comparar (el actual es el del resultado):",
-                                        parent=self)
+                                        parent=self.app)
         if not otro or len(otro) < 20:
-            return self.set_estado("⚠️ Pega un prompt válido para comparar.", "#e67e22")
+            return self.app.set_estado("⚠️ Pega un prompt válido para comparar.", "#e67e22")
 
-        self.set_estado("🔍 Analizando consistencia entre prompts...", "#f39c12")
-        self.toggle_botones(False)
+        self.app.set_estado("🔍 Analizando consistencia entre prompts...", "#f39c12")
+        self.app.toggle_botones(False)
 
         peticion = (
             f"Compara estos dos prompts y analiza la CONSISTENCIA entre ellos.\n\n"
@@ -1237,14 +1245,14 @@ class ToolsCreativeMixin:
 
         def _worker():
             try:
-                resp = self.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
+                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
 
                 def _mostrar():
-                    vent = GPromptWindow(self)
+                    vent = GPromptWindow(self.app)
                     vent.title("🔍 Análisis de consistencia")
                     vent.geometry("700x550")
-                    vent.transient(self)
+                    vent.transient(self.app)
                     ctk.CTkLabel(vent, text="🔍 Consistencia entre prompts", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
@@ -1252,12 +1260,12 @@ class ToolsCreativeMixin:
                     txt.configure(state="disabled")
                     ctk.CTkButton(vent, text="📋 Copiar", width=100, height=28,
                                   command=lambda: pyperclip.copy(resp)).pack(pady=10)
-                    self.toggle_botones(True)
-                    self.set_estado("🔍 Consistencia analizada", "#2ecc71")
-                self.after(0, _mostrar)
+                    self.app.toggle_botones(True)
+                    self.app.set_estado("🔍 Consistencia analizada", "#2ecc71")
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.after(0, lambda: self.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1266,15 +1274,15 @@ class ToolsCreativeMixin:
 
         v1.1: búsqueda/filtrar, guardar preset, mostrar activos, tabs por categoría.
         """
-        if not self._debe_mostrar_negatives():
-            return self.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
+        if not self.app._debe_mostrar_negatives():
+            return self.app.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🧰 Constructor de NEGATIVE")
         vent.geometry("700x720")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🧰 Constructor de NEGATIVE", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
         lbl_activos = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=9), text_color="#2ecc71")
@@ -1399,7 +1407,7 @@ class ToolsCreativeMixin:
         def _cargar_presets() -> list:
             """Lee los presets persistidos desde preferencias.json."""
             try:
-                prefs = self.store.cargar_preferencias() or {}
+                prefs = self.app.store.cargar_preferencias() or {}
                 return list(prefs.get("negative_presets", []))
             except Exception as e:
                 logger.debug(f"_cargar_presets: {e}")
@@ -1407,16 +1415,16 @@ class ToolsCreativeMixin:
 
         def _persistir_presets(presets: list) -> None:
             try:
-                prefs = self.store.cargar_preferencias() or {}
+                prefs = self.app.store.cargar_preferencias() or {}
                 prefs["negative_presets"] = presets
-                self.store.guardar_preferencias(prefs)
+                self.app.store.guardar_preferencias(prefs)
             except Exception as e:
                 logger.warning(f"_persistir_presets falló: {e}")
 
         def _guardar_preset():
             activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
             if not activos:
-                return self.set_estado("⚠️ Marca elementos antes de guardar preset.", "#e67e22")
+                return self.app.set_estado("⚠️ Marca elementos antes de guardar preset.", "#e67e22")
             # Pedir nombre al usuario
             from tkinter import simpledialog
             presets = _cargar_presets()
@@ -1439,13 +1447,13 @@ class ToolsCreativeMixin:
                 presets = [p for p in presets if p.get("nombre") != nombre]
             presets.append({"nombre": nombre, "items": activos})
             _persistir_presets(presets)
-            self.set_estado(f"💾 Preset '{nombre}' guardado ({len(activos)} items)", "#2ecc71")
+            self.app.set_estado(f"💾 Preset '{nombre}' guardado ({len(activos)} items)", "#2ecc71")
             _actualizar_lbl()
 
         def _mostrar_presets():
             presets = _cargar_presets()
             if not presets:
-                self.set_estado("⚠️ No hay presets guardados todavía.", "#e67e22")
+                self.app.set_estado("⚠️ No hay presets guardados todavía.", "#e67e22")
                 return
             win = GPromptWindow(vent)
             win.title("💾 Presets de NEGATIVE")
@@ -1533,23 +1541,23 @@ class ToolsCreativeMixin:
         def _aplicar():
             tags_sel = _tags_seleccionados()
             if not tags_sel:
-                return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+                return self.app.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
             negativo = ", ".join(tags_sel)
-            pos = self.extraer_positive()
+            pos = self.app.extraer_positive()
             if pos:
-                self.actualizar_salida(f"POSITIVE PROMPT: {pos}\nNEGATIVE PROMPT: {negativo}")
-                self.set_estado(f"🧰 NEGATIVE construido ({len(tags_sel)} items)", "#2ecc71")
+                self.app.actualizar_salida(f"POSITIVE PROMPT: {pos}\nNEGATIVE PROMPT: {negativo}")
+                self.app.set_estado(f"🧰 NEGATIVE construido ({len(tags_sel)} items)", "#2ecc71")
             else:
                 pyperclip.copy(negativo)
-                self.set_estado(f"🧰 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
+                self.app.set_estado(f"🧰 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
 
         def _copiar():
             tags_sel = _tags_seleccionados()
             if not tags_sel:
-                return self.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+                return self.app.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
             pyperclip.copy(", ".join(tags_sel))
-            self.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
+            self.app.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
 
         ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=30, fg_color="#1a7a3c",
@@ -1564,16 +1572,16 @@ class ToolsCreativeMixin:
         v1.1: copia color individual, genera complementarios/analogos,
         guarda paleta, muestra valores RGB/HSL.
         """
-        if not self.imagen_cargada:
-            return self.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
+        if not self.app.imagen_cargada:
+            return self.app.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
 
-        self.set_estado("🎨 Extrayendo paleta de colores...", "#f39c12")
+        self.app.set_estado("🎨 Extrayendo paleta de colores...", "#f39c12")
 
         def _worker():
             try:
 
 
-                img = self.imagen_cargada.copy()
+                img = self.app.imagen_cargada.copy()
                 img.thumbnail((200, 200))
                 img = img.convert("RGB")
 
@@ -1624,10 +1632,10 @@ class ToolsCreativeMixin:
                     return results
 
                 def _mostrar():
-                    vent = GPromptWindow(self)
+                    vent = GPromptWindow(self.app)
                     vent.title("🎨 Paleta de colores extraída")
                     vent.geometry("580x600")
-                    vent.transient(self)
+                    vent.transient(self.app)
                     ctk.CTkLabel(vent, text="🎨 Paleta extraída de la imagen",
                                  font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 4))
                     ctk.CTkLabel(vent, text="Haz clic en un color para copiarlo. Añade al prompt para aplicar la paleta.",
@@ -1647,7 +1655,7 @@ class ToolsCreativeMixin:
 
                         def _copy_color(h=hex_c):
                             pyperclip.copy(h)
-                            self.set_estado(f"📋 {h} copiado", "#2ecc71")
+                            self.app.set_estado(f"📋 {h} copiado", "#2ecc71")
 
                         def _on_enter(e, f, orig):
                             f.configure(border_color="#ffffff", border_width=2)
@@ -1710,7 +1718,7 @@ class ToolsCreativeMixin:
                         ctk.CTkLabel(f2, text=lab, font=ctk.CTkFont(size=8),
                                      text_color="white" if sum(int(col[i*2+1:i*2+3], 16) for i in range(3))/3 < 128 else "black",
                                      fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
-                        f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.set_estado(f"📋 {h} copiado", "#2ecc71")))
+                        f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.app.set_estado(f"📋 {h} copiado", "#2ecc71")))
 
                     btn_row = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_row.pack(pady=10)
@@ -1722,7 +1730,7 @@ class ToolsCreativeMixin:
                         nombre = simpledialog.askstring(
                             "Guardar paleta",
                             "Nombre de la paleta:",
-                            initialvalue=f"Paleta {len(self.store.paletas or []) + 1}",
+                            initialvalue=f"Paleta {len(self.app.store.paletas or []) + 1}",
                             parent=vent,
                         )
                         if not nombre:
@@ -1733,24 +1741,24 @@ class ToolsCreativeMixin:
                             "rgb": [list(c) for c in colores_raw[:5]],
                             "timestamp": str(datetime.datetime.now())[:19],
                         }
-                        self.store.paletas.append(paleta)
-                        self.store._guardar("paletas")  # FIX: era store.guardar() inexistente
-                        self.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
+                        self.app.store.paletas.append(paleta)
+                        self.app.store._guardar("paletas")  # FIX: era store.guardar() inexistente
+                        self.app.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
 
                     ctk.CTkButton(btn_row, text="📋 Copiar HEX", width=120, height=28,
                                   command=lambda: pyperclip.copy(hex_str)).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text="🎨 Añadir al prompt", width=140, height=28, fg_color="#1a7a3c",
-                                  command=lambda: (self._aplicar_atajo_tags(f"color palette: {hex_str}"),
+                                  command=lambda: (self.app._aplicar_atajo_tags(f"color palette: {hex_str}"),
                                                     vent.destroy())).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text="💾 Guardar paleta", width=130, height=28, fg_color="#4a1a6a",
                                   command=_guardar_paleta).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text="📚 Biblioteca", width=110, height=28, fg_color="#1a4a5a",
                                   command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
 
-                    self.set_estado("🎨 Paleta extraída", "#2ecc71")
-                self.after(0, _mostrar)
+                    self.app.set_estado("🎨 Paleta extraída", "#2ecc71")
+                self.app.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1781,7 +1789,7 @@ class ToolsCreativeMixin:
         def _refrescar():
             for w in scroll.winfo_children():
                 w.destroy()
-            paletas = self.store.paletas or []
+            paletas = self.app.store.paletas or []
             cont_var.set(f"{len(paletas)} paletas guardadas")
             if not paletas:
                 ctk.CTkLabel(scroll, text="No hay paletas guardadas todavía.\n"
@@ -1807,13 +1815,13 @@ class ToolsCreativeMixin:
 
                 def _aplicar(pal=p):
                     hex_str = ", ".join(pal.get("hex", []))
-                    self._aplicar_atajo_tags(f"color palette: {hex_str}")
-                    self.set_estado(f"🎨 Paleta '{pal.get('nombre','')}' añadida al prompt",
+                    self.app._aplicar_atajo_tags(f"color palette: {hex_str}")
+                    self.app.set_estado(f"🎨 Paleta '{pal.get('nombre','')}' añadida al prompt",
                                     "#2ecc71")
 
                 def _copiar(pal=p):
                     pyperclip.copy(", ".join(pal.get("hex", [])))
-                    self.set_estado(f"📋 Hex de '{pal.get('nombre','')}' copiados",
+                    self.app.set_estado(f"📋 Hex de '{pal.get('nombre','')}' copiados",
                                     "#2ecc71")
 
                 def _borrar(i=idx, nombre=p.get("nombre", "?")):
@@ -1823,8 +1831,8 @@ class ToolsCreativeMixin:
                                         parent=win):
                         return
                     try:
-                        self.store.paletas.pop(i)
-                        self.store._guardar("paletas")
+                        self.app.store.paletas.pop(i)
+                        self.app.store._guardar("paletas")
                         _refrescar()
                     except Exception as e:
                         logger.warning(f"Borrar paleta: {e}")
@@ -1858,7 +1866,7 @@ class ToolsCreativeMixin:
                     # Click para copiar el color individual
                     def _cp_color(h=hex_c):
                         pyperclip.copy(h)
-                        self.set_estado(f"📋 {h} copiado", "#2ecc71")
+                        self.app.set_estado(f"📋 {h} copiado", "#2ecc71")
                     f.bind("<Button-1>", lambda _e, h=hex_c: _cp_color(h))
 
         _refrescar()
