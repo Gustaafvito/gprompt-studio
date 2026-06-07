@@ -533,10 +533,15 @@ class UiFooterService:
             return None  # LoRAs son cosa de imagen mayormente
         modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, "combo_modelo_imagen") else ""
         modelo_l = modelo.lower()
-        f = familia_lora.lower()
+        # Normalizar familia del LoRA: "Z Image" → "z image", quitar guiones.
+        f = familia_lora.lower().replace("-", " ").replace("_", " ").strip()
         # Detectar familia del modelo (más casos)
         modelo_familia = None
-        if "flux" in modelo_l: modelo_familia = "flux"
+        # Z-Image PRIMERO porque "z-image" no contiene flux/sdxl/etc.
+        # Cubre: "Z-Image-Base", "Z Image Turbo", "z_image", etc.
+        if "z-image" in modelo_l or "z image" in modelo_l or "z_image" in modelo_l:
+            modelo_familia = "z image"
+        elif "flux" in modelo_l: modelo_familia = "flux"
         elif "sd3.5" in modelo_l or "sd 3.5" in modelo_l: modelo_familia = "sd3.5"
         elif "pony" in modelo_l: modelo_familia = "pony"
         elif "illustrious" in modelo_l or "noob" in modelo_l or "wai " in modelo_l: modelo_familia = "illustrious"
