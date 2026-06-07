@@ -33,7 +33,7 @@ class ToolsAnalysisService:
         en las entradas que mapean a funciones reales de la app.
         """
         from modules.glosario import abrir_glosario
-        abrir_glosario(self)
+        abrir_glosario(self.app)
 
     def _cmd_critica_historial(self) -> None:
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""

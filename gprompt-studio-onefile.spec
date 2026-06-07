@@ -21,6 +21,9 @@ block_cipher = None
 # IMPORTANTE: misma lista que el spec onedir — mantener en sync.
 datas = [
     ('data',          'data'),
+    # Plantillas predefinidas (faltaba — _cmd_plantillas_populares
+    # leía config/plantillas_default.json y devolvía [] en el .exe).
+    ('config',        'config'),
     *collect_data_files('customtkinter'),
     *collect_data_files('PIL'),
     ('README.md',     '.'),

@@ -215,9 +215,20 @@ class CoreMixin:
                 self._focus_exit_btn.destroy()
                 self._focus_exit_btn = None
 
-            # Restaurar widgets en el mismo orden con after= encadenado
-            # Header va primero (antes de frame_entrada), luego cada uno after el anterior
-            prev = None
+            # Restaurar widgets respetando el orden original.
+            #
+            # Fix sesión 15: el código previo usaba pack(after=prev) en
+            # cadena, pero como los frames ocultos van TODOS antes de
+            # frame_entrada, esto rompía el orden y dejaba un hueco
+            # negro arriba (el primer widget iba `before=ancla` y los
+            # demás `after=prev` → al final pasaban a estar detrás de
+            # frame_entrada en el pack stack, dejando vacío el espacio
+            # superior).
+            #
+            # Estrategia robusta: usar pack(before=frame_entrada) para
+            # TODOS los widgets, en orden. Tk respeta el orden de
+            # `pack(before=X)` y los apila justo antes de X manteniendo
+            # el orden de las llamadas.
             ancla = getattr(self, 'frame_entrada', None)
             for attr, info in self._focus_pack_order:
                 widget = getattr(self, attr, None)
@@ -227,24 +238,25 @@ class CoreMixin:
                     info.pop('in', None)
                     info.pop('before', None)
                     info.pop('after', None)
-                    if prev is not None:
-                        widget.pack(after=prev, **info)
-                    elif ancla:
+                    if ancla:
                         widget.pack(before=ancla, **info)
                     else:
                         widget.pack(**info)
-                    prev = widget
                 except Exception:
                     try:
                         if ancla:
                             widget.pack(before=ancla, fill="x", padx=16, pady=2)
                         else:
                             widget.pack(fill="x", padx=16, pady=2)
-                        prev = widget
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             self._focus_pack_order = []
             self._modo_focus_activo = False
+            # Forzar recálculo del layout para que se vea de inmediato
+            try:
+                self.update_idletasks()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
 
             # Repintar colores del tema
             try:

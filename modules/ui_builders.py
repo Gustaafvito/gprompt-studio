@@ -245,7 +245,7 @@ class UIBuildersService:
             ("📚 Aprender", "#2e8a9e", [
                 ("ℹ️  Acerca de G-Prompt", self.app.dialogs.cmd_acerca_de),
                 ("⌨️  Atajos teclado", self.app.atajos.cmd_mostrar_atajos),
-                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
+                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
                 ("📖  Modo educativo", self.app.analysis.cmd_modo_educativo),
                 ("📚  Tutorial completo", self.app.atajos.abrir_tutorial),
             ]),
