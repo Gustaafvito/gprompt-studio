@@ -936,7 +936,7 @@ class ToolsAnalysisService:
 
         seed = {
             "nombre": nombre,
-            "estilos": list(self.app.estilos_seleccionados()),
+            "estilos": list(self.app.footer.estilos_seleccionados()),
             "plataforma": self.app.plataforma_var.get() if hasattr(self.app, 'plataforma_var') else "",
             "modelo_img": self.app.modelo_img_var.get() if hasattr(self.app, 'modelo_img_var') else "",
             "modelo_vid": self.app.modelo_vid_var.get() if hasattr(self.app, 'modelo_vid_var') else "",

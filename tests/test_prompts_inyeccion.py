@@ -29,6 +29,7 @@ def _host(**attrs):
     app = SimpleNamespace()
     for k, v in attrs.items():
         setattr(app, k, v)
+    app.footer = app  # shortcut para tests A1 fase 2 (UiFooter)
     return PromptsInyeccionService(app)
 
 

@@ -91,7 +91,7 @@ class UiEventsService:
             self.app.switch_nsfw.pack(side="right", padx=20)
             self.app.btn_vision.configure(text="👁 Analizar", state="normal")
             self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
-            self.app._construir_checkboxes(ESTILOS_VIDEO)
+            self.app.footer._construir_checkboxes(ESTILOS_VIDEO)
             self._actualizar_motores_video()
 
         elif modo == "audio":
@@ -106,7 +106,7 @@ class UiEventsService:
             self.app.switch_nsfw.pack_forget()
             self.app.btn_vision.configure(text="👁 (no aplica)", state="disabled")
             self.app.btn_img_prompt.configure(text="🎯 (no aplica)", state="disabled")
-            self.app._construir_checkboxes(ESTILOS_AUDIO)
+            self.app.footer._construir_checkboxes(ESTILOS_AUDIO)
             self._on_motor_audio_cambio()
 
         else:
@@ -123,7 +123,7 @@ class UiEventsService:
             self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
             self.app.combo_ratio.set("1:1")
             self.app.ratio_var.set("1:1")
-            self.app._construir_checkboxes(ESTILOS_IMAGEN)
+            self.app.footer._construir_checkboxes(ESTILOS_IMAGEN)
             self._on_modelo_imagen_cambio()
 
         try:
@@ -269,7 +269,7 @@ class UiEventsService:
         try: self.app._sesion_log(f"🎨 Cambió modelo imagen → {modelo_name}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        try: self.app._actualizar_lora_trigger_visible()
+        try: self.app.footer._actualizar_lora_trigger_visible()
         except Exception as e:
             logger.debug(f"[silent] {e}")
         try: self.app._actualizar_tokens()
@@ -338,7 +338,7 @@ class UiEventsService:
         try: self.app._actualizar_tokens()
         except: pass
         try:
-            self.app.after(500, lambda: self.app._recomendar_loras_para_modelo(modelo_name))
+            self.app.after(500, lambda: self.app.footer._recomendar_loras_para_modelo(modelo_name))
         except Exception as e:
             logger.debug(f"[silent] {e}")
 

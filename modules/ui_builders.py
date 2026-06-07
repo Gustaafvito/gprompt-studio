@@ -905,7 +905,7 @@ class UIBuildersService:
         self.app.combo_personaje = ctk.CTkComboBox(self.app.frame_pers_lora, values=["— Sin personaje —"], width=160,
                                                 fg_color=c["combo_bg"], border_color=c["combo_border"],
                                                 text_color=c["hdr_text"],
-                                                command=self.app._on_personaje_selected)
+                                                command=self.app.footer._on_personaje_selected)
         self.app.combo_personaje.pack(side="left", padx=5)
 
         ctk.CTkLabel(self.app.frame_pers_lora, text="🔗 LoRA:",
@@ -917,7 +917,7 @@ class UIBuildersService:
                                             text_color=c["hdr_text"],
                                             command=lambda v: (
                                                 self.app._sesion_log(f"🔗 LoRA → {v}") if hasattr(self.app, "_sesion_eventos") else None,
-                                                self.app._actualizar_lora_trigger_visible()
+                                                self.app.footer._actualizar_lora_trigger_visible()
                                             ))
         self.app.combo_lora.pack(side="left", padx=5)
         # Label trigger visible (Mejora bonus LoRAs)
@@ -1036,7 +1036,7 @@ class UIBuildersService:
 
         self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text="🔍 Buscar estilo...", width=180, height=24, font=ctk.CTkFont(size=11))
         self.app.entry_busqueda.pack(side="left")
-        self.app.entry_busqueda.bind("<KeyRelease>", self.app._filtrar_estilos)
+        self.app.entry_busqueda.bind("<KeyRelease>", self.app.footer._filtrar_estilos)
 
         btn_sugerir = ctk.CTkButton(header_estilos, text="🎨 Sugerir estilos", width=130, height=24,
                                        fg_color="#3a1a5a", hover_color="#2a0f3a",
@@ -1081,7 +1081,7 @@ class UIBuildersService:
                                              anchor="w", justify="left")
         self.app.lbl_estilos_sel.pack(fill="x", padx=8, pady=(0, 4))
 
-        self.app._construir_checkboxes(ESTILOS_IMAGEN)
+        self.app.footer._construir_checkboxes(ESTILOS_IMAGEN)
 
     def _limpiar_estilos(self):
         """Desmarca todos los estilos seleccionados."""
@@ -1096,7 +1096,7 @@ class UIBuildersService:
         if not hasattr(self.app, 'lbl_estilos_count') or not hasattr(self.app, 'estilo_checks'): return
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
-        sel = self.app.estilos_seleccionados()
+        sel = self.app.footer.estilos_seleccionados()
         n = len(sel)
         if n == 0:
             self.app.lbl_estilos_count.configure(text="(ninguno)", text_color=c["muted_text"])
@@ -1125,7 +1125,7 @@ class UIBuildersService:
                       fg_color="#dc2626" if is_light else "#444",
                       hover_color="#b91c1c" if is_light else "#222",
                       text_color="#ffffff",
-                      command=self.app._limpiar_negatives).pack(side="right", padx=4)
+                      command=self.app.footer._limpiar_negatives).pack(side="right", padx=4)
 
         self.app._frame_neg_presets = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app._frame_neg_presets.pack(fill="x", pady=(2, 4))
@@ -1140,7 +1140,7 @@ class UIBuildersService:
                 self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
                 activo = self.app.preset_vars[n].get()
                 self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
-                self.app._rebuild_negative_text()
+                self.app.footer._rebuild_negative_text()
 
             btn = ctk.CTkButton(frame_presets, text=nombre_p, height=24, width=100,
                                 fg_color=fg, hover_color=hv, text_color="#ffffff",
@@ -1150,7 +1150,7 @@ class UIBuildersService:
 
         self.app.txt_negative = ctk.CTkTextbox(parent, height=36, font=ctk.CTkFont(size=12))
         self.app.txt_negative.pack(fill="x")
-        self.app.txt_negative.bind("<KeyRelease>", self.app._validar_negative_length)
+        self.app.txt_negative.bind("<KeyRelease>", self.app.footer._validar_negative_length)
         self.app.txt_negative.bind("<FocusOut>", lambda e: self.app.reiniciar_memoria())
 
         # Warning de límite negative
@@ -1166,7 +1166,7 @@ class UIBuildersService:
         self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
         activo = self.app.preset_vars[n].get()
         self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
-        self.app._rebuild_negative_text()
+        self.app.footer._rebuild_negative_text()
 
     def _build_imagen_ref(self):
         # Frame placeholder (los widgets reales están dentro de la tab "Ajustes Extra")
@@ -1225,7 +1225,7 @@ class UIBuildersService:
         # Bind para autocompletar
         self.app.txt_idea.bind("<KeyRelease>", self._on_idea_keyrelease)
         # Menú contextual click derecho (Cortar/Copiar/Pegar/Seleccionar todo)
-        self.app.txt_idea.bind("<Button-3>", self.app._mostrar_menu_contextual_idea)
+        self.app.txt_idea.bind("<Button-3>", self.app.footer._mostrar_menu_contextual_idea)
 
         # Barra visual de chars
         self.app.chars_bar_frame = ctk.CTkFrame(self.app.frame_entrada, fg_color="#d1d5db" if is_light else "#0a0a14", height=4, corner_radius=2)
@@ -1485,7 +1485,7 @@ class UIBuildersService:
         self.app.btn_img_prompt = self.app.action_btns[10]
 
         # Registrar callback para actualizar coste cuando cambie la idea
-        self.app.txt_idea.bind("<<Modified>>", self.app._actualizar_coste_estimado)
+        self.app.txt_idea.bind("<<Modified>>", self.app.footer._actualizar_coste_estimado)
 
         row2 = ctk.CTkFrame(outer, fg_color="transparent")
         row2.pack(fill="x")
@@ -1592,7 +1592,7 @@ class UIBuildersService:
             pass
         self.app.txt_salida.bind("<KeyRelease>", self.app._on_salida_editada)
         self.app.txt_salida.bind("<Double-Button-1>", self.app._on_doble_click_salida)
-        self.app.txt_salida.bind("<Button-3>", self.app._mostrar_menu_contextual)
+        self.app.txt_salida.bind("<Button-3>", self.app.footer._mostrar_menu_contextual)
 
         # ── MEJORA 9 (inline): franja de compatibilidad rápida con plataformas top ──
         self.app.lbl_compat_inline = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=9),

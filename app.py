@@ -35,7 +35,6 @@ from modules import (
     CoreMixin,
     DialogsMixin,
     EventBus,
-    UiFooterMixin,
     install_components,
 )
 from persistence import DataStore
@@ -72,7 +71,7 @@ class ArquitectoApp(
     # RefinamientoMixin removido (A1 fase 2, sesión 14) → self.refinar.* (RefinamientoService)
     # DashboardMixin removido (A1 fase 2, sesión 11) → self.dashboard.cmd_abrir()
     # (DashboardService)
-    UiFooterMixin,
+    # UiFooterMixin removido (A1 fase 2, sesión 14) → self.footer.* (UiFooterService)
 ):
 
     def __init__(self):
@@ -223,7 +222,7 @@ class ArquitectoApp(
             logger.debug(f"[silent] {_e}")
         # ── Construir UI Organizada ───────────────────────────────
         self._build_author()
-        self._build_footer()
+        self.footer._build_footer()
 
         # Zona 1: Contexto Global
         self.ui._build_header()

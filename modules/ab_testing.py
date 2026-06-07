@@ -215,7 +215,7 @@ class AbTestingService:
                     "- Añade estilos y calidad profesional\n"
                     f"- Límite: {max_chars} caracteres\n"
                     f"- {neg_str}\n\n"
-                    f"Estilos activos: {self.app.estilos_texto()}\n\n"
+                    f"Estilos activos: {self.app.footer.estilos_texto()}\n\n"
                     "Responde SOLO con el prompt."
                 )
 
@@ -494,7 +494,7 @@ class AbTestingService:
                         f"MODELO: {modelo}\n"
                         f"FORTALEZAS: {best_for}\n\n"
                         f"IDEA: {idea}\n"
-                        f"ESTILOS A INCLUIR: {self.app.estilos_texto()}\n\n"
+                        f"ESTILOS A INCLUIR: {self.app.footer.estilos_texto()}\n\n"
                         "REGLAS ESTRICTAS:\n"
                         f"- Formato: {tipo_format}\n"
                         f"- Límite POSITIVE: {max_c} caracteres\n"

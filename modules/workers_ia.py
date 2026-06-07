@@ -130,7 +130,7 @@ class WorkersIaService:
 
     def _worker_prompt_traduccion(self, idea_original):
         idea = idea_original
-        if self.app.switch_traduccion_var.get() and self.app.detectar_idioma(idea_original):
+        if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_original):
             self.app.after(0, lambda: self.app.set_estado("🌐 Traduciendo al inglés...", "#f39c12"))
             idea = self.app.deepseek.traducir(idea_original)
             self.app.after(0, lambda: self.app.set_estado("🌐 Traducido...", "#3498db"))
@@ -172,7 +172,7 @@ class WorkersIaService:
             peticion = (
                 f"⚡ QUICK MODE: prompt rápido y directo para {modo}.\n"
                 f"IDEA: {idea}\n"
-                f"ESTILOS: {self.app.estilos_texto()}{ratio_str}{extras}\n"
+                f"ESTILOS: {self.app.footer.estilos_texto()}{ratio_str}{extras}\n"
                 f"{formato}\n"
                 f"{neg_rule}\n"
                 f"⛔ Máx {limite_chars} caracteres. Sé conciso, no añadas explicaciones."
@@ -244,7 +244,7 @@ class WorkersIaService:
             self.app.after(0, _poner_desc)
 
             idea_final = desc if not idea_manual else f"{desc}\n\nAdiciones: {idea_manual}"
-            if self.app.switch_traduccion_var.get() and self.app.detectar_idioma(idea_final):
+            if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_final):
                 idea_final = self.app.deepseek.traducir(idea_final)
 
             specs = self.app.get_current_model_specs()
@@ -276,7 +276,7 @@ class WorkersIaService:
                     f"4. El prompt debe representar UNA SOLA imagen (no un storyboard ni "
                     f"un grid), pero mantener la paleta/iluminación/personajes/estilo "
                     f"identificados en el paso 1.\n"
-                    f"Estilos extra del usuario: {self.app.estilos_texto()}.{formato}{regla_longitud}"
+                    f"Estilos extra del usuario: {self.app.footer.estilos_texto()}.{formato}{regla_longitud}"
                 ) + self.app.prompts.construir_modelo_info()
             elif tiene_prompt:
                 # MODO MEJORAR: analizar imagen + corregir prompt existente
@@ -290,13 +290,13 @@ class WorkersIaService:
                     f"para que el prompt reproduzca FIELMENTE lo que se ve en la imagen. "
                     f"MANTÉN la estructura y estilo del prompt original. {formato}\n"
                     f"⛔ Límite: {limite_chars} caracteres.\n"
-                    f"Estilos: {self.app.estilos_texto()}." + self.app.prompts.construir_modelo_info()
+                    f"Estilos: {self.app.footer.estilos_texto()}." + self.app.prompts.construir_modelo_info()
                 )
             else:
                 # MODO GENERAR: crear prompt nuevo desde imagen
                 formato = " FORMATO OBLIGATORIO: tags separados por comas con pesos (tag:1.2). NO prosa fluida." if es_tag_based else ""
                 regla_longitud = f" ⛔ REGLA ESTRICTA: El prompt FINAL no debe superar los {limite_chars} caracteres en total."
-                peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.app.estilos_texto()}.{formato}{regla_longitud}" + self.app.prompts.construir_modelo_info()
+                peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.app.footer.estilos_texto()}.{formato}{regla_longitud}" + self.app.prompts.construir_modelo_info()
 
             texto = self.app.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
             texto = limpiar_marcadores(texto)

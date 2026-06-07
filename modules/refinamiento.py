@@ -224,7 +224,7 @@ class RefinamientoService:
             return self.app.set_estado("⚠️ Genera un prompt primero para refinarlo.", "#e67e22")
 
         self.app._ocultar_ideas()
-        idea, pers, lora, modo = self.app.txt_idea.get("1.0", "end").strip(), self.app.personaje_activo(), self.app.lora_activo(), self.app.modo_var.get()
+        idea, pers, lora, modo = self.app.txt_idea.get("1.0", "end").strip(), self.app.footer.personaje_activo(), self.app.footer.lora_activo(), self.app.modo_var.get()
         try: self.app._sesion_log("🔁 Refinó prompt")
         except Exception as e:
             logger.debug(f"[silent] {e}")

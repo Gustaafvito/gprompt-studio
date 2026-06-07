@@ -208,7 +208,7 @@ class ToolsCreativeService:
                 peticion = (
                     f"Genera un prompt de {modo} basado en: {idea}\n"
                     f"Formato: {fmt}. Límite: {max_c} chars. {neg_str}\n"
-                    f"Estilos: {self.app.estilos_texto()}.\n"
+                    f"Estilos: {self.app.footer.estilos_texto()}.\n"
                     f"Responde SOLO con el prompt, sin explicaciones."
                 )
                 resp = self.app.deepseek.generar(peticion, temperature=temp, max_tokens=2000)
@@ -251,8 +251,8 @@ class ToolsCreativeService:
         if not self.app._debe_mostrar_negatives():
             return self.app.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
 
-        modelo = self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
-            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
+        modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
+            self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
         pos = self.app.extraer_positive() or self.app.txt_idea.get("1.0", "end").strip() or "imagen general"
 
         self.app.set_estado("🛡 Generando NEGATIVE óptimo para este modelo...", "#f39c12")
@@ -505,7 +505,7 @@ class ToolsCreativeService:
                     f"MODELO: {nombre_mod}\n"
                     f"FORTALEZAS: {best_for}\n\n"
                     f"IDEA: {idea}\n"
-                    f"ESTILOS A INCLUIR: {self.app.estilos_texto()}\n\n"
+                    f"ESTILOS A INCLUIR: {self.app.footer.estilos_texto()}\n\n"
                     f"REGLAS ESTRICTAS:\n"
                     f"- Formato: {fmt}\n"
                     f"- Límite POSITIVE: {max_c} caracteres\n"
@@ -583,8 +583,8 @@ class ToolsCreativeService:
         self.app.set_estado("🛡 Generando NEGATIVE optimizado...", "#f39c12")
         self.app.toggle_botones(False)
 
-        modelo = self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
-            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
+        modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
+            self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
 
         peticion = (
             f"Genera un NEGATIVE PROMPT optimizado para este modelo y contenido.\n\n"

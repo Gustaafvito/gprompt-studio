@@ -87,7 +87,7 @@ class MultiPromptService:
         peticion = (
             f"Genera UN MOODBOARD: {n} prompts que comparten el MISMO MOOD/atmósfera pero con SUJETOS distintos.\n\n"
             f"CONCEPTO/MOOD BASE: {idea}\n"
-            f"ESTILOS: {self.app.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.footer.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- Mantén la MISMA paleta, iluminación, atmósfera y estilo en TODOS los {n}.\n"
             f"- Cambia el SUJETO en cada uno (elige {n} categorías diversas: persona, "
@@ -321,7 +321,7 @@ class MultiPromptService:
         peticion = (
             f"Genera {n} SHOTS CINEMATOGRÁFICOS de la misma escena, manteniendo coherencia.\n\n"
             f"ESCENA: {idea}\n"
-            f"ESTILOS: {self.app.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.footer.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- MISMO sujeto, MISMA iluminación, MISMA paleta, MISMA atmósfera.\n"
             f"- Solo cambia el ENCUADRE/PLANO en cada uno.\n"
@@ -387,7 +387,7 @@ class MultiPromptService:
         peticion = (
             f"Genera un STORYBOARD DE {n} SHOTS para una secuencia de vídeo.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
-            f"ESTILOS: {self.app.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.footer.estilos_texto()}\n\n"
             f"REGLAS:\n"
             f"- Cuenta una microhistoria visual con {n} beats: apertura → "
             f"desarrollo → (intensidad creciente) → climax → cierre.\n"
@@ -529,7 +529,7 @@ class MultiPromptService:
             return self.app.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
         # Detectar formato del modelo actual (natural vs tag-based)
-        modelo = self.app.modelo_imagen_valido()
+        modelo = self.app.footer.modelo_imagen_valido()
         specs = get_image_model_specs(modelo) if modelo else None
         is_natural = bool(specs and specs.get("is_natural"))
         has_negative = bool(specs and specs.get("has_negative"))
@@ -594,7 +594,7 @@ class MultiPromptService:
             f"Genera un STORYBOARD DE {n} PANELES en formato {formato_etiqueta} "
             f"para el modelo {modelo_label}.\n\n"
             f"HISTORIA/ESCENA: {idea}\n"
-            f"ESTILOS: {self.app.estilos_texto()}\n\n"
+            f"ESTILOS: {self.app.footer.estilos_texto()}\n\n"
             f"REGLAS COMUNES:\n"
             f"- Cuenta una microhistoria visual con {n} momentos: apertura → "
             f"desarrollo → tensión → climax → resolución (distribuido según N).\n"

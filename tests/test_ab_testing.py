@@ -49,6 +49,7 @@ def _host(**overrides):
     defaults.update(overrides)
     for k, v in defaults.items():
         setattr(app, k, v)
+    app.footer = app  # shortcut para tests A1 fase 2 (UiFooter)
     return AbTestingService(app)
 
 

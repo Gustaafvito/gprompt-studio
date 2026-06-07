@@ -390,12 +390,12 @@ class PromptsInyeccionService:
         # Cacheo simple: si no cambió la config, devolver cache
         clave_cache = (
             self.app.modo_var.get(),
-            self.app.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else "",
-            self.app.modelo_video_valido() if self.app.modo_var.get() == "video" else "",
+            self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else "",
+            self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "",
             self.app.combo_modelo_audio.get() if self.app.modo_var.get() == "audio" and hasattr(self.app, "combo_modelo_audio") else "",
-            self.app.ratio_actual(),
-            self.app.personaje_activo(),
-            self.app.lora_activo(),
+            self.app.footer.ratio_actual(),
+            self.app.footer.personaje_activo(),
+            self.app.footer.lora_activo(),
             self.app.destino_var.get(),
         )
 
@@ -406,23 +406,23 @@ class PromptsInyeccionService:
         info = ""
         modo = self.app.modo_var.get()
         if modo == "video":
-            info = f" Motor: {self.app.modelo_video_valido()}. Duración: {self.app.duracion_var.get()}."
+            info = f" Motor: {self.app.footer.modelo_video_valido()}. Duración: {self.app.duracion_var.get()}."
         elif modo == "audio":
             motor_a = self.app.combo_modelo_audio.get() if hasattr(self.app, "combo_modelo_audio") else ""
             if motor_a and not es_separador(motor_a):
                 info = f" Motor audio: {motor_a}."
         else:
-            m = self.app.modelo_imagen_valido()
+            m = self.app.footer.modelo_imagen_valido()
             if m:
                 info = f" Modelo: {m}."
 
-        ratio = self.app.ratio_actual()
+        ratio = self.app.footer.ratio_actual()
         if ratio:
             info += f" Ratio: {ratio}."
-        pers = self.app.personaje_activo()
+        pers = self.app.footer.personaje_activo()
         if pers:
             info += f" Personaje: {pers}."
-        lora = self.app.lora_activo()
+        lora = self.app.footer.lora_activo()
         if lora:
             info += f" LoRA: {lora}."
         dest = self.app.destino_var.get()

@@ -725,7 +725,7 @@ class CoreMixin:
     # extraídos a PromptsInyeccionMixin (modules/prompts_inyeccion.py).
 
     def _construir_peticion(self, idea, modo_letra):
-        base = f"MODO {modo_letra}: Genera prompt para: '{idea}'. Estilos: {self.estilos_texto()}."
+        base = f"MODO {modo_letra}: Genera prompt para: '{idea}'. Estilos: {self.footer.estilos_texto()}."
 
         # Forzar formato según modo tag-based o natural
         if self.modo_var.get() == "imagen" and not self.is_natural_mode():
@@ -942,7 +942,7 @@ class CoreMixin:
                     f"REGLAS:\n"
                     f"- Mantén el mismo género/atmósfera/temática.\n"
                     f"- Cambia detalles (sujeto exacto, escena, hora, paleta, encuadre).\n"
-                    f"- Estilos activos: {self.estilos_texto()}\n\n"
+                    f"- Estilos activos: {self.footer.estilos_texto()}\n\n"
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
                 self.sesion._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
@@ -1242,7 +1242,7 @@ class CoreMixin:
         self.reiniciar_memoria()  # Evitar contaminación del historial previo
         idea = self.txt_idea.get("1.0", "end").strip()
         tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
-        peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.estilos_texto()}'."
+        peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.footer.estilos_texto()}'."
         if idea: peticion += f" Tema: {idea}."
 
         self.set_estado("⏳ Generando ideas...", "#f39c12")
@@ -1409,7 +1409,7 @@ class CoreMixin:
             formato_extra += f" FORMATO: tags separados por comas con pesos (tag:1.2). NO prosa fluida. Las {n} variaciones deben usar el MISMO formato de tags."
 
         if pos and len(pos) > 10:
-            peticion = f"MODO C: Genera {n} variaciones de este prompt. Base: '{pos}'. Estilos: {self.estilos_texto()}." + formato_extra
+            peticion = f"MODO C: Genera {n} variaciones de este prompt. Base: '{pos}'. Estilos: {self.footer.estilos_texto()}." + formato_extra
             if idea: peticion += f" Incorpora también: {idea}."
         else:
             peticion = self._construir_peticion(idea, "C") + f" Genera {n} variaciones." + formato_extra
@@ -1529,7 +1529,7 @@ class CoreMixin:
             v.set(False)
         self.ui._actualizar_contador_estilos()
         # Limpiar negativos
-        self._limpiar_negatives()
+        self.footer._limpiar_negatives()
         self.actualizar_salida("")
         self._ocultar_ideas()
         self.reiniciar_memoria()

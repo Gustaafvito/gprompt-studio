@@ -28,7 +28,7 @@ from .tools_creative import ToolsCreativeService  # A1 fase 2 (sesión 14)
 from .tools_workflow import ToolsWorkflowService  # A1 fase 2 (sesión 14)
 from .ui_builders import UIBuildersService  # A1 fase 2 (sesión 14)
 from .ui_events import UiEventsService  # A1 fase 2 (sesión 14)
-from .ui_footer import UiFooterMixin
+from .ui_footer import UiFooterService  # A1 fase 2 (sesión 14)
 from .workers_ia import WorkersIaService  # A1 fase 2 (sesión 14)
 
 __all__ = [
@@ -52,7 +52,7 @@ __all__ = [
     "AbTestingService",
     "AtajosAyudaService",
     "DashboardService",
-    "UiFooterMixin",
+    "UiFooterService",
     "GPromptWindow",
     "EventBus",
     "PreviewService",

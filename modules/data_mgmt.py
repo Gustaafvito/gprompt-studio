@@ -118,7 +118,7 @@ class DataMgmtService:
             "modelo_vid":  self.app.combo_modelo_video.get() if hasattr(self.app, 'combo_modelo_video') else "",
             "modelo_aud":  self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
             "ratio":       self.app.ratio_var.get(),
-            "estilos":     self.app.estilos_seleccionados(),
+            "estilos":     self.app.footer.estilos_seleccionados(),
             "nsfw":        self.app.switch_nsfw_var.get(),
             "neg_extra":   neg_extra,
             "neg_presets": [n for n, v in self.app.preset_vars.items() if v.get()],
@@ -469,8 +469,8 @@ class DataMgmtService:
             "estilos":    [n for n, v in self.app.estilo_checks.items() if v.get()],
             "ratio":      self.app.ratio_var.get(),
             "nsfw":       self.app.switch_nsfw_var.get(),
-            "personaje":  self.app.personaje_activo(),
-            "lora":       self.app.lora_activo(),
+            "personaje":  self.app.footer.personaje_activo(),
+            "lora":       self.app.footer.lora_activo(),
             "destino":    self.app.destino_var.get(),
             "brief":      self.app.brief_var.get(),
             "modelo_img": self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else "",
@@ -483,11 +483,11 @@ class DataMgmtService:
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "modo":       self.app.modo_var.get(),
             "plataforma": self.app.plataforma_var.get(),
-            "estilos":    self.app.estilos_texto(),
+            "estilos":    self.app.footer.estilos_texto(),
             "ratio":      self.app.ratio_var.get(),
             "nsfw":       self.app.switch_nsfw_var.get(),
-            "personaje":  self.app.personaje_activo(),
-            "lora":       self.app.lora_activo(),
+            "personaje":  self.app.footer.personaje_activo(),
+            "lora":       self.app.footer.lora_activo(),
             "destino":    self.app.destino_var.get(),
             "brief":      self.app.brief_var.get(),
             "contenido":  texto,
@@ -544,11 +544,11 @@ class DataMgmtService:
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "modo":       self.app.modo_var.get(),
             "plataforma": self.app.plataforma_var.get(),
-            "estilos":    self.app.estilos_texto(),
+            "estilos":    self.app.footer.estilos_texto(),
             "ratio":      self.app.ratio_var.get(),
             "nsfw":       self.app.switch_nsfw_var.get(),
-            "personaje":  self.app.personaje_activo(),
-            "lora":       self.app.lora_activo(),
+            "personaje":  self.app.footer.personaje_activo(),
+            "lora":       self.app.footer.lora_activo(),
             "destino":    self.app.destino_var.get(),
             "brief":      self.app.brief_var.get(),
             "contenido":  texto,
@@ -565,18 +565,18 @@ class DataMgmtService:
         modo = self.app.modo_var.get()
         modelo = ""
         if modo == "video":
-            modelo = self.app.modelo_video_valido()
+            modelo = self.app.footer.modelo_video_valido()
         elif modo == "audio":
             modelo = self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else ""
         else:
-            modelo = self.app.modelo_imagen_valido()
+            modelo = self.app.footer.modelo_imagen_valido()
         self.app.store.agregar_estrella({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "nota":       nota.strip(),
             "modo":       modo,
             "modelo":     modelo,
             "plataforma": self.app.plataforma_var.get(),
-            "estilos":    self.app.estilos_texto(),
+            "estilos":    self.app.footer.estilos_texto(),
             "contenido":  texto,
         })
         self.app.set_estado(f"🌟 Prompt estrella guardado{': ' + nota if nota else ''}.", "#f39c12")
@@ -602,14 +602,14 @@ class DataMgmtService:
                 f"  Plataforma:  {plat}\n"
             )
             if modo == "VIDEO":
-                header += f"  Motor:       {self.app.modelo_video_valido()}\n  Duración:    {self.app.duracion_var.get()}\n"
+                header += f"  Motor:       {self.app.footer.modelo_video_valido()}\n  Duración:    {self.app.duracion_var.get()}\n"
             elif modo == "AUDIO":
                 motor_a = self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else ""
                 header += f"  Motor:       {motor_a}\n"
             else:
-                modelo = self.app.modelo_imagen_valido()
+                modelo = self.app.footer.modelo_imagen_valido()
                 if modelo: header += f"  Modelo:      {modelo}\n"
-            header += f"  Ratio:       {self.app.ratio_var.get()}\n  Estilos:     {self.app.estilos_texto()}\n"
+            header += f"  Ratio:       {self.app.ratio_var.get()}\n  Estilos:     {self.app.footer.estilos_texto()}\n"
 
             p = self.app.combo_personaje.get()
             if p and p != "— Sin personaje —": header += f"  Personaje:   {p}\n"
@@ -1321,7 +1321,7 @@ class DataMgmtService:
         if self.app.combo_lora.get() not in nombres:
             self.app.combo_lora.set("— Sin LoRA —")
         # Refrescar trigger visible y aviso de compatibilidad
-        try: self.app._actualizar_lora_trigger_visible()
+        try: self.app.footer._actualizar_lora_trigger_visible()
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -1465,7 +1465,7 @@ class DataMgmtService:
             "modelo_vid":  self.app.combo_modelo_video.get(),
             "modelo_aud":  self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
             "ratio":       self.app.ratio_var.get(),
-            "estilos":     self.app.estilos_seleccionados(),
+            "estilos":     self.app.footer.estilos_seleccionados(),
             "nsfw":        self.app.switch_nsfw_var.get(),
             "traduccion":  self.app.switch_traduccion_var.get(),
             "personaje":   self.app.combo_personaje.get(),

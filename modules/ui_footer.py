@@ -41,18 +41,26 @@ def _get_real_is_light():
     return ctk.get_appearance_mode().lower() == 'light'
 
 
-class UiFooterMixin:
+class UiFooterService:
+    """Footer/barra inferior + helpers de selección.
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
     def _build_footer(self):
         is_light = _get_real_is_light()
         from config import get_theme_colors
         c = get_theme_colors(is_light)
-        outer = ctk.CTkFrame(self, fg_color="transparent")
+        outer = ctk.CTkFrame(self.app, fg_color="transparent")
         outer.pack(side="bottom", fill="x", padx=16, pady=(1, 2))
 
-        self.lbl_tokens = ctk.CTkLabel(outer, text="", font=ctk.CTkFont(family="Consolas", size=10),
+        self.app.lbl_tokens = ctk.CTkLabel(outer, text="", font=ctk.CTkFont(family="Consolas", size=10),
                                         fg_color="transparent",
                                         text_color=c["muted_text"])
-        self.lbl_tokens.pack(fill="x", pady=(0, 2))
+        self.app.lbl_tokens.pack(fill="x", pady=(0, 2))
 
         frame = ctk.CTkFrame(outer, fg_color="transparent")
         frame.pack(fill="x")
@@ -63,27 +71,27 @@ class UiFooterMixin:
         # Estructura: (titulo_grupo, color_titulo, [(label, w, fg, cmd, tip), …])
         grupos_inf = [
             ("📋 COPIAR", "#15803d", [
-                ("🟢 POS",     60, "#15803d",  lambda: self._copiar("positivo"),     "Copiar POSITIVE · Ctrl+1"),
-                ("🔴 NEG",     60, "#991b1b",  lambda: self._copiar("negativo"),     "Copiar NEGATIVE · Ctrl+2"),
-                ("📋 Todo",    55, "#475569",  lambda: self._copiar("todo"),          "Copiar todo el prompt"),
+                ("🟢 POS",     60, "#15803d",  lambda: self.app._copiar("positivo"),     "Copiar POSITIVE · Ctrl+1"),
+                ("🔴 NEG",     60, "#991b1b",  lambda: self.app._copiar("negativo"),     "Copiar NEGATIVE · Ctrl+2"),
+                ("📋 Todo",    55, "#475569",  lambda: self.app._copiar("todo"),          "Copiar todo el prompt"),
             ]),
             ("🔧 HERRAMIENTAS", "#1e3a8a", [
-                ("🔧 Comfy",   60, "#1e3a8a",  self.analysis.copiar_comfyui_json,     "Exportar/Importar ComfyUI JSON"),
-                ("🇪🇸 Trad",    55, "#1e3a8a",  self.analysis.traducir_salida,         "Traducir al español"),
-                ("📊",         30, "#1e3a8a",  self.analysis.cmd_scoring,             "Scoring del prompt"),
-                ("✨",         30, "#1e3a8a",  self.analysis.abrir_atajos_tags,       "Atajos de tags rápidos"),
+                ("🔧 Comfy",   60, "#1e3a8a",  self.app.analysis.copiar_comfyui_json,     "Exportar/Importar ComfyUI JSON"),
+                ("🇪🇸 Trad",    55, "#1e3a8a",  self.app.analysis.traducir_salida,         "Traducir al español"),
+                ("📊",         30, "#1e3a8a",  self.app.analysis.cmd_scoring,             "Scoring del prompt"),
+                ("✨",         30, "#1e3a8a",  self.app.analysis.abrir_atajos_tags,       "Atajos de tags rápidos"),
             ]),
             ("🛡 NEGATIVE", "#991b1b", [
-                ("🔴+",        35, "#991b1b",  self.creative.cmd_solo_negative,        "Regenerar SOLO el NEGATIVE"),
-                ("🛡",         30, "#991b1b",  self.creative.cmd_negative_optimo,      "Generar NEGATIVE óptimo según modelo"),
+                ("🔴+",        35, "#991b1b",  self.app.creative.cmd_solo_negative,        "Regenerar SOLO el NEGATIVE"),
+                ("🛡",         30, "#991b1b",  self.app.creative.cmd_negative_optimo,      "Generar NEGATIVE óptimo según modelo"),
             ]),
             ("⭐ GUARDAR", "#a16207", [
-                ("⭐",         30, "#a16207",  self.data.guardar_favorito,             "Guardar en Favoritos"),
-                ("🌟",         30, "#b45309",  self.data.guardar_estrella,             "Guardar como Estrella"),
-                ("💎",         30, "#854d0e",  self.analysis.guardar_seed_favorito,    "Guardar config como Seed favorito"),
+                ("⭐",         30, "#a16207",  self.app.data.guardar_favorito,             "Guardar en Favoritos"),
+                ("🌟",         30, "#b45309",  self.app.data.guardar_estrella,             "Guardar como Estrella"),
+                ("💎",         30, "#854d0e",  self.app.analysis.guardar_seed_favorito,    "Guardar config como Seed favorito"),
             ]),
             ("💾 EXPORT", "#15803d", [
-                ("💾",         30, "#15803d",  self.data._exportar,                         "Exportar como .txt"),
+                ("💾",         30, "#15803d",  self.app.data._exportar,                         "Exportar como .txt"),
             ]),
         ]
 
@@ -103,7 +111,7 @@ class UiFooterMixin:
             btn_row.pack(side="top", anchor="w")
             for text, w, fg, cmd, tip in botones:
                 btn = ctk.CTkButton(btn_row, text=text, width=w, fg_color=fg,
-                                     hover_color=self._darker(fg),
+                                     hover_color=self.app._darker(fg),
                                      command=cmd, **pill)
                 btn.pack(side="left", padx=2)
                 CTkToolTip(btn, delay=0.3, message=tip, **tip_kwargs)
@@ -111,34 +119,34 @@ class UiFooterMixin:
     def _mostrar_menu_contextual(self, event):
         """Menú contextual con click derecho en el resultado."""
         import tkinter as tk
-        menu = tk.Menu(self, tearoff=0, bg="#1a1a2a", fg="white",
+        menu = tk.Menu(self.app, tearoff=0, bg="#1a1a2a", fg="white",
                        activebackground="#2a4a6a", activeforeground="white",
                        font=("Segoe UI", 10), borderwidth=1)
 
-        menu.add_command(label="🟢 Copiar POSITIVE", command=lambda: self._copiar("positivo"))
-        menu.add_command(label="🔴 Copiar NEGATIVE", command=lambda: self._copiar("negativo"))
-        menu.add_command(label="📋 Copiar todo", command=lambda: self._copiar("todo"))
+        menu.add_command(label="🟢 Copiar POSITIVE", command=lambda: self.app._copiar("positivo"))
+        menu.add_command(label="🔴 Copiar NEGATIVE", command=lambda: self.app._copiar("negativo"))
+        menu.add_command(label="📋 Copiar todo", command=lambda: self.app._copiar("todo"))
         menu.add_separator()
 
         # Submenú: pegar último prompt del historial
-        if self.store.historial:
+        if self.app.store.historial:
             submenu_hist = tk.Menu(menu, tearoff=0, bg="#1a1a2a", fg="white",
                                     activebackground="#2a4a6a", font=("Segoe UI", 10))
-            for i, item in enumerate(self.store.historial[:5]):
+            for i, item in enumerate(self.app.store.historial[:5]):
                 if isinstance(item, dict):
                     txt = item.get("texto", "")
                 else:
                     txt = item
                 if txt:
                     label = f"#{i+1} {txt[:50]}{'...' if len(txt) > 50 else ''}"
-                    submenu_hist.add_command(label=label, command=lambda t=txt: self.actualizar_salida(t))
+                    submenu_hist.add_command(label=label, command=lambda t=txt: self.app.actualizar_salida(t))
             menu.add_cascade(label="📋 Pegar de historial reciente", menu=submenu_hist)
 
         # Submenú: pegar de favoritos
-        if self.store.favoritos:
+        if self.app.store.favoritos:
             submenu_fav = tk.Menu(menu, tearoff=0, bg="#1a1a2a", fg="white",
                                    activebackground="#2a4a6a", font=("Segoe UI", 10))
-            for i, item in enumerate(self.store.favoritos[:5]):
+            for i, item in enumerate(self.app.store.favoritos[:5]):
                 if isinstance(item, dict):
                     txt = item.get("texto", "")
                     nombre = item.get("nombre", "")
@@ -147,17 +155,17 @@ class UiFooterMixin:
                     nombre = ""
                 if txt:
                     label = f"⭐ {nombre or txt[:50]}"
-                    submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.actualizar_salida(t))
+                    submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.app.actualizar_salida(t))
             menu.add_cascade(label="⭐ Pegar de favoritos", menu=submenu_fav)
 
         menu.add_separator()
-        menu.add_command(label="📊 Analizar calidad", command=self.analysis.cmd_scoring)
-        menu.add_command(label="✨ Atajos de tags", command=self.analysis.abrir_atajos_tags)
-        menu.add_command(label="🇪🇸 Traducir al español", command=self.analysis.traducir_salida)
-        menu.add_command(label="🧬 Variar con ADN visual", command=self._cmd_variar_con_anclaje)
-        menu.add_command(label="🔍 Comparar consistencia", command=self._cmd_comparar_consistencia)
+        menu.add_command(label="📊 Analizar calidad", command=self.app.analysis.cmd_scoring)
+        menu.add_command(label="✨ Atajos de tags", command=self.app.analysis.abrir_atajos_tags)
+        menu.add_command(label="🇪🇸 Traducir al español", command=self.app.analysis.traducir_salida)
+        menu.add_command(label="🧬 Variar con ADN visual", command=self.app._cmd_variar_con_anclaje)
+        menu.add_command(label="🔍 Comparar consistencia", command=self.app._cmd_comparar_consistencia)
         menu.add_separator()
-        menu.add_command(label="🗑 Limpiar resultado", command=lambda: self.txt_salida.delete("1.0", "end"))
+        menu.add_command(label="🗑 Limpiar resultado", command=lambda: self.app.txt_salida.delete("1.0", "end"))
 
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -167,36 +175,36 @@ class UiFooterMixin:
     def _mostrar_menu_contextual_idea(self, event):
         """Menú contextual click derecho en el textbox de idea (Cortar/Copiar/Pegar/Seleccionar todo)."""
         import tkinter as tk
-        menu = tk.Menu(self, tearoff=0, bg="#1a1a2a", fg="white",
+        menu = tk.Menu(self.app, tearoff=0, bg="#1a1a2a", fg="white",
                        activebackground="#2a4a6a", activeforeground="white",
                        font=("Segoe UI", 10), borderwidth=1)
 
         # Comprobar si hay selección
         try:
-            tiene_seleccion = bool(self.txt_idea.tag_ranges("sel"))
+            tiene_seleccion = bool(self.app.txt_idea.tag_ranges("sel"))
         except Exception:
             tiene_seleccion = False
 
         def _cortar():
             try:
                 if tiene_seleccion:
-                    sel = self.txt_idea.get("sel.first", "sel.last")
+                    sel = self.app.txt_idea.get("sel.first", "sel.last")
                     pyperclip.copy(sel)
-                    self.txt_idea.delete("sel.first", "sel.last")
-                    self.set_estado("✂️ Cortado al portapapeles", "#3498db")
+                    self.app.txt_idea.delete("sel.first", "sel.last")
+                    self.app.set_estado("✂️ Cortado al portapapeles", "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _copiar_sel():
             try:
                 if tiene_seleccion:
-                    sel = self.txt_idea.get("sel.first", "sel.last")
+                    sel = self.app.txt_idea.get("sel.first", "sel.last")
                 else:
                     # Si no hay selección, copiar todo
-                    sel = self.txt_idea.get("1.0", "end").strip()
+                    sel = self.app.txt_idea.get("1.0", "end").strip()
                 if sel:
                     pyperclip.copy(sel)
-                    self.set_estado("📋 Copiado al portapapeles", "#3498db")
+                    self.app.set_estado("📋 Copiado al portapapeles", "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -205,23 +213,23 @@ class UiFooterMixin:
                 texto = pyperclip.paste()
                 if texto:
                     if tiene_seleccion:
-                        self.txt_idea.delete("sel.first", "sel.last")
-                    self.txt_idea.insert("insert", texto)
-                    self.ui._actualizar_barra_chars()
+                        self.app.txt_idea.delete("sel.first", "sel.last")
+                    self.app.txt_idea.insert("insert", texto)
+                    self.app.ui._actualizar_barra_chars()
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _seleccionar_todo():
             try:
-                self.txt_idea.tag_add("sel", "1.0", "end")
-                self.txt_idea.mark_set("insert", "1.0")
-                self.txt_idea.see("insert")
+                self.app.txt_idea.tag_add("sel", "1.0", "end")
+                self.app.txt_idea.mark_set("insert", "1.0")
+                self.app.txt_idea.see("insert")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _limpiar():
-            self.txt_idea.delete("1.0", "end")
-            self.ui._actualizar_barra_chars()
+            self.app.txt_idea.delete("1.0", "end")
+            self.app.ui._actualizar_barra_chars()
 
         menu.add_command(label="✂️ Cortar" + ("" if tiene_seleccion else "  (sin selección)"),
                          command=_cortar, state="normal" if tiene_seleccion else "disabled")
@@ -246,43 +254,43 @@ class UiFooterMixin:
         destruir/reconstruir widgets. Evita recrear ~257 widgets de
         IMAGEN cada vez que el usuario alterna Imagen/Vídeo/Audio.
 
-        Compatibilidad: self.estilo_checks sigue apuntando al dict del
+        Compatibilidad: self.app.estilo_checks sigue apuntando al dict del
         modo activo (consumido por _filtrar_estilos, _validar_estilos,
         estilos_seleccionados, etc.).
         """
         # Inicializar cachés si es la primera vez
-        if not hasattr(self, '_checks_subframes_cache'):
-            self._checks_subframes_cache = {}   # id(lista) → sub-frame
-            self._checks_vars_cache = {}        # id(lista) → dict {nombre: BooleanVar}
+        if not hasattr(self.app, '_checks_subframes_cache'):
+            self.app._checks_subframes_cache = {}   # id(lista) → sub-frame
+            self.app._checks_vars_cache = {}        # id(lista) → dict {nombre: BooleanVar}
 
         cache_key = id(lista)
 
         # Si ya existe sub-frame para esta lista: solo swap visibility
-        if cache_key in self._checks_subframes_cache:
+        if cache_key in self.app._checks_subframes_cache:
             # Ocultar todos los sub-frames anteriores
-            for k, sub in self._checks_subframes_cache.items():
+            for k, sub in self.app._checks_subframes_cache.items():
                 if k != cache_key:
                     try: sub.pack_forget()
                     except Exception: pass
             # Mostrar el actual
-            try: self._checks_subframes_cache[cache_key].pack(fill="both", expand=True)
+            try: self.app._checks_subframes_cache[cache_key].pack(fill="both", expand=True)
             except Exception: pass
-            # Apuntar self.estilo_checks al dict cacheado
-            self.estilo_checks = self._checks_vars_cache[cache_key]
+            # Apuntar self.app.estilo_checks al dict cacheado
+            self.app.estilo_checks = self.app._checks_vars_cache[cache_key]
             # Reset visual: desmarcar todo
-            for var in self.estilo_checks.values():
+            for var in self.app.estilo_checks.values():
                 try: var.set(False)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
-            if hasattr(self, 'lbl_estilos_sel'):
-                self.lbl_estilos_sel.configure(text="")
-            self._estilos_lista_actual = lista
+            if hasattr(self.app, 'lbl_estilos_sel'):
+                self.app.lbl_estilos_sel.configure(text="")
+            self.app._estilos_lista_actual = lista
             self._auto_sugerir_negativos()
-            self.ui._actualizar_contador_estilos()
+            self.app.ui._actualizar_contador_estilos()
             return
 
         # Primera construcción para esta lista: ocultar otros sub-frames
-        for sub in self._checks_subframes_cache.values():
+        for sub in self.app._checks_subframes_cache.values():
             try: sub.pack_forget()
             except Exception: pass
 
@@ -290,9 +298,9 @@ class UiFooterMixin:
         c = get_theme_colors(is_light)
 
         # Sub-frame propio para esta lista (anidado dentro de frame_checks)
-        sub_frame = ctk.CTkFrame(self.frame_checks, fg_color="transparent")
+        sub_frame = ctk.CTkFrame(self.app.frame_checks, fg_color="transparent")
         sub_frame.pack(fill="both", expand=True)
-        self._checks_subframes_cache[cache_key] = sub_frame
+        self.app._checks_subframes_cache[cache_key] = sub_frame
 
         local_checks = {}
         cols = 3
@@ -321,17 +329,17 @@ class UiFooterMixin:
         for c_i in range(cols):
             sub_frame.columnconfigure(c_i, weight=1)
 
-        self._checks_vars_cache[cache_key] = local_checks
-        self.estilo_checks = local_checks
-        self._estilos_lista_actual = lista
-        if hasattr(self, 'lbl_estilos_sel'):
-            self.lbl_estilos_sel.configure(text="")
+        self.app._checks_vars_cache[cache_key] = local_checks
+        self.app.estilo_checks = local_checks
+        self.app._estilos_lista_actual = lista
+        if hasattr(self.app, 'lbl_estilos_sel'):
+            self.app.lbl_estilos_sel.configure(text="")
 
         self._auto_sugerir_negativos()
-        self.ui._actualizar_contador_estilos()
+        self.app.ui._actualizar_contador_estilos()
 
     def _filtrar_estilos(self, event=None):
-        termino = self.entry_busqueda.get().lower()
+        termino = self.app.entry_busqueda.get().lower()
         # v1.2: los CTkCheckBox ahora viven en un sub-frame cacheado por
         # modo, no directamente en frame_checks. Iterar recursivamente.
         def _filter_in(parent):
@@ -344,43 +352,43 @@ class UiFooterMixin:
                 else:
                     try: _filter_in(child)
                     except Exception: pass
-        _filter_in(self.frame_checks)
+        _filter_in(self.app.frame_checks)
 
     def _validar_estilos(self, maximo):
-        marcados = [n for n, v in self.estilo_checks.items() if v.get()]
+        marcados = [n for n, v in self.app.estilo_checks.items() if v.get()]
         if len(marcados) > maximo:
-            self.estilo_checks[marcados[0]].set(False)
+            self.app.estilo_checks[marcados[0]].set(False)
 
     def _on_estilo_cambio(self):
         self._validar_estilos(6)
         self._auto_sugerir_negativos()
-        self.ui._actualizar_contador_estilos()
+        self.app.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
-            self.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
+            self.app.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
         else:
-            self.set_estado("🎨 Estilos: General (ninguno seleccionado)")
+            self.app.set_estado("🎨 Estilos: General (ninguno seleccionado)")
 
     def _on_personaje_selected(self, nombre: str):
         if not nombre or nombre == "— Sin personaje —":
             return
-        desc = self.store.descripcion_personaje(nombre) if hasattr(self, 'store') else ""
+        desc = self.app.store.descripcion_personaje(nombre) if hasattr(self.app, 'store') else ""
         if desc:
-            self.txt_idea.delete("1.0", "end")
-            self.txt_idea.insert("1.0", desc)
-            if hasattr(self, "_sesion_eventos"):
-                self.sesion._sesion_log(f"🧑 Personaje → {nombre}")
+            self.app.txt_idea.delete("1.0", "end")
+            self.app.txt_idea.insert("1.0", desc)
+            if hasattr(self.app, "_sesion_eventos"):
+                self.app.sesion._sesion_log(f"🧑 Personaje → {nombre}")
 
     def _actualizar_coste_estimado(self, event=None):
         """Calcula y muestra el coste estimado de la generación."""
         try:
-            texto = self.txt_idea.get("1.0", "end").strip()
+            texto = self.app.txt_idea.get("1.0", "end").strip()
             if not texto or len(texto) < 5:
-                self.lbl_coste.configure(text="")
+                self.app.lbl_coste.configure(text="")
                 return
 
             tokens = max(1, len(texto) // 4)
-            proveedor = self.llm_var.get().lower() if hasattr(self, 'llm_var') else ""
+            proveedor = self.app.llm_var.get().lower() if hasattr(self.app, 'llm_var') else ""
 
             precios = {
                 "deepseek": 0.27,
@@ -403,95 +411,95 @@ class UiFooterMixin:
             coste = (tokens / 1000) * precio_base
 
             if precio_base == 0:
-                self.lbl_coste.configure(text=f"🆓 gratis")
+                self.app.lbl_coste.configure(text=f"🆓 gratis")
             elif coste < 0.001:
-                self.lbl_coste.configure(text=f"$0.00{coste:.0f}")
+                self.app.lbl_coste.configure(text=f"$0.00{coste:.0f}")
             elif coste < 0.01:
-                self.lbl_coste.configure(text=f"${coste:.3f}")
+                self.app.lbl_coste.configure(text=f"${coste:.3f}")
             else:
-                self.lbl_coste.configure(text=f"${coste:.2f}")
+                self.app.lbl_coste.configure(text=f"${coste:.2f}")
 
         except Exception:
-            self.lbl_coste.configure(text="")
+            self.app.lbl_coste.configure(text="")
 
     def _auto_sugerir_negativos(self):
-        if not self._debe_mostrar_negatives():
+        if not self.app._debe_mostrar_negatives():
             return
 
         presets_sugeridos = set()
-        for estilo, var in self.estilo_checks.items():
+        for estilo, var in self.app.estilo_checks.items():
             if var.get() and estilo in ESTILO_NEGATIVO_AUTO:
                 for preset in ESTILO_NEGATIVO_AUTO[estilo]:
                     presets_sugeridos.add(preset)
 
         cambio = False
-        for pname, pvar in self.preset_vars.items():
+        for pname, pvar in self.app.preset_vars.items():
             deberia_estar = pname in presets_sugeridos
             if deberia_estar != pvar.get():
                 pvar.set(deberia_estar)
-                if pname in self.preset_btns:
+                if pname in self.app.preset_btns:
                     fg = PRESET_COLORES.get(pname, ("#333", "#555"))[0]
-                    self.preset_btns[pname].configure(fg_color="#2ecc71" if deberia_estar else fg, text=f"✓ {pname}" if deberia_estar else pname)
+                    self.app.preset_btns[pname].configure(fg_color="#2ecc71" if deberia_estar else fg, text=f"✓ {pname}" if deberia_estar else pname)
                 cambio = True
 
         if cambio:
             self._rebuild_negative_text()
 
     def actualizar_combo_personajes(self):
-        nombres = self.store.nombres_personajes()
-        self.combo_personaje.configure(values=nombres)
-        if self.combo_personaje.get() not in nombres:
-            self.combo_personaje.set("— Sin personaje —")
+        nombres = self.app.store.nombres_personajes()
+        self.app.combo_personaje.configure(values=nombres)
+        if self.app.combo_personaje.get() not in nombres:
+            self.app.combo_personaje.set("— Sin personaje —")
 
     def actualizar_combo_loras(self):
-        nombres = self.store.nombres_loras()
-        self.combo_lora.configure(values=nombres)
-        if self.combo_lora.get() not in nombres:
-            self.combo_lora.set("— Sin LoRA —")
+        nombres = self.app.store.nombres_loras()
+        self.app.combo_lora.configure(values=nombres)
+        if self.app.combo_lora.get() not in nombres:
+            self.app.combo_lora.set("— Sin LoRA —")
         # Refrescar trigger visible y aviso de compatibilidad
         try: self._actualizar_lora_trigger_visible()
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
     def actualizar_combo_plantillas(self):
-        nombres = self.store.nombres_plantillas()
-        self.combo_plantilla.configure(values=nombres)
-        if self.combo_plantilla.get() not in nombres:
-            self.combo_plantilla.set("— Sin plantilla —")
+        nombres = self.app.store.nombres_plantillas()
+        self.app.combo_plantilla.configure(values=nombres)
+        if self.app.combo_plantilla.get() not in nombres:
+            self.app.combo_plantilla.set("— Sin plantilla —")
 
     def estilos_seleccionados(self):
-        return [n for n, v in self.estilo_checks.items() if v.get()]
+        return [n for n, v in self.app.estilo_checks.items() if v.get()]
 
     def estilos_texto(self):
         sel = self.estilos_seleccionados()
         return " + ".join(sel) if sel else "General"
 
     def ratio_actual(self):
-        return self.ratio_var.get() if self.ratio_var.get() != "Libre" else ""
+        return self.app.ratio_var.get() if self.app.ratio_var.get() != "Libre" else ""
 
     def personaje_activo(self):
-        nombre = self.combo_personaje.get()
+        nombre = self.app.combo_personaje.get()
         if nombre and nombre != "— Sin personaje —":
-            return self.store.descripcion_personaje(nombre)
+            return self.app.store.descripcion_personaje(nombre)
         return ""
 
     def lora_activo(self):
-        nombre = self.combo_lora.get()
+        nombre = self.app.combo_lora.get()
         if nombre and nombre != "— Sin LoRA —":
-            return self.store.trigger_lora(nombre)
+            return self.app.store.trigger_lora(nombre)
         return ""
 
     def _actualizar_lora_trigger_visible(self):
         """Muestra el trigger del LoRA seleccionado al lado del combo (Mejora LoRAs)."""
-        if not hasattr(self, "lbl_lora_trigger"): return
-        nombre = self.combo_lora.get() if hasattr(self, "combo_lora") else ""
+        if not hasattr(self.app, "lbl_lora_trigger"): return
+        nombre = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
         if not nombre or nombre == "— Sin LoRA —":
-            self.lbl_lora_trigger.configure(text="")
+            self.app.lbl_lora_trigger.configure(text="")
             return
-        trigger = self.store.trigger_lora(nombre)
+        trigger = self.app.store.trigger_lora(nombre)
         # Encontrar familia
         familia = ""
-        for l in self.store.loras:
+        for l in self.app.store.loras:
             if l.get("nombre") == nombre:
                 familia = l.get("familia", "")
                 break
@@ -514,16 +522,16 @@ class UiFooterMixin:
         texto = f'→ "{trigger}"'
         if familia: texto += f"  [{familia}]"
         texto += warning
-        self.lbl_lora_trigger.configure(text=texto, text_color=color)
+        self.app.lbl_lora_trigger.configure(text=texto, text_color=color)
 
     def _es_lora_compatible(self, familia_lora):
         """Devuelve True/False si el LoRA es compatible con el modelo activo. None si no se puede determinar."""
         if not familia_lora or familia_lora == "—":
             return None  # sin info, no juzgamos
-        modo = self.modo_var.get() if hasattr(self, "modo_var") else "imagen"
+        modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
         if modo != "imagen":
             return None  # LoRAs son cosa de imagen mayormente
-        modelo = self.combo_modelo_imagen.get() if hasattr(self, "combo_modelo_imagen") else ""
+        modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, "combo_modelo_imagen") else ""
         modelo_l = modelo.lower()
         f = familia_lora.lower()
         # Detectar familia del modelo (más casos)
@@ -549,11 +557,11 @@ class UiFooterMixin:
 
     def _recomendar_loras_para_modelo(self, modelo_name):
         """Cuando cambia el modelo, busca LoRAs guardados compatibles y avisa al usuario."""
-        if not hasattr(self, "store") or not self.store.loras:
+        if not hasattr(self.app, "store") or not self.app.store.loras:
             return
         # Si ya hay un LoRA seleccionado, no molestar
         try:
-            actual = self.combo_lora.get()
+            actual = self.app.combo_lora.get()
             if actual and actual != "— Sin LoRA —":
                 return
         except Exception as e:
@@ -561,7 +569,7 @@ class UiFooterMixin:
 
         # Filtrar LoRAs con familia compatible con el nuevo modelo
         compatibles = []
-        for lora in self.store.loras:
+        for lora in self.app.store.loras:
             familia = lora.get("familia", "")
             if not familia or familia == "—": continue
             if self._es_lora_compatible(familia) is True:
@@ -578,17 +586,17 @@ class UiFooterMixin:
             msg = f"💡 {len(compatibles)} LoRAs compatibles disponibles: {', '.join(nombres)}"
         else:
             msg = f"💡 {len(compatibles)} LoRAs compatibles ({', '.join(nombres)} +{len(compatibles) - 3} más)"
-        self.set_estado(msg, "#a78bfa")
+        self.app.set_estado(msg, "#a78bfa")
 
     def modelo_video_valido(self):
-        v = self.combo_modelo_video.get()
-        plat = self.plataforma_var.get()
+        v = self.app.combo_modelo_video.get()
+        plat = self.app.plataforma_var.get()
         if not v or es_separador(v):
             return MOTOR_DEFAULT.get(plat, plat)
         return v
 
     def modelo_imagen_valido(self):
-        v = self.combo_modelo_imagen.get()
+        v = self.app.combo_modelo_imagen.get()
         return v if not es_separador(v) else ""
 
     def detectar_idioma(self, texto):
@@ -597,64 +605,64 @@ class UiFooterMixin:
     def _validar_negative_length(self, event=None):
         """Limita el negative extra manual a 1500 chars y muestra advertencia."""
         NEGATIVE_MAX = 1500
-        texto = self.txt_negative.get("1.0", "end").strip()
+        texto = self.app.txt_negative.get("1.0", "end").strip()
         if len(texto) > NEGATIVE_MAX:
             recortado = texto[:NEGATIVE_MAX].rsplit(",", 1)[0].rstrip(", ")
-            self.txt_negative.delete("1.0", "end")
-            self.txt_negative.insert("1.0", recortado)
-            self.txt_negative.mark_set("insert", "end")
-        if hasattr(self, 'lbl_negative_warning'):
+            self.app.txt_negative.delete("1.0", "end")
+            self.app.txt_negative.insert("1.0", recortado)
+            self.app.txt_negative.mark_set("insert", "end")
+        if hasattr(self.app, 'lbl_negative_warning'):
             if len(texto) > NEGATIVE_MAX * 0.8:
-                self.lbl_negative_warning.configure(
+                self.app.lbl_negative_warning.configure(
                     text=f"⚠️ Negative: {len(texto)}/{NEGATIVE_MAX} chars" + (" (recortado)" if len(texto) >= NEGATIVE_MAX else ""),
                     text_color="#e74c3c" if len(texto) >= NEGATIVE_MAX else "#f39c12")
-                self.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
+                self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
             else:
-                self.lbl_negative_warning.configure(text="")
-                if self.lbl_negative_warning.winfo_ismapped():
-                    self.lbl_negative_warning.pack_forget()
+                self.app.lbl_negative_warning.configure(text="")
+                if self.app.lbl_negative_warning.winfo_ismapped():
+                    self.app.lbl_negative_warning.pack_forget()
 
     def _rebuild_negative_text(self):
-        partes = [NEGATIVE_PRESETS[n] for n, v in self.preset_vars.items() if v.get()]
+        partes = [NEGATIVE_PRESETS[n] for n, v in self.app.preset_vars.items() if v.get()]
         manual = self._get_negative_manual()
         if manual: partes.append(manual)
         texto = ", ".join(partes)
         NEGATIVE_MAX = 1500
         if len(texto) > NEGATIVE_MAX:
             texto = texto[:NEGATIVE_MAX].rsplit(",", 1)[0].rstrip(", ")
-            if hasattr(self, 'lbl_negative_warning'):
-                self.lbl_negative_warning.configure(
+            if hasattr(self.app, 'lbl_negative_warning'):
+                self.app.lbl_negative_warning.configure(
                     text=f"⚠️ Negative recortado a {NEGATIVE_MAX} chars (límite SeaArt)",
                     text_color="#e74c3c")
-                self.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
+                self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
         else:
-            if hasattr(self, 'lbl_negative_warning'):
-                self.lbl_negative_warning.configure(text="")
-                if self.lbl_negative_warning.winfo_ismapped():
-                    self.lbl_negative_warning.pack_forget()
-        self.txt_negative.delete("1.0", "end")
-        if texto: self.txt_negative.insert("1.0", texto)
-        self.reiniciar_memoria()
+            if hasattr(self.app, 'lbl_negative_warning'):
+                self.app.lbl_negative_warning.configure(text="")
+                if self.app.lbl_negative_warning.winfo_ismapped():
+                    self.app.lbl_negative_warning.pack_forget()
+        self.app.txt_negative.delete("1.0", "end")
+        if texto: self.app.txt_negative.insert("1.0", texto)
+        self.app.reiniciar_memoria()
 
     def _get_negative_manual(self):
-        texto = self.txt_negative.get("1.0", "end").strip()
+        texto = self.app.txt_negative.get("1.0", "end").strip()
         if not texto: return ""
-        for pname in self.preset_vars:
+        for pname in self.app.preset_vars:
             texto = texto.replace(NEGATIVE_PRESETS[pname], "")
         return re.sub(r',\s*,', ',', texto).strip(", \n")
 
     def _limpiar_negatives(self):
-        self.txt_negative.delete("1.0", "end")
-        for pname, pvar in self.preset_vars.items():
+        self.app.txt_negative.delete("1.0", "end")
+        for pname, pvar in self.app.preset_vars.items():
             pvar.set(False)
-            if pname in self.preset_btns:
+            if pname in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pname, ("#333", "#555"))[0]
-                self.preset_btns[pname].configure(fg_color=fg, text=pname)
-        self.reiniciar_memoria()
+                self.app.preset_btns[pname].configure(fg_color=fg, text=pname)
+        self.app.reiniciar_memoria()
 
     def _resetear_presets_visual(self):
-        for pname, pvar in self.preset_vars.items():
+        for pname, pvar in self.app.preset_vars.items():
             pvar.set(False)
-            if pname in self.preset_btns:
+            if pname in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pname, ("#333", "#555"))[0]
-                self.preset_btns[pname].configure(fg_color=fg, text=pname)
+                self.app.preset_btns[pname].configure(fg_color=fg, text=pname)

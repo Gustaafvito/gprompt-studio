@@ -158,7 +158,7 @@ class ToolsWorkflowService:
                         logger.debug(f"[silent] {e}")
             # Refrescar negative textbox
             if hasattr(self.app, "_rebuild_negative_text"):
-                try: self.app._rebuild_negative_text()
+                try: self.app.footer._rebuild_negative_text()
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
         except Exception as e:
@@ -374,7 +374,7 @@ class ToolsWorkflowService:
             aspecto = var_aspecto.get()
             personalizado = ent_personalizado.get().strip()
             modo = self.app.modo_var.get()
-            estilos = self.app.estilos_texto()
+            estilos = self.app.footer.estilos_texto()
 
             mapeo_aspecto = {
                 "Solo iluminación": "iluminación (tipo, dirección, intensidad, color)",
@@ -916,7 +916,7 @@ class ToolsWorkflowService:
         """Genera 1 idea directamente sin popup - para macros."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         tipo = "canción" if self.app.modo_var.get() == "audio" else "vídeo" if self.app.modo_var.get() == "video" else "imagen"
-        estilos = self.app.estilos_texto()
+        estilos = self.app.footer.estilos_texto()
         peticion = f"Genera UNA sola idea para {tipo}. Estilos: {estilos}"
         if idea:
             peticion += f" Tema: {idea}"

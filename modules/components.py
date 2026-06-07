@@ -133,6 +133,30 @@ class CreativeComponent(_Component):
         return self._service._cmd_grupo_personajes()
 
 
+class UiFooterComponent(_Component):
+    """Footer/barra inferior + helpers de selección (estilos, ratio,
+    personaje, lora, negative, idioma).
+
+    A1 fase 2 (sesión 14): UiFooterMixin → UiFooterService aislado.
+    __getattr__ delega al servicio (necesario porque hay 29 métodos y
+    muchos se usan desde decenas de sitios).
+    """
+    _name = "footer"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.ui_footer import UiFooterService
+        self._service = UiFooterService(app)
+
+    def __getattr__(self, name):
+        if name in ("app", "_service"):
+            raise AttributeError(name)
+        if hasattr(self._service, name):
+            return getattr(self._service, name)
+        return super().__getattr__(name)
+
+
 class WorkflowComponent(_Component):
     """Macros, Cron, Proyectos, Versiones, Búsqueda global, etc.
 
@@ -678,8 +702,9 @@ def install_components(app) -> None:
     app.sesion = SesionVideoComponent(app)
     app.dashboard = DashboardComponent(app)
     app.events = UiEventsComponent(app)
+    app.footer = UiFooterComponent(app)
     logger.debug(
         "Componentes instalados: core, ui, creative, workflow, analysis, data, "
         "backup, dialogs, prompts, ab, json, refinar, workers, atajos, cliente, "
-        "multi, adn, sesion, dashboard, events"
+        "multi, adn, sesion, dashboard, events, footer"
     )
