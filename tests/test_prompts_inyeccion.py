@@ -516,7 +516,11 @@ class TestConstruirModeloInfo:
         assert "Modelo: FluxDev" in info
         assert "Ratio: 16:9" in info
         assert "Personaje: Alicia" in info
-        assert "LoRA: AnimeStyle" in info
+        # Sesión 15: la inyección del LoRA pasó de "LoRA: trigger." a una
+        # instrucción explícita ("TRIGGER WORD OBLIGATORIO: `trigger`").
+        # El trigger sigue presente, pero con instrucción imperativa.
+        assert "AnimeStyle" in info
+        assert "TRIGGER" in info.upper()
         assert "Destino: Instagram" in info
 
     def test_destino_personal_no_se_incluye(self):

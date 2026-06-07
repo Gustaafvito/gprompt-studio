@@ -424,7 +424,17 @@ class PromptsInyeccionService:
             info += f" Personaje: {pers}."
         lora = self.app.footer.lora_activo()
         if lora:
-            info += f" LoRA: {lora}."
+            # Instrucción explícita para que el LLM incluya la trigger word
+            # LITERALMENTE al inicio del POSITIVE PROMPT. Antes era solo
+            # "LoRA: trigger." y el LLM lo interpretaba como contexto
+            # informativo, no como obligación — especialmente en modelos
+            # con system prompts estrictos como Z-Image-Base.
+            info += (
+                f"\n🔗 LORA ACTIVO — TRIGGER WORD OBLIGATORIO: "
+                f"`{lora}`. Inclúyelo LITERALMENTE como PRIMER TOKEN del "
+                f"POSITIVE PROMPT (antes de cualquier preámbulo de quality "
+                f"tags). NO lo traduzcas ni modifiques."
+            )
         dest = self.app.destino_var.get()
         if dest and dest != "— Personal —":
             info += f" Destino: {dest}."

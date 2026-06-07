@@ -429,3 +429,79 @@ class TestWorkerImagenAPrompt:
         p = capturado["peticion"]
         assert "REFERENCIA VISUAL" in p
         assert "corrector visual" not in p.lower()
+
+
+# ─────────────────────── _garantizar_lora_trigger ────────────────────
+
+
+class TestGarantizarLoraTrigger:
+    """Safety-net que asegura que el trigger del LoRA aparece en el output
+    aunque el LLM ignore la instrucción del system prompt (sesión 15)."""
+
+    def _stub_app(self, lora_nombre="Mi LoRA", trigger="mistyle"):
+        return SimpleNamespace(
+            combo_lora=_var(lora_nombre),
+            store=SimpleNamespace(trigger_lora=lambda _n: trigger),
+        )
+
+    def test_sin_lora_no_modifica_texto(self):
+        app = SimpleNamespace(
+            combo_lora=_var("— Sin LoRA —"),
+            store=SimpleNamespace(trigger_lora=lambda _n: ""),
+        )
+        s = WorkersIaService(app)
+        texto = "POSITIVE PROMPT: castle on a cliff"
+        assert s._garantizar_lora_trigger(texto) == texto
+
+    def test_trigger_ya_presente_no_duplica(self):
+        s = WorkersIaService(self._stub_app(trigger="mistyle"))
+        texto = "POSITIVE PROMPT: mistyle, castle on a cliff"
+        out = s._garantizar_lora_trigger(texto)
+        # No debe haber dos "mistyle" en el output
+        assert out.lower().count("mistyle") == 1
+
+    def test_trigger_ausente_se_inserta_tras_positive_prompt(self):
+        s = WorkersIaService(self._stub_app(trigger="mistyle"))
+        texto = "POSITIVE PROMPT: castle on a cliff"
+        out = s._garantizar_lora_trigger(texto)
+        # Trigger aparece justo después de "POSITIVE PROMPT:"
+        assert out.startswith("POSITIVE PROMPT: mistyle,")
+        assert "castle on a cliff" in out
+
+    def test_trigger_case_insensitive(self):
+        """Si el LLM puso el trigger con mayúsculas distintas, no duplicar."""
+        s = WorkersIaService(self._stub_app(trigger="lmnlhrr"))
+        texto = "POSITIVE PROMPT: LMNLHRR, dark forest"
+        out = s._garantizar_lora_trigger(texto)
+        assert out.lower().count("lmnlhrr") == 1
+
+    def test_es_ideas_no_aplica(self):
+        """Las ideas son sugerencias creativas, no prompts → no insertar."""
+        s = WorkersIaService(self._stub_app(trigger="mistyle"))
+        texto = "1. una idea\n2. otra idea\n3. tercera"
+        out = s._garantizar_lora_trigger(texto, es_ideas=True)
+        assert out == texto
+        assert "mistyle" not in out
+
+    def test_sin_marcador_positive_anade_uno(self):
+        """Texto sin 'POSITIVE PROMPT:' → prepend completo."""
+        s = WorkersIaService(self._stub_app(trigger="mistyle"))
+        texto = "castle on a cliff, stormy sea"
+        out = s._garantizar_lora_trigger(texto)
+        assert out.startswith("POSITIVE PROMPT: mistyle,")
+
+    def test_texto_vacio_devuelve_vacio(self):
+        s = WorkersIaService(self._stub_app(trigger="mistyle"))
+        assert s._garantizar_lora_trigger("") == ""
+
+    def test_trigger_vacio_no_modifica(self):
+        s = WorkersIaService(self._stub_app(trigger=""))
+        texto = "POSITIVE PROMPT: castle"
+        assert s._garantizar_lora_trigger(texto) == texto
+
+    def test_combo_lora_ausente_no_crashea(self):
+        """Si app no tiene combo_lora (UI todavía no construida) devolver tal cual."""
+        app = SimpleNamespace(store=SimpleNamespace(trigger_lora=lambda _n: "x"))
+        s = WorkersIaService(app)
+        texto = "POSITIVE PROMPT: castle"
+        assert s._garantizar_lora_trigger(texto) == texto

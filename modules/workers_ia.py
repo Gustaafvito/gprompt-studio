@@ -40,6 +40,45 @@ class WorkersIaService:
     def __init__(self, app):
         self.app = app
 
+    def _garantizar_lora_trigger(self, texto, es_ideas=False):
+        """Post-procesado: si hay LoRA activo y el trigger NO aparece en
+        el texto, lo inserta al inicio del POSITIVE PROMPT.
+
+        Algunos modelos con system prompt estricto (Z-Image-Base, modelos
+        natural con plantillas fijas) ignoran la instrucción de incluir
+        el trigger word literal. Este safety-net garantiza que aparezca.
+
+        No se aplica a ideas (son sugerencias creativas, no prompts).
+        """
+        if es_ideas or not texto:
+            return texto
+        try:
+            lora_nombre = (self.app.combo_lora.get()
+                           if hasattr(self.app, "combo_lora") else "")
+        except Exception:
+            return texto
+        if not lora_nombre or lora_nombre == "— Sin LoRA —":
+            return texto
+        try:
+            trigger = self.app.store.trigger_lora(lora_nombre)
+        except Exception:
+            return texto
+        if not trigger or not trigger.strip():
+            return texto
+        trigger = trigger.strip()
+        # Ya está en el texto (case-insensitive) → no tocar
+        if trigger.lower() in texto.lower():
+            return texto
+        # Insertar el trigger al inicio del POSITIVE PROMPT
+        m = re.search(r"(POSITIVE\s+PROMPT\s*:|^PROMPT\s*:)", texto,
+                      re.IGNORECASE | re.MULTILINE)
+        if m:
+            # Tras "POSITIVE PROMPT:" inserta " trigger,"
+            insert_pos = m.end()
+            return texto[:insert_pos] + f" {trigger}, " + texto[insert_pos:].lstrip()
+        # Sin marcador POSITIVE: prepend "POSITIVE PROMPT: trigger, ..."
+        return f"POSITIVE PROMPT: {trigger}, {texto.lstrip()}"
+
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
                    es_refinamiento=False, texto_previo=None):
         try:
@@ -51,6 +90,8 @@ class WorkersIaService:
             cerebro_elegido = self.app.llm_var.get()
             texto = self.app.deepseek.generar(peticion, max_tokens=max_tok)
             texto = limpiar_marcadores(texto)  # Eliminar ** y __ del resultado
+            # Safety-net: garantizar trigger del LoRA en el output
+            texto = self._garantizar_lora_trigger(texto, es_ideas=es_ideas)
 
             # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta
             if max_c and not es_ideas and not es_variaciones:
@@ -195,6 +236,8 @@ class WorkersIaService:
             # Generación rápida
             texto = self.app.deepseek.generar(peticion, temperature=0.4, max_tokens=1200)
             texto = limpiar_marcadores(texto)
+            # Safety-net: garantizar trigger del LoRA en el output
+            texto = self._garantizar_lora_trigger(texto)
 
             # Limpiar NEGATIVE si el modelo no lo soporta
             if not has_neg:
