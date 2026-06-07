@@ -415,7 +415,7 @@ class ToolsCreativeService:
         def _aplicar_modelo(nombre):
             if modo == "imagen" and hasattr(self.app, 'combo_modelo_imagen'):
                 self.app.combo_modelo_imagen.set(nombre)
-                self.app._on_modelo_imagen_cambio()
+                self.app.events.on_modelo_imagen_cambio()
             elif modo == "video" and hasattr(self.app, 'combo_modelo_video'):
                 self.app.combo_modelo_video.set(nombre)
             elif modo == "audio" and hasattr(self.app, 'combo_modelo_audio'):
@@ -1769,10 +1769,10 @@ class ToolsCreativeService:
         text_main = "#111827" if is_lt else "#e5e7eb"
         text_muted = "#4b5563" if is_lt else "#9ca3af"
 
-        win = GPromptWindow(parent_window or self)
+        win = GPromptWindow(parent_window or self.app)
         win.title("📚 Biblioteca de paletas")
         win.geometry("560x600")
-        win.transient(parent_window or self)
+        win.transient(parent_window or self.app)
 
         ctk.CTkLabel(win, text="📚 Biblioteca de paletas",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))

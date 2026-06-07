@@ -772,10 +772,10 @@ class ModoClienteService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        win = GPromptWindow(parent_window or self)
+        win = GPromptWindow(parent_window or self.app)
         win.title("📚 Mis estilos de moodboard")
         win.geometry("640x560")
-        win.transient(parent_window or self)
+        win.transient(parent_window or self.app)
 
         ctk.CTkLabel(win, text="📚 Estilos detectados con moodboard",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))

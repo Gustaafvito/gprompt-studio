@@ -255,13 +255,13 @@ class UIBuildersService:
                 ("📂  Restaurar backup", self.app.backup.cmd_restore_completo),
             ]),
             ("📁 Datos", "#3d7a9c", [
-                ("🌟  Estrellas", lambda: abrir_lista(self, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
+                ("🌟  Estrellas", lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
                 ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self.app.json.cmd_exportar),
-                ("⭐  Favoritos", lambda: abrir_lista(self, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
-                ("📋  Historial", lambda: abrir_lista(self, "historial", "📋 Historial de Prompts", "#1a2a3a")),
+                ("⭐  Favoritos", lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
+                ("📋  Historial", lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
                 ("📥  Importar prompt JSON pro", self.app.json.cmd_importar),
-                ("🔗  LoRAs", lambda: abrir_loras(self)),
-                ("🧑  Personajes", lambda: abrir_personajes(self)),
+                ("🔗  LoRAs", lambda: abrir_loras(self.app)),
+                ("🧑  Personajes", lambda: abrir_personajes(self.app)),
             ]),
             ("🛠 Herramientas", "#c97a2e", [
                 ("🔒  Anclaje rasgos (consistencia)", self.app.creative.cmd_anclaje_visual),
@@ -400,7 +400,12 @@ class UIBuildersService:
 
         def _on_resize(event=None):
             try:
-                if event is not None and event.widget is not self:
+                # Fix A1 fase 2: el widget es self.app (ArquitectoApp),
+                # no self (UIBuildersService). Antes el guard siempre era
+                # True → el handler retornaba sin actualizar → los botones
+                # se quedaban en modo compacto (cuadrados) tras el primer
+                # tick del after(200) que dispara con ancho parcial.
+                if event is not None and event.widget is not self.app:
                     return
                 ancho = self.app.winfo_width()
                 debe_compactar = ancho < 1180
@@ -478,7 +483,7 @@ class UIBuildersService:
         self.app._lbl_plataforma.pack(side="left", padx=(0, 4))
         self.app.combo_plataforma = ctk.CTkComboBox(inner, values=PLATAFORMAS_IMAGEN_LISTA, variable=self.app.plataforma_var,
                                                  width=180, height=28, font=ctk.CTkFont(size=11),
-                                                 command=self.app._on_plataforma_cambio)
+                                                 command=self.app.events.on_plataforma_cambio)
         self.app.combo_plataforma.pack(side="left", padx=(0, 10))
 
         # Dimensiones tipo "iOS pill" — pelota más pequeña que el body para
@@ -577,7 +582,7 @@ class UIBuildersService:
     def _on_segmento_modo(self, valor):
         mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}
         self.app.modo_var.set(mapa.get(valor, "imagen"))
-        self.app._on_modo_cambio()
+        self.app.events.on_modo_cambio()
 
     def _build_video_panel(self):
         is_light = _get_real_is_light()
@@ -591,7 +596,7 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=15)
-        self.app.combo_modelo_video = ctk.CTkComboBox(self.app.frame_video, values=MODELOS_VIDEO_FLAT, width=215, command=self.app._on_motor_cambio)
+        self.app.combo_modelo_video = ctk.CTkComboBox(self.app.frame_video, values=MODELOS_VIDEO_FLAT, width=215, command=self.app.events.on_motor_cambio)
         self.app.combo_modelo_video.set("Kling 3.0")
         self.app.combo_modelo_video.pack(side="left", padx=5)
 
@@ -650,7 +655,7 @@ class UIBuildersService:
         ctk.CTkLabel(row1, text="Modelo:", font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 5))
-        self.app.combo_modelo_audio = ctk.CTkComboBox(row1, values=MODELOS_AUDIO_FLAT, width=215, command=self.app._on_motor_audio_cambio)
+        self.app.combo_modelo_audio = ctk.CTkComboBox(row1, values=MODELOS_AUDIO_FLAT, width=215, command=self.app.events.on_motor_audio_cambio)
         self.app.combo_modelo_audio.set("Suno v5")
         self.app.combo_modelo_audio.pack(side="left", padx=5)
 
@@ -694,21 +699,21 @@ class UIBuildersService:
         ctk.CTkLabel(row2, text="Emoción:", font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 3))
-        self.app.combo_emocion = ctk.CTkComboBox(row2, values=["— Emoción —"] + EMOCIONES_AUDIO, variable=self.app.emocion_var, width=130, command=self.app._on_audio_filtro_cambio)
+        self.app.combo_emocion = ctk.CTkComboBox(row2, values=["— Emoción —"] + EMOCIONES_AUDIO, variable=self.app.emocion_var, width=130, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_emocion.pack(side="left", padx=(0, 10))
 
         self.app.voz_var = ctk.StringVar(value="— Voz —")
         ctk.CTkLabel(row2, text="Voz:", font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
-        self.app.combo_voz = ctk.CTkComboBox(row2, values=["— Voz —"] + VOCES_AUDIO, variable=self.app.voz_var, width=155, command=self.app._on_audio_filtro_cambio)
+        self.app.combo_voz = ctk.CTkComboBox(row2, values=["— Voz —"] + VOCES_AUDIO, variable=self.app.voz_var, width=155, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_voz.pack(side="left", padx=(0, 10))
 
         self.app.idioma_audio_var = ctk.StringVar(value="— Idioma —")
         ctk.CTkLabel(row2, text="Idioma:", font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
-        self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=["— Idioma —"] + IDIOMAS_AUDIO, variable=self.app.idioma_audio_var, width=160, command=self.app._on_audio_filtro_cambio)
+        self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=["— Idioma —"] + IDIOMAS_AUDIO, variable=self.app.idioma_audio_var, width=160, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_idioma_audio.pack(side="left", padx=(0, 5))
 
     def _build_modelo_imagen_panel(self):
@@ -729,7 +734,7 @@ class UIBuildersService:
         ctk.CTkLabel(f1, text="Modelo", font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_modelo_imagen = ctk.CTkComboBox(f1, values=MODELOS_IMAGEN_FLAT, width=220, height=28,
-                                                    font=ctk.CTkFont(size=11), command=self.app._on_modelo_imagen_cambio)
+                                                    font=ctk.CTkFont(size=11), command=self.app.events.on_modelo_imagen_cambio)
         self.app.combo_modelo_imagen.set("Z Image Turbo")
         self.app.combo_modelo_imagen.pack()
         self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message="Pasa el cursor para info del modelo")
@@ -822,7 +827,7 @@ class UIBuildersService:
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
             self.app.brief_var.set(True)
-            self.app._on_brief_cambio()
+            self.app.events.on_brief_cambio()
             self.app.dialogs.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
 
         self.app.reiniciar_memoria()
@@ -947,7 +952,7 @@ class UIBuildersService:
                       command=self.app._cmd_borrar_plantilla).pack(side="left", padx=2)
 
         def _toggle_brief_visual():
-            self.app._on_brief_cambio()
+            self.app.events.on_brief_cambio()
             if self.app.brief_var.get():
                 self.app.switch_brief.configure(text_color="#fcd34d", border_color="#f59e0b")
             else:

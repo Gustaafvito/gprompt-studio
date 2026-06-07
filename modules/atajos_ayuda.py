@@ -79,7 +79,7 @@ class AtajosAyudaService:
         if modo_destino not in ("imagen", "video", "audio"): return "break"
         try:
             self.app.modo_var.set(modo_destino)
-            self.app._on_modo_cambio()
+            self.app.events.on_modo_cambio()
             etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
             self.app.dialogs.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
         except Exception as e:
@@ -167,7 +167,7 @@ class AtajosAyudaService:
     def _cmd_abrir_loras(self) -> str:
         """Atajo Ctrl+L - Abrir gestión de LoRAs."""
         try:
-            abrir_loras(self)
+            abrir_loras(self.app)
         except Exception as e:
             self.app.dialogs.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
         return "break"
@@ -181,10 +181,10 @@ class AtajosAyudaService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("⌨️ Atajos de teclado")
         vent.geometry("620x640")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="⌨️ Atajos de teclado",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
@@ -325,10 +325,10 @@ class AtajosAyudaService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        vent = GPromptWindow(self)
+        vent = GPromptWindow(self.app)
         vent.title("🔍 Búsqueda global")
         vent.geometry("550x450")
-        vent.transient(self)
+        vent.transient(self.app)
 
         ctk.CTkLabel(vent, text="🔍 Búsqueda global", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text="Busca en historial, favoritos y estrellas", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
@@ -390,4 +390,4 @@ class AtajosAyudaService:
         """Abre el tutorial interactivo (data/tutorial.json) con índice
         lateral, progreso persistente y botón "Probar ahora".
         """
-        abrir_tutorial(self)
+        abrir_tutorial(self.app)

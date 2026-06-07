@@ -347,7 +347,7 @@ class JsonPromptService:
                 if modo_actual != modo_detectado:
                     self.app.modo_var.set(modo_detectado)
                     if hasattr(self, "_on_modo_cambio"):
-                        self.app._on_modo_cambio()
+                        self.app.events.on_modo_cambio()
                     resumen["modo"] = modo_detectado
             except Exception as e:
                 logger.debug(f"[silent] cambio modo: {e}")

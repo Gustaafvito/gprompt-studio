@@ -560,7 +560,7 @@ class AbTestingService:
                                         if m2 in valores:
                                             self.app.combo_modelo_imagen.set(m2)
                                             if hasattr(self.app, "_on_modelo_imagen_cambio"):
-                                                self.app._on_modelo_imagen_cambio()
+                                                self.app.events.on_modelo_imagen_cambio()
                                     elif modo_act == "video" and hasattr(self.app, "combo_modelo_video"):
                                         valores = list(self.app.combo_modelo_video.cget("values") or [])
                                         if m2 in valores:

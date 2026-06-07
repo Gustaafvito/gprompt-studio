@@ -1089,7 +1089,7 @@ class ToolsAnalysisService:
             if seed["plataforma"] in valores_plat:
                 self.app.plataforma_var.set(seed["plataforma"])
                 if hasattr(self.app, '_on_plataforma_cambio'):
-                    try: self.app._on_plataforma_cambio()
+                    try: self.app.events.on_plataforma_cambio()
                     except: pass
                 aplicado = True
 
@@ -1099,7 +1099,7 @@ class ToolsAnalysisService:
             if seed["modelo_img"] in valores_modelo:
                 self.app.modelo_img_var.set(seed["modelo_img"])
                 if hasattr(self.app, '_on_modelo_imagen_cambio'):
-                    try: self.app._on_modelo_imagen_cambio()
+                    try: self.app.events.on_modelo_imagen_cambio()
                     except: pass
                 aplicado = True
             elif seed["modelo_img"]:
@@ -1112,7 +1112,7 @@ class ToolsAnalysisService:
             if seed["modelo_vid"] in valores_vid:
                 self.app.combo_modelo_video.set(seed["modelo_vid"])
                 if hasattr(self.app, '_on_motor_cambio'):
-                    try: self.app._on_motor_cambio(seed["modelo_vid"])
+                    try: self.app.events.on_motor_cambio(seed["modelo_vid"])
                     except Exception as _e: logger.debug(f"[silent] {_e}")
                 aplicado = True
             elif seed["modelo_vid"]:

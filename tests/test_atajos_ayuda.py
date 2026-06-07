@@ -31,7 +31,6 @@ def _host(**overrides):
         modo_var=_var("imagen"),
         txt_idea=_txt(""),
         deepseek=SimpleNamespace(traducir=lambda txt: txt),
-        _on_modo_cambio=MagicMock(),
         attributes=MagicMock(return_value=False),
         winfo_children=lambda: [],
     )
@@ -39,6 +38,9 @@ def _host(**overrides):
     for k, v in defaults.items():
         setattr(app, k, v)
     app.dialogs = SimpleNamespace(set_estado=MagicMock())
+    # A1 fase 2 bug-fix sesión 15: _cmd_cambiar_modo ahora llama
+    # self.app.events.on_modo_cambio() en lugar de self.app._on_modo_cambio()
+    app.events = SimpleNamespace(on_modo_cambio=MagicMock())
     return AtajosAyudaService(app)
 
 
@@ -57,7 +59,7 @@ class TestCmdCambiarModo:
         h = _host()
         h._cmd_cambiar_modo("imagen")
         h.app.modo_var.set.assert_called_once_with("imagen")
-        h.app._on_modo_cambio.assert_called_once()
+        h.app.events.on_modo_cambio.assert_called_once()
         h.app.dialogs.set_estado.assert_called_once()
         msg = h.app.dialogs.set_estado.call_args[0][0]
         assert "IMAGEN" in msg

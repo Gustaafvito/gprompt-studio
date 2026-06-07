@@ -81,14 +81,14 @@ class ToolsWorkflowService:
             if setup.get("modo") and hasattr(self.app, "modo_var"):
                 self.app.modo_var.set(setup["modo"])
                 if hasattr(self.app, "_on_modo_cambio"):
-                    try: self.app._on_modo_cambio()
+                    try: self.app.events.on_modo_cambio()
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Plataforma
             if setup.get("plataforma") and hasattr(self.app, "plataforma_var"):
                 self.app.plataforma_var.set(setup["plataforma"])
                 if hasattr(self.app, "_on_plataforma_cambio"):
-                    try: self.app._on_plataforma_cambio()
+                    try: self.app.events.on_plataforma_cambio()
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Modelo (según modo)
@@ -98,19 +98,19 @@ class ToolsWorkflowService:
                 if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
                     self.app.combo_modelo_imagen.set(modelo)
                     if hasattr(self.app, "_on_modelo_imagen_cambio"):
-                        try: self.app._on_modelo_imagen_cambio()
+                        try: self.app.events.on_modelo_imagen_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                 elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
                     self.app.combo_modelo_video.set(modelo)
                     if hasattr(self.app, "_on_motor_cambio"):
-                        try: self.app._on_motor_cambio()
+                        try: self.app.events.on_motor_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                 elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
                     self.app.combo_modelo_audio.set(modelo)
                     if hasattr(self.app, "_on_motor_audio_cambio"):
-                        try: self.app._on_motor_audio_cambio()
+                        try: self.app.events.on_motor_audio_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
             # Ratio, destino

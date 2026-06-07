@@ -483,7 +483,7 @@ class MultiPromptService:
                         try:
                             self.app.modo_var.set("video")
                             if hasattr(self.app, '_on_modo_cambio'):
-                                self.app._on_modo_cambio()
+                                self.app.events.on_modo_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] cambio modo: {e}")
                     self.app.dialogs.actualizar_salida(resp)

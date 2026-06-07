@@ -1074,7 +1074,7 @@ class DashboardService:
                 if modo and hasattr(self.app, "modo_var"):
                     self.app.modo_var.set(modo)
                     if hasattr(self.app, "_on_modo_cambio"):
-                        try: self.app._on_modo_cambio()
+                        try: self.app.events.on_modo_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
             except Exception as e:
@@ -1090,19 +1090,19 @@ class DashboardService:
                             if modo == "imagen" and hasattr(self.app, "combo_modelo_imagen"):
                                 self.app.combo_modelo_imagen.set(modelo)
                                 if hasattr(self.app, "_on_modelo_imagen_cambio"):
-                                    try: self.app._on_modelo_imagen_cambio()
+                                    try: self.app.events.on_modelo_imagen_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                             elif modo == "video" and hasattr(self.app, "combo_modelo_video"):
                                 self.app.combo_modelo_video.set(modelo)
                                 if hasattr(self.app, "_on_motor_cambio"):
-                                    try: self.app._on_motor_cambio()
+                                    try: self.app.events.on_motor_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                             elif modo == "audio" and hasattr(self.app, "combo_modelo_audio"):
                                 self.app.combo_modelo_audio.set(modelo)
                                 if hasattr(self.app, "_on_motor_audio_cambio"):
-                                    try: self.app._on_motor_audio_cambio()
+                                    try: self.app.events.on_motor_audio_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                         except Exception as e:
@@ -1140,7 +1140,7 @@ class DashboardService:
                             if audio_emocion and hasattr(self.app, "emocion_var"):
                                 self.app.emocion_var.set(audio_emocion)
                                 if hasattr(self.app, "_on_audio_filtro_cambio"):
-                                    try: self.app._on_audio_filtro_cambio()
+                                    try: self.app.events.on_audio_filtro_cambio()
                                     except Exception as e:
                                         logger.debug(f"[silent] {e}")
                             if audio_voz and hasattr(self.app, "voz_var"):

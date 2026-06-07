@@ -345,7 +345,10 @@ class DialogsService:
         from config import AUTHOR, PUBLIC_VERSION
 
         is_light = ctk.get_appearance_mode().lower() == "light"
-        author_frame = ctk.CTkFrame(self, fg_color="transparent", height=30)
+        # Fix A1 fase 2: CTkFrame necesita un master Tk real (self.app),
+        # no el service. Antes daba: AttributeError: 'DialogsService'
+        # object has no attribute 'tk' al arrancar la app.
+        author_frame = ctk.CTkFrame(self.app, fg_color="transparent", height=30)
         author_frame.pack(side="bottom", fill="x", padx=16, pady=(4, 6))
 
         # Texto autor (izquierda)

@@ -73,6 +73,53 @@ class ArquitectoApp(
     # UiFooterMixin removido (A1 fase 2, sesión 14) → self.footer.* (UiFooterService)
 ):
 
+    # Mapa nombre-de-método → componente que lo expone. Se usa en
+    # __getattr__ como fallback para resolver call sites legacy del tipo
+    # `self.app._método` que sobrevivieron a la migración A1 fase 2.
+    # NO incluye el "_" inicial — la búsqueda lo añade automáticamente.
+    _LEGACY_SERVICE_ATTR = (
+        "dialogs", "footer", "ui", "events", "data", "sesion", "creative",
+        "workflow", "analysis", "backup", "atajos", "multi", "adn",
+        "cliente", "ab", "json", "refinar", "workers", "prompts",
+        "dashboard",
+    )
+
+    def __getattr__(self, name):
+        """Fallback: busca el atributo en los services registrados.
+
+        Resuelve call sites legacy `self.app._método()` que tras la
+        migración A1 fase 2 (sesión 14) ya no existen como métodos
+        directos del app porque los mixins se removieron del MRO.
+
+        Solo se llama si el atributo NO se encontró por la vía normal
+        (atributo de instancia, atributo de clase, herencia). Si tampoco
+        está en ningún service, delegamos a tkinter (comportamiento
+        original de CTk).
+        """
+        if name.startswith("__") or name == "_LEGACY_SERVICE_ATTR":
+            raise AttributeError(name)
+        for comp_attr in type(self)._LEGACY_SERVICE_ATTR:
+            comp = self.__dict__.get(comp_attr)
+            if comp is None:
+                continue
+            # Buscar en el _service interno del componente (donde viven
+            # los métodos reales con underscore)
+            service = getattr(comp, "_service", None)
+            if service is not None and hasattr(service, name):
+                return getattr(service, name)
+            # Si el componente no tiene service (solo delegación
+            # __getattr__), no probamos más para evitar recursión.
+        # Fallback al comportamiento original de tkinter
+        try:
+            tk = self.__dict__.get("tk")
+            if tk is not None:
+                return getattr(tk, name)
+        except AttributeError:
+            pass
+        raise AttributeError(
+            f"{type(self).__name__!r} object has no attribute {name!r}"
+        )
+
     def __init__(self):
         super().__init__()
 
