@@ -77,6 +77,7 @@ def _host(**overrides):
     for k, v in defaults.items():
         setattr(app, k, v)
     app.footer = app  # shortcut para tests A1 fase 2 (UiFooter)
+    app.dialogs = app  # shortcut para tests A1 fase 2 (Dialogs)
     return UiEventsService(app)
 
 

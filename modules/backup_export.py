@@ -60,9 +60,9 @@ class BackupExportService:
                 f"  - Plantillas: {len(backup['plantillas'])}"
             )
             messagebox.showinfo("Backup completo", mensaje, parent=self.app)
-            self.app.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
+            self.app.dialogs.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
         except Exception as e:
-            self.app.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self.app)
 
     def _construir_backup(self) -> dict:
@@ -189,9 +189,9 @@ class BackupExportService:
                 f"Si te has equivocado, puedes restaurar ese archivo.",
                 parent=self.app,
             )
-            self.app.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
+            self.app.dialogs.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
         except Exception as e:
-            self.app.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
@@ -203,7 +203,7 @@ class BackupExportService:
         favs  = self.app.store.favoritos or []
         stars = self.app.store.estrellas or []
         if not (hist or favs or stars):
-            return self.app.set_estado(
+            return self.app.dialogs.set_estado(
                 "⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos).",
                 "#e67e22",
             )
@@ -318,14 +318,14 @@ class BackupExportService:
                             it.get("contenido", ""),
                         ])
                         n += 1
-            self.app.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
+            self.app.dialogs.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
             messagebox.showinfo(
                 "Exportación completada",
                 f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
                 parent=self.app,
             )
         except Exception as e:
-            self.app.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
             messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self.app)
 
     def _cmd_export_cli(self) -> None:
@@ -345,7 +345,7 @@ class BackupExportService:
         import re
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         ratio = self.app.ratio_var.get() or "1:1"
         pos = self.app.extraer_positive() or actual
@@ -513,7 +513,7 @@ class BackupExportService:
         def _make_copy(c, n, color):
             def _copiar():
                 pyperclip.copy(c)
-                self.app.set_estado(f"📋 {n} copiado", "#2ecc71")
+                self.app.dialogs.set_estado(f"📋 {n} copiado", "#2ecc71")
                 if hasattr(self.app, "show_toast"):
                     try:
                         self.app.show_toast(f"📋 Copiado: {n}", color, 1800)
@@ -581,7 +581,7 @@ class BackupExportService:
                          if modo_sel is None or m in (modo_sel, "todos")]
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
-            self.app.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
+            self.app.dialogs.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
                             "#2ecc71")
 
         ctk.CTkButton(vent, text="📋 Copiar todos los del filtro actual",
@@ -675,7 +675,7 @@ class BackupExportService:
                         txt_full = str(item).lower()
                     if termino in txt_full:
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
+                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["favoritos"].get():
                 for item in (self.app.store.favoritos or []):
@@ -686,7 +686,7 @@ class BackupExportService:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
+                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["estrellas"].get():
                 for item in (self.app.store.estrellas or []):
@@ -697,7 +697,7 @@ class BackupExportService:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.app.actualizar_salida(c)))
+                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["seeds"].get():
                 for s in (prefs.get("seeds_favoritos") or []):
@@ -723,7 +723,7 @@ class BackupExportService:
                             txt_form = f"POSITIVE PROMPT: {ff.get('positive', '')}"
                             if ff.get('negative'):
                                 txt_form += f"\nNEGATIVE PROMPT: {ff.get('negative')}"
-                            self.app.actualizar_salida(txt_form)
+                            self.app.dialogs.actualizar_salida(txt_form)
                         resultados.append(("🧪 Fórmula", f.get("nombre", "?"), pos_neg, _cargar_formula))
 
             if filtros["personajes"].get():
@@ -774,7 +774,7 @@ class BackupExportService:
 
                 btn = ctk.CTkButton(card, text="✅ Aplicar", width=90, height=22, fg_color="#1a7a3c",
                                       font=ctk.CTkFont(size=10),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.app.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
+                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.

@@ -326,7 +326,7 @@ class JsonPromptService:
             else:
                 texto_final = f"POSITIVE PROMPT: {prompt.strip()}"
             try:
-                self.app.actualizar_salida(texto_final)
+                self.app.dialogs.actualizar_salida(texto_final)
                 resumen["prompt"] = True
             except Exception as e:
                 logger.warning(f"actualizar_salida desde JSON falló: {e}")
@@ -396,7 +396,7 @@ class JsonPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(
+        self.app.dialogs.set_estado(
             f"📥 JSON importado — prompt aplicado"
             + (f" · modo→{resumen['modo']}" if resumen["modo"] else "")
             + (f" · ratio={resumen['ratio']}" if resumen["ratio"] else ""),
@@ -501,9 +501,9 @@ class JsonPromptService:
             extras_dict = {k: data.get(k) for k in extras}
             try:
                 pyperclip.copy(json.dumps(extras_dict, indent=2, ensure_ascii=False))
-                self.app.set_estado("📋 Metadatos extras copiados al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado("📋 Metadatos extras copiados al portapapeles", "#2ecc71")
             except Exception as e:
-                self.app.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
+                self.app.dialogs.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
 
         if extras:
             ctk.CTkButton(btn_row, text="📋 Copiar metadatos extras", width=210, height=32,
@@ -527,7 +527,7 @@ class JsonPromptService:
         """
         prompt_actual = self.app.txt_salida.get("1.0", "end").strip()
         if not prompt_actual or len(prompt_actual) < 20:
-            self.app.set_estado(
+            self.app.dialogs.set_estado(
                 "⚠️ Genera primero un prompt para exportarlo como JSON profesional.",
                 "#e67e22",
             )
@@ -543,9 +543,9 @@ class JsonPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado("📤 Enriqueciendo prompt a JSON profesional vía LLM...",
+        self.app.dialogs.set_estado("📤 Enriqueciendo prompt a JSON profesional vía LLM...",
                          "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.toggle_botones(False)
 
         # Construir petición al LLM para producir el JSON
         guia_modo = {
@@ -618,9 +618,9 @@ class JsonPromptService:
                     logger.warning(f"JSON pro inválido: {e}")
 
                 def _mostrar():
-                    self.app.toggle_botones(True)
+                    self.app.dialogs.toggle_botones(True)
                     self._mostrar_modal_export(json_pretty, parsed is not None)
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         "📤 JSON profesional listo"
                         + ("" if parsed is not None else " ⚠️ (puede tener errores de sintaxis)"),
                         "#2ecc71" if parsed is not None else "#e67e22",
@@ -629,9 +629,9 @@ class JsonPromptService:
                 self.app.after(0, _mostrar)
             except Exception as e:
                 logger.exception("exportar json")
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error exportando: {e}",
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error exportando: {e}",
                                                        "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 

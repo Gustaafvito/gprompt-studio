@@ -204,7 +204,7 @@ class UIBuildersService:
         self.app._btn_key = ctk.CTkButton(frame_llm, text="🔑", width=30, height=28,
                       fg_color=key_bg, hover_color=key_hover,
                       font=ctk.CTkFont(size=12),
-                      command=self.app._cmd_configurar_api_keys)
+                      command=self.app.dialogs._cmd_configurar_api_keys)
         self.app._btn_key.pack(side="left", padx=(4, 0))
         # Tooltip si CTkToolTip está instalado
         try:
@@ -780,9 +780,9 @@ class UIBuildersService:
         if ratio in ratios_dispo:
             self.app.ratio_var.set(ratio)
             self.app.combo_ratio.set(ratio)
-            self.app.set_estado(f"📐 Ratio {ratio} aplicado", "#3498db")
+            self.app.dialogs.set_estado(f"📐 Ratio {ratio} aplicado", "#3498db")
         else:
-            self.app.set_estado(f"⚠️ Ratio {ratio} no disponible para este modelo", "#e67e22")
+            self.app.dialogs.set_estado(f"⚠️ Ratio {ratio} no disponible para este modelo", "#e67e22")
 
     def _build_destino_panel(self):
         """Panel Destino — ahora oculto, los combos están integrados en cada panel de modo."""
@@ -817,13 +817,13 @@ class UIBuildersService:
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.set_estado(f"📐 Destino {dest} → Ratio auto: {ratio}", "#3498db")
+            self.app.dialogs.set_estado(f"📐 Destino {dest} → Ratio auto: {ratio}", "#3498db")
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
             self.app.brief_var.set(True)
             self.app._on_brief_cambio()
-            self.app.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
+            self.app.dialogs.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
 
         self.app.reiniciar_memoria()
 
@@ -1089,7 +1089,7 @@ class UIBuildersService:
         for n, v in self.app.estilo_checks.items():
             v.set(False)
         self._actualizar_contador_estilos()
-        self.app.set_estado("🗑 Estilos limpiados")
+        self.app.dialogs.set_estado("🗑 Estilos limpiados")
 
     def _actualizar_contador_estilos(self):
         """Actualiza el contador y label verde de estilos seleccionados."""
@@ -1335,7 +1335,7 @@ class UIBuildersService:
                         logger.debug(f"[silent] {e}")
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.app.switch_traduccion_var.get() else "desactivado"
-                self.app.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
+                self.app.dialogs.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _build_acciones(self):
@@ -1457,7 +1457,7 @@ class UIBuildersService:
                 btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
                 btn_row.pack(side="top", anchor="w")
                 for text, w, fg, cmd, tooltip in grupo:
-                    kw = {"fg_color": fg, "hover_color": self.app._darker(fg)} if fg else {}
+                    kw = {"fg_color": fg, "hover_color": self.app.dialogs._darker(fg)} if fg else {}
                     btn = ctk.CTkButton(btn_row, text=text, width=w,
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
@@ -1590,8 +1590,8 @@ class UIBuildersService:
                 self.app.txt_salida.bind(seq, _redo)
         except Exception as _e:
             pass
-        self.app.txt_salida.bind("<KeyRelease>", self.app._on_salida_editada)
-        self.app.txt_salida.bind("<Double-Button-1>", self.app._on_doble_click_salida)
+        self.app.txt_salida.bind("<KeyRelease>", self.app.dialogs._on_salida_editada)
+        self.app.txt_salida.bind("<Double-Button-1>", self.app.dialogs._on_doble_click_salida)
         self.app.txt_salida.bind("<Button-3>", self.app.footer._mostrar_menu_contextual)
 
         # ── MEJORA 9 (inline): franja de compatibilidad rápida con plataformas top ──

@@ -104,6 +104,7 @@ def _host(*, deepseek_resp="POSITIVE PROMPT: nice\nNEGATIVE PROMPT: bad",
         mostrar_diff_refinamiento=app._mostrar_diff_refinamiento,
     )
     app.footer = app  # shortcut para tests A1 fase 2 (UiFooter)
+    app.dialogs = app  # shortcut para tests A1 fase 2 (Dialogs)
     return WorkersIaService(app)
 
 

@@ -111,7 +111,7 @@ class UiFooterService:
             btn_row.pack(side="top", anchor="w")
             for text, w, fg, cmd, tip in botones:
                 btn = ctk.CTkButton(btn_row, text=text, width=w, fg_color=fg,
-                                     hover_color=self.app._darker(fg),
+                                     hover_color=self.app.dialogs._darker(fg),
                                      command=cmd, **pill)
                 btn.pack(side="left", padx=2)
                 CTkToolTip(btn, delay=0.3, message=tip, **tip_kwargs)
@@ -139,7 +139,7 @@ class UiFooterService:
                     txt = item
                 if txt:
                     label = f"#{i+1} {txt[:50]}{'...' if len(txt) > 50 else ''}"
-                    submenu_hist.add_command(label=label, command=lambda t=txt: self.app.actualizar_salida(t))
+                    submenu_hist.add_command(label=label, command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
             menu.add_cascade(label="📋 Pegar de historial reciente", menu=submenu_hist)
 
         # Submenú: pegar de favoritos
@@ -155,7 +155,7 @@ class UiFooterService:
                     nombre = ""
                 if txt:
                     label = f"⭐ {nombre or txt[:50]}"
-                    submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.app.actualizar_salida(t))
+                    submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
             menu.add_cascade(label="⭐ Pegar de favoritos", menu=submenu_fav)
 
         menu.add_separator()
@@ -191,7 +191,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("sel.first", "sel.last")
                     pyperclip.copy(sel)
                     self.app.txt_idea.delete("sel.first", "sel.last")
-                    self.app.set_estado("✂️ Cortado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado("✂️ Cortado al portapapeles", "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -204,7 +204,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("1.0", "end").strip()
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.set_estado("📋 Copiado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado("📋 Copiado al portapapeles", "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -365,9 +365,9 @@ class UiFooterService:
         self.app.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
-            self.app.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
+            self.app.dialogs.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
         else:
-            self.app.set_estado("🎨 Estilos: General (ninguno seleccionado)")
+            self.app.dialogs.set_estado("🎨 Estilos: General (ninguno seleccionado)")
 
     def _on_personaje_selected(self, nombre: str):
         if not nombre or nombre == "— Sin personaje —":
@@ -586,7 +586,7 @@ class UiFooterService:
             msg = f"💡 {len(compatibles)} LoRAs compatibles disponibles: {', '.join(nombres)}"
         else:
             msg = f"💡 {len(compatibles)} LoRAs compatibles ({', '.join(nombres)} +{len(compatibles) - 3} más)"
-        self.app.set_estado(msg, "#a78bfa")
+        self.app.dialogs.set_estado(msg, "#a78bfa")
 
     def modelo_video_valido(self):
         v = self.app.combo_modelo_video.get()

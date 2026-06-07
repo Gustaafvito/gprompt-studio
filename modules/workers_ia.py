@@ -43,7 +43,7 @@ class WorkersIaService:
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
                    es_refinamiento=False, texto_previo=None):
         try:
-            self.app.after(0, self.app._iniciar_progreso)
+            self.app.after(0, self.app.dialogs._iniciar_progreso)
             specs = self.app.get_current_model_specs()
             max_c = specs.get("max_chars") or specs.get("max_chars_letra") or 0 if specs else 0
             max_tok = 2500 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
@@ -57,7 +57,7 @@ class WorkersIaService:
                 texto_original_len = len(texto)
                 texto = self.app._recortar_si_excede(texto, max_c)
                 if len(texto) < texto_original_len:
-                    self.app.after(0, lambda: self.app.set_estado(f"✂️ Prompt recortado a {max_c} chars (máximo del modelo)", "#f39c12"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(f"✂️ Prompt recortado a {max_c} chars (máximo del modelo)", "#f39c12"))
 
             # ELIMINAR NEGATIVE si el modelo no lo soporta (Nano Banana, Gemini, Turbo en ComfyUI)
             es_comfyui_turbo = False
@@ -69,14 +69,14 @@ class WorkersIaService:
                     texto = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?(?=\n\s*(?:POSITIVE|─|$)|\Z)', '', texto, flags=re.DOTALL | re.IGNORECASE)
                     texto = texto.strip()
                     razon = "ComfyUI + Turbo" if es_comfyui_turbo else "este modelo"
-                    self.app.after(0, lambda r=razon: self.app.set_estado(f"⚠️ NEGATIVE eliminado ({r} no lo soporta)", "#f39c12"))
+                    self.app.after(0, lambda r=razon: self.app.dialogs.set_estado(f"⚠️ NEGATIVE eliminado ({r} no lo soporta)", "#f39c12"))
 
             # ELIMINAR PESOS NUMÉRICOS solo en ComfyUI con modelos Turbo
             if es_comfyui_turbo and not es_ideas:
                 if re.search(r'\([^)]+:[0-9.]+\)', texto):
                     # (word:1.2) → word   |   (word word:0.8) → word word
                     texto = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', texto)
-                    self.app.after(0, lambda: self.app.set_estado(f"⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)", "#f39c12"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(f"⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)", "#f39c12"))
 
             self.app.guardar_en_historial(texto)
             # No sobrescribir el resultado con el texto crudo de las
@@ -86,14 +86,14 @@ class WorkersIaService:
             if es_refinamiento:
                 self.app.after(0, lambda: self.app.refinar.mostrar_diff_refinamiento(texto_previo or "", texto))
             elif not es_ideas and not es_variaciones:
-                self.app.after(0, lambda: self.app.actualizar_salida(texto))
+                self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
             estado_msg = (f"🔍 Refinamiento listo — revisa el diff ({cerebro_elegido})."
                           if es_refinamiento
                           else f"✅ Completado ({cerebro_elegido}).")
-            self.app.after(0, lambda m=estado_msg: self.app.set_estado(m, "#2ecc71"))
-            self.app.after(0, lambda: self.app.toggle_botones(True))
-            self.app.after(0, self.app._sonar_completado)
-            self.app.after(0, self.app._detener_progreso)
+            self.app.after(0, lambda m=estado_msg: self.app.dialogs.set_estado(m, "#2ecc71"))
+            self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+            self.app.after(0, self.app.dialogs._sonar_completado)
+            self.app.after(0, self.app.dialogs._detener_progreso)
             if es_ideas:
                 ideas = parsear_ideas(texto)
                 # Fallback: si el LLM no usó formato "1. 2. 3.", dividir por bloques
@@ -104,36 +104,36 @@ class WorkersIaService:
                 self.app.after(0, lambda ideas=ideas: self.app._mostrar_ideas(ideas))
             elif es_variaciones: self.app.after(0, lambda: self.app._mostrar_variaciones(self.app._parsear_variaciones(texto, n_esperado=n_variaciones)))
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.actualizar_salida(f"❌ Error {self.app.llm_var.get()}: {e}"))
-            self.app.after(0, lambda: self.app.set_estado("Error de conexión.", "#e74c3c"))
-            self.app.after(0, lambda: self.app.toggle_botones(True))
-            self.app.after(0, self.app._detener_progreso)
+            self.app.after(0, lambda e=e: self.app.dialogs.actualizar_salida(f"❌ Error {self.app.llm_var.get()}: {e}"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado("Error de conexión.", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+            self.app.after(0, self.app.dialogs._detener_progreso)
 
     def _worker_vision(self):
         try:
-            self.app.after(0, lambda: self.app.set_estado("👁 Analizando imagen...", "#f39c12"))
-            def on_status(msg): self.app.after(0, lambda: self.app.set_estado(msg, "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado("👁 Analizando imagen...", "#f39c12"))
+            def on_status(msg): self.app.after(0, lambda: self.app.dialogs.set_estado(msg, "#f39c12"))
             desc, motor = self.app.vision.describir(self.app.imagen_cargada, self.app.modo_var.get(), on_status)
 
             def _mostrar_resultado():
                 idea_previa = self.app.txt_idea.get("1.0", "end").strip()
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\n{idea_previa}" if idea_previa else desc)
-                self.app.actualizar_salida(f"👁 [{motor}] analizó la imagen...\nRevisa y pulsa Generar Prompt.")
-                self.app.set_estado(f"👁 [{motor}] — Edita la descripción y pulsa Generar Prompt", "#2ecc71")
-                self.app.toggle_botones(True)
+                self.app.dialogs.actualizar_salida(f"👁 [{motor}] analizó la imagen...\nRevisa y pulsa Generar Prompt.")
+                self.app.dialogs.set_estado(f"👁 [{motor}] — Edita la descripción y pulsa Generar Prompt", "#2ecc71")
+                self.app.dialogs.toggle_botones(True)
                 self.app.txt_idea.focus_set()
             self.app.after(0, _mostrar_resultado)
         except Exception as e:
-            self.app.after(0, lambda: self.app.set_estado("❌ Error visión.", "#e74c3c"))
-            self.app.after(0, lambda: self.app.toggle_botones(True))
+            self.app.after(0, lambda: self.app.dialogs.set_estado("❌ Error visión.", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
     def _worker_prompt_traduccion(self, idea_original):
         idea = idea_original
         if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_original):
-            self.app.after(0, lambda: self.app.set_estado("🌐 Traduciendo al inglés...", "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado("🌐 Traduciendo al inglés...", "#f39c12"))
             idea = self.app.deepseek.traducir(idea_original)
-            self.app.after(0, lambda: self.app.set_estado("🌐 Traducido...", "#3498db"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado("🌐 Traducido...", "#3498db"))
         self._worker_ia(self.app._construir_peticion(idea, "B"))
     # ──────────────────────────────────────────────────────────────
     def _worker_prompt_quick(self, idea):
@@ -204,16 +204,16 @@ class WorkersIaService:
             self.app.guardar_en_historial(texto)
 
             def _aplicar():
-                self.app.actualizar_salida(texto)
-                self.app.set_estado("⚡ Quick listo", "#2ecc71")
-                self.app.toggle_botones(True)
-                try: self.app._sonar_completado()
+                self.app.dialogs.actualizar_salida(texto)
+                self.app.dialogs.set_estado("⚡ Quick listo", "#2ecc71")
+                self.app.dialogs.toggle_botones(True)
+                try: self.app.dialogs._sonar_completado()
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             self.app.after(0, _aplicar)
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
-            self.app.after(0, lambda: self.app.toggle_botones(True))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
     # ──────────────────────────────────────────────────────────────
     def _worker_imagen_a_prompt(self):
@@ -222,8 +222,8 @@ class WorkersIaService:
             es_referencia = bool(self.app.switch_ref_visual_var.get())
             modo_etiqueta = "🖼 REFERENCIA" if es_referencia else "👁 FIEL"
 
-            self.app.after(0, lambda: self.app.set_estado(f"{modo_etiqueta} Analizando imagen...", "#f39c12"))
-            def on_status(msg): self.app.after(0, lambda: self.app.set_estado(msg, "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(f"{modo_etiqueta} Analizando imagen...", "#f39c12"))
+            def on_status(msg): self.app.after(0, lambda: self.app.dialogs.set_estado(msg, "#f39c12"))
             desc, motor = self.app.vision.describir(self.app.imagen_cargada, self.app.modo_var.get(), on_status)
             self.app._ultimo_anclaje_visual = desc
             idea_manual = self.app.txt_idea.get("1.0", "end").strip()
@@ -236,11 +236,11 @@ class WorkersIaService:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\nAdiciones del usuario: {idea_manual}" if idea_manual else desc)
                 if es_referencia:
-                    self.app.set_estado(f"🖼 [{motor}] → generando prompt con guía visual (estilo/paleta/personajes)...", "#7c3aed")
+                    self.app.dialogs.set_estado(f"🖼 [{motor}] → generando prompt con guía visual (estilo/paleta/personajes)...", "#7c3aed")
                 elif tiene_prompt:
-                    self.app.set_estado(f"👁 [{motor}] → mejorando prompt existente con análisis visual...", "#f39c12")
+                    self.app.dialogs.set_estado(f"👁 [{motor}] → mejorando prompt existente con análisis visual...", "#f39c12")
                 else:
-                    self.app.set_estado(f"👁 [{motor}] → generando prompt con contexto visual anclado...", "#f39c12")
+                    self.app.dialogs.set_estado(f"👁 [{motor}] → generando prompt con contexto visual anclado...", "#f39c12")
             self.app.after(0, _poner_desc)
 
             idea_final = desc if not idea_manual else f"{desc}\n\nAdiciones: {idea_manual}"
@@ -303,16 +303,16 @@ class WorkersIaService:
             self.app.guardar_en_historial(texto)
 
             def _mostrar_final():
-                self.app.actualizar_salida(texto)
+                self.app.dialogs.actualizar_salida(texto)
                 if es_referencia:
                     modo_txt = "Prompt generado con imagen como referencia visual"
                 elif tiene_prompt:
                     modo_txt = "Prompt mejorado con análisis visual"
                 else:
                     modo_txt = "Prompt anclado generado"
-                self.app.set_estado(f"✅ Visión: [{motor}] · LLM: {self.app.llm_var.get()} · {modo_txt}", "#2ecc71")
-                self.app.toggle_botones(True)
+                self.app.dialogs.set_estado(f"✅ Visión: [{motor}] · LLM: {self.app.llm_var.get()} · {modo_txt}", "#2ecc71")
+                self.app.dialogs.toggle_botones(True)
             self.app.after(0, _mostrar_final)
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
-            self.app.after(0, lambda: self.app.toggle_botones(True))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))

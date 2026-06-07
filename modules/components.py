@@ -335,21 +335,37 @@ class BackupComponent(_Component):
 
 
 class DialogsComponent(_Component):
-    """API Keys, Tema, Preferencias, Acerca de, Tokens
-    (DialogsMixin). Decimoctavo servicio del refactor A1.
+    """API Keys, Tema, Preferencias, Acerca de, Tokens + UI base
+    (set_estado, actualizar_salida, toggle_botones, progreso, sonido).
 
-    NOTA: _cmd_dashboard ya migrado a DashboardComponent (sesión 6).
+    A1 fase 2 (sesión 14): DialogsMixin → DialogsService aislado.
+    __getattr__ delega TODO al servicio (necesario porque set_estado,
+    actualizar_salida, toggle_botones, etc. se usan desde CIENTOS de
+    sitios y sería contraproducente listarlos todos como métodos).
     """
     _name = "dialogs"
+    __slots__ = ("app", "_service")
+
+    def __init__(self, app):
+        super().__init__(app)
+        from modules.dialogs import DialogsService
+        self._service = DialogsService(app)
+
+    def __getattr__(self, name):
+        if name in ("app", "_service"):
+            raise AttributeError(name)
+        if hasattr(self._service, name):
+            return getattr(self._service, name)
+        return super().__getattr__(name)
 
     def cmd_configurar_api_keys(self, provider_focus=None) -> None:
-        return self.app._cmd_configurar_api_keys(provider_focus)
+        return self._service._cmd_configurar_api_keys(provider_focus)
 
     def cmd_toggle_tema(self) -> None:
-        return self.app._cmd_toggle_tema()
+        return self._service._cmd_toggle_tema()
 
     def cmd_acerca_de(self) -> None:
-        return self.app._cmd_acerca_de()
+        return self._service._cmd_acerca_de()
 
     def cmd_preferencias(self) -> None:
         return self.app.cmd_preferencias()

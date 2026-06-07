@@ -68,7 +68,7 @@ class UiEventsService:
 
         try:
             if hasattr(self.app, 'txt_salida') and self.app.txt_salida.get("1.0", "end").strip():
-                self.app.actualizar_salida("")
+                self.app.dialogs.actualizar_salida("")
             self.app.reiniciar_memoria()
             if getattr(self.app, '_anclaje_visual', None) and modo != "imagen":
                 self.app._anclaje_visual = None
@@ -191,8 +191,8 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
 
         natural = self.app.is_natural_mode()
-        if natural: self.app.set_estado(f"🌐 {self.app.plataforma_var.get()} — prompts descriptivos", "#3498db")
-        else: self.app.set_estado(f"🎯 {self.app.plataforma_var.get()} — tags + pesos + negatives", "#3498db")
+        if natural: self.app.dialogs.set_estado(f"🌐 {self.app.plataforma_var.get()} — prompts descriptivos", "#3498db")
+        else: self.app.dialogs.set_estado(f"🎯 {self.app.plataforma_var.get()} — tags + pesos + negatives", "#3498db")
         self.app.reiniciar_memoria()
 
     def _actualizar_motores_video(self) -> None:
@@ -220,7 +220,7 @@ class UiEventsService:
             if self.app.ratio_var.get() not in specs["ratios"]: self.app.ratio_var.set(specs["ratios"][0])
             self.app.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | 🎬 {specs['best_for']}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.set_estado(f"🎬 {motor_name}", "#3498db")
+            self.app.dialogs.set_estado(f"🎬 {motor_name}", "#3498db")
 
             try:
                 if hasattr(self.app, '_tooltip_motor_video') and self.app._tooltip_motor_video is not None:
@@ -257,11 +257,11 @@ class UiEventsService:
         else:
             self.app.combo_ratio_v.configure(values=RATIOS_VIDEO)
             self.app.lbl_img_model_info.pack_forget()
-            self.app.set_estado(f"🎬 {motor_name}")
+            self.app.dialogs.set_estado(f"🎬 {motor_name}")
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
-        try: self.app._actualizar_tokens()
+        try: self.app.dialogs._actualizar_tokens()
         except: pass
 
     def _on_modelo_imagen_cambio(self, modelo_name: str | None = None) -> None:
@@ -272,7 +272,7 @@ class UiEventsService:
         try: self.app.footer._actualizar_lora_trigger_visible()
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        try: self.app._actualizar_tokens()
+        try: self.app.dialogs._actualizar_tokens()
         except Exception as e:
             logger.debug(f"[silent] {e}")
         if self.app.modo_var.get() != "imagen":
@@ -335,7 +335,7 @@ class UiEventsService:
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
-        try: self.app._actualizar_tokens()
+        try: self.app.dialogs._actualizar_tokens()
         except: pass
         try:
             self.app.after(500, lambda: self.app.footer._recomendar_loras_para_modelo(modelo_name))
@@ -355,7 +355,7 @@ class UiEventsService:
         if specs:
             self.app.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | ⏱ {specs['duracion_max_min']} min — {specs['best_for']}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.set_estado(f"🎵 {motor_name}", "#9b59b6")
+            self.app.dialogs.set_estado(f"🎵 {motor_name}", "#9b59b6")
         else:
             self.app.lbl_img_model_info.pack_forget()
         self.app.reiniciar_memoria()
@@ -371,14 +371,14 @@ class UiEventsService:
         if id_a and id_a != "— Idioma —": partes.append(f"🌐 {id_a}")
 
         if partes:
-            self.app.set_estado(f"🎵 Filtros audio: {' · '.join(partes)}", "#9b59b6")
+            self.app.dialogs.set_estado(f"🎵 Filtros audio: {' · '.join(partes)}", "#9b59b6")
         else:
-            self.app.set_estado("🎵 Sin filtros de audio adicionales")
+            self.app.dialogs.set_estado("🎵 Sin filtros de audio adicionales")
         self.app.reiniciar_memoria()
 
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():
-            self.app.set_estado("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios", "#f39c12")
+            self.app.dialogs.set_estado("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios", "#f39c12")
         else:
-            self.app.set_estado("Modo Brief desactivado — prompts artísticos libres")
+            self.app.dialogs.set_estado("Modo Brief desactivado — prompts artísticos libres")
         self.app.reiniciar_memoria()

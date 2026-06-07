@@ -200,7 +200,7 @@ class ModoClienteService:
         def _generar_propuestas():
             brief_dict = {k: v.get().strip() for k, v in campos.items()}
             if not any(brief_dict.values()):
-                self.app.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
+                self.app.dialogs.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
                 return
 
             # Persistir último brief
@@ -230,8 +230,8 @@ class ModoClienteService:
 
     def _generar_propuestas_cliente(self, brief):
         """Genera 5 propuestas basadas en un brief."""
-        self.app.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         specs = self.app.get_current_model_specs()
         has_neg = specs.get("has_negative", True) if specs else True
@@ -307,16 +307,16 @@ class ModoClienteService:
 
                 def _mostrar():
                     self._abrir_comparador_propuestas(propuestas[:5], brief)
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         f"💼 {len(propuestas)} propuestas profesionales generadas",
                         "#2ecc71",
                     )
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -406,14 +406,14 @@ class ModoClienteService:
 
             def _usar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
-                self.app.actualizar_salida(completo)
-                self.app.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
+                self.app.dialogs.actualizar_salida(completo)
+                self.app.dialogs.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
                 vent.destroy()
 
             def _copiar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 pyperclip.copy(completo)
-                self.app.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
 
             def _guardar_prop(nom=titulo, p=positivo, neg=negativo):
                 """Guarda como FAVORITO con marca de origen. Antes intentaba
@@ -438,9 +438,9 @@ class ModoClienteService:
                         "nombre":     nom,
                         "contenido":  completo,
                     })
-                    self.app.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
+                    self.app.dialogs.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
                 except Exception as e:
-                    self.app.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
 
             ctk.CTkButton(btn_row, text="✅ Usar propuesta", width=150, height=30, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
@@ -637,10 +637,10 @@ class ModoClienteService:
                 )
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
-                return self.app.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
+                return self.app.dialogs.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
 
-            self.app.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
-            self.app.toggle_botones(False)
+            self.app.dialogs.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
+            self.app.dialogs.toggle_botones(False)
             lbl_prog.pack(anchor="w")
             progress_bar.pack(fill="x", pady=(2, 0))
             lbl_prog.configure(text=f"Analizando imagen 1/{total_imgs}...")
@@ -695,9 +695,9 @@ class ModoClienteService:
                             m = re.search(r'PROMPT\s+TEMPLATE[^:]*:\s*(.+?)(?=\Z)', resp, re.DOTALL | re.IGNORECASE)
                             if m:
                                 template = m.group(1).strip()
-                                self.app.actualizar_salida(template)
+                                self.app.dialogs.actualizar_salida(template)
                                 vent2.destroy()
-                                self.app.set_estado("🎭 Template aplicado", "#2ecc71")
+                                self.app.dialogs.set_estado("🎭 Template aplicado", "#2ecc71")
 
                         def _guardar_estilo():
                             import re as _re
@@ -731,7 +731,7 @@ class ModoClienteService:
                             })
                             prefs_g["estilos_moodboard"] = estilos_g
                             self.app.store.guardar_preferencias(prefs_g)
-                            self.app.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
+                            self.app.dialogs.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
 
                         ctk.CTkButton(btn_row2, text="✅ Aplicar template", width=140, height=28,
                                       fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
@@ -740,14 +740,14 @@ class ModoClienteService:
                         ctk.CTkButton(btn_row2, text="📋 Copiar análisis", width=140, height=28,
                                       command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
 
-                        self.app.toggle_botones(True)
-                        self.app.set_estado("🎭 Estilo común detectado", "#2ecc71")
+                        self.app.dialogs.toggle_botones(True)
+                        self.app.dialogs.set_estado("🎭 Estilo común detectado", "#2ecc71")
                     self.app.after(0, _mostrar)
                 except Exception as e:
                     self.app.after(0, lambda: lbl_prog.pack_forget())
                     self.app.after(0, lambda: progress_bar.pack_forget())
-                    self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                    self.app.after(0, lambda: self.app.toggle_botones(True))
+                    self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                    self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
             threading.Thread(target=_trabajar, daemon=True).start()
 
@@ -821,11 +821,11 @@ class ModoClienteService:
                 def _aplicar(e=est):
                     tpl = e.get("template", "").strip()
                     if not tpl:
-                        self.app.set_estado("⚠️ Este estilo no tiene template aplicable",
+                        self.app.dialogs.set_estado("⚠️ Este estilo no tiene template aplicable",
                                         "#e67e22")
                         return
-                    self.app.actualizar_salida(tpl)
-                    self.app.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
+                    self.app.dialogs.actualizar_salida(tpl)
+                    self.app.dialogs.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
                                     "#2ecc71")
 
                 def _ver(e=est):

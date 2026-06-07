@@ -39,7 +39,7 @@ class ToolsAnalysisService:
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""
         items = self.app.store.historial or []
         if len(items) < 5:
-            return self.app.set_estado("⚠️ Necesitas al menos 5 prompts en historial.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Necesitas al menos 5 prompts en historial.", "#e67e22")
 
         # ── Selector N + comprobar caché ──
         vent_sel = GPromptWindow(self.app)
@@ -91,7 +91,7 @@ class ToolsAnalysisService:
                       command=vent_sel.destroy).pack(pady=2)
 
     def _critica_ejecutar(self, ultimos: list) -> None:
-        self.app.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
+        self.app.dialogs.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
 
         modelos_usados = Counter()
         plataformas_usadas = Counter()
@@ -167,7 +167,7 @@ class ToolsAnalysisService:
                     logger.debug(f"Cache crítica no se pudo guardar: {e}")
                 self.app.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
             except Exception as e:
-                self.app.after(0, lambda: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -193,16 +193,16 @@ class ToolsAnalysisService:
 
         def _copiar_todo():
             pyperclip.copy(resp)
-            self.app.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+            self.app.dialogs.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
 
         def _copiar_seleccion():
             try:
                 sel = txt.get("sel.first", "sel.last")
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+                    self.app.dialogs.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
             except Exception:
-                self.app.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
+                self.app.dialogs.set_estado("⚠️ Selecciona texto primero arrastrando con el ratón", "#e67e22")
 
         def _regenerar():
             # Borra caché y vuelve a llamar a la crítica desde cero
@@ -228,13 +228,13 @@ class ToolsAnalysisService:
                       fg_color="#444", hover_color="#555",
                       command=vent.destroy).pack(side="left", padx=4)
 
-        self.app.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
+        self.app.dialogs.set_estado("🔍 Análisis listo" + (" (caché)" if cacheado else ""), "#2ecc71")
 
     def _cmd_automejora_periodica(self) -> None:
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
         items = self.app.store.historial or []
         if len(items) < 3:
-            return self.app.set_estado("⚠️ Necesitas al menos 3 prompts en historial.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Necesitas al menos 3 prompts en historial.", "#e67e22")
 
         # ── Selector "últimos N" ──
         vent_sel = GPromptWindow(self.app)
@@ -271,7 +271,7 @@ class ToolsAnalysisService:
 
     def _auto_mejora_ejecutar(self, ultimos: list) -> None:
         """Lanza la auto-mejora con un set concreto de prompts."""
-        self.app.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
+        self.app.dialogs.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
 
         prompts = []
         for i, it in enumerate(ultimos, 1):
@@ -305,7 +305,7 @@ class ToolsAnalysisService:
                         logger.debug(f"JSON parse falló: {e}")
                 self.app.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -395,13 +395,13 @@ class ToolsAnalysisService:
                             if hasattr(self.app, "txt_salida"):
                                 self.app.txt_salida.delete("1.0", "end")
                                 self.app.txt_salida.insert("1.0", texto)
-                                self.app.set_estado("✨ Versión mejorada aplicada en el área de salida", "#2ecc71")
+                                self.app.dialogs.set_estado("✨ Versión mejorada aplicada en el área de salida", "#2ecc71")
                         except Exception as e:
-                            self.app.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
+                            self.app.dialogs.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
 
                     def _copiar(texto=mejorado):
                         pyperclip.copy(texto)
-                        self.app.set_estado("📋 Versión mejorada copiada", "#2ecc71")
+                        self.app.dialogs.set_estado("📋 Versión mejorada copiada", "#2ecc71")
 
                     ctk.CTkButton(fila_btn, text="✨ Aplicar versión",
                                   width=160, height=28, fg_color=success,
@@ -414,7 +414,7 @@ class ToolsAnalysisService:
                       fg_color="#444", hover_color="#555",
                       command=vent.destroy).pack(pady=8)
 
-        self.app.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
+        self.app.dialogs.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
 
     def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
@@ -666,7 +666,7 @@ class ToolsAnalysisService:
                         est_s,
                         len(str(cont).split()) if cont else 0,
                     ])
-            self.app.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
+            self.app.dialogs.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
 
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(fill="x", padx=10, pady=8)
@@ -686,9 +686,9 @@ class ToolsAnalysisService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        self.app.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
+        self.app.dialogs.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
 
         peticion = (
             f"Analiza este prompt de IA y devuelve EXACTAMENTE en este formato (mantén las etiquetas):\n\n"
@@ -874,14 +874,14 @@ class ToolsAnalysisService:
 
                     def _copiar_analisis():
                         pyperclip.copy(resp)
-                        self.app.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
+                        self.app.dialogs.set_estado("📋 Análisis copiado al portapapeles", "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=30,
                                   fg_color="#1a7a3c", hover_color="#145e2d",
                                   command=_copiar_analisis).pack(side="left", padx=4)
 
                     def _generar_mejorado():
-                        self.app.set_estado("✨ Generando versión mejorada...", "#f39c12")
+                        self.app.dialogs.set_estado("✨ Generando versión mejorada...", "#f39c12")
                         peticion_mejora = (
                             f"Mejora este prompt de IA manteniendo la idea original pero añadiendo:\n"
                             f"- Más detalle en sujeto y estilo\n"
@@ -895,21 +895,21 @@ class ToolsAnalysisService:
                                 texto_mejorado = self.app.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
                                 texto_mejorado = limpiar_marcadores(texto_mejorado)
                                 def _aplicar():
-                                    self.app.actualizar_salida(texto_mejorado)
+                                    self.app.dialogs.actualizar_salida(texto_mejorado)
                                     vent.destroy()
-                                    self.app.set_estado("✨ Prompt mejorado aplicado", "#2ecc71")
+                                    self.app.dialogs.set_estado("✨ Prompt mejorado aplicado", "#2ecc71")
                                 self.app.after(0, _aplicar)
                             except Exception as e:
-                                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                         threading.Thread(target=_worker_mejorar, daemon=True).start()
 
                     ctk.CTkButton(btn_frame, text="✨ Mejorar prompt", width=140, height=30,
                                   fg_color="#7c3aed", command=_generar_mejorado).pack(side="left", padx=4)
 
-                    self.app.set_estado("📝 Scoring listo", "#2ecc71")
+                    self.app.dialogs.set_estado("📝 Scoring listo", "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -921,7 +921,7 @@ class ToolsAnalysisService:
         if any(term in actual for term in nsfw_terms):
             if hasattr(self.app, 'nsfw_var'):
                 self.app.nsfw_var.set(True)
-            self.app.set_estado("⚠️ Contenido NSFW detectado — activado modo NSFW", "#e74c3c")
+            self.app.dialogs.set_estado("⚠️ Contenido NSFW detectado — activado modo NSFW", "#e74c3c")
 
     def _guardar_seed_favorito(self) -> None:
         """Guarda la configuración actual como seed favorito."""
@@ -945,7 +945,7 @@ class ToolsAnalysisService:
         seeds.append(seed)
         prefs["seeds_favoritos"] = seeds
         self.app.store.guardar_preferencias(prefs)
-        self.app.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
+        self.app.dialogs.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
 
     def _abrir_seeds_favoritos(self) -> None:
         """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
@@ -1061,7 +1061,7 @@ class ToolsAnalysisService:
                         prefs_b["seeds_favoritos"] = seeds_act
                         self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.app.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
+                    self.app.dialogs.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
 
                 ctk.CTkButton(btn_frame, text="✅ Aplicar", width=90, height=26,
                               fg_color="#1a7a3c", font=ctk.CTkFont(size=10),
@@ -1135,11 +1135,11 @@ class ToolsAnalysisService:
 
         if aplicado:
             nombre = seed.get('nombre', '?')
-            self.app.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
+            self.app.dialogs.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
             if mensajes:
-                self.app.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
+                self.app.dialogs.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
         else:
-            self.app.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
+            self.app.dialogs.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
 
     def _autocompletar_tags(self, event=None) -> None:
         """Auto-completar tags mientras escribe."""
@@ -1243,7 +1243,7 @@ class ToolsAnalysisService:
         """Crea y exporta un workflow completo de ComfyUI."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual:
-            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         pos = self.app.extraer_positive() or actual
         neg = self.app.extraer_negative() or ""
@@ -1358,7 +1358,7 @@ class ToolsAnalysisService:
 
         def _copiar():
             pyperclip.copy(json_str)
-            self.app.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
+            self.app.dialogs.set_estado("📋 JSON copiado al portapapeles", "#2ecc71")
 
         def _guardar():
             from tkinter import filedialog
@@ -1371,7 +1371,7 @@ class ToolsAnalysisService:
             if ruta:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(json_str)
-                self.app.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
+                self.app.dialogs.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
 
         ctk.CTkButton(frame_btn, text="📋 Copiar JSON", width=120, fg_color="#15803d",
                       hover_color="#166534", command=_copiar).pack(side="left", padx=(0, 6))
@@ -1384,17 +1384,17 @@ class ToolsAnalysisService:
         """Traduce el prompt actual al español en una ventana aparte."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 10:
-            return self.app.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
-        self.app.set_estado("🌐 Traduciendo a español...", "#f39c12")
+        self.app.dialogs.set_estado("🌐 Traduciendo a español...", "#f39c12")
 
         def _worker():
             try:
                 traducido = self.app.deepseek.traducir_a_espanol(actual)
                 self.app.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
-                self.app.after(0, lambda: self.app.set_estado("🌐 Traducción lista", "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado("🌐 Traducción lista", "#2ecc71"))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -1428,13 +1428,13 @@ class ToolsAnalysisService:
         frame_btn.pack(fill="x")
 
         def _usar():
-            self.app.actualizar_salida(texto)
+            self.app.dialogs.actualizar_salida(texto)
             vent.destroy()
 
         def _copiar():
             import pyperclip
             pyperclip.copy(texto)
-            self.app.set_estado("📋 Traducción copiada", "#2ecc71")
+            self.app.dialogs.set_estado("📋 Traducción copiada", "#2ecc71")
 
         ctk.CTkButton(frame_btn, text="✅ Usar traducción", width=130,
                       fg_color="#2563eb", hover_color="#1d4ed8",
@@ -1466,7 +1466,7 @@ class ToolsAnalysisService:
         if consejos:
             import random
             consejo = random.choice(consejos)
-            self.app.set_estado(consejo, "#3498db")
+            self.app.dialogs.set_estado(consejo, "#3498db")
 
     def _validar_compatibilidad_modelo(self) -> None:
         """Valida la compatibilidad del modelo con la configuración actual."""

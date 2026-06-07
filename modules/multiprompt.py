@@ -61,7 +61,7 @@ class MultiPromptService:
         """
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
 
         n = self.app._pedir_n_modal(
             "🎭 Mood — número de prompts",
@@ -77,8 +77,8 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
             f"PROMPT {i+1}: [sujeto diverso] — POSITIVE: ... NEGATIVE: ..."
@@ -103,19 +103,19 @@ class MultiPromptService:
                 resp = limpiar_marcadores(resp)
                 bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
                 if len(bloques) < 2:
-                    self.app.after(0, lambda: self.app.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
-                    self.app.after(0, lambda: self.app.toggle_botones(True))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n])
-                    self.app.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -278,10 +278,10 @@ class MultiPromptService:
         (LLM elige).
         """
         if self.app.modo_var.get() != "imagen":
-            return self.app.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.set_estado("⚠️ Escribe la escena base.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Escribe la escena base.", "#e67e22")
 
         cfg = self._pedir_story_config(default_n=3)
         if cfg is None:
@@ -295,8 +295,8 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         if auto:
             tipos_instr = (
@@ -341,13 +341,13 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n], labels=labels_comp)
-                    self.app.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -358,10 +358,10 @@ class MultiPromptService:
         de la microhistoria según el N elegido.
         """
         if self.app.modo_var.get() != "video":
-            return self.app.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
         n = self.app._pedir_n_modal(
             "📽 Board — número de frames",
@@ -377,8 +377,8 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
             f"FRAME {i+1} (rol narrativo): POSITIVE: ... NEGATIVE: ..."
@@ -417,16 +417,16 @@ class MultiPromptService:
                             ("🎬 Encadenar como prompt de vídeo", "#7c3aed", _encadenar_video),
                         ],
                     )
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         f"📽 Storyboard de {len(bloques)} frames listo · 🎬 encadénalo a vídeo desde el comparador",
                         "#2ecc71",
                     )
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -439,14 +439,14 @@ class MultiPromptService:
         txt_salida y cierra el comparador.
         """
         if not frames:
-            return self.app.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
 
         try: self.app._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         # Construir bloque con cada frame numerado
         frames_str = "\n\n".join(
@@ -486,14 +486,14 @@ class MultiPromptService:
                                 self.app._on_modo_cambio()
                         except Exception as e:
                             logger.debug(f"[silent] cambio modo: {e}")
-                    self.app.actualizar_salida(resp)
+                    self.app.dialogs.actualizar_salida(resp)
                     self.app.guardar_en_historial(resp)
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         f"🎬 Vídeo encadenado de {len(frames)} keyframes aplicado al editor",
                         "#2ecc71",
                     )
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                     try:
                         if vent_comparador and vent_comparador.winfo_exists():
                             vent_comparador.destroy()
@@ -502,8 +502,8 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("encadenar board→vídeo")
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -520,13 +520,13 @@ class MultiPromptService:
         combinar los N paneles en una sola descripción multi-panel.
         """
         if self.app.modo_var.get() != "imagen":
-            return self.app.set_estado(
+            return self.app.dialogs.set_estado(
                 "⚠️ Storyboard de imagen solo está disponible en modo IMAGEN.",
                 "#e67e22",
             )
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
 
         # Detectar formato del modelo actual (natural vs tag-based)
         modelo = self.app.footer.modelo_imagen_valido()
@@ -551,8 +551,8 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         if is_natural:
             formato_lineas = "\n---\n".join(
@@ -627,16 +627,16 @@ class MultiPromptService:
                             ("📋 Fusionar en 1 prompt", "#7c3aed", _fusionar),
                         ],
                     )
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         f"🖼 Storyboard de {len(bloques)} paneles listo · 📋 fusiona en 1 prompt desde el comparador",
                         "#2ecc71",
                     )
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -648,14 +648,14 @@ class MultiPromptService:
         panel explícita, etc.).
         """
         if not paneles:
-            return self.app.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
 
         try: self.app._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
 
         paneles_str = "\n\n".join(
             f"--- PANEL {i+1} ---\n{p.strip()}"
@@ -689,14 +689,14 @@ class MultiPromptService:
                 resp = limpiar_marcadores(resp)
 
                 def _aplicar():
-                    self.app.actualizar_salida(resp)
+                    self.app.dialogs.actualizar_salida(resp)
                     self.app.guardar_en_historial(resp)
-                    self.app.set_estado(
+                    self.app.dialogs.set_estado(
                         f"📋 Storyboard fusionado en 1 prompt ({len(paneles)} paneles) aplicado al editor",
                         "#2ecc71",
                     )
-                    self.app.toggle_botones(True)
-                    self.app._sonar_completado()
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
                     try:
                         if vent_comparador and vent_comparador.winfo_exists():
                             vent_comparador.destroy()
@@ -705,8 +705,8 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("fusionar storyboard imagen")
-                self.app.after(0, lambda e=e: self.app.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
-                self.app.after(0, lambda: self.app.toggle_botones(True))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         threading.Thread(target=_worker, daemon=True).start()
 
@@ -724,7 +724,7 @@ class MultiPromptService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
 
         try: self.app._sesion_log("🌀 Walk árbol abierto")
         except Exception as e:
@@ -989,10 +989,10 @@ class MultiPromptService:
         # ─── Acción: usar este nodo (NO cierra, sigues explorando) ──
         def _usar_nodo():
             n = nodos[sel["id"]]
-            self.app.actualizar_salida(n["texto"])
+            self.app.dialogs.actualizar_salida(n["texto"])
             ruta = _ruta_de(sel["id"])
             ruta_str = " → ".join(x["label"] for x in ruta)
-            self.app.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
+            self.app.dialogs.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
             try: self.app._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
                 logger.debug(f"[silent] {e}")

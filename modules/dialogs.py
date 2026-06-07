@@ -22,8 +22,15 @@ except ImportError:
 if TYPE_CHECKING:
     pass
 
-class DialogsMixin:
-    """Mixin containing all dialog, window, and special UI panel methods."""
+class DialogsService:
+    """17 métodos de diálogos + UI base (set_estado, actualizar_salida,
+    toggle_botones, progreso, tokens, sonido).
+
+    A1 fase 2 (sesión 14): servicio aislado con app por composición.
+    """
+
+    def __init__(self, app):
+        self.app = app
 
     def _cmd_configurar_api_keys(self, provider_focus=None):
         """Abre wizard de configuración de API keys para todos los proveedores."""
@@ -41,7 +48,7 @@ class DialogsMixin:
             self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
             return
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("🔑 Configurar API Keys")
         v.geometry("780x720")
 
@@ -196,8 +203,8 @@ class DialogsMixin:
                 nueva_key = ent.get().strip()
                 key_actual = cargar_api_key(pid) or ""
                 if nueva_key != key_actual:
-                    if hasattr(self.clients, "actualizar_key"):
-                        self.clients.actualizar_key(pid, nueva_key)
+                    if hasattr(self.app.clients, "actualizar_key"):
+                        self.app.clients.actualizar_key(pid, nueva_key)
                     else:
                         guardar_api_key(pid, nueva_key)
                     cambios += 1
@@ -206,13 +213,13 @@ class DialogsMixin:
                 # Refrescar el desplegable del cerebro para que los iconos ✅/🔒
                 # reflejen las keys recién guardadas
                 try:
-                    if hasattr(self, "_refrescar_indicadores_llm"):
-                        self.ui._refrescar_indicadores_llm()
+                    if hasattr(self.app, "_refrescar_indicadores_llm"):
+                        self.app.ui._refrescar_indicadores_llm()
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
                 try:
-                    if hasattr(self, "_actualizar_indicador_proveedor"):
-                        self._actualizar_indicador_proveedor()
+                    if hasattr(self.app, "_actualizar_indicador_proveedor"):
+                        self.app._actualizar_indicador_proveedor()
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             else:
@@ -233,7 +240,7 @@ class DialogsMixin:
 
     def _close_menu_if_open(self, event=None):
         """Cierra menú del header si el click fue fuera del popup y botones."""
-        popup = getattr(self, '_active_menu_popup', None)
+        popup = getattr(self.app, '_active_menu_popup', None)
         if not popup or not popup.winfo_exists():
             return
         if event:
@@ -244,7 +251,7 @@ class DialogsMixin:
                     return
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-            for btn in getattr(self, '_header_menu_btns', []):
+            for btn in getattr(self.app, '_header_menu_btns', []):
                 try:
                     bx, by, bw, bh = btn.winfo_rootx(), btn.winfo_rooty(), btn.winfo_width(), btn.winfo_height()
                     if bx <= event.x_root <= bx + bw and by <= event.y_root <= by + bh:
@@ -255,7 +262,7 @@ class DialogsMixin:
             popup.destroy()
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-        self._active_menu_popup = None
+        self.app._active_menu_popup = None
 
     def _cmd_acerca_de(self) -> None:
         """Modal 'Acerca de' con info de la app, versión, autor y enlaces."""
@@ -266,10 +273,10 @@ class DialogsMixin:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
 
-        v = GPromptWindow(self)
+        v = GPromptWindow(self.app)
         v.title("ℹ️ Acerca de G-Prompt Studio")
         v.geometry("520x520")
-        v.transient(self)
+        v.transient(self.app)
 
         # Cabecera
         ctk.CTkLabel(v, text=APP_TITLE, font=ctk.CTkFont(size=20, weight="bold"),
@@ -320,10 +327,10 @@ class DialogsMixin:
         nuevo = "Light" if actual == "Dark" else "Dark"
         ctk.set_appearance_mode(nuevo)
         # Guardar preferencia
-        prefs = self.store.cargar_preferencias()
+        prefs = self.app.store.cargar_preferencias()
         prefs["tema"] = nuevo.lower()
-        self.store.guardar_preferencias(prefs)
-        self.after(100, self._apply_theme_colors)
+        self.app.store.guardar_preferencias(prefs)
+        self.app.after(100, self.app._apply_theme_colors)
         self.set_estado(f"🌗 Tema: {nuevo}", "#2ecc71")
 
     def _build_author(self) -> None:
@@ -382,9 +389,9 @@ class DialogsMixin:
         def _abrir(url):
             try:
                 webbrowser.open(url)
-                if hasattr(self, "show_toast"):
+                if hasattr(self.app, "show_toast"):
                     try:
-                        self.show_toast(f"🌐 Abriendo {url[:40]}...", "#3b82f6", 1500)
+                        self.app.show_toast(f"🌐 Abriendo {url[:40]}...", "#3b82f6", 1500)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             except Exception as e:
@@ -427,22 +434,22 @@ class DialogsMixin:
                 color = c["muted_text"]
             except Exception:
                 color = "#6b7280" if is_light else "#888888"
-        if hasattr(self, 'lbl_estado'):
-            self.lbl_estado.configure(text=texto, text_color=color)
+        if hasattr(self.app, 'lbl_estado'):
+            self.app.lbl_estado.configure(text=texto, text_color=color)
 
     def actualizar_salida(self, texto):
         """Actualiza el textbox de salida."""
-        if hasattr(self, 'txt_salida'):
-            try: self._guardar_version_prompt()
+        if hasattr(self.app, 'txt_salida'):
+            try: self.app._guardar_version_prompt()
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             # F3: marcar separador para que la escritura programática
             # sea un solo paso de undo, distinto del que tenía el usuario.
-            try: self.txt_salida._textbox.edit_separator()
+            try: self.app.txt_salida._textbox.edit_separator()
             except Exception: pass
-            self.txt_salida.delete("1.0", "end")
-            self.txt_salida.insert("1.0", texto)
-            try: self.txt_salida._textbox.edit_separator()
+            self.app.txt_salida.delete("1.0", "end")
+            self.app.txt_salida.insert("1.0", texto)
+            try: self.app.txt_salida._textbox.edit_separator()
             except Exception: pass
             self._colorear_resultado()
             try: self._actualizar_tokens()
@@ -457,9 +464,9 @@ class DialogsMixin:
           • Natural (GPT Image, Nano Banana, etc.): PROMPT: (sin negative)
           • Legado:                                 POSITIVE: / NEGATIVE:
         """
-        if not hasattr(self, 'txt_salida'): return
-        self.txt_salida.tag_config("pos_label", foreground="#2ecc71")
-        self.txt_salida.tag_config("neg_label", foreground="#e74c3c")
+        if not hasattr(self.app, 'txt_salida'): return
+        self.app.txt_salida.tag_config("pos_label", foreground="#2ecc71")
+        self.app.txt_salida.tag_config("neg_label", foreground="#e74c3c")
         labels = [
             ("pos_label", "POSITIVE PROMPT:"),
             ("neg_label", "NEGATIVE PROMPT:"),
@@ -470,24 +477,24 @@ class DialogsMixin:
         for tag, label in labels:
             start = "1.0"
             while True:
-                pos = self.txt_salida.search(label, start, stopindex="end")
+                pos = self.app.txt_salida.search(label, start, stopindex="end")
                 if not pos: break
                 end = f"{pos}+{len(label)}c"
-                self.txt_salida.tag_add(tag, pos, end)
+                self.app.txt_salida.tag_add(tag, pos, end)
                 start = end
 
     def _on_doble_click_salida(self, event=None):
         """Doble click en resultado: si está en línea POSITIVE/NEGATIVE, copiar esa parte."""
         try:
-            idx = self.txt_salida.index("current")
-            linea = self.txt_salida.get(f"{idx} linestart", f"{idx} lineend")
+            idx = self.app.txt_salida.index("current")
+            linea = self.app.txt_salida.get(f"{idx} linestart", f"{idx} lineend")
             if "POSITIVE PROMPT:" in linea or "POSITIVE:" in linea:
-                pos = self.extraer_positive()
+                pos = self.app.extraer_positive()
                 if pos:
                     pyperclip.copy(pos)
                     self.set_estado("🟢 POSITIVE copiado (doble-click)", "#2ecc71")
             elif "NEGATIVE PROMPT:" in linea or "NEGATIVE:" in linea:
-                neg = self.extraer_negative()
+                neg = self.app.extraer_negative()
                 if neg:
                     pyperclip.copy(neg)
                     self.set_estado(" NEGATIVE copiado (doble-click)", "#e74c3c")
@@ -495,8 +502,8 @@ class DialogsMixin:
             logger.debug(f"[silent] {_e}")
     def toggle_botones(self, estado=True):
         """Activa/desactiva botones de generación."""
-        if hasattr(self, 'action_btns'):
-            for btn in self.action_btns:
+        if hasattr(self.app, 'action_btns'):
+            for btn in self.app.action_btns:
                 btn.configure(state="normal" if estado else "disabled")
         if estado:
             self._detener_progreso()
@@ -505,18 +512,18 @@ class DialogsMixin:
 
     def _iniciar_progreso(self) -> None:
         """Inicia la barra de progreso."""
-        if not getattr(self, '_progreso_activo', False):
-            self._progreso_activo = True
-            bar = getattr(self, 'progress', None) or getattr(self, 'barra_progreso', None)
+        if not getattr(self.app, '_progreso_activo', False):
+            self.app._progreso_activo = True
+            bar = getattr(self.app, 'progress', None) or getattr(self.app, 'barra_progreso', None)
             if bar:
                 bar.pack(side="right", padx=(10, 0))
                 bar.start()
 
     def _detener_progreso(self) -> None:
         """Detiene y oculta la barra de progreso."""
-        if getattr(self, '_progreso_activo', False):
-            self._progreso_activo = False
-            bar = getattr(self, 'progress', None) or getattr(self, 'barra_progreso', None)
+        if getattr(self.app, '_progreso_activo', False):
+            self.app._progreso_activo = False
+            bar = getattr(self.app, 'progress', None) or getattr(self.app, 'barra_progreso', None)
             if bar:
                 bar.stop()
                 bar.pack_forget()
@@ -531,23 +538,23 @@ class DialogsMixin:
         try:
             # Auto-guardar borrador y preferencias
             try:
-                self.data._auto_guardar_borrador()
+                self.app.data._auto_guardar_borrador()
             except Exception as e:
                 logger.warning(f"_auto_guardar_borrador en cierre: {e}")
             try:
-                self.data._guardar_preferencias()
+                self.app.data._guardar_preferencias()
             except Exception as e:
                 logger.warning(f"_guardar_preferencias en cierre: {e}")
 
             # Detener grabación de sesión si está activa
             try:
-                if getattr(self, "_sesion_activa", False):
-                    self._sesion_activa = False
+                if getattr(self.app, "_sesion_activa", False):
+                    self.app._sesion_activa = False
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
             # Cerrar todas las ventanas hijas (Toplevel)
             try:
-                for w in list(self.winfo_children()):
+                for w in list(self.app.winfo_children()):
                     try:
                         if isinstance(w, ctk.CTkToplevel) and w.winfo_exists():
                             w.destroy()
@@ -557,33 +564,33 @@ class DialogsMixin:
                 logger.debug(f"[silent] {_e}")
         finally:
             try:
-                self.destroy()
+                self.app.destroy()
             except Exception:
                 logger.error("Error destruyendo ventana principal", exc_info=True)
 
     def _on_salida_editada(self, event=None):
         """Detecta cuando el usuario edita la salida."""
-        self._salida_editada = True
-        if getattr(self, '_token_pending', None):
-            self.after_cancel(self._token_pending)
-        self._token_pending = self.after(300, self._actualizar_tokens)
+        self.app._salida_editada = True
+        if getattr(self.app, '_token_pending', None):
+            self.app.after_cancel(self.app._token_pending)
+        self.app._token_pending = self.app.after(300, self._actualizar_tokens)
 
     def _actualizar_tokens(self) -> None:
         """Actualiza el contador de tokens y caracteres."""
-        if not hasattr(self, 'txt_salida') or not hasattr(self, 'lbl_tokens'):
+        if not hasattr(self.app, 'txt_salida') or not hasattr(self.app, 'lbl_tokens'):
             return
-        texto = self.txt_salida.get("1.0", "end").strip()
-        pos = self.extraer_positive()
-        neg = self.extraer_negative()
+        texto = self.app.txt_salida.get("1.0", "end").strip()
+        pos = self.app.extraer_positive()
+        neg = self.app.extraer_negative()
         c_pos = len(pos) if pos else 0
         c_neg = len(neg) if neg else 0
         c_tot = len(texto)
 
-        specs = self.get_current_model_specs()
+        specs = self.app.get_current_model_specs()
         if specs:
             max_c = specs.get("max_chars") or specs.get("max_chars_letra") or 1500
         else:
-            plat = getattr(self, 'plataforma_var', None)
+            plat = getattr(self.app, 'plataforma_var', None)
             max_c = 2000  # Default si no hay specs
 
         excede = c_pos > max_c
@@ -591,17 +598,17 @@ class DialogsMixin:
             color = "#e74c3c" if excede else "#3498db"
             aviso = " ⚠️ EXCEDE" if excede else ""
             if c_neg:
-                self.lbl_tokens.configure(
+                self.app.lbl_tokens.configure(
                     text=f"📝 Positive: {c_pos}/{max_c}{aviso}  |  Negative: {c_neg}  |  Total: {c_tot}",
                     text_color=color)
             else:
-                self.lbl_tokens.configure(
+                self.app.lbl_tokens.configure(
                     text=f"📝 Prompt: {c_pos}/{max_c}{aviso}  |  Total: {c_tot}",
                     text_color=color)
         elif texto:
-            self.lbl_tokens.configure(text=f"📝 Total: {c_tot} chars", text_color="#555555")
+            self.app.lbl_tokens.configure(text=f"📝 Total: {c_tot} chars", text_color="#555555")
         else:
-            self.lbl_tokens.configure(text="", text_color="#555555")
+            self.app.lbl_tokens.configure(text="", text_color="#555555")
 
     def _sonar_completado(self) -> None:
         """Sonido de notificación al completar generación."""

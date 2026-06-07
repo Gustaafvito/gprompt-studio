@@ -64,7 +64,7 @@ class AtajosAyudaService:
             widget.bind("<Control-t>",            lambda e: (self._abrir_tutorial(), "break")[1])
             widget.bind("<Control-Shift-N>",      lambda e: (self.app._cmd_negative_builder(), "break")[1])
             widget.bind("<Control-h>",            lambda e: (self.app._cmd_modo_focus(), "break")[1])
-            widget.bind("<Control-Shift-L>",      lambda e: (self.app._cmd_toggle_tema(), "break")[1])
+            widget.bind("<Control-Shift-L>",      lambda e: (self.app.dialogs._cmd_toggle_tema(), "break")[1])
             widget.bind("<Control-Shift-T>",      lambda e: (self._atajo_traducir_idea(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
@@ -81,7 +81,7 @@ class AtajosAyudaService:
             self.app.modo_var.set(modo_destino)
             self.app._on_modo_cambio()
             etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
-            self.app.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
+            self.app.dialogs.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         return "break"
@@ -93,7 +93,7 @@ class AtajosAyudaService:
         elif hasattr(self.app, "cmd_exportar"):
             self.app.cmd_exportar()
         else:
-            self.app.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
+            self.app.dialogs.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
         return "break"
 
     def _atajo_guardar_estrella(self) -> str:
@@ -102,9 +102,9 @@ class AtajosAyudaService:
             if hasattr(self.app, "_guardar_estrella"):
                 self.app._guardar_estrella()
             else:
-                self.app.set_estado("⚠️ Función no disponible", "#e74c3c")
+                self.app.dialogs.set_estado("⚠️ Función no disponible", "#e74c3c")
         except Exception as e:
-            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _cmd_buscar_global(self) -> str:
@@ -112,7 +112,7 @@ class AtajosAyudaService:
         try:
             self._abrir_busqueda_global()
         except Exception as e:
-            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _atajo_buscar_global(self) -> str:
@@ -120,25 +120,25 @@ class AtajosAyudaService:
         try:
             self._cmd_buscar_global()
         except Exception as e:
-            self.app.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
         return "break"
 
     def _atajo_traducir_idea(self) -> str:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
+            self.app.dialogs.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
             return "break"
         try:
             texto_traducido = self.app.deepseek.traducir(idea)
             if texto_traducido and texto_traducido != idea:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", texto_traducido)
-                self.app.set_estado("🌐 Idea traducida al inglés", "#3498db")
+                self.app.dialogs.set_estado("🌐 Idea traducida al inglés", "#3498db")
             else:
-                self.app.set_estado("⚠️ No se pudo traducir", "#e67e22")
+                self.app.dialogs.set_estado("⚠️ No se pudo traducir", "#e67e22")
         except Exception as e:
-            self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
 
     def _toggle_fullscreen(self) -> str:
@@ -169,7 +169,7 @@ class AtajosAyudaService:
         try:
             abrir_loras(self)
         except Exception as e:
-            self.app.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
         return "break"
 
     def _cmd_mostrar_atajos(self) -> str:
@@ -256,7 +256,7 @@ class AtajosAyudaService:
         def _copiar_tecla(tecla):
             try:
                 pyperclip.copy(tecla)
-                self.app.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
+                self.app.dialogs.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

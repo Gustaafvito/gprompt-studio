@@ -78,7 +78,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.app.dialogs.set_estado("⚠️ Escribe una idea primero", "#e67e22")
             return
         try:
             self.app._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
@@ -190,8 +190,8 @@ class AbTestingService:
         fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
         neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "No generes NEGATIVE."
 
-        self.app.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
-        self.app.toggle_botones(False)
+        self.app.dialogs.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
+        self.app.dialogs.toggle_botones(False)
 
         def _generar():
             prompts_generados = []
@@ -262,8 +262,8 @@ class AbTestingService:
             txt.insert("1.0", prompt)
 
             def _usar(p=prompt):
-                self.app.actualizar_salida(p)
-                self.app.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
+                self.app.dialogs.actualizar_salida(p)
+                self.app.dialogs.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
                 # No cerramos la ventana para poder ver las otras opciones
 
             btn = ctk.CTkButton(cell, text="✅ Usar este", height=28, fg_color="#1a8a3c", hover_color="#127a30",
@@ -271,8 +271,8 @@ class AbTestingService:
             btn.pack(fill="x", padx=10, pady=(0, 8))
 
         ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy, fg_color=c["fg_dark"]).pack(pady=(5, 12))
-        self.app.set_estado("🧪 Elige la variante que más te guste", "#3498db")
-        self.app.toggle_botones(True)
+        self.app.dialogs.set_estado("🧪 Elige la variante que más te guste", "#3498db")
+        self.app.dialogs.toggle_botones(True)
 
     def _cmd_comparar_modelos(self):
         """Genera el prompt actual adaptado a 3 modelos a elegir por el usuario."""
@@ -280,7 +280,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
+            return self.app.dialogs.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
         try:
             self.app._sesion_log("🆚 Comparar: abrió comparador de modelos")
         except Exception as e:
@@ -376,7 +376,7 @@ class AbTestingService:
             seleccionados = [combos[i].get() for i in range(n)]
             # Validar que sean diferentes
             if len(set(seleccionados)) < n:
-                self.app.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
+                self.app.dialogs.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
                 return
             sel_vent.destroy()
             self._abrir_ventana_comparacion(idea, modo, seleccionados)
@@ -571,7 +571,7 @@ class AbTestingService:
                                             self.app.combo_modelo_audio.set(m2)
                                 except Exception as _e:
                                     logger.debug(f"[silent compar usar] {_e}")
-                                self.app.actualizar_salida(r2)
+                                self.app.dialogs.actualizar_salida(r2)
 
                                 # Highlight visual: borde dorado en la card aplicada,
                                 # las demás vuelven a su color original.
@@ -587,7 +587,7 @@ class AbTestingService:
                                     except Exception as _e:
                                         logger.debug(f"[silent highlight] {_e}")
 
-                                self.app.set_estado(
+                                self.app.dialogs.set_estado(
                                     f"🏆 '{m2}' aplicado — la ventana sigue abierta para probar otros",
                                     "#2ecc71")
 
@@ -601,7 +601,7 @@ class AbTestingService:
                                 state="normal",
                                 command=lambda r=r, m=m: (
                                     pyperclip.copy(r),
-                                    self.app.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
+                                    self.app.dialogs.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
                     self.app.after(0, _mostrar)

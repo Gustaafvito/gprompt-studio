@@ -33,7 +33,6 @@ from config import (
 )
 from modules import (
     CoreMixin,
-    DialogsMixin,
     EventBus,
     install_components,
 )
@@ -54,7 +53,7 @@ class ArquitectoApp(
     # ToolsWorkflowMixin removido (A1 fase 2, sesión 14) → self.workflow.* (ToolsWorkflowService)
     # DataMgmtMixin removido (A1 fase 2, sesión 14) → self.data.* (DataMgmtService)
     # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
-    DialogsMixin,
+    # DialogsMixin removido (A1 fase 2, sesión 14) → self.dialogs.* (DialogsService)
     CoreMixin,
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
     # MultiPromptMixin removido (A1 fase 2, sesión 14) → self.multi.* (MultiPromptService)
@@ -221,7 +220,7 @@ class ArquitectoApp(
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # ── Construir UI Organizada ───────────────────────────────
-        self._build_author()
+        self.dialogs._build_author()
         self.footer._build_footer()
 
         # Zona 1: Contexto Global
@@ -293,7 +292,7 @@ class ArquitectoApp(
         # Indicador de ADN visual activo (si se cargó desde preferencias)
         self.after(900, self._actualizar_indicador_adn)
 
-        self.protocol("WM_DELETE_WINDOW", self._on_cerrar)
+        self.protocol("WM_DELETE_WINDOW", self.dialogs._on_cerrar)
 
         try:
             self._splash_estado("¡Listo!")
@@ -834,7 +833,7 @@ class ArquitectoApp(
         self._regen_init()
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.dialogs.set_estado("⚠️ Escribe una idea primero", "#e67e22")
             return
         # Guardar resultado actual en pila ANTES de regenerar
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -850,7 +849,7 @@ class ArquitectoApp(
         """Navega a la versión anterior de la regeneración."""
         self._regen_init()
         if not self._regen_stack:
-            self.set_estado("⚠️ No hay versiones anteriores", "#e67e22")
+            self.dialogs.set_estado("⚠️ No hay versiones anteriores", "#e67e22")
             return
         # Si estamos en el último, primero guardamos el actual
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -859,37 +858,37 @@ class ArquitectoApp(
             self._regen_push(actual)
             self._regen_idx -= 1
         if self._regen_idx <= 0:
-            self.set_estado("⚠️ Ya estás en la versión más antigua", "#e67e22")
+            self.dialogs.set_estado("⚠️ Ya estás en la versión más antigua", "#e67e22")
             return
         self._regen_idx -= 1
-        self.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.set_estado(f"← Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
+        self.dialogs.set_estado(f"← Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
 
     def _cmd_regenerar_adelante(self):
         """Navega a la versión siguiente de la regeneración."""
         self._regen_init()
         if not self._regen_stack or self._regen_idx >= len(self._regen_stack) - 1:
-            self.set_estado("⚠️ Ya estás en la versión más reciente", "#e67e22")
+            self.dialogs.set_estado("⚠️ Ya estás en la versión más reciente", "#e67e22")
             return
         self._regen_idx += 1
-        self.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.set_estado(f"→ Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
+        self.dialogs.set_estado(f"→ Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
 
     def _cmd_diff_versiones(self):
         """Muestra ventana con diff coloreado entre versión actual y anterior de la pila de regeneración."""
         self._regen_init()
         actual_txt = self.txt_salida.get("1.0", "end").strip()
         if not actual_txt:
-            self.set_estado("⚠️ No hay prompt actual para comparar", "#e67e22")
+            self.dialogs.set_estado("⚠️ No hay prompt actual para comparar", "#e67e22")
             return
         # Buscar la versión anterior
         if not self._regen_stack:
-            self.set_estado("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial.", "#e67e22")
+            self.dialogs.set_estado("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial.", "#e67e22")
             return
         # Si el actual es el último, comparamos con el penúltimo
         if self._regen_idx == len(self._regen_stack) - 1:
             if len(self._regen_stack) < 2:
-                self.set_estado("⚠️ Necesitas al menos 2 versiones para comparar", "#e67e22")
+                self.dialogs.set_estado("⚠️ Necesitas al menos 2 versiones para comparar", "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx - 1]
             etiqueta_actual = f"Versión {self._regen_idx + 1} (actual)"
@@ -897,7 +896,7 @@ class ArquitectoApp(
         else:
             # Estamos navegando atrás, comparar con la siguiente
             if self._regen_idx + 1 >= len(self._regen_stack):
-                self.set_estado("⚠️ No hay versión siguiente para comparar", "#e67e22")
+                self.dialogs.set_estado("⚠️ No hay versión siguiente para comparar", "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx]
             actual_txt = self._regen_stack[self._regen_idx + 1]
@@ -1156,7 +1155,7 @@ class ArquitectoApp(
 
         plantillas = self._cargar_plantillas_desde_json()
         if not plantillas:
-            self.set_estado("⚠️ No se pudieron cargar las plantillas", "#e74c3c")
+            self.dialogs.set_estado("⚠️ No se pudieron cargar las plantillas", "#e74c3c")
             return
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
@@ -1208,7 +1207,7 @@ class ArquitectoApp(
             _recargar_estado()
             _refrescar_restaurar_btn()
             _refrescar()
-            self.set_estado(f"↩ {n} plantillas predefinidas restauradas", "#2ecc71")
+            self.dialogs.set_estado(f"↩ {n} plantillas predefinidas restauradas", "#2ecc71")
 
         def _refrescar_restaurar_btn():
             for w in restaurar_slot.winfo_children():
@@ -1353,9 +1352,9 @@ class ArquitectoApp(
                         txt = f"POSITIVE PROMPT: {p}"
                         if n:
                             txt += f"\nNEGATIVE PROMPT: {n}"
-                        self.actualizar_salida(txt)
+                        self.dialogs.actualizar_salida(txt)
                         vent.destroy()
-                        self.set_estado(f"📑 Plantilla '{name}' aplicada", "#2ecc71")
+                        self.dialogs.set_estado(f"📑 Plantilla '{name}' aplicada", "#2ecc71")
 
                 def _borrar(name=nombre):
                     from tkinter import messagebox as _mb
@@ -1372,7 +1371,7 @@ class ArquitectoApp(
                     _recargar_estado()
                     _refrescar_restaurar_btn()
                     _refrescar()
-                    self.set_estado(f"🗑 '{name}' borrada", "#e67e22")
+                    self.dialogs.set_estado(f"🗑 '{name}' borrada", "#e67e22")
 
                 ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
                               fg_color="#8b2c2c", hover_color="#6e2020",
@@ -1455,7 +1454,7 @@ class ArquitectoApp(
                 for ent in entries.values():
                     ent.delete(0, "end")
                 _actualizar_preview()
-                self.set_estado(f"🧹 Memoria de '{nombre}' borrada", "#888")
+                self.dialogs.set_estado(f"🧹 Memoria de '{nombre}' borrada", "#888")
             except Exception as e:
                 logger.warning(f"_limpiar_memoria wizard: {e}")
 
@@ -1524,10 +1523,10 @@ class ArquitectoApp(
                     return
             _persistir_valores()
             txt_final = preview_txt.get("1.0", "end").strip()
-            self.actualizar_salida(txt_final)
+            self.dialogs.actualizar_salida(txt_final)
             wiz.destroy()
             ventana_padre.destroy()
-            self.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
+            self.dialogs.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
 
         ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=32,
                       fg_color="#1a7a3c", hover_color="#15642f",
@@ -1537,7 +1536,7 @@ class ArquitectoApp(
                       fg_color="#1a4a5a",
                       command=lambda: (_persistir_valores(),
                                        pyperclip.copy(preview_txt.get("1.0", "end").strip()),
-                                       self.set_estado("📋 Copiado", "#2ecc71"))
+                                       self.dialogs.set_estado("📋 Copiado", "#2ecc71"))
                       ).pack(side="left", padx=4)
         if ultimos:
             ctk.CTkButton(btn_row, text="🧹 Olvidar valores", width=130, height=32,
@@ -1685,16 +1684,16 @@ class ArquitectoApp(
 
             def _copiar_completo(v=var, n=i+1):
                 pyperclip.copy(v)
-                self.set_estado(f"✅ Variación #{n} copiada", "#2ecc71")
+                self.dialogs.set_estado(f"✅ Variación #{n} copiada", "#2ecc71")
 
             def _copiar_pos(p=pos_text, n=i+1):
                 pyperclip.copy(p)
-                self.set_estado(f"✅ POSITIVE #{n} copiado", "#2ecc71")
+                self.dialogs.set_estado(f"✅ POSITIVE #{n} copiado", "#2ecc71")
 
             def _copiar_neg(ng=neg_text, n=i+1):
                 if ng:
                     pyperclip.copy(ng)
-                    self.set_estado(f"✅ NEGATIVE #{n} copiado", "#2ecc71")
+                    self.dialogs.set_estado(f"✅ NEGATIVE #{n} copiado", "#2ecc71")
 
             # Registrar esta card en el set compartido
             cols_aplicadas_refs["all"].append((col, hdr, colores_header[i % len(colores_header)]))
@@ -1733,7 +1732,7 @@ class ArquitectoApp(
                     texto_aplicar = v
 
                 # Aplicar prompt al resultado
-                self.actualizar_salida(texto_aplicar)
+                self.dialogs.actualizar_salida(texto_aplicar)
 
                 # Marcar visualmente: cabecera dorada en la card aplicada
                 for prev_col, prev_hdr, prev_color in cols_aplicadas_refs.get("all", []):
@@ -1750,12 +1749,12 @@ class ArquitectoApp(
 
                 # Mensaje según si cambió el modelo o no
                 if modelo_aplicado:
-                    self.set_estado(
+                    self.dialogs.set_estado(
                         f"🏆 Modelo '{modelo_aplicado}' + prompt cargados — "
                         f"la ventana sigue abierta",
                         "#2ecc71")
                 else:
-                    self.set_estado(
+                    self.dialogs.set_estado(
                         f"✅ '{label}' cargada — la ventana sigue abierta",
                         "#2ecc71")
 
@@ -1945,11 +1944,11 @@ class ArquitectoApp(
 
         def _copiar_a():
             pyperclip.copy(texto_a)
-            self.set_estado(f"✅ '{label_a}' copiada", "#2ecc71")
+            self.dialogs.set_estado(f"✅ '{label_a}' copiada", "#2ecc71")
 
         def _copiar_b():
             pyperclip.copy(texto_b)
-            self.set_estado(f"✅ '{label_b}' copiada", "#2ecc71")
+            self.dialogs.set_estado(f"✅ '{label_b}' copiada", "#2ecc71")
 
         ctk.CTkButton(pie, text=f"📋 Copiar {label_a}", width=200, height=30,
                       fg_color="#1a4a7a", hover_color="#0f2e4d",
@@ -2752,9 +2751,9 @@ class ArquitectoApp(
         self.data._guardar_preferencias()
 
         if total_modelos > 0:
-            self.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
+            self.dialogs.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
         else:
-            self.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
+            self.dialogs.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
         ventana.destroy()
 
     def cmd_previsualizar(self):
@@ -2771,10 +2770,10 @@ class ArquitectoApp(
         prompt_actual = self.txt_salida.get("1.0", "end").strip()
 
         if not prompt_actual:
-            return self.set_estado("⚠️ Genera un prompt primero para poder previsualizarlo.", "#e67e22")
+            return self.dialogs.set_estado("⚠️ Genera un prompt primero para poder previsualizarlo.", "#e67e22")
 
         if self.modo_var.get() == "audio":
-            return self.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
+            return self.dialogs.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
         try: self.sesion._sesion_log("🎨 Previsualizó (boceto rápido)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -2800,11 +2799,11 @@ class ArquitectoApp(
             image_pil, url_imagen, _ = self._preview_cache[cache_key]
             img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
             self._mostrar_preview_window(image_pil, img_ctk, url_imagen, desde_cache=True)
-            self.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
+            self.dialogs.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
             return
 
-        self.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
-        self.toggle_botones(False)
+        self.dialogs.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
+        self.dialogs.toggle_botones(False)
 
         # Usa el helper unificado (turbo + semáforo + retry con backoff).
         # URL para mostrar al usuario se reconstruye después con turbo + seed.
@@ -2827,15 +2826,15 @@ class ArquitectoApp(
                 self._preview_cache[cache_key] = (image_pil, url_imagen, time.time())
                 self._mostrar_preview_window(image_pil, img_ctk, url_imagen,
                                               desde_cache=False)
-                self.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
+                self.dialogs.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
             except Exception as e:
-                self.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
+                self.dialogs.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
             finally:
-                self.toggle_botones(True)
+                self.dialogs.toggle_botones(True)
 
         def _on_err(msg):
-            self.set_estado(f"❌ Error al generar imagen: {msg}", "#e74c3c")
-            self.toggle_botones(True)
+            self.dialogs.set_estado(f"❌ Error al generar imagen: {msg}", "#e74c3c")
+            self.dialogs.toggle_botones(True)
 
         # `texto_limpio` ya viene normalizado: usamos un proxy que pase ese
         # texto a _generar_preview_pollinations (cuya extracción de POSITIVE
@@ -2879,7 +2878,7 @@ class ArquitectoApp(
         ctk.CTkButton(btn_row, text="🔗 Copiar URL", width=120, height=30,
                       fg_color="#3498db", hover_color="#2876b8",
                       command=lambda: (pyperclip.copy(url_imagen),
-                                       self.set_estado("📋 URL copiada", "#2ecc71"))
+                                       self.dialogs.set_estado("📋 URL copiada", "#2ecc71"))
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text="🌐 Abrir en navegador", width=160, height=30,
                       fg_color="#7c3aed", hover_color="#5d2ab5",
@@ -2892,6 +2891,6 @@ class ArquitectoApp(
             try:
                 if image_pil.mode in ("RGBA", "P"): image_pil = image_pil.convert("RGB")
                 image_pil.save(ruta)
-                self.set_estado(f"✅ Boceto guardado en: {ruta}", "#2ecc71")
+                self.dialogs.set_estado(f"✅ Boceto guardado en: {ruta}", "#2ecc71")
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar la imagen:\n{e}")

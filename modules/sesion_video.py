@@ -100,7 +100,7 @@ class SesionVideoService:
         except Exception as e:
             self.app._sesion_video_writer = None
             self.app._sesion_video_running = False
-            self.app.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
             return False
 
     def _sesion_video_worker(self) -> None:
@@ -162,7 +162,7 @@ class SesionVideoService:
                     else:
                         next_t = time.time()
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
 
     def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""
@@ -223,7 +223,7 @@ class SesionVideoService:
             self.app._sesion_grabando = False
             video_path = None
             if self.app._sesion_video_running or self.app._sesion_video_writer:
-                self.app.set_estado("⏹ Cerrando vídeo...")
+                self.app.dialogs.set_estado("⏹ Cerrando vídeo...")
                 video_path = self._sesion_video_detener()
             self._cmd_sesion_exportar(video_path=video_path)
 
@@ -240,19 +240,19 @@ class SesionVideoService:
         self._sesion_log("🔴 GRABACIÓN INICIADA")
 
         if tipo_video == "nada":
-            self.app.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
+            self.app.dialogs.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
         elif tipo_video == "app":
             if self._sesion_video_iniciar(solo_app=True):
                 self._sesion_log("🎥 Grabación de vídeo (solo app, 5 FPS)")
-                self.app.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
+                self.app.dialogs.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
             else:
-                self.app.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.dialogs.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
         elif tipo_video == "pantalla":
             if self._sesion_video_iniciar(solo_app=False):
                 self._sesion_log("🎥 Grabación de vídeo (pantalla completa, 5 FPS)")
-                self.app.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
+                self.app.dialogs.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
             else:
-                self.app.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.dialogs.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
 
     def _cmd_sesion_exportar(self, video_path=None):
         """Abre ventana con el log de la sesión y opciones de exportación.
@@ -261,7 +261,7 @@ class SesionVideoService:
         c = _get_tc(is_lt)
         self._sesion_init()
         if not self.app._sesion_eventos:
-            self.app.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+            self.app.dialogs.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
 
         v = GPromptWindow(self.app)
@@ -305,7 +305,7 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", folder])
                 except Exception as e:
-                    self.app.set_estado(f"⚠️ No se pudo abrir: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"⚠️ No se pudo abrir: {e}", "#e74c3c")
 
             def _abrir_video():
                 try:
@@ -318,7 +318,7 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", video_path])
                 except Exception as e:
-                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
             ctk.CTkButton(video_banner, text="📁 Abrir carpeta", width=120, height=24,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -360,9 +360,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_md)
-                    self.app.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _exp_txt():
             ruta = filedialog.asksaveasfilename(
@@ -373,16 +373,16 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_txt)
-                    self.app.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _limpiar():
             if messagebox.askyesno("Limpiar registro", "¿Borrar todos los eventos grabados?", parent=v):
                 self.app._sesion_eventos = []
                 self.app._sesion_inicio = None
                 v.destroy()
-                self.app.set_estado("🗑 Registro de sesión limpiado")
+                self.app.dialogs.set_estado("🗑 Registro de sesión limpiado")
 
         ctk.CTkButton(btn_row, text="📄 Exportar .md", width=130, command=_exp_md,
                       fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
@@ -401,7 +401,7 @@ class SesionVideoService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         if not self.app._sesion_eventos:
-            self.app.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+            self.app.dialogs.set_estado("⚠️ No hay eventos grabados", "#e67e22")
             return
 
         # Agrupar eventos en pasos lógicos según los tipos
@@ -456,14 +456,14 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(guion)
-                    self.app.set_estado(f"📄 Tutorial exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(f"📄 Tutorial exportado: {ruta}", "#2ecc71")
                 except Exception as e:
-                    self.app.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
         def _copiar():
             try:
                 pyperclip.copy(guion)
-                self.app.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 

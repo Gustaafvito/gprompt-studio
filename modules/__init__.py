@@ -13,7 +13,7 @@ from .components import install_components
 from .core import CoreMixin
 from .dashboard import DashboardService  # A1 fase 2 (sesión 11)
 from .data_mgmt import DataMgmtService  # A1 fase 2 (sesión 14)
-from .dialogs import DialogsMixin
+from .dialogs import DialogsService  # A1 fase 2 (sesión 14)
 from .event_bus import EventBus
 from .gprompt_window import GPromptWindow
 from .json_prompt import JsonPromptService  # A1 fase 2: era JsonPromptMixin
@@ -38,7 +38,7 @@ __all__ = [
     "ToolsAnalysisService",
     "DataMgmtService",
     "BackupExportService",
-    "DialogsMixin",
+    "DialogsService",
     "CoreMixin",
     "AdnVisualService",
     "MultiPromptService",
