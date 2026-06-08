@@ -2233,51 +2233,6 @@
     "prompt_ejemplo": "Cute chibi anime girl with pink twin-tails in a magical forest, surrounded by small glowing fairies and floating mushrooms, soft pastel colors, dreamy atmosphere --niji 5 --style cute --ar 1:1 --stylize 200",
     "limitaciones": "Legacy. Niji 6 y 7 superiores en coherencia, detalles y prompt understanding. Sin --cref ni --sref ni --oref. Sin Personalization. Los --style flags pueden ignorarse en algunos casos. Útil solo para reproducir el look específico V5."
   },
-  "GPT Image 1": {
-    "nota": 4.5,
-    "has_negative": false,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "2:3",
-      "3:2",
-      "1024x1024",
-      "1024x1536",
-      "1536x1024"
-    ],
-    "max_chars": 4000,
-    "modos_gen": [
-      "Low",
-      "Medium",
-      "High"
-    ],
-    "best_for": "Primer GPT Image (Abril 2025). Modelo nativo multimodal de GPT-4o. Excelente integración con ChatGPT, mejor que DALL-E 3 en text-in-image, composición compleja y world knowledge. Famoso por estilo Studio Ghibli viral. Disponible en API (gpt-image-1) y ChatGPT. Requiere verificación de organización en la API. Casos de uso destacados: ilustración con texto, personajes con specs detalladas, prototipos UI, posters, branding visual.",
-    "prompt_formula": "Lenguaje natural en prosa fluida. Estructura: background/scene → subject → key details → constraints + intended use (ad, UI, infographic). Para texto literal: usar comillas, e.g. 'with the words \"Hello World\"'. Soporta specs muy largas tipo character sheet (rasgos físicos, paleta, movimiento, mood). Para fondo transparente: incluir 'on a transparent background' (auto-detecta y aplica transparency en PNG/WebP).",
-    "prompt_ejemplo": "Create a photorealistic portrait of an elderly sailor on a fishing boat at dawn, weathered face, soft coastal light, 35mm film aesthetic, medium close-up at eye level",
-    "limitaciones": "Warm color bias en muchas salidas. Sin negative prompt. Cropping prematuro a veces. Sin pesos numéricos. Resolución máxima ~1024px. Edición: soporta hasta 10 imágenes input + máscara con alpha channel (para edición localizada). Parámetro 'input_fidelity=high' preserva caras, logos y texturas con más detalle (primera imagen retiene mejor). Precio: ~$0.02 low / ~$0.07 medium / ~$0.19 high (1024x1024)."
-  },
-  "GPT Image 1 mini": {
-    "nota": 4.2,
-    "has_negative": false,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "2:3",
-      "3:2",
-      "1024x1024",
-      "1024x1536",
-      "1536x1024"
-    ],
-    "max_chars": 4000,
-    "modos_gen": [
-      "Low",
-      "Medium"
-    ],
-    "best_for": "GPT Image 1 mini (2026). Versión optimizada para coste y velocidad. Ideal para alto volumen, prototipado, iteración rápida y workflows automatizados donde el coste por imagen importa más que la fidelidad máxima. Mantiene la capacidad multimodal de GPT Image 1.",
-    "prompt_formula": "Igual que GPT Image 1 pero prefiere prompts más cortos y directos. Estructura: subject + scene + 2-3 detalles clave. Evita prompts muy complejos con muchas restricciones simultáneas.",
-    "prompt_ejemplo": "A friendly cartoon mascot for a coffee app, smiling coffee cup with arms and legs, holding a tablet, flat vector style, warm orange and brown palette, simple background",
-    "limitaciones": "Solo modos Low y Medium (no High). Menos detalle fino que GPT Image 1 full. Sin negative. ~3-5× más barato por imagen que GPT Image 1. Recomendado para tareas que no requieran 4K ni text rendering complejo."
-  },
   "GPT Image 1.5": {
     "nota": 4.7,
     "has_negative": false,
@@ -2304,7 +2259,7 @@
     "limitaciones": "Sigue sin negative prompt ni pesos. Algunas regresiones en estilos artísticos respecto a GPT Image 1. Resolución máxima ~1024px (no 4K). input_fidelity=high consume más tokens de input pero crítico para preservar caras y logos. Output formats: PNG, JPEG, WebP."
   },
   "GPT Image 2": {
-    "nota": 4.9,
+    "nota": 4.5,
     "has_negative": false,
     "is_natural": true,
     "ratios": [
@@ -2314,13 +2269,7 @@
       "9:16",
       "16:9",
       "4:5",
-      "5:4",
-      "1024x1024",
-      "1536x1024",
-      "1024x1536",
-      "2048x2048",
-      "2048x1152",
-      "3840x2160 (4K)"
+      "5:4"
     ],
     "max_chars": 5000,
     "modos_gen": [
@@ -2328,10 +2277,10 @@
       "Medium",
       "High"
     ],
-    "best_for": "GPT Image 2 (Abril 2026). Modelo OpenAI más reciente y capaz. Primero con razonamiento O-series integrado (Understand→Plan→Generate→Review). Destacado por: (1) text rendering casi perfecto en posters, signage, labels y UI; (2) realismo natural en piel, materiales, iluminación; (3) prompt understanding superior con múltiples requisitos; (4) consistencia entre generaciones (series, campañas, story boards); (5) RESOLUCIÓN NATIVA HASTA 4K (3840×2160); (6) HIGH FIDELITY AUTOMÁTICO en imágenes de referencia (no necesita el parámetro input_fidelity explícito como GPT Image 1/1.5); (7) hasta 5 imágenes de referencia + máscara para edición composite ('subject from img1 + scene from img2 + style from img3'). Ideal para marketing profesional, UI/app mockups, product shots, fotorrealismo editorial, posters de cine, wallpapers.",
-    "prompt_formula": "Lenguaje natural estructurado. ORDEN: subject → scene/setting → lighting → style/mood → composition → exact text (entre comillas si aparece en la imagen). Para texto literal: 'with the words \"...\"'. Para UI/mockups: indicar tipo de pantalla, elementos de interfaz, estado. Para realismo: pedir lens (35mm, 50mm), DOF, grain, texturas. Para edición composite: 'subject from img1, scene from img2, style from img3'. Para fondos transparentes: incluir 'transparent background' en el texto (en GPT Image 2 ya no se acepta el parámetro background=transparent).",
+    "best_for": "GPT Image 2 en SeaArt. Pensado para creadores que necesitan prompts detallados, texto limpio dentro de la imagen y resultados nítidos a la primera. Destaca en: (1) renderizado de TEXTO EN LA IMAGEN (posters, labels, signage, menús, UI) manteniendo legibilidad y placement correctos; (2) REALISMO natural en piel, materiales, iluminación, reflejos, sombras, profundidad — sin sensación 'sobre-procesada'; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING con múltiples requisitos simultáneos; (5) CONSISTENCIA entre generaciones (series, campañas, brand visuals, story boards). Ideal para marketing creatives, UI/app concepts, product storytelling, fotorrealismo, editorial/design assets, worldbuilding creativo.",
+    "prompt_formula": "Lenguaje natural estructurado. Describe: subject + scene + lighting + style + mood + composition. Para texto dentro de la imagen: escribe la palabra exacta entre comillas (ej. 'with the words \"Hello World\"'). Refina iterativamente: primer prompt → mira resultado → ajusta detalles, mood, layout. Soporta prompts muy largos (hasta 5000 chars).",
     "prompt_ejemplo": "Photorealistic marketing banner for a coffee brand. Subject: a ceramic cup of espresso on a wooden table at golden hour. Soft natural light coming from the left, visible steam, reflections on the cup, shallow depth of field. Above the cup, clean modern typography with the words \"Morning Ritual\" in dark brown sans-serif. Composition: rule of thirds, cup bottom-left, copy upper-right. Cinematic still, 50mm lens, soft film grain.",
-    "limitaciones": "Sin negative prompt ni pesos (no aplican sintaxis SD). Solo n=1 por llamada en API (lanzar requests paralelas para múltiples). Tiempo: high quality + 2K/4K puede tardar 3-5 minutos (timeout recomendado ≥360s, exponential backoff en 5xx). Resoluciones >2560×1440 marcadas experimentales. NO admite parámetro 'background=transparent' (usar post-procesado). NO usar input_fidelity (auto-forzado high; el parámetro genera error). Precio: ~$0.006 low / $0.053 medium / $0.211 high (1024×1024); 4K alta sube a ~$0.41/imagen."
+    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos (no aplica sintaxis SD). Refinamiento iterativo: si el resultado no encaja, ajustar prompt y regenerar. Modos Low/Medium/High disponibles en SeaArt."
   },
   "Ideogram v3": {
     "nota": 4.8,

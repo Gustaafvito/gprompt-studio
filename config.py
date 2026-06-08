@@ -240,6 +240,7 @@ GRUPOS_IMAGEN = [
         "Z-Image-Base",
     ])),
     ("── GPT Image (OpenAI en SeaArt) ──", sorted([
+        "GPT Image 1.5",
         "GPT Image 2",
     ])),
     ("── Nano Banana ──", sorted([
@@ -529,7 +530,7 @@ MODELOS_MAGNIFIC_IMAGEN_FLAT = _lista_plana(GRUPOS_MAGNIFIC_IMAGEN)
 # Solo familia GPT Image actualmente activa en la API oficial.
 GRUPOS_DALLE_IMAGEN = [
     ("── ChatGPT / GPT Image (OpenAI oficial) ──", sorted([
-        "GPT Image 1", "GPT Image 1 mini", "GPT Image 1.5", "GPT Image 2",
+        "GPT Image 1.5", "GPT Image 2",
     ])),
 ]
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
