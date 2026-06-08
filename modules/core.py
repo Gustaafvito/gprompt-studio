@@ -1255,7 +1255,63 @@ class CoreMixin:
         idea = self.txt_idea.get("1.0", "end").strip()
         tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
         peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.footer.estilos_texto()}'."
-        if idea: peticion += f" Tema: {idea}."
+
+        # Contexto de LoRAs activos: si el usuario tiene seleccionado un
+        # LoRA (especialmente de personaje), las ideas deberían girar en
+        # torno a él. Si hay rasgos visuales rellenados, los usamos para
+        # que el LLM proponga escenas que encajen con ese personaje.
+        try:
+            rasgos_loras = self.footer.rasgos_loras_activos() or []
+        except Exception:
+            rasgos_loras = []
+        try:
+            nombres_loras = []
+            try:
+                _primario = self.combo_lora.get() if hasattr(self, "combo_lora") else ""
+                if _primario and _primario != "— Sin LoRA —":
+                    nombres_loras.append(_primario)
+            except Exception:
+                pass
+            for _n in getattr(self, "loras_multi", []) or []:
+                if _n not in nombres_loras:
+                    nombres_loras.append(_n)
+        except Exception:
+            nombres_loras = []
+        # Personaje activo (combo)
+        pers_activo = ""
+        try:
+            pers_activo = self.footer.personaje_activo() or ""
+        except Exception:
+            pass
+
+        if nombres_loras or pers_activo:
+            contexto = "\n\n🎯 CONTEXTO IMPORTANTE — las 3 ideas DEBEN encajar con:\n"
+            if rasgos_loras:
+                contexto += (
+                    f"  • PERSONAJE/ESTÉTICA del LoRA: "
+                    f"{' | '.join(rasgos_loras)}.\n"
+                    f"    Las ideas deben PROTAGONIZAR o reflejar este "
+                    f"personaje/estética.\n"
+                )
+            elif nombres_loras:
+                contexto += (
+                    f"  • LoRA(s) activo(s): {', '.join(nombres_loras)}. "
+                    f"Las ideas deben encajar con el ESTILO/personaje que "
+                    f"sugieren esos nombres.\n"
+                )
+            if pers_activo:
+                contexto += (
+                    f"  • PERSONAJE adicional: {pers_activo}. "
+                    f"Inclúyelo en las escenas propuestas.\n"
+                )
+            contexto += (
+                "  • Sugiere ESCENAS/ESCENARIOS/ACCIONES diversos donde "
+                "ese personaje/estética encajen, no descripciones del "
+                "personaje en sí.\n"
+            )
+            peticion += contexto
+
+        if idea: peticion += f"\n\nTema añadido por el usuario: {idea}."
 
         self.set_estado("⏳ Generando ideas...", "#f39c12")
         self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
