@@ -2266,21 +2266,31 @@
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
       "16:9",
-      "4:5",
-      "5:4"
+      "9:21",
+      "21:9"
     ],
     "max_chars": 5000,
     "modos_gen": [
-      "Low",
-      "Medium",
-      "High"
+      "Baja",
+      "Media",
+      "Alta"
     ],
-    "best_for": "GPT Image 2 en SeaArt. Pensado para creadores que necesitan prompts detallados, texto limpio dentro de la imagen y resultados nítidos a la primera. Destaca en: (1) renderizado de TEXTO EN LA IMAGEN (posters, labels, signage, menús, UI) manteniendo legibilidad y placement correctos; (2) REALISMO natural en piel, materiales, iluminación, reflejos, sombras, profundidad — sin sensación 'sobre-procesada'; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING con múltiples requisitos simultáneos; (5) CONSISTENCIA entre generaciones (series, campañas, brand visuals, story boards). Ideal para marketing creatives, UI/app concepts, product storytelling, fotorrealismo, editorial/design assets, worldbuilding creativo.",
+    "resoluciones": [
+      "1K",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 10,
+    "magia_sugerencia": ["Automático", "Abrir", "Cerrar"],
+    "best_for": "GPT Image 2 en SeaArt. Pensado para creadores que necesitan prompts detallados, texto limpio dentro de la imagen y resultados nítidos a la primera. Destaca en: (1) renderizado de TEXTO EN LA IMAGEN (posters, labels, signage, menús, UI) manteniendo legibilidad y placement correctos; (2) REALISMO natural en piel, materiales, iluminación, reflejos, sombras, profundidad — sin sensación 'sobre-procesada'; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING con múltiples requisitos simultáneos; (5) CONSISTENCIA entre generaciones (series, campañas, brand visuals, story boards). Soporta hasta 10 imágenes de SUJETO como referencia (img2img composite). Ideal para marketing creatives, UI/app concepts, product storytelling, fotorrealismo, editorial/design assets, worldbuilding creativo.",
     "prompt_formula": "Lenguaje natural estructurado. Describe: subject + scene + lighting + style + mood + composition. Para texto dentro de la imagen: escribe la palabra exacta entre comillas (ej. 'with the words \"Hello World\"'). Refina iterativamente: primer prompt → mira resultado → ajusta detalles, mood, layout. Soporta prompts muy largos (hasta 5000 chars).",
     "prompt_ejemplo": "Photorealistic marketing banner for a coffee brand. Subject: a ceramic cup of espresso on a wooden table at golden hour. Soft natural light coming from the left, visible steam, reflections on the cup, shallow depth of field. Above the cup, clean modern typography with the words \"Morning Ritual\" in dark brown sans-serif. Composition: rule of thirds, cup bottom-left, copy upper-right. Cinematic still, 50mm lens, soft film grain.",
-    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos (no aplica sintaxis SD). Refinamiento iterativo: si el resultado no encaja, ajustar prompt y regenerar. Modos Low/Medium/High disponibles en SeaArt."
+    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos (no aplica sintaxis SD). Calidad: Baja/Media/Alta. Resolución: 1K/2K (gratis) / 4K (premium). Cantidad por generación: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 10 imágenes. Refinamiento iterativo si el resultado no encaja."
   },
   "Ideogram v3": {
     "nota": 4.8,
