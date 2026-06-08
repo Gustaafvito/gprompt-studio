@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 14** (continuación de las sesiones 1-13).
+Actualizado al final de la **sesión 15** (continuación de las sesiones 1-14).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,9 +15,9 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **249/249** ✅ |
+| Tests | **373/373** ✅ (+124 sesión 15) |
 | Working tree | Limpio |
-| Branch | `main` (sincronizado con `origin/main` en `d31310c`) |
+| Branch | `main` (sesión 15 cerrada en `f8937dc`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** (era 21 — 20 removidos en A1 fase 2 ⭐⭐⭐) |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
@@ -1285,33 +1285,222 @@ Los otros 20 mixins están como **Service classes aisladas**
 accesibles vía componentes (`app.dialogs`, `app.ui`, `app.events`,
 etc.).
 
-### 🚧 Pendiente sesión 15+
+---
+
+## ✅ Sesión 15 — Tests + cascada de regresiones A1 + sistema LoRA repensado
+
+Sesión muy productiva: 17 commits cubriendo desde tests a features
+nuevas pasando por una **cascada de bugs de A1 fase 2** que impedía
+arrancar la app y un **rediseño completo del flujo de LoRAs** para
+que sea usable end-to-end sin tener que mantener Personaje + LoRA
+sincronizados a mano.
+
+### Bloque 1 — Cobertura de tests (+112 tests, 249 → 361)
+
+Tests para los 7 mixins sin cobertura que listaba el HANDOFF:
+- `test_adn_visual.py` (5 tests) — guards de comandos.
+- `test_modo_cliente.py` (6 tests) — worker propuestas, formatos.
+- `test_multiprompt.py` (17 tests) — STORY_SHOT_TYPES, helpers, guards
+  de los 4 cmd.
+- `test_atajos_ayuda.py` (17 tests) — `_cmd_cambiar_modo`, exportar
+  rápido, traducir, fullscreen.
+- `test_sesion_video.py` (14 tests) — `_sesion_init`, `_sesion_log`,
+  `_sesion_agrupar_pasos`, narrativas.
+- `test_dialogs.py` (23 tests) — `_darker`, `set_estado`,
+  `actualizar_salida`, `toggle_botones`, progreso, tokens, tema.
+- `test_core.py` (30 tests) — `extraer_positive`/`negative`,
+  `_parsear_variaciones`, `_recortar_si_excede`, `_extraer_pos_de_bloque`.
+
+Patrón establecido: SimpleNamespace + mock de ctk.* + threading.Thread.
+Documentado en cada archivo el bug latente del `while True` en
+`_colorear_resultado` que requiere mockear `txt.search` con `""`.
+
+### Bloque 2 — Cascada A1 fase 2 (app arrancando otra vez)
+
+La maratón A1 fase 2 (sesión 14) removió 16 mixins del MRO de
+`ArquitectoApp` pero dejó **MUCHOS** call sites legacy que asumían
+que `self` era el app o que ciertos métodos estaban heredados. La
+app **crasheaba al arrancar** desde la primera línea de
+`_build_author`. Fixes en un solo commit:
+
+1. **`__getattr__` en `ArquitectoApp`** (red de seguridad sistémica):
+   delega a los `_service` de los componentes registrados como
+   fallback antes de tirar `AttributeError`. Esto cubre cualquier
+   `self.app._método()` superviviente.
+2. **`_build_author` en dialogs.py**: `CTkFrame(self, ...)` →
+   `CTkFrame(self.app, ...)`. El service no es un widget Tk.
+3. **Bulk replace de 28 call sites** `self.app._on_X_cambio` →
+   `self.app.events.on_X_cambio` en 9 archivos.
+4. **Helpers externos** que recibían `self` (que ya no era el app)
+   en `ui_builders` (abrir_lista, abrir_loras, abrir_personajes),
+   `atajos_ayuda` (GPromptWindow), `modo_cliente`, `tools_creative`.
+5. **`_on_resize` en ui_builders**: el guard `event.widget is not
+   self` era siempre True (self ahora es el service, no el app),
+   causando que los botones del header se quedaran en "modo
+   compacto" (cuadrados de 42px solo emoji) permanentemente.
+
+### Bloque 3 — Bugs de menús (4 menús rotos)
+
+1. **📖 Guía de estilos** no abría: `abrir_guia_estilos(self, ...)`
+   con `self` = service. Fix → `self.app`.
+2. **📖 Modo educativo** no abría: `abrir_glosario(self)` mismo error.
+3. **📋 Plantillas** "no se pudieron cargar" — la carpeta `config/`
+   no estaba en `datas` del PyInstaller spec. Añadido a los 2 specs.
+4. **🎯 Modo Focus** dejaba un hueco negro arriba al salir — el
+   re-pack usaba `after=prev` que rompía el orden de los frames.
+   Fix: `pack(before=frame_entrada)` para TODOS + `update_idletasks()`.
+
+### Bloque 4 — Quick wins MEDIA del HANDOFF
+
+- **`build.py --clean-cache`**: nuevo flag que combina `--clean` con
+  borrado recursivo de `__pycache__/` (resuelve el problema de
+  PyInstaller cacheando bytecode viejo documentado en sesiones 12-13).
+- **Toast 🖼 Ref ON**: al activar el switch, aparece la nota
+  *"pega SOLO el prompt en la plataforma de vídeo destino — NO
+  subas otra vez la imagen ahí"*. Resuelve la confusión de sesión 11
+  con Seedance interpretando la imagen como image-to-video.
+
+### Bloque 5 — Sistema LoRA repensado (el corazón de la sesión)
+
+Reportes encadenados del usuario que terminaron en un rediseño
+completo del flujo LoRA con Z-Image-Base:
+
+1. **Familia Z-Image** no detectada en `_es_lora_compatible` (siempre
+   "⚠️ familia distinta"). Añadido detector `z-image`/`z image`/
+   `z_image` como primera rama del matcher.
+
+2. **Trigger del LoRA no aparecía en el output**: el LLM ignoraba
+   la sugerencia "LoRA: trigger" como contexto informativo. Fix en
+   2 capas:
+   - Instrucción imperativa en `construir_modelo_info`.
+   - **Safety-net** en `_garantizar_lora_trigger` (workers_ia.py)
+     que inserta el trigger automáticamente si el LLM lo olvidó.
+
+3. **Plantilla Z-Image** con bloque dedicado `[LoRA Activation &
+   Style]` cuando hay LoRA activo + estructura 4 bloques en inglés
+   (Subject & Composition / LoRA Activation & Style / Lighting &
+   Environment / Mood). Sin LoRA mantiene plantilla cinematográfica
+   clásica.
+
+4. **Anti-duplicado del trigger**: el LLM ponía el trigger en
+   preámbulo + bloque dedicado. Safety-net detecta el bloque
+   dedicado y elimina apariciones fuera de él automáticamente.
+
+5. **Toggle "Estilo Z"** (Auto/Photoreal/Creative/Fantasy/SciFi) —
+   combo que aparece junto al modelo SOLO si es de la familia
+   Z-Image. Fuerza la categoría del bloque NEGATIVE estilístico
+   sin que el LLM tenga que adivinar.
+
+6. **Sistema multi-LoRA**: combo primario + botón `🔗+` que abre
+   modal con checkboxes para combinar varios LoRAs. Indicador
+   inline "🔗+N" junto al trigger. Persistido en
+   `preferences.json["loras_multi"]`. Inyección unificada:
+   `"trig1 style + trig2 style + ..."` en el bloque dedicado.
+
+7. **Validación de trigger mal formado** al guardar LoRAs: avisa
+   (no bloqueante) si el trigger tiene >40 chars, >8 palabras o
+   puntuación de prosa. Acepta comas (multi-trigger válidos como
+   `Nyra, Amber Eyes, Undercut`).
+
+8. **Campo "Rasgos visuales" en cada LoRA** — la feature clave que
+   resuelve el problema raíz. Para LoRAs de personaje, el usuario
+   guarda los rasgos físicos (pelo, ojos, complexión, vestuario)
+   en el propio LoRA. La app los inyecta automáticamente en
+   `[Subject & Composition]` sin necesidad de mantener un Personaje
+   separado.
+
+   Workflow nuevo (validado con LoRA "Nyra for Z-image"):
+   - LoRA con `rasgos_visuales` rellenado.
+   - Sin Personaje en el combo.
+   - Idea: solo escena/acción.
+   - Resultado: Nyra pelirroja+undercut+ámbar EN LA ESCENA, sin
+     contradicciones, sin tener que crear Personaje aparte.
+
+9. **Contexto LoRA/personaje en TODOS los comandos generativos** —
+   no solo `cmd_prompt`. Helper centralizado
+   `_contexto_loras_personaje(intro)` en CoreMixin aplicado a:
+   `cmd_ideas`, `cmd_prompt_quick`, `_cmd_moodboard`,
+   `_cmd_story_sequence`, `_cmd_storyboard_video`,
+   `_cmd_storyboard_imagen`, Walk `_ramificar`. Antes generaban
+   ideas/variaciones genéricas; ahora respetan el LoRA activo.
+
+10. **Panel "🎯 Fuentes activas"** con chips clickables que muestra
+    qué se está inyectando en el prompt:
+      🧑 Personaje · 🔗 N LoRAs · ⚓ Anclaje · 🧬 ADN.
+    Click → limpia esa fuente (combo a "Sin X", anclaje a None,
+    multi-LoRA vaciado, etc.) + persiste el cambio. Se oculta solo
+    cuando no hay nada activo.
+
+### Bloque 6 — Auditoría de specs (empezada)
+
+- **SeaArt Film Video** (data/model_specs_video.json):
+  - `has_negative: false` → `true`.
+  - `max_chars: 2400` → `1500`.
+  - Quitada la frase "Sin prompt negativo" de limitaciones.
+
+Quedan 118 modelos imagen + 14 vídeo + 10 audio por revisar.
+
+### Resumen de la sesión 15
+
+| Métrica | Inicio | Cierre |
+|---|---:|---:|
+| Tests | 249 | **373** (+124) |
+| App arranca | ❌ Crash | ✅ |
+| Menús funcionando | 4 rotos | ✅ Todos |
+| LoRAs usables | ⚠️ confusos | ✅ flujo unificado |
+| Mixins en MRO | 1 | 1 (sin cambios) |
+| Working tree | Limpio | Limpio ✅ |
+
+### Commits sesión 15
+
+```
+f8937dc fix(specs): SeaArt Film Video max_chars 2400 → 1500
+decea45 fix(specs): SeaArt Film Video sí soporta prompt negativo
+98b3bd8 feat: panel "Fuentes activas" con chips clickables
+9dcf3ae feat: contexto de LoRAs/personaje en TODOS los comandos generativos
+8d7c75b feat(ideas): contexto de LoRAs/personaje activos en cmd_ideas
+0097952 feat(loras): campo "Rasgos visuales" para LoRAs de personaje
+bacce21 fix(z-image+lora): reforzar verbalmente rasgos del personaje
+d8af7f9 fix(z-image+lora): dejar la apariencia del sujeto al LoRA
+87ec7c1 fix(loras): relajar validación de trigger
+dca5e11 feat(loras): validación de trigger mal formado al guardar
+4c377cb feat(loras): sistema multi-LoRA con modal checkboxes
+2bbdab0 feat(z-image): toggle "Estilo Z" Auto/Photoreal/Creative/Fantasy/SciFi
+1af4962 fix(loras): eliminar duplicación del trigger en preámbulo + bloque
+2789526 feat(z-image): bloque [LoRA Activation & Style] dedicado
+413b6f4 fix(loras): el trigger del LoRA no aparecía en el prompt generado
+1d5890e fix(loras): detectar familia Z-Image en _es_lora_compatible
+1ec53b3 feat(quick wins): build.py --clean-cache + aviso 🖼 Ref
+f398437 fix: 4 regresiones reportadas por el usuario tras los fixes A1
+aaef195 fix(A1 fase 2): cascada de regresiones que impedían arrancar la app
+1935a20 test: cobertura de los 7 mixins sin tests (+112 tests, 249 → 361)
+```
+
+### 🚧 Pendiente sesión 16+
 
 #### 🔴 ALTA
 - **CoreMixin (último mixin restante)**: 33 métodos, 127 call sites
   externos. Es el más complejo. Para abordarlo habrá que decidir si
   vale la pena (la app necesita un esqueleto base) o dejarlo como
   "foundation" definitiva.
-- Tests para 7 módulos sin cobertura: `adn_visual`, `multiprompt`,
-  `sesion_video`, `modo_cliente`, `atajos_ayuda`, `dialogs`, `core`.
 
 #### 🟡 MEDIA
 - **Toggle modelo Pollinations** (turbo / kontext / sdxl / anime)
   como combo en el comparador.
-- **Toggle "estilo creative/photoreal"** para Z-Image-Base que
-  hint-ee la categoría al LLM en lugar de dejarle elegir.
-- **`build.py --clean-cache`**: borrar `__pycache__/` automáticamente
-  antes de PyInstaller.
-- Nota visible en UI al activar "🖼 Ref" recordando NO subir la imagen
-  otra vez en la plataforma de vídeo destino.
-- Variante SD/Comfy del storyboard.
-- Particiones de archivos grandes (`core.py` 1645, `data_mgmt.py`
-  1545, `ui_builders.py` ~1600).
-- Revisar los 119 modelos imagen + 15 vídeo + 10 audio del catálogo
-  (auditoría de specs desactualizadas).
+- **Variante SD/Comfy del storyboard imagen** (tag-based directo
+  con POSITIVE/NEGATIVE + pesos, sin tener que refinar uno a uno).
+- **Particiones de archivos grandes** (`core.py` 1700+, `data_mgmt.py`
+  1545, `ui_builders.py` ~1700 tras los cambios de sesión 15).
+- **Auditoría de specs** — empezada con SeaArt Film Video. Quedan
+  118 modelos imagen + 14 vídeo + 10 audio.
+- **Verificar installer end-to-end** en VM/usuario nuevo: instalación
+  limpia → arranque → desinstalación.
 
 #### 🟢 BAJA
-Code-signing del `.exe`, SeaArt char limits, performance.
+- Code-signing del `.exe` (SmartScreen warning).
+- Performance: lazy load de `data/*.json`, semáforo workers IA,
+  virtual scrolling historial/favoritos.
+- Features ambiciosos: PDF export, plugin system, API REST.
 
 ---
 
