@@ -280,6 +280,11 @@ class WorkersIaService:
                 f"{neg_rule}\n"
                 f"⛔ Máx {limite_chars} caracteres. Sé conciso, no añadas explicaciones."
             )
+            # Contexto de LoRAs/personaje activos (sesión 16)
+            try:
+                peticion += self.app._contexto_loras_personaje("el prompt")
+            except Exception as _e:
+                logger.debug(f"[silent ctx loras] {_e}")
 
             # Inyección mínima del modelo (sin construir_modelo_info completo)
             modelo_actual = ""

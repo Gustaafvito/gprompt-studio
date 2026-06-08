@@ -95,6 +95,10 @@ class MultiPromptService:
             f"- Todos juntos deben formar una serie visualmente coherente.\n\n"
             f"FORMATO ({n} prompts):\n{formato_lineas}"
         )
+        try:
+            peticion += self.app._contexto_loras_personaje(f"los {n} prompts del moodboard")
+        except Exception as _e:
+            logger.debug(f"[silent ctx] {_e}")
 
         def _worker():
             try:
@@ -328,6 +332,10 @@ class MultiPromptService:
             f"{tipos_instr}\n\n"
             f"FORMATO ({n} shots):\n{formato_lineas}"
         )
+        try:
+            peticion += self.app._contexto_loras_personaje(f"los {n} shots de la secuencia")
+        except Exception as _e:
+            logger.debug(f"[silent ctx] {_e}")
 
         # Labels para el comparador (si manual, usar tipo explícito)
         labels_comp = [f"#{i+1} {tipos[i]}" for i in range(n)] if not auto else None
@@ -396,6 +404,10 @@ class MultiPromptService:
             f"- Cada shot es un prompt de IMAGEN (para usar como key frame del vídeo).\n\n"
             f"FORMATO ({n} frames):\n{formato_lineas}"
         )
+        try:
+            peticion += self.app._contexto_loras_personaje(f"los {n} frames del storyboard")
+        except Exception as _e:
+            logger.debug(f"[silent ctx] {_e}")
 
         def _worker():
             try:
@@ -609,6 +621,10 @@ class MultiPromptService:
             f"FORMATO DE SALIDA (devuelve EXACTAMENTE {n} bloques, separados por ---):\n"
             f"{formato_lineas}"
         )
+        try:
+            peticion += self.app._contexto_loras_personaje(f"los {n} paneles del storyboard")
+        except Exception as _e:
+            logger.debug(f"[silent ctx] {_e}")
 
         def _worker():
             try:
@@ -934,6 +950,10 @@ class MultiPromptService:
                 f"PROMPT 3:\nPOSITIVE PROMPT: ...\nNEGATIVE PROMPT: ...\n\n"
                 f"NO añadas explicaciones, NO añadas títulos, NO añadas un PROMPT 4."
             )
+            try:
+                peticion += self.app._contexto_loras_personaje("las 3 derivaciones")
+            except Exception as _e:
+                logger.debug(f"[silent ctx] {_e}")
 
             def _worker():
                 try:
