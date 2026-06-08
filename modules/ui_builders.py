@@ -982,6 +982,23 @@ class UIBuildersService:
                                                text_color=lora_color)
         self.app.lbl_lora_trigger.pack(side="left", padx=(6, 0))
 
+        # ── Panel "Fuentes activas" — chips clickables que muestran qué
+        # está inyectándose en el prompt y permiten limpiar cada fuente
+        # (LoRAs, Personaje, Anclaje visual, ADN visual). Visibles solo
+        # cuando hay al menos una activa.
+        self.app.frame_fuentes_activas = ctk.CTkFrame(parent, fg_color=tab_bg)
+        # No empaquetado inicial — _actualizar_fuentes_activas lo pack si hay algo.
+        ctk.CTkLabel(
+            self.app.frame_fuentes_activas, text="🎯 Fuentes activas:",
+            font=ctk.CTkFont(weight="bold", size=10),
+            fg_color="transparent", text_color=c["panel_text"],
+        ).pack(side="left", padx=(8, 6))
+        # Sub-frame donde se renderizan los chips dinámicamente
+        self.app.frame_fuentes_chips = ctk.CTkFrame(
+            self.app.frame_fuentes_activas, fg_color="transparent",
+        )
+        self.app.frame_fuentes_chips.pack(side="left", fill="x", expand=True)
+
         self.app.frame_plantilla_brief = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app.frame_plantilla_brief.pack(fill="x", pady=1)
 

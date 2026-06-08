@@ -317,6 +317,12 @@ class ArquitectoApp(
         self.data.actualizar_combo_personajes()
         self.data.actualizar_combo_loras()
         self.data.actualizar_combo_plantillas()
+        # Refrescar panel "Fuentes activas" tras cargar prefs (puede haber
+        # anclaje persistido o loras_multi precargados).
+        try:
+            self.footer.actualizar_fuentes_activas()
+        except Exception as _e:
+            logger.debug(f"[silent fuentes init] {_e}")
 
         # Cargar estado y forzar pintado correcto
         self.data._cargar_preferencias()

@@ -370,6 +370,11 @@ class UiFooterService:
             self.app.dialogs.set_estado("🎨 Estilos: General (ninguno seleccionado)")
 
     def _on_personaje_selected(self, nombre: str):
+        # Refrescar panel fuentes activas siempre (incluso al deseleccionar)
+        try:
+            self.actualizar_fuentes_activas()
+        except Exception:
+            pass
         if not nombre or nombre == "— Sin personaje —":
             return
         desc = self.app.store.descripcion_personaje(nombre) if hasattr(self.app, 'store') else ""
@@ -511,6 +516,115 @@ class UiFooterService:
                 triggers.append(t)
                 vistos.add(t.lower())
         return triggers
+
+    def actualizar_fuentes_activas(self) -> None:
+        """Refresca el panel "Fuentes activas" con chips clickables que
+        muestran qué está inyectándose en el prompt. Click en cada chip
+        limpia esa fuente.
+
+        Fuentes detectadas:
+          • 🧑 Personaje (combo_personaje)
+          • 🔗 LoRA primario + extras (combo_lora + loras_multi)
+          • ⚓ Anclaje visual (_anclaje_visual)
+          • 🧬 Último ADN visual (_ultimo_anclaje_visual)
+        """
+        if not hasattr(self.app, "frame_fuentes_chips"):
+            return
+        # Limpiar chips previos
+        for w in self.app.frame_fuentes_chips.winfo_children():
+            w.destroy()
+
+        chips: list = []
+        # 🧑 Personaje
+        try:
+            pers = self.app.combo_personaje.get() if hasattr(self.app, "combo_personaje") else ""
+            if pers and pers != "— Sin personaje —":
+                chips.append(("🧑 " + pers, "#3b82f6", "personaje"))
+        except Exception:
+            pass
+        # 🔗 LoRA primario + extras
+        n_loras = 0
+        try:
+            principal = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
+            if principal and principal != "— Sin LoRA —":
+                n_loras += 1
+        except Exception:
+            pass
+        n_loras += len(getattr(self.app, "loras_multi", []) or [])
+        if n_loras:
+            lbl = f"🔗 {n_loras} LoRA" + ("s" if n_loras > 1 else "")
+            chips.append((lbl, "#7c3aed", "loras"))
+        # ⚓ Anclaje visual persistido
+        if getattr(self.app, "_anclaje_visual", None):
+            chips.append(("⚓ Anclaje", "#f59e0b", "anclaje"))
+        # 🧬 ADN visual (último análisis de imagen)
+        if getattr(self.app, "_ultimo_anclaje_visual", None):
+            chips.append(("🧬 ADN", "#10b981", "adn"))
+
+        if not chips:
+            # Sin fuentes → ocultar el panel entero
+            try:
+                self.app.frame_fuentes_activas.pack_forget()
+            except Exception:
+                pass
+            return
+        # Hay fuentes → asegurar que el panel se muestra
+        try:
+            if not self.app.frame_fuentes_activas.winfo_ismapped():
+                self.app.frame_fuentes_activas.pack(
+                    fill="x", pady=1, before=self.app.frame_plantilla_brief,
+                )
+        except Exception as _e:
+            logger.debug(f"[silent fuentes pack] {_e}")
+
+        for label, color, tipo in chips:
+            btn = ctk.CTkButton(
+                self.app.frame_fuentes_chips, text=label + "  ✕",
+                width=0, height=22,
+                fg_color=color, hover_color=color,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                corner_radius=10,
+                command=lambda t=tipo: self._limpiar_fuente(t),
+            )
+            btn.pack(side="left", padx=2)
+
+    def _limpiar_fuente(self, tipo: str) -> None:
+        """Limpia una fuente activa (personaje / loras / anclaje / adn)
+        y refresca el panel."""
+        try:
+            if tipo == "personaje" and hasattr(self.app, "combo_personaje"):
+                self.app.combo_personaje.set("— Sin personaje —")
+                try:
+                    self._on_personaje_selected("— Sin personaje —")
+                except Exception:
+                    pass
+            elif tipo == "loras":
+                if hasattr(self.app, "combo_lora"):
+                    self.app.combo_lora.set("— Sin LoRA —")
+                self.app.loras_multi = []
+                try:
+                    prefs = self.app.store.cargar_preferencias() or {}
+                    prefs["loras_multi"] = []
+                    self.app.store.guardar_preferencias(prefs)
+                except Exception:
+                    pass
+                self._actualizar_lora_trigger_visible()
+            elif tipo == "anclaje":
+                self.app._anclaje_visual = None
+                try:
+                    prefs = self.app.store.cargar_preferencias() or {}
+                    prefs["anclaje_visual"] = None
+                    self.app.store.guardar_preferencias(prefs)
+                except Exception:
+                    pass
+            elif tipo == "adn":
+                self.app._ultimo_anclaje_visual = None
+            try:
+                self.app.dialogs.set_estado(f"🧹 Fuente '{tipo}' limpiada", "#9b59b6")
+            except Exception:
+                pass
+        finally:
+            self.actualizar_fuentes_activas()
 
     def rasgos_loras_activos(self) -> list:
         """Devuelve los 'rasgos visuales' (descripciones de personaje)
@@ -703,6 +817,11 @@ class UiFooterService:
         except Exception:
             pass
         self.app.lbl_lora_trigger.configure(text=texto, text_color=color)
+        # Refrescar panel "Fuentes activas"
+        try:
+            self.actualizar_fuentes_activas()
+        except Exception:
+            pass
 
     def _es_lora_compatible(self, familia_lora):
         """Devuelve True/False si el LoRA es compatible con el modelo activo. None si no se puede determinar."""
