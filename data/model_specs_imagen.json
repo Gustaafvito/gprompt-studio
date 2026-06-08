@@ -168,40 +168,6 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción."
   },
-  "Z-Image-Base-Realistic": {
-    "nota": 4.8,
-    "has_negative": true,
-    "is_natural": false,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1500,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 8,
-    "best_for": "Fotorrealismo de máxima fidelidad (no destilado). Versión Europe-v1.0: texturas de personajes optimizadas para estética europea. Más pasos = más detalle que Z Image Turbo.",
-    "prompt_formula": "Tag-based con pesos SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, colores, iluminación, calidad. Mayor budget de pasos permite prompts más detallados.",
-    "prompt_ejemplo": "close-up portrait, 1girl, European features, (detailed skin texture:1.3), freckles, green eyes, auburn hair, soft natural lighting, shallow DOF, (cinematic color grading:1.2), 8K, hyper-realistic, professional photography",
-    "sampler_recomendado": "Euler",
-    "pasos": "25-50",
-    "cfg": "3-5",
-    "clip_skip": 1,
-    "negative_recomendado": "Low quality, blurry, distorted, ugly, extra fingers, deformed face, asymmetrical eyes, misaligned teeth, repetitive textures, compression artifacts, watermarks, text, overexposure, heavy shadows, color distortion, lack of details, stiff movements, deformities",
-    "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Más lento que Z Image Turbo (más pasos). Optimizado para personajes europeos en v1.0."
-  },
   "NiwaStyle - Animax ColorPop (Illustrious)": {
     "nota": 5.0,
     "has_negative": true,

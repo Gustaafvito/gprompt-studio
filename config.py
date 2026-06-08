@@ -238,7 +238,6 @@ GRUPOS_IMAGEN = [
     ("── Familia Z-Image ──", sorted([
         "Z Image Turbo",
         "Z-Image-Base",
-        "Z-Image-Base-Realistic",
     ])),
     ("── GPT Image (OpenAI en SeaArt) ──", sorted([
         "GPT Image 2",
@@ -799,12 +798,12 @@ TOKEN_LIMITS = {
 PROMPT_TEMPLATES = {
     # ── Realismo SD (tag-based con pesos) ────────────────────
     "fotorrealismo_sd": {
-        "modelos": ["Z Image Turbo", "Z-Image-Base-Realistic", "CyberRealistic", "Realistic Vision V6.0", "Illustrious Realism by Klaabu", "Real Dream SDXL", "MajicMIX Realistic v6", "Prodigies"],
+        "modelos": ["Z Image Turbo", "Z-Image-Base", "CyberRealistic", "Realistic Vision V6.0", "Illustrious Realism by Klaabu", "Real Dream SDXL", "MajicMIX Realistic v6", "Prodigies"],
         "positive_base": "({encuadre}:1.2), {sujeto}, {detalles_sujeto}, (detailed skin texture:1.2), {ropa_accesorios}, {entorno}, ({iluminacion}:1.3), {atmosfera}, {paleta_colores}, {estilo_fotografico}, sharp focus, photorealistic, 8K, masterpiece, highly detailed",
         "negative_base": "(worst quality, low quality, lowres, blurry:1.4), (anime, cartoon, 3d render, painting, drawing, illustration:1.3), (text, watermark, signature:1.3), (deformed, distorted, asymmetric:1.2), jpeg artifacts",
     },
     "retrato_sd": {
-        "modelos": ["Z Image Turbo", "Z-Image-Base-Realistic", "CyberRealistic", "Realistic Vision V6.0", "Prodigies", "MajicMIX Realistic v6"],
+        "modelos": ["Z Image Turbo", "Z-Image-Base", "CyberRealistic", "Realistic Vision V6.0", "Prodigies", "MajicMIX Realistic v6"],
         "positive_base": "(close-up portrait:1.3), {sujeto}, (detailed eyes:1.2), (detailed skin:1.2), {expresion}, {pelo}, {ropa}, ({iluminacion}:1.3), shallow DOF, bokeh, {fondo}, professional portrait photography, 8K, masterpiece",
         "negative_base": "(worst quality, low quality:1.4), (bad anatomy, deformed hands, extra fingers:1.3), (anime, cartoon:1.3), (text, watermark:1.3), (overexposed:0.9), blurry, jpeg artifacts",
     },
