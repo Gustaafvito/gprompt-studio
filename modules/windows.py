@@ -368,6 +368,30 @@ def abrir_loras(app):
             messagebox.showwarning("Faltan datos", "Rellena nombre y trigger word.",
                                    parent=ventana)
             return
+        # Validación: el trigger debe ser una palabra única de activación,
+        # no una descripción del personaje/concepto. Detectar señales típicas
+        # de error: comas, +, más de 3 palabras separadas por espacios.
+        # Aviso no bloqueante — el usuario puede insistir si está seguro.
+        _sospechoso = (
+            "," in trigger
+            or "+" in trigger
+            or len(trigger.split()) > 3
+        )
+        if _sospechoso:
+            _confirma = messagebox.askyesno(
+                "¿Trigger correcto?",
+                f"El trigger '{trigger}' parece una descripción, no una "
+                f"palabra de activación.\n\n"
+                f"Los triggers reales de LoRAs suelen ser UNA palabra única "
+                f"(ej. 'nira', 'lmnlhrr', 'cybrpnk'), sin comas ni listas "
+                f"de rasgos.\n\n"
+                f"Si quieres guardar la descripción del personaje, ponla en "
+                f"🧑 Personajes; aquí solo el trigger del LoRA.\n\n"
+                f"¿Guardar igualmente '{trigger}'?",
+                parent=ventana,
+            )
+            if not _confirma:
+                return
         if editando_idx[0] is not None:
             i = editando_idx[0]
             try:
