@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 15** (continuación de las sesiones 1-14).
+Actualizado al final de la **sesión 16** (continuación de las sesiones 1-15).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,9 +15,9 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **373/373** ✅ (+124 sesión 15) |
+| Tests | **374/374** ✅ (+1 sesión 16) |
 | Working tree | Limpio |
-| Branch | `main` (sesión 15 cerrada en `f8937dc`) |
+| Branch | `main` (sesión 16 cerrada en `de175e1`) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** (era 21 — 20 removidos en A1 fase 2 ⭐⭐⭐) |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
@@ -1500,6 +1500,180 @@ aaef195 fix(A1 fase 2): cascada de regresiones que impedían arrancar la app
 - Code-signing del `.exe` (SmartScreen warning).
 - Performance: lazy load de `data/*.json`, semáforo workers IA,
   virtual scrolling historial/favoritos.
+- Features ambiciosos: PDF export, plugin system, API REST.
+
+---
+
+## ✅ Sesión 16 — Auditoría de specs + sistema "Estilo por familia"
+
+Sesión enfocada en **calidad de output** para los modelos que el
+usuario realmente usa. Política establecida: todas las auditorías de
+modelos se hacen **desde la perspectiva de SeaArt** (cómo aparecen y
+se comportan en SeaArt, no en API original ni otras plataformas).
+
+### Bloque 1 — Documentación viva para futuras auditorías
+
+Creado **`AGREGAR_MODELO.md`** en la raíz: guía con plantilla JSON,
+checklist pre-commit, tabla de campos críticos vs informativos,
+método empírico para medir `max_chars`, los 4 sitios a actualizar
+al añadir un modelo, y ejemplos validados. Pensado para incorporar
+modelos sesión a sesión sin recordar todos los pasos.
+
+### Bloque 2 — Auditoría familia Z-Image (SeaArt)
+
+- **Z Image Turbo**: nota 4.6→**4.3**, pasos 20→**8**,
+  max_chars 1500→**2000** (medido), best_for reescrito.
+- **Z-Image-Base**: nota 4.7→**4.8**, max_chars 1800→**2000**.
+- **Z-Image-Base-Realistic eliminado** (no disponible en SeaArt).
+
+### Bloque 3 — Bug latente: `max_chars_negative` hardcoded a 1500
+
+`_recortar_si_excede` en core.py tenía `NEGATIVE_MAX = 1500` hardcoded.
+Truncaba el NEGATIVE a 1500 incluso en modelos donde el límite real
+es el mismo que el POSITIVE.
+
+Fix: nuevo parámetro `max_chars_negative`. Si `None`, usa
+`max_chars` (mismo límite POSITIVE/NEGATIVE — comportamiento real
+SeaArt). `workers_ia.py` lee `specs.get("max_chars_negative")` y lo
+pasa al recortador. Test actualizado + nuevo test del override.
+
+### Bloque 4 — SeaArt Film Video corregido
+
+`has_negative: false→true`, `max_chars: 2400→1500`. Limpieza de
+limitaciones.
+
+### Bloque 5 — Auditoría familia GPT Image (SeaArt)
+
+- **GPT Image 1** y **mini eliminados** (no en SeaArt).
+- **GPT Image 2**: nota 4.9→**4.5**, max_chars confirmado **5000**
+  (medido, corta en 4997). Ratios 13→**9** (solo aspect ratios
+  estándar). Modos Low/Med/High→**Baja/Media/Alta** (etiquetas
+  SeaArt). Nuevos campos: `resoluciones [1K, 2K, 4K]`,
+  `max_imagenes 8`, `max_imagenes_referencia 10`,
+  `magia_sugerencia [Auto, Abrir, Cerrar]`.
+- **GPT Image 1.5**: nota 4.7→**3.5**, max_chars 4000→**2000**
+  (medido). modos→**["2048×2048"]** (única resolución). Ratios
+  8→**10**. `max_imagenes_referencia: 7`.
+
+### Bloque 6 — Plantilla `formato_bloques: "gpt_image"`
+
+Análoga a `z_image` pero adaptada al lenguaje natural de GPT.
+Nuevo método `_inyectar_formato_gpt_image()` con **7 bloques en
+inglés**:
+
+```
+[Subject] sujeto + rasgos físicos + ropa + pose
+[Setting] lugar + entorno + props + era
+[Lighting] fuente + dirección + calidad + mood
+[Style] photoreal/cinematic/illustration + lente/film
+[Composition] shot + ángulo + framing
+[Mood] atmósfera emocional
+[Text in image] SOLO si el usuario menciona texto → con comillas
+```
+
+Reglas: NO NEGATIVE, NO pesos numéricos, NO triggers SD,
+`[Text in image]` se OMITE si no aplica.
+
+Integración con multi-LoRA: si hay LoRA con "Rasgos visuales", se
+inyectan en `[Subject]` como REFUERZO verbal (NO se crea bloque
+`[LoRA Activation & Style]` porque GPT no usa triggers SD).
+
+Validado en vivo: GPT Image 2 generó imagen con "NEON DREAMS"
+enorme en una billboard, demostrando que el bloque `[Text in image]`
+funciona end-to-end.
+
+### Bloque 7 — Sistema "Estilo por familia" (refactor + extensión)
+
+Refactor del antiguo toggle "Estilo Z" a un sistema **genérico
+por familia**. Cada familia declara sus estilos en
+`config.ESTILOS_POR_FAMILIA` y la UI los muestra dinámicamente.
+
+Diccionario inicial (ampliable):
+
+```python
+ESTILOS_POR_FAMILIA = {
+    "z_image":   ["Auto", "Photoreal", "Creative", "Fantasy", "SciFi"],
+    "gpt_image": ["Auto", "Photoreal", "Editorial", "Illustration",
+                  "UI-Mockup", "Poster-Typography"],
+}
+```
+
+Cambios:
+- `z_image_estilo_var` → **`familia_estilo_var`** (genérico, compat
+  con la pref vieja `z_image_estilo`).
+- `frame_z_estilo` → **`frame_familia_estilo`** + label "Estilo Z"→
+  "Estilo".
+- `_on_modelo_imagen_cambio`: detecta familia → repuebla combo →
+  muestra/oculta panel + reset a "Auto" si el valor previo no
+  encaja.
+- `_inyectar_formato_z_image`: lee `familia_estilo_var`.
+- `_inyectar_formato_gpt_image`: nuevo bloque "🎯 ESTILO FORZADO"
+  con hints específicos para los 5 estilos no-Auto de GPT.
+
+Para añadir una familia nueva: extender `ESTILOS_POR_FAMILIA` +
+añadir entrada en `detectar_familia()` + opcionalmente mapa de
+hints en su plantilla específica.
+
+### Estado del catálogo al cierre
+
+| Categoría | Auditados | Total |
+|---|---:|---:|
+| Imagen | 4 ✅ | 117 (-2 eliminados) |
+| Vídeo | 1 ✅ | 15 |
+| Audio | 0 | 10 |
+
+Auditados: Z Image Turbo · Z-Image-Base · GPT Image 1.5 · GPT Image
+2 · SeaArt Film Video.
+
+### Commits sesión 16
+
+```
+de175e1 feat(estilos): toggle "Estilo" genérico por familia
+7454be4 feat(gpt_image): plantilla formato_bloques="gpt_image"
+afaec27 fix(specs): GPT Image 1.5 — datos exactos panel SeaArt
+7601a72 fix(specs): GPT Image 2 — datos exactos panel SeaArt
+9227d18 fix(specs): GPT Image SeaArt — eliminar 1 y 1 mini
+2427ca1 docs: añadir AGREGAR_MODELO.md (guía + plantilla)
+0f38bf0 fix(specs): eliminar Z-Image-Base-Realistic
+2aab178 fix(specs): Z-Image-Base nota 4.7→4.8 + max_chars 1800→2000
+9542401 fix: max_chars_negative del spec + Z Image Turbo
+```
+
+### Métricas finales sesión 16
+
+| | Empezando | Cerrando |
+|---|---:|---:|
+| Tests | 373 | **374** (+1) |
+| Modelos auditados SeaArt | 0 | **5** ✅ |
+| Familias con estilos | 1 (Z-Image) | **2** (+ GPT Image) |
+| Plantillas `formato_bloques` | 1 | **2** |
+| Working tree | Limpio | Limpio ✅ |
+
+### 🚧 Pendiente sesión 17+
+
+#### 🔴 ALTA
+- **CoreMixin → CoreService** (decisión arquitectónica).
+
+#### 🟡 MEDIA
+- **Auditoría de specs continúa** — quedan ~112 imagen + 14 vídeo
+  + 10 audio. Orden sugerido por uso real:
+    - Imagen: Nano Banana, Midjourney, Flux, Ideogram, Recraft,
+      Illustrious, SDXL.
+    - Vídeo: Seedance, Kling, Veo, Sora, Wan, Hailuo.
+    - Audio: Suno (4), Udio, MiniMax, SeaArt MusicGo.
+- **Estilos por familia** — extender `ESTILOS_POR_FAMILIA` por
+  cada familia auditada (4-6 estilos relevantes).
+- **Plantillas `formato_bloques`** — crear para familias con
+  prompt format distintivo (Flux con prosa, Midjourney con
+  `--parámetros`, etc.).
+- Toggle modelo Pollinations en comparador.
+- Variante SD/Comfy del storyboard imagen.
+- Particiones de archivos grandes.
+- Verificar installer end-to-end en VM.
+
+#### 🟢 BAJA
+- Code-signing del `.exe`.
+- Performance: lazy load JSON, semáforo workers, virtual scrolling.
 - Features ambiciosos: PDF export, plugin system, API REST.
 
 ---
