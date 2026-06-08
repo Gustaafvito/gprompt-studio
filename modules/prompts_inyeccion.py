@@ -180,6 +180,9 @@ class PromptsInyeccionService:
         # Formato especial Z-Image-Base: bloques narrativos + negative dinámico
         if specs.get("formato_bloques") == "z_image":
             return self._inyectar_formato_z_image(modelo, specs, extra)
+        # Formato especial GPT Image: 7 bloques en inglés, sin NEGATIVE
+        if specs.get("formato_bloques") == "gpt_image":
+            return self._inyectar_formato_gpt_image(modelo, specs, extra)
 
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
@@ -436,6 +439,88 @@ class PromptsInyeccionService:
             "   (Sin tags de anatomía — no hay personas; sin tags de "
             "movimiento — paisaje estático)\n"
         )
+        return extra
+
+    def _inyectar_formato_gpt_image(self, modelo: str, specs: dict, extra: str) -> str:
+        """Reglas específicas GPT Image (1.5 / 2) en SeaArt.
+
+        Lenguaje natural en prosa fluida estructurada por 7 bloques en
+        inglés. SIN NEGATIVE PROMPT (modelo natural). SIN pesos numéricos
+        ni sintaxis SD.
+
+        Si hay LoRA con "Rasgos visuales" rellenado (multi-LoRA o
+        primario), los rasgos se inyectan en [Subject] como REFUERZO
+        verbal — NO como bloque dedicado [LoRA Activation & Style]
+        porque GPT Image no usa triggers SD.
+        """
+        # Detectar si hay rasgos visuales para reforzar el sujeto
+        rasgos_lora: list = []
+        try:
+            if hasattr(self.app, "footer"):
+                rasgos_lora = self.app.footer.rasgos_loras_activos() or []
+        except Exception:
+            rasgos_lora = []
+        rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
+
+        extra += (
+            "• TIPO: GPT Image (modelo OpenAI multimodal en SeaArt). "
+            "Lenguaje NATURAL en prosa fluida, NO tags separados por "
+            "comas, NO pesos numéricos, NO sintaxis SD.\n"
+            "• Excelente con TEXTO DENTRO DE LA IMAGEN: si el usuario "
+            "menciona texto literal, usa comillas ('with the words "
+            "\"...\"').\n"
+            "• Instruction following ESTRICTO: pide composiciones y "
+            "spatial arrangements complejos sin temer reinterpretaciones.\n"
+            "• Razonamiento: el modelo lee el prompt entero, así que "
+            "el orden y la coherencia importan.\n"
+        )
+        extra += (
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\n"
+            "\n"
+            "PROMPT:\n"
+            "[Subject] <Main subject + detailed physical traits (face, "
+            "hair, eyes, build, ethnicity if relevant) + clothing/"
+            "wardrobe + pose/expression. Concrete and specific.>\n"
+            "[Setting] <Location + environment + background elements + "
+            "era/period + key props. Where the subject is and what "
+            "surrounds them.>\n"
+            "[Lighting] <Light source (sun, neon, candle, fluorescent) + "
+            "direction (from the left, backlit, top-down) + quality "
+            "(soft, harsh, volumetric, rim light) + mood it creates.>\n"
+            "[Style] <Visual style: photorealistic / illustration / "
+            "cinematic / editorial / vector / oil painting. Reference "
+            "specifics: lens (35mm, 85mm, macro), film stock (Portra 400, "
+            "Cinestill), art reference if relevant.>\n"
+            "[Composition] <Shot type (close-up / medium / wide / "
+            "extreme wide / over-the-shoulder) + angle (eye-level, low, "
+            "high, dutch) + framing (centered, rule of thirds, symmetric).>\n"
+            "[Mood] <Emotional atmosphere + overall feeling (epic, "
+            "intimate, melancholic, energetic, contemplative, mysterious).>\n"
+            "[Text in image] <ONLY if the user's idea mentions text in "
+            "the image: with the words \"EXACT WORDS\" in [font style, "
+            "color, placement]. If no text: OMIT this block entirely.>\n"
+            "\n"
+            "━━━ REGLAS GENERALES GPT IMAGE ━━━\n"
+            "  • NO incluyas NEGATIVE PROMPT — este modelo no lo soporta.\n"
+            "  • NO uses pesos numéricos (tag:1.2). No aplica.\n"
+            "  • NO inventes triggers SD (lmnlhrr, etc.) — el modelo "
+            "no los reconoce.\n"
+            "  • Sé ESPECÍFICO con lighting, composition y mood — "
+            "GPT Image los respeta al pie de la letra.\n"
+            "  • Para texto en la imagen: usa comillas dobles con la "
+            "palabra exacta. Indica font/color/placement si importa.\n"
+            "  • El bloque [Text in image] SOLO va si el usuario lo "
+            "pide. Si no lo menciona, OMÍTELO completamente.\n"
+        )
+        if rasgos_combinados:
+            extra += (
+                f"\n🎭 RASGOS VISUALES DEL/LOS LORA(S) — INCLÚYELOS "
+                f"EXPLÍCITAMENTE en [Subject]:\n"
+                f"  {rasgos_combinados}\n"
+                f"  • Adáptalos al contexto de la escena sin contradecir.\n"
+                f"  • Refuerzan los pesos del LoRA cuando el output se "
+                f"abre en SeaArt con LoRA activo.\n"
+            )
         return extra
 
     def _inyectar_template(self, motor: str, extra: str) -> str:

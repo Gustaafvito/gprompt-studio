@@ -2237,6 +2237,7 @@
     "nota": 3.5,
     "has_negative": false,
     "is_natural": true,
+    "formato_bloques": "gpt_image",
     "ratios": [
       "1:1",
       "2:3",
@@ -2265,6 +2266,7 @@
     "nota": 4.5,
     "has_negative": false,
     "is_natural": true,
+    "formato_bloques": "gpt_image",
     "ratios": [
       "1:1",
       "2:3",
