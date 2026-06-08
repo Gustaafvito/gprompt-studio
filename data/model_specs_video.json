@@ -242,7 +242,7 @@
   },
   "SeaArt Film Video": {
     "nota": 4.5,
-    "has_negative": false,
+    "has_negative": true,
     "has_audio": true,
     "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
     "duraciones": [
@@ -262,7 +262,7 @@
     "best_for": "El modelo de vídeo más usado de SeaArt (10.4M usos). Cinematográfico, HQ, fotogramas. Sujetos múltiples, magia de sugerencia. Image-to-Video y Text-to-Video.",
     "prompt_formula": "Subject + action + camera + lighting + style. Prompts descriptivos con magia de sugerencia.",
     "prompt_ejemplo": "A woman in a flowing white dress walks through golden wheat fields at sunset, cinematic slow motion, warm golden hour light, shallow DOF.",
-    "limitaciones": "Sin prompt negativo. Máx 10s. Coste ~480-2400 energía."
+    "limitaciones": "Máx 10s. Coste ~480-2400 energía."
   },
   "SeaArt Ultra Pro": {
     "nota": 4.6,
