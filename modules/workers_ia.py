@@ -63,6 +63,9 @@ class WorkersIaService:
         """
         if es_ideas or not texto:
             return texto
+        # Multi-LoRA: el safety-net opera sobre el trigger PRIMARIO. Los
+        # extras del modal son responsabilidad del LLM al haber visto la
+        # instrucción imperativa en construir_modelo_info y la plantilla.
         try:
             lora_nombre = (self.app.combo_lora.get()
                            if hasattr(self.app, "combo_lora") else "")

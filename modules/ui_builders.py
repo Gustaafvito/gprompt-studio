@@ -962,6 +962,18 @@ class UIBuildersService:
                                                 self.app.footer._actualizar_lora_trigger_visible()
                                             ))
         self.app.combo_lora.pack(side="left", padx=5)
+
+        # Botón "🔗+" — abre modal de multi-LoRA con checkboxes para
+        # combinar varios LoRAs en el mismo prompt (sesión 16). El combo
+        # principal sigue siendo el LoRA "primario"; los extras se guardan
+        # en self.app.loras_multi (set de nombres).
+        ctk.CTkButton(
+            self.app.frame_pers_lora, text="🔗+", width=36, height=26,
+            fg_color="#5b2c8e", hover_color="#3d1a6a",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=self.app.footer._abrir_multi_lora_modal,
+        ).pack(side="left", padx=(2, 0))
+
         # Label trigger visible (Mejora bonus LoRAs)
         lora_color = "#7c3aed" if is_light else "#9b59b6"
         self.app.lbl_lora_trigger = ctk.CTkLabel(self.app.frame_pers_lora, text="",

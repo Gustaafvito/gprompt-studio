@@ -489,6 +489,144 @@ class UiFooterService:
             return self.app.store.trigger_lora(nombre)
         return ""
 
+    def triggers_loras_activos(self) -> list:
+        """Devuelve TODOS los triggers activos: el del combo principal +
+        los de loras_multi (modal multi-LoRA). Sin duplicados, en orden
+        de inserción (primario primero).
+        """
+        triggers = []
+        vistos = set()
+        # Primario
+        trig_principal = self.lora_activo()
+        if trig_principal:
+            triggers.append(trig_principal)
+            vistos.add(trig_principal.lower())
+        # Extras del multi-LoRA
+        for nombre in getattr(self.app, "loras_multi", []) or []:
+            try:
+                t = self.app.store.trigger_lora(nombre)
+            except Exception:
+                t = ""
+            if t and t.lower() not in vistos:
+                triggers.append(t)
+                vistos.add(t.lower())
+        return triggers
+
+    def _abrir_multi_lora_modal(self):
+        """Modal con checkboxes para seleccionar VARIOS LoRAs adicionales
+        además del primario del combo. Persiste en self.app.loras_multi.
+        """
+        from modules.gprompt_window import GPromptWindow
+        is_light = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_light)
+
+        vent = GPromptWindow(self.app)
+        vent.title("🔗 Multi-LoRA — selecciona varios")
+        vent.geometry("520x560")
+        vent.transient(self.app)
+
+        ctk.CTkLabel(vent, text="🔗 Multi-LoRA",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
+        ctk.CTkLabel(vent,
+                     text=("Marca los LoRAs adicionales a usar junto con el "
+                           "primario.\nEl combo principal sigue siendo el LoRA "
+                           "primario; estos se añaden encima."),
+                     font=ctk.CTkFont(size=10),
+                     text_color=c["muted_text"], justify="center").pack(pady=(0, 8))
+
+        # Cabecera con LoRA primario (informativo)
+        nombre_primario = ""
+        try:
+            nombre_primario = self.app.combo_lora.get() or ""
+        except Exception:
+            pass
+        if nombre_primario and nombre_primario != "— Sin LoRA —":
+            ctk.CTkLabel(
+                vent,
+                text=f"🔹 Primario (combo): {nombre_primario}",
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color="#2ecc71",
+            ).pack(pady=(0, 6))
+
+        # Scrollable con checkboxes
+        scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=12, pady=4)
+
+        loras = self.app.store.loras or []
+        seleccionados_actual = set(getattr(self.app, "loras_multi", []) or [])
+        # No incluimos el primario en el modal (ya está en el combo)
+        chk_vars: dict = {}
+        if not loras:
+            ctk.CTkLabel(
+                scroll,
+                text="(No hay LoRAs guardados — añádelos desde 📁 Datos → 🔗 LoRAs)",
+                text_color=c["muted_text"],
+            ).pack(pady=20)
+        else:
+            for l in loras:
+                nombre = l.get("nombre", "")
+                if not nombre or nombre == nombre_primario:
+                    continue  # Saltar el primario
+                trigger = l.get("trigger", "")
+                familia = l.get("familia", "")
+                var = ctk.BooleanVar(value=(nombre in seleccionados_actual))
+                row = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=4)
+                row.pack(fill="x", pady=2)
+                cb = ctk.CTkCheckBox(
+                    row, text=nombre, variable=var,
+                    font=ctk.CTkFont(size=11, weight="bold"),
+                )
+                cb.pack(side="left", padx=8, pady=4)
+                meta = f'→ "{trigger}"'
+                if familia:
+                    meta += f"  [{familia}]"
+                ctk.CTkLabel(row, text=meta,
+                             font=ctk.CTkFont(family="Consolas", size=9),
+                             text_color="#9b59b6").pack(side="left", padx=4)
+                chk_vars[nombre] = var
+
+        # Botones
+        btns = ctk.CTkFrame(vent, fg_color="transparent")
+        btns.pack(pady=10)
+
+        def _guardar():
+            nuevos = [n for n, v in chk_vars.items() if v.get()]
+            self.app.loras_multi = nuevos
+            # Persistir
+            try:
+                prefs = self.app.store.cargar_preferencias() or {}
+                prefs["loras_multi"] = nuevos
+                self.app.store.guardar_preferencias(prefs)
+            except Exception as _e:
+                logger.debug(f"[silent multi-lora persist] {_e}")
+            # Actualizar label inline con conteo
+            try:
+                self._actualizar_lora_trigger_visible()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+            try:
+                self.app.dialogs.set_estado(
+                    f"🔗 Multi-LoRA: {len(nuevos)} extra(s) activo(s)",
+                    "#7c3aed",
+                )
+            except Exception:
+                pass
+            vent.destroy()
+
+        def _limpiar():
+            for v in chk_vars.values():
+                v.set(False)
+
+        ctk.CTkButton(btns, text="💾 Guardar", width=110, height=30,
+                      fg_color="#1a7a3c",
+                      command=_guardar).pack(side="left", padx=4)
+        ctk.CTkButton(btns, text="✕ Limpiar todo", width=120, height=30,
+                      fg_color="#7a1a1a",
+                      command=_limpiar).pack(side="left", padx=4)
+        ctk.CTkButton(btns, text="Cancelar", width=100, height=30,
+                      fg_color=c["fg_dark"],
+                      command=vent.destroy).pack(side="left", padx=4)
+
     def _actualizar_lora_trigger_visible(self):
         """Muestra el trigger del LoRA seleccionado al lado del combo (Mejora LoRAs)."""
         if not hasattr(self.app, "lbl_lora_trigger"): return
@@ -522,6 +660,13 @@ class UiFooterService:
         texto = f'→ "{trigger}"'
         if familia: texto += f"  [{familia}]"
         texto += warning
+        # Indicador multi-LoRA "+N más"
+        try:
+            n_extra = len(getattr(self.app, "loras_multi", []) or [])
+            if n_extra:
+                texto += f"  🔗+{n_extra}"
+        except Exception:
+            pass
         self.app.lbl_lora_trigger.configure(text=texto, text_color=color)
 
     def _es_lora_compatible(self, familia_lora):

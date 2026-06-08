@@ -229,16 +229,21 @@ class PromptsInyeccionService:
             "• Settings óptimos: 28-50 steps, CFG 3-5.\n"
         )
 
-        # Detectar LoRA activo para insertar bloque dedicado en la plantilla.
-        # Si hay LoRA, usamos la estructura de 4 bloques en inglés con bloque
-        # [LoRA Activation & Style] inmediatamente tras [Subject & Composition].
-        # Si no, mantenemos la estructura cinematográfica clásica (5 bloques ES).
-        lora_trigger = ""
+        # Detectar LoRA(s) activo(s) para insertar bloque dedicado.
+        # Multi-LoRA: el bloque [LoRA Activation & Style] lista todos los
+        # triggers (primario + extras del modal) en formato
+        # "trig1 style + trig2 style + ...".
+        triggers_lora: list = []
         try:
             if hasattr(self.app, "footer"):
-                lora_trigger = self.app.footer.lora_activo() or ""
+                triggers_lora = self.app.footer.triggers_loras_activos() or []
         except Exception:
-            lora_trigger = ""
+            triggers_lora = []
+        lora_trigger = triggers_lora[0] if triggers_lora else ""
+        # String para mostrar en el bloque [LoRA Activation & Style]
+        # Ej con 1: "lmnlhrr style"
+        # Ej con 2: "lmnlhrr style + flux_anime style"
+        triggers_bloque = " + ".join(f"{t} style" for t in triggers_lora) if triggers_lora else ""
 
         # Toggle "Estilo Z" — el usuario fuerza una categoría en lugar de
         # dejar que el LLM elija a ciegas. Hint el bloque ESTILÍSTICO del
@@ -271,12 +276,13 @@ class PromptsInyeccionService:
                 "(close-up/wide/medium/etc) + composition + pose. Describe "
                 "concrete physical traits: skin texture, eye/hair color, "
                 "wardrobe. Include depth of field cues if relevant.>\n"
-                f"[LoRA Activation & Style] {lora_trigger} style, <DESCRIPTION "
-                f"of the visual style and aesthetic this LoRA contributes — "
-                f"e.g. 'pure liminal space aesthetic, eerie and desolate "
-                f"atmosphere' / 'cyberpunk neon-noir with rain-slick streets' "
-                f"/ 'vintage 35mm film grain with muted earth tones'. Connect "
-                f"it to specific scene elements that reinforce that style.>\n"
+                f"[LoRA Activation & Style] {triggers_bloque}, <DESCRIPTION "
+                f"of the COMBINED visual style and aesthetic these LoRAs "
+                f"contribute — e.g. 'pure liminal space aesthetic, eerie "
+                f"and desolate atmosphere' / 'cyberpunk neon-noir with "
+                f"rain-slick streets' / 'vintage 35mm film grain with "
+                f"muted earth tones'. Connect to specific scene elements "
+                f"that reinforce these styles.>\n"
                 "[Lighting & Environment] <Specific lighting (golden hour, "
                 "volumetric, dappled shadows, rim light, fluorescent, neon) + "
                 "environment/background details, era, props. Color grading.>\n"
@@ -290,16 +296,19 @@ class PromptsInyeccionService:
                 "depth of field, <lente sugerida: 35mm lens shot, wide-angle "
                 "drone, macro>.\n"
             )
+            triggers_list_str = ", ".join(f"`{t}`" for t in triggers_lora)
+            plural_palabra = "trigger" if len(triggers_lora) == 1 else "triggers"
             nota_lora = (
-                f"\n🔗 LORA ACTIVO — REGLAS ESTRICTAS:\n"
-                f"  • Incluye `{lora_trigger}` UNA SOLA VEZ, EXCLUSIVAMENTE "
-                f"al inicio del bloque [LoRA Activation & Style] (formato: "
-                f"`{lora_trigger} style, ...`).\n"
-                f"  • ❌ NO lo pongas en el preámbulo de quality tags.\n"
-                f"  • ❌ NO lo pongas en [Subject & Composition].\n"
-                f"  • ❌ NO lo pongas en [Lighting & Environment] ni [Mood].\n"
-                f"  • ❌ NO repitas `{lora_trigger}` en ningún otro bloque.\n"
-                f"  • NO lo traduzcas ni modifiques (es literal).\n"
+                f"\n🔗 LORA(S) ACTIVO(S) — REGLAS ESTRICTAS:\n"
+                f"  • {plural_palabra.capitalize()}: {triggers_list_str}.\n"
+                f"  • Inclúyelos UNA SOLA VEZ cada uno, EXCLUSIVAMENTE "
+                f"al inicio del bloque [LoRA Activation & Style] "
+                f"(formato: `{triggers_bloque}, ...`).\n"
+                f"  • ❌ NO los pongas en el preámbulo de quality tags.\n"
+                f"  • ❌ NO los pongas en [Subject & Composition].\n"
+                f"  • ❌ NO los pongas en [Lighting & Environment] ni [Mood].\n"
+                f"  • ❌ NO repitas ningún trigger en otros bloques.\n"
+                f"  • NO los traduzcas ni modifiques (son literales).\n"
             )
         else:
             bloques_positivos = (
@@ -505,20 +514,29 @@ class PromptsInyeccionService:
         pers = self.app.footer.personaje_activo()
         if pers:
             info += f" Personaje: {pers}."
-        lora = self.app.footer.lora_activo()
-        if lora:
-            # Instrucción genérica de trigger obligatorio. Para Z-Image-Base
-            # (y otros modelos con plantilla específica), la posición exacta
-            # se decide en _inyectar_specs_formato → _inyectar_formato_z_image
-            # (que dirá: en el bloque [LoRA Activation & Style], NO en el
-            # preámbulo). Esta instrucción es para modelos sin plantilla
-            # propia, que pueden colocarlo donde encaje mejor (típicamente
-            # al inicio del POSITIVE PROMPT como tag suelto).
+        # Multi-LoRA: combinar primario + extras del modal
+        try:
+            triggers = self.app.footer.triggers_loras_activos() or []
+        except Exception:
+            triggers = []
+            tp = self.app.footer.lora_activo()
+            if tp:
+                triggers = [tp]
+        if triggers:
+            if len(triggers) == 1:
+                triggers_str = f"`{triggers[0]}`"
+                plural_nota = ""
+            else:
+                triggers_str = ", ".join(f"`{t}`" for t in triggers)
+                plural_nota = (
+                    f" Son {len(triggers)} triggers de LoRAs distintos — "
+                    f"inclúyelos TODOS, no omitas ninguno."
+                )
             info += (
-                f"\n🔗 LORA ACTIVO — TRIGGER WORD OBLIGATORIO: "
-                f"`{lora}`. Inclúyelo LITERALMENTE UNA SOLA VEZ en el "
-                f"POSITIVE PROMPT. NO lo traduzcas ni modifiques. NO lo "
-                f"repitas en varias secciones."
+                f"\n🔗 LORA(S) ACTIVO(S) — TRIGGER WORDS OBLIGATORIOS: "
+                f"{triggers_str}. Inclúyelos LITERALMENTE UNA SOLA VEZ "
+                f"cada uno en el POSITIVE PROMPT. NO los traduzcas ni "
+                f"modifiques. NO los repitas en varias secciones.{plural_nota}"
             )
         dest = self.app.destino_var.get()
         if dest and dest != "— Personal —":

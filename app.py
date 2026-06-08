@@ -232,6 +232,15 @@ class ArquitectoApp(
         # Solo aplica cuando el modelo de imagen es de la familia Z-Image.
         self.z_image_estilo_var  = ctk.StringVar(
             value=_switches_prefs.get("z_image_estilo", "Auto"))
+        # Multi-LoRA: lista de nombres EXTRA seleccionados (además del
+        # primario del combo_lora). Persistido en prefs como lista.
+        try:
+            _multi_loras = _switches_prefs.get("loras_multi", [])
+            if not isinstance(_multi_loras, list):
+                _multi_loras = []
+        except Exception:
+            _multi_loras = []
+        self.loras_multi: list = list(_multi_loras)
         self.estilo_checks       = {}
         self.preset_vars         = {}
         self.preset_btns         = {}
