@@ -2234,29 +2234,32 @@
     "limitaciones": "Legacy. Niji 6 y 7 superiores en coherencia, detalles y prompt understanding. Sin --cref ni --sref ni --oref. Sin Personalization. Los --style flags pueden ignorarse en algunos casos. Útil solo para reproducir el look específico V5."
   },
   "GPT Image 1.5": {
-    "nota": 4.7,
+    "nota": 3.5,
     "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
       "2:3",
       "3:2",
-      "1024x1024",
-      "1024x1536",
-      "1536x1024",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
       "9:16",
-      "16:9"
+      "16:9",
+      "21:9"
     ],
-    "max_chars": 4000,
+    "max_chars": 2000,
     "modos_gen": [
-      "Low",
-      "Medium",
-      "High"
+      "2048×2048"
     ],
-    "best_for": "GPT Image 1.5 (Noviembre 2025). 4× más rápido que GPT Image 1. Mejor edición de imagen preservando detalles (lighting, composición, rostros). Adherencia a instrucciones reforzada. Inputs/outputs ~20% más baratos. EXCELENTE para edición precisa con input_fidelity=high: item edits (cambiar color de un objeto sin tocar resto), element removal (quitar limpio), element addition (insertar nuevo natural), face preservation (mantener identidad en variaciones), branding consistency (logo sin distorsión), product photography (mismo producto en nuevos fondos), fashion (cambiar outfit sin alterar pose). Ideal para ecommerce, branding, story sequences, avatares consistentes.",
-    "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'. Para generación: scene → subject → details → style → constraints. Reseteo de identidad facial: 'maintain the same person'. Cuando se editan múltiples caras: combina las fotos en un canvas único antes de enviar (la primera imagen del input preserva más fidelidad).",
-    "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic",
-    "limitaciones": "Sigue sin negative prompt ni pesos. Algunas regresiones en estilos artísticos respecto a GPT Image 1. Resolución máxima ~1024px (no 4K). input_fidelity=high consume más tokens de input pero crítico para preservar caras y logos. Output formats: PNG, JPEG, WebP."
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 7,
+    "magia_sugerencia": ["Automático", "Abrir", "Cerrar"],
+    "best_for": "GPT Image 1.5 en SeaArt. Modelo OpenAI orientado a flujos profesionales con CONTROL CREATIVO PRECISO. Destaca en: (1) 4× MÁS RÁPIDO que GPT Image 1 — iteración rápida sin perder el flow; (2) INSTRUCTION FOLLOWING ESTRICTO — sigue prompts complejos al pie de la letra, sin reinterpretaciones; (3) EDICIÓN PRECISA + CONSISTENCIA — cambia ropa, iluminación, expresiones manteniendo caras, logos, branding y detalles finos coherentes; (4) TEXTO DENSO Y PEQUEÑO — infografías, posters, labels y layouts con texto legible y nítido; (5) ALTA FIDELIDAD — imágenes más nítidas, realistas y estilísticamente alineadas. Soporta hasta 7 imágenes de SUJETO como referencia (img2img composite). Ideal para refinamiento de assets, branding, ecommerce, story sequences, avatares consistentes, infografías con tipografía.",
+    "prompt_formula": "Lenguaje natural en prosa fluida con instrucciones EXPLÍCITAS y precisas. Para EDICIÓN: 'Change X to Y, keep Z intact' / 'maintain the same person'. Para GENERACIÓN: describe scene → subject → spatial arrangement → lighting → style → exact text (entre comillas). Por su instruction following estricto, no temas pedir layouts complejos en grid o composiciones multi-step. Para texto literal usa comillas: 'with the words \"...\"'. Soporta hasta 2000 chars.",
+    "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic.",
+    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos. Resolución única 2048×2048 en SeaArt. Cantidad: 1-4 (gratis) / 5-8 (premium). Sujetos referencia: máx 7 imágenes (menos que GPT Image 2 que admite 10). Creación privada: premium. Magia de sugerencia (prompt enhancement): Auto/Abrir/Cerrar."
   },
   "GPT Image 2": {
     "nota": 4.5,
