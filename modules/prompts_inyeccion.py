@@ -234,16 +234,21 @@ class PromptsInyeccionService:
         # triggers (primario + extras del modal) en formato
         # "trig1 style + trig2 style + ...".
         triggers_lora: list = []
+        rasgos_lora: list = []
         try:
             if hasattr(self.app, "footer"):
                 triggers_lora = self.app.footer.triggers_loras_activos() or []
+                rasgos_lora = self.app.footer.rasgos_loras_activos() or []
         except Exception:
             triggers_lora = []
+            rasgos_lora = []
         lora_trigger = triggers_lora[0] if triggers_lora else ""
         # String para mostrar en el bloque [LoRA Activation & Style]
         # Ej con 1: "lmnlhrr style"
         # Ej con 2: "lmnlhrr style + flux_anime style"
         triggers_bloque = " + ".join(f"{t} style" for t in triggers_lora) if triggers_lora else ""
+        # Rasgos visuales combinados (si hay)
+        rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
 
         # Toggle "Estilo Z" — el usuario fuerza una categoría en lugar de
         # dejar que el LLM elija a ciegas. Hint el bloque ESTILÍSTICO del
@@ -303,7 +308,21 @@ class PromptsInyeccionService:
             )
             triggers_list_str = ", ".join(f"`{t}`" for t in triggers_lora)
             plural_palabra = "trigger" if len(triggers_lora) == 1 else "triggers"
+            # Bloque opcional con rasgos visuales de los LoRAs (sesión 16)
+            bloque_rasgos = ""
+            if rasgos_combinados:
+                bloque_rasgos = (
+                    f"\n🎭 RASGOS VISUALES DEL/LOS LORA(S) — INCLÚYELOS "
+                    f"EXPLÍCITAMENTE en [Subject & Composition]:\n"
+                    f"  {rasgos_combinados}\n"
+                    f"  • Estos rasgos son los que el LoRA tiene entrenados; "
+                    f"mencionarlos en el prompt los REFUERZA y asegura que "
+                    f"salgan en la imagen.\n"
+                    f"  • Adáptalos al contexto de la escena (puedes "
+                    f"reformular pero NO contradigas).\n"
+                )
             nota_lora = (
+                f"{bloque_rasgos}"
                 f"\n🔗 LORA(S) ACTIVO(S) — REGLAS ESTRICTAS:\n"
                 f"  • {plural_palabra.capitalize()}: {triggers_list_str}.\n"
                 f"  • Inclúyelos UNA SOLA VEZ cada uno, EXCLUSIVAMENTE "

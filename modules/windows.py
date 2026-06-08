@@ -339,18 +339,46 @@ def abrir_loras(app):
     entry_nota = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="opcional")
     entry_nota.pack(side="left", padx=5)
 
+    # ── Sub-fila: Rasgos visuales (opcional) ──
+    # Si está relleno, la app inyecta estos rasgos en [Subject & Composition]
+    # del prompt cuando este LoRA está activo, en lugar de exigir un
+    # Personaje separado.
+    frame_nuevo_2 = ctk.CTkFrame(ventana, fg_color="transparent")
+    rasgos_row = ctk.CTkFrame(frame_nuevo_2, fg_color="transparent")
+    rasgos_row.pack(fill="x", padx=10, pady=(0, 6))
+    ctk.CTkLabel(
+        rasgos_row,
+        text="Rasgos visuales (opcional):",
+        font=ctk.CTkFont(size=10, weight="bold"),
+    ).pack(anchor="w")
+    ctk.CTkLabel(
+        rasgos_row,
+        text=(
+            "Si es un LoRA de PERSONAJE, describe sus rasgos físicos clave "
+            "(pelo, ojos, undercut, etc). La app los inyectará automáticamente "
+            "en el prompt — no necesitas crear un Personaje aparte."
+        ),
+        font=ctk.CTkFont(size=9), text_color="#888",
+        wraplength=780, justify="left",
+    ).pack(anchor="w", pady=(0, 4))
+    txt_rasgos = ctk.CTkTextbox(rasgos_row, height=60,
+                                font=ctk.CTkFont(size=11))
+    txt_rasgos.pack(fill="x")
+
     form_visible = [False]
     editando_idx = [None]
 
     def _toggle_form():
         if form_visible[0]:
             frame_nuevo.pack_forget()
+            frame_nuevo_2.pack_forget()
             btn_toggle_form.configure(text="+ Nuevo LoRA")
             form_visible[0] = False
             editando_idx[0] = None
             btn_guardar.configure(text="💾 Guardar")
         else:
-            frame_nuevo.pack(fill="x", padx=15, pady=(2, 6), after=frame_busqueda)
+            frame_nuevo.pack(fill="x", padx=15, pady=(2, 0), after=frame_busqueda)
+            frame_nuevo_2.pack(fill="x", padx=15, pady=(0, 6), after=frame_nuevo)
             btn_toggle_form.configure(text="× Cerrar form")
             form_visible[0] = True
             entry_nombre.focus_set()
@@ -362,6 +390,7 @@ def abrir_loras(app):
         trigger = entry_trigger.get().strip()
         nota    = entry_nota.get().strip()
         familia = combo_familia_form.get().strip()
+        rasgos  = txt_rasgos.get("1.0", "end").strip()
         if familia in ("—", ""):
             familia = ""
         if not nombre or not trigger:
@@ -401,10 +430,13 @@ def abrir_loras(app):
         if editando_idx[0] is not None:
             i = editando_idx[0]
             try:
-                app.store.loras[i] = {
+                _entry = {
                     "nombre": nombre, "trigger": trigger,
                     "descripcion": nota, "familia": familia,
                 }
+                if rasgos:
+                    _entry["rasgos_visuales"] = rasgos
+                app.store.loras[i] = _entry
                 app.store._guardar("loras")
                 editando_idx[0] = None
                 btn_guardar.configure(text="💾 Guardar")
@@ -413,7 +445,7 @@ def abrir_loras(app):
                                      parent=ventana)
                 return
         else:
-            existia = app.store.guardar_lora(nombre, trigger, nota, familia)
+            existia = app.store.guardar_lora(nombre, trigger, nota, familia, rasgos)
             if existia:
                 if not messagebox.askyesno("Ya existe",
                                            f"¿Sobreescribir '{nombre}'?",
@@ -424,6 +456,7 @@ def abrir_loras(app):
         entry_trigger.delete(0, "end")
         entry_nota.delete(0, "end")
         combo_familia_form.set("—")
+        txt_rasgos.delete("1.0", "end")
         refrescar()
         app.set_estado(f"🔗 LoRA '{nombre}' guardado.", "#9b59b6")
 
@@ -503,6 +536,9 @@ def abrir_loras(app):
                 entry_nota.delete(0, "end"); entry_nota.insert(0, l_.get("descripcion", ""))
                 f = l_.get("familia") or "—"
                 combo_familia_form.set(f if f in FAMILIAS[1:] else "—")
+                # Cargar rasgos visuales (campo nuevo sesión 16)
+                txt_rasgos.delete("1.0", "end")
+                txt_rasgos.insert("1.0", l_.get("rasgos_visuales", ""))
                 editando_idx[0] = i
                 btn_guardar.configure(text="✏️ Actualizar")
 

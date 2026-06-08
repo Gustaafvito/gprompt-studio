@@ -512,6 +512,41 @@ class UiFooterService:
                 vistos.add(t.lower())
         return triggers
 
+    def rasgos_loras_activos(self) -> list:
+        """Devuelve los 'rasgos visuales' (descripciones de personaje)
+        de TODOS los LoRAs activos que los tengan rellenados.
+
+        Cada LoRA puede tener un campo 'rasgos_visuales' opcional. Si está
+        relleno, la app lo trata como descripción del personaje del LoRA
+        y la inyecta en el prompt sin necesidad del combo Personaje.
+
+        Devuelve lista de strings (en orden: primario primero, luego
+        extras). Strings vacíos se omiten.
+        """
+        rasgos: list = []
+        # LoRA primario del combo
+        nombre_primario = ""
+        try:
+            nombre_primario = self.app.combo_lora.get() or ""
+        except Exception:
+            pass
+        if nombre_primario and nombre_primario != "— Sin LoRA —":
+            for l in (self.app.store.loras or []):
+                if l.get("nombre") == nombre_primario:
+                    r = (l.get("rasgos_visuales") or "").strip()
+                    if r:
+                        rasgos.append(r)
+                    break
+        # Extras del multi-LoRA
+        for nombre in getattr(self.app, "loras_multi", []) or []:
+            for l in (self.app.store.loras or []):
+                if l.get("nombre") == nombre:
+                    r = (l.get("rasgos_visuales") or "").strip()
+                    if r:
+                        rasgos.append(r)
+                    break
+        return rasgos
+
     def _abrir_multi_lora_modal(self):
         """Modal con checkboxes para seleccionar VARIOS LoRAs adicionales
         además del primario del combo. Persiste en self.app.loras_multi.

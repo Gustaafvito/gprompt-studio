@@ -176,18 +176,25 @@ class DataStore:
     # ── LoRAs ─────────────────────────────────────────────────────
 
     @log_operation("loras.guardar")
-    def guardar_lora(self, nombre: str, trigger: str, descripcion: str = "", familia: str = "") -> bool:
+    def guardar_lora(self, nombre: str, trigger: str, descripcion: str = "",
+                     familia: str = "", rasgos_visuales: str = "") -> bool:
         for l in self.loras:
             if l["nombre"] == nombre:
                 l["trigger"] = trigger
                 l["descripcion"] = descripcion
                 if familia:
                     l["familia"] = familia
+                if rasgos_visuales:
+                    l["rasgos_visuales"] = rasgos_visuales
+                elif "rasgos_visuales" in l:
+                    l["rasgos_visuales"] = ""  # Permite vaciarlo
                 self._guardar("loras")
                 return True
         nuevo = {"nombre": nombre, "trigger": trigger, "descripcion": descripcion}
         if familia:
             nuevo["familia"] = familia
+        if rasgos_visuales:
+            nuevo["rasgos_visuales"] = rasgos_visuales
         self.loras.insert(0, nuevo)
         self._guardar("loras")
         return False
