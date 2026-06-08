@@ -368,25 +368,31 @@ def abrir_loras(app):
             messagebox.showwarning("Faltan datos", "Rellena nombre y trigger word.",
                                    parent=ventana)
             return
-        # Validación: el trigger debe ser una palabra única de activación,
-        # no una descripción del personaje/concepto. Detectar señales típicas
-        # de error: comas, +, más de 3 palabras separadas por espacios.
-        # Aviso no bloqueante — el usuario puede insistir si está seguro.
+        # Validación: detectar triggers que parecen DESCRIPCIONES de
+        # personaje en lugar de trigger words reales. Las comas son
+        # válidas (LoRAs multi-trigger las usan, p.ej.
+        # "Nyra, Amber Eyes, Undercut" para "Nyra for Z-image"), así
+        # que solo avisamos en casos claros:
+        #   • >40 caracteres (frase larga)
+        #   • >8 palabras (lista demasiado extensa)
+        #   • puntuación de prosa (puntos, ;, dos puntos finales)
+        # Aviso no bloqueante.
+        _palabras = trigger.split()
         _sospechoso = (
-            "," in trigger
-            or "+" in trigger
-            or len(trigger.split()) > 3
+            len(trigger) > 40
+            or len(_palabras) > 8
+            or any(c in trigger for c in ".;:")
         )
         if _sospechoso:
             _confirma = messagebox.askyesno(
                 "¿Trigger correcto?",
-                f"El trigger '{trigger}' parece una descripción, no una "
-                f"palabra de activación.\n\n"
-                f"Los triggers reales de LoRAs suelen ser UNA palabra única "
-                f"(ej. 'nira', 'lmnlhrr', 'cybrpnk'), sin comas ni listas "
-                f"de rasgos.\n\n"
-                f"Si quieres guardar la descripción del personaje, ponla en "
-                f"🧑 Personajes; aquí solo el trigger del LoRA.\n\n"
+                f"El trigger '{trigger}' parece una descripción de "
+                f"personaje, no una palabra de activación.\n\n"
+                f"Los triggers de LoRAs son palabras únicas (ej. 'nira', "
+                f"'lmnlhrr') o, como mucho, varias separadas por comas "
+                f"(ej. 'Nyra, Amber Eyes, Undercut').\n\n"
+                f"Si quieres guardar la descripción del personaje, ponla "
+                f"en 🧑 Personajes; aquí solo el/los trigger(s).\n\n"
                 f"¿Guardar igualmente '{trigger}'?",
                 parent=ventana,
             )
