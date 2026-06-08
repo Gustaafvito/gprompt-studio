@@ -253,13 +253,13 @@ class PromptsInyeccionService:
         # Rasgos visuales combinados (si hay)
         rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
 
-        # Toggle "Estilo Z" — el usuario fuerza una categoría en lugar de
+        # Toggle "Estilo" — el usuario fuerza una categoría en lugar de
         # dejar que el LLM elija a ciegas. Hint el bloque ESTILÍSTICO del
         # NEGATIVE (categoría 📷/🐉/🤖) además de orientar el POSITIVE.
         estilo_z = "Auto"
         try:
-            if hasattr(self.app, "z_image_estilo_var"):
-                estilo_z = self.app.z_image_estilo_var.get() or "Auto"
+            if hasattr(self.app, "familia_estilo_var"):
+                estilo_z = self.app.familia_estilo_var.get() or "Auto"
         except Exception:
             estilo_z = "Auto"
         if estilo_z != "Auto":
@@ -462,6 +462,16 @@ class PromptsInyeccionService:
             rasgos_lora = []
         rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
 
+        # Toggle "Estilo" del usuario para GPT Image. Cuando != Auto,
+        # se inyecta un hint que orienta TODA la salida hacia esa
+        # categoría (photoreal, editorial, illustration, UI, poster).
+        estilo_gpt = "Auto"
+        try:
+            if hasattr(self.app, "familia_estilo_var"):
+                estilo_gpt = self.app.familia_estilo_var.get() or "Auto"
+        except Exception:
+            estilo_gpt = "Auto"
+
         extra += (
             "• TIPO: GPT Image (modelo OpenAI multimodal en SeaArt). "
             "Lenguaje NATURAL en prosa fluida, NO tags separados por "
@@ -521,6 +531,62 @@ class PromptsInyeccionService:
                 f"  • Refuerzan los pesos del LoRA cuando el output se "
                 f"abre en SeaArt con LoRA activo.\n"
             )
+
+        # Hint de estilo forzado por el usuario (toggle "Estilo")
+        if estilo_gpt != "Auto":
+            estilo_map_gpt = {
+                "Photoreal": (
+                    "📷 FOTORREALISMO. El [Style] DEBE pedir: photorealistic, "
+                    "natural skin texture, real photography, no AI shine, "
+                    "specify lens (50mm/85mm) and film stock (Portra 400, "
+                    "Cinestill, Kodak Gold). El [Mood] grounded y natural. "
+                    "EVITA términos de ilustración."
+                ),
+                "Editorial": (
+                    "📰 EDITORIAL / MARKETING. El [Style] DEBE pedir: "
+                    "editorial photography, fashion magazine aesthetic, "
+                    "Vogue/Harper's Bazaar quality, professional lighting, "
+                    "clean composition. [Composition] con énfasis en rule "
+                    "of thirds y leading lines. [Mood] sofisticado y "
+                    "aspiracional. Ideal para banners, ads, social media."
+                ),
+                "Illustration": (
+                    "🎨 ILUSTRACIÓN / ARTE CONCEPTUAL. El [Style] DEBE "
+                    "pedir: digital illustration, stylized, hand-drawn "
+                    "feel, vibrant colors. Especifica medium (watercolor, "
+                    "vector, gouache, oil painting) y artist reference si "
+                    "ayuda. [Composition] más creativa. EVITA pedir "
+                    "photorealistic."
+                ),
+                "UI-Mockup": (
+                    "🖥 UI / MOCKUP. El [Subject] es la INTERFAZ (app "
+                    "screen, dashboard, browser window, product page). "
+                    "[Setting] específico (iOS, web, desktop). [Style] "
+                    "clean, modern UI, flat design, realistic device "
+                    "frame. Incluye elementos de UI (buttons, cards, "
+                    "navigation, status bar). [Text in image] activo "
+                    "OBLIGATORIO con etiquetas reales en comillas."
+                ),
+                "Poster-Typography": (
+                    "📰 POSTER / TYPOGRAPHY DENSA. La imagen tiene "
+                    "TEXTO COMO PROTAGONISTA. [Subject] es el conjunto "
+                    "tipográfico + visuales de apoyo. [Composition] tipo "
+                    "poster (hierarchy clara, headline + body + footer). "
+                    "[Text in image] OBLIGATORIO con texto detallado entre "
+                    "comillas, font style, color, placement, jerarquía. "
+                    "Especifica formato (movie poster, book cover, "
+                    "infographic, magazine cover, propaganda)."
+                ),
+            }
+            hint = estilo_map_gpt.get(estilo_gpt, "")
+            if hint:
+                extra += (
+                    f"\n🎯 ESTILO FORZADO POR EL USUARIO: {estilo_gpt}.\n"
+                    f"  {hint}\n"
+                    f"  • Orienta TODA la salida (Subject/Setting/Style/"
+                    f"Composition/Mood) a esta categoría.\n"
+                    f"  • NO mezcles con otras categorías.\n"
+                )
         return extra
 
     def _inyectar_template(self, motor: str, extra: str) -> str:

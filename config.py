@@ -689,6 +689,40 @@ PRESET_COLORES = {
 MAX_HIST_IA = 12
 
 # ══════════════════════════════════════════════════════════════════
+# ESTILOS POR FAMILIA (toggle "Estilo" en el panel del modelo)
+# ══════════════════════════════════════════════════════════════════
+# Cada familia define sus estilos. "Auto" significa que el LLM decide
+# según la idea. El resto fuerza una categoría que se inyecta como hint
+# en la plantilla específica de cada familia.
+ESTILOS_POR_FAMILIA = {
+    "z_image": [
+        "Auto", "Photoreal", "Creative", "Fantasy", "SciFi",
+    ],
+    "gpt_image": [
+        "Auto", "Photoreal", "Editorial", "Illustration",
+        "UI-Mockup", "Poster-Typography",
+    ],
+}
+
+
+def detectar_familia(modelo_nombre: str) -> str | None:
+    """Detecta la familia de un modelo a partir de su nombre.
+
+    Devuelve la clave de familia (ej. "z_image", "gpt_image") o None
+    si no se detecta. Usada por el combo "Estilo" para repoblar
+    opciones cuando el usuario cambia de modelo.
+    """
+    if not modelo_nombre:
+        return None
+    n = modelo_nombre.lower()
+    if "z-image" in n or "z image" in n or "z_image" in n:
+        return "z_image"
+    if "gpt image" in n or "gpt-image" in n:
+        return "gpt_image"
+    return None
+
+
+# ══════════════════════════════════════════════════════════════════
 # PLATAFORMAS
 # ══════════════════════════════════════════════════════════════════
 PLATAFORMAS_IMAGEN = {

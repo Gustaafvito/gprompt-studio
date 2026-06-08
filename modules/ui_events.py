@@ -275,20 +275,38 @@ class UiEventsService:
         try: self.app.dialogs._actualizar_tokens()
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        # Mostrar / ocultar combo "Estilo Z" según familia del modelo
+        # Mostrar/ocultar combo "Estilo" según familia del modelo.
+        # Repoblar valores y resetear si la familia cambia.
         try:
-            es_z_image = ("z-image" in modelo_name.lower()
-                          or "z image" in modelo_name.lower()
-                          or "z_image" in modelo_name.lower())
-            if hasattr(self.app, "frame_z_estilo"):
-                if es_z_image and not self.app.frame_z_estilo.winfo_ismapped():
-                    # Empaquetar después del frame del modelo (combo_modelo_imagen.master)
-                    self.app.frame_z_estilo.pack(side="left", padx=(4, 8),
-                                                 after=self.app.combo_modelo_imagen.master)
-                elif (not es_z_image) and self.app.frame_z_estilo.winfo_ismapped():
-                    self.app.frame_z_estilo.pack_forget()
+            from config import ESTILOS_POR_FAMILIA, detectar_familia
+            familia = detectar_familia(modelo_name)
+            estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
+            if hasattr(self.app, "frame_familia_estilo"):
+                if estilos:
+                    # Repoblar el combo con los estilos de la familia
+                    try:
+                        self.app.combo_familia_estilo.configure(values=estilos)
+                    except Exception as _e:
+                        logger.debug(f"[silent estilo values] {_e}")
+                    # Si el valor actual no encaja en la nueva familia,
+                    # reset a "Auto"
+                    try:
+                        if self.app.familia_estilo_var.get() not in estilos:
+                            self.app.familia_estilo_var.set("Auto")
+                    except Exception as _e:
+                        logger.debug(f"[silent estilo reset] {_e}")
+                    # Mostrar el combo si no está visible
+                    if not self.app.frame_familia_estilo.winfo_ismapped():
+                        self.app.frame_familia_estilo.pack(
+                            side="left", padx=(4, 8),
+                            after=self.app.combo_modelo_imagen.master,
+                        )
+                else:
+                    # Familia sin estilos definidos → ocultar
+                    if self.app.frame_familia_estilo.winfo_ismapped():
+                        self.app.frame_familia_estilo.pack_forget()
         except Exception as _e:
-            logger.debug(f"[silent z_estilo toggle] {_e}")
+            logger.debug(f"[silent familia_estilo toggle] {_e}")
         if self.app.modo_var.get() != "imagen":
             self.app.lbl_img_model_info.pack_forget()
             return

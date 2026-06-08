@@ -227,11 +227,18 @@ class ArquitectoApp(
         # subidos que NO se deben describir literalmente sino usar como guía de
         # estilo/paleta/personajes para el prompt resultante.
         self.switch_ref_visual_var = ctk.BooleanVar(value=_switches_prefs.get("switch_ref_visual", False))
-        # Toggle Z-Image — hint de categoría al LLM para que no tenga que
-        # adivinarla. Valores: Auto / Photoreal / Creative / Fantasy / SciFi.
-        # Solo aplica cuando el modelo de imagen es de la familia Z-Image.
-        self.z_image_estilo_var  = ctk.StringVar(
-            value=_switches_prefs.get("z_image_estilo", "Auto"))
+        # Toggle "Estilo" — hint de categoría al LLM para cada familia
+        # de modelos. Los valores disponibles dependen de la familia
+        # activa (ver config.ESTILOS_POR_FAMILIA). Cuando cambias de
+        # familia, el combo se repuebla y resetea a "Auto".
+        # Compat: leemos también el nombre viejo "z_image_estilo" para
+        # no perder la preferencia de usuarios de sesiones anteriores.
+        _estilo_inicial = (
+            _switches_prefs.get("familia_estilo")
+            or _switches_prefs.get("z_image_estilo")
+            or "Auto"
+        )
+        self.familia_estilo_var  = ctk.StringVar(value=_estilo_inicial)
         # Multi-LoRA: lista de nombres EXTRA seleccionados (además del
         # primario del combo_lora). Persistido en prefs como lista.
         try:
@@ -267,8 +274,8 @@ class ArquitectoApp(
                 "write", _persistir_switch("brief", self.brief_var.get))
             self.switch_ref_visual_var.trace_add(
                 "write", _persistir_switch("switch_ref_visual", self.switch_ref_visual_var.get))
-            self.z_image_estilo_var.trace_add(
-                "write", _persistir_switch("z_image_estilo", self.z_image_estilo_var.get))
+            self.familia_estilo_var.trace_add(
+                "write", _persistir_switch("familia_estilo", self.familia_estilo_var.get))
         except Exception as _e:
             logger.debug(f"[silent] trace switches: {_e}")
 

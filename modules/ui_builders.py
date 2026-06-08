@@ -750,31 +750,27 @@ class UIBuildersService:
         self.app.combo_modelo_imagen.pack()
         self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message="Pasa el cursor para info del modelo")
 
-        # Combo "Estilo Z" — solo visible cuando el modelo es de la familia
-        # Z-Image. Hint de categoría al LLM para que aplique el bloque
-        # estilístico negativo correcto sin tener que adivinar.
-        self.app.frame_z_estilo = ctk.CTkFrame(inner, fg_color="transparent")
-        # No se hace pack() inicial — el on_modelo_imagen_cambio decide
-        # si mostrarlo según el modelo activo.
-        ctk.CTkLabel(self.app.frame_z_estilo, text="Estilo Z",
+        # Combo "Estilo" — visible solo cuando el modelo es de una familia
+        # con estilos definidos en config.ESTILOS_POR_FAMILIA. Los valores
+        # se repueblan dinámicamente desde on_modelo_imagen_cambio.
+        # Hint de categoría al LLM que se inyecta en la plantilla específica.
+        self.app.frame_familia_estilo = ctk.CTkFrame(inner, fg_color="transparent")
+        # No se hace pack() inicial — _on_modelo_imagen_cambio decide.
+        ctk.CTkLabel(self.app.frame_familia_estilo, text="Estilo",
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
-        self.app.combo_z_estilo = ctk.CTkComboBox(
-            self.app.frame_z_estilo,
-            values=["Auto", "Photoreal", "Creative", "Fantasy", "SciFi"],
-            variable=self.app.z_image_estilo_var,
-            width=110, height=28,
+        self.app.combo_familia_estilo = ctk.CTkComboBox(
+            self.app.frame_familia_estilo,
+            values=["Auto"],   # placeholder — _on_modelo_imagen_cambio lo repuebla
+            variable=self.app.familia_estilo_var,
+            width=140, height=28,
             font=ctk.CTkFont(size=11),
         )
-        self.app.combo_z_estilo.pack()
-        CTkToolTip(self.app.combo_z_estilo, delay=0.4, message=(
-            "Hint de categoría para Z-Image-Base:\n"
-            "• Auto: el LLM decide según la idea.\n"
-            "• Photoreal: fotorealismo puro (gente, productos, comida).\n"
-            "• Creative: ilustración, arte conceptual, estilizado.\n"
-            "• Fantasy: épico/místico (dragones, magia, dioses).\n"
-            "• SciFi: cyberpunk, robots, tech, naves."
-        ))
+        self.app.combo_familia_estilo.pack()
+        self.app._tooltip_familia_estilo = CTkToolTip(
+            self.app.combo_familia_estilo, delay=0.4,
+            message="Hint de estilo para la familia del modelo activo.",
+        )
 
         # Ratio
         f2 = ctk.CTkFrame(inner, fg_color="transparent")
