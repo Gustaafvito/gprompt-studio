@@ -175,14 +175,28 @@ class TestRecortarSiExcede:
         pos_part = result.split("POSITIVE PROMPT:")[1].strip()
         assert len(pos_part) <= 100
 
-    def test_negative_excede_1500_se_recorta(self):
+    def test_negative_excede_se_recorta_al_mismo_limite_que_positive(self):
+        """Sesión 16: el límite del NEGATIVE por defecto es el mismo que
+        el POSITIVE (antes era hardcoded 1500). Para forzar otro, se
+        pasa max_chars_negative."""
         h = _Host()
         tags = ", ".join([f"negativo_tag{i}_muy_largo_de_verdad" for i in range(100)])
         texto = f"POSITIVE PROMPT: short\nNEGATIVE PROMPT: {tags}"
+        # Con max_chars=5000 el NEGATIVE puede llegar hasta 5000
         result = h._recortar_si_excede(texto, 5000)
         assert "NEGATIVE PROMPT:" in result
         neg_part = result.split("NEGATIVE PROMPT:")[1].strip()
-        assert len(neg_part) <= 1500
+        assert len(neg_part) <= 5000
+
+    def test_max_chars_negative_override(self):
+        """El parámetro max_chars_negative limita el NEGATIVE
+        independientemente del POSITIVE."""
+        h = _Host()
+        tags = ", ".join([f"tag{i}_largo" for i in range(80)])
+        texto = f"POSITIVE PROMPT: short\nNEGATIVE PROMPT: {tags}"
+        result = h._recortar_si_excede(texto, 5000, max_chars_negative=500)
+        neg_part = result.split("NEGATIVE PROMPT:")[1].strip()
+        assert len(neg_part) <= 500
 
     def test_sin_pos_marker_devuelve_texto_tal_cual(self):
         h = _Host()

@@ -147,6 +147,7 @@ class WorkersIaService:
             self.app.after(0, self.app.dialogs._iniciar_progreso)
             specs = self.app.get_current_model_specs()
             max_c = specs.get("max_chars") or specs.get("max_chars_letra") or 0 if specs else 0
+            max_c_neg = specs.get("max_chars_negative") if specs else None
             max_tok = 2500 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
 
             cerebro_elegido = self.app.llm_var.get()
@@ -158,7 +159,7 @@ class WorkersIaService:
             # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta
             if max_c and not es_ideas and not es_variaciones:
                 texto_original_len = len(texto)
-                texto = self.app._recortar_si_excede(texto, max_c)
+                texto = self.app._recortar_si_excede(texto, max_c, max_chars_negative=max_c_neg)
                 if len(texto) < texto_original_len:
                     self.app.after(0, lambda: self.app.dialogs.set_estado(f"✂️ Prompt recortado a {max_c} chars (máximo del modelo)", "#f39c12"))
 

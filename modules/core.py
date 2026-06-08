@@ -1200,8 +1200,16 @@ class CoreMixin:
 
     # COMANDOS & WORKERS
 
-    def _recortar_si_excede(self, texto, max_chars):
-        """Recorta el POSITIVE y NEGATIVE del prompt si excede el límite, preservando estructura."""
+    def _recortar_si_excede(self, texto, max_chars, max_chars_negative=None):
+        """Recorta el POSITIVE y NEGATIVE del prompt si excede el límite, preservando estructura.
+
+        max_chars_negative: límite específico para NEGATIVE. Si None,
+        se usa el mismo `max_chars`. Antes había un hardcoded de 1500
+        para el negative, pero eso era erróneo para modelos como
+        Z Image Turbo (negative también es 2000 chars, no 1500).
+        El spec del modelo puede declarar `max_chars_negative` para
+        forzar un límite distinto.
+        """
         if not max_chars or not texto:
             return texto
         # Extraer POSITIVE y NEGATIVE
@@ -1214,8 +1222,9 @@ class CoreMixin:
             pos = m_pos.group(1).strip()
             neg = m_neg.group(1).strip() if m_neg else ""
 
-            # Límite NEGATIVE: SeaArt ~1500 chars
-            NEGATIVE_MAX = 1500
+            # Límite NEGATIVE: por defecto el mismo que POSITIVE.
+            # El spec puede sobreescribir con `max_chars_negative`.
+            NEGATIVE_MAX = max_chars_negative if max_chars_negative else max_chars
             neg_recortado = False
             if len(neg) > NEGATIVE_MAX:
                 partes_neg = neg.split(",")

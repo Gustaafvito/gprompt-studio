@@ -118,7 +118,7 @@
     "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora."
   },
   "Z Image Turbo": {
-    "nota": 4.6,
+    "nota": 4.3,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
@@ -134,17 +134,17 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 8,
-    "best_for": "Fotorrealismo ultrarrápido, latencia sub-segundo. Renderizado de texto bilingüe (inglés/chino). Razonamiento profundo. Sampler Euler, 20 pasos. En ComfyUI funciona como Turbo puro (CFG ~1.0, sin negative ni pesos); en SeaArt la plataforma lo adapta para aceptar negative y pesos.",
+    "best_for": "Z Image: 6B params, fotorrealismo de calidad profesional a velocidad sub-segundo (~8 NFEs). Bilingüe EN/ZH con renderizado preciso de texto. Prompt enhancer con razonamiento (va más allá de descripciones superficiales).",
     "prompt_formula": "Depende de plataforma. SeaArt: tags con pesos SD tradicionales + negative. ComfyUI: tags limpios sin pesos ni negative (modelo Turbo puro).",
     "prompt_ejemplo": "close-up portrait, 1girl, silver hair, blue eyes, detailed skin, soft studio lighting, shallow DOF, muted teal background, professional photography, 8K",
     "sampler_recomendado": "Euler",
-    "pasos": 20,
+    "pasos": 8,
     "cfg": 1.0,
     "coste_energia": "28 (Calidad) — gratis VIP",
     "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI."

@@ -66,7 +66,7 @@ def _host(*, deepseek_resp="POSITIVE PROMPT: nice\nNEGATIVE PROMPT: bad",
         is_natural_mode=lambda: is_natural,
         detectar_idioma=lambda t: True,
         # Recorte / parseo
-        _recortar_si_excede=lambda txt, max_c: txt[:max_c] if max_c and len(txt) > max_c else txt,
+        _recortar_si_excede=lambda txt, max_c, max_chars_negative=None: txt[:max_c] if max_c and len(txt) > max_c else txt,
         _parsear_variaciones=lambda txt, n_esperado=None: ["v1", "v2", "v3"],
         # Construcción de petición
         _construir_peticion=lambda idea, letra: f"P[{letra}]:{idea}",
