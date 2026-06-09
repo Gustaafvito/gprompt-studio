@@ -1585,19 +1585,31 @@
       "3:2",
       "3:4",
       "4:3",
+      "4:5",
+      "5:4",
       "9:16",
-      "16:9"
+      "16:9",
+      "21:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 5000,
     "modos_gen": [
       "Estándar"
     ],
-    "max_imagenes": 10,
-    "best_for": "Motor Gemini 3 Pro. 331.9K usos. Text rendering mejorado, multi-image fusion, character consistency, 2K nativo con 4K upscale. Generación 1-5 segundos.",
-    "prompt_formula": "Lenguaje natural: describe cambios deseados, usa 'Replace background with...', 'Keep face identity...'",
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "2048×2048"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 14,
+    "best_for": "Motor Gemini 3 Pro (upgrade del 2.5 Flash original). Text rendering superior (especialmente lenguas asiáticas, infografías, charts). Character consistency entre ediciones. Multi-turn editing sin degradación. Multi-image fusion (combinar varias imágenes en una escena). Style transfer. 2K nativo + upscale 4K. Generación 1-5 segundos.",
+    "prompt_formula": "Lenguaje natural describiendo cambios: 'Replace background with...', 'Make her wear...', 'Keep face identity, keep pose, only change...'. Para multi-turn: cada paso construye sobre el anterior. Para fusion: describe el resultado deseado combinando elementos de imágenes de referencia. Acepta prompts muy largos (5000 chars).",
     "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Sin sampler/CFG/negative. Limitaciones ocasionales en manos y reflejos complejos."
+    "limitaciones": "Sin sampler/CFG/negative. Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos y lighting complejo a veces inconsistente. Sin cropping preciso de aspect ratio (prioriza la edición generativa)."
   },
   "Nano Banana 2": {
     "nota": 4.0,
