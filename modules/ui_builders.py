@@ -1267,6 +1267,17 @@ class UIBuildersService:
         self.app.lbl_idioma_aviso.pack(side="left", padx=(10, 0))
         # Click en el aviso de idioma → toggle auto-trad
         self.app.lbl_idioma_aviso.bind("<Button-1>", lambda e: self._toggle_auto_trad_desde_aviso())
+        # ── MEJORA 18 (sesión 18): aviso de palabras polisémicas españolas ──
+        # Detecta términos ambiguos (pulso, muñeca, vela, pluma...) que el
+        # LLM podría interpretar mal. Click → modal con sugerencias.
+        self.app.lbl_claridad_aviso = ctk.CTkLabel(
+            hdr, text="", font=ctk.CTkFont(size=9, slant="italic"),
+            fg_color="transparent", text_color="#7c3aed", cursor="hand2",
+        )
+        self.app.lbl_claridad_aviso.pack(side="left", padx=(10, 0))
+        self.app.lbl_claridad_aviso.bind(
+            "<Button-1>", lambda e: self._mostrar_sugerencias_claridad()
+        )
         btn_clear = ctk.CTkButton(hdr, text="🗑", width=22, height=18, fg_color="transparent",
                                     hover_color="#dc2626" if is_light else "#3a1a1a", font=ctk.CTkFont(size=10),
                                     text_color=c["muted_text"],
@@ -1359,6 +1370,98 @@ class UIBuildersService:
             self._detectar_idioma_y_avisar(texto)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+        # ── MEJORA 18: detectar palabras polisémicas y avisar ──
+        try:
+            self._detectar_claridad_y_avisar(texto)
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def _detectar_claridad_y_avisar(self, texto):
+        """Detecta palabras españolas polisémicas y muestra chip clickable."""
+        try:
+            from modules.clarity_hints import detect_ambiguous
+            hallazgos = detect_ambiguous(texto)
+            if not hallazgos:
+                self.app.lbl_claridad_aviso.configure(text="")
+                self.app._claridad_hallazgos = []
+                return
+            # Almacenar para el modal
+            self.app._claridad_hallazgos = hallazgos
+            # Chip resumen
+            n = len(hallazgos)
+            palabras = ", ".join(f"'{h['word']}'" for h in hallazgos[:2])
+            sufijo = f" y {n-2} más" if n > 2 else ""
+            self.app.lbl_claridad_aviso.configure(
+                text=f"💡 Claridad: {palabras}{sufijo} — click para ver"
+            )
+        except Exception as _e:
+            logger.debug(f"[silent] claridad: {_e}")
+
+    def _mostrar_sugerencias_claridad(self):
+        """Modal con las sugerencias de claridad para las palabras detectadas."""
+        try:
+            hallazgos = getattr(self.app, "_claridad_hallazgos", [])
+            if not hallazgos:
+                return
+            from modules.gprompt_window import GPromptWindow
+            is_light = _get_real_is_light()
+            from config import get_theme_colors
+            c = get_theme_colors(is_light)
+            vent = GPromptWindow(self.app)
+            vent.title("💡 Sugerencias de claridad")
+            vent.geometry("520x420")
+            vent.transient(self.app)
+            ctk.CTkLabel(
+                vent,
+                text="💡 Palabras polisémicas detectadas en tu idea",
+                font=ctk.CTkFont(size=13, weight="bold"),
+            ).pack(pady=(12, 4), padx=12)
+            ctk.CTkLabel(
+                vent,
+                text=(
+                    "El LLM puede interpretarlas de varias formas. "
+                    "Reformula tu idea con la versión específica para "
+                    "evitar resultados inesperados."
+                ),
+                font=ctk.CTkFont(size=10),
+                text_color=c["muted_text"],
+                wraplength=480,
+                justify="left",
+            ).pack(pady=(0, 8), padx=12)
+            scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+            scroll.pack(fill="both", expand=True, padx=12, pady=4)
+            for h in hallazgos:
+                card = ctk.CTkFrame(
+                    scroll, fg_color=c["fg_frame"], corner_radius=8,
+                )
+                card.pack(fill="x", pady=4, padx=2)
+                ctk.CTkLabel(
+                    card,
+                    text=f"🔤 '{h['word']}'",
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color="#7c3aed",
+                ).pack(anchor="w", padx=10, pady=(6, 2))
+                ctk.CTkLabel(
+                    card,
+                    text="Interpretaciones posibles: " + " / ".join(h["meanings"]),
+                    font=ctk.CTkFont(size=10),
+                    text_color=c["muted_text"],
+                    wraplength=460, justify="left",
+                ).pack(anchor="w", padx=10, pady=(0, 4))
+                ctk.CTkLabel(
+                    card,
+                    text=h["hint"],
+                    font=ctk.CTkFont(size=10, slant="italic"),
+                    wraplength=460, justify="left",
+                ).pack(anchor="w", padx=10, pady=(0, 8))
+            ctk.CTkButton(
+                vent, text="Cerrar", width=120, height=30,
+                fg_color="#6b7280", hover_color="#4b5563",
+                command=vent.destroy,
+            ).pack(pady=10)
+        except Exception as _e:
+            logger.debug(f"[silent] modal claridad: {_e}")
+
     def _detectar_idioma_y_avisar(self, texto):
         """Detecta heurísticamente si el texto está en ES o EN y avisa si auto-trad no concuerda."""
         if not hasattr(self.app, 'lbl_idioma_aviso'): return
