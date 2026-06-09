@@ -1947,6 +1947,29 @@ class ArquitectoApp(
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=6)
 
+        # ── Atajos del comparador (sesión 18 round 3) ──
+        # Ctrl+G   = abrir Grid Pollinations
+        # Ctrl+Enter = Comparar 2 lado-a-lado (solo si hay 2 marcadas)
+        vent.bind("<Control-g>", lambda e: _abrir_grid())
+        def _atajo_comparar(_e=None):
+            seleccionadas = [i for i, v in compare_vars.items() if v.get()]
+            if len(seleccionadas) == 2:
+                _abrir_lado_a_lado()
+            else:
+                self.set_estado(
+                    f"⚠️ Selecciona EXACTAMENTE 2 cards para comparar "
+                    f"(hay {len(seleccionadas)} marcadas)",
+                    "#e67e22",
+                )
+        vent.bind("<Control-Return>", _atajo_comparar)
+        # Hint visual debajo del pie sobre los atajos disponibles
+        ctk.CTkLabel(
+            vent,
+            text="⌨️ Atajos: Ctrl+G = Grid · Ctrl+Enter = Comparar 2 · Esc = Cerrar",
+            font=ctk.CTkFont(size=9, slant="italic"),
+            text_color=c["muted_text"],
+        ).pack(pady=(2, 6))
+
     def _abrir_diff_lado_a_lado(self, texto_a, texto_b, label_a, label_b):
         """Ventana 50/50 con diff palabra-por-palabra entre 2 variantes.
 

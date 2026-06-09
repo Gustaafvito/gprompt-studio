@@ -66,6 +66,8 @@ class AtajosAyudaService:
             widget.bind("<Control-h>",            lambda e: (self.app._cmd_modo_focus(), "break")[1])
             widget.bind("<Control-Shift-L>",      lambda e: (self.app.dialogs._cmd_toggle_tema(), "break")[1])
             widget.bind("<Control-Shift-T>",      lambda e: (self._atajo_traducir_idea(), "break")[1])
+            # Ctrl+Shift+C = mostrar modal de Claridad si hay palabras polisémicas
+            widget.bind("<Control-Shift-C>",      lambda e: (self._atajo_mostrar_claridad(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
@@ -148,6 +150,26 @@ class AtajosAyudaService:
         else:
             current = self.app.attributes('-fullscreen')
             self.app.attributes('-fullscreen', not current)
+        return "break"
+
+    def _atajo_mostrar_claridad(self) -> str:
+        """Ctrl+Shift+C - Mostrar modal con sugerencias de claridad.
+
+        Si no hay hallazgos polisémicos, lo dice en la barra de estado.
+        Si hay, abre el mismo modal que el chip clickable de la cabecera.
+        """
+        try:
+            hallazgos = getattr(self.app, "_claridad_hallazgos", [])
+            if not hallazgos:
+                self.app.dialogs.set_estado(
+                    "💡 No hay palabras polisémicas detectadas en tu idea.",
+                    "#2ecc71",
+                )
+                return "break"
+            # Delegamos al método del UIBuildersService que ya construye el modal
+            self.app.ui._mostrar_sugerencias_claridad()
+        except Exception as e:
+            self.app.dialogs.set_estado(f"⚠️ Error claridad: {e}", "#e74c3c")
         return "break"
 
     def _cerrar_popup_activo(self) -> str:
@@ -243,6 +265,11 @@ class AtajosAyudaService:
                 ("Ctrl+Shift+N", "Constructor de negative"),
                 ("Ctrl+H", "Modo Focus"),
                 ("Ctrl+Shift+L", "Cambiar tema claro/oscuro"),
+                ("Ctrl+Shift+C", "Sugerencias de claridad (palabras polisémicas)"),
+            ]),
+            ("⚖️ Comparador (dentro de la ventana)", [
+                ("Ctrl+G", "Abrir Grid Pollinations (previews de TODAS)"),
+                ("Ctrl+Enter", "Comparar 2 cards lado-a-lado (si hay 2 marcadas)"),
             ]),
             ("❓ Extra", [
                 ("F11", "Pantalla completa"),
