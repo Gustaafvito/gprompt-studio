@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 17** (continuación de las sesiones 1-16).
+Actualizado al final de la **sesión 18** (continuación de las sesiones 1-17).
 Working tree limpio cuando se generó.
 
 ---
@@ -17,11 +17,14 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **374/374** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sesión 17 cerrada con CoreMixin como foundation) |
+| Branch | `main` (sesión 18 cerrada con familia Nano Banana completa) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** foundation por diseño (`CoreMixin`) ⭐⭐⭐ |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
 | **A1 fase 2** | **20/20 COMPLETO** ✅ — `CoreMixin` cerrado como foundation |
+| **Familias con plantilla `formato_bloques`** | **3** (Z-Image, GPT Image, Nano Banana) |
+| **Familias con `ESTILOS_POR_FAMILIA`** | **3** (z_image, gpt_image, nano_banana) |
+| Modelos auditados SeaArt | **8** (familia Z-Image 2 + GPT Image 2 + Nano Banana 3 + SeaArt Film Video 1) |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
@@ -1791,6 +1794,222 @@ verificar `has_negative` en panel SeaArt, ratios reales, modos.
 #### 🟢 BAJA
 - Code-signing del `.exe` (SmartScreen warning).
 - Performance: lazy load JSON, semáforo workers IA, virtual scrolling.
+- Features ambiciosos: PDF export, plugin system, API REST.
+
+---
+
+## ✅ Sesión 18 — Familia Nano Banana completa + validación end-to-end
+
+Sesión enfocada en cerrar la primera familia completa de la auditoría
+de specs siguiendo el roadmap de sesión 17+. Resultado: **3/3 modelos
+auditados con datos panel SeaArt + plantilla específica
+`formato_bloques: "nano_banana"` + 6 estilos por familia + validación
+end-to-end con un reto creativo real**.
+
+### Bloque 1 — Auditoría completa de la familia (3 modelos)
+
+Política sesión 16: datos exactos del panel SeaArt sobre docs externos.
+Medición empírica de `max_chars` con prompts marcados.
+
+| Modelo | Motor | Nota | max_chars | Especial | Commit |
+|---|---|---:|---:|---|---|
+| **Nano Banana** | Gemini 2.5 Flash | 3.6 | 5000 | Gratis tiempo limitado, max 3 refs (vs 14) | `f332f99` |
+| **Nano Banana Pro Image** | Gemini 3 Pro | 3.6 | 5000 | Text rendering superior, single mode | `3d467ff` |
+| **Nano Banana 2** | Gemini 3.1 Flash | 4.0 | 5000 | Estándar/Calidad, 4K nativo, 14 refs | `7c01b99` |
+
+Patrón consolidado de la familia: `is_natural: true`, `has_negative: false`,
+`max_chars: 5000` (medido), lenguaje natural editing-first.
+
+**Campos nuevos estandarizados para familia Gemini**:
+- `magia_sugerencia`: ["Automático", "Abrir", "Cerrar"]
+- `resoluciones`: ["832×1248"|"2048×2048"|"4096×4096"] (varía por modelo)
+- `max_imagenes_referencia`: 3 / 14 / 14 (sustituye al campo único anterior)
+
+**Modelo nuevo añadido** (no estaba en el JSON): "Nano Banana"
+original. Registrado en `data/model_specs_imagen.json`, `config.py`
+(grupo "── Nano Banana ──" + fórmula `natural_flux`).
+
+### Bloque 2 — Investigación: ¿qué tipo de prompt usa esta familia?
+
+Antes de implementar la plantilla, se consultaron 3 fuentes:
+
+1. **SeaArt docs (`docs.seaart.ai`)** vía endpoint dinámico
+   `how-to-use-an-ai-image-generator.md?ask=...`. Resultado: **no
+   tienen guía específica de Nano Banana**. Su guía oficial es
+   SD-style genérica (pesos `(term:1.2)`, corchetes, NEGATIVE) — NO
+   aplica a Gemini.
+2. **Google Gemini Image docs** (`ai.google.dev/gemini-api/docs/
+   image-generation`). Resultado: "Sin estructura formal. Prompts
+   descriptivos detallados con especificidad visual + compositiva.
+   Multi-turn conversacional para editing."
+3. **Marketing copy del propio modelo en SeaArt** (texto que pasó el
+   usuario al copiar la página del modelo): "Write constraints as a
+   checklist: Subject, Scene, Composition, Lighting, Materials, Output."
+
+**Convergencia**: los 3 patrones apuntan al mismo checklist 6 bloques.
+Eso es lo que se implementó en la plantilla.
+
+Hallazgo bonus de Google docs: distingue refs por tipo (NB2 = 10 obj +
+4 chars = 14; NB Pro = 6 obj + 5 chars = 11). El panel SeaArt
+**unifica todo en "sujeto"** sin distinguir. Política sesión 16 manda
+→ usamos lo que muestra el panel (14 para Pro/2, 3 para original).
+
+### Bloque 3 — Plantilla `formato_bloques: "nano_banana"`
+
+Tercera familia con plantilla específica (después de Z-Image y GPT Image).
+
+**6 bloques obligatorios + 1 condicional**:
+
+```
+[Subject]            main subject + traits físicos + ropa + pose
+[Scene]              location + entorno + props + época
+[Composition]        shot + ángulo + framing
+[Lighting]           source + dirección + calidad + mood
+[Materials]          texturas y superficies (CLAVE para fotorrealismo)
+[Style]              photoreal / cinematic / illustration / watercolor / oil
+[Output]             1 sola frase corta (≤15 palabras)
+[Edit Instructions]  SOLO si la idea es edición ("Replace X with Y" +
+                     "Keep face/pose/identity, only change Z")
+```
+
+**Reglas duras inyectadas** (cortan vectores de error en Gemini):
+- ❌ NO NEGATIVE PROMPT
+- ❌ NO pesos numéricos `(tag:1.2)`
+- ❌ NO corchetes `[tag]` estilo A1111
+- ❌ NO triggers SD (`lmnlhrr`)
+- ✅ SÍ prosa descriptiva fluida con especificidad visual
+
+**6 estilos en `ESTILOS_POR_FAMILIA["nano_banana"]`**:
+`Auto` · `Photoreal` · `Editorial` · `Character-Consistent` · `Artistic` · `Edit-Focus`
+
+Cada estilo (excepto Auto) inyecta un hint específico que orienta los
+6 bloques hacia esa categoría (similar a Z-Image y GPT Image).
+
+### Bloque 4 — Validación end-to-end: reto "Pulso"
+
+Test real generando con los 3 modelos sobre el mismo reto creativo:
+"Un duelo de pulsos inesperado entre humanos, monstruos, robots,
+juguetes o cualquier personaje con manos".
+
+**Iteración 1** (idea ambigua): solo Nano Banana (original) clavó algo
+cercano a pulso. NB Pro Image y NB 2 generaron "peleas" genéricas. La
+palabra "pulso" en español puede significar arm wrestling Y agarre
+genérico — el LLM eligió la segunda interpretación cuando faltaba
+especificidad de pose.
+
+**Iteración 2** (idea corregida con pose explícita): se redactó una
+idea base que bloqueaba la pose de pulso clásico — "codos sobre
+superficie, manos derechas agarradas palma contra palma, dedos
+entrelazados, antebrazos verticales formando una V, ni vencedor ni
+vencido aún". Los 3 modelos clavaron el reto.
+
+**Resultados validados visualmente**:
+
+| Modelo | Match-up generado | Estilo | Veredicto |
+|---|---|---|---|
+| Nano Banana | Macro extremo de manos | Foto sucia/grano | Pure tensión íntima |
+| Nano Banana Pro Image | Caballero medieval vs robot industrial sobre tronco | B&W noir con brasa cayendo | Cinematográfico estricto |
+| Nano Banana 2 (modo Calidad) | Caballero vs alien biomecánico tipo Giger sobre tronco | Color saturado (rojo+verde+amber) | 🥇 Ganador en ambición visual |
+
+**Conclusión arquitectónica**: la plantilla funcionó en los 3 modelos.
+Los 6 bloques se respetaron. El bloque condicional `[Edit Instructions]`
+correctamente NO se activó (la idea no era editing). Los prompts
+usaron ~3500-4000 chars (aprovechan bien el budget de 5000 medido).
+
+### Bloque 5 — Refinamiento [Output] post-validación
+
+Observación: los 3 LLMs escribieron párrafos en `[Output]` con
+detalles técnicos (film stock, ISO, lens specs) que duplicaban lo de
+`[Style]` y `[Composition]`. El hint "Brief — 1-2 frases técnicas" no
+era suficientemente fuerte.
+
+Fix (`9db6cc2`): hint endurecido a "ONE single short sentence (max 15
+words). Only: aspect ratio + 'professional grade, no artifacts'. NO
+film stock, NO ISO, NO lens specs here." + regla explícita en el bloque
+de reglas generales.
+
+### Lección sobre traducciones español → LLM
+
+"Pulso" tradujo mal al LLM en la iteración 1. **No fue bug del modelo
+ni de la plantilla** — fue ambigüedad léxica del español. Patrón
+generalizable: cuando una idea contiene una palabra polisémica del
+español, conviene **especificar la pose/concepto al detalle dentro de
+la propia idea** en lugar de confiar en el LLM. La plantilla no puede
+adivinar la intención del reto.
+
+Esto podría guiarse en el futuro con un panel "Sugerencias de claridad"
+que detecte palabras ambiguas y proponga reformulación — pero no es
+crítico ahora.
+
+### Commits sesión 18 (6 commits)
+
+```
+9db6cc2 fix(nano_banana): bloque [Output] forzado a 1 frase corta
+97be503 feat(nano_banana): plantilla formato_bloques="nano_banana" + estilo familia
+f332f99 feat(specs): añadir Nano Banana (original) a familia Nano Banana
+3d467ff fix(specs): Nano Banana Pro Image — datos exactos del panel SeaArt
+7c01b99 fix(specs): Nano Banana 2 — datos exactos del panel SeaArt
+fb66589 docs(arch): cerrar A1 fase 2 — CoreMixin como foundation por diseño
+```
+
+### Métricas finales sesión 18
+
+| | Empezando | Cerrando |
+|---|---:|---:|
+| Tests | 374 | 374 ✅ |
+| Modelos auditados SeaArt | 5 | **8** (+3 Nano Banana) |
+| Familias con `formato_bloques` | 2 | **3** (+ nano_banana) |
+| Familias con `ESTILOS_POR_FAMILIA` | 2 | **3** (+ nano_banana) |
+| Modelos imagen totales | 117 | **118** (+ Nano Banana original) |
+| Validación end-to-end | 0 retos | 1 reto (Pulso) en 3 modelos ✅ |
+| Mixins en MRO | 1 | 1 (sin cambios) |
+| Working tree | Limpio | Limpio ✅ |
+
+### Estado del catálogo al cierre
+
+| Familia | Modelos | Auditados |
+|---|---:|:---:|
+| Z-Image (SeaArt) | 2 | ✅ 2/2 |
+| GPT Image (SeaArt) | 2 | ✅ 2/2 |
+| **Nano Banana (SeaArt)** | **3** | ✅ **3/3** ⭐ |
+| Flux | 17 | ⏳ |
+| Illustrious | 10 | ⏳ |
+| Midjourney | 5 | ⏳ |
+| Otros | 79 | ⏳ |
+| Vídeo SeaArt | 2 | ✅ 1/2 |
+| Vídeo resto | 13 | ⏳ |
+| Audio | 10 | ⏳ |
+
+**8 de 145 modelos auditados** al cierre de sesión 18 (5.5%).
+
+### 🚧 Pendiente sesión 19+
+
+#### 🔴 ALTA — Auditoría de specs (la prioridad principal)
+Continuar con las siguientes familias en orden de uso real:
+- **Imagen**: Midjourney (5) → Flux (17) → Ideogram → Recraft →
+  Illustrious (10) → SDXL.
+- **Vídeo**: Seedance → Kling → Veo → Sora → Wan → Hailuo.
+- **Audio**: Suno → Udio → MiniMax → SeaArt MusicGo.
+
+Patrón establecido en Nano Banana (replicable):
+1. Datos panel SeaArt exactos.
+2. Medición empírica de `max_chars` con prompt marcado.
+3. Si la familia tiene formato distintivo: crear `formato_bloques`.
+4. Si tiene categorías estilísticas claras: crear entrada en
+   `ESTILOS_POR_FAMILIA`.
+5. Validar end-to-end con un reto real.
+
+#### 🟡 MEDIA
+- Panel "Sugerencias de claridad" para palabras ambiguas español→inglés
+  (idea surgida del problema con "pulso").
+- Toggle modelo Pollinations en comparador.
+- Variante SD/Comfy del storyboard imagen.
+- Particiones de archivos grandes.
+- Verificar installer end-to-end en VM.
+
+#### 🟢 BAJA
+- Code-signing del `.exe`.
+- Performance: lazy load JSON, semáforo workers, virtual scrolling.
 - Features ambiciosos: PDF export, plugin system, API REST.
 
 ---
