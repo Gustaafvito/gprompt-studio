@@ -1712,9 +1712,15 @@ class ArquitectoApp(
             if btn is not None:
                 try:
                     if len(seleccionadas) == 2:
-                        btn.configure(state="normal", fg_color="#7c3aed")
+                        btn.configure(
+                            state="normal", fg_color="#7c3aed",
+                            text="🆚 Comparar 2 lado-a-lado",
+                        )
                     else:
-                        btn.configure(state="disabled", fg_color="#4b5563")
+                        btn.configure(
+                            state="disabled", fg_color="#4b5563",
+                            text="🆚 Selecciona 2 cards para comparar",
+                        )
                 except Exception as _e:
                     logger.debug(f"[silent] compare btn: {_e}")
 
@@ -1911,9 +1917,16 @@ class ArquitectoApp(
                 variaciones[i_a], variaciones[i_b], label_a, label_b
             )
 
+        # Botón "🆚 Comparar 2": empieza disabled hasta marcar 2 cards.
+        # Texto-pista en estado disabled + text_color_disabled explícito para
+        # que el botón sea VISIBLE incluso disabled (antes el text_color
+        # default + fg_color #4b5563 hacían que el botón se fundiera con
+        # el fondo del pie del comparador — bug detectado sesión 18).
         compare_btn_ref["btn"] = ctk.CTkButton(
-            pie, text="🆚 Comparar 2", width=160, height=32,
+            pie, text="🆚 Selecciona 2 cards para comparar", width=240, height=32,
             fg_color="#4b5563", hover_color="#7c3aed",
+            text_color="#e5e7eb",
+            text_color_disabled="#cbd5e1",
             font=ctk.CTkFont(size=11, weight="bold"),
             state="disabled",
             command=_abrir_lado_a_lado,
