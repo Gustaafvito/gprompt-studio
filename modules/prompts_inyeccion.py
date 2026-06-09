@@ -667,9 +667,11 @@ class PromptsInyeccionService:
             "illustration / watercolor / oil painting / cartoon. "
             "Reference specifics if relevant: lens (35mm, 85mm, macro), "
             "film stock (Portra 400, Cinestill), art reference.>\n"
-            "[Output] <Aspect ratio + resolution hint + clean output "
-            "qualifiers ('clean background', 'professional grade', "
-            "'no artifacts'). Brief — just the technical wrap-up.>\n"
+            "[Output] <ONE single short sentence (max 15 words). "
+            "Only: aspect ratio + 'professional grade, no artifacts'. "
+            "NO film stock, NO ISO, NO lens specs here (those go in "
+            "[Style] / [Composition]). NO storytelling. Just the tech "
+            "wrap-up.>\n"
             "[Edit Instructions] <ONLY if the user's idea is an EDIT "
             "(replace/change/add/remove/extend over an existing image). "
             "Otherwise OMIT this block entirely. Format: 'Replace X "
@@ -690,7 +692,9 @@ class PromptsInyeccionService:
             "X, only change Y]' para preservar identidad.\n"
             "  • El bloque [Edit Instructions] SOLO va si la idea es de "
             "edición. Si la idea es text-to-image puro, OMÍTELO.\n"
-            "  • El bloque [Output] es breve — 1-2 frases técnicas.\n"
+            "  • El bloque [Output] DEBE ser 1 sola frase corta (≤15 "
+            "palabras). NO detalles de lens/film/ISO ahí — esos van "
+            "en [Style] o [Composition].\n"
         )
         if rasgos_combinados:
             extra += (
