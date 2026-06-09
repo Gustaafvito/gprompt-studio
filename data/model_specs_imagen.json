@@ -1612,17 +1612,26 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2500,
+    "max_chars": 5000,
     "modos_gen": [
       "Estándar",
-      "Pro"
+      "Calidad"
     ],
-    "max_imagenes": 14,
-    "best_for": "Motor Gemini 3.1 Flash Image. 505.9K usos. Fast iteration, strong world knowledge, text-to-image + editing avanzado. Mejor price-performance.",
-    "prompt_formula": "Write constraints as checklist: Subject, Scene, Composition, Lighting, Materials, Output. Para editing: 'Replace background with...', 'Keep face identity...'",
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "4096×4096"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 14,
+    "best_for": "Motor Gemini 3.1 Flash Image. Pro-level fidelity con Flash-speed iteration. Strong world knowledge + edición avanzada (inpainting, outpainting, style transfer). Upscale hasta 4K. Excelente price-performance. Acepta prompts muy largos (~5200 chars medido).",
+    "prompt_formula": "Constraints como checklist: Subject (who/what) + Scene (where) + Composition (wide/close-up, angle) + Lighting (softbox, golden hour, neon rim) + Materials (metal, glass, fabric) + Output (aspect ratio, resolution). Para editing: 'Replace background with...', 'Keep face identity, keep pose, only change outfit'. Para outpainting: 'Extend canvas upward to show...'",
     "prompt_ejemplo": "A portrait of a woman, studio lighting, golden hour, professional photography, keep the face identity, change outfit to formal suit",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio."
+    "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio. Para editing, describe el cambio (no toda la imagen)."
   },
   "NiwaStyle - Animax Plus (Illustrious)": {
     "nota": 5.0,
