@@ -17,7 +17,8 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **385/385** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sesión 18 round 2 cerrada con 3 features MEDIA) |
+| Branch | `main` (sesión 18 round 3 cerrada con auditoría + hot-fixes + atajos) |
+| Atajos de teclado | **29** registrados, todos en Ctrl+? |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** foundation por diseño (`CoreMixin`) ⭐⭐⭐ |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
@@ -2033,7 +2034,96 @@ a7d2c56 feat(claridad): panel de sugerencias para palabras españolas polisémic
 297c7c1 feat(comparador): toggle modelo Pollinations en grid 👁
 ```
 
-### Métricas finales sesión 18 (round 1 + round 2)
+### Bloque 7 — Round 3: hot-fixes + auditoría + atajos nuevos
+
+Tras el primer build distribuible del round 2, el usuario detectó 2
+regresiones visuales al testear features secundarias. Se hizo una
+auditoría completa de la herramienta y se añadieron atajos para las
+features nuevas.
+
+**Hot-fix 1 — Click derecho en 🔁 Refinar no abría el menú (`a035f44`)**
+
+Regresión heredada de A1 fase 2 (sesión 14) sin detectar hasta hoy:
+`menu = tk.Menu(self, tearoff=0, ...)` en `RefinamientoService.
+_menu_refinar_especifico`. `self` ahora es el Service (no widget Tk),
+así que el menú no se construía y el binding `<Button-3>` fallaba
+silenciosamente.
+
+Fix: `tk.Menu(self.app, ...)`. El menú con 7 opciones de
+refinamiento (🎬 cinematográfico / 👤 detalle facial / 💡 iluminación /
+⚡ impacto / ✂️ simplificar / 🌈 paleta / 🔍 técnico) vuelve a aparecer
+al click derecho.
+
+**Hot-fix 2 — Botón "🆚 Comparar 2" invisible en disabled (`9530279`)**
+
+Captura del usuario mostró un hueco vacío en el pie del comparador
+donde debería estar el botón. Causa: el botón nacía con
+`state="disabled"` y `fg_color="#4b5563"` (gris oscuro casi igual al
+fondo del pie). customtkinter aplica además `text_color_disabled`
+semitransparente por defecto → botón invisible hasta marcar 2 cards.
+
+Fix:
+- `text_color="#e5e7eb"` y `text_color_disabled="#cbd5e1"` explícitos
+  → texto siempre legible.
+- Texto-pista en estado disabled: "🆚 Selecciona 2 cards para
+  comparar" (informa qué hacer para activarlo).
+- En estado activo: "🆚 Comparar 2 lado-a-lado" (acción).
+- Ancho aumentado 160 → 240 px para acomodar el texto-pista.
+
+**Auditoría completa de la herramienta (8 áreas)**
+
+Tras los 2 hot-fixes, barrido sistemático buscando otras regresiones
+y bugs UI similares:
+
+| Auditoría | Hallazgos |
+|---|---|
+| A — Otros `tk.Menu(self)` en services | ✅ 0 |
+| B — `self.X` widget-aware fuera de CoreMixin | ✅ 0 |
+| C — Botones `disabled` con fg gris-oscuro | ✅ Resto son temporales |
+| D — Atajos: bindings vs ventana ayuda Ctrl+? | ✅ 26→29 actualizados |
+| E — Escape cierra modales nuevos | ✅ Funciona genéricamente |
+| F — TODO/FIXME sin resolver | ✅ 0 marcadores reales |
+| G — `fg_color` con riesgo invisibilidad | ✅ Solo Comparar 2 era crítico |
+| H — Sanity check imports + estructura | ✅ Todo OK |
+
+Observaciones no críticas dejadas como TODO en el HANDOFF:
+- **313 `[silent]` exception catches** — la mayoría intencionales pero
+  puede dificultar debugging futuro. No urgente.
+- **Pollinations rate limit anónimo** — externo, ya tiene retry
+  exponencial. Considerar autenticar API key si molesta.
+
+**3 atajos nuevos para features de sesión 18 (`e0fa97d`)**
+
+La auditoría reveló que 3 features añadidas en sesión 18 no tenían
+atajo de teclado:
+
+- **`Ctrl+Shift+C`** (global) → Mostrar modal de Sugerencias de
+  Claridad. Si no hay palabras polisémicas detectadas, lo dice en
+  la barra de estado.
+- **`Ctrl+G`** (en comparador rico) → Abrir Grid Pollinations.
+- **`Ctrl+Enter`** (en comparador rico) → Comparar 2 cards lado-a-lado
+  (verifica que haya exactamente 2 marcadas).
+
+Atajos del comparador son **Toplevel-scoped** (bound al `vent` del
+comparador) — solo activos mientras esa ventana esté abierta. Label
+inline en el pie con la pista de los atajos disponibles.
+
+Ventana Ctrl+? actualizada con:
+- Nueva entrada en "🛠 Herramientas": `Ctrl+Shift+C` para Claridad.
+- Sección nueva "⚖️ Comparador (dentro de la ventana)" con
+  `Ctrl+G` y `Ctrl+Enter`.
+
+**Total atajos: 26 → 29**, todos documentados en la ventana de ayuda.
+
+### Commits sesión 18 round 3 (3 commits)
+
+```
+e0fa97d feat(atajos): 3 atajos nuevos para features de sesión 18
+9530279 fix(ui): botón "🆚 Comparar 2" era invisible en estado disabled
+a035f44 fix(refinar): click derecho en 🔁 Refinar no abría el menú contextual
+```
+
+### Métricas finales sesión 18 (round 1 + round 2 + round 3)
 
 | | Empezando | Cerrando |
 |---|---:|---:|
@@ -2044,10 +2134,13 @@ a7d2c56 feat(claridad): panel de sugerencias para palabras españolas polisémic
 | Modelos imagen totales | 117 | **118** (+ Nano Banana original) |
 | Validación end-to-end | 0 retos | 1 reto (Pulso) en 3 modelos ✅ |
 | Módulos `modules/` nuevos | — | **2** (clarity_hints + prompt_helpers) |
+| Atajos de teclado | 26 | **29** (+ Ctrl+Shift+C / Ctrl+G / Ctrl+Enter) |
 | Líneas core.py | 1747 | **1669** (-4.5%) |
+| Regresiones A1 detectadas+fijadas | 0 | **2** (tk.Menu + invisible button) |
+| Auditorías sistemáticas | 0 | **8** (todas verdes) |
 | Mixins en MRO | 1 | 1 (sin cambios) |
 | Working tree | Limpio | Limpio ✅ |
-| `.exe` distribuible | Día anterior | **Hoy** ✅ |
+| `.exe` distribuible | Día anterior | **Hoy round 3** ✅ |
 
 ### Estado del catálogo al cierre
 
@@ -2101,6 +2194,15 @@ Patrón establecido en Nano Banana (replicable):
 - Code-signing del `.exe`.
 - Performance: lazy load JSON, semáforo workers, virtual scrolling.
 - Features ambiciosos: PDF export, plugin system, API REST.
+- **Auditar los 313 `[silent]` exception catches** — la mayoría son
+  intencionales (try/except con `logger.debug("[silent]")`) pero
+  pueden ocultar bugs nuevos. Estrategia: dejarlo y solo abordarlo
+  si aparecen bugs sin explicación clara. Detectado en auditoría
+  sesión 18 round 3.
+- **Pollinations API key (autenticada)** — el toggle de modelo en el
+  grid funciona, pero la API anónima tiene rate limit estricto
+  (1 concurrente por IP + por minuto). Con API key se eliminaría
+  el "En cola" / "Sobrecarga" frecuente. Opcional.
 
 ---
 
