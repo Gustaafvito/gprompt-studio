@@ -2044,7 +2044,8 @@ class ArquitectoApp(
 
     def _generar_preview_pollinations(self, prompt_text, on_imagen, on_error,
                                        parent_widget=None, size=512,
-                                       on_progress=None, force_refresh=False):
+                                       on_progress=None, force_refresh=False,
+                                       modelo="auto"):
         """Genera preview de imagen vía Pollinations.ai API (sin auth).
 
         - `prompt_text`: texto del prompt. Se extrae solo POSITIVE y se trunca
@@ -2054,9 +2055,13 @@ class ArquitectoApp(
         - `parent_widget`: si se pasa, los callbacks se programan con .after()
           para ser thread-safe sobre el Tk principal.
         - `size`: ancho/alto de la imagen pedida (default 512).
+        - `modelo`: "auto" (default, fallback turbo → none) o nombre concreto
+          ("turbo", "kontext", "sdxl", "anime"). En modo concreto solo se
+          intenta ese modelo (sin fallback) — útil para A/B testing.
 
         Caché en `~/.arquitecto_prompts/preview_cache/{md5}.png` para no
-        regenerar el mismo prompt entre sesiones.
+        regenerar el mismo prompt entre sesiones. La clave de caché incluye
+        el modelo para no mezclar resultados entre toggles.
         """
         import hashlib
         from io import BytesIO
@@ -2082,7 +2087,7 @@ class ArquitectoApp(
             cache_dir.mkdir(parents=True, exist_ok=True)
         except Exception as _e:
             logger.debug(f"[silent] cache dir: {_e}")
-        key = hashlib.md5(f"{pos}|{size}".encode()).hexdigest()[:16]
+        key = hashlib.md5(f"{pos}|{size}|{modelo}".encode()).hexdigest()[:16]
         cache_path = cache_dir / f"{key}.png"
 
         def _safe_cb(cb, arg):
@@ -2118,7 +2123,12 @@ class ArquitectoApp(
             # (max 1 simultánea) + retry con backoff exponencial al recibir 402.
             # El contador `_pollinations_queue_size` permite mostrar
             # "⏳ En cola (N por delante)" en la UI.
-            modelos_a_probar = ["turbo", None]  # None = sin param model
+            # Si el usuario pidió un modelo concreto, solo ese.
+            # En "auto" (default), fallback chain turbo → none.
+            if modelo and modelo != "auto":
+                modelos_a_probar = [modelo]
+            else:
+                modelos_a_probar = ["turbo", None]
             last_err = None
 
             # Registrarse en la cola y notificar posición inicial
@@ -2151,9 +2161,9 @@ class ArquitectoApp(
                                           # "queue full" → si son la mayoría,
                                           # mensaje final es claro.
                     for intento in range(4):
-                        for modelo in modelos_a_probar:
+                        for mdl_actual in modelos_a_probar:
                             try:
-                                extra = f"&model={modelo}" if modelo else ""
+                                extra = f"&model={mdl_actual}" if mdl_actual else ""
                                 url = (
                                     f"https://image.pollinations.ai/prompt/{quote(pos)}"
                                     f"?width={size}&height={size}&nologo=true&enhance=false"
@@ -2253,6 +2263,31 @@ class ArquitectoApp(
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
+        # Toggle de modelo Pollinations. "Auto" usa fallback chain turbo→none
+        # (comportamiento histórico). Los demás fuerzan un modelo concreto.
+        # Las regeneraciones (♻) y el "open large" usan el modelo seleccionado.
+        # Las previews ya generadas NO se auto-regeneran al cambiar el toggle.
+        modelo_pollinations_var = ctk.StringVar(value="auto")
+        bar_modelo = ctk.CTkFrame(vent, fg_color="transparent")
+        bar_modelo.pack(pady=(0, 4))
+        ctk.CTkLabel(bar_modelo, text="Modelo:",
+                     font=ctk.CTkFont(size=10)
+                     ).pack(side="left", padx=(0, 4))
+        combo_modelo_pol = ctk.CTkComboBox(
+            bar_modelo,
+            values=["auto", "turbo", "kontext", "sdxl", "anime"],
+            variable=modelo_pollinations_var,
+            width=110, height=24,
+            font=ctk.CTkFont(size=10),
+            dropdown_font=ctk.CTkFont(size=10),
+            state="readonly",
+        )
+        combo_modelo_pol.pack(side="left")
+        ctk.CTkLabel(bar_modelo,
+                     text="(♻ usa el modelo seleccionado)",
+                     font=ctk.CTkFont(size=9), text_color="#666"
+                     ).pack(side="left", padx=(6, 0))
+
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -2298,13 +2333,16 @@ class ArquitectoApp(
                                             size=(thumb.width, thumb.height))
                     lbl.configure(image=ctk_img, text="")
                     lbl.image = ctk_img
-                    # Click → abrir en navegador con tamaño 1024
+                    # Click → abrir en navegador con tamaño 1024 usando el
+                    # modelo seleccionado en el toggle ("auto" → turbo).
                     def _open_large(_e=None, p=prompt_text):
                         try:
                             pos = self._extraer_pos_de_bloque(p) or p
+                            m = modelo_pollinations_var.get()
+                            modelo_url = "turbo" if m == "auto" else m
                             url = (
                                 f"https://image.pollinations.ai/prompt/{quote((pos or '')[:500])}"
-                                f"?width=1024&height=1024&model=turbo&nologo=true"
+                                f"?width=1024&height=1024&model={modelo_url}&nologo=true"
                                 f"&referrer=gprompt-studio"
                             )
                             webbrowser.open(url)
@@ -2340,6 +2378,7 @@ class ArquitectoApp(
                 self._generar_preview_pollinations(
                     prompt_text, _img, _err, vent, size=512,
                     on_progress=_prog, force_refresh=True,
+                    modelo=modelo_pollinations_var.get(),
                 )
 
             btn_regen.configure(command=_regenerar)
