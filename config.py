@@ -244,7 +244,7 @@ GRUPOS_IMAGEN = [
         "GPT Image 2",
     ])),
     ("── Nano Banana ──", sorted([
-        "Nano Banana Pro Image", "Nano Banana 2",
+        "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2",
     ])),
     ("── Realismo SD ──", sorted([
         "Alchemist Mix (Illustrious Realism)",
@@ -856,7 +856,7 @@ PROMPT_TEMPLATES = {
     },
     # ── FLUX / Natural Language ──────────────────────────────
     "natural_flux": {
-        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1", "FLUX.1D UltraReal", "Mix Max Cinematic Realism", "SeaArt Infinity", "SeaArt Infinity V2.0", "Nano Banana Pro Image", "Nano Banana 2"],
+        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1", "FLUX.1D UltraReal", "Mix Max Cinematic Realism", "SeaArt Infinity", "SeaArt Infinity V2.0", "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2"],
         "positive_base": "A {encuadre} of {sujeto}, {accion_pose}, {entorno_detallado}, {iluminacion_descriptiva}, {atmosfera}, {estilo_referencia}, {calidad}",
         "negative_base": "",
     },

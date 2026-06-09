@@ -1611,6 +1611,42 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin sampler/CFG/negative. Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos y lighting complejo a veces inconsistente. Sin cropping preciso de aspect ratio (prioriza la edición generativa)."
   },
+  "Nano Banana": {
+    "nota": 3.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "21:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "832×1248"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 3,
+    "best_for": "Motor Gemini 2.5 Flash (versión original gratis tiempo limitado). Edición por lenguaje natural con character consistency, multi-turn editing, multi-image fusion. Style transfer (photorealistic, cartoon, watercolor, oil, abstract). Generación 1-5 segundos. Excelente para iteración rápida en redes sociales y prototipado.",
+    "prompt_formula": "Lenguaje natural describiendo cambios: 'Replace background with...', 'Make her wear...', 'Keep face identity, only change...'. Para multi-turn: cada paso construye sobre el anterior sin perder contexto. Para fusion: máx 3 imágenes de referencia. Acepta prompts largos (5000 chars).",
+    "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
+    "coste_energia": "Gratis por tiempo limitado",
+    "limitaciones": "Sin sampler/CFG/negative. Text rendering débil (especialmente fuentes complejas — usar Pro Image para texto). Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos/lighting complejos a veces inconsistentes. Sin cropping preciso de aspect ratio. Máx 3 imágenes de referencia (vs 14 en Pro/2)."
+  },
   "Nano Banana 2": {
     "nota": 4.0,
     "has_negative": false,
