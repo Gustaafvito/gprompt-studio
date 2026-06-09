@@ -15,9 +15,9 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **374/374** ✅ |
+| Tests | **385/385** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sesión 18 cerrada con familia Nano Banana completa) |
+| Branch | `main` (sesión 18 round 2 cerrada con 3 features MEDIA) |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** foundation por diseño (`CoreMixin`) ⭐⭐⭐ |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
@@ -1952,18 +1952,102 @@ f332f99 feat(specs): añadir Nano Banana (original) a familia Nano Banana
 fb66589 docs(arch): cerrar A1 fase 2 — CoreMixin como foundation por diseño
 ```
 
-### Métricas finales sesión 18
+### Bloque 6 — Round 2: 3 pendientes MEDIA cerrados antes de dormir
+
+Tras cerrar la familia Nano Banana, se atacaron 3 items de la lista 🟡
+MEDIA acumulados en sesiones anteriores. Estrategia: orden de menor a
+mayor riesgo, 1 commit por feature.
+
+**1. Toggle modelo Pollinations en grid 👁 (`297c7c1`)**
+
+Combo "Modelo:" en la ventana `_abrir_grid_pollinations` con:
+`auto / turbo / kontext / sdxl / anime`.
+
+- `"auto"` mantiene el comportamiento histórico (fallback turbo → none).
+- Modelos concretos fuerzan UN solo engine sin fallback — útil para
+  A/B testing rápido entre Pollinations engines.
+- La regeneración (♻) y el "open large" usan el modelo seleccionado.
+- Las previews ya en pantalla NO se auto-regeneran al cambiar (evita
+  reset accidental).
+- Caché de imágenes incluye el modelo en la key (`{md5(pos|size|modelo)}.png`)
+  para no mezclar resultados entre toggles.
+- Bug fix lateral: loop interno renombrado de `modelo` a `mdl_actual`
+  para evitar shadowing del nuevo param (lo detectó ruff F823).
+
+**2. Panel "Sugerencias de claridad" español→inglés (`a7d2c56`)**
+
+Nuevo módulo `modules/clarity_hints.py` con detector de palabras
+polisémicas + UI en el campo idea. Nació del problema con "pulso" del
+bloque 4 (validación end-to-end).
+
+Diccionario inicial con **14 palabras** (≥2 significados visualmente
+distintos cada una): pulso, muñeca, vela, pluma, silla, gato, llave,
+planta, manga, carta, banco, caballo, torre, rey.
+
+Cada entrada tiene `meanings` (interpretaciones) + `hint` (sugerencia
+de reformulación). El detector hace match por word-boundary
+case-insensitive + maneja plurales regulares (`+s`) y un diccionario
+`PLURALES_IRREGULARES` para casos especiales (`rey` → `reyes`).
+
+UI: chip morado `💡 Claridad: 'pulso', 'vela'... — click para ver`
+en la cabecera del campo idea (junto al aviso de idioma). Click abre
+modal con cards expandidas mostrando interpretaciones + hint por
+palabra. Se actualiza en cada `KeyRelease`. Hookeado en
+`_actualizar_barra_chars` después del detector de idioma existente.
+
+11 tests nuevos en `tests/test_clarity_hints.py`. Patrón establecido
+para extender: añadir entrada al dict con ≥2 meanings + hint
+descriptivo (≥20 chars validado por test).
+
+**3. Partición core.py → prompt_helpers.py (`340dd9b`)**
+
+Siguiendo la guía explícita del docstring de CoreMixin (sesión 17):
+*"extraer primero los helpers puros — _parsear_variaciones,
+_recortar_si_excede, _extraer_* — a un módulo standalone tipo
+prompt_helpers.py"*.
+
+3 funciones movidas a `modules/prompt_helpers.py`:
+- `parsear_variaciones(texto, n_esperado=None)`
+- `extraer_pos_de_bloque(bloque)`
+- `recortar_si_excede(texto, max_chars, max_chars_negative=None)`
+
+Las 3 son **puras** (sin deps de widget ni estado de app). CoreMixin
+conserva los métodos como **wrappers thin de 3-5 líneas** que delegan
+en los helpers → 0 call sites cambiados, compat total con `self.X()`
+/ `self.app.X()` que había en 7+ archivos.
+
+`core.py`: 1747 → **1669 líneas** (-78, -4.5%). Ruff auto-removió
+`import re` ya no usado.
+
+Beneficios:
+- Helpers testeables en aislamiento (sin mockear app/widgets).
+- CoreMixin sigue siendo la foundation por diseño (sin cambios
+  arquitectónicos), solo más compacta.
+- Sienta el patrón para futuras particiones de helpers puros.
+
+### Commits sesión 18 round 2 (3 commits)
+
+```
+340dd9b refactor(core): extraer helpers puros a modules/prompt_helpers.py
+a7d2c56 feat(claridad): panel de sugerencias para palabras españolas polisémicas
+297c7c1 feat(comparador): toggle modelo Pollinations en grid 👁
+```
+
+### Métricas finales sesión 18 (round 1 + round 2)
 
 | | Empezando | Cerrando |
 |---|---:|---:|
-| Tests | 374 | 374 ✅ |
+| Tests | 374 | **385** (+11 en test_clarity_hints) ✅ |
 | Modelos auditados SeaArt | 5 | **8** (+3 Nano Banana) |
 | Familias con `formato_bloques` | 2 | **3** (+ nano_banana) |
 | Familias con `ESTILOS_POR_FAMILIA` | 2 | **3** (+ nano_banana) |
 | Modelos imagen totales | 117 | **118** (+ Nano Banana original) |
 | Validación end-to-end | 0 retos | 1 reto (Pulso) en 3 modelos ✅ |
+| Módulos `modules/` nuevos | — | **2** (clarity_hints + prompt_helpers) |
+| Líneas core.py | 1747 | **1669** (-4.5%) |
 | Mixins en MRO | 1 | 1 (sin cambios) |
 | Working tree | Limpio | Limpio ✅ |
+| `.exe` distribuible | Día anterior | **Hoy** ✅ |
 
 ### Estado del catálogo al cierre
 
@@ -2000,12 +2084,18 @@ Patrón establecido en Nano Banana (replicable):
 5. Validar end-to-end con un reto real.
 
 #### 🟡 MEDIA
-- Panel "Sugerencias de claridad" para palabras ambiguas español→inglés
-  (idea surgida del problema con "pulso").
-- Toggle modelo Pollinations en comparador.
+- ~~Panel "Sugerencias de claridad" para palabras ambiguas español→inglés~~
+  ✅ HECHO en round 2 (`a7d2c56`).
+- ~~Toggle modelo Pollinations en comparador~~
+  ✅ HECHO en round 2 (`297c7c1`).
+- ~~Particiones de archivos grandes — core.py~~
+  ✅ HECHO en round 2 (`340dd9b`, helpers puros a prompt_helpers.py).
 - Variante SD/Comfy del storyboard imagen.
-- Particiones de archivos grandes.
+- Particiones restantes: `app.py` (2972), `ui_builders.py` (~1700),
+  `dashboard.py`, `tools_creative.py` (1881), `data_mgmt.py` (1545).
 - Verificar installer end-to-end en VM.
+- Extender diccionario `AMBIGUOUS_WORDS` cuando aparezcan más casos
+  reales (criterio: ≥2 significados visualmente distintos).
 
 #### 🟢 BAJA
 - Code-signing del `.exe`.
