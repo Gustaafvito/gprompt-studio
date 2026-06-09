@@ -40,7 +40,11 @@ class RefinamientoService:
             return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        menu = tk.Menu(self, tearoff=0,
+        # Master del menú debe ser un widget Tk, NO el Service.
+        # Regresión heredada de A1 fase 2 (sesión 14): cuando se migró
+        # el mixin a service, `self` dejó de ser el app widget pero
+        # esta línea no se actualizó. Fix en sesión 18 round 2.
+        menu = tk.Menu(self.app, tearoff=0,
                        bg="#f0f0f0" if is_lt else "#1a1a2a",
                        fg="#111827" if is_lt else "white",
                        activebackground="#dbeafe" if is_lt else "#2a4a6a",
