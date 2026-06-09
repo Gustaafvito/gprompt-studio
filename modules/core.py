@@ -1,5 +1,20 @@
 """Core Mixin - Workers, Commands, Main Logic, Theme, Focus Mode, etc.
 
+NOTA ARQUITECTÓNICA (sesión 17): CoreMixin es la FOUNDATION definitiva
+de ArquitectoApp. A1 fase 2 (sesiones 9-14) migró los otros 20 mixins a
+Services aislados, pero CoreMixin permanece en el MRO por diseño:
+
+- Crea widgets directamente sobre `self` (Modo Focus, theme apply).
+- Hereda métodos llamados desde TODO el código como si fueran del app:
+  reiniciar_memoria, _recortar_si_excede, extraer_positive/negative,
+  get_current_model_specs, is_natural_mode, _contexto_loras_personaje.
+- Migrarlo a Service requeriría reescribir ~127 call sites externos sin
+  beneficio arquitectónico real (la app SÍ necesita un esqueleto base).
+
+Si en el futuro se quiere romper esta foundation, conviene extraer
+primero los helpers puros (_parsear_variaciones, _recortar_si_excede,
+_extraer_*) a un módulo standalone tipo `prompt_helpers.py`.
+
 v1.0:
 - Eliminadas 9 referencias muertas al parámetro modelo_llm en llamadas a
   self.deepseek.generar() / .traducir(). El parámetro ya no se usa porque

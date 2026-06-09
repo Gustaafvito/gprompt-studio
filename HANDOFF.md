@@ -1,7 +1,7 @@
 # 🧾 Handoff — G-Prompt Studio
 
 Documento de continuación para retomar el proyecto en una sesión nueva.
-Actualizado al final de la **sesión 16** (continuación de las sesiones 1-15).
+Actualizado al final de la **sesión 17** (continuación de las sesiones 1-16).
 Working tree limpio cuando se generó.
 
 ---
@@ -15,13 +15,13 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 
 | Métrica | Valor |
 |---|---|
-| Tests | **374/374** ✅ (+1 sesión 16) |
+| Tests | **374/374** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sesión 16 cerrada en `de175e1`) |
+| Branch | `main` (sesión 17 cerrada con CoreMixin como foundation) |
 | Bloques de profundidad | **6/6** ✅ |
-| Mixins en `ArquitectoApp` | **1** (era 21 — 20 removidos en A1 fase 2 ⭐⭐⭐) |
+| Mixins en `ArquitectoApp` | **1** foundation por diseño (`CoreMixin`) ⭐⭐⭐ |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
-| **A1 fase 2** | **20/20 COMPLETO** ✅ — solo queda `CoreMixin` |
+| **A1 fase 2** | **20/20 COMPLETO** ✅ — `CoreMixin` cerrado como foundation |
 | `core.py` | 1665 líneas (era 2698, **−38%**) |
 | `dialogs.py` | 543 líneas (era 1976, **−72%**) |
 | `ui_builders.py` | 1553 líneas (era 2167, **−28%**, sesión 8) |
@@ -1699,6 +1699,98 @@ categoría, y el usuario debe elegir el modelo con suficiente budget.
 #### 🟢 BAJA
 - Code-signing del `.exe`.
 - Performance: lazy load JSON, semáforo workers, virtual scrolling.
+- Features ambiciosos: PDF export, plugin system, API REST.
+
+---
+
+## ✅ Sesión 17 — Cierre A1 fase 2: CoreMixin como foundation
+
+Sesión corta y arquitectónica. La ALTA pendiente desde sesión 16 era
+decidir qué hacer con `CoreMixin` (el último mixin del MRO). Auditoría
+honesta antes de migrar reveló que **migrar no aporta valor**:
+
+### Por qué CoreMixin se queda
+
+1. **Operaciones widget-aware sobre `self`**:
+   - `_cmd_modo_focus` crea `ctk.CTkButton(self, ...)` directamente.
+   - `_apply_theme_colors` recorre `self.winfo_children()`.
+   - `update_idletasks()` se llama en el flujo de Modo Focus.
+2. **Estado del propio app**: `__init__` (de ArquitectoApp) ya construye
+   `self.imagen_cargada`, `self._anclaje_visual`, etc. CoreMixin opera
+   sobre ese estado como si fuera el app, porque LO ES.
+3. **Métodos llamados desde TODO el código** como helpers del app:
+   `reiniciar_memoria`, `_recortar_si_excede`, `extraer_positive/
+   negative`, `get_current_model_specs`, `is_natural_mode`,
+   `_contexto_loras_personaje`. 127 call sites externos.
+4. **Sin beneficio real**: la app necesita un esqueleto base con
+   widget + estado + helpers de prompt. Romperlo en Service introduce
+   una capa de delegación que no mejora ni la testabilidad ni la
+   modularidad (los Services ya cubren lo que tenía sentido aislar).
+
+### Qué se hizo
+
+- `modules/core.py`: docstring del módulo actualizado con la nota
+  arquitectónica completa, razones técnicas y guía para futuros
+  refactors (si en algún momento se quiere romper, extraer primero
+  los helpers puros — `_parsear_variaciones`, `_recortar_si_excede`,
+  `_extraer_*` — a un `prompt_helpers.py` standalone).
+- `app.py`: comentario junto a `CoreMixin` en la herencia explicando
+  que es FOUNDATION definitiva, no pendiente de migrar.
+- `HANDOFF.md`: estado del proyecto refleja "1 mixin foundation por
+  diseño", A1 fase 2 cerrado formalmente.
+
+### Estado arquitectónico final
+
+```
+ArquitectoApp(ctk.CTk, CoreMixin)
+  ├─ CoreMixin    ← foundation (widget + estado base + helpers prompt)
+  └─ 20 services aislados (accesibles via self.X.metodo())
+     ├─ self.ui, self.dialogs, self.footer, self.events
+     ├─ self.creative, self.workflow, self.analysis
+     ├─ self.data, self.backup, self.atajos
+     ├─ self.multi, self.adn, self.cliente, self.sesion
+     ├─ self.ab, self.json, self.refinar, self.workers
+     ├─ self.prompts, self.dashboard
+     └─ __getattr__ fallback para call sites legacy
+```
+
+A1 fase 2 **CERRADO** ✅. La próxima sesión arranca con auditoría de
+specs como prioridad principal.
+
+### Métricas finales sesión 17
+
+| | Empezando | Cerrando |
+|---|---:|---:|
+| Tests | 374 | 374 ✅ |
+| Mixins en MRO | 1 | **1 (foundation por diseño)** ⭐ |
+| A1 fase 2 estado | "1 pendiente" | **CERRADO** ✅ |
+| Documentación arquitectónica | implícita | **explícita** (docstring + comments) |
+| Working tree | Limpio | Limpio ✅ |
+
+### 🚧 Pendiente sesión 18+
+
+#### 🔴 ALTA — Auditoría de specs (la prioridad principal ahora)
+Quedan ~112 imagen + 14 vídeo + 10 audio. Orden sugerido por uso real:
+- **Imagen**: Nano Banana, Midjourney, Flux, Ideogram, Recraft,
+  Illustrious, SDXL.
+- **Vídeo**: Seedance, Kling, Veo, Sora, Wan, Hailuo.
+- **Audio**: Suno (4), Udio, MiniMax, SeaArt MusicGo.
+
+Para cada uno seguir `AGREGAR_MODELO.md`: medir `max_chars` empírico,
+verificar `has_negative` en panel SeaArt, ratios reales, modos.
+
+#### 🟡 MEDIA
+- Extender `ESTILOS_POR_FAMILIA` por cada familia auditada.
+- Plantillas `formato_bloques` para Flux / Midjourney (prompt format
+  distintivo).
+- Toggle modelo Pollinations en comparador.
+- Variante SD/Comfy del storyboard imagen (tag-based directo).
+- Particiones de archivos grandes (core.py 1747+ tras docstring, etc.).
+- Verificar installer end-to-end en VM.
+
+#### 🟢 BAJA
+- Code-signing del `.exe` (SmartScreen warning).
+- Performance: lazy load JSON, semáforo workers IA, virtual scrolling.
 - Features ambiciosos: PDF export, plugin system, API REST.
 
 ---

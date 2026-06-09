@@ -54,6 +54,9 @@ class ArquitectoApp(
     # DataMgmtMixin removido (A1 fase 2, sesión 14) → self.data.* (DataMgmtService)
     # BackupExportMixin removido (A1 fase 2, sesión 14) → self.backup.* (BackupExportService)
     # DialogsMixin removido (A1 fase 2, sesión 14) → self.dialogs.* (DialogsService)
+    # CoreMixin: FOUNDATION definitiva (sesión 17). Permanece en el MRO
+    # por diseño — A1 fase 2 cerrado con 1 mixin foundation. Ver docstring
+    # de modules/core.py para razones técnicas.
     CoreMixin,
     # AdnVisualMixin removido (A1 fase 2, sesión 14) → self.adn.* (AdnVisualService)
     # MultiPromptMixin removido (A1 fase 2, sesión 14) → self.multi.* (MultiPromptService)
