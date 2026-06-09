@@ -22,7 +22,6 @@ v1.0:
 - Llamada a _actualizar_indicador_proveedor() tras cambio de LLM.
 """
 import logging
-import re
 import threading
 
 import pyperclip
@@ -41,6 +40,15 @@ from config import (
     get_model_specs,
 )
 from modules.gprompt_window import GPromptWindow
+from modules.prompt_helpers import (
+    extraer_pos_de_bloque as _h_extraer_pos_de_bloque,
+)
+from modules.prompt_helpers import (
+    parsear_variaciones as _h_parsear_variaciones,
+)
+from modules.prompt_helpers import (
+    recortar_si_excede as _h_recortar_si_excede,
+)
 from modules.windows import abrir_batch
 from prompts import (
     BRIEF_MODIFIER,
@@ -1011,42 +1019,12 @@ class CoreMixin:
         self.update()
 
     def _parsear_variaciones(self, texto, n_esperado=None):
-        """Parser de variaciones (cmd_variaciones).
+        """Wrapper sobre prompt_helpers.parsear_variaciones (sesión 18).
 
-        `n_esperado`: si se pasa, filtra preámbulos del LLM cuando el
-        número de bloques parseados supera N. Prefiere bloques con
-        "POSITIVE PROMPT:" / "POSITIVE:"; si no hay suficientes, asume
-        que el preámbulo va al principio y se queda con los últimos N.
+        Lógica pura extraída a modules/prompt_helpers.py. Este método
+        se mantiene para compat con call sites legacy `self._parsear_variaciones()`.
         """
-        texto_limpio = re.sub(r'[\*#]', '', texto)
-        patron = r'\n\s*(?:Variaci[oó]n|Prompt)?\s*\d+[\.\)\-:]\s*|\n\s*---\s*\n'
-        bloques = re.split(patron, '\n' + texto_limpio, flags=re.IGNORECASE)
-
-        resultado = []
-        for b in bloques:
-            b = b.strip()
-            if b and ("PROMPT:" in b.upper() or "ESTILO:" in b.upper() or len(b) > 60):
-                resultado.append(b)
-
-        if len(resultado) <= 1:
-            bloques_alt = re.split(r'\n(?=(?:POSITIVE )?PROMPT:)', texto_limpio, flags=re.IGNORECASE)
-            resultado = [b.strip() for b in bloques_alt if len(b.strip()) > 50]
-
-        if len(resultado) <= 1:
-            return []
-
-        # Filtrar preámbulos cuando hay más bloques que los pedidos
-        if n_esperado is not None and len(resultado) > n_esperado:
-            con_marker = [
-                b for b in resultado
-                if re.search(r'POSITIVE\s+PROMPT|POSITIVE\s*:', b, re.IGNORECASE)
-            ]
-            if len(con_marker) >= n_esperado:
-                resultado = con_marker[:n_esperado]
-            else:
-                resultado = resultado[-n_esperado:]
-
-        return resultado
+        return _h_parsear_variaciones(texto, n_esperado=n_esperado)
 
     def _mostrar_variaciones(self, variaciones):
         """Muestra las variaciones en un modal con cards visibles.
@@ -1194,14 +1172,8 @@ class CoreMixin:
                       command=vent.destroy).pack(pady=(0, 12))
 
     def _extraer_pos_de_bloque(self, bloque):
-        limpio = limpiar_marcadores(bloque)
-        p = limpio
-        if "NEGATIVE PROMPT:" in p: p = p.split("NEGATIVE PROMPT:")[0]
-        elif "NEGATIVE:" in p: p = p.split("NEGATIVE:")[0]
-
-        if "POSITIVE PROMPT:" in p: return p.split("POSITIVE PROMPT:")[1].strip(" \n*")
-        if "PROMPT:" in p: return p.split("PROMPT:")[1].strip(" \n*")
-        return p.strip(" \n*")
+        """Wrapper sobre prompt_helpers.extraer_pos_de_bloque (sesión 18)."""
+        return _h_extraer_pos_de_bloque(bloque)
 
     def _extraer_neg_de_bloque(self, bloque):
         limpio = limpiar_marcadores(bloque)
@@ -1216,61 +1188,8 @@ class CoreMixin:
     # COMANDOS & WORKERS
 
     def _recortar_si_excede(self, texto, max_chars, max_chars_negative=None):
-        """Recorta el POSITIVE y NEGATIVE del prompt si excede el límite, preservando estructura.
-
-        max_chars_negative: límite específico para NEGATIVE. Si None,
-        se usa el mismo `max_chars`. Antes había un hardcoded de 1500
-        para el negative, pero eso era erróneo para modelos como
-        Z Image Turbo (negative también es 2000 chars, no 1500).
-        El spec del modelo puede declarar `max_chars_negative` para
-        forzar un límite distinto.
-        """
-        if not max_chars or not texto:
-            return texto
-        # Extraer POSITIVE y NEGATIVE
-        try:
-            import re
-            m_pos = re.search(r'(?:POSITIVE\s+)?PROMPT\s*:\s*(.+?)(?=\n\s*NEGATIVE|$)', texto, re.DOTALL | re.IGNORECASE)
-            m_neg = re.search(r'NEGATIVE\s+PROMPT\s*:\s*(.+?)$', texto, re.DOTALL | re.IGNORECASE)
-            if not m_pos:
-                return texto
-            pos = m_pos.group(1).strip()
-            neg = m_neg.group(1).strip() if m_neg else ""
-
-            # Límite NEGATIVE: por defecto el mismo que POSITIVE.
-            # El spec puede sobreescribir con `max_chars_negative`.
-            NEGATIVE_MAX = max_chars_negative if max_chars_negative else max_chars
-            neg_recortado = False
-            if len(neg) > NEGATIVE_MAX:
-                partes_neg = neg.split(",")
-                neg = ""
-                for p in partes_neg:
-                    p_stripped = p.strip()
-                    if len(neg) + len(p_stripped) + 2 > NEGATIVE_MAX:
-                        break
-                    neg += (", " if neg else "") + p_stripped
-                neg_recortado = True
-
-            if len(pos) <= max_chars and not neg_recortado:
-                return texto
-
-            # Recortar pos preservando tags completos (separados por comas)
-            pos_recortado = pos
-            if len(pos) > max_chars:
-                partes = pos.split(",")
-                pos_recortado = ""
-                for p in partes:
-                    p_stripped = p.strip()
-                    if len(pos_recortado) + len(p_stripped) + 2 > max_chars:
-                        break
-                    pos_recortado += (", " if pos_recortado else "") + p_stripped
-
-            nuevo = f"POSITIVE PROMPT: {pos_recortado}"
-            if neg:
-                nuevo += f"\nNEGATIVE PROMPT: {neg}"
-            return nuevo
-        except Exception:
-            return texto
+        """Wrapper sobre prompt_helpers.recortar_si_excede (sesión 18)."""
+        return _h_recortar_si_excede(texto, max_chars, max_chars_negative=max_chars_negative)
 
 
     def _contexto_loras_personaje(self, sufijo_intro: str = "") -> str:
