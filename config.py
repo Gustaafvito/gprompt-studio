@@ -702,6 +702,10 @@ ESTILOS_POR_FAMILIA = {
         "Auto", "Photoreal", "Editorial", "Illustration",
         "UI-Mockup", "Poster-Typography",
     ],
+    "nano_banana": [
+        "Auto", "Photoreal", "Editorial",
+        "Character-Consistent", "Artistic", "Edit-Focus",
+    ],
 }
 
 
@@ -719,6 +723,8 @@ def detectar_familia(modelo_nombre: str) -> str | None:
         return "z_image"
     if "gpt image" in n or "gpt-image" in n:
         return "gpt_image"
+    if "nano banana" in n or "nano-banana" in n or "nano_banana" in n:
+        return "nano_banana"
     return None
 
 

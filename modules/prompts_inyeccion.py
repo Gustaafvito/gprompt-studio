@@ -183,6 +183,9 @@ class PromptsInyeccionService:
         # Formato especial GPT Image: 7 bloques en inglés, sin NEGATIVE
         if specs.get("formato_bloques") == "gpt_image":
             return self._inyectar_formato_gpt_image(modelo, specs, extra)
+        # Formato especial Nano Banana (Gemini): 6 bloques checklist + edit
+        if specs.get("formato_bloques") == "nano_banana":
+            return self._inyectar_formato_nano_banana(modelo, specs, extra)
 
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
@@ -585,6 +588,179 @@ class PromptsInyeccionService:
                     f"  {hint}\n"
                     f"  • Orienta TODA la salida (Subject/Setting/Style/"
                     f"Composition/Mood) a esta categoría.\n"
+                    f"  • NO mezcles con otras categorías.\n"
+                )
+        return extra
+
+    def _inyectar_formato_nano_banana(self, modelo: str, specs: dict, extra: str) -> str:
+        """Reglas específicas familia Nano Banana (Gemini) en SeaArt.
+
+        Aplica a: Nano Banana (Gemini 2.5 Flash), Nano Banana Pro Image
+        (Gemini 3 Pro), Nano Banana 2 (Gemini 3.1 Flash).
+
+        Estructura derivada del consenso SeaArt (marketing NB2) + Google
+        Gemini docs: 6 bloques checklist en inglés + bloque condicional
+        [Edit Instructions] que el LLM activa SOLO si la idea es de
+        edición. SIN NEGATIVE PROMPT (Gemini no lo soporta). SIN pesos
+        numéricos ni sintaxis SD.
+
+        Si hay LoRA con "Rasgos visuales" rellenado, los rasgos se
+        inyectan en [Subject] como REFUERZO verbal — NO como bloque
+        dedicado [LoRA Activation & Style] porque Gemini no usa
+        triggers SD.
+        """
+        # Rasgos de LoRA activos (multi-LoRA o primario)
+        rasgos_lora: list = []
+        try:
+            if hasattr(self.app, "footer"):
+                rasgos_lora = self.app.footer.rasgos_loras_activos() or []
+        except Exception:
+            rasgos_lora = []
+        rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
+
+        # Toggle "Estilo" del usuario
+        estilo_nb = "Auto"
+        try:
+            if hasattr(self.app, "familia_estilo_var"):
+                estilo_nb = self.app.familia_estilo_var.get() or "Auto"
+        except Exception:
+            estilo_nb = "Auto"
+
+        extra += (
+            "• TIPO: Nano Banana (motor Gemini en SeaArt). Lenguaje "
+            "NATURAL en prosa fluida con bloques estructurados. NO tags "
+            "separados por comas, NO pesos numéricos (tag:1.2), NO "
+            "corchetes [tag], NO sintaxis SD, NO triggers SD.\n"
+            "• Fortalezas: character consistency entre ediciones, "
+            "multi-turn editing sin pérdida de contexto, multi-image "
+            "fusion, style transfer, instruction following preciso.\n"
+            "• Especialmente bueno para: edición ('Replace background "
+            "with...', 'Make her wear...'), preservación de identidad "
+            "('Keep face identity, only change...'), outpainting "
+            "('Extend canvas to show...').\n"
+        )
+        extra += (
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\n"
+            "\n"
+            "PROMPT:\n"
+            "[Subject] <Main subject + detailed physical traits (face, "
+            "hair, eyes, build, age, ethnicity if relevant) + clothing/"
+            "wardrobe + pose/expression. Be concrete and specific. For "
+            "non-human subjects (creature/robot/object) describe form, "
+            "materials and distinguishing features.>\n"
+            "[Scene] <Location + environment + background elements + "
+            "key props + era/period. Where the subject is and what "
+            "surrounds them.>\n"
+            "[Composition] <Shot type (close-up / medium / wide / "
+            "extreme wide / over-the-shoulder / POV) + angle (eye-level, "
+            "low, high, dutch, overhead) + framing (centered, rule of "
+            "thirds, symmetric, off-center).>\n"
+            "[Lighting] <Light source (sun, neon, candle, fluorescent, "
+            "softbox) + direction (from the left, backlit, top-down, "
+            "rim) + quality (soft, harsh, volumetric, golden hour) + "
+            "mood it creates.>\n"
+            "[Materials] <Textures and surfaces with specificity: "
+            "polished metal, frosted glass, weathered leather, fine "
+            "fabric weave, skin texture with natural imperfections, "
+            "wood grain, etc. Critical for photorealism.>\n"
+            "[Style] <Visual style: photorealistic / cinematic / "
+            "illustration / watercolor / oil painting / cartoon. "
+            "Reference specifics if relevant: lens (35mm, 85mm, macro), "
+            "film stock (Portra 400, Cinestill), art reference.>\n"
+            "[Output] <Aspect ratio + resolution hint + clean output "
+            "qualifiers ('clean background', 'professional grade', "
+            "'no artifacts'). Brief — just the technical wrap-up.>\n"
+            "[Edit Instructions] <ONLY if the user's idea is an EDIT "
+            "(replace/change/add/remove/extend over an existing image). "
+            "Otherwise OMIT this block entirely. Format: 'Replace X "
+            "with Y' / 'Make her/him wear Z' / 'Extend canvas upward "
+            "to show W' followed by 'Keep face identity, keep pose, "
+            "keep color palette, only change [outfit/background/...]'.>\n"
+            "\n"
+            "━━━ REGLAS GENERALES NANO BANANA / GEMINI ━━━\n"
+            "  • NO incluyas NEGATIVE PROMPT — Gemini no lo soporta.\n"
+            "  • NO uses pesos numéricos (tag:1.2). El modelo los "
+            "ignora o degrada.\n"
+            "  • NO uses corchetes [tag] estilo SD/A1111.\n"
+            "  • NO inventes triggers SD (lmnlhrr, etc.) — Gemini no "
+            "los reconoce.\n"
+            "  • Sé ESPECÍFICO con lighting, materials y composition — "
+            "Gemini los respeta literalmente.\n"
+            "  • Para editing: combina '[Edit Instructions]' con '[Keep "
+            "X, only change Y]' para preservar identidad.\n"
+            "  • El bloque [Edit Instructions] SOLO va si la idea es de "
+            "edición. Si la idea es text-to-image puro, OMÍTELO.\n"
+            "  • El bloque [Output] es breve — 1-2 frases técnicas.\n"
+        )
+        if rasgos_combinados:
+            extra += (
+                f"\n🎭 RASGOS VISUALES DEL/LOS LORA(S) — INCLÚYELOS "
+                f"EXPLÍCITAMENTE en [Subject]:\n"
+                f"  {rasgos_combinados}\n"
+                f"  • Adáptalos al contexto sin contradecir la escena.\n"
+                f"  • Refuerzan los pesos del LoRA cuando el output se "
+                f"abre en SeaArt con LoRA activo.\n"
+            )
+
+        # Hint de estilo forzado por el usuario (toggle "Estilo")
+        if estilo_nb != "Auto":
+            estilo_map_nb = {
+                "Photoreal": (
+                    "📷 FOTORREALISMO. [Style] DEBE pedir: photorealistic, "
+                    "natural skin texture, real photography, no AI shine. "
+                    "Especifica lens (50mm/85mm) y film stock (Portra 400, "
+                    "Cinestill, Kodak Gold). [Materials] con detalle alto "
+                    "(piel, telas, superficies). [Lighting] natural y "
+                    "creíble (golden hour, softbox, backlight). EVITA "
+                    "términos de ilustración."
+                ),
+                "Editorial": (
+                    "📰 EDITORIAL / MARKETING. [Style] DEBE pedir: "
+                    "editorial photography, fashion magazine aesthetic, "
+                    "Vogue/Harper's Bazaar quality, professional lighting, "
+                    "clean composition. [Composition] con énfasis en rule "
+                    "of thirds y leading lines. [Lighting] sofisticada "
+                    "(studio strobes, ring light, accent lights). Ideal "
+                    "para banners, ads, social media, e-commerce."
+                ),
+                "Character-Consistent": (
+                    "🎭 CHARACTER CONSISTENCY. La fortaleza principal del "
+                    "modelo. [Subject] EXTREMADAMENTE detallado (rostro, "
+                    "rasgos únicos, vestimenta característica, age, "
+                    "ethnicity) para que pueda mantenerse entre "
+                    "ediciones. Pensado para series de imágenes del "
+                    "mismo personaje: AI influencer, comic multi-panel, "
+                    "branded mascot, photo series. Incluye al final del "
+                    "[Subject]: 'consistent character identity for "
+                    "multi-image series'."
+                ),
+                "Artistic": (
+                    "🎨 STYLE TRANSFER ARTÍSTICO. [Style] DEBE pedir un "
+                    "medium artístico específico: watercolor painting "
+                    "with visible brush strokes / oil painting impasto "
+                    "texture / pen and ink illustration / gouache "
+                    "illustration / cel-shaded cartoon / abstract "
+                    "expressionism. [Materials] describe la SUPERFICIE "
+                    "del medium (paper texture, canvas grain, paint "
+                    "thickness). EVITA pedir photorealistic."
+                ),
+                "Edit-Focus": (
+                    "✏️ EDICIÓN PURA. La idea del usuario es modificar "
+                    "una imagen existente. El bloque [Edit Instructions] "
+                    "ES OBLIGATORIO con formato 'Replace X with Y' / "
+                    "'Make her/him wear Z' / 'Extend canvas upward to "
+                    "show W'. Siempre añade 'Keep face identity, keep "
+                    "pose, keep color palette, only change [específico]'. "
+                    "Los otros bloques describen el RESULTADO esperado "
+                    "tras la edición, no la imagen original."
+                ),
+            }
+            hint = estilo_map_nb.get(estilo_nb, "")
+            if hint:
+                extra += (
+                    f"\n🎯 ESTILO FORZADO POR EL USUARIO: {estilo_nb}.\n"
+                    f"  {hint}\n"
+                    f"  • Orienta TODA la salida a esta categoría.\n"
                     f"  • NO mezcles con otras categorías.\n"
                 )
         return extra
