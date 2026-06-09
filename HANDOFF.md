@@ -1649,6 +1649,31 @@ afaec27 fix(specs): GPT Image 1.5 — datos exactos panel SeaArt
 | Plantillas `formato_bloques` | 1 | **2** |
 | Working tree | Limpio | Limpio ✅ |
 
+### Validación end-to-end (caso real del usuario)
+
+Probado en vivo el flujo completo **GPT Image 2 + estilo
+"Poster-Typography"**:
+
+- Idea simple del usuario: poster minimalista de arcade game.
+- La app generó prompt de **3448 chars** con 7 bloques completos,
+  incluido `[Text in image]` detallado con "ARCADE LEGACY" + subtitle
+  + footer + tagline, con specs de typography (geometric sans-serif,
+  electric cyan, neon glow, drop shadow, etc.).
+- El usuario pegó el prompt en GPT Image 2 → imagen final renderizada
+  con el texto **clavado pixel-perfect**: "ARCADE LEGACY" en cyan
+  con glow, "MASTER THE MACHINE" en subtitle blanco, footer "COMING
+  SOON | INSERT COIN TO CONTINUE" en pale gray condensed type.
+- Misma idea probada con **GPT Image 1.5**: prompt cortado
+  automáticamente a 2000 chars (perdiendo `[Composition]`, `[Mood]`
+  y todo `[Text in image]`) → imagen sin texto.
+
+Conclusión: la combinación plantilla + estilo + `max_chars` correcto
+funciona end-to-end. Para prompts complejos (UI-Mockup, Poster,
+Editorial densa), GPT Image 2 (5000 chars) es claramente superior
+a 1.5 (2000). Esta diferencia justifica mantener el toggle "Estilo"
+visible — el LLM produce prompts más densos cuando se le fuerza una
+categoría, y el usuario debe elegir el modelo con suficiente budget.
+
 ### 🚧 Pendiente sesión 17+
 
 #### 🔴 ALTA

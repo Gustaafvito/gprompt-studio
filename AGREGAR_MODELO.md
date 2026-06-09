@@ -4,6 +4,14 @@ Plantilla y checklist para añadir un modelo nuevo (o auditar uno
 existente) al catálogo de G-Prompt Studio. Mantén este archivo
 actualizado cuando descubras patrones nuevos.
 
+> ⚠️ **Política sesión 16+**: TODAS las auditorías de modelos se
+> hacen **desde la perspectiva de SeaArt** (cómo aparece y se
+> comporta el modelo en SeaArt, NO en la API original ni en otras
+> plataformas como Magnific, ComfyUI local, etc.). Los modelos de
+> otras plataformas se pueden auditar más adelante en bloques
+> separados. Esto se hace porque el flujo principal del usuario es
+> SeaArt → app genera prompt → SeaArt genera imagen.
+
 ---
 
 ## 🎯 Antes de empezar
