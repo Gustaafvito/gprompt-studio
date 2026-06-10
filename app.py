@@ -1112,8 +1112,23 @@ class ArquitectoApp(
             # Esc → cancelar
             v.bind("<Escape>", lambda _e: _cancelar())
         else:
-            ctk.CTkButton(btn_row, text="Cerrar", width=110, command=v.destroy,
-                          fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack()
+            # Modo lectura: además de Cerrar, permite aplicar cualquiera de
+            # las dos versiones a la salida (feedback usuario sesión 19:
+            # "solo tenemos cerrar en la ventana de diff").
+            def _usar(texto, etiqueta):
+                self.dialogs.actualizar_salida(texto)
+                v.destroy()
+                self.dialogs.set_estado(f"⏪ Aplicada: {etiqueta}", "#2ecc71")
+            ctk.CTkButton(btn_row, text=f"⏪ Usar {label_a}", width=200, height=32,
+                          fg_color="#8a5a1a", hover_color="#6a4515",
+                          font=ctk.CTkFont(size=11),
+                          command=lambda: _usar(texto_a, label_a)).pack(side="left", padx=5)
+            ctk.CTkButton(btn_row, text=f"✅ Usar {label_b}", width=200, height=32,
+                          fg_color="#1a7a3c", hover_color="#15633a",
+                          font=ctk.CTkFont(size=11),
+                          command=lambda: _usar(texto_b, label_b)).pack(side="left", padx=5)
+            ctk.CTkButton(btn_row, text="Cerrar", width=110, height=32, command=v.destroy,
+                          fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="left", padx=5)
 
     def _notificar_sistema(self, titulo, mensaje):
         """Notificación del sistema operativo (Windows / macOS / Linux)."""

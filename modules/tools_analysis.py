@@ -1184,6 +1184,11 @@ class ToolsAnalysisService:
                                     fg_color="#1a8a3c", hover_color="#127a30",
                                     state="disabled")
         btn_aplicar.pack(side="left", padx=4)
+
+        btn_diff = ctk.CTkButton(btn_row, text="🆚 Ver diff", width=100, height=30,
+                                 fg_color="#1a4a7a", hover_color="#143a5f",
+                                 state="disabled")
+        btn_diff.pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=vent.destroy).pack(side="left", padx=4)
@@ -1263,7 +1268,33 @@ class ToolsAnalysisService:
                     estado_lbl.configure(text=resumen, text_color=c["panel_text"])
                     vent.title("🎯 Optimizador — resultado")
 
+                    hubo_cambio = mejor["texto"].strip() != texto_inicial.strip()
+
+                    def _ver_diff():
+                        try:
+                            self.app._abrir_ventana_diff(
+                                texto_inicial, mejor["texto"],
+                                "Original",
+                                f"Optimizada ({int(mejor['score'])}/100)")
+                        except Exception as e:
+                            self.app.dialogs.set_estado(f"❌ Error abriendo diff: {e}", "#e74c3c")
+                    if hubo_cambio:
+                        btn_diff.configure(state="normal", command=_ver_diff)
+
                     def _aplicar():
+                        # Registrar versiones para 📑 Versiones y 📊 Diff:
+                        # la original queda como rollback y ambas entran en
+                        # la pila de regeneración (antes el diff exigía
+                        # pulsar 🔄 Regenerar para tener 2 versiones).
+                        try:
+                            self.app._guardar_version_prompt()
+                        except Exception as e:
+                            logger.debug(f"[silent] versión pre-optimización: {e}")
+                        try:
+                            self.app._regen_push(texto_inicial)
+                            self.app._regen_push(mejor["texto"])
+                        except Exception as e:
+                            logger.debug(f"[silent] regen push: {e}")
                         self.app.dialogs.actualizar_salida(mejor["texto"])
                         vent.destroy()
                         self.app.dialogs.set_estado(
