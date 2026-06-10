@@ -17,8 +17,6 @@ import os
 
 import customtkinter as ctk
 
-from modules.gprompt_window import GPromptWindow
-
 logger = logging.getLogger(__name__)
 
 
@@ -348,12 +346,19 @@ class UIBuildersService:
                         break
                 if btn_real is None:
                     return
-                new_popup = GPromptWindow(self.app)
+                # Toplevel PLANO de tkinter (no GPromptWindow/CTkToplevel):
+                # un popup overrideredirect con CTkToplevel en Windows puede
+                # quedar invisible/detrás de la ventana principal — además
+                # GPromptWindow._bring_to_front quita el topmost a los 250ms
+                # y la ventana sin gestión cae al fondo del z-order.
+                # Bug sesión 19: "clic en el menú y no se abre nada".
+                import tkinter as tk
+                is_lt = ctk.get_appearance_mode().lower() == "light"
+                new_popup = tk.Toplevel(self.app)
                 self.app._active_menu_popup = new_popup
                 self.app._active_menu_label = lg
-                new_popup.title(lg)
                 new_popup.overrideredirect(True)
-                new_popup.attributes("-topmost", True)
+                new_popup.configure(bg="#ffffff" if is_lt else "#1f2937")
                 try:
                     abs_x = btn_real.winfo_rootx()
                     abs_y = btn_real.winfo_rooty() + btn_real.winfo_height() + 4
@@ -361,7 +366,6 @@ class UIBuildersService:
                     abs_x, abs_y = 200, 100
                 new_popup.geometry(f"+{abs_x}+{abs_y}")
 
-                is_lt = ctk.get_appearance_mode().lower() == "light"
                 bg_frame = ctk.CTkFrame(new_popup, fg_color="#ffffff" if is_lt else "#1f2937", border_color=cb, border_width=2, corner_radius=8)
                 bg_frame.pack(fill="both", expand=True, padx=2, pady=2)
 
@@ -373,6 +377,10 @@ class UIBuildersService:
                                               command=lambda c=item_cmd: (c(), _close_menu()))
                     btn_item.pack(fill="x", padx=4, pady=2)
 
+                # Mantener el popup por encima MIENTRAS está abierto (se
+                # cierra al hacer clic fuera, así que no molesta).
+                new_popup.attributes("-topmost", True)
+                new_popup.lift()
                 new_popup.bind("<Escape>", lambda e: _close_menu())
                 new_popup.focus_set()
             return _toggle
