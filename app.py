@@ -2397,8 +2397,11 @@ class ArquitectoApp(
                                     wraplength=thumb_size - 20)
             img_lbl.pack(pady=2)
 
-            # Botón ♻ Regenerar (oculto por defecto, aparece al fallar)
+            # Botón ♻ Regenerar (SIEMPRE visible — sesión 18 round 5).
+            # Antes solo aparecía al fallar; ahora también permite cambiar
+            # de modelo (con el toggle del header) sin esperar a un error.
             btn_row_cell = ctk.CTkFrame(cell, fg_color="transparent")
+            btn_row_cell.pack(pady=(2, 4))  # siempre visible
             btn_regen = ctk.CTkButton(btn_row_cell, text="♻ Regenerar",
                                        width=120, height=22,
                                        fg_color="#7c3aed", hover_color="#5b21b6",
@@ -2417,11 +2420,14 @@ class ArquitectoApp(
                     # Click → abrir en navegador con tamaño 1024 usando el
                     # modelo seleccionado en el toggle.
                     # "auto" → flux (con key) o turbo (sin key).
-                    # Si hay API key, se abre en el endpoint nuevo y la URL
-                    # NO lleva la key (el navegador del usuario llama anónimo
-                    # con rate limit del legacy, pero al menos el modelo
-                    # correcto está en el path). La vista en grande es solo
-                    # navegacional/visual — para auth se usa el grid.
+                    # Cuando hay key: gen.pollinations.ai requiere auth.
+                    # El navegador NO envía el header Bearer automáticamente,
+                    # así que pasamos la key como `?key=` query param
+                    # (formato documentado por su error 401: "Please provide
+                    # an API key via Authorization header (Bearer token) or
+                    # ?key= query parameter"). Trade-off: la key queda en el
+                    # historial del navegador del usuario — aceptable porque
+                    # es su propio escritorio.
                     def _open_large(_e=None, p=prompt_text):
                         try:
                             pos = self._extraer_pos_de_bloque(p) or p
@@ -2430,23 +2436,32 @@ class ArquitectoApp(
                                 modelo_url = "flux" if _has_pol_key else "turbo"
                             else:
                                 modelo_url = m
-                            base = (
-                                "https://gen.pollinations.ai/image/"
-                                if _has_pol_key
-                                else "https://image.pollinations.ai/prompt/"
-                            )
+                            if _has_pol_key:
+                                try:
+                                    from api_clients import (
+                                        cargar_api_key as _ck,
+                                    )
+                                    _k = _ck("pollinations") or ""
+                                except Exception:
+                                    _k = ""
+                                base = "https://gen.pollinations.ai/image/"
+                                auth_qs = f"&key={quote(_k)}" if _k else ""
+                            else:
+                                base = "https://image.pollinations.ai/prompt/"
+                                auth_qs = ""
                             url = (
                                 f"{base}{quote((pos or '')[:500])}"
                                 f"?width=1024&height=1024&model={modelo_url}&nologo=true"
-                                f"&referrer=gprompt-studio"
+                                f"&referrer=gprompt-studio{auth_qs}"
                             )
                             webbrowser.open(url)
                         except Exception as _e:
                             logger.debug(f"[silent] open large: {_e}")
                     lbl.bind("<Button-1>", _open_large)
-                    # Si la generación fue OK, ocultar el botón regenerar
-                    try: btn_frame.pack_forget()
-                    except Exception: pass
+                    # Si la generación fue OK, mantener el botón regenerar
+                    # visible (ahora siempre, no solo al fallar). Sesión 18
+                    # round 5: usuario pidió poder cambiar modelo + ♻ sin
+                    # tener que esperar a un fallo.
                 except Exception as _e:
                     logger.debug(f"[silent] grid thumb: {_e}")
                     lbl.configure(text=f"❌ {_e}", text_color="#e74c3c")
@@ -2454,16 +2469,13 @@ class ArquitectoApp(
             def _on_err(msg, lbl=img_lbl, btn_frame=btn_row_cell):
                 lbl.configure(text=f"❌ {msg}", text_color="#e74c3c",
                               wraplength=thumb_size - 20)
-                # Al fallar, mostrar el botón regenerar
-                try: btn_frame.pack(pady=(2, 4))
-                except Exception: pass
+                # Botón ♻ ya está siempre visible (round 5).
 
             def _on_progress(msg, lbl=img_lbl, btn_frame=btn_row_cell):
                 lbl.configure(text=msg, text_color="#888",
                               wraplength=thumb_size - 20)
-                # Mientras se procesa, ocultar regenerar (si estaba visible)
-                try: btn_frame.pack_forget()
-                except Exception: pass
+                # Botón ♻ se mantiene visible durante la generación —
+                # útil si el usuario cambia de modelo y quiere ♻ ya.
 
             def _regenerar(prompt_text=var, _img=_on_img, _err=_on_err,
                             _prog=_on_progress, lbl=img_lbl, btn_frame=btn_row_cell):
