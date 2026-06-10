@@ -28,10 +28,11 @@ datas = [
     *collect_data_files('customtkinter'),
     # Pillow tiene plugins por formato
     *collect_data_files('PIL'),
-    # Documentación opcional (útil para que el usuario tenga a mano)
+    # Documentación de USUARIO únicamente. Los docs de desarrollo
+    # (ESTRUCTURA.md, HANDOFF.md, BUILD.md, AGREGAR_MODELO.md) NO se
+    # empaquetan: son material interno del proyecto.
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
-    ('ESTRUCTURA.md', '.'),
 ]
 
 # ─── Hidden imports (módulos que PyInstaller no detecta solo) ────

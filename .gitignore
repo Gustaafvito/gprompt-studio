@@ -39,8 +39,8 @@ venv/
 Thumbs.db
 desktop.ini
 
-# Claude Code (settings locales de máquina)
-.claude/settings.local.json
+# Claude Code (settings locales de máquina + lockfiles internos)
+.claude/
 
 # Archivos temporales de trabajo
 *_temp.py

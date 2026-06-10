@@ -26,9 +26,9 @@ datas = [
     ('config',        'config'),
     *collect_data_files('customtkinter'),
     *collect_data_files('PIL'),
+    # Solo docs de USUARIO (los docs de desarrollo no se empaquetan)
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
-    ('ESTRUCTURA.md', '.'),
 ]
 
 # ─── Hidden imports (mismos que onedir) ──────────────────────────
