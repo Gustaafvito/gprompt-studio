@@ -9,6 +9,7 @@ Cubren la lógica extraída en sesión 19 (sin UI):
 import pytest
 
 from modules.tools_analysis import (
+    asegurar_etiquetas_prompt,
     color_para_score,
     construir_peticion_mejora,
     construir_peticion_scoring,
@@ -139,6 +140,42 @@ class TestConstruirPeticionMejora:
     def test_pide_solo_el_prompt(self):
         p = construir_peticion_mejora("x")
         assert "SOLO el prompt mejorado" in p
+
+    def test_exige_formato_si_original_tiene_etiquetas(self):
+        p = construir_peticion_mejora("POSITIVE PROMPT:\ngato\nNEGATIVE PROMPT:\nblurry")
+        assert "FORMATO DE SALIDA OBLIGATORIO" in p
+
+    def test_no_exige_formato_sin_etiquetas(self):
+        p = construir_peticion_mejora("un gato astronauta")
+        assert "FORMATO DE SALIDA OBLIGATORIO" not in p
+
+
+# ── asegurar_etiquetas_prompt ─────────────────────────────────────
+
+class TestAsegurarEtiquetasPrompt:
+    ORIGINAL = "POSITIVE PROMPT:\n(masterpiece), gato\nNEGATIVE PROMPT:\nblurry"
+
+    def test_reconstruye_etiqueta_perdida(self):
+        mejorado = "(masterpiece, raw photo), gato épico\nNEGATIVE PROMPT:\nblurry"
+        r = asegurar_etiquetas_prompt(self.ORIGINAL, mejorado)
+        assert r.startswith("POSITIVE PROMPT:\n")
+        assert "gato épico" in r
+
+    def test_no_toca_si_etiqueta_presente(self):
+        mejorado = "POSITIVE PROMPT:\ngato épico\nNEGATIVE PROMPT:\nblurry"
+        assert asegurar_etiquetas_prompt(self.ORIGINAL, mejorado) == mejorado
+
+    def test_no_toca_si_original_sin_etiquetas(self):
+        # Prompt natural sin etiquetas (GPT Image, etc.) → no inventar etiqueta
+        r = asegurar_etiquetas_prompt("un gato", "un gato épico")
+        assert r == "un gato épico"
+
+    def test_case_insensitive(self):
+        mejorado = "positive prompt: gato épico"
+        assert asegurar_etiquetas_prompt(self.ORIGINAL, mejorado) == mejorado
+
+    def test_mejorado_vacio_se_devuelve_tal_cual(self):
+        assert asegurar_etiquetas_prompt(self.ORIGINAL, "") == ""
 
 
 # ── ejecutar_loop_optimizacion ────────────────────────────────────

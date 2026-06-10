@@ -106,22 +106,45 @@ def parsear_scoring(resp: str) -> dict:
 def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = "") -> str:
     """Petición de mejora. Si hay feedback del scoring (debiles/sugerencia),
     se inyecta para que la mejora ataque los puntos débiles concretos en
-    lugar de la mejora genérica."""
+    lugar de la mejora genérica. Si el prompt usa etiquetas POSITIVE/
+    NEGATIVE PROMPT, se exige conservarlas (los LLM tienden a pelarlas)."""
     feedback = ""
     if debiles:
         feedback += f"\nPUNTOS DÉBILES DETECTADOS (corrígelos):\n{debiles}\n"
     if sugerencia:
         feedback += f"\nSUGERENCIAS A APLICAR:\n{sugerencia}\n"
+    formato = ""
+    if "POSITIVE PROMPT" in prompt.upper():
+        formato = (
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO: el prompt original usa las "
+            "etiquetas 'POSITIVE PROMPT:' y 'NEGATIVE PROMPT:'. Tu respuesta "
+            "DEBE conservar EXACTAMENTE esas etiquetas y su estructura.\n"
+        )
     return (
         f"Mejora este prompt de IA manteniendo la idea original pero añadiendo:\n"
         f"- Más detalle en sujeto y estilo\n"
         f"- Especificaciones de cámara e iluminación\n"
         f"- Tags de calidad apropiados\n"
         f"- Composición más interesante\n"
-        f"{feedback}\n"
+        f"{feedback}{formato}\n"
         f"Mantén una longitud similar a la original (no la dupliques).\n"
         f"Devuelve SOLO el prompt mejorado, sin explicaciones:\n\n{prompt}"
     )
+
+
+def asegurar_etiquetas_prompt(texto_original: str, texto_mejorado: str) -> str:
+    """Reconstruye la etiqueta 'POSITIVE PROMPT:' si el LLM la peló.
+
+    Bug sesión 19 (mismo patrón que Iterar/Usar en sesión 7): pese a la
+    instrucción de formato, algunos LLM devuelven la mejora sin la
+    etiqueta inicial. Si el original la tenía y la mejora no, se
+    antepone para no romper el coloreado ni los botones POS/NEG."""
+    if not texto_mejorado:
+        return texto_mejorado
+    if ("POSITIVE PROMPT" in texto_original.upper()
+            and "POSITIVE PROMPT" not in texto_mejorado.upper()):
+        return "POSITIVE PROMPT:\n" + texto_mejorado.lstrip()
+    return texto_mejorado
 
 
 def ejecutar_loop_optimizacion(texto_inicial: str, puntuar, mejorar,
@@ -1004,7 +1027,8 @@ class ToolsAnalysisService:
                         def _worker_mejorar():
                             try:
                                 texto_mejorado = self.app.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
-                                texto_mejorado = limpiar_marcadores(texto_mejorado)
+                                texto_mejorado = asegurar_etiquetas_prompt(
+                                    actual, limpiar_marcadores(texto_mejorado))
                                 def _aplicar():
                                     self.app.dialogs.actualizar_salida(texto_mejorado)
                                     vent.destroy()
@@ -1239,7 +1263,8 @@ class ToolsAnalysisService:
                 self._OPTIMIZADOR_SYSTEM_MEJORA,
                 construir_peticion_mejora(texto, debiles, sugerencia),
                 temperature=0.5, max_tokens=2000)
-            return limpiar_marcadores(resp)
+            # Reconstruir POSITIVE PROMPT: si el LLM la peló
+            return asegurar_etiquetas_prompt(texto, limpiar_marcadores(resp))
 
         def _worker():
             try:
