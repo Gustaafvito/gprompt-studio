@@ -296,7 +296,9 @@ class GeminiProvider(BaseLLMProvider):
         if not GEMINI_DISPONIBLE:
             raise Exception("google-genai no instalado")
 
-        cliente = google_genai.Client(api_key=self.api_key)
+        if self._cliente is None:
+            self._cliente = google_genai.Client(api_key=self.api_key)
+        cliente = self._cliente
 
         modelo = model or self.model or "gemini-2.5-flash"
 

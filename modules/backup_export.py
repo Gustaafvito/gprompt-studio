@@ -18,6 +18,16 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     pass
 
+
+def _csv_safe(valor) -> str:
+    """Neutraliza CSV injection: Excel/Sheets ejecutan como fórmula las
+    celdas que empiezan por =, +, -, @ o tab. Se prefija con ' (apóstrofo),
+    que Excel interpreta como "texto literal"."""
+    s = "" if valor is None else str(valor)
+    if s and s[0] in ("=", "+", "-", "@", "\t"):
+        return "'" + s
+    return s
+
 class BackupExportService:
     """Backup, Restore, Export CSV/CLI, Búsqueda Global.
 
@@ -163,19 +173,30 @@ class BackupExportService:
                 return
 
             # ── RESTAURAR ──
-            self.app.store.historial   = backup.get("historial", [])
-            self.app.store.favoritos   = backup.get("favoritos", [])
-            self.app.store.estrellas   = backup.get("estrellas", [])
-            self.app.store.personajes  = backup.get("personajes", [])
-            self.app.store.loras       = backup.get("loras", [])
-            self.app.store.plantillas  = backup.get("plantillas", [])
+            # Validación de tipos: un backup editado/corrupto podría traer
+            # un string o dict donde se espera una lista de dicts, lo que
+            # corrompería el store y crashearía la UI más adelante.
+            def _lista_valida(clave: str) -> list:
+                valor = backup.get(clave, [])
+                if not isinstance(valor, list):
+                    logger.warning(f"Backup: '{clave}' no es una lista, se ignora")
+                    return []
+                return [it for it in valor if isinstance(it, dict)]
+
+            self.app.store.historial   = _lista_valida("historial")
+            self.app.store.favoritos   = _lista_valida("favoritos")
+            self.app.store.estrellas   = _lista_valida("estrellas")
+            self.app.store.personajes  = _lista_valida("personajes")
+            self.app.store.loras       = _lista_valida("loras")
+            self.app.store.plantillas  = _lista_valida("plantillas")
 
             for col in ["historial", "favoritos", "estrellas",
                         "personajes", "loras", "plantillas"]:
                 self.app.store._guardar(col)
 
-            if backup.get("preferencias"):
-                self.app.store.guardar_preferencias(backup["preferencias"])
+            prefs_backup = backup.get("preferencias")
+            if isinstance(prefs_backup, dict) and prefs_backup:
+                self.app.store.guardar_preferencias(prefs_backup)
 
             self.app.actualizar_combo_personajes()
             self.app.actualizar_combo_loras()
@@ -301,7 +322,7 @@ class BackupExportService:
                     for it in items:
                         if not isinstance(it, dict):
                             continue
-                        w.writerow([
+                        w.writerow([_csv_safe(v) for v in (
                             nombre_col,
                             it.get("fecha", ""),
                             it.get("modo", ""),
@@ -316,7 +337,7 @@ class BackupExportService:
                             it.get("lora", ""),
                             it.get("nota", ""),  # solo estrellas
                             it.get("contenido", ""),
-                        ])
+                        )])
                         n += 1
             self.app.dialogs.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
             messagebox.showinfo(

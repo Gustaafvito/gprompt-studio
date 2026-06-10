@@ -1555,7 +1555,6 @@ class CoreMixin:
         self.footer._limpiar_negatives()
         self.actualizar_salida("")
         self._ocultar_ideas()
-        self.reiniciar_memoria()
         self.set_estado("🔄 Sistema reseteado.", "#3498db")
         try: self.sesion._sesion_log("🗑 Reset completo del sistema")
         except Exception as e:

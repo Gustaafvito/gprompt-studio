@@ -11,8 +11,6 @@ import customtkinter as ctk
 
 logger = logging.getLogger(__name__)
 
-import threading
-from pathlib import Path
 from tkinter import filedialog, messagebox
 
 import pyperclip

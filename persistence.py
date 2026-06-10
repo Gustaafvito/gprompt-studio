@@ -17,6 +17,10 @@ class DataStore:
 
     def __init__(self):
         self._archivos_corruptos: list = []
+        # Colecciones cuyo archivo existía pero no se pudo LEER (permisos,
+        # bloqueo de antivirus/OneDrive...). Se usa en _guardar para no
+        # sobrescribir el archivo original con datos vacíos sin respaldarlo.
+        self._archivos_ilegibles: set = set()
         self.historial: list = self._cargar("historial")
         self.favoritos: list = self._cargar("favoritos")
         self.personajes: list = self._cargar("personajes")
@@ -51,14 +55,23 @@ class DataStore:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except json.JSONDecodeError as e:
-                logger.warning(f"{nombre}.json corrupto (línea {e.lineno}), renombrando a .corrupt")
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                # UnicodeDecodeError: archivo con encoding roto. Es ValueError
+                # (no JSONDecodeError ni OSError) → sin esta rama crashea el arranque.
+                detalle = f"línea {e.lineno}" if isinstance(e, json.JSONDecodeError) else "encoding inválido"
+                logger.warning(f"{nombre}.json corrupto ({detalle}), renombrando a .corrupt")
                 corrupt_path = path.with_suffix(".json.corrupt")
-                path.rename(corrupt_path)
+                try:
+                    # os.replace pisa un .corrupt previo (rename lanza
+                    # FileExistsError en Windows si ya existe).
+                    os.replace(path, corrupt_path)
+                except OSError as e2:
+                    logger.error(f"No se pudo renombrar {nombre}.json corrupto: {e2}")
                 self._archivos_corruptos.append((nombre, str(corrupt_path)))
                 return []
             except OSError as e:
                 logger.error(f"No se pudo leer {nombre}.json: {e}")
+                self._archivos_ilegibles.add(nombre)
                 return []
         return []
 
@@ -66,6 +79,24 @@ class DataStore:
         """Escritura atómica: escribe a archivo temporal y luego renombra."""
         data = getattr(self, nombre)
         path = ARCHIVOS[nombre]
+        if nombre in self._archivos_ilegibles:
+            # El archivo existía pero no se pudo leer al arrancar: respaldarlo
+            # antes de pisarlo, porque la colección en memoria arrancó vacía
+            # y sobrescribir directamente destruiría los datos originales.
+            try:
+                import shutil
+                shutil.copy2(path, str(path) + ".bak")
+                self._archivos_ilegibles.discard(nombre)
+                logger.warning(
+                    f"{nombre}.json no se pudo leer al arrancar; "
+                    f"copia preservada en {nombre}.json.bak antes de sobrescribir"
+                )
+            except OSError as e:
+                logger.error(
+                    f"NO se guarda {nombre}.json: su lectura falló al arrancar "
+                    f"y tampoco se pudo respaldar ({e})"
+                )
+                return
         tmp_path = str(path) + ".tmp"
         try:
             with open(tmp_path, "w", encoding="utf-8") as f:
@@ -269,8 +300,13 @@ class DataStore:
         if path.exists():
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except Exception:
+                    datos = json.load(f)
+                    return datos if isinstance(datos, dict) else {}
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                logger.warning(f"preferencias.json corrupto, se usan valores por defecto: {e}")
+                return {}
+            except OSError as e:
+                logger.error(f"No se pudo leer preferencias.json: {e}")
                 return {}
         return {}
 
