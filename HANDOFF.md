@@ -2428,6 +2428,83 @@ Patrón establecido en Nano Banana (replicable):
 
 ---
 
+## ✅ Sesión 19 — bugs de review externa + Optimizador en bucle + Costes
+
+### Round 1: verificación de review externa (DeepSeek) + 6 fixes
+
+Se auditó una review externa de 24+ hallazgos. **2 de sus 3 "críticos"
+eran falsos positivos** (no entendió el fallback `__getattr__` de
+`app.py:90` que resuelve `self.set_estado` / `self.app.PULSE_PRESET_3`
+vía los services). Fixes reales aplicados (`a9bb3a4`):
+
+- `persistence._cargar`: captura `UnicodeDecodeError` + `os.replace`
+  (antes `rename` → `FileExistsError` con `.corrupt` previo en Windows).
+- Archivo ilegible (permisos/antivirus) ya no se pisa con lista vacía:
+  copia `.bak` o aborta el guardado.
+- `cargar_preferencias` loguea errores y valida dict.
+- `GeminiProvider.completar` cachea `self._cliente` (antes 1 cliente
+  nuevo por llamada).
+- CSV export: `_csv_safe` neutraliza CSV injection (`=`, `+`, `-`, `@`).
+- Restore de backup valida tipos (listas de dicts + prefs dict).
+
+### Round 2: empaquetado limpio (`2ec090a`)
+
+- `ESTRUCTURA.md` (doc interno) fuera del `.exe` — los specs solo
+  empaquetan docs de usuario (README + GUIA_ESTILOS).
+- `.gitignore`: `.claude/` completo.
+- Verificado: repo GitHub es **privado** (los docs de desarrollo no
+  son visibles para terceros).
+
+### Round 3: 🎯 Optimizador en bucle (`aa2cb50`)
+
+Cierra el lazo generar → puntuar → mejorar → repetir hasta score
+objetivo o N iteraciones (menú 📊 Análisis):
+
+- Helpers puros módulo-level en `tools_analysis.py` (testeables sin
+  UI): `parsear_scoring`, `construir_peticion_scoring/mejora`,
+  `color_para_score`, `ejecutar_loop_optimizacion`.
+- Conserva siempre la MEJOR versión vista (aunque una iteración
+  empeore). Botón ⏹ Detener (cancela tras la llamada en curso).
+- Puntúa con `generar_batch` a T=0.3 (one-shot, no contamina el
+  historial de conversación). `generar_batch` ahora acepta
+  `temperature`/`max_tokens`.
+- El "✨ Mejorar prompt" del scoring clásico ahora inyecta los puntos
+  débiles detectados (antes mejora genérica).
+- `tests/test_tools_analysis.py`: 28 tests.
+
+### Round 4: 💰 Coste de sesión (`f0d8c4e`)
+
+- `api_clients.py`: `PRECIOS_USD_1M` (precios junio 2026 del
+  model_default; gratis/local=0; openrouter=None→"—") +
+  `calcular_coste_usd()` + `UsageTracker` global thread-safe.
+- Los 3 tipos de provider capturan el `usage` real de cada respuesta
+  y lo registran (nunca rompe la generación). `get_provider()` asigna
+  `provider_id` a la instancia.
+- Modal "💰 Coste de sesión" en 📊 Análisis: tabla por proveedor +
+  total + reset.
+- +17 tests en `test_api_clients.py`.
+
+### Métricas sesión 19
+
+| Métrica | Antes | Ahora |
+|---|---:|---:|
+| Tests | 385 | **430** (+45) ⭐ |
+| Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
+| Bugs de datos/arranque | 6 conocidos | 0 ✅ |
+
+### 🚧 Pendiente sesión 20+
+
+- 🔴 Auditoría de specs continúa siendo la prioridad (Midjourney →
+  Flux → Ideogram), poco a poco — requiere datos del panel SeaArt.
+- 🟡 Validar el Optimizador en bucle end-to-end con un LLM real
+  (el bucle está testeado con mocks; falta probar calidad real).
+- 🟡 Revisar precios de `PRECIOS_USD_1M` periódicamente.
+- 🟡 QoL: overlay de ratio sobre imagen de referencia; variante
+  SD/Comfy del storyboard.
+- 🟢 Resto: ver "Pendiente sesión 19+" arriba (sigue vigente).
+
+---
+
 ## 🔁 Cómo continuar (sesión nueva)
 
 1. **Confirmar baseline**:
