@@ -2519,15 +2519,41 @@ verificada. Coste de sesión: 5 llamadas, 3.567 in / 2.004 out =
 **$0.0018** por pasada completa (~550 optimizaciones por dólar).
 Usuario confirmó etiquetas conservadas tras el fix.
 
+### Round 6: 3 modelos nuevos + max_chars medidos + 2 mejoras
+
+**Specs (`fb70a3a`, `5700310`)**: Reve 2.0 (4.8, layout-first, CON
+etiqueta negativa) + MAI-Image-2.5 / Flash (4.9, Microsoft) añadidos
+con datos del panel SeaArt. El usuario midió `max_chars` con prompt
+marcado de 5192 chars: **Reve corta exacto en 2000, MAI en 5000**
+(la estimación conservadora de 2000 habría recortado 3000 chars
+útiles en MAI). Familias MAI y Reve → ✅ auditadas (11 en total).
+
+**Optimizador consciente del modelo (`0d9f016`)**: el scoring y la
+mejora (bucle + scoring clásico) inyectan las specs del modelo activo
+vía `inyectar_specs_modelo("")` capado a 1800 chars — evalúan la
+ADECUACIÓN AL MODELO (formato, max_chars, fortalezas) y la mejora
+respeta sus reglas. Con Reve optimiza hacia layout-first; con Z Image
+hacia tags con pesos.
+
+**Coste histórico persistente (`6f713b3`)**: `pendiente_persistir()`
+(delta idempotente) + `acumular_historico()` (poda 60 días) →
+`prefs["uso_api_historico"]`, enganchado al tick de 30s de
+`_auto_guardar_borrador` (cubre también el cierre). Modal 💰 con
+sección "📅 Histórico (últimos 14 días)" + total del periodo.
+
+Distribuibles regenerados ×3 con todo incluido (23:47).
+
 ### Métricas sesión 19
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **437** (+52) ⭐ |
+| Tests | 385 | **452** (+67) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
 | Menús del header | invisibles (bug) | **visibles** ✅ |
-| Optimizador validado | mocks | **end-to-end real** ✅ |
+| Optimizador validado | mocks | **end-to-end real + model-aware** ✅ |
+| Modelos auditados | 8 | **11** (Reve + MAI ×2, max_chars medidos) |
+| Coste API | invisible | **sesión + histórico persistente** ✅ |
 
 ### 🚧 Pendiente sesión 20+
 
