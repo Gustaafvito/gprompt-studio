@@ -2235,10 +2235,35 @@ class ArquitectoApp(
                                 resp = requests.get(url, timeout=60, headers=req_headers)
                                 sc = resp.status_code
                                 if sc == 402:
-                                    body_lower = (resp.text or "")[:200].lower()
+                                    body_lower = (resp.text or "")[:300].lower()
                                     if "queue full" in body_lower or "queued" in body_lower:
                                         queue_full_hits += 1
                                         last_err = "Cola Pollinations llena, reintentando..."
+                                    elif (
+                                        "insufficient balance" in body_lower
+                                        or "payment_required" in body_lower
+                                    ) and pollinations_key:
+                                        # Sesión 18 round 5: la key del usuario
+                                        # no tiene Pollen para este modelo.
+                                        # Caer automáticamente al endpoint
+                                        # legacy anónimo (más lento pero
+                                        # gratis) en el siguiente intento.
+                                        # Avisa al usuario por la UI.
+                                        if on_progress:
+                                            _safe_cb(
+                                                on_progress,
+                                                "💸 Sin Pollen — usando endpoint anónimo (más lento)",
+                                            )
+                                        base_url = "https://image.pollinations.ai/prompt/"
+                                        req_headers = {}
+                                        # Cambiar también el modelo a uno
+                                        # que el legacy SÍ acepta (turbo).
+                                        # flux/kontext/etc. no existen ahí.
+                                        if mdl_actual not in ("turbo", None,
+                                                              "kontext", "sdxl",
+                                                              "anime"):
+                                            mdl_actual = "turbo"
+                                        last_err = "Sin Pollen — fallback a legacy"
                                     else:
                                         last_err = "Pollinations: cuenta de pago requerida"
                                     continue
