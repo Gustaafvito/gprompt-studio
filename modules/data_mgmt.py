@@ -68,11 +68,38 @@ class DataMgmtService:
                 self.app.store.guardar_preferencias(prefs)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+        # Acumular uso de API en el histórico persistente (sesión 19).
+        # Mismo tick de 30s + se ejecuta también al cerrar la app
+        # (porque _on_cerrar llama a _auto_guardar_borrador).
+        self._persistir_uso_api()
         # Reagendar
         try:
             self.app.after(30000, self._auto_guardar_borrador)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+
+    def _persistir_uso_api(self) -> None:
+        """Vuelca el uso de API nuevo (tokens/llamadas) a preferencias.
+
+        Solo escribe si hubo consumo desde el último volcado. El formato
+        es prefs["uso_api_historico"] = {fecha: {provider: {...}}} con
+        poda automática a 60 días (acumular_historico).
+        """
+        try:
+            from api_clients import acumular_historico, usage_tracker
+            delta = usage_tracker.pendiente_persistir()
+            if not delta:
+                return
+            prefs = self.app.store.cargar_preferencias()
+            historico = prefs.get("uso_api_historico")
+            if not isinstance(historico, dict):
+                historico = {}
+            acumular_historico(historico, delta,
+                               datetime.date.today().isoformat())
+            prefs["uso_api_historico"] = historico
+            self.app.store.guardar_preferencias(prefs)
+        except Exception as _e:
+            logger.debug(f"[silent] uso api: {_e}")
     def _restaurar_borrador(self) -> None:
         """Si hay un borrador guardado, ofrece restaurarlo al abrir la app."""
         try:

@@ -253,6 +253,9 @@ class UsageTracker:
         import threading
         self._lock = threading.Lock()
         self._datos: dict[str, dict] = {}
+        # Contadores ya volcados al histórico persistente (para calcular
+        # deltas en pendiente_persistir sin contar dos veces).
+        self._drenado: dict[str, dict] = {}
 
     def registrar(self, provider_id: str, tokens_entrada: int,
                   tokens_salida: int) -> None:
@@ -282,9 +285,59 @@ class UsageTracker:
         return sum(d["coste_usd"] for d in self.resumen().values()
                    if d["coste_usd"] is not None)
 
+    def pendiente_persistir(self) -> dict[str, dict]:
+        """Delta de uso desde el último volcado al histórico.
+
+        Devuelve {provider: {llamadas, tokens_entrada, tokens_salida}}
+        solo con lo NUEVO desde la última llamada, y lo marca como
+        drenado. Idempotente: dos llamadas seguidas → la segunda {}.
+        """
+        with self._lock:
+            delta = {}
+            for pid, d in self._datos.items():
+                prev = self._drenado.get(pid, {})
+                dif = {k: d[k] - prev.get(k, 0)
+                       for k in ("llamadas", "tokens_entrada", "tokens_salida")}
+                if any(v > 0 for v in dif.values()):
+                    delta[pid] = dif
+                self._drenado[pid] = dict(d)
+            return delta
+
     def reset(self) -> None:
         with self._lock:
             self._datos.clear()
+            self._drenado.clear()
+
+
+def acumular_historico(historico: dict, delta: dict, fecha: str,
+                       max_dias: int = 60) -> dict:
+    """Acumula un delta de uso en el histórico persistente.
+
+    Formato: {fecha_iso: {provider: {llamadas, tokens_entrada,
+    tokens_salida}}}. Muta y devuelve `historico`. Poda los días más
+    antiguos si supera max_dias (las fechas ISO ordenan correctamente).
+    """
+    dia = historico.setdefault(fecha, {})
+    for pid, d in delta.items():
+        acc = dia.setdefault(pid, {"llamadas": 0, "tokens_entrada": 0,
+                                   "tokens_salida": 0})
+        for k in ("llamadas", "tokens_entrada", "tokens_salida"):
+            acc[k] = acc.get(k, 0) + max(0, int(d.get(k, 0)))
+    if len(historico) > max_dias:
+        for vieja in sorted(historico)[:len(historico) - max_dias]:
+            historico.pop(vieja, None)
+    return historico
+
+
+def coste_dia_usd(datos_dia: dict) -> float:
+    """Coste estimado de un día del histórico (suma de costes conocidos)."""
+    total = 0.0
+    for pid, d in datos_dia.items():
+        c = calcular_coste_usd(pid, d.get("tokens_entrada", 0),
+                               d.get("tokens_salida", 0))
+        if c is not None:
+            total += c
+    return total
 
 
 # Instancia global de sesión (se resetea al reiniciar la app).

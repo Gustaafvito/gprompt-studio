@@ -1385,9 +1385,16 @@ class ToolsAnalysisService:
         model_default (tabla PRECIOS_USD_1M, junio 2026). Proveedores
         gratuitos/locales = 0; OpenRouter = "—" (depende del modelo).
         """
-        from api_clients import LLM_PROVIDERS, usage_tracker
+        from api_clients import LLM_PROVIDERS, coste_dia_usd, usage_tracker
 
         try: self.app._sesion_log("💰 Abrió Coste de sesión")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        # Volcar el uso pendiente al histórico para que la sección
+        # "Histórico" incluya también lo consumido en esta sesión.
+        try:
+            self.app.data._persistir_uso_api()
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
@@ -1435,33 +1442,73 @@ class ToolsAnalysisService:
                              font=ctk.CTkFont(size=11),
                              text_color=c["muted_text"]).pack(pady=20)
                 lbl_total.configure(text="Total estimado: 0.0000 $")
-                return
-            # Cabecera
-            head = ctk.CTkFrame(cuerpo, fg_color="transparent")
-            head.pack(fill="x", pady=(0, 4))
-            for texto, ancho in (("Proveedor", 160), ("Llamadas", 70),
-                                 ("Tokens entrada", 110), ("Tokens salida", 110),
-                                 ("Coste", 80)):
-                ctk.CTkLabel(head, text=texto, width=ancho, anchor="w",
-                             font=ctk.CTkFont(size=10, weight="bold"),
-                             text_color=c["muted_text"]).pack(side="left", padx=2)
-            # Filas
-            for pid in sorted(datos.keys()):
-                d = datos[pid]
-                nombre = LLM_PROVIDERS.get(pid, {}).get("name", pid)
-                coste = d["coste_usd"]
-                coste_txt = "—" if coste is None else f"{coste:.4f} $"
-                row = ctk.CTkFrame(cuerpo, fg_color=c.get("card_bg", "transparent"),
-                                   corner_radius=6)
-                row.pack(fill="x", pady=1)
-                for texto, ancho in ((nombre, 160), (str(d["llamadas"]), 70),
-                                     (f"{d['tokens_entrada']:,}", 110),
-                                     (f"{d['tokens_salida']:,}", 110),
-                                     (coste_txt, 80)):
-                    ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
-                                 font=ctk.CTkFont(size=11),
-                                 text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
-            lbl_total.configure(text=f"Total estimado: {usage_tracker.total_usd():.4f} $")
+            else:
+                # Cabecera
+                head = ctk.CTkFrame(cuerpo, fg_color="transparent")
+                head.pack(fill="x", pady=(0, 4))
+                for texto, ancho in (("Proveedor", 160), ("Llamadas", 70),
+                                     ("Tokens entrada", 110), ("Tokens salida", 110),
+                                     ("Coste", 80)):
+                    ctk.CTkLabel(head, text=texto, width=ancho, anchor="w",
+                                 font=ctk.CTkFont(size=10, weight="bold"),
+                                 text_color=c["muted_text"]).pack(side="left", padx=2)
+                # Filas
+                for pid in sorted(datos.keys()):
+                    d = datos[pid]
+                    nombre = LLM_PROVIDERS.get(pid, {}).get("name", pid)
+                    coste = d["coste_usd"]
+                    coste_txt = "—" if coste is None else f"{coste:.4f} $"
+                    row = ctk.CTkFrame(cuerpo, fg_color=c.get("card_bg", "transparent"),
+                                       corner_radius=6)
+                    row.pack(fill="x", pady=1)
+                    for texto, ancho in ((nombre, 160), (str(d["llamadas"]), 70),
+                                         (f"{d['tokens_entrada']:,}", 110),
+                                         (f"{d['tokens_salida']:,}", 110),
+                                         (coste_txt, 80)):
+                        ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
+                                     font=ctk.CTkFont(size=11),
+                                     text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
+                lbl_total.configure(text=f"Total estimado: {usage_tracker.total_usd():.4f} $")
+
+            # ── Histórico persistente (últimos 14 días) ──
+            try:
+                historico = self.app.store.cargar_preferencias().get("uso_api_historico", {})
+            except Exception:
+                historico = {}
+            if isinstance(historico, dict) and historico:
+                ctk.CTkLabel(cuerpo, text="📅 Histórico (últimos 14 días)",
+                             font=ctk.CTkFont(size=12, weight="bold"),
+                             text_color=c["panel_text"]).pack(anchor="w", pady=(14, 4))
+                head_h = ctk.CTkFrame(cuerpo, fg_color="transparent")
+                head_h.pack(fill="x", pady=(0, 4))
+                for texto, ancho in (("Fecha", 110), ("Llamadas", 70),
+                                     ("Tokens entrada", 110), ("Tokens salida", 110),
+                                     ("Coste/día", 80)):
+                    ctk.CTkLabel(head_h, text=texto, width=ancho, anchor="w",
+                                 font=ctk.CTkFont(size=10, weight="bold"),
+                                 text_color=c["muted_text"]).pack(side="left", padx=2)
+                total_periodo = 0.0
+                for fecha in sorted(historico.keys(), reverse=True)[:14]:
+                    dia = historico[fecha]
+                    if not isinstance(dia, dict):
+                        continue
+                    llam = sum(d.get("llamadas", 0) for d in dia.values())
+                    t_in = sum(d.get("tokens_entrada", 0) for d in dia.values())
+                    t_out = sum(d.get("tokens_salida", 0) for d in dia.values())
+                    coste = coste_dia_usd(dia)
+                    total_periodo += coste
+                    row = ctk.CTkFrame(cuerpo, fg_color="transparent")
+                    row.pack(fill="x", pady=1)
+                    for texto, ancho in ((fecha, 110), (str(llam), 70),
+                                         (f"{t_in:,}", 110), (f"{t_out:,}", 110),
+                                         (f"{coste:.4f} $", 80)):
+                        ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
+                                     font=ctk.CTkFont(size=11),
+                                     text_color=c["muted_text"]).pack(side="left", padx=2, pady=2)
+                ctk.CTkLabel(cuerpo,
+                             text=f"Total del periodo mostrado: {total_periodo:.4f} $",
+                             font=ctk.CTkFont(size=11, weight="bold"),
+                             text_color=c["panel_text"]).pack(anchor="w", pady=(4, 2))
 
         _render()
 

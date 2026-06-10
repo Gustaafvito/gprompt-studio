@@ -197,3 +197,98 @@ class TestProviderIdAsignado:
     def test_registrar_uso_no_rompe_sin_id(self):
         p = BaseLLMProvider(api_key="x")
         p._registrar_uso(10, 10)  # no debe lanzar
+
+
+# ── Histórico persistente de uso (sesión 19, mejora 2) ────────────
+
+from api_clients import acumular_historico, coste_dia_usd  # noqa: E402
+
+
+class TestPendientePersistir:
+    def test_primera_llamada_devuelve_todo(self):
+        t = UsageTracker()
+        t.registrar("deepseek", 100, 50)
+        delta = t.pendiente_persistir()
+        assert delta == {"deepseek": {"llamadas": 1, "tokens_entrada": 100,
+                                      "tokens_salida": 50}}
+
+    def test_segunda_llamada_sin_uso_nuevo_devuelve_vacio(self):
+        t = UsageTracker()
+        t.registrar("deepseek", 100, 50)
+        t.pendiente_persistir()
+        assert t.pendiente_persistir() == {}
+
+    def test_solo_devuelve_el_delta(self):
+        t = UsageTracker()
+        t.registrar("deepseek", 100, 50)
+        t.pendiente_persistir()
+        t.registrar("deepseek", 30, 10)
+        delta = t.pendiente_persistir()
+        assert delta == {"deepseek": {"llamadas": 1, "tokens_entrada": 30,
+                                      "tokens_salida": 10}}
+
+    def test_no_afecta_al_resumen_de_sesion(self):
+        t = UsageTracker()
+        t.registrar("deepseek", 100, 50)
+        t.pendiente_persistir()
+        # El resumen de sesión sigue mostrando el total
+        assert t.resumen()["deepseek"]["tokens_entrada"] == 100
+
+    def test_reset_limpia_tambien_el_drenado(self):
+        t = UsageTracker()
+        t.registrar("deepseek", 100, 50)
+        t.pendiente_persistir()
+        t.reset()
+        t.registrar("deepseek", 20, 5)
+        delta = t.pendiente_persistir()
+        assert delta["deepseek"]["tokens_entrada"] == 20
+
+
+class TestAcumularHistorico:
+    def test_crea_dia_y_acumula(self):
+        h = {}
+        acumular_historico(h, {"deepseek": {"llamadas": 2, "tokens_entrada": 100,
+                                            "tokens_salida": 50}}, "2026-06-10")
+        acumular_historico(h, {"deepseek": {"llamadas": 1, "tokens_entrada": 30,
+                                            "tokens_salida": 10}}, "2026-06-10")
+        d = h["2026-06-10"]["deepseek"]
+        assert d == {"llamadas": 3, "tokens_entrada": 130, "tokens_salida": 60}
+
+    def test_dias_distintos_no_se_mezclan(self):
+        h = {}
+        acumular_historico(h, {"openai": {"llamadas": 1, "tokens_entrada": 10,
+                                          "tokens_salida": 5}}, "2026-06-09")
+        acumular_historico(h, {"openai": {"llamadas": 1, "tokens_entrada": 20,
+                                          "tokens_salida": 8}}, "2026-06-10")
+        assert h["2026-06-09"]["openai"]["tokens_entrada"] == 10
+        assert h["2026-06-10"]["openai"]["tokens_entrada"] == 20
+
+    def test_poda_dias_antiguos(self):
+        h = {}
+        for i in range(1, 71):
+            acumular_historico(h, {"groq": {"llamadas": 1, "tokens_entrada": 1,
+                                            "tokens_salida": 1}},
+                               f"2026-03-{i:02d}" if i <= 31 else f"2026-04-{i-31:02d}",
+                               max_dias=60)
+        assert len(h) == 60
+        # Se conservan las fechas más recientes
+        assert "2026-03-01" not in h
+
+    def test_valores_negativos_no_restan(self):
+        h = {}
+        acumular_historico(h, {"deepseek": {"llamadas": -5, "tokens_entrada": -10,
+                                            "tokens_salida": 3}}, "2026-06-10")
+        d = h["2026-06-10"]["deepseek"]
+        assert d["llamadas"] == 0 and d["tokens_entrada"] == 0
+        assert d["tokens_salida"] == 3
+
+
+class TestCosteDiaUsd:
+    def test_suma_costes_conocidos(self):
+        dia = {"openai": {"tokens_entrada": 1_000_000, "tokens_salida": 0},   # 2.50
+               "deepseek": {"tokens_entrada": 0, "tokens_salida": 1_000_000}}  # 0.42
+        assert coste_dia_usd(dia) == pytest.approx(2.92)
+
+    def test_ignora_costes_desconocidos(self):
+        dia = {"openrouter": {"tokens_entrada": 999, "tokens_salida": 999}}
+        assert coste_dia_usd(dia) == 0.0
