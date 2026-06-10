@@ -41,9 +41,22 @@ def color_para_score(valor: int, maximo: int) -> str:
     return "#e74c3c"
 
 
-def construir_peticion_scoring(prompt: str) -> str:
-    """Petición al LLM para puntuar un prompt en formato parseable."""
+def construir_peticion_scoring(prompt: str, modelo_info: str = "") -> str:
+    """Petición al LLM para puntuar un prompt en formato parseable.
+
+    modelo_info (opcional): bloque de reglas/specs del modelo destino
+    (de inyectar_specs_modelo). Si se pasa, el evaluador puntúa la
+    ADECUACIÓN AL MODELO además de la calidad genérica (sesión 19)."""
+    contexto = ""
+    if modelo_info:
+        contexto = (
+            f"CONTEXTO DEL MODELO DESTINO — evalúa el prompt según estas "
+            f"reglas (formato, longitud máxima, fortalezas del modelo). "
+            f"Penaliza en las categorías y refleja en PUNTOS DÉBILES "
+            f"cualquier incumplimiento:\n{modelo_info}\n\n"
+        )
     return (
+        f"{contexto}"
         f"Analiza este prompt de IA y devuelve EXACTAMENTE en este formato (mantén las etiquetas):\n\n"
         f"PUNTUACIÓN (0-100):\n"
         f"- Claridad del sujeto: X/25\n"
@@ -103,16 +116,25 @@ def parsear_scoring(resp: str) -> dict:
     }
 
 
-def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = "") -> str:
+def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = "",
+                              modelo_info: str = "") -> str:
     """Petición de mejora. Si hay feedback del scoring (debiles/sugerencia),
     se inyecta para que la mejora ataque los puntos débiles concretos en
     lugar de la mejora genérica. Si el prompt usa etiquetas POSITIVE/
-    NEGATIVE PROMPT, se exige conservarlas (los LLM tienden a pelarlas)."""
+    NEGATIVE PROMPT, se exige conservarlas (los LLM tienden a pelarlas).
+    modelo_info (opcional): reglas del modelo destino — la mejora debe
+    respetar su formato y límite de caracteres (sesión 19)."""
     feedback = ""
     if debiles:
         feedback += f"\nPUNTOS DÉBILES DETECTADOS (corrígelos):\n{debiles}\n"
     if sugerencia:
         feedback += f"\nSUGERENCIAS A APLICAR:\n{sugerencia}\n"
+    contexto = ""
+    if modelo_info:
+        contexto = (
+            f"\nREGLAS DEL MODELO DESTINO (la mejora DEBE respetarlas — "
+            f"formato y límite de caracteres incluidos):\n{modelo_info}\n"
+        )
     formato = ""
     if "POSITIVE PROMPT" in prompt.upper():
         formato = (
@@ -126,7 +148,7 @@ def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = 
         f"- Especificaciones de cámara e iluminación\n"
         f"- Tags de calidad apropiados\n"
         f"- Composición más interesante\n"
-        f"{feedback}{formato}\n"
+        f"{feedback}{contexto}{formato}\n"
         f"Mantén una longitud similar a la original (no la dupliques).\n"
         f"Devuelve SOLO el prompt mejorado, sin explicaciones:\n\n{prompt}"
     )
@@ -880,7 +902,9 @@ class ToolsAnalysisService:
 
         self.app.dialogs.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
 
-        peticion = construir_peticion_scoring(actual)
+        # Specs del modelo activo → el scoring evalúa adecuación al modelo
+        modelo_info = self._contexto_modelo_activo()
+        peticion = construir_peticion_scoring(actual, modelo_info)
         _color_para_score = color_para_score
 
         def _worker():
@@ -1023,7 +1047,8 @@ class ToolsAnalysisService:
                         self.app.dialogs.set_estado("✨ Generando versión mejorada...", "#f39c12")
                         # Inyecta los puntos débiles del scoring para que la
                         # mejora ataque lo detectado, no la mejora genérica.
-                        peticion_mejora = construir_peticion_mejora(actual, debiles, sugerencia)
+                        peticion_mejora = construir_peticion_mejora(
+                            actual, debiles, sugerencia, modelo_info)
                         def _worker_mejorar():
                             try:
                                 texto_mejorado = self.app.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
@@ -1060,6 +1085,20 @@ class ToolsAnalysisService:
         "generativa atacando los puntos débiles detectados, sin cambiar "
         "la idea original. Devuelves SOLO el prompt mejorado."
     )
+
+    def _contexto_modelo_activo(self) -> str:
+        """Bloque de reglas/specs del modelo activo para scoring y mejora.
+
+        Reutiliza inyectar_specs_modelo (lo mismo que ve el generador) y
+        lo capa a 1800 chars para no inflar el coste de cada llamada.
+        Devuelve "" si no hay modelo con specs (el scoring sigue genérico).
+        """
+        try:
+            info = self.app.prompts.inyectar_specs_modelo("") or ""
+            return info.strip()[:1800]
+        except Exception as e:
+            logger.debug(f"[silent] contexto modelo: {e}")
+            return ""
 
     def _cmd_optimizar_loop(self) -> None:
         """Optimizador en bucle: genera → puntúa → mejora → repite hasta
@@ -1243,12 +1282,16 @@ class ToolsAnalysisService:
                 self.app.after(0, lambda: estado_lbl.configure(
                     text=f"⏳ Iteración {iteracion + 1}: mejorando y re-puntuando…"))
 
+        # Specs del modelo activo: el bucle puntúa y mejora PARA el
+        # modelo destino (formato, max_chars, fortalezas). Sesión 19.
+        modelo_info = self._contexto_modelo_activo()
+
         def _puntuar(texto):
             if cancelar["v"]:
                 return None, "", ""
             resp = self.app.deepseek.generar_batch(
                 self._OPTIMIZADOR_SYSTEM_SCORING,
-                construir_peticion_scoring(texto),
+                construir_peticion_scoring(texto, modelo_info),
                 temperature=0.3, max_tokens=2000)
             parsed = parsear_scoring(limpiar_marcadores(resp))
             if not parsed["total"] or parsed["total"][1] <= 0:
@@ -1261,7 +1304,7 @@ class ToolsAnalysisService:
                 return ""
             resp = self.app.deepseek.generar_batch(
                 self._OPTIMIZADOR_SYSTEM_MEJORA,
-                construir_peticion_mejora(texto, debiles, sugerencia),
+                construir_peticion_mejora(texto, debiles, sugerencia, modelo_info),
                 temperature=0.5, max_tokens=2000)
             # Reconstruir POSITIVE PROMPT: si el LLM la peló
             return asegurar_etiquetas_prompt(texto, limpiar_marcadores(resp))

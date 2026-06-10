@@ -52,6 +52,16 @@ class TestConstruirPeticionScoring:
                          "⚠️ PUNTOS DÉBILES", "💡 SUGERENCIA"):
             assert etiqueta in peticion
 
+    def test_sin_modelo_info_no_inyecta_contexto(self):
+        assert "CONTEXTO DEL MODELO DESTINO" not in construir_peticion_scoring("x")
+
+    def test_con_modelo_info_inyecta_contexto(self):
+        p = construir_peticion_scoring("x", modelo_info="• LÍMITE: 2000 chars")
+        assert "CONTEXTO DEL MODELO DESTINO" in p
+        assert "• LÍMITE: 2000 chars" in p
+        # El contexto va ANTES del prompt para no romper el parseo
+        assert p.index("CONTEXTO DEL MODELO DESTINO") < p.index("PROMPT:\nx")
+
 
 # ── parsear_scoring ───────────────────────────────────────────────
 
@@ -140,6 +150,14 @@ class TestConstruirPeticionMejora:
     def test_pide_solo_el_prompt(self):
         p = construir_peticion_mejora("x")
         assert "SOLO el prompt mejorado" in p
+
+    def test_sin_modelo_info_no_inyecta_reglas(self):
+        assert "REGLAS DEL MODELO DESTINO" not in construir_peticion_mejora("x")
+
+    def test_con_modelo_info_inyecta_reglas(self):
+        p = construir_peticion_mejora("x", modelo_info="• Formato: tags con pesos")
+        assert "REGLAS DEL MODELO DESTINO" in p
+        assert "• Formato: tags con pesos" in p
 
     def test_exige_formato_si_original_tiene_etiquetas(self):
         p = construir_peticion_mejora("POSITIVE PROMPT:\ngato\nNEGATIVE PROMPT:\nblurry")
