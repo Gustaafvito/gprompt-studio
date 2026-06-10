@@ -219,6 +219,9 @@ class AnalysisComponent(_Component):
     def cmd_scoring(self) -> None:
         return self._service._cmd_scoring()
 
+    def cmd_optimizar_loop(self) -> None:
+        return self._service._cmd_optimizar_loop()
+
     def detectar_nsfw_auto(self, idea: str | None = None) -> bool:
         return self._service._detectar_nsfw_auto(idea)
 

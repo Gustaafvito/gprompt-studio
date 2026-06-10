@@ -241,6 +241,7 @@ class UIBuildersService:
                 ("🚀  Auto-mejora", self.app.analysis.cmd_automejora_periodica),
                 ("📝  Crítica historial", self.app.analysis.cmd_critica_historial),
                 ("📈  Estadísticas", self.app.analysis.abrir_estadisticas),
+                ("🎯  Optimizador en bucle", self.app.analysis.cmd_optimizar_loop),
             ]),
             ("📚 Aprender", "#2e8a9e", [
                 ("ℹ️  Acerca de G-Prompt", self.app.dialogs.cmd_acerca_de),

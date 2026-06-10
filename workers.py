@@ -182,16 +182,21 @@ class DeepSeekWorker:
                         self.historial.pop()
                     raise
 
-    def generar_batch(self, system_content: str, peticion: str, **kwargs) -> str:
+    def generar_batch(self, system_content: str, peticion: str,
+                      temperature: float = 0.8, max_tokens: int = 6000,
+                      **kwargs) -> str:
         """Generación batch sin historial (one-shot). max_tokens se
-        escala según provider. **kwargs se ignora (retrocompat)."""
+        escala según provider. **kwargs restantes se ignoran (retrocompat).
+
+        temperature/max_tokens configurables desde sesión 19 (el
+        optimizador en bucle puntúa con T=0.3 para scores estables)."""
         msgs = [
             {"role": "system", "content": system_content},
             {"role": "user",   "content": peticion},
         ]
         provider = self._get_provider()
-        max_tokens_escalado = self._escalar_max_tokens(6000)
-        return provider.completar(msgs, temperature=0.8, max_tokens=max_tokens_escalado)
+        max_tokens_escalado = self._escalar_max_tokens(max_tokens)
+        return provider.completar(msgs, temperature=temperature, max_tokens=max_tokens_escalado)
 
     def traducir(self, texto_es: str, **kwargs) -> str:
         """Traduce ES → EN para prompts de IA. Devuelve original si falla."""

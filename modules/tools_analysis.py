@@ -16,6 +16,173 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     pass
 
+
+# ── Helpers puros de scoring (módulo-level, testeables sin UI) ──────
+# Extraídos de _cmd_scoring (sesión 19) para poder reutilizarlos en el
+# optimizador en bucle y cubrirlos con tests unitarios.
+
+# Máximos válidos para los scores por categoría — filtra falsas
+# capturas tipo "- usa ratio 1/2" en las secciones de texto libre.
+_SCORE_MAXIMOS_VALIDOS = (10, 20, 25, 50, 100)
+
+_PATTERN_SCORE_CAT = re.compile(r"-\s*([^:]+):\s*(\d+)\s*/\s*(\d+)")
+_PATTERN_SCORE_TOTAL = re.compile(r"TOTAL\s*:\s*(\d+)\s*/\s*(\d+)", re.IGNORECASE)
+
+
+def color_para_score(valor: int, maximo: int) -> str:
+    """Color hex según el porcentaje: verde ≥80%, amarillo ≥50%, rojo <50%."""
+    if maximo <= 0:
+        return "#888888"
+    pct = (valor / maximo) * 100
+    if pct >= 80:
+        return "#2ecc71"
+    elif pct >= 50:
+        return "#f39c12"
+    return "#e74c3c"
+
+
+def construir_peticion_scoring(prompt: str) -> str:
+    """Petición al LLM para puntuar un prompt en formato parseable."""
+    return (
+        f"Analiza este prompt de IA y devuelve EXACTAMENTE en este formato (mantén las etiquetas):\n\n"
+        f"PUNTUACIÓN (0-100):\n"
+        f"- Claridad del sujeto: X/25\n"
+        f"- Detalle de estilo: X/25\n"
+        f"- Composición y cámara: X/25\n"
+        f"- Calidad y atmósfera: X/25\n"
+        f"TOTAL: X/100\n\n"
+        f"✅ PUNTOS FUERTES:\n"
+        f"- (lista 2-3 cosas que están bien)\n\n"
+        f"⚠️ PUNTOS DÉBILES:\n"
+        f"- (lista 2-3 cosas que faltan o sobran)\n\n"
+        f"💡 SUGERENCIA:\n"
+        f"- (1-2 consejos específicos accionables)\n\n"
+        f"PROMPT:\n{prompt}"
+    )
+
+
+def _extraer_seccion(texto: str, marcador: str, siguiente_marcadores: list) -> str:
+    """Devuelve el texto entre `marcador` y el primer marcador siguiente."""
+    idx = texto.find(marcador)
+    if idx == -1:
+        return ""
+    inicio = idx + len(marcador)
+    fin = len(texto)
+    for sig in siguiente_marcadores:
+        i = texto.find(sig, inicio)
+        if i != -1 and i < fin:
+            fin = i
+    return texto[inicio:fin].strip().lstrip(":").strip()
+
+
+def parsear_scoring(resp: str) -> dict:
+    """Parsea la respuesta del LLM al formato de scoring.
+
+    Devuelve dict con:
+      - scores_cat: lista de (nombre, valor, maximo) por categoría.
+      - total: (valor, maximo) o None si no se encontró.
+      - fuertes / debiles / sugerencia: secciones de texto (str, "" si faltan).
+    """
+    scores_cat = []
+    for m in _PATTERN_SCORE_CAT.finditer(resp):
+        nombre, val, maxv = m.group(1).strip(), int(m.group(2)), int(m.group(3))
+        if maxv in _SCORE_MAXIMOS_VALIDOS and val <= maxv:
+            scores_cat.append((nombre, val, maxv))
+
+    m_total = _PATTERN_SCORE_TOTAL.search(resp)
+    total = (int(m_total.group(1)), int(m_total.group(2))) if m_total else None
+
+    return {
+        "scores_cat": scores_cat,
+        "total": total,
+        "fuertes": _extraer_seccion(resp, "✅ PUNTOS FUERTES",
+                                    ["⚠️ PUNTOS DÉBILES", "💡 SUGERENCIA", "PROMPT:"]),
+        "debiles": _extraer_seccion(resp, "⚠️ PUNTOS DÉBILES",
+                                    ["💡 SUGERENCIA", "PROMPT:"]),
+        "sugerencia": _extraer_seccion(resp, "💡 SUGERENCIA", ["PROMPT:"]),
+    }
+
+
+def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = "") -> str:
+    """Petición de mejora. Si hay feedback del scoring (debiles/sugerencia),
+    se inyecta para que la mejora ataque los puntos débiles concretos en
+    lugar de la mejora genérica."""
+    feedback = ""
+    if debiles:
+        feedback += f"\nPUNTOS DÉBILES DETECTADOS (corrígelos):\n{debiles}\n"
+    if sugerencia:
+        feedback += f"\nSUGERENCIAS A APLICAR:\n{sugerencia}\n"
+    return (
+        f"Mejora este prompt de IA manteniendo la idea original pero añadiendo:\n"
+        f"- Más detalle en sujeto y estilo\n"
+        f"- Especificaciones de cámara e iluminación\n"
+        f"- Tags de calidad apropiados\n"
+        f"- Composición más interesante\n"
+        f"{feedback}\n"
+        f"Mantén una longitud similar a la original (no la dupliques).\n"
+        f"Devuelve SOLO el prompt mejorado, sin explicaciones:\n\n{prompt}"
+    )
+
+
+def ejecutar_loop_optimizacion(texto_inicial: str, puntuar, mejorar,
+                               score_objetivo: float = 85,
+                               max_iteraciones: int = 3,
+                               on_progreso=None) -> dict:
+    """Bucle generar → puntuar → mejorar hasta score objetivo o N iteraciones.
+
+    Args:
+        texto_inicial: prompt de partida.
+        puntuar: callable(texto) -> (score_pct | None, debiles, sugerencia).
+            score_pct en escala 0-100; None si la respuesta no fue parseable.
+        mejorar: callable(texto, debiles, sugerencia) -> texto_mejorado.
+        score_objetivo: porcentaje 0-100 al que parar.
+        max_iteraciones: máximo de rondas de mejora (cada una = 2 llamadas LLM).
+        on_progreso: callable(iteracion, score, texto) opcional, se invoca
+            tras cada puntuación (iteración 0 = prompt original).
+
+    Returns dict:
+        - mejor: {"texto", "score", "iteracion"} — la versión con mayor score
+          vista en todo el bucle (puede ser la original).
+        - historial: lista de {"iteracion", "score", "texto"}.
+        - alcanzado: bool, si se llegó al objetivo.
+        - iteraciones: rondas de mejora ejecutadas.
+        - error: str solo si el score inicial no fue parseable.
+    """
+    score, debiles, sugerencia = puntuar(texto_inicial)
+    if score is None:
+        return {"error": "El LLM no devolvió un score parseable para el prompt inicial.",
+                "mejor": None, "historial": [], "alcanzado": False, "iteraciones": 0}
+
+    historial = [{"iteracion": 0, "score": score, "texto": texto_inicial}]
+    mejor = {"texto": texto_inicial, "score": score, "iteracion": 0}
+    if on_progreso:
+        on_progreso(0, score, texto_inicial)
+
+    texto = texto_inicial
+    iteracion = 0
+    while mejor["score"] < score_objetivo and iteracion < max_iteraciones:
+        iteracion += 1
+        texto_nuevo = (mejorar(texto, debiles, sugerencia) or "").strip()
+        if not texto_nuevo:
+            iteracion -= 1
+            break
+        score_nuevo, debiles, sugerencia = puntuar(texto_nuevo)
+        if score_nuevo is None:
+            # Mejora no evaluable → descartarla y parar con lo que hay.
+            iteracion -= 1
+            break
+        historial.append({"iteracion": iteracion, "score": score_nuevo, "texto": texto_nuevo})
+        if score_nuevo > mejor["score"]:
+            mejor = {"texto": texto_nuevo, "score": score_nuevo, "iteracion": iteracion}
+        if on_progreso:
+            on_progreso(iteracion, score_nuevo, texto_nuevo)
+        texto = texto_nuevo
+
+    return {"mejor": mejor, "historial": historial,
+            "alcanzado": mejor["score"] >= score_objetivo,
+            "iteraciones": iteracion}
+
+
 class ToolsAnalysisService:
     """23 herramientas de análisis: crítica, automejora, stats, scoring,
     seeds, autocompletado tags, traducción, etc.
@@ -690,71 +857,20 @@ class ToolsAnalysisService:
 
         self.app.dialogs.set_estado("📝 Analizando y puntuando prompt...", "#f39c12")
 
-        peticion = (
-            f"Analiza este prompt de IA y devuelve EXACTAMENTE en este formato (mantén las etiquetas):\n\n"
-            f"PUNTUACIÓN (0-100):\n"
-            f"- Claridad del sujeto: X/25\n"
-            f"- Detalle de estilo: X/25\n"
-            f"- Composición y cámara: X/25\n"
-            f"- Calidad y atmósfera: X/25\n"
-            f"TOTAL: X/100\n\n"
-            f"✅ PUNTOS FUERTES:\n"
-            f"- (lista 2-3 cosas que están bien)\n\n"
-            f"⚠️ PUNTOS DÉBILES:\n"
-            f"- (lista 2-3 cosas que faltan o sobran)\n\n"
-            f"💡 SUGERENCIA:\n"
-            f"- (1-2 consejos específicos accionables)\n\n"
-            f"PROMPT:\n{actual}"
-        )
-
-        def _color_para_score(valor: int, maximo: int) -> str:
-            """Devuelve un color hex según el porcentaje del score."""
-            if maximo <= 0:
-                return "#888888"
-            pct = (valor / maximo) * 100
-            if pct >= 80:
-                return "#2ecc71"  # verde
-            elif pct >= 50:
-                return "#f39c12"  # amarillo/naranja
-            else:
-                return "#e74c3c"  # rojo
+        peticion = construir_peticion_scoring(actual)
+        _color_para_score = color_para_score
 
         def _worker():
             try:
                 resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
 
-                # Parsear scores con regex
-                # Formato esperado: "- Claridad del sujeto: 18/25"
-                pattern_cat = re.compile(r"-\s*([^:]+):\s*(\d+)\s*/\s*(\d+)")
-                pattern_total = re.compile(r"TOTAL\s*:\s*(\d+)\s*/\s*(\d+)", re.IGNORECASE)
-
-                scores_cat = []
-                for m in pattern_cat.finditer(resp):
-                    nombre, val, maxv = m.group(1).strip(), int(m.group(2)), int(m.group(3))
-                    # Filtrar para que no capture líneas como "- bla bla 1/2" en sugerencias
-                    if maxv in (10, 20, 25, 50, 100) and val <= maxv:
-                        scores_cat.append((nombre, val, maxv))
-
-                m_total = pattern_total.search(resp)
-                total_val, total_max = (int(m_total.group(1)), int(m_total.group(2))) if m_total else (None, None)
-
-                # Extraer secciones de texto
-                def _extraer_seccion(texto, marcador, siguiente_marcadores):
-                    idx = texto.find(marcador)
-                    if idx == -1:
-                        return ""
-                    inicio = idx + len(marcador)
-                    fin = len(texto)
-                    for sig in siguiente_marcadores:
-                        i = texto.find(sig, inicio)
-                        if i != -1 and i < fin:
-                            fin = i
-                    return texto[inicio:fin].strip().lstrip(":").strip()
-
-                fuertes = _extraer_seccion(resp, "✅ PUNTOS FUERTES", ["⚠️ PUNTOS DÉBILES", "💡 SUGERENCIA", "PROMPT:"])
-                debiles = _extraer_seccion(resp, "⚠️ PUNTOS DÉBILES", ["💡 SUGERENCIA", "PROMPT:"])
-                sugerencia = _extraer_seccion(resp, "💡 SUGERENCIA", ["PROMPT:"])
+                parsed = parsear_scoring(resp)
+                scores_cat = parsed["scores_cat"]
+                total_val, total_max = parsed["total"] if parsed["total"] else (None, None)
+                fuertes = parsed["fuertes"]
+                debiles = parsed["debiles"]
+                sugerencia = parsed["sugerencia"]
 
                 def _mostrar():
                     is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -882,14 +998,9 @@ class ToolsAnalysisService:
 
                     def _generar_mejorado():
                         self.app.dialogs.set_estado("✨ Generando versión mejorada...", "#f39c12")
-                        peticion_mejora = (
-                            f"Mejora este prompt de IA manteniendo la idea original pero añadiendo:\n"
-                            f"- Más detalle en sujeto y estilo\n"
-                            f"- Especificaciones de cámara e iluminación\n"
-                            f"- Tags de calidad apropiados\n"
-                            f"- Composición más interesante\n\n"
-                            f"Devuelve SOLO el prompt mejorado, sin explicaciones:\n\n{actual}"
-                        )
+                        # Inyecta los puntos débiles del scoring para que la
+                        # mejora ataque lo detectado, no la mejora genérica.
+                        peticion_mejora = construir_peticion_mejora(actual, debiles, sugerencia)
                         def _worker_mejorar():
                             try:
                                 texto_mejorado = self.app.deepseek.generar(peticion_mejora, temperature=0.3, max_tokens=2000)
@@ -910,6 +1021,260 @@ class ToolsAnalysisService:
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    # ── Optimizador en bucle (sesión 19) ──────────────────────────
+
+    _OPTIMIZADOR_SYSTEM_SCORING = (
+        "Eres un evaluador estricto y consistente de prompts para IA "
+        "generativa. Puntúas con rigor y detectas debilidades concretas. "
+        "Respondes EXACTAMENTE en el formato que se te pide."
+    )
+    _OPTIMIZADOR_SYSTEM_MEJORA = (
+        "Eres un ingeniero de prompts experto. Mejoras prompts para IA "
+        "generativa atacando los puntos débiles detectados, sin cambiar "
+        "la idea original. Devuelves SOLO el prompt mejorado."
+    )
+
+    def _cmd_optimizar_loop(self) -> None:
+        """Optimizador en bucle: genera → puntúa → mejora → repite hasta
+        alcanzar el score objetivo o agotar las iteraciones máximas.
+
+        Reutiliza el formato de scoring de _cmd_scoring (helpers puros
+        parsear_scoring/construir_peticion_*) y conserva siempre la MEJOR
+        versión vista, aunque una iteración empeore el score.
+        Cada iteración = 2 llamadas LLM (mejorar + puntuar) + 1 inicial.
+        """
+        actual = self.app.txt_salida.get("1.0", "end").strip()
+        if not actual or len(actual) < 20:
+            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+
+        try: self.app._sesion_log("🎯 Abrió Optimizador en bucle")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        try:
+            from config import get_theme_colors
+            c = get_theme_colors(is_lt)
+        except Exception:
+            c = {"panel_text": "#111827" if is_lt else "#e5e7eb",
+                 "muted_text": "#4b5563" if is_lt else "#9ca3af",
+                 "fg_dark": "#e5e7eb" if is_lt else "#2b2b2b",
+                 "fg_dark_hover": "#d1d5db" if is_lt else "#3a3a3a"}
+
+        # ── Modal de configuración ──
+        cfg = GPromptWindow(self.app)
+        cfg.title("🎯 Optimizador en bucle")
+        cfg.geometry("460x360")
+        cfg.transient(self.app)
+        cfg.grab_set()
+
+        ctk.CTkLabel(cfg, text="🎯 Optimizador en bucle",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(16, 4))
+        ctk.CTkLabel(cfg,
+                     text="Puntúa el prompt, lo mejora atacando sus puntos débiles,\n"
+                          "y repite hasta alcanzar el objetivo. Conserva la mejor versión.",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     justify="center").pack(pady=(0, 14))
+
+        objetivo_var = ctk.IntVar(value=85)
+        lbl_obj = ctk.CTkLabel(cfg, text="Score objetivo: 85/100",
+                               font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_obj.pack()
+        sl_obj = ctk.CTkSlider(cfg, from_=60, to=95, number_of_steps=7,
+                               variable=objetivo_var,
+                               command=lambda v: lbl_obj.configure(
+                                   text=f"Score objetivo: {int(v)}/100"))
+        sl_obj.pack(fill="x", padx=40, pady=(2, 12))
+
+        iter_var = ctk.IntVar(value=3)
+        lbl_iter = ctk.CTkLabel(cfg, text="Iteraciones máx: 3",
+                                font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_iter.pack()
+        sl_iter = ctk.CTkSlider(cfg, from_=1, to=5, number_of_steps=4,
+                                variable=iter_var,
+                                command=lambda v: lbl_iter.configure(
+                                    text=f"Iteraciones máx: {int(v)}"))
+        sl_iter.pack(fill="x", padx=40, pady=(2, 8))
+
+        lbl_coste = ctk.CTkLabel(cfg, text="",
+                                 font=ctk.CTkFont(size=9, slant="italic"),
+                                 text_color=c["muted_text"])
+        lbl_coste.pack(pady=(0, 10))
+
+        def _actualizar_coste(*_a):
+            n = int(iter_var.get())
+            lbl_coste.configure(
+                text=f"Máximo {1 + 2 * n} llamadas al LLM (1 scoring inicial + 2 por iteración)")
+        _actualizar_coste()
+        sl_iter.configure(command=lambda v: (lbl_iter.configure(
+            text=f"Iteraciones máx: {int(v)}"), _actualizar_coste()))
+
+        btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
+        btn_row.pack(side="bottom", pady=(0, 16))
+        ctk.CTkButton(btn_row, text="▶ Optimizar", width=150, height=34,
+                      fg_color="#1a8a3c", hover_color="#127a30",
+                      font=ctk.CTkFont(size=12, weight="bold"),
+                      command=lambda: _lanzar()).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cancelar", width=100, height=34,
+                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                      command=cfg.destroy).pack(side="left", padx=4)
+
+        def _lanzar():
+            objetivo = int(objetivo_var.get())
+            max_iter = int(iter_var.get())
+            cfg.destroy()
+            self._optimizar_loop_ejecutar(actual, objetivo, max_iter)
+
+        cfg.bind("<Return>", lambda _e: _lanzar())
+
+    def _optimizar_loop_ejecutar(self, texto_inicial: str, objetivo: int,
+                                 max_iter: int) -> None:
+        """Ventana de progreso + worker del bucle de optimización."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        try:
+            from config import get_theme_colors
+            c = get_theme_colors(is_lt)
+        except Exception:
+            c = {"panel_text": "#111827" if is_lt else "#e5e7eb",
+                 "muted_text": "#4b5563" if is_lt else "#9ca3af",
+                 "card_bg": "#ffffff" if is_lt else "#111820",
+                 "card_border": "#d1d5db" if is_lt else "#1f2937",
+                 "fg_dark": "#e5e7eb" if is_lt else "#2b2b2b",
+                 "fg_dark_hover": "#d1d5db" if is_lt else "#3a3a3a"}
+
+        vent = GPromptWindow(self.app)
+        vent.title("🎯 Optimizando…")
+        vent.geometry("680x560")
+        vent.transient(self.app)
+
+        ctk.CTkLabel(vent, text=f"🎯 Optimizando hacia {objetivo}/100 (máx {max_iter} iteraciones)",
+                     font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(12, 6))
+
+        progreso_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent", height=160)
+        progreso_frame.pack(fill="x", padx=16, pady=(0, 6))
+
+        resultado_box = ctk.CTkTextbox(vent, wrap="word", font=ctk.CTkFont(size=11))
+        resultado_box.pack(fill="both", expand=True, padx=16, pady=(0, 6))
+        resultado_box.insert("1.0", texto_inicial)
+
+        estado_lbl = ctk.CTkLabel(vent, text="⏳ Puntuando prompt inicial…",
+                                  font=ctk.CTkFont(size=11),
+                                  text_color=c["muted_text"])
+        estado_lbl.pack(pady=(0, 4))
+
+        btn_row = ctk.CTkFrame(vent, fg_color="transparent")
+        btn_row.pack(pady=(0, 12))
+
+        cancelar = {"v": False}
+
+        def _detener():
+            cancelar["v"] = True
+            estado_lbl.configure(text="⏹ Deteniendo tras la llamada en curso…")
+
+        btn_detener = ctk.CTkButton(btn_row, text="⏹ Detener", width=110, height=30,
+                                    fg_color="#b45309", hover_color="#92400e",
+                                    command=_detener)
+        btn_detener.pack(side="left", padx=4)
+
+        btn_aplicar = ctk.CTkButton(btn_row, text="✅ Aplicar mejor versión",
+                                    width=180, height=30,
+                                    fg_color="#1a8a3c", hover_color="#127a30",
+                                    state="disabled")
+        btn_aplicar.pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
+                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                      command=vent.destroy).pack(side="left", padx=4)
+
+        def _fila_progreso(iteracion: int, score: float, texto: str):
+            etiqueta = "Original" if iteracion == 0 else f"Iteración {iteracion}"
+            color = color_para_score(int(score), 100)
+            row = ctk.CTkFrame(progreso_frame, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+            ctk.CTkLabel(row, text=f"{etiqueta}:", width=110, anchor="w",
+                         font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(4, 6))
+            try:
+                bar = ctk.CTkProgressBar(row, width=300, height=12, progress_color=color)
+                bar.set(min(score / 100.0, 1.0))
+                bar.pack(side="left", padx=4)
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+            ctk.CTkLabel(row, text=f"{int(score)}/100",
+                         font=ctk.CTkFont(size=11, weight="bold"),
+                         text_color=color, width=60).pack(side="left", padx=4)
+            # El textbox muestra siempre la última versión generada
+            resultado_box.delete("1.0", "end")
+            resultado_box.insert("1.0", texto)
+
+        def _on_progreso(iteracion, score, texto):
+            self.app.after(0, lambda: _fila_progreso(iteracion, score, texto))
+            if iteracion < max_iter:
+                self.app.after(0, lambda: estado_lbl.configure(
+                    text=f"⏳ Iteración {iteracion + 1}: mejorando y re-puntuando…"))
+
+        def _puntuar(texto):
+            if cancelar["v"]:
+                return None, "", ""
+            resp = self.app.deepseek.generar_batch(
+                self._OPTIMIZADOR_SYSTEM_SCORING,
+                construir_peticion_scoring(texto),
+                temperature=0.3, max_tokens=2000)
+            parsed = parsear_scoring(limpiar_marcadores(resp))
+            if not parsed["total"] or parsed["total"][1] <= 0:
+                return None, parsed["debiles"], parsed["sugerencia"]
+            val, maxv = parsed["total"]
+            return (val / maxv) * 100, parsed["debiles"], parsed["sugerencia"]
+
+        def _mejorar(texto, debiles, sugerencia):
+            if cancelar["v"]:
+                return ""
+            resp = self.app.deepseek.generar_batch(
+                self._OPTIMIZADOR_SYSTEM_MEJORA,
+                construir_peticion_mejora(texto, debiles, sugerencia),
+                temperature=0.5, max_tokens=2000)
+            return limpiar_marcadores(resp)
+
+        def _worker():
+            try:
+                r = ejecutar_loop_optimizacion(
+                    texto_inicial, _puntuar, _mejorar,
+                    score_objetivo=objetivo, max_iteraciones=max_iter,
+                    on_progreso=_on_progreso)
+
+                def _finalizar():
+                    btn_detener.configure(state="disabled")
+                    if r.get("error"):
+                        estado_lbl.configure(
+                            text=f"❌ {r['error']}", text_color="#e74c3c")
+                        return
+                    mejor = r["mejor"]
+                    resultado_box.delete("1.0", "end")
+                    resultado_box.insert("1.0", mejor["texto"])
+                    if cancelar["v"]:
+                        resumen = f"⏹ Detenido — mejor versión: {int(mejor['score'])}/100"
+                    elif r["alcanzado"]:
+                        resumen = (f"🎯 Objetivo alcanzado: {int(mejor['score'])}/100 "
+                                   f"en {r['iteraciones']} iteración(es)")
+                    else:
+                        resumen = (f"⏱ Máximo de iteraciones — mejor versión: "
+                                   f"{int(mejor['score'])}/100 (iteración {mejor['iteracion']})")
+                    estado_lbl.configure(text=resumen, text_color=c["panel_text"])
+                    vent.title("🎯 Optimizador — resultado")
+
+                    def _aplicar():
+                        self.app.dialogs.actualizar_salida(mejor["texto"])
+                        vent.destroy()
+                        self.app.dialogs.set_estado(
+                            f"🎯 Prompt optimizado aplicado ({int(mejor['score'])}/100)", "#2ecc71")
+                    btn_aplicar.configure(state="normal", command=_aplicar)
+
+                self.app.after(0, _finalizar)
+            except Exception as e:
+                self.app.after(0, lambda e=e: estado_lbl.configure(
+                    text=f"❌ Error: {e}", text_color="#e74c3c"))
+                self.app.after(0, lambda: btn_detener.configure(state="disabled"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
