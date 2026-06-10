@@ -154,9 +154,22 @@
     "has_negative": true,
     "is_natural": true,
     "formato_bloques": "z_image",
-    "ratios": ["1:1", "16:9", "9:16", "3:4", "4:3", "2:3", "3:2", "4:5", "5:4"],
+    "ratios": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "3:4",
+      "4:3",
+      "2:3",
+      "3:2",
+      "4:5",
+      "5:4"
+    ],
     "max_chars": 2000,
-    "modos_gen": ["Estándar", "Calidad"],
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
     "max_imagenes": 4,
     "best_for": "Foundation checkpoint (6B params, arquitectura S3-DiT). HÍBRIDO: preámbulo de quality tags con pesos + bloques narrativos en lenguaje natural. Bilingüe EN/ZH. Photoreal portraits, cinematic scenes, posters. Fine-tuning friendly (Apache 2.0).",
     "prompt_formula": "(quality tags:1.2), 8k details. [Sujeto y Composición] desc cinematográfica. [Acción] qué hace. [Entorno] fondo/época. [Lighting & Mood] luz + atmósfera.",
@@ -2316,7 +2329,11 @@
     ],
     "max_imagenes": 8,
     "max_imagenes_referencia": 7,
-    "magia_sugerencia": ["Automático", "Abrir", "Cerrar"],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
     "best_for": "GPT Image 1.5 en SeaArt. Modelo OpenAI orientado a flujos profesionales con CONTROL CREATIVO PRECISO. Destaca en: (1) 4× MÁS RÁPIDO que GPT Image 1 — iteración rápida sin perder el flow; (2) INSTRUCTION FOLLOWING ESTRICTO — sigue prompts complejos al pie de la letra, sin reinterpretaciones; (3) EDICIÓN PRECISA + CONSISTENCIA — cambia ropa, iluminación, expresiones manteniendo caras, logos, branding y detalles finos coherentes; (4) TEXTO DENSO Y PEQUEÑO — infografías, posters, labels y layouts con texto legible y nítido; (5) ALTA FIDELIDAD — imágenes más nítidas, realistas y estilísticamente alineadas. Soporta hasta 7 imágenes de SUJETO como referencia (img2img composite). Ideal para refinamiento de assets, branding, ecommerce, story sequences, avatares consistentes, infografías con tipografía.",
     "prompt_formula": "Lenguaje natural en prosa fluida con instrucciones EXPLÍCITAS y precisas. Para EDICIÓN: 'Change X to Y, keep Z intact' / 'maintain the same person'. Para GENERACIÓN: describe scene → subject → spatial arrangement → lighting → style → exact text (entre comillas). Por su instruction following estricto, no temas pedir layouts complejos en grid o composiciones multi-step. Para texto literal usa comillas: 'with the words \"...\"'. Soporta hasta 2000 chars.",
     "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic.",
@@ -2351,7 +2368,11 @@
     ],
     "max_imagenes": 8,
     "max_imagenes_referencia": 10,
-    "magia_sugerencia": ["Automático", "Abrir", "Cerrar"],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
     "best_for": "GPT Image 2 en SeaArt. Pensado para creadores que necesitan prompts detallados, texto limpio dentro de la imagen y resultados nítidos a la primera. Destaca en: (1) renderizado de TEXTO EN LA IMAGEN (posters, labels, signage, menús, UI) manteniendo legibilidad y placement correctos; (2) REALISMO natural en piel, materiales, iluminación, reflejos, sombras, profundidad — sin sensación 'sobre-procesada'; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING con múltiples requisitos simultáneos; (5) CONSISTENCIA entre generaciones (series, campañas, brand visuals, story boards). Soporta hasta 10 imágenes de SUJETO como referencia (img2img composite). Ideal para marketing creatives, UI/app concepts, product storytelling, fotorrealismo, editorial/design assets, worldbuilding creativo.",
     "prompt_formula": "Lenguaje natural estructurado. Describe: subject + scene + lighting + style + mood + composition. Para texto dentro de la imagen: escribe la palabra exacta entre comillas (ej. 'with the words \"Hello World\"'). Refina iterativamente: primer prompt → mira resultado → ajusta detalles, mood, layout. Soporta prompts muy largos (hasta 5000 chars).",
     "prompt_ejemplo": "Photorealistic marketing banner for a coffee brand. Subject: a ceramic cup of espresso on a wooden table at golden hour. Soft natural light coming from the left, visible steam, reflections on the cup, shallow depth of field. Above the cup, clean modern typography with the words \"Morning Ritual\" in dark brown sans-serif. Composition: rule of thirds, cup bottom-left, copy upper-right. Cinematic still, 50mm lens, soft film grain.",
@@ -3119,5 +3140,105 @@
       "NEGATIVE DISPONIBLE: Control sobre qué excluir."
     ],
     "limitaciones": "Calidad menor que Classic estándar."
+  },
+  "Reve 2.0": {
+    "nota": 4.8,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "1024×1024",
+      "hasta 4K×4K nativo"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 6,
+    "best_for": "Modelo LAYOUT-FIRST: planifica la imagen (composición, colocación de objetos, posición del texto, jerarquía visual) ANTES de renderizar. Destaca en: (1) 4K NATIVO (hasta 4K×4K) con detalle y texturas ricas; (2) COLOCACIÓN DE TEXTO fiable — posters, signs, labels, packaging, thumbnails, social graphics; (3) EDICIÓN QUIRÚRGICA — cambia objetos, texto, colores o iluminación sin perder la estructura; (4) ITERACIÓN ESTABLE — refina paso a paso sin que la composición colapse; (5) look CINEMATOGRÁFICO/editorial con luz natural y encuadre sólido. Ideal para creadores que necesitan imágenes usables, no solo bonitas.",
+    "prompt_formula": "Lenguaje natural ORIENTADO A LAYOUT: no describas solo el sujeto, di DÓNDE va cada cosa. Estructura: objeto principal + posición → fondo → posición del texto (entre comillas) → mood de color → iluminación → composición global. Para diseño usa términos como 'centered product', 'headline at the top', 'clean empty space', 'bold readable text', 'minimal luxury layout'. Tras generar, refina con prompts de edición dirigidos a partes concretas.",
+    "prompt_ejemplo": "A minimal luxury poster for a perfume brand: centered glass bottle on a marble pedestal, soft golden side light, clean empty space around the product, elegant serif headline at the top reading \"ESSENCE\", warm beige palette, editorial photography look, balanced composition.",
+    "coste_energia": "Variable — cantidad 5-8 con coste extra",
+    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt (prompt marcado o contador del panel). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada)."
+  },
+  "MAI-Image-2.5": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "1024×1024"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 1,
+    "best_for": "Modelo de Microsoft AI orientado a imágenes USABLES en producción. Destaca en: (1) COHERENCIA DE ESCENA — objetos bien situados, luz natural, sombras con sentido, escala creíble, fondo que apoya al sujeto; (2) TEXT RENDERING fuerte — posters, packaging, signs, labels, thumbnails con texto que forma parte del diseño; (3) EDICIÓN QUIRÚRGICA img2img — cambia un objeto/color/texto sin romper el resto; (4) CONSISTENCIA DE IDENTIDAD en retratos y personajes entre ediciones; (5) visuales de MARCA/PRODUCTO/COMERCIALES (mockups, ad creatives, fashion, lifestyle). Tu 'director de arte final'.",
+    "prompt_formula": "Lenguaje natural con INTENCIÓN DE DISEÑO explícita: sujeto + estilo + composición + iluminación + mood + colores + ángulo de cámara + texto exacto entre comillas. En vez de 'make a product poster' → 'A premium skincare product poster with a white ceramic bottle on a marble surface, soft natural window light, clean beige background, elegant serif text reading \"ORVA\", minimal luxury brand style'. Para edición: describe exactamente QUÉ cambia y QUÉ se conserva ('Keep the same composition and lighting, change X to Y, preserve the background').",
+    "prompt_ejemplo": "A premium perfume bottle on a reflective black surface, soft spotlight from above, elegant gold serif text reading \"NOIR\", luxury magazine advertisement style, high-end product photography, clean composition.",
+    "coste_energia": "Variable — cantidad 5-8 con coste extra",
+    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt. Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí."
+  },
+  "MAI-Image-2.5-Flash": {
+    "nota": 4.9,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "1024×1024"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 1,
+    "best_for": "Variante RÁPIDA de MAI-Image-2.5 (Microsoft AI): velocidad, volumen e iteración. Tu 'estudio de conceptos rápido': probar ideas, generar múltiples variaciones, explorar estilos/paletas/layouts y producir lotes grandes en poco tiempo. Mismo entendimiento de escena y diseño que el 2.5 estándar con menos pulido final. Flujo recomendado: explora con Flash → la dirección ganadora se refina con MAI-Image-2.5.",
+    "prompt_formula": "Igual que MAI-Image-2.5: lenguaje natural con intención de diseño (sujeto + estilo + composición + luz + mood + texto entre comillas). Al ser el modo de ideación, prompts algo más cortos y variados funcionan bien — genera varias opciones y filtra.",
+    "prompt_ejemplo": "A colorful summer drink poster with bold readable text saying \"MANGO FIZZ\", tropical fruits, bright sunlight, playful commercial design, clean layout, square format.",
+    "coste_energia": "Bajo — pensado para volumen",
+    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt. Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle)."
   }
 }

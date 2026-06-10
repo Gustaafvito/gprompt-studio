@@ -277,23 +277,29 @@ for n, s in d.items():
 
 ---
 
-## 📊 Estado actual del catálogo (sesión 16)
+## 📊 Estado actual del catálogo (sesión 19)
 
 | Categoría | Familia | Modelos | Auditado |
 |---|---|---:|:---:|
 | Imagen | Z-Image (SeaArt) | 2 | ✅ |
+| Imagen | GPT Image (SeaArt) | 2 | ✅ |
+| Imagen | Nano Banana (SeaArt) | 3 | ✅ |
+| Imagen | MAI Image (SeaArt) | 2 | 🟡 (falta max_chars empírico) |
+| Imagen | Reve (SeaArt) | 1 | 🟡 (falta max_chars empírico) |
 | Imagen | Z-Image (otros) | 3 | ⏳ |
 | Imagen | Flux | 17 | ⏳ |
 | Imagen | Illustrious | 10 | ⏳ |
 | Imagen | SDXL | 6 | ⏳ |
 | Imagen | Midjourney | 5 | ⏳ |
-| Imagen | Otros | 75 | ⏳ |
+| Imagen | Otros | 69 | ⏳ |
 | Vídeo | SeaArt | 2 | ✅ (1 de 2) |
 | Vídeo | Resto | 13 | ⏳ |
 | Audio | Todos | 10 | ⏳ |
 
-Total: 118 imagen + 15 vídeo + 10 audio. **3 modelos auditados** al
-cierre de la sesión 16.
+Total: 120 imagen + 15 vídeo + 10 audio. **8 auditados + 3 semi**
+(Reve 2.0, MAI-Image-2.5, MAI-Image-2.5-Flash añadidos en sesión 19
+con datos del panel; pendiente solo la medición empírica de
+`max_chars` — usan 2000 estimado/conservador hasta entonces).
 
 ---
 
