@@ -3173,7 +3173,7 @@
     "prompt_formula": "Lenguaje natural ORIENTADO A LAYOUT: no describas solo el sujeto, di DÓNDE va cada cosa. Estructura: objeto principal + posición → fondo → posición del texto (entre comillas) → mood de color → iluminación → composición global. Para diseño usa términos como 'centered product', 'headline at the top', 'clean empty space', 'bold readable text', 'minimal luxury layout'. Tras generar, refina con prompts de edición dirigidos a partes concretas.",
     "prompt_ejemplo": "A minimal luxury poster for a perfume brand: centered glass bottle on a marble pedestal, soft golden side light, clean empty space around the product, elegant serif headline at the top reading \"ESSENCE\", warm beige palette, editorial photography look, balanced composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
-    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt (prompt marcado o contador del panel). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada)."
+    "limitaciones": "max_chars=2000 MEDIDO empíricamente (corte exacto en 2000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada)."
   },
   "MAI-Image-2.5": {
     "nota": 4.9,
@@ -3188,7 +3188,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 5000,
     "modos_gen": [
       "Estándar"
     ],
@@ -3203,10 +3203,10 @@
     "max_imagenes": 8,
     "max_imagenes_referencia": 1,
     "best_for": "Modelo de Microsoft AI orientado a imágenes USABLES en producción. Destaca en: (1) COHERENCIA DE ESCENA — objetos bien situados, luz natural, sombras con sentido, escala creíble, fondo que apoya al sujeto; (2) TEXT RENDERING fuerte — posters, packaging, signs, labels, thumbnails con texto que forma parte del diseño; (3) EDICIÓN QUIRÚRGICA img2img — cambia un objeto/color/texto sin romper el resto; (4) CONSISTENCIA DE IDENTIDAD en retratos y personajes entre ediciones; (5) visuales de MARCA/PRODUCTO/COMERCIALES (mockups, ad creatives, fashion, lifestyle). Tu 'director de arte final'.",
-    "prompt_formula": "Lenguaje natural con INTENCIÓN DE DISEÑO explícita: sujeto + estilo + composición + iluminación + mood + colores + ángulo de cámara + texto exacto entre comillas. En vez de 'make a product poster' → 'A premium skincare product poster with a white ceramic bottle on a marble surface, soft natural window light, clean beige background, elegant serif text reading \"ORVA\", minimal luxury brand style'. Para edición: describe exactamente QUÉ cambia y QUÉ se conserva ('Keep the same composition and lighting, change X to Y, preserve the background').",
+    "prompt_formula": "Lenguaje natural con INTENCIÓN DE DISEÑO explícita: sujeto + estilo + composición + iluminación + mood + colores + ángulo de cámara + texto exacto entre comillas. En vez de 'make a product poster' → 'A premium skincare product poster with a white ceramic bottle on a marble surface, soft natural window light, clean beige background, elegant serif text reading \"ORVA\", minimal luxury brand style'. Para edición: describe exactamente QUÉ cambia y QUÉ se conserva ('Keep the same composition and lighting, change X to Y, preserve the background'). Acepta prompts muy largos (hasta 5000 chars) — aprovéchalo para capas de storytelling y micro-detalles.",
     "prompt_ejemplo": "A premium perfume bottle on a reflective black surface, soft spotlight from above, elegant gold serif text reading \"NOIR\", luxury magazine advertisement style, high-end product photography, clean composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
-    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt. Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí."
+    "limitaciones": "max_chars=5000 MEDIDO empíricamente (corte exacto en 5000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí."
   },
   "MAI-Image-2.5-Flash": {
     "nota": 4.9,
@@ -3221,7 +3221,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 5000,
     "modos_gen": [
       "Estándar"
     ],
@@ -3239,6 +3239,6 @@
     "prompt_formula": "Igual que MAI-Image-2.5: lenguaje natural con intención de diseño (sujeto + estilo + composición + luz + mood + texto entre comillas). Al ser el modo de ideación, prompts algo más cortos y variados funcionan bien — genera varias opciones y filtra.",
     "prompt_ejemplo": "A colorful summer drink poster with bold readable text saying \"MANGO FIZZ\", tropical fruits, bright sunlight, playful commercial design, clean layout, square format.",
     "coste_energia": "Bajo — pensado para volumen",
-    "limitaciones": "max_chars=2000 ES ESTIMADO — PENDIENTE medición empírica en SeaArt. Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle)."
+    "limitaciones": "max_chars=5000 asumido igual que MAI-Image-2.5 (mismo motor; no medido por separado). Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle)."
   }
 }

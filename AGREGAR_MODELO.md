@@ -284,8 +284,8 @@ for n, s in d.items():
 | Imagen | Z-Image (SeaArt) | 2 | ✅ |
 | Imagen | GPT Image (SeaArt) | 2 | ✅ |
 | Imagen | Nano Banana (SeaArt) | 3 | ✅ |
-| Imagen | MAI Image (SeaArt) | 2 | 🟡 (falta max_chars empírico) |
-| Imagen | Reve (SeaArt) | 1 | 🟡 (falta max_chars empírico) |
+| Imagen | MAI Image (SeaArt) | 2 | ✅ (max_chars 5000 medido) |
+| Imagen | Reve (SeaArt) | 1 | ✅ (max_chars 2000 medido) |
 | Imagen | Z-Image (otros) | 3 | ⏳ |
 | Imagen | Flux | 17 | ⏳ |
 | Imagen | Illustrious | 10 | ⏳ |
@@ -296,10 +296,10 @@ for n, s in d.items():
 | Vídeo | Resto | 13 | ⏳ |
 | Audio | Todos | 10 | ⏳ |
 
-Total: 120 imagen + 15 vídeo + 10 audio. **8 auditados + 3 semi**
-(Reve 2.0, MAI-Image-2.5, MAI-Image-2.5-Flash añadidos en sesión 19
-con datos del panel; pendiente solo la medición empírica de
-`max_chars` — usan 2000 estimado/conservador hasta entonces).
+Total: 120 imagen + 15 vídeo + 10 audio. **11 modelos auditados**
+(Reve 2.0 y MAI-Image-2.5 con max_chars MEDIDO empíricamente en
+sesión 19: cortes exactos en 2000 y 5000 respectivamente, prompt
+marcado de 5192 chars; Flash asume el límite del 2.5 — mismo motor).
 
 ---
 
