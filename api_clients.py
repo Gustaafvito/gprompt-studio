@@ -424,10 +424,6 @@ ENV_VAR_POR_PROVIDER = {
     "lm_studio": "",  # local, no necesita key
     "perplexity": "PERPLEXITY_API_KEY",
     "togetherai": "TOGETHER_API_KEY",
-    # Pollinations es proveedor de IMAGEN (no LLM). Se usa solo para
-    # previews en el comparador. Con API key se eliminan los rate
-    # limits anónimos (1 concurrente por IP).
-    "pollinations": "POLLINATIONS_API_KEY",
 }
 
 

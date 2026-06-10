@@ -2161,20 +2161,6 @@ class ArquitectoApp(
             # (max 1 simultánea) + retry con backoff exponencial al recibir 402.
             # El contador `_pollinations_queue_size` permite mostrar
             # "⏳ En cola (N por delante)" en la UI.
-            #
-            # Sesión 18 round 4: si el usuario tiene API key de Pollinations
-            # guardada (keyring o keys.json), se envía con header
-            # `Authorization: Bearer X` → la API elimina el rate limit
-            # anónimo. La key se obtiene 1 vez por worker (no por cada
-            # request) para no impactar performance.
-            try:
-                from api_clients import cargar_api_key
-                pollinations_key = cargar_api_key("pollinations") or ""
-            except Exception:
-                pollinations_key = ""
-            req_headers = {}
-            if pollinations_key:
-                req_headers["Authorization"] = f"Bearer {pollinations_key}"
             # Si el usuario pidió un modelo concreto, solo ese.
             # En "auto" (default), fallback chain turbo → none.
             if modelo and modelo != "auto":
@@ -2221,7 +2207,7 @@ class ArquitectoApp(
                                     f"?width={size}&height={size}&nologo=true&enhance=false"
                                     f"&referrer=gprompt-studio{extra}"
                                 )
-                                resp = requests.get(url, timeout=60, headers=req_headers)
+                                resp = requests.get(url, timeout=60)
                                 sc = resp.status_code
                                 if sc == 402:
                                     body_lower = (resp.text or "")[:200].lower()
