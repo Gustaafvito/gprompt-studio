@@ -207,15 +207,111 @@ IMAGE_PROVIDERS = {
 }
 
 
+# PRECIOS Y TRACKING DE USO (sesión 19)
+
+# Precios en USD por 1M tokens (entrada, salida) para el model_default
+# de cada proveedor. Valores de junio 2026 — revisar periódicamente.
+# - Proveedores gratuitos / locales: (0, 0).
+# - None = coste variable o desconocido (p.ej. OpenRouter, donde el
+#   precio depende del modelo elegido) → se muestra "—" en la UI.
+PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
+    "claude":        (3.00, 15.00),   # claude-sonnet-4-5
+    "deepseek":      (0.28, 0.42),    # deepseek-chat
+    "fireworks":     (0.90, 0.90),    # llama-v3p3-70b
+    "gemini":        (0.0, 0.0),      # free tier 15rpm (tier de pago: 0.30/2.50)
+    "github_models": (0.0, 0.0),      # gratis con cuenta GitHub
+    "groq":          (0.0, 0.0),      # free tier
+    "lm_studio":     (0.0, 0.0),      # local
+    "mistral":       (2.00, 6.00),    # mistral-large
+    "ollama":        (0.0, 0.0),      # local
+    "openai":        (2.50, 10.00),   # gpt-4o
+    "openrouter":    None,            # depende del modelo elegido
+    "perplexity":    (3.00, 15.00),   # sonar-pro
+    "togetherai":    (0.88, 0.88),    # Llama-3.3-70B-Turbo
+    "xai":           (2.00, 10.00),   # grok-2
+}
+
+
+def calcular_coste_usd(provider_id: str, tokens_entrada: int,
+                       tokens_salida: int) -> float | None:
+    """Coste estimado en USD, o None si el precio es desconocido."""
+    precios = PRECIOS_USD_1M.get(provider_id)
+    if precios is None:
+        return None
+    p_in, p_out = precios
+    return (tokens_entrada * p_in + tokens_salida * p_out) / 1_000_000
+
+
+class UsageTracker:
+    """Acumulador thread-safe de tokens consumidos en la sesión.
+
+    Los providers llaman a registrar() tras cada completar(); la UI
+    consulta resumen() para mostrar el coste estimado de la sesión.
+    """
+
+    def __init__(self):
+        import threading
+        self._lock = threading.Lock()
+        self._datos: dict[str, dict] = {}
+
+    def registrar(self, provider_id: str, tokens_entrada: int,
+                  tokens_salida: int) -> None:
+        if not provider_id:
+            provider_id = "desconocido"
+        with self._lock:
+            d = self._datos.setdefault(provider_id, {
+                "llamadas": 0, "tokens_entrada": 0, "tokens_salida": 0,
+            })
+            d["llamadas"] += 1
+            d["tokens_entrada"] += max(0, int(tokens_entrada or 0))
+            d["tokens_salida"] += max(0, int(tokens_salida or 0))
+
+    def resumen(self) -> dict[str, dict]:
+        """Copia del estado con coste_usd calculado por proveedor
+        (None si el precio es desconocido)."""
+        with self._lock:
+            out = {}
+            for pid, d in self._datos.items():
+                out[pid] = dict(d)
+                out[pid]["coste_usd"] = calcular_coste_usd(
+                    pid, d["tokens_entrada"], d["tokens_salida"])
+            return out
+
+    def total_usd(self) -> float:
+        """Suma de los costes conocidos (los None no suman)."""
+        return sum(d["coste_usd"] for d in self.resumen().values()
+                   if d["coste_usd"] is not None)
+
+    def reset(self) -> None:
+        with self._lock:
+            self._datos.clear()
+
+
+# Instancia global de sesión (se resetea al reiniciar la app).
+usage_tracker = UsageTracker()
+
+
 # INTERFAZ BASE
 
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
 
+    # Asignado por get_provider() — permite que completar() registre
+    # el uso de tokens en usage_tracker con la key correcta.
+    provider_id: str = ""
+
     def __init__(self, api_key: str | None, model: str | None = None, **kwargs):
         self.api_key = api_key
         self.model = model
         self._cliente = None
+
+    def _registrar_uso(self, tokens_entrada, tokens_salida) -> None:
+        """Registra tokens en el tracker global. Nunca rompe la generación."""
+        try:
+            usage_tracker.registrar(self.provider_id,
+                                    tokens_entrada or 0, tokens_salida or 0)
+        except Exception as e:
+            logger.debug(f"[silent] registro de uso: {e}")
 
     def disponible(self) -> bool:
         return bool(self.api_key)
@@ -246,6 +342,10 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         res = self._cliente.chat.completions.create(
             model=modelo, messages=messages, temperature=temperature, max_tokens=max_tokens,
         )
+        usage = getattr(res, "usage", None)
+        if usage is not None:
+            self._registrar_uso(getattr(usage, "prompt_tokens", 0),
+                                getattr(usage, "completion_tokens", 0))
         return res.choices[0].message.content
 
 
@@ -326,6 +426,11 @@ class GeminiProvider(BaseLLMProvider):
             config=config,
         )
 
+        meta = getattr(response, "usage_metadata", None)
+        if meta is not None:
+            self._registrar_uso(getattr(meta, "prompt_token_count", 0),
+                                getattr(meta, "candidates_token_count", 0))
+
         raw = response.text or ""
         markers = [
             "<system-reminder>", "<system-reminder",
@@ -375,6 +480,10 @@ class ClaudeProvider(BaseLLMProvider):
         if system_prompt:
             kwargs_api["system"] = system_prompt
         res = self._cliente.messages.create(**kwargs_api)
+        usage = getattr(res, "usage", None)
+        if usage is not None:
+            self._registrar_uso(getattr(usage, "input_tokens", 0),
+                                getattr(usage, "output_tokens", 0))
         return res.content[0].text
 
 
@@ -390,15 +499,18 @@ def get_provider(provider_id: str, api_key: str, model: str | None = None) -> Ba
     modelo_final = model or info.get("model_default")
 
     if provider_id == "ollama":
-        return OllamaProvider(api_key=None, model=modelo_final, base_url=info.get("base_url"))
+        prov = OllamaProvider(api_key=None, model=modelo_final, base_url=info.get("base_url"))
     elif tipo == "openai_compatible":
-        return OpenAICompatibleProvider(api_key=api_key, model=modelo_final, base_url=info.get("base_url"))
+        prov = OpenAICompatibleProvider(api_key=api_key, model=modelo_final, base_url=info.get("base_url"))
     elif tipo == "google":
-        return GeminiProvider(api_key=api_key, model=modelo_final)
+        prov = GeminiProvider(api_key=api_key, model=modelo_final)
     elif tipo == "anthropic":
-        return ClaudeProvider(api_key=api_key, model=modelo_final)
+        prov = ClaudeProvider(api_key=api_key, model=modelo_final)
     else:
         raise ValueError(f"Tipo de proveedor desconocido: {tipo}")
+    # Para que completar() registre el uso de tokens con la key correcta
+    prov.provider_id = provider_id
+    return prov
 
 
 # ALMACENAMIENTO DE API KEYS (keyring + fallback .env)

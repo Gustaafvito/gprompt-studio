@@ -1278,6 +1278,109 @@ class ToolsAnalysisService:
 
         threading.Thread(target=_worker, daemon=True).start()
 
+    def _cmd_coste_sesion(self) -> None:
+        """Muestra el coste estimado de la sesión por proveedor.
+
+        Los tokens se acumulan en api_clients.usage_tracker cada vez que
+        un provider completa una llamada. Coste = tokens × precio del
+        model_default (tabla PRECIOS_USD_1M, junio 2026). Proveedores
+        gratuitos/locales = 0; OpenRouter = "—" (depende del modelo).
+        """
+        from api_clients import LLM_PROVIDERS, usage_tracker
+
+        try: self.app._sesion_log("💰 Abrió Coste de sesión")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        try:
+            from config import get_theme_colors
+            c = get_theme_colors(is_lt)
+        except Exception:
+            c = {"panel_text": "#111827" if is_lt else "#e5e7eb",
+                 "muted_text": "#4b5563" if is_lt else "#9ca3af",
+                 "card_bg": "#ffffff" if is_lt else "#111820",
+                 "fg_dark": "#e5e7eb" if is_lt else "#2b2b2b",
+                 "fg_dark_hover": "#d1d5db" if is_lt else "#3a3a3a"}
+
+        vent = GPromptWindow(self.app)
+        vent.title("💰 Coste de sesión")
+        vent.geometry("620x440")
+        vent.transient(self.app)
+
+        ctk.CTkLabel(vent, text="💰 Coste estimado de esta sesión",
+                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(14, 2))
+        ctk.CTkLabel(vent,
+                     text="Tokens reales reportados por cada API × precio del modelo por defecto.",
+                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+
+        cuerpo = ctk.CTkScrollableFrame(vent, fg_color="transparent")
+        cuerpo.pack(fill="both", expand=True, padx=16, pady=(0, 6))
+
+        lbl_total = ctk.CTkLabel(vent, text="",
+                                 font=ctk.CTkFont(size=14, weight="bold"))
+        lbl_total.pack(pady=(0, 2))
+
+        ctk.CTkLabel(vent,
+                     text="Estimación orientativa (precios junio 2026, model_default de cada proveedor).",
+                     font=ctk.CTkFont(size=9, slant="italic"),
+                     text_color=c["muted_text"]).pack(pady=(0, 4))
+
+        def _render():
+            for w in cuerpo.winfo_children():
+                w.destroy()
+            datos = usage_tracker.resumen()
+            if not datos:
+                ctk.CTkLabel(cuerpo,
+                             text="Aún no hay llamadas LLM en esta sesión.",
+                             font=ctk.CTkFont(size=11),
+                             text_color=c["muted_text"]).pack(pady=20)
+                lbl_total.configure(text="Total estimado: 0.0000 $")
+                return
+            # Cabecera
+            head = ctk.CTkFrame(cuerpo, fg_color="transparent")
+            head.pack(fill="x", pady=(0, 4))
+            for texto, ancho in (("Proveedor", 160), ("Llamadas", 70),
+                                 ("Tokens entrada", 110), ("Tokens salida", 110),
+                                 ("Coste", 80)):
+                ctk.CTkLabel(head, text=texto, width=ancho, anchor="w",
+                             font=ctk.CTkFont(size=10, weight="bold"),
+                             text_color=c["muted_text"]).pack(side="left", padx=2)
+            # Filas
+            for pid in sorted(datos.keys()):
+                d = datos[pid]
+                nombre = LLM_PROVIDERS.get(pid, {}).get("name", pid)
+                coste = d["coste_usd"]
+                coste_txt = "—" if coste is None else f"{coste:.4f} $"
+                row = ctk.CTkFrame(cuerpo, fg_color=c.get("card_bg", "transparent"),
+                                   corner_radius=6)
+                row.pack(fill="x", pady=1)
+                for texto, ancho in ((nombre, 160), (str(d["llamadas"]), 70),
+                                     (f"{d['tokens_entrada']:,}", 110),
+                                     (f"{d['tokens_salida']:,}", 110),
+                                     (coste_txt, 80)):
+                    ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
+                                 font=ctk.CTkFont(size=11),
+                                 text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
+            lbl_total.configure(text=f"Total estimado: {usage_tracker.total_usd():.4f} $")
+
+        _render()
+
+        btn_row = ctk.CTkFrame(vent, fg_color="transparent")
+        btn_row.pack(pady=(0, 12))
+        ctk.CTkButton(btn_row, text="🔄 Actualizar", width=110, height=30,
+                      command=_render).pack(side="left", padx=4)
+
+        def _resetear():
+            usage_tracker.reset()
+            _render()
+        ctk.CTkButton(btn_row, text="🗑 Resetear contador", width=150, height=30,
+                      fg_color="#b45309", hover_color="#92400e",
+                      command=_resetear).pack(side="left", padx=4)
+        ctk.CTkButton(btn_row, text="Cerrar", width=90, height=30,
+                      fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
+                      command=vent.destroy).pack(side="left", padx=4)
+
     def _detectar_nsfw_auto(self, idea: str | None = None) -> bool:
         """Detecta si el prompt actual tiene elementos NSFW y avisa."""
         texto = idea if idea else self.app.txt_salida.get("1.0", "end").strip()

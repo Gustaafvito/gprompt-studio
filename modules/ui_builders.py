@@ -239,6 +239,7 @@ class UIBuildersService:
         grupos_menus = [
             ("📊 Análisis", "#8e4ab0", [
                 ("🚀  Auto-mejora", self.app.analysis.cmd_automejora_periodica),
+                ("💰  Coste de sesión", self.app.analysis.cmd_coste_sesion),
                 ("📝  Crítica historial", self.app.analysis.cmd_critica_historial),
                 ("📈  Estadísticas", self.app.analysis.abrir_estadisticas),
                 ("🎯  Optimizador en bucle", self.app.analysis.cmd_optimizar_loop),
