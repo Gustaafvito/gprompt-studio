@@ -269,7 +269,7 @@ class AtajosAyudaService:
             ]),
             ("⚖️ Comparador (dentro de la ventana)", [
                 ("Ctrl+G", "Abrir Grid Pollinations (previews de TODAS)"),
-                ("Ctrl+Enter", "Comparar 2 cards lado-a-lado (si hay 2 marcadas)"),
+                ("Alt+C", "Comparar 2 cards lado-a-lado (si hay 2 marcadas)"),
             ]),
             ("❓ Extra", [
                 ("F11", "Pantalla completa"),
