@@ -185,6 +185,28 @@ LLM_PROVIDERS = {
 }
 
 
+# Proveedores de IMAGEN (no LLM). Se gestionan en el mismo wizard
+# 🔑 API Keys pero se renderizan en una sección aparte, y NO aparecen
+# en el dropdown del LLM activo del header. Compartirán el mismo
+# sistema de almacenamiento (keyring / keys.json / .env) que LLM_PROVIDERS.
+IMAGE_PROVIDERS = {
+    "pollinations": {
+        "name": "Pollinations.ai",
+        "label": "🖼 Pollinations.ai (previews)",
+        "descripcion": (
+            "Previews rápidos en el comparador 👁 y botón 🖼 Preview. "
+            "Con tu key: hasta ~555 imágenes flux por 1€ (1 Pollen). "
+            "Sin key: anonymous con rate limit estricto (lento). "
+            "Registra cuenta gratis en pollinations.ai → API → + API Key."
+        ),
+        "url_obtener_key": "https://pollinations.ai/auth",
+        "tipo": "image_service",
+        "model_default": "flux",
+        "is_paid": False,  # Funciona en anónimo, no es obligatorio
+    },
+}
+
+
 # INTERFAZ BASE
 
 class BaseLLMProvider:

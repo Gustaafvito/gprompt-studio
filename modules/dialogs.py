@@ -38,6 +38,7 @@ class DialogsService:
         c = get_theme_colors(is_lt)
         try:
             from api_clients import (
+                IMAGE_PROVIDERS,
                 LLM_PROVIDERS,
                 borrar_api_key,
                 cargar_api_key,
@@ -188,6 +189,123 @@ class DialogsService:
             btn_borrar.pack(side="left", padx=2)
 
             # Guardar refs para _refrescar_card
+            cards_refs[pid] = {
+                "lbl_estado": lbl_estado,
+                "lbl_origen": lbl_origen,
+                "btn_borrar": btn_borrar,
+            }
+
+        # ── Separador + sección de proveedores de IMAGEN ──
+        # (Sesión 18 round 5: añadido Pollinations como proveedor de
+        # imagen para previews. No es LLM, no aparece en el dropdown
+        # principal. Pero usa el mismo sistema de almacenamiento de
+        # keys, así que se gestiona desde el mismo wizard.)
+        sep = ctk.CTkFrame(scroll, fg_color="#1a2a3a", height=2)
+        sep.pack(fill="x", pady=(12, 4))
+        ctk.CTkLabel(
+            scroll, text="🖼 Proveedores de IMAGEN (no LLM)",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#7c3aed",
+        ).pack(anchor="w", padx=4, pady=(4, 2))
+        ctk.CTkLabel(
+            scroll,
+            text=(
+                "Usados para previews en el comparador 👁 y botón "
+                "🖼 Preview. SON OPCIONALES — sin key, la app funciona "
+                "en modo anónimo (más lento, con rate limit)."
+            ),
+            font=ctk.CTkFont(size=10, slant="italic"),
+            text_color="#aaaaaa",
+            wraplength=720, justify="left",
+        ).pack(anchor="w", padx=4, pady=(0, 8))
+
+        for pid, info in IMAGE_PROVIDERS.items():
+            card = ctk.CTkFrame(scroll, fg_color="#0f1820", corner_radius=8)
+            card.pack(fill="x", pady=4)
+
+            hdr = ctk.CTkFrame(card, fg_color="transparent")
+            hdr.pack(fill="x", padx=12, pady=(8, 4))
+            current_key_init = cargar_api_key(pid) or ""
+            origen_init = ubicacion_api_key(pid)
+            estado_actual = "✅ configurado" if current_key_init else "⚪ opcional (modo anónimo)"
+            color_estado = "#2ecc71" if current_key_init else "#9ca3af"
+            ctk.CTkLabel(hdr, text=f"{info['label']}",
+                         font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+            lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
+                                        font=ctk.CTkFont(size=10),
+                                        text_color=color_estado)
+            lbl_estado.pack(side="right")
+
+            ctk.CTkLabel(card, text=f"  {info['descripcion']}",
+                         font=ctk.CTkFont(size=10, slant="italic"), text_color="#aaaaaa",
+                         wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
+
+            lbl_origen = ctk.CTkLabel(
+                card,
+                text=ICONO_ORIGEN.get(origen_init, ""),
+                font=ctk.CTkFont(size=9, slant="italic"),
+                text_color="#3498db" if origen_init else "#666",
+                anchor="w",
+            )
+            lbl_origen.pack(fill="x", padx=12, pady=(0, 4))
+
+            fila = ctk.CTkFrame(card, fg_color="transparent")
+            fila.pack(fill="x", padx=12, pady=(0, 8))
+            placeholder = "Pega tu key (sk_...) — déjalo vacío para modo anónimo"
+            ent = ctk.CTkEntry(fila, width=440, placeholder_text=placeholder, show="•")
+            if current_key_init:
+                ent.insert(0, current_key_init)
+            ent.pack(side="left", padx=(0, 6))
+            entries_keys[pid] = ent
+
+            def _crear_toggle_show_img(e=ent):
+                def _toggle():
+                    e.configure(show="" if e.cget("show") else "•")
+                return _toggle
+            ctk.CTkButton(fila, text="👁", width=30, height=28, fg_color=c["fg_dark"],
+                          hover_color=c["fg_dark_hover"], command=_crear_toggle_show_img()).pack(side="left", padx=2)
+
+            def _crear_obtener_btn_img(url=info.get('url_obtener_key', '')):
+                def _abrir():
+                    try:
+                        import webbrowser
+                        webbrowser.open(url)
+                    except Exception as e:
+                        logger.debug(f"[silent] {e}")
+                return _abrir
+            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
+                          fg_color="#1e3a5f", hover_color="#162d49",
+                          font=ctk.CTkFont(size=10),
+                          command=_crear_obtener_btn_img()).pack(side="left", padx=2)
+
+            def _crear_borrar_btn_img(p=pid, e=ent, info_l=info):
+                def _borrar():
+                    from tkinter import messagebox
+                    if not messagebox.askyesno(
+                        "Borrar API key",
+                        f"¿Borrar la API key de {info_l['label']}?\n\n"
+                        "Se eliminará de keyring del SO y de keys.json cifrado.\n"
+                        "La app volverá al modo anónimo (más lento).",
+                        parent=v,
+                    ):
+                        return
+                    try:
+                        borrar_api_key(p)
+                        e.delete(0, "end")
+                        _refrescar_card(p)
+                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                    except Exception as ex:
+                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                return _borrar
+            btn_borrar = ctk.CTkButton(
+                fila, text="🗑", width=36, height=28,
+                fg_color="#7a1a1a", hover_color="#5a1010",
+                font=ctk.CTkFont(size=11),
+                command=_crear_borrar_btn_img(),
+                state="normal" if current_key_init else "disabled",
+            )
+            btn_borrar.pack(side="left", padx=2)
+
             cards_refs[pid] = {
                 "lbl_estado": lbl_estado,
                 "lbl_origen": lbl_origen,
