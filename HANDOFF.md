@@ -2123,6 +2123,94 @@ e0fa97d feat(atajos): 3 atajos nuevos para features de sesión 18
 a035f44 fix(refinar): click derecho en 🔁 Refinar no abría el menú contextual
 ```
 
+### Bloque 8 — Round 4: investigación Pollinations API key + revert
+
+Usuario aportó una "Secret Key" (server-to-server, tier "All", budget
+∞) creada en pollinations.ai/auth. La feature pretendía eliminar el
+rate limit anónimo que causaba "En cola" / "Sobrecarga" en el grid 👁
+de previews.
+
+**Commit `e5f40bd` (luego revertido)**: añadió `pollinations` a
+`ENV_VAR_POR_PROVIDER`, modificó `_generar_preview_pollinations` para
+enviar `Authorization: Bearer <key>` por request. Key guardada en
+Windows Credential Manager (cifrado por SO, fuera del repo).
+
+**Investigación end-to-end de por qué NO autenticaba**:
+
+- Test directo Python con `Authorization: Bearer` → **402 "Queue full
+  max:1"** (tier anónimo). Dashboard pollinations.ai/auth muestra
+  "Used: never" → la key NO se está reconociendo.
+- Test sin Bearer (anónimo) → **mismo 402** → confirma que la IP
+  estaba en cooldown.
+- Test con `?token=key` query param → 402.
+- Test endpoints alternativos (`/v1/images/generations`, `/api/image`,
+  `enter.pollinations.ai/...`) → 404, 405 o HTML (frontend React).
+- Test endpoint texto (`text.pollinations.ai/openai`) con Bearer →
+  429 + body con pista clave:
+  > *"NOTE: The Pollinations legacy text API is being deprecated for
+  > authenticated users. Please migrate to https://enter.pollinations.ai
+  > for better performance and access to all the latest models."*
+
+**Hallazgo crítico**: la infraestructura legacy (`image.pollinations.ai`,
+`text.pollinations.ai`) **NO acepta autenticación**. El sistema nuevo
+(`enter.pollinations.ai`) requiere keys pero **los endpoints exactos
+no están en los docs públicos** consultados (APIDOCS.md, FAQ y
+auth.pollinations.ai/api/* dan 404).
+
+**Sistema Pollen (descubierto por FAQ del usuario)**:
+- $1 ≈ 1 Pollen.
+- Free models: solo **flux** (∞ por Pollen).
+- Modelos de pago: turbo (333/$), kontext (200/$), gptimage (77/$),
+  nanobanana (50/$).
+- Tiers: Anonymous → Seed (free auth) → Flower (paid) → Nectar
+  (enterprise/unlimited).
+- Server-to-Server Keys: "No platform rate limits" (en teoría).
+- Daily Pollen grants para registered devs.
+
+**Decisión final — REVERT (`911d017`)**:
+
+Razones:
+1. El código del Bearer es "muerto" mientras no haya endpoint público.
+2. El comportamiento anónimo + retry exponencial ya funciona estable.
+3. Mantener código sin uso confunde a futuro lector.
+4. Cuando Pollinations publique los endpoints del sistema nuevo
+   (Discord, GitHub release notes, o docs renovados), reintegrar es
+   trivial: añadir entrada en `ENV_VAR_POR_PROVIDER` (~4 líneas) +
+   modificar URL/header en el worker (~10 líneas).
+
+**Acciones de cleanup**:
+- `git revert e5f40bd` → quita 19 líneas en app.py + 4 en api_clients.py.
+- `keyring.delete_password("GPromptStudio", "api_key_pollinations")` →
+  borra la key del Credential Manager (ya verificado con get → None).
+- La key SIGUE activa en pollinations.ai/auth (NO se revoca remoto,
+  solo se quita de nuestra app local).
+
+**Lección para futuras integraciones de proveedores nuevos**:
+Antes de meter un Bearer, **probar con un curl directo** que la key
+autentica contra ESE endpoint. Si el server devuelve algo de "tier
+anónimo" o "rate limit", el Bearer se está ignorando → endpoint
+incorrecto.
+
+### Bloque 8b — Fix atajo `Ctrl+Enter` duplicado (`9f54a95`)
+
+Tras la auditoría del round 3, usuario detectó que `Ctrl+Enter` salía
+2 veces en la ventana Ctrl+? (global = "Generar prompt"; comparador =
+"Comparar 2"). Aunque técnicamente uno es app-scoped y otro
+Toplevel-scoped, visualmente confunde.
+
+Fix: cambio del binding del comparador a `Alt+C` (Comparar). El hint
+inline del pie del comparador y la entrada "⚖️ Comparador" de la
+ventana Ctrl+? actualizadas. Script de detección de duplicados (regex
+contra `atajos_ayuda.py`) confirma 0 duplicados.
+
+### Commits sesión 18 round 4 (3 commits)
+
+```
+911d017 Revert "feat(pollinations): soporte API key autenticada..."
+9f54a95 fix(atajos): cambiar Ctrl+Enter del comparador a Alt+C (era duplicado)
+e5f40bd feat(pollinations): soporte API key autenticada (revertido)
+```
+
 ### Métricas finales sesión 18 (round 1 + round 2 + round 3)
 
 | | Empezando | Cerrando |
@@ -2199,10 +2287,15 @@ Patrón establecido en Nano Banana (replicable):
   pueden ocultar bugs nuevos. Estrategia: dejarlo y solo abordarlo
   si aparecen bugs sin explicación clara. Detectado en auditoría
   sesión 18 round 3.
-- **Pollinations API key (autenticada)** — el toggle de modelo en el
-  grid funciona, pero la API anónima tiene rate limit estricto
-  (1 concurrente por IP + por minuto). Con API key se eliminaría
-  el "En cola" / "Sobrecarga" frecuente. Opcional.
+- **Pollinations API key (autenticada)** — **BLOQUEADA** sesión 18
+  round 4: la infraestructura legacy (`image.pollinations.ai`) NO
+  acepta auth. El sistema nuevo (`enter.pollinations.ai`) requiere
+  keys pero los endpoints exactos no están en docs públicos. Cuando
+  se publiquen (vigilar Discord/GitHub release notes de
+  pollinations/pollinations), reintegrar es trivial: 4 líneas en
+  `ENV_VAR_POR_PROVIDER` + 10 líneas en el worker
+  `_generar_preview_pollinations`. Detalles del intento + tests en
+  bloque 8 de sesión 18.
 
 ---
 
