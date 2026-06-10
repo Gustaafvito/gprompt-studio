@@ -2161,10 +2161,35 @@ class ArquitectoApp(
             # (max 1 simultánea) + retry con backoff exponencial al recibir 402.
             # El contador `_pollinations_queue_size` permite mostrar
             # "⏳ En cola (N por delante)" en la UI.
+            #
+            # Sesión 18 round 5: si el usuario tiene API key de Pollinations
+            # guardada (keyring o keys.json), se usa el endpoint NUEVO
+            # `gen.pollinations.ai/image/{prompt}` con `Authorization: Bearer`
+            # → sin rate limit (tier server-to-server). Si NO hay key, se
+            # cae al endpoint legacy `image.pollinations.ai` con retry.
+            # El endpoint legacy NO acepta auth (la ignora silenciosamente),
+            # por eso decidimos en runtime cuál URL usar.
+            try:
+                from api_clients import cargar_api_key
+                pollinations_key = cargar_api_key("pollinations") or ""
+            except Exception:
+                pollinations_key = ""
+            req_headers = {}
+            if pollinations_key:
+                req_headers["Authorization"] = f"Bearer {pollinations_key}"
+                base_url = "https://gen.pollinations.ai/image/"
+            else:
+                base_url = "https://image.pollinations.ai/prompt/"
+
             # Si el usuario pidió un modelo concreto, solo ese.
-            # En "auto" (default), fallback chain turbo → none.
+            # En "auto" (default), elegir modelos según endpoint:
+            #   - Sin key (legacy): turbo + sin param (comportamiento histórico)
+            #   - Con key (gen.pollinations.ai): flux (free ∞) como default,
+            #     fallback al endpoint sin model (por si flux falla, raro).
             if modelo and modelo != "auto":
                 modelos_a_probar = [modelo]
+            elif pollinations_key:
+                modelos_a_probar = ["flux", None]
             else:
                 modelos_a_probar = ["turbo", None]
             last_err = None
@@ -2203,11 +2228,11 @@ class ArquitectoApp(
                             try:
                                 extra = f"&model={mdl_actual}" if mdl_actual else ""
                                 url = (
-                                    f"https://image.pollinations.ai/prompt/{quote(pos)}"
+                                    f"{base_url}{quote(pos)}"
                                     f"?width={size}&height={size}&nologo=true&enhance=false"
                                     f"&referrer=gprompt-studio{extra}"
                                 )
-                                resp = requests.get(url, timeout=60)
+                                resp = requests.get(url, timeout=60, headers=req_headers)
                                 sc = resp.status_code
                                 if sc == 402:
                                     body_lower = (resp.text or "")[:200].lower()
@@ -2301,10 +2326,28 @@ class ArquitectoApp(
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
-        # Toggle de modelo Pollinations. "Auto" usa fallback chain turbo→none
-        # (comportamiento histórico). Los demás fuerzan un modelo concreto.
-        # Las regeneraciones (♻) y el "open large" usan el modelo seleccionado.
+        # Toggle de modelo Pollinations. Lista dinámica según endpoint:
+        # - SIN key (legacy image.pollinations.ai): turbo / kontext / sdxl / anime
+        # - CON key (gen.pollinations.ai): flux (free ∞) / kontext / gptimage /
+        #   zimage / klein / nova-canvas. Solo flux es gratis; los demás
+        #   consumen Pollen del balance de la key.
+        # "auto" = fallback chain inteligente (flux con key, turbo sin).
+        # Las regeneraciones (♻) y "open large" usan el modelo seleccionado.
         # Las previews ya generadas NO se auto-regeneran al cambiar el toggle.
+        try:
+            from api_clients import cargar_api_key as _cargar
+            _has_pol_key = bool(_cargar("pollinations"))
+        except Exception:
+            _has_pol_key = False
+        if _has_pol_key:
+            _modelos_disponibles = [
+                "auto", "flux", "kontext", "gptimage",
+                "zimage", "klein", "nova-canvas",
+            ]
+            _hint_modo = "🔑 con API key · flux es gratis"
+        else:
+            _modelos_disponibles = ["auto", "turbo", "kontext", "sdxl", "anime"]
+            _hint_modo = "anónimo · con rate limit"
         modelo_pollinations_var = ctk.StringVar(value="auto")
         bar_modelo = ctk.CTkFrame(vent, fg_color="transparent")
         bar_modelo.pack(pady=(0, 4))
@@ -2313,16 +2356,16 @@ class ArquitectoApp(
                      ).pack(side="left", padx=(0, 4))
         combo_modelo_pol = ctk.CTkComboBox(
             bar_modelo,
-            values=["auto", "turbo", "kontext", "sdxl", "anime"],
+            values=_modelos_disponibles,
             variable=modelo_pollinations_var,
-            width=110, height=24,
+            width=130, height=24,
             font=ctk.CTkFont(size=10),
             dropdown_font=ctk.CTkFont(size=10),
             state="readonly",
         )
         combo_modelo_pol.pack(side="left")
         ctk.CTkLabel(bar_modelo,
-                     text="(♻ usa el modelo seleccionado)",
+                     text=f"({_hint_modo})",
                      font=ctk.CTkFont(size=9), text_color="#666"
                      ).pack(side="left", padx=(6, 0))
 
@@ -2372,14 +2415,28 @@ class ArquitectoApp(
                     lbl.configure(image=ctk_img, text="")
                     lbl.image = ctk_img
                     # Click → abrir en navegador con tamaño 1024 usando el
-                    # modelo seleccionado en el toggle ("auto" → turbo).
+                    # modelo seleccionado en el toggle.
+                    # "auto" → flux (con key) o turbo (sin key).
+                    # Si hay API key, se abre en el endpoint nuevo y la URL
+                    # NO lleva la key (el navegador del usuario llama anónimo
+                    # con rate limit del legacy, pero al menos el modelo
+                    # correcto está en el path). La vista en grande es solo
+                    # navegacional/visual — para auth se usa el grid.
                     def _open_large(_e=None, p=prompt_text):
                         try:
                             pos = self._extraer_pos_de_bloque(p) or p
                             m = modelo_pollinations_var.get()
-                            modelo_url = "turbo" if m == "auto" else m
+                            if m == "auto":
+                                modelo_url = "flux" if _has_pol_key else "turbo"
+                            else:
+                                modelo_url = m
+                            base = (
+                                "https://gen.pollinations.ai/image/"
+                                if _has_pol_key
+                                else "https://image.pollinations.ai/prompt/"
+                            )
                             url = (
-                                f"https://image.pollinations.ai/prompt/{quote((pos or '')[:500])}"
+                                f"{base}{quote((pos or '')[:500])}"
                                 f"?width=1024&height=1024&model={modelo_url}&nologo=true"
                                 f"&referrer=gprompt-studio"
                             )
@@ -2961,16 +3018,29 @@ class ArquitectoApp(
         self.dialogs.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
         self.dialogs.toggle_botones(False)
 
-        # Usa el helper unificado (turbo + semáforo + retry con backoff).
-        # URL para mostrar al usuario se reconstruye después con turbo + seed.
+        # Usa el helper unificado (semáforo + retry con backoff).
+        # URL para mostrar al usuario se reconstruye después con el modelo
+        # adecuado al endpoint (legacy: turbo, autenticado: flux).
         import time
         import urllib.parse as _up
+        try:
+            from api_clients import cargar_api_key
+            _tiene_key = bool(cargar_api_key("pollinations"))
+        except Exception:
+            _tiene_key = False
         semilla = int(time.time())
-        url_imagen = (
-            f"https://image.pollinations.ai/prompt/{_up.quote(texto_limpio)}"
-            f"?width=512&height=512&nologo=true&model=turbo&seed={semilla}"
-            f"&referrer=gprompt-studio"
-        )
+        if _tiene_key:
+            url_imagen = (
+                f"https://gen.pollinations.ai/image/{_up.quote(texto_limpio)}"
+                f"?width=512&height=512&nologo=true&model=flux&seed={semilla}"
+                f"&referrer=gprompt-studio"
+            )
+        else:
+            url_imagen = (
+                f"https://image.pollinations.ai/prompt/{_up.quote(texto_limpio)}"
+                f"?width=512&height=512&nologo=true&model=turbo&seed={semilla}"
+                f"&referrer=gprompt-studio"
+            )
 
         def _on_img(image_pil):
             try:
