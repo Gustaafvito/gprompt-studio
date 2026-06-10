@@ -2484,20 +2484,55 @@ objetivo o N iteraciones (menú 📊 Análisis):
   total + reset.
 - +17 tests en `test_api_clients.py`.
 
+### Round 5: prueba en vivo con el usuario → 3 bugs encontrados y cerrados
+
+El usuario probó el optimizador en vivo (app lanzada por Claude, log
+vigilado + capturas con computer-use). Salieron 3 bugs reales:
+
+**1. Menús del header INVISIBLES (`cd63850`)** — bug pre-existente
+que afectaba a TODOS los dropdowns (📊 Análisis, 📚 Aprender...):
+el popup `overrideredirect` se abría pero `GPromptWindow._bring_to_front`
+le quitaba el topmost a los 250ms → caía detrás de la ventana principal.
+El usuario clicaba y "no pasaba nada" (los clicks SÍ llegaban a items
+invisibles). Fix: popup como `tk.Toplevel` plano con topmost mantenido.
+**Por esto el usuario "no veía" el Optimizador** — el ítem siempre
+estuvo; el menú entero era invisible.
+
+**2. Diff sin acciones + optimizador sin diff (`8cbc9db`)** —
+feedback UX: la ventana "Diff visual entre versiones" solo tenía
+Cerrar, y para comparar tras optimizar había que pulsar 🔄 Regenerar.
+Fix: botones "Usar versión izquierda/derecha" en el diff de lectura;
+botón "🆚 Ver diff" en el resultado del optimizador; "Aplicar mejor
+versión" registra la original en `_versiones_prompt` + ambas en
+`_regen_stack`.
+
+**3. Etiqueta POSITIVE PROMPT pelada (`45d7d9e`)** — el LLM de mejora
+devolvía el prompt sin `POSITIVE PROMPT:` (mismo patrón que el bug
+Iterar/Usar de sesión 7). Fix en 2 capas: instrucción FORMATO
+OBLIGATORIO en `construir_peticion_mejora` + helper
+`asegurar_etiquetas_prompt` que la reconstruye si aun así se pierde
+(no inventa etiquetas en prompts naturales). +7 tests.
+
+**Validación end-to-end real**: optimizador 82 → 92 → 88 → 95/100,
+objetivo alcanzado en 3 iteraciones, conservación de la mejor versión
+verificada. Coste de sesión: 5 llamadas, 3.567 in / 2.004 out =
+**$0.0018** por pasada completa (~550 optimizaciones por dólar).
+Usuario confirmó etiquetas conservadas tras el fix.
+
 ### Métricas sesión 19
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **430** (+45) ⭐ |
+| Tests | 385 | **437** (+52) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
+| Menús del header | invisibles (bug) | **visibles** ✅ |
+| Optimizador validado | mocks | **end-to-end real** ✅ |
 
 ### 🚧 Pendiente sesión 20+
 
 - 🔴 Auditoría de specs continúa siendo la prioridad (Midjourney →
   Flux → Ideogram), poco a poco — requiere datos del panel SeaArt.
-- 🟡 Validar el Optimizador en bucle end-to-end con un LLM real
-  (el bucle está testeado con mocks; falta probar calidad real).
 - 🟡 Revisar precios de `PRECIOS_USD_1M` periódicamente.
 - 🟡 QoL: overlay de ratio sobre imagen de referencia; variante
   SD/Comfy del storyboard.
