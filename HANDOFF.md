@@ -17,8 +17,11 @@ sistema de empaquetado `.exe`, y CI/CD configurado.
 |---|---|
 | Tests | **385/385** ✅ |
 | Working tree | Limpio |
-| Branch | `main` (sesión 18 round 3 cerrada con auditoría + hot-fixes + atajos) |
+| Branch | `main` (sesión 18 round 5 cerrada con Pollinations autenticado real + wizard de keys) |
 | Atajos de teclado | **29** registrados, todos en Ctrl+? |
+| Pollinations API | ✅ **Autenticada** via gen.pollinations.ai (round 5) |
+| Wizard 🔑 API Keys | ✅ Soporta LLM + IMAGEN (Pollinations) |
+| Modelo BYOP | ✅ Cada usuario usa su propia key, NO la del autor |
 | Bloques de profundidad | **6/6** ✅ |
 | Mixins en `ArquitectoApp` | **1** foundation por diseño (`CoreMixin`) ⭐⭐⭐ |
 | **Componentes (A1)** | **21/21** ✅ accesibles vía `self.X.metodo()` (+ footer) |
@@ -2211,7 +2214,133 @@ contra `atajos_ayuda.py`) confirma 0 duplicados.
 e5f40bd feat(pollinations): soporte API key autenticada (revertido)
 ```
 
-### Métricas finales sesión 18 (round 1 + round 2 + round 3)
+### Bloque 9 — Round 5: Pollinations RESUELTO + wizard + BYOP
+
+El usuario aportó la URL clave del round 4 que faltaba:
+**`https://gen.pollinations.ai/docs#tag/byop`** — la documentación
+oficial del sistema autenticado.
+
+**Descubrimiento del endpoint real**:
+- El docs es una SPA Scalar; el OpenAPI spec real está en
+  `gen.pollinations.ai/docs/open-api/generate-schema` (~180 KB JSON).
+- **Endpoint correcto** para imágenes autenticadas:
+  `GET https://gen.pollinations.ai/image/{prompt}` con
+  `Authorization: Bearer <sk_...>`.
+- Confirmado con test directo: 200 OK + 15.8 KB JPEG en **3s** vs
+  ~30s en cola con el legacy.
+- Spec también expone: `/v1/images/generations` (OpenAI-compat),
+  `/account/key` (info), `/account/balance` (balance Pollen),
+  `/image/models` (catálogo).
+
+**Modelos disponibles en `gen.pollinations.ai`** (cambiaron vs legacy):
+- `flux` (≈555 imágenes/$1, NO es gratis pero baratísimo)
+- `kontext` (≈200/$1)
+- `gptimage` / `gptimage-large`
+- `zimage`, `klein`, `nova-canvas`
+- `ltx-2` (video)
+
+**Lo que YA NO existe** en el endpoint nuevo: `turbo`, `sdxl`, `anime`
+(eran legacy). Toggle del grid renovado dinámicamente según endpoint.
+
+**Re-integración del Bearer** (`b99c06e`):
+- `api_clients.py`: `"pollinations"` en `ENV_VAR_POR_PROVIDER`.
+- `_generar_preview_pollinations`: detecta key en runtime y elige
+  endpoint + headers + fallback chain (`flux` con key, `turbo` sin).
+- Toggle del grid: lista dinámica con hint del modo
+  (`🔑 con API key · flux es gratis` o `anónimo · con rate limit`).
+- `_open_large` (click en imagen para verla grande) y
+  `cmd_previsualizar` (botón 🖼 Preview / Ctrl+Shift+P) actualizados
+  con la misma lógica.
+
+**Fix UX post-integración** (`4dcff05`):
+- Click en imagen → 401 UNAUTHORIZED en navegador. Causa: el navegador
+  NO envía el header Bearer automáticamente. Pollinations devuelve
+  401 con mensaje exacto: *"Please provide an API key via Authorization
+  header (Bearer token) or `?key=` query parameter"*.
+  Fix: añadir `&key=<api_key>` al URL del open_large (solo en navegador,
+  NO en los requests del worker que sí usan header Bearer). Trade-off:
+  la key queda en historial del navegador del propio usuario.
+- Botón ♻ Regenerar ahora **siempre visible** (antes solo al fallar).
+  Permite al usuario cambiar modelo en el combo y regenerar sin
+  esperar un error.
+
+**Pollinations API key del usuario adquirida**:
+- Usuario creó key "G-Prompt estudio" (sk_5fLJSYFE...) en
+  pollinations.ai/auth — Secret Key tier All, budget ∞.
+- Tras gastar el daily grant en tests, balance llegó a 0.0013 Pollen.
+- Pagó **5€** → balance pasa a **5.0012 Pollen** (~2.777 imágenes
+  flux, suficiente para 3-4 meses de uso intenso). Pollen no caduca.
+
+**Fallback automático "Insufficient balance"** (`0be4284`):
+- Cuando el endpoint nuevo devuelve 402 con body
+  `"Insufficient balance"` o `"PAYMENT_REQUIRED"`, el worker conmuta
+  dinámicamente:
+  - `base_url` → `image.pollinations.ai/prompt/` (legacy anónimo)
+  - `req_headers` → `{}` (sin Bearer)
+  - `mdl_actual` → `turbo` si era de los nuevos
+- Notifica al usuario por `on_progress`:
+  `"💸 Sin Pollen — usando endpoint anónimo (más lento)"`
+- Reintento del retry-loop usa el legacy → 200 OK.
+- Comportamiento: nunca falla por balance — al peor caso, vuelve al
+  modo anónimo de ayer.
+
+**Pre-distribución pública — wizard 🔑 API Keys** (`f29a20f`):
+Crítica del usuario: *"cuando queramos subir esta herramienta al público
+la gente no cogerá esta key no?"* — pregunta válida sobre BYOP.
+
+Cambios:
+- `api_clients.py`: nuevo dict `IMAGE_PROVIDERS` separado de
+  `LLM_PROVIDERS`. NO se mezcla para no contaminar el dropdown LLM.
+  Comparten sistema de almacenamiento (keyring/keys.json/.env).
+- `modules/dialogs.py` (`_cmd_configurar_api_keys`): tras el loop de
+  `LLM_PROVIDERS` añade separador + sección
+  `"🖼 Proveedores de IMAGEN (no LLM)"` + segundo loop sobre
+  `IMAGE_PROVIDERS`. Estado inicial `"⚪ opcional (modo anónimo)"`.
+- `LEEME-PRIMERO.txt` del distribuible actualizado con la nota BYOP
+  específica de Pollinations.
+
+**Verificación de seguridad pre-distribución**:
+```
+grep -r "sk_5fLJSYFE" repo/   → 0 ocurrencias
+git log --all -p | grep ...   → 0 ocurrencias (nunca commited)
+grep -r "sk_..." build/dist/  → 0 ocurrencias
+keyring (Windows local)       → SÍ (solo aquí)
+```
+
+La key del autor SOLO existe en su Credential Manager. Distribuir el
+`.exe` NO comparte la key.
+
+**Modelo BYOP (Bring Your Own Pollen) establecido**:
+1. Usuario descarga `.exe` → Credential Manager vacío de Pollinations.
+2. App arranca en modo anónimo (legacy, rate-limited pero gratis).
+3. Usuario registra cuenta gratis en pollinations.ai → API → +API Key.
+4. Pega su key en `Header → 🔑 API Keys → 🖼 Proveedores de IMAGEN`.
+5. La app empieza a usar `gen.pollinations.ai` autenticado con SU key.
+6. Pago opcional para más Pollen — cada usuario gestiona su cuenta.
+
+### Commits sesión 18 round 5 (5 commits)
+
+```
+f29a20f feat(security): wizard 🔑 API Keys ahora gestiona también Pollinations
+0be4284 fix(pollinations): fallback automático a legacy si la key se queda sin Pollen
+4dcff05 fix(pollinations): click-en-imagen autentica + ♻ Regenerar siempre visible
+b99c06e feat(pollinations): integración real con API key — endpoint gen.pollinations.ai
+9749705 docs: cierre sesión 18 round 4 — Pollinations bloqueado + revert
+```
+
+### Lección clave del round 4 → round 5
+
+El round 4 cerró Pollinations como BLOQUEADO porque los endpoints
+nuevos "no estaban en docs públicos consultados". El usuario aportó
+1 URL (`gen.pollinations.ai/docs#tag/byop`) que destrabó todo.
+
+**Patrón generalizable**: cuando un bloqueo viene de "docs no
+encontradas", PEDIR al usuario que comparta la URL exacta de su
+dashboard / portal del proveedor — suele tener pistas (endpoint base,
+subdominio inusual, schema OpenAPI accesible) que un search externo
+no encuentra.
+
+### Métricas finales sesión 18 (rounds 1-5)
 
 | | Empezando | Cerrando |
 |---|---:|---:|
@@ -2228,7 +2357,10 @@ e5f40bd feat(pollinations): soporte API key autenticada (revertido)
 | Auditorías sistemáticas | 0 | **8** (todas verdes) |
 | Mixins en MRO | 1 | 1 (sin cambios) |
 | Working tree | Limpio | Limpio ✅ |
-| `.exe` distribuible | Día anterior | **Hoy round 3** ✅ |
+| Pollinations API autenticada | ⛔ Bloqueado (r4) | ✅ **Activa** via gen.pollinations.ai (r5) |
+| Wizard 🔑 gestiona Pollinations | ❌ | ✅ (sección "🖼 Proveedores de IMAGEN") |
+| Modelo BYOP listo para distribución | ❌ | ✅ Verificado: 0 ocurrencias de key en repo/build |
+| `.exe` distribuible | Día anterior | **Hoy round 5** ✅ |
 
 ### Estado del catálogo al cierre
 
@@ -2287,15 +2419,12 @@ Patrón establecido en Nano Banana (replicable):
   pueden ocultar bugs nuevos. Estrategia: dejarlo y solo abordarlo
   si aparecen bugs sin explicación clara. Detectado en auditoría
   sesión 18 round 3.
-- **Pollinations API key (autenticada)** — **BLOQUEADA** sesión 18
-  round 4: la infraestructura legacy (`image.pollinations.ai`) NO
-  acepta auth. El sistema nuevo (`enter.pollinations.ai`) requiere
-  keys pero los endpoints exactos no están en docs públicos. Cuando
-  se publiquen (vigilar Discord/GitHub release notes de
-  pollinations/pollinations), reintegrar es trivial: 4 líneas en
-  `ENV_VAR_POR_PROVIDER` + 10 líneas en el worker
-  `_generar_preview_pollinations`. Detalles del intento + tests en
-  bloque 8 de sesión 18.
+- ~~**Pollinations API key (autenticada)**~~ ✅ **HECHO en round 5**
+  (`b99c06e` + `0be4284` + `f29a20f`). El endpoint correcto era
+  `gen.pollinations.ai/image/{prompt}` con `Authorization: Bearer`.
+  Sistema BYOP completo: wizard 🔑 API Keys gestiona LLMs + IMAGEN
+  por separado, fallback automático si "Insufficient balance",
+  notificación en UI, LEEME actualizado.
 
 ---
 
