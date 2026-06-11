@@ -2583,18 +2583,49 @@ nueva para la auditoría (URLs útiles documentadas en AGREGAR_MODELO.md):
 - Sintaxis oficial de fusión de keywords capturada: `[a:b:f]`,
   `[tag:f]`, `[tag::f]`, `[a|b]`, escape `\(...\)` — NO aplica a Flux.
 
+### Rounds 9-11: theme bug + Avatar v2 (ficha auto, visión, modelo destino)
+
+**Bug del theme (`59d959f`)**: la ventana Avatar abría VACÍA —
+`theme.json` carecía de `CTkFrame.top_fg_color` → KeyError al anidar
+un CTkScrollableFrame dentro de un frame (primer sitio de la app que
+lo hace). Añadidas también `CTkSegmentedButton.border_width` (misma
+mina latente, comparado contra el blue.json oficial). BONUS: el .exe
+NUNCA empaquetó theme.json (corría con el tema azul por defecto) →
+añadido a datas en ambos .spec.
+
+**Avatar v2** (`e45f9af`, `e598dea`, `1e577a6`), peticiones del
+usuario durante la prueba real:
+- 🎲 **Ficha automática**: tema opcional + el LLM inventa el personaje
+  completo (T=0.9) y rellena el formulario con trigger sugerido.
+  Helpers puros con JSON validado (parsear_ficha_json).
+- 📷 **Ficha desde imagen**: nueva `VisionChain.describir_con_prompt()`
+  (cadena Gemini→Ollama→OpenRouter con prompt custom) +
+  PROMPT_VISION_FICHA → la visión extrae la ficha de una foto de
+  referencia. La imagen se COPIA al dataset exportado (referencia.*)
+  para subirla como "sujeto" en SeaArt. Feedback visual: miniatura +
+  nombre + estado (sin esto el usuario pulsaba 2 veces).
+- 🎯 **Modelo destino elegible**: desplegable con todos los modelos
+  del combo (no solo el activo); el adaptador resuelve los specs del
+  elegido al generar.
+
+**Validación end-to-end REAL por el usuario**: ficha automática →
+dataset "ohwx_valquiria" → imágenes en SeaArt (Z-Image-Base, truco de
+seed fija entre tandas) → consistencia de identidad confirmada en
+3 tandas de 4. Flujo 📷 desde imagen también validado.
+
 ### Métricas sesión 19 (final)
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **473** (+88) ⭐ |
+| Tests | 385 | **484** (+99) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
 | Menús del header | invisibles (bug) | **visibles** ✅ |
 | Optimizador validado | mocks | **end-to-end real + model-aware** ✅ |
 | Modelos con specs trabajados | 8 | **21** (11 ✅ + 10 doc oficial) |
 | Coste API | invisible | **sesión + histórico persistente** ✅ |
-| Módulo Avatar LoRA | — | **integrado + model-aware** ✅ |
+| Módulo Avatar LoRA | — | **v2 validado end-to-end real** ✅ |
+| theme.json | 2 claves faltantes + fuera del exe | **completo + empaquetado** ✅ |
 
 ### 🚧 Pendiente sesión 20+
 
