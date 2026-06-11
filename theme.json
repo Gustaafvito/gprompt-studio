@@ -50,6 +50,10 @@
       "#e5e7eb",
       "#1a1f2e"
     ],
+    "top_fg_color": [
+      "#f3f4f6",
+      "#222838"
+    ],
     "hover_color": [
       "#d1d5db",
       "#1f2937"
@@ -432,7 +436,8 @@
       "#bfdbfe",
       "#3a3f4e"
     ],
-    "corner_radius": 6
+    "corner_radius": 6,
+    "border_width": 2
   },
   "CTkTextbox": {
     "fg_color": [

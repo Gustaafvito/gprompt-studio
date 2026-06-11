@@ -28,6 +28,9 @@ datas = [
     *collect_data_files('customtkinter'),
     # Pillow tiene plugins por formato
     *collect_data_files('PIL'),
+    # Tema visual personalizado (sin esto el .exe caía al tema azul
+    # por defecto de CTk — detectado en sesión 19 round 9).
+    ('theme.json',    '.'),
     # Documentación de USUARIO únicamente. Los docs de desarrollo
     # (ESTRUCTURA.md, HANDOFF.md, BUILD.md, AGREGAR_MODELO.md) NO se
     # empaquetan: son material interno del proyecto.

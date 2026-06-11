@@ -26,6 +26,8 @@ datas = [
     ('config',        'config'),
     *collect_data_files('customtkinter'),
     *collect_data_files('PIL'),
+    # Tema visual personalizado (sin esto el .exe caía al tema azul)
+    ('theme.json',    '.'),
     # Solo docs de USUARIO (los docs de desarrollo no se empaquetan)
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
