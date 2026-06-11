@@ -18,6 +18,7 @@ from modules.avatar_config import (
     DEFAULT_ANGLE_SET,
 )
 from modules.avatar_generator import (
+    adaptar_dataset_a_modelo,
     exportar_dataset,
     generar_dataset_avatar,
     generar_descripcion_canonica,
@@ -135,6 +136,34 @@ class TestPipeline:
         assert r["descripcion_canonica"] == DESC
         assert r["total_prompts"] == 16
         assert len(r["dataset"]) == 16
+
+    def test_adaptar_modelo_sin_negative_vacia_negatives(self):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        avisos = adaptar_dataset_a_modelo(r, "Nano Banana", {"has_negative": False})
+        assert r["dataset"][0]["negative"] == ""
+        assert r["modelo_destino"] == "Nano Banana"
+        assert any("NO soporta negative" in a for a in avisos)
+
+    def test_adaptar_modelo_con_negative_no_toca(self):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        avisos = adaptar_dataset_a_modelo(r, "Reve 2.0",
+                                          {"has_negative": True, "max_chars": 2000})
+        assert r["dataset"][0]["negative"] != ""
+        assert avisos == []
+
+    def test_adaptar_avisa_si_excede_max_chars_sin_truncar(self):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "x" * 300, "bg")
+        prompt_original = r["dataset"][0]["prompt"]
+        avisos = adaptar_dataset_a_modelo(r, "Mini", {"has_negative": True,
+                                                      "max_chars": 100})
+        assert any("exceden el límite" in a for a in avisos)
+        # NO trunca: la identidad entre ángulos es sagrada
+        assert r["dataset"][0]["prompt"] == prompt_original
+
+    def test_adaptar_sin_specs_no_hace_nada(self):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        assert adaptar_dataset_a_modelo(r, "X", {}) == []
+        assert "modelo_destino" not in r
 
     def test_exportar_dataset_escribe_estructura_completa(self, tmp_path):
         r = generar_dataset_avatar(

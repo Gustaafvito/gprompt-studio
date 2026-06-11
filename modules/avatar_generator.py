@@ -63,6 +63,50 @@ def generar_dataset_avatar(
     }
 
 
+def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
+    """Adapta el dataset al modelo de imagen destino usando sus specs.
+
+    100% determinista (sin LLM). Muta `resultado` y devuelve la lista
+    de avisos para mostrar al usuario. Reglas (sesión 19):
+    - has_negative=False (Nano Banana, GPT Image...) → vacía los
+      negatives del dataset: el modelo los ignoraría o los trataría
+      como prompt positivo.
+    - max_chars → avisa si algún prompt lo excede. NO trunca: recortar
+      rompería la consistencia de identidad entre ángulos; mejor que
+      el usuario acorte ropa/rasgos y regenere.
+    - Registra el modelo destino en el dataset.json (trazabilidad).
+    """
+    avisos = []
+    if not specs:
+        return avisos
+
+    resultado["modelo_destino"] = modelo
+
+    if specs.get("has_negative") is False:
+        n_con_negative = sum(1 for it in resultado["dataset"] if it["negative"])
+        if n_con_negative:
+            for it in resultado["dataset"]:
+                it["negative"] = ""
+            avisos.append(
+                f"⚠️ {modelo} NO soporta negative prompt — se ha quitado "
+                f"de los {n_con_negative} prompts del dataset."
+            )
+
+    max_c = specs.get("max_chars")
+    if max_c:
+        excedidos = [it["filename"] for it in resultado["dataset"]
+                     if len(it["prompt"]) > max_c]
+        if excedidos:
+            avisos.append(
+                f"⚠️ {len(excedidos)} prompt(s) exceden el límite de "
+                f"{max_c} caracteres de {modelo} (ej: {excedidos[0]}). "
+                f"Acorta la ropa/rasgos en la ficha y regenera — NO se "
+                f"truncan automáticamente para no romper la identidad."
+            )
+
+    return avisos
+
+
 # ---------------------------------------------------------------------------
 # EXPORTACIÓN
 # Estructura de salida:

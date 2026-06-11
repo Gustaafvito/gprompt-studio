@@ -30,10 +30,16 @@ from modules.avatar_generator import exportar_dataset, generar_dataset_avatar
 
 
 class AvatarFrame(ctk.CTkFrame):
-    def __init__(self, master, llm_call, carpeta_salida_default=".", **kwargs):
+    def __init__(self, master, llm_call, carpeta_salida_default=".",
+                 adaptador=None, modelo_destino="", **kwargs):
+        """adaptador: callable(resultado) -> list[str] de avisos. Se aplica
+        tras generar y antes de exportar (adaptación al modelo destino).
+        modelo_destino: nombre del modelo para el label informativo."""
         super().__init__(master, **kwargs)
         self.llm_call = llm_call
         self.carpeta_salida = carpeta_salida_default
+        self.adaptador = adaptador
+        self.modelo_destino = modelo_destino
         self._campos = {}
         self._angulo_vars = {}
         self._construir_ui()
@@ -49,6 +55,15 @@ class AvatarFrame(ctk.CTkFrame):
             font=ctk.CTkFont(size=18, weight="bold"),
         )
         titulo.grid(row=0, column=0, columnspan=2, pady=(12, 6), sticky="n")
+
+        if self.modelo_destino:
+            ctk.CTkLabel(
+                self,
+                text=f"🎯 Adaptado al modelo activo: {self.modelo_destino} "
+                     f"(negative y límite de caracteres según sus specs)",
+                font=ctk.CTkFont(size=11),
+                text_color="#9ca3af",
+            ).grid(row=0, column=0, columnspan=2, pady=(40, 0), sticky="n")
 
         # --- Columna izquierda: formulario de rasgos ---
         form = ctk.CTkScrollableFrame(self, label_text="Ficha del personaje")
@@ -163,21 +178,25 @@ class AvatarFrame(ctk.CTkFrame):
                 fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
                 incluir_negative=bool(self.check_negative.get()),
             )
+            # Adaptación al modelo destino (specs SeaArt) ANTES de exportar
+            avisos = self.adaptador(resultado) if self.adaptador else []
             ruta = exportar_dataset(resultado, carpeta)
-            self.after(0, lambda: self._fin_ok(resultado, ruta))
+            self.after(0, lambda: self._fin_ok(resultado, ruta, avisos))
         except Exception as e:
             # lambda e=e: Python hace `del e` al salir del except — sin la
             # captura, el callback diferido lanza NameError (patrón sesión 10)
             self.after(0, lambda e=e: self._fin_error(str(e)))
 
-    def _fin_ok(self, resultado, ruta):
+    def _fin_ok(self, resultado, ruta, avisos=None):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
             text=f"✅ {resultado['total_prompts']} prompts exportados.")
-        messagebox.showinfo(
-            "Dataset generado",
+        mensaje = (
             f"Descripción canónica:\n\n{resultado['descripcion_canonica']}\n\n"
             f"Exportado en:\n{ruta}")
+        if avisos:
+            mensaje += "\n\n" + "\n\n".join(avisos)
+        messagebox.showinfo("Dataset generado", mensaje)
 
     def _fin_error(self, mensaje):
         self.boton_generar.configure(state="normal")
@@ -212,6 +231,25 @@ def abrir_avatar_window(app) -> None:
         return app.deepseek.generar_batch(
             system_prompt, user_prompt, temperature=0.3, max_tokens=900)
 
+    # Adaptación al modelo de imagen activo (specs SeaArt auditados):
+    # quita el negative si el modelo no lo soporta y avisa si algún
+    # prompt excede su max_chars medido. Determinista, sin LLM extra.
+    modelo_activo = ""
+    adaptador = None
+    try:
+        from config import get_image_model_specs
+        modelo_activo = app.footer.modelo_imagen_valido() or ""
+        specs = get_image_model_specs(modelo_activo) if modelo_activo else None
+        if specs:
+            from modules.avatar_generator import adaptar_dataset_a_modelo
+
+            def adaptador(resultado, _m=modelo_activo, _s=specs):
+                return adaptar_dataset_a_modelo(resultado, _m, _s)
+        else:
+            modelo_activo = ""  # sin specs → sin label ni adaptación
+    except Exception:
+        modelo_activo = ""
+
     vent = GPromptWindow(app)
     vent.title("🧑‍🎨 Avatar dataset (LoRA)")
     vent.geometry("920x700")
@@ -219,7 +257,8 @@ def abrir_avatar_window(app) -> None:
 
     frame = AvatarFrame(
         vent, llm_call=_llm_call,
-        carpeta_salida_default=str(Path.home()))
+        carpeta_salida_default=str(Path.home()),
+        adaptador=adaptador, modelo_destino=modelo_activo)
     frame.pack(fill="both", expand=True, padx=4, pady=4)
 
 
