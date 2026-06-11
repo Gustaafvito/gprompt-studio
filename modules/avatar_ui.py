@@ -123,6 +123,14 @@ class AvatarFrame(ctk.CTkFrame):
             self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
         else:
             self.boton_imagen = None
+        # Feedback visual de la imagen cargada (miniatura + nombre +
+        # estado del análisis). Sin esto el usuario no sabía si la
+        # imagen se había cargado (feedback sesión 19 round 11).
+        self.label_imagen_ref = ctk.CTkLabel(
+            form, text="", anchor="w", compound="left",
+            font=ctk.CTkFont(size=10), text_color="#9ca3af")
+        self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
+                                   padx=8, pady=(0, 4)); fila += 1
 
         # Trigger word
         ctk.CTkLabel(form, text="Trigger word (LoRA)").grid(
@@ -217,13 +225,19 @@ class AvatarFrame(ctk.CTkFrame):
 
     def _on_ficha_desde_imagen(self):
         """Analiza una imagen de referencia con visión y rellena la ficha."""
+        import os
+
         ruta = filedialog.askopenfilename(
             title="Imagen de referencia del personaje",
             filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp"),
                        ("Todos", "*.*")])
         if not ruta:
             return
+        nombre = os.path.basename(ruta)
         self.boton_imagen.configure(state="disabled")
+        # Feedback INMEDIATO de que la imagen está cargada y en análisis
+        self.label_imagen_ref.configure(
+            text=f"  📷 {nombre} — ⏳ analizando con IA de visión…", image=None)
         self.label_estado.configure(text="📷 Analizando la imagen de referencia…")
 
         def _worker():
@@ -233,6 +247,9 @@ class AvatarFrame(ctk.CTkFrame):
                 imagen.load()
                 if imagen.mode not in ("RGB", "L"):
                     imagen = imagen.convert("RGB")
+                # Miniatura para el feedback visual
+                thumb = imagen.copy()
+                thumb.thumbnail((42, 42))
                 resp = self.vision_call(imagen, PROMPT_VISION_FICHA)
                 ficha = parsear_ficha_json(resp)
                 if not ficha:
@@ -240,10 +257,27 @@ class AvatarFrame(ctk.CTkFrame):
                         "La IA de visión no devolvió una ficha JSON parseable. "
                         "Prueba con otra imagen (mejor un retrato claro).")
                 self._imagen_referencia = ruta
-                self.after(0, lambda: self._aplicar_ficha(
-                    ficha, origen="📷 Ficha extraída de la imagen"))
+
+                def _ok():
+                    try:
+                        ctk_img = ctk.CTkImage(light_image=thumb,
+                                               dark_image=thumb,
+                                               size=(thumb.width, thumb.height))
+                        self.label_imagen_ref.configure(
+                            image=ctk_img, text=f"  📷 {nombre} ✓ ficha extraída")
+                        self.label_imagen_ref._image_ref = ctk_img
+                    except Exception:
+                        self.label_imagen_ref.configure(
+                            text=f"  📷 {nombre} ✓ ficha extraída")
+                    self._aplicar_ficha(
+                        ficha, origen="📷 Ficha extraída de la imagen")
+                self.after(0, _ok)
             except Exception as e:
-                self.after(0, lambda e=e: self._fin_ficha_error(str(e)))
+                def _err(e=e):
+                    self.label_imagen_ref.configure(
+                        text=f"  ❌ {nombre} — no se pudo analizar", image=None)
+                    self._fin_ficha_error(str(e))
+                self.after(0, _err)
 
         threading.Thread(target=_worker, daemon=True).start()
 
