@@ -2543,22 +2543,68 @@ sección "📅 Histórico (últimos 14 días)" + total del periodo.
 
 Distribuibles regenerados ×3 con todo incluido (23:47).
 
-### Métricas sesión 19
+### Round 7: módulo Avatar dataset LoRA (`155423a`, `1baf170`)
+
+Integrado el módulo de INTEGRACION_CLAUDE_CODE.md (4 archivos →
+`modules/avatar_*.py`), adaptado a la arquitectura actual:
+
+- **Diseño**: FASE 1 = 1 sola llamada LLM que fija la descripción
+  canónica del personaje (40-70 palabras, inglés, sin cámara/estilo);
+  FASE 2 = ensamblado 100% programático de hasta 16 ángulos repitiendo
+  la identidad palabra por palabra. Exporta dataset.json, prompts/,
+  captions/ kohya y prompts_todos.txt.
+- **Acceso**: 🛠 Herramientas → "🧑‍🎨 Avatar dataset (LoRA)" como
+  VENTANA (GPromptWindow), NO como 4º modo — el doc pide no tocar los
+  modos imagen/vídeo/audio. LLM vía `generar_batch` (one-shot, T=0.3).
+- **Adaptación al modelo activo** (`adaptar_dataset_a_modelo`): si el
+  modelo seleccionado no soporta negative → se vacía + aviso; si los
+  prompts exceden su max_chars → aviso SIN truncar (la identidad
+  entre ángulos es sagrada). Label "🎯 Adaptado al modelo activo".
+- 2 fixes al integrar: lambda sin capturar `e` (patrón sesión 10,
+  cazado por ruff F821) + saneado de comillas tras fences.
+- `tests/test_avatar.py`: 20+ tests.
+
+### Round 8: cosecha de la DOC OFICIAL de SeaArt (`959044b`, `96b7246`)
+
+El usuario aportó https://docs.seaart.ai/guide-1/espanol — fuente
+nueva para la auditoría (URLs útiles documentadas en AGREGAR_MODELO.md):
+
+- **10 modelos actualizados con datos oficiales** (34 cambios).
+  Correcciones CRÍTICAS: `no_weights=true` en Infinity ×2, Realism y
+  SD 3.5 ×3 (pesos/BREAK no funcionan — T5/FLUX); `is_natural=true`
+  en SD 3.5 ×3 (la doc exige lenguaje natural, estaban tag-based).
+  Más pasos/CFG/samplers oficiales y negatives recomendados (NoobAI,
+  T-Ponynai3 con score tags, Counterfeit con EasyNegativeV2,
+  Temporal Paradox con 5 embeddings).
+- **Avatar alineado con la guía oficial de datasets LoRA**: captions
+  ahora incluyen fondo + iluminación (si no se etiquetan, el LoRA los
+  absorbe en el trigger) + `CONSEJOS_SEAART.txt` en cada export
+  (25-40 imágenes, máx 3-6 por fondo, Focus Crop, BLIP/Deepbooru).
+- Sintaxis oficial de fusión de keywords capturada: `[a:b:f]`,
+  `[tag:f]`, `[tag::f]`, `[a|b]`, escape `\(...\)` — NO aplica a Flux.
+
+### Métricas sesión 19 (final)
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **452** (+67) ⭐ |
+| Tests | 385 | **473** (+88) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
 | Menús del header | invisibles (bug) | **visibles** ✅ |
 | Optimizador validado | mocks | **end-to-end real + model-aware** ✅ |
-| Modelos auditados | 8 | **11** (Reve + MAI ×2, max_chars medidos) |
+| Modelos con specs trabajados | 8 | **21** (11 ✅ + 10 doc oficial) |
 | Coste API | invisible | **sesión + histórico persistente** ✅ |
+| Módulo Avatar LoRA | — | **integrado + model-aware** ✅ |
 
 ### 🚧 Pendiente sesión 20+
 
-- 🔴 Auditoría de specs continúa siendo la prioridad (Midjourney →
-  Flux → Ideogram), poco a poco — requiere datos del panel SeaArt.
+- 🔴 Auditoría de specs: siguientes familias **Flux (17)** e
+  **Illustrious (10)** — requiere pantallazos del panel SeaArt.
+- 🟡 max_chars empírico de los 10 semi-auditados (Infinity, SD 3.5,
+  Realism, NoobAI, T-Ponynai3, Counterfeit, Temporal) — prompt
+  marcado o contador del panel.
+- 🟡 Validar el módulo Avatar end-to-end (generar dataset real +
+  entrenar LoRA en SeaArt) — el usuario lo prueba ahora.
 - 🟡 Revisar precios de `PRECIOS_USD_1M` periódicamente.
 - 🟡 QoL: overlay de ratio sobre imagen de referencia; variante
   SD/Comfy del storyboard.
