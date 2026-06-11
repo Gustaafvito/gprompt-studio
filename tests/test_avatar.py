@@ -24,6 +24,7 @@ from modules.avatar_generator import (
     generar_descripcion_canonica,
 )
 from modules.avatar_prompts import (
+    PROMPT_VISION_FICHA,
     SYSTEM_PROMPT_AVATAR_FICHA,
     construir_user_prompt_canonico,
     construir_user_prompt_ficha,
@@ -121,6 +122,17 @@ class TestFichaAutomatica:
     def test_valores_numericos_se_castean(self):
         f = parsear_ficha_json('{"edad": 25, "pelo": "negro"}')
         assert f["edad"] == "25"
+
+    def test_prompt_vision_exige_json_y_mismas_claves(self):
+        # La ficha por visión reutiliza parsear_ficha_json → mismas claves
+        assert "JSON" in PROMPT_VISION_FICHA
+        for clave in ("trigger", "genero", "edad", "etnia_piel", "pelo",
+                      "ojos", "rasgos", "complexion", "ropa"):
+            assert clave in PROMPT_VISION_FICHA
+
+    def test_prompt_vision_prohibe_fondo_e_iluminacion(self):
+        # El fondo/iluminación los pone el ensamblador, no la ficha
+        assert "NO describas el fondo" in PROMPT_VISION_FICHA
 
 
 # ── ensamblar_dataset (núcleo de la consistencia) ─────────────────

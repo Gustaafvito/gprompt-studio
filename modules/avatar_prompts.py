@@ -88,6 +88,24 @@ EJEMPLO DE SALIDA VÁLIDA:
 {"trigger": "ohwx_vera", "genero": "Mujer", "edad": "25-35", "etnia_piel": "piel morena con subtono cálido", "pelo": "melena negra lisa hasta la cintura con flequillo recto", "ojos": "ojos marrón oscuro grandes y rasgados", "rasgos": "lunar bajo el ojo izquierdo, pendientes de aro dorados", "complexion": "Atlética", "ropa": "chaqueta bomber verde oliva sobre camiseta negra lisa y vaqueros negros"}"""
 
 
+PROMPT_VISION_FICHA = """Analiza a la PERSONA o PERSONAJE de esta imagen y devuelve su ficha EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown ni ```.
+2. Claves EXACTAS: trigger, genero, edad, etnia_piel, pelo, ojos, rasgos, complexion, ropa.
+3. Valores en ESPAÑOL, salvo "trigger": inventa uno en formato ohwx_nombre (minúsculas, sin espacios).
+4. Valores cerrados obligatorios:
+   - genero: uno de [Mujer, Hombre, Andrógino]
+   - edad: uno de [18-25, 25-35, 35-45, 45-60, 60+] (edad APARENTE)
+   - complexion: uno de [Delgada, Atlética, Media, Robusta, Curvy]
+5. Describe SOLO lo que VES: piel, cara, ojos, pelo, rasgos distintivos (cicatrices, pecas, gafas, tatuajes, joyas) y la ropa EXACTA (color + prenda + detalle).
+6. Sé concreto y verificable — nada de adjetivos vagos. La ficha se usará para recrear a esta persona de forma idéntica en 16 ángulos distintos.
+7. NO describas el fondo, la iluminación ni el encuadre de la foto.
+
+EJEMPLO DE SALIDA VÁLIDA:
+{"trigger": "ohwx_valquiria", "genero": "Mujer", "edad": "25-35", "etnia_piel": "piel pálida con subtono rosado", "pelo": "pelo platino corto rapado a los lados y largo arriba", "ojos": "ojos gris acero almendrados", "rasgos": "cicatriz fina en la ceja derecha, cejas rectas y gruesas", "complexion": "Atlética", "ropa": "armadura de placas cromada brillante con correas negras"}"""
+
+
 def construir_user_prompt_ficha(tema: str = "") -> str:
     """Mensaje de usuario para la ficha automática. tema opcional."""
     tema = (tema or "").strip()

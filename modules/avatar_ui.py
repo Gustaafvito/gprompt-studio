@@ -28,6 +28,7 @@ from modules.avatar_config import (
 )
 from modules.avatar_generator import exportar_dataset, generar_dataset_avatar
 from modules.avatar_prompts import (
+    PROMPT_VISION_FICHA,
     SYSTEM_PROMPT_AVATAR_FICHA,
     construir_user_prompt_ficha,
     parsear_ficha_json,
@@ -37,18 +38,23 @@ from modules.avatar_prompts import (
 class AvatarFrame(ctk.CTkFrame):
     def __init__(self, master, llm_call, carpeta_salida_default=".",
                  adaptador=None, modelo_destino="", modelos_destino=None,
-                 **kwargs):
+                 vision_call=None, **kwargs):
         """adaptador: callable(resultado, modelo) -> list[str] de avisos.
         Se aplica tras generar y antes de exportar (adaptación al modelo).
         modelo_destino: modelo inicial seleccionado en el desplegable.
         modelos_destino: lista de modelos elegibles; si None, no se
-        muestra el selector (modo standalone)."""
+        muestra el selector (modo standalone).
+        vision_call: callable(imagen_pil, prompt) -> str. Si se pasa,
+        aparece el botón "📷 Desde imagen" que rellena la ficha
+        analizando una imagen de referencia."""
         super().__init__(master, **kwargs)
         self.llm_call = llm_call
         self.carpeta_salida = carpeta_salida_default
         self.adaptador = adaptador
         self.modelo_destino = modelo_destino
         self.modelos_destino = modelos_destino or []
+        self.vision_call = vision_call
+        self._imagen_referencia = ""   # ruta de la imagen usada para la ficha
         self._campos = {}
         self._angulo_vars = {}
         self._construir_ui()
@@ -108,6 +114,15 @@ class AvatarFrame(ctk.CTkFrame):
             fg_color="#7c3aed", hover_color="#6d28d9",
             command=self._on_ficha_auto)
         self.boton_auto.grid(row=0, column=1)
+        # Ficha desde imagen de referencia (visión) — solo si hay vision_call
+        if self.vision_call:
+            self.boton_imagen = ctk.CTkButton(
+                fila_auto, text="📷 Desde imagen", width=120,
+                fg_color="#0e7490", hover_color="#155e75",
+                command=self._on_ficha_desde_imagen)
+            self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
+        else:
+            self.boton_imagen = None
 
         # Trigger word
         ctk.CTkLabel(form, text="Trigger word (LoRA)").grid(
@@ -200,7 +215,39 @@ class AvatarFrame(ctk.CTkFrame):
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _aplicar_ficha(self, ficha: dict):
+    def _on_ficha_desde_imagen(self):
+        """Analiza una imagen de referencia con visión y rellena la ficha."""
+        ruta = filedialog.askopenfilename(
+            title="Imagen de referencia del personaje",
+            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp"),
+                       ("Todos", "*.*")])
+        if not ruta:
+            return
+        self.boton_imagen.configure(state="disabled")
+        self.label_estado.configure(text="📷 Analizando la imagen de referencia…")
+
+        def _worker():
+            try:
+                from PIL import Image
+                imagen = Image.open(ruta)
+                imagen.load()
+                if imagen.mode not in ("RGB", "L"):
+                    imagen = imagen.convert("RGB")
+                resp = self.vision_call(imagen, PROMPT_VISION_FICHA)
+                ficha = parsear_ficha_json(resp)
+                if not ficha:
+                    raise ValueError(
+                        "La IA de visión no devolvió una ficha JSON parseable. "
+                        "Prueba con otra imagen (mejor un retrato claro).")
+                self._imagen_referencia = ruta
+                self.after(0, lambda: self._aplicar_ficha(
+                    ficha, origen="📷 Ficha extraída de la imagen"))
+            except Exception as e:
+                self.after(0, lambda e=e: self._fin_ficha_error(str(e)))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _aplicar_ficha(self, ficha: dict, origen: str = "🎲 Ficha generada"):
         """Vuelca la ficha generada en los widgets del formulario."""
         for key, widget in self._campos.items():
             valor = ficha.get(key, "")
@@ -221,11 +268,15 @@ class AvatarFrame(ctk.CTkFrame):
             self.entry_trigger.delete(0, "end")
             self.entry_trigger.insert(0, trigger)
         self.boton_auto.configure(state="normal")
+        if self.boton_imagen:
+            self.boton_imagen.configure(state="normal")
         self.label_estado.configure(
-            text="🎲 Ficha generada — revísala/edítala y pulsa ⚡ Generar dataset.")
+            text=f"{origen} — revísala/edítala y pulsa ⚡ Generar dataset.")
 
     def _fin_ficha_error(self, mensaje: str):
         self.boton_auto.configure(state="normal")
+        if self.boton_imagen:
+            self.boton_imagen.configure(state="normal")
         self.label_estado.configure(text="❌ Error generando la ficha.")
         messagebox.showerror("Error", mensaje)
 
@@ -280,6 +331,17 @@ class AvatarFrame(ctk.CTkFrame):
             avisos = (self.adaptador(resultado, modelo_sel)
                       if self.adaptador else [])
             ruta = exportar_dataset(resultado, carpeta)
+            # Copiar la imagen de referencia al dataset: en SeaArt se sube
+            # como "sujeto" para anclar la identidad en los 16 ángulos.
+            if self._imagen_referencia:
+                try:
+                    import os
+                    import shutil
+                    ext = os.path.splitext(self._imagen_referencia)[1] or ".png"
+                    shutil.copy2(self._imagen_referencia,
+                                 os.path.join(ruta, f"referencia{ext}"))
+                except Exception:
+                    pass  # la copia es un extra; no rompe la exportación
             self.after(0, lambda: self._fin_ok(resultado, ruta, avisos))
         except Exception as e:
             # lambda e=e: Python hace `del e` al salir del except — sin la
@@ -365,11 +427,21 @@ def abrir_avatar_window(app) -> None:
     vent.geometry("920x720")
     vent.transient(app)
 
+    # Visión para "📷 Desde imagen": cadena Gemini→Ollama→OpenRouter de
+    # la app con el prompt custom de ficha. None si no hay visión.
+    vision_call = None
+    try:
+        if getattr(app, "vision", None) and app.vision.proveedores:
+            def vision_call(imagen_pil, prompt):
+                return app.vision.describir_con_prompt(imagen_pil, prompt)[0]
+    except Exception:
+        vision_call = None
+
     frame = AvatarFrame(
         vent, llm_call=_llm_call,
         carpeta_salida_default=str(Path.home()),
         adaptador=adaptador, modelo_destino=modelo_activo,
-        modelos_destino=modelos)
+        modelos_destino=modelos, vision_call=vision_call)
     frame.pack(fill="both", expand=True, padx=4, pady=4)
 
 

@@ -275,7 +275,20 @@ class VisionChain:
         Describe una imagen usando la cadena de fallback.
         Devuelve (descripcion, motor_usado) o lanza excepción.
         """
-        prompt_v = self._prompt_vision(modo)
+        return self.describir_con_prompt(imagen_pil, self._prompt_vision(modo), on_status)
+
+    def describir_con_prompt(
+        self,
+        imagen_pil,
+        prompt_v: str,
+        on_status: Callable[[str], None] | None = None
+    ) -> tuple[str, str]:
+        """Misma cadena de fallback pero con un prompt de visión CUSTOM.
+
+        Lo usa el módulo Avatar (ficha desde imagen de referencia,
+        sesión 19) y cualquier caller que necesite un análisis distinto
+        de los modos estándar imagen/vídeo.
+        """
         ultimo_error = None
 
         for nombre, fn in self.proveedores:
