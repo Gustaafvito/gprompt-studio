@@ -24,8 +24,11 @@ from modules.avatar_generator import (
     generar_descripcion_canonica,
 )
 from modules.avatar_prompts import (
+    SYSTEM_PROMPT_AVATAR_FICHA,
     construir_user_prompt_canonico,
+    construir_user_prompt_ficha,
     ensamblar_dataset,
+    parsear_ficha_json,
 )
 
 DESC = ("a 28 year old woman with fair skin, oval face, green eyes, "
@@ -72,6 +75,52 @@ class TestConstruirUserPrompt:
 
     def test_pide_la_descripcion(self):
         assert "descripción canónica" in construir_user_prompt_canonico({})
+
+
+# ── Ficha automática (sesión 19 round 10) ─────────────────────────
+
+class TestFichaAutomatica:
+    FICHA_JSON = ('{"trigger": "ohwx_vera", "genero": "Mujer", "edad": "25-35", '
+                  '"pelo": "melena negra lisa", "ojos": "marrones grandes", '
+                  '"complexion": "Atlética", "ropa": "bomber verde y vaqueros"}')
+
+    def test_system_prompt_exige_json_y_claves(self):
+        assert "JSON" in SYSTEM_PROMPT_AVATAR_FICHA
+        for clave in ("trigger", "genero", "edad", "complexion", "ropa"):
+            assert clave in SYSTEM_PROMPT_AVATAR_FICHA
+
+    def test_user_prompt_con_tema(self):
+        p = construir_user_prompt_ficha("guerrera élfica")
+        assert "guerrera élfica" in p
+
+    def test_user_prompt_sin_tema_pide_aleatorio(self):
+        assert "aleatorio" in construir_user_prompt_ficha("")
+
+    def test_parsea_json_limpio(self):
+        f = parsear_ficha_json(self.FICHA_JSON)
+        assert f["trigger"] == "ohwx_vera"
+        assert f["genero"] == "Mujer"
+        assert f["ropa"] == "bomber verde y vaqueros"
+
+    def test_parsea_json_con_texto_y_fences(self):
+        sucio = f"Claro, aquí tienes:\n```json\n{self.FICHA_JSON}\n```\n¡Listo!"
+        f = parsear_ficha_json(sucio)
+        assert f["trigger"] == "ohwx_vera"
+
+    def test_filtra_claves_desconocidas_y_vacias(self):
+        f = parsear_ficha_json('{"trigger": "x", "hacker": "no", "pelo": "  "}')
+        assert f == {"trigger": "x"}
+
+    def test_respuesta_sin_json_devuelve_vacio(self):
+        assert parsear_ficha_json("no hay nada aquí") == {}
+        assert parsear_ficha_json("") == {}
+
+    def test_json_invalido_devuelve_vacio(self):
+        assert parsear_ficha_json("{trigger: sin comillas}") == {}
+
+    def test_valores_numericos_se_castean(self):
+        f = parsear_ficha_json('{"edad": 25, "pelo": "negro"}')
+        assert f["edad"] == "25"
 
 
 # ── ensamblar_dataset (núcleo de la consistencia) ─────────────────

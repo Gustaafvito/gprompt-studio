@@ -27,19 +27,28 @@ from modules.avatar_config import (
     AVATAR_STYLES,
 )
 from modules.avatar_generator import exportar_dataset, generar_dataset_avatar
+from modules.avatar_prompts import (
+    SYSTEM_PROMPT_AVATAR_FICHA,
+    construir_user_prompt_ficha,
+    parsear_ficha_json,
+)
 
 
 class AvatarFrame(ctk.CTkFrame):
     def __init__(self, master, llm_call, carpeta_salida_default=".",
-                 adaptador=None, modelo_destino="", **kwargs):
-        """adaptador: callable(resultado) -> list[str] de avisos. Se aplica
-        tras generar y antes de exportar (adaptación al modelo destino).
-        modelo_destino: nombre del modelo para el label informativo."""
+                 adaptador=None, modelo_destino="", modelos_destino=None,
+                 **kwargs):
+        """adaptador: callable(resultado, modelo) -> list[str] de avisos.
+        Se aplica tras generar y antes de exportar (adaptación al modelo).
+        modelo_destino: modelo inicial seleccionado en el desplegable.
+        modelos_destino: lista de modelos elegibles; si None, no se
+        muestra el selector (modo standalone)."""
         super().__init__(master, **kwargs)
         self.llm_call = llm_call
         self.carpeta_salida = carpeta_salida_default
         self.adaptador = adaptador
         self.modelo_destino = modelo_destino
+        self.modelos_destino = modelos_destino or []
         self._campos = {}
         self._angulo_vars = {}
         self._construir_ui()
@@ -56,20 +65,50 @@ class AvatarFrame(ctk.CTkFrame):
         )
         titulo.grid(row=0, column=0, columnspan=2, pady=(12, 6), sticky="n")
 
-        if self.modelo_destino:
+        # Selector de modelo destino: el dataset se adapta a sus specs
+        # (negative, max_chars) sin tener que cambiar el modelo de la app.
+        if self.modelos_destino:
+            fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
+            fila_modelo.grid(row=0, column=0, columnspan=2, pady=(42, 0), sticky="n")
             ctk.CTkLabel(
-                self,
-                text=f"🎯 Adaptado al modelo activo: {self.modelo_destino} "
-                     f"(negative y límite de caracteres según sus specs)",
-                font=ctk.CTkFont(size=11),
-                text_color="#9ca3af",
-            ).grid(row=0, column=0, columnspan=2, pady=(40, 0), sticky="n")
+                fila_modelo, text="🎯 Modelo destino:",
+                font=ctk.CTkFont(size=11, weight="bold"),
+            ).pack(side="left", padx=(0, 6))
+            inicial = (self.modelo_destino
+                       if self.modelo_destino in self.modelos_destino
+                       else self.modelos_destino[0])
+            self.menu_modelo = ctk.CTkOptionMenu(
+                fila_modelo, values=self.modelos_destino, width=260)
+            self.menu_modelo.set(inicial)
+            self.menu_modelo.pack(side="left", padx=(0, 6))
+            ctk.CTkLabel(
+                fila_modelo,
+                text="(negative y límite de chars según sus specs)",
+                font=ctk.CTkFont(size=10), text_color="#9ca3af",
+            ).pack(side="left")
+        else:
+            self.menu_modelo = None
 
         # --- Columna izquierda: formulario de rasgos ---
         form = ctk.CTkScrollableFrame(self, label_text="Ficha del personaje")
         form.grid(row=1, column=0, padx=(12, 6), pady=6, sticky="nsew")
 
         fila = 0
+        # Ficha automática: la IA inventa el personaje y rellena el form
+        ctk.CTkLabel(form, text="🎲 Ficha automática — tema opcional (vacío = aleatorio)").grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+        fila_auto = ctk.CTkFrame(form, fg_color="transparent")
+        fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+        fila_auto.grid_columnconfigure(0, weight=1)
+        self.entry_tema = ctk.CTkEntry(
+            fila_auto, placeholder_text="ej: guerrera élfica, detective noir, chef robot…")
+        self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+        self.boton_auto = ctk.CTkButton(
+            fila_auto, text="🎲 Generar ficha", width=130,
+            fg_color="#7c3aed", hover_color="#6d28d9",
+            command=self._on_ficha_auto)
+        self.boton_auto.grid(row=0, column=1)
+
         # Trigger word
         ctk.CTkLabel(form, text="Trigger word (LoRA)").grid(
             row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
@@ -134,6 +173,62 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_generar.grid(row=0, column=1, padx=(8, 0))
 
     # ------------------------------------------------------------- acciones
+    def _on_ficha_auto(self):
+        """La IA inventa el personaje (con tema opcional) y rellena el form."""
+        tema = self.entry_tema.get().strip()
+        self.boton_auto.configure(state="disabled")
+        self.label_estado.configure(text="🎲 Inventando personaje con la IA…")
+
+        def _worker():
+            try:
+                user_p = construir_user_prompt_ficha(tema)
+                # T alta para variedad — si el llm_call inyectado no acepta
+                # temperature (standalone), caer a la firma de 2 args.
+                try:
+                    resp = self.llm_call(SYSTEM_PROMPT_AVATAR_FICHA, user_p,
+                                         temperature=0.9)
+                except TypeError:
+                    resp = self.llm_call(SYSTEM_PROMPT_AVATAR_FICHA, user_p)
+                ficha = parsear_ficha_json(resp)
+                if not ficha:
+                    raise ValueError(
+                        "La IA no devolvió una ficha JSON parseable. "
+                        "Prueba otra vez (o con otro tema).")
+                self.after(0, lambda: self._aplicar_ficha(ficha))
+            except Exception as e:
+                self.after(0, lambda e=e: self._fin_ficha_error(str(e)))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _aplicar_ficha(self, ficha: dict):
+        """Vuelca la ficha generada en los widgets del formulario."""
+        for key, widget in self._campos.items():
+            valor = ficha.get(key, "")
+            if not valor:
+                continue
+            if isinstance(widget, ctk.CTkOptionMenu):
+                # Solo aceptar valores que existan en el desplegable
+                opciones = list(widget.cget("values"))
+                match = next((o for o in opciones
+                              if o.lower() == valor.lower()), None)
+                if match:
+                    widget.set(match)
+            else:
+                widget.delete(0, "end")
+                widget.insert(0, valor)
+        trigger = ficha.get("trigger", "")
+        if trigger:
+            self.entry_trigger.delete(0, "end")
+            self.entry_trigger.insert(0, trigger)
+        self.boton_auto.configure(state="normal")
+        self.label_estado.configure(
+            text="🎲 Ficha generada — revísala/edítala y pulsa ⚡ Generar dataset.")
+
+    def _fin_ficha_error(self, mensaje: str):
+        self.boton_auto.configure(state="normal")
+        self.label_estado.configure(text="❌ Error generando la ficha.")
+        messagebox.showerror("Error", mensaje)
+
     def _on_generar(self):
         trigger = self.entry_trigger.get().strip()
         if not trigger:
@@ -161,13 +256,15 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_generar.configure(state="disabled")
         self.label_estado.configure(text="Generando descripción canónica con el LLM…")
 
+        modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
         hilo = threading.Thread(
             target=self._worker_generar,
-            args=(form_data, trigger, seleccionados, carpeta),
+            args=(form_data, trigger, seleccionados, carpeta, modelo_sel),
             daemon=True)
         hilo.start()
 
-    def _worker_generar(self, form_data, trigger, seleccionados, carpeta):
+    def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
+                        modelo_sel=""):
         try:
             resultado = generar_dataset_avatar(
                 llm_call=self.llm_call,
@@ -178,8 +275,10 @@ class AvatarFrame(ctk.CTkFrame):
                 fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
                 incluir_negative=bool(self.check_negative.get()),
             )
-            # Adaptación al modelo destino (specs SeaArt) ANTES de exportar
-            avisos = self.adaptador(resultado) if self.adaptador else []
+            # Adaptación al modelo destino elegido (specs SeaArt) ANTES
+            # de exportar
+            avisos = (self.adaptador(resultado, modelo_sel)
+                      if self.adaptador else [])
             ruta = exportar_dataset(resultado, carpeta)
             self.after(0, lambda: self._fin_ok(resultado, ruta, avisos))
         except Exception as e:
@@ -227,38 +326,50 @@ def abrir_avatar_window(app) -> None:
     except Exception:
         pass
 
-    def _llm_call(system_prompt: str, user_prompt: str) -> str:
+    def _llm_call(system_prompt: str, user_prompt: str,
+                  temperature: float = 0.3) -> str:
+        # T=0.3 para la descripción canónica (determinista); la ficha
+        # automática pide T=0.9 para variedad.
         return app.deepseek.generar_batch(
-            system_prompt, user_prompt, temperature=0.3, max_tokens=900)
+            system_prompt, user_prompt, temperature=temperature, max_tokens=900)
 
-    # Adaptación al modelo de imagen activo (specs SeaArt auditados):
-    # quita el negative si el modelo no lo soporta y avisa si algún
-    # prompt excede su max_chars medido. Determinista, sin LLM extra.
+    # Selector de modelo destino: mismos modelos que el combo de la app
+    # (plataforma actual), sin separadores. El adaptador resuelve los
+    # specs DEL MODELO ELEGIDO al generar: quita el negative si no lo
+    # soporta y avisa si algún prompt excede su max_chars. Sin LLM extra.
     modelo_activo = ""
+    modelos = []
     adaptador = None
     try:
-        from config import get_image_model_specs
-        modelo_activo = app.footer.modelo_imagen_valido() or ""
-        specs = get_image_model_specs(modelo_activo) if modelo_activo else None
-        if specs:
-            from modules.avatar_generator import adaptar_dataset_a_modelo
+        from config import es_separador, get_image_model_specs
+        from modules.avatar_generator import adaptar_dataset_a_modelo
 
-            def adaptador(resultado, _m=modelo_activo, _s=specs):
-                return adaptar_dataset_a_modelo(resultado, _m, _s)
-        else:
-            modelo_activo = ""  # sin specs → sin label ni adaptación
+        try:
+            valores = list(app.combo_modelo_imagen.cget("values"))
+        except Exception:
+            valores = []
+        modelos = [v for v in valores if v and not es_separador(v)]
+        modelo_activo = app.footer.modelo_imagen_valido() or ""
+
+        def adaptador(resultado, modelo):
+            if not modelo:
+                return []
+            specs = get_image_model_specs(modelo) or {}
+            return adaptar_dataset_a_modelo(resultado, modelo, specs)
     except Exception:
-        modelo_activo = ""
+        modelos = []
+        adaptador = None
 
     vent = GPromptWindow(app)
     vent.title("🧑‍🎨 Avatar dataset (LoRA)")
-    vent.geometry("920x700")
+    vent.geometry("920x720")
     vent.transient(app)
 
     frame = AvatarFrame(
         vent, llm_call=_llm_call,
         carpeta_salida_default=str(Path.home()),
-        adaptador=adaptador, modelo_destino=modelo_activo)
+        adaptador=adaptador, modelo_destino=modelo_activo,
+        modelos_destino=modelos)
     frame.pack(fill="both", expand=True, padx=4, pady=4)
 
 

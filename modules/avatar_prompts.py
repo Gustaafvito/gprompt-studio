@@ -65,6 +65,67 @@ def construir_user_prompt_canonico(form_data: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# FICHA AUTOMÁTICA — el LLM inventa el personaje y rellena el formulario
+# (sesión 19 round 10, petición del usuario)
+# ---------------------------------------------------------------------------
+SYSTEM_PROMPT_AVATAR_FICHA = """Eres un diseñador de personajes para datasets de entrenamiento LoRA.
+
+Tu tarea: inventar UNA ficha de personaje coherente y devolverla EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown ni ```.
+2. Claves EXACTAS del JSON: trigger, genero, edad, etnia_piel, pelo, ojos, rasgos, complexion, ropa.
+3. Valores en ESPAÑOL, salvo "trigger": formato ohwx_nombre (minúsculas, sin espacios, ej. "ohwx_vera").
+4. Valores cerrados obligatorios:
+   - genero: uno de [Mujer, Hombre, Andrógino]
+   - edad: uno de [18-25, 25-35, 35-45, 45-60, 60+]
+   - complexion: uno de [Delgada, Atlética, Media, Robusta, Curvy]
+5. Descripciones físicas CONCRETAS y verificables (color + forma + detalle), nada de adjetivos vagos tipo "bonito".
+6. La ropa debe ser cerrada y exacta (color + prenda + detalle) — será idéntica en todo el dataset.
+7. Personaje visualmente distintivo pero realista de generar con IA.
+
+EJEMPLO DE SALIDA VÁLIDA:
+{"trigger": "ohwx_vera", "genero": "Mujer", "edad": "25-35", "etnia_piel": "piel morena con subtono cálido", "pelo": "melena negra lisa hasta la cintura con flequillo recto", "ojos": "ojos marrón oscuro grandes y rasgados", "rasgos": "lunar bajo el ojo izquierdo, pendientes de aro dorados", "complexion": "Atlética", "ropa": "chaqueta bomber verde oliva sobre camiseta negra lisa y vaqueros negros"}"""
+
+
+def construir_user_prompt_ficha(tema: str = "") -> str:
+    """Mensaje de usuario para la ficha automática. tema opcional."""
+    tema = (tema or "").strip()
+    if tema:
+        return (f"Inventa la ficha de un personaje basado en este "
+                f"tema/concepto: {tema}\n\nDevuelve SOLO el JSON.")
+    return ("Inventa la ficha de un personaje original aleatorio "
+            "(varía género, edad, etnia y estilo).\n\nDevuelve SOLO el JSON.")
+
+
+def parsear_ficha_json(respuesta: str) -> dict:
+    """Extrae la ficha del JSON de la respuesta del LLM.
+
+    Devuelve {} si no hay JSON parseable. Filtra a las claves conocidas
+    del formulario (+trigger) y descarta valores vacíos o no escalares.
+    """
+    import json as _json
+    import re as _re
+
+    m = _re.search(r"\{.*\}", respuesta or "", _re.DOTALL)
+    if not m:
+        return {}
+    try:
+        datos = _json.loads(m.group(0))
+    except Exception:
+        return {}
+    if not isinstance(datos, dict):
+        return {}
+    claves = {"trigger", "genero", "edad", "etnia_piel", "pelo", "ojos",
+              "rasgos", "complexion", "ropa"}
+    ficha = {}
+    for k, v in datos.items():
+        if k in claves and isinstance(v, (str, int, float)) and str(v).strip():
+            ficha[k] = str(v).strip()
+    return ficha
+
+
+# ---------------------------------------------------------------------------
 # FASE 2 — ENSAMBLADO PROGRAMÁTICO DEL DATASET
 # ---------------------------------------------------------------------------
 def ensamblar_dataset(
