@@ -105,6 +105,7 @@ from config import (
     VOCES_AUDIO,
     get_theme_colors,
 )
+from modules.avatar_ui import abrir_avatar_window
 from modules.style_guide import abrir_guia_estilos
 from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 
@@ -265,6 +266,7 @@ class UIBuildersService:
             ]),
             ("🛠 Herramientas", "#c97a2e", [
                 ("🔒  Anclaje rasgos (consistencia)", self.app.creative.cmd_anclaje_visual),
+                ("🧑‍🎨  Avatar dataset (LoRA)", lambda: abrir_avatar_window(self.app)),
                 ("🎭  Detectar estilo (3 imágenes)", self.app.cliente.cmd_companero_moodboard),
                 ("📤  Export CLI", self.app.backup.cmd_export_cli),
                 ("💼  Modo Cliente", self.app.cliente.cmd_modo_cliente),

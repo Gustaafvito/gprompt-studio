@@ -69,6 +69,11 @@ hiddenimports = [
     'modules.dashboard',
     'modules.ui_footer',
     'modules.tooltip',
+    # Módulo Avatar dataset LoRA (sesión 19)
+    'modules.avatar_config',
+    'modules.avatar_prompts',
+    'modules.avatar_generator',
+    'modules.avatar_ui',
     # Keyring backends por plataforma (PyInstaller suele perder éstos)
     'keyring.backends.Windows',
     'keyring.backends.SecretService',
