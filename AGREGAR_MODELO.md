@@ -286,20 +286,39 @@ for n, s in d.items():
 | Imagen | Nano Banana (SeaArt) | 3 | ✅ |
 | Imagen | MAI Image (SeaArt) | 2 | ✅ (max_chars 5000 medido) |
 | Imagen | Reve (SeaArt) | 1 | ✅ (max_chars 2000 medido) |
+| Imagen | SeaArt Infinity ×2 | 2 | 🟡 doc oficial (max_chars sin medir) |
+| Imagen | SD 3.5 ×3 | 3 | 🟡 doc oficial (max_chars sin medir) |
+| Imagen | SeaArt Realism | 1 | 🟡 doc oficial (max_chars sin medir) |
+| Imagen | NoobAI / T-Ponynai3 / Counterfeit / Temporal | 4 | 🟡 doc oficial |
 | Imagen | Z-Image (otros) | 3 | ⏳ |
 | Imagen | Flux | 17 | ⏳ |
 | Imagen | Illustrious | 10 | ⏳ |
-| Imagen | SDXL | 6 | ⏳ |
 | Imagen | Midjourney | 5 | ⏳ |
-| Imagen | Otros | 69 | ⏳ |
+| Imagen | Otros | 62 | ⏳ |
 | Vídeo | SeaArt | 2 | ✅ (1 de 2) |
 | Vídeo | Resto | 13 | ⏳ |
 | Audio | Todos | 10 | ⏳ |
 
-Total: 120 imagen + 15 vídeo + 10 audio. **11 modelos auditados**
-(Reve 2.0 y MAI-Image-2.5 con max_chars MEDIDO empíricamente en
-sesión 19: cortes exactos en 2000 y 5000 respectivamente, prompt
-marcado de 5192 chars; Flash asume el límite del 2.5 — mismo motor).
+Total: 120 imagen + 15 vídeo + 10 audio. **11 auditados + 10 semi**.
+Sesión 19: Reve 2.0 y MAI-Image-2.5 con max_chars MEDIDO (2000/5000,
+prompt marcado de 5192 chars; Flash asume el del 2.5). Además, 10
+modelos actualizados con la DOC OFICIAL (docs.seaart.ai): correcciones
+críticas `no_weights=true` en Infinity/Realism/SD3.5 e
+`is_natural=true` en SD 3.5 (la doc exige lenguaje natural), pasos/cfg/
+samplers oficiales y negatives recomendados en limitaciones.
+
+### 📖 Fuente nueva: documentación oficial (docs.seaart.ai)
+
+`https://docs.seaart.ai/guide-1/espanol` tiene specs oficiales útiles:
+- `4-parametros/4-6-guia-completa-de-prompts` y `4-7-edicion-de-prompts`
+  (sintaxis de pesos/fusión: `[a:b:f]`, `[tag:f]`, `[tag::f]`, `[a|b]`,
+  escape `\(...\)` — NO aplica a Flux).
+- `6-eventos-permanentes/recomendaciones-de-modelos-de-alta-calidad/*`
+  (página por modelo con sampler/pasos/CFG/negative oficiales).
+- `3-guia-avanzada/3-2-entrenamiento-de-lora-avanzado/*` (reglas de
+  datasets LoRA — aplicadas al módulo Avatar).
+La doc oficial NO da max_chars → sigue haciendo falta la medición
+empírica con prompt marcado.
 
 ---
 

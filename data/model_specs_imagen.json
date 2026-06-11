@@ -23,13 +23,14 @@
     ],
     "max_imagenes": 8,
     "best_for": "Modelo oficial all-in-one de SeaArt. 144.5M usos. Versátil para cualquier estilo. Magia de sugerencia integrada. Control con sampler/steps/CFG.",
-    "prompt_formula": "Lenguaje natural descriptivo o tags. Modelo versátil que acepta ambos formatos.",
+    "prompt_formula": "Lenguaje natural descriptivo SIN comas-tag y SIN pesos (oficial). Orden oficial: Estilo/Medio → Sujeto → Detalles del sujeto → Detalles adicionales → Iluminación/Sombra → Modificadores finales. Texto a renderizar entre comillas.",
     "prompt_ejemplo": "A young woman in a sunlit meadow, golden hour, soft bokeh, cinematic composition, professional photography",
     "sampler_recomendado": "Euler",
     "pasos": 30,
     "cfg": 3.5,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Sin prompt negativo visible en UI. Modelo cerrado de SeaArt."
+    "limitaciones": "Sin prompt negativo visible en UI. Modelo cerrado de SeaArt. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
+    "no_weights": true
   },
   "SeaArt Infinity V2.0": {
     "nota": 4.7,
@@ -54,10 +55,11 @@
     ],
     "max_imagenes": 4,
     "best_for": "Modelo oficial V2.0 de SeaArt. Simplificado: sin sampler/CFG/steps. Solo prompt + genera. Magia de sugerencia. Ideal para principiantes y resultados rápidos.",
-    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle, el modelo se encarga del resto.",
+    "prompt_formula": "Lenguaje natural descriptivo SIN comas-tag y SIN pesos (oficial). Orden oficial: Estilo/Medio → Sujeto → Detalles del sujeto → Detalles adicionales → Iluminación/Sombra → Modificadores finales. Texto a renderizar entre comillas.",
     "prompt_ejemplo": "Cinematic portrait of an old man reading a book in a cozy library, warm lamp light, dust particles in the air, shallow depth of field",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Sin control avanzado (no sampler, no CFG, no steps, no negative). Solo semilla fija. Máx 4 imágenes."
+    "limitaciones": "Sin control avanzado (no sampler, no CFG, no steps, no negative). Solo semilla fija. Máx 4 imágenes. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
+    "no_weights": true
   },
   "SeaArt Realism": {
     "nota": 3.6,
@@ -83,10 +85,11 @@
     ],
     "max_imagenes": 4,
     "best_for": "Fotorrealismo de SeaArt. 3.9M usos. Modelo Flux.1 D. Ideal para retratos y escenas realistas.",
-    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle.",
+    "prompt_formula": "Lenguaje natural descriptivo (oficial). Orden: tipo de foto → sujeto → detalles → composición → iluminación → modificadores. Negaciones dentro del positivo, texto a renderizar entre comillas.",
     "prompt_ejemplo": "A beautiful woman portrait, detailed skin texture, natural lighting, soft bokeh background, professional photography",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Sin prompt negativo visible en UI. Modelo basado en Flux.1 D."
+    "limitaciones": "Sin prompt negativo visible en UI. Modelo basado en Flux.1 D. DOC OFICIAL: base FLUX — ignora el negative (alternativa: negaciones en el positivo, p.ej. 'una carretera sin coches'); pesos, corchetes y BREAK no funcionan; texto entre comillas; términos artísticos pueden romper el realismo.",
+    "no_weights": true
   },
   "Luma Uni-1.1 Image": {
     "nota": 4.3,
@@ -411,7 +414,7 @@
   "SD 3.5 Large": {
     "nota": 3.9,
     "has_negative": true,
-    "is_natural": false,
+    "is_natural": true,
     "ratios": [
       "1:1",
       "2:3",
@@ -428,19 +431,20 @@
     ],
     "max_imagenes": 4,
     "best_for": "Stable Diffusion 3.5 Large (fp8). 229.7K usos. Modelo base SD 3.5L. Alta calidad, versátil para distintos estilos.",
-    "prompt_formula": "Tag-based: tags descriptivos separados por comas.weights como (tag:1.2). Negative prompt recomendado.",
+    "prompt_formula": "Lenguaje natural (oficial). Orden: Estilo/Medio → Sujeto → Detalles del sujeto → Referencias artísticas → Detalles adicionales → Iluminación/Sombra → Modificadores finales. Renderiza texto preciso y múltiples sujetos distintos sin esfuerzo.",
     "prompt_ejemplo": "1girl, portrait, detailed skin, natural lighting, (cinematic:1.3), best quality, masterpiece, (deformed hands:0.8)",
     "clip_skip": 1,
-    "sampler_recomendado": "Euler",
-    "pasos": "25-40",
-    "cfg": "4-7",
+    "sampler_recomendado": "Euler+beta / DPM++ 2M+sgm_uniform",
+    "pasos": "20 (máx 40)",
+    "cfg": "4.5 (7 anime)",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "fp8 quantization. Sin modo 'fast'. Requiere negative prompt para mejores resultados."
+    "limitaciones": "fp8 quantization. Sin modo 'fast'. Requiere negative prompt para mejores resultados. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
+    "no_weights": true
   },
   "SD 3.5 Medium": {
     "nota": 3.8,
     "has_negative": true,
-    "is_natural": false,
+    "is_natural": true,
     "ratios": [
       "1:1",
       "2:3",
@@ -457,19 +461,20 @@
     ],
     "max_imagenes": 4,
     "best_for": "Stable Diffusion 3.5 Medium (fp8). Versión reducida del modelo SD 3.5. Más eficiente en recursos manteniendo buena calidad.",
-    "prompt_formula": "Tag-based: tags descriptivos. Negative prompt recomendado para evitar artefactos.",
+    "prompt_formula": "Lenguaje natural (oficial). Orden: Estilo/Medio → Sujeto → Detalles del sujeto → Referencias artísticas → Detalles adicionales → Iluminación/Sombra → Modificadores finales. Renderiza texto preciso y múltiples sujetos distintos sin esfuerzo.",
     "prompt_ejemplo": "landscape, nature, mountains, golden hour, (detailed:1.2), best quality, masterpiece",
     "clip_skip": 1,
     "sampler_recomendado": "Euler",
     "pasos": "20-35",
-    "cfg": "4-6",
+    "cfg": "4.5 (7 anime)",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Menor capacidad que Large para detalles finos."
+    "limitaciones": "Menor capacidad que Large para detalles finos. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
+    "no_weights": true
   },
   "SD 3.5 Large Turbo": {
     "nota": 3.7,
     "has_negative": true,
-    "is_natural": false,
+    "is_natural": true,
     "ratios": [
       "1:1",
       "2:3",
@@ -485,14 +490,15 @@
     ],
     "max_imagenes": 4,
     "best_for": "Stable Diffusion 3.5 Large Turbo (fp8). Versión rápida del SD 3.5. Menos pasos, generación más rápida.",
-    "prompt_formula": "Tag-based simplificado. Fewer steps, good results.",
+    "prompt_formula": "Lenguaje natural (oficial). Orden: Estilo/Medio → Sujeto → Detalles del sujeto → Referencias artísticas → Detalles adicionales → Iluminación/Sombra → Modificadores finales. Renderiza texto preciso y múltiples sujetos distintos sin esfuerzo.",
     "prompt_ejemplo": "1girl, portrait, soft lighting, (high quality:1.2), masterpiece, (nsfw:0.9)",
     "clip_skip": 1,
-    "sampler_recomendado": "Euler",
+    "sampler_recomendado": "Euler+beta",
     "pasos": "10-20",
     "cfg": "3-5",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Modo 'fast' no funciona. Menor calidad que la versión completa."
+    "limitaciones": "Modo 'fast' no funciona. Menor calidad que la versión completa. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
+    "no_weights": true
   },
   "SeaArt Film": {
     "nota": 4.5,
@@ -837,7 +843,7 @@
     "cfg": 7,
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo."
+    "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo. DOC OFICIAL: empezar con score_9, score_8_up...score_4_up + source_anime (o 'anime'); NO usar 'masterpiece/best quality'; rating_* para seguridad. Negative oficial: '(score_4, score_3, score_2, score_1), ugly, bad anatomy, bad hands'. No fotorrealista, no furry."
   },
   "NoobAI-XL (NAI-XL)": {
     "nota": 4.5,
@@ -861,11 +867,11 @@
     "best_for": "NoobAI-XL (NAI-XL). 796.5K usos. V-prediction model. Excelente para anime y furry. 13M imágenes Danbooru+e621. Reconoce personajes, artistas, series.",
     "prompt_formula": "Calidad tags al inicio: masterpiece, best quality, newest, absurdres, highres. Luego: personaje, serie, artistas, tags. No underscores, escapar ().",
     "prompt_ejemplo": "masterpiece, best quality, newest, absurdres, highres, ganyu (genshin impact), genshin impact, solo, blue hair, detailed background",
-    "sampler_recomendado": "Euler",
-    "pasos": "28-35",
-    "cfg": "4-5",
+    "sampler_recomendado": "Euler / Euler a",
+    "pasos": "28-40",
+    "cfg": "3.5-5.5",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. Compatible con LoRA PonyV6 y Animagine."
+    "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. Compatible con LoRA PonyV6 y Animagine. DOC OFICIAL: sin guiones bajos en tags; paréntesis escapados \\(...\\); artistas SOLO por nombre (sin 'by'); personajes como 'nombre (serie), serie'; sin CLIP Skip ni VAE extra. Negative oficial: 'nsfw, low quality, worst quality, normal quality, text, signature, jpeg artifacts, bad anatomy, old'."
   },
   "WAI-Pluralistic-Noob": {
     "nota": 4.6,
@@ -916,7 +922,7 @@
     "cfg": "8-10",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. Solo personajes conocidos limitados."
+    "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. Solo personajes conocidos limitados. DOC OFICIAL: el embedding EasyNegativeV2 es ESENCIAL en el negative (v3; no mezclar con EasyNegative v1). Mayor riesgo de errores anatómicos en manos; no reconoce la mayoría de personajes conocidos."
   },
   "Temporal Paradox Mix": {
     "nota": 4.5,
@@ -938,11 +944,11 @@
     "prompt_formula": "Tag-based mixto. Funciona con prompts breves o detallados. Embeddings negativos recomendados.",
     "prompt_ejemplo": "cinematic portrait, 1woman, detailed hands, elegant outfit, studio lighting, 8K, photorealistic, sharp focus",
     "sampler_recomendado": "Euler a / DPM++ 2M Karras",
-    "pasos": "20-40",
+    "pasos": "35-40 (20 ok)",
     "cfg": "7-8",
     "clip_skip": "1-2",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos."
+    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales)."
   },
   "Illustrious Realism by Klaabu": {
     "nota": 4.9,
