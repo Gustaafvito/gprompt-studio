@@ -29,6 +29,7 @@ from modules.avatar_prompts import (
     construir_user_prompt_canonico,
     construir_user_prompt_ficha,
     ensamblar_dataset,
+    ensamblar_dataset_edicion,
     parsear_ficha_json,
 )
 
@@ -186,6 +187,56 @@ class TestEnsamblarDataset:
     def test_sin_estilo_no_deja_coma_colgando(self):
         ds = ensamblar_dataset("t", DESC, ["face_front"], "", "bg")
         assert not ds[0]["prompt"].endswith(", ")
+
+
+# ── Modo edición img2img (sesión 19 round 12) ─────────────────────
+
+class TestDatasetEdicion:
+    def test_16_prompts_de_edicion(self):
+        ds = ensamblar_dataset_edicion("ohwx_t", DEFAULT_ANGLE_SET, "gray bg")
+        assert len(ds) == 16
+
+    def test_prompt_ordena_conservar_identidad_y_cambiar_camara(self):
+        ds = ensamblar_dataset_edicion("t", ["face_profile_left"], "gray bg")
+        p = ds[0]["prompt"]
+        assert "EXACT same person from the reference image" in p
+        assert "Change ONLY the camera" in p
+        assert "full left side profile" in p
+        assert "gray bg" in p
+
+    def test_sin_descripcion_canonica(self):
+        # La identidad la aporta la imagen — el texto NO describe al personaje
+        ds = ensamblar_dataset_edicion("t", ["face_front"], "bg")
+        assert DESC not in ds[0]["prompt"]
+
+    def test_caption_identica_al_modo_texto(self):
+        texto = ensamblar_dataset("t", DESC, ["face_front"], "", "bg")
+        edicion = ensamblar_dataset_edicion("t", ["face_front"], "bg")
+        assert edicion[0]["caption"] == texto[0]["caption"]
+        assert edicion[0]["filename"] == texto[0]["filename"]
+
+    def test_adaptador_tambien_vacia_negatives_de_edicion(self):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        r["dataset_edicion"] = ensamblar_dataset_edicion("t", ["face_front"], "bg")
+        adaptar_dataset_a_modelo(r, "Nano Banana", {"has_negative": False})
+        assert r["dataset"][0]["negative"] == ""
+        assert r["dataset_edicion"][0]["negative"] == ""
+
+    def test_export_incluye_prompts_edicion(self, tmp_path):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        r["dataset_edicion"] = ensamblar_dataset_edicion("t", ["face_front"], "bg")
+        base = exportar_dataset(r, str(tmp_path))
+        assert os.path.isfile(os.path.join(base, "prompts_edicion",
+                                           "01_face_front.txt"))
+        assert os.path.isfile(os.path.join(base, "prompts_edicion_todos.txt"))
+        with open(os.path.join(base, "prompts_edicion_todos.txt"),
+                  encoding="utf-8") as f:
+            assert "MODO EDICIÓN" in f.read()
+
+    def test_export_sin_edicion_no_crea_carpeta(self, tmp_path):
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
+        base = exportar_dataset(r, str(tmp_path))
+        assert not os.path.isdir(os.path.join(base, "prompts_edicion"))
 
 
 # ── Pipeline completo + exportación ───────────────────────────────

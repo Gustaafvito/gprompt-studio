@@ -82,11 +82,17 @@ def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
 
     resultado["modelo_destino"] = modelo
 
+    # El dataset de edición (img2img), si existe, sigue las mismas reglas
+    listas = [resultado["dataset"]] + (
+        [resultado["dataset_edicion"]] if resultado.get("dataset_edicion") else [])
+
     if specs.get("has_negative") is False:
-        n_con_negative = sum(1 for it in resultado["dataset"] if it["negative"])
+        n_con_negative = sum(1 for lista in listas
+                             for it in lista if it["negative"])
         if n_con_negative:
-            for it in resultado["dataset"]:
-                it["negative"] = ""
+            for lista in listas:
+                for it in lista:
+                    it["negative"] = ""
             avisos.append(
                 f"⚠️ {modelo} NO soporta negative prompt — se ha quitado "
                 f"de los {n_con_negative} prompts del dataset."
@@ -94,7 +100,7 @@ def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
 
     max_c = specs.get("max_chars")
     if max_c:
-        excedidos = [it["filename"] for it in resultado["dataset"]
+        excedidos = [it["filename"] for lista in listas for it in lista
                      if len(it["prompt"]) > max_c]
         if excedidos:
             avisos.append(
@@ -154,6 +160,34 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
                 "\n=== NEGATIVE PROMPT (idéntico para todas) ===\n"
                 + resultado["dataset"][0]["negative"] + "\n"
             )
+
+    # Prompts de EDICIÓN img2img (solo si se generaron — requieren
+    # imagen de referencia). Van en su propia carpeta para no mezclar
+    # con los text-to-image.
+    if resultado.get("dataset_edicion"):
+        dir_edicion = os.path.join(base, "prompts_edicion")
+        os.makedirs(dir_edicion, exist_ok=True)
+        lineas_ed = [
+            "=== MODO EDICIÓN (img2img con imagen de sujeto) ===",
+            "1. En SeaArt elige un modelo con edición/sujeto: MAI-Image-2.5,",
+            "   Nano Banana o Reve 2.0.",
+            "2. Sube la imagen 'referencia.*' de esta carpeta como SUJETO.",
+            "3. Pega cada prompt de abajo: cambia solo la cámara, la",
+            "   identidad la aporta tu imagen.",
+            "",
+        ]
+        for item in resultado["dataset_edicion"]:
+            nombre = item["filename"]
+            contenido = f"PROMPT (edición):\n{item['prompt']}\n"
+            if item["negative"]:
+                contenido += f"\nNEGATIVE PROMPT:\n{item['negative']}\n"
+            with open(os.path.join(dir_edicion, f"{nombre}.txt"), "w",
+                      encoding="utf-8") as f:
+                f.write(contenido)
+            lineas_ed.append(f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n")
+        with open(os.path.join(base, "prompts_edicion_todos.txt"), "w",
+                  encoding="utf-8") as f:
+            f.write("\n".join(lineas_ed))
 
     # Consejos de la guía OFICIAL de SeaArt para entrenamiento LoRA
     # (docs.seaart.ai → Entrenamiento de LoRA avanzado → datasets).

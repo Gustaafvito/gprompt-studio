@@ -201,3 +201,52 @@ def ensamblar_dataset(
         })
 
     return dataset
+
+
+def ensamblar_dataset_edicion(
+    trigger_word: str,
+    angulos_seleccionados: list,
+    fondo: str,
+    incluir_negative: bool = True,
+) -> list:
+    """Variante IMG2IMG del dataset: prompts de EDICIÓN por ángulo.
+
+    Para modelos con imagen de sujeto/edición (MAI-Image-2.5, Nano
+    Banana, Reve 2.0, SeaArt Film Edit): se sube la imagen de
+    referencia como sujeto y cada prompt ordena cambiar SOLO la cámara
+    manteniendo la identidad. Sin descripción canónica: la identidad
+    la aporta la imagen, no el texto (sesión 19 round 12).
+    """
+    trigger = trigger_word.strip()
+    dataset = []
+    for key in angulos_seleccionados:
+        angulo = AVATAR_ANGLES.get(key)
+        if not angulo:
+            continue
+        partes = [
+            ("Keep the EXACT same person from the reference image: "
+             "same face identity, same hairstyle, same facial hair, "
+             "same clothing"),
+            f"Change ONLY the camera and pose to: {angulo['prompt']}",
+        ]
+        if fondo:
+            partes.append(f"Background: {fondo}")
+        partes.append(AVATAR_LIGHTING)
+        partes.append("Preserve photorealistic detail and natural skin texture")
+        prompt = ". ".join(partes) + "."
+
+        # La caption de entrenamiento es la misma que en el modo texto
+        partes_caption = [trigger, angulo["framing"]]
+        if fondo:
+            partes_caption.append(fondo.split(",")[0].strip())
+        partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
+
+        dataset.append({
+            "angle_key": key,
+            "label": angulo["label"],
+            "filename": angulo["filename"],
+            "prompt": prompt,
+            "negative": AVATAR_NEGATIVE_PROMPT if incluir_negative else "",
+            "caption": ", ".join(partes_caption),
+        })
+    return dataset

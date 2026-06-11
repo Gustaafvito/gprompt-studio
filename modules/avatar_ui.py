@@ -360,6 +360,16 @@ class AvatarFrame(ctk.CTkFrame):
                 fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
                 incluir_negative=bool(self.check_negative.get()),
             )
+            # Si hay imagen de referencia → generar TAMBIÉN los prompts
+            # de edición img2img (la identidad la aporta la imagen).
+            if self._imagen_referencia:
+                from modules.avatar_prompts import ensamblar_dataset_edicion
+                resultado["dataset_edicion"] = ensamblar_dataset_edicion(
+                    trigger_word=trigger,
+                    angulos_seleccionados=seleccionados,
+                    fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
+                    incluir_negative=bool(self.check_negative.get()),
+                )
             # Adaptación al modelo destino elegido (specs SeaArt) ANTES
             # de exportar
             avisos = (self.adaptador(resultado, modelo_sel)
@@ -389,6 +399,11 @@ class AvatarFrame(ctk.CTkFrame):
         mensaje = (
             f"Descripción canónica:\n\n{resultado['descripcion_canonica']}\n\n"
             f"Exportado en:\n{ruta}")
+        if resultado.get("dataset_edicion"):
+            mensaje += (
+                "\n\n📷 Incluye prompts_edicion/ (img2img): sube "
+                "referencia.* como SUJETO en MAI / Nano Banana / Reve y "
+                "pega esos prompts — la identidad la ancla tu imagen.")
         if avisos:
             mensaje += "\n\n" + "\n\n".join(avisos)
         messagebox.showinfo("Dataset generado", mensaje)
