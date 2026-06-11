@@ -96,11 +96,19 @@ class TestEnsamblarDataset:
         assert AVATAR_LIGHTING in p
         assert p.endswith("estilo_x")
 
-    def test_caption_kohya_solo_trigger_y_encuadre(self):
-        ds = ensamblar_dataset("ohwx_ana", DESC, ["face_front"], "", "bg")
-        # La identidad NO va en la caption (la absorbe el trigger)
-        assert ds[0]["caption"] == "ohwx_ana, close-up portrait"
+    def test_caption_kohya_incluye_fondo_e_iluminacion(self):
+        # GUÍA OFICIAL SeaArt: la caption etiqueta fondo/iluminación/pose
+        # para que el LoRA no los absorba; la identidad NO va (trigger).
+        ds = ensamblar_dataset("ohwx_ana", DESC, ["face_front"], "",
+                               "plain gray background, seamless backdrop")
+        assert ds[0]["caption"] == ("ohwx_ana, close-up portrait, "
+                                    "plain gray background, "
+                                    "soft even studio lighting")
         assert DESC not in ds[0]["caption"]
+
+    def test_caption_sin_fondo_omite_el_segmento(self):
+        ds = ensamblar_dataset("t", DESC, ["face_front"], "", "")
+        assert ds[0]["caption"] == "t, close-up portrait, soft even studio lighting"
 
     def test_negative_opcional(self):
         con = ensamblar_dataset("t", DESC, ["face_front"], "", "bg",
@@ -183,7 +191,14 @@ class TestPipeline:
 
         with open(os.path.join(base, "captions", "01_face_front.txt"),
                   encoding="utf-8") as f:
-            assert f.read() == "ohwx_test, close-up portrait"
+            assert f.read() == ("ohwx_test, close-up portrait, bg, "
+                                "soft even studio lighting")
+
+        # Consejos oficiales de SeaArt incluidos en cada export
+        consejos = os.path.join(base, "CONSEJOS_SEAART.txt")
+        assert os.path.isfile(consejos)
+        with open(consejos, encoding="utf-8") as f:
+            assert "25-40 imágenes" in f.read()
 
         with open(os.path.join(base, "prompts", "01_face_front.txt"),
                   encoding="utf-8") as f:

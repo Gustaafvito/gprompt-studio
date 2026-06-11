@@ -101,9 +101,16 @@ def ensamblar_dataset(
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
 
-        # Caption kohya: trigger + encuadre. La identidad NO se describe en la
-        # caption para que el LoRA la absorba en el trigger word.
-        caption = f"{trigger}, {angulo['framing']}"
+        # Caption kohya: trigger + encuadre + fondo + iluminación.
+        # GUÍA OFICIAL SeaArt (datasets LoRA): la caption debe incluir lo
+        # que el LoRA NO debe absorber (fondo, iluminación, pose) — si el
+        # fondo no se etiqueta, el LoRA lo "pega" al personaje. La
+        # identidad NO se describe: la absorbe el trigger word.
+        partes_caption = [trigger, angulo["framing"]]
+        if fondo:
+            partes_caption.append(fondo.split(",")[0].strip())
+        partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
+        caption = ", ".join(partes_caption)
 
         dataset.append({
             "angle_key": key,

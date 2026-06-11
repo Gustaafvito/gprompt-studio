@@ -155,7 +155,34 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
                 + resultado["dataset"][0]["negative"] + "\n"
             )
 
+    # Consejos de la guía OFICIAL de SeaArt para entrenamiento LoRA
+    # (docs.seaart.ai → Entrenamiento de LoRA avanzado → datasets).
+    with open(os.path.join(base, "CONSEJOS_SEAART.txt"), "w", encoding="utf-8") as f:
+        f.write(CONSEJOS_LORA_SEAART)
+
     return base
+
+
+CONSEJOS_LORA_SEAART = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJE
+====================================================
+(fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
+
+• CANTIDAD: 25-40 imágenes en total. Más imágenes ≠ mejor (riesgo de
+  LoRA sobreentrenada).
+• DISTRIBUCIÓN por encuadre (ejemplo oficial para 30 imágenes):
+  ~12 retratos, ~6 medios, ~8 cuerpo entero, 8-10 de pie.
+  Máximo 3-6 imágenes por término/etiqueta.
+• FONDOS: NO uses el mismo fondo en todo el dataset — el LoRA lo
+  absorberá y lo generará siempre. Máximo 3-6 imágenes por fondo.
+  → Consejo: genera este dataset 2-3 veces cambiando el fondo.
+• RESOLUCIÓN: 1024x1024 para SDXL / Flux / SD 3.5 (512x512 para SD 1.5).
+• RECORTE: "Focus Crop" es el modo recomendado para personajes.
+• CAPTIONS: BLIP para fotorrealismo/SDXL/Flux; Deepbooru para
+  anime/furry/cómic. Umbral 0.5-0.8.
+• REGLA DE ORO: la identidad del personaje va en el TRIGGER WORD
+  (no la etiquetes); el fondo, la iluminación, la pose y la expresión
+  SÍ van en la caption (este dataset ya lo hace así).
+"""
 
 
 # ---------------------------------------------------------------------------
