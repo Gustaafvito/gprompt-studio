@@ -339,6 +339,12 @@ class CoreMixin:
                     self.ui._refrescar_indicadores_llm()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
+            # Repoblar el selector de modelo con los del proveedor nuevo
+            try:
+                if hasattr(self, "_refrescar_combo_modelo_llm"):
+                    self._refrescar_combo_modelo_llm()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
     # TOGGLE TEMA CLARO/OSCURO
 
     def _apply_theme_colors(self):

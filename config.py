@@ -79,6 +79,7 @@ ARCHIVOS = {
     "estrellas":     CARPETA_APP / "estrellas.json",
     "keys":          CARPETA_APP / "keys.json",
     "active_provider": CARPETA_APP / "active_provider.txt",
+    "active_models":   CARPETA_APP / "active_models.json",
     "autobackup_marker": CARPETA_APP / "_last_autobackup.txt",
     "modelos_comfy": CARPETA_APP / "mis_modelos_comfy.json",
 }

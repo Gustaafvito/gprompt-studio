@@ -292,3 +292,81 @@ class TestCosteDiaUsd:
     def test_ignora_costes_desconocidos(self):
         dia = {"openrouter": {"tokens_entrada": 999, "tokens_salida": 999}}
         assert coste_dia_usd(dia) == 0.0
+
+
+# ── Selector de modelo por proveedor (sesión 19 round 13) ─────────
+
+from api_clients import (  # noqa: E402
+    MODELOS_CLAUDE_SIN_SAMPLING,
+    PRECIOS_USD_1M_MODELO,
+    modelo_acepta_temperature,
+)
+
+
+class TestModelosClaude:
+    def test_ids_oficiales_en_lista_seleccionable(self):
+        modelos = LLM_PROVIDERS["claude"]["modelos"]
+        for mid in ("claude-fable-5", "claude-opus-4-8",
+                    "claude-sonnet-4-6", "claude-haiku-4-5"):
+            assert mid in modelos
+
+    def test_default_claude_es_sonnet_46(self):
+        assert LLM_PROVIDERS["claude"]["model_default"] == "claude-sonnet-4-6"
+
+    def test_fable_y_opus_no_aceptan_temperature(self):
+        # Fable 5 / Opus 4.8 / 4.7 devuelven 400 si se envía temperature
+        for mid in MODELOS_CLAUDE_SIN_SAMPLING:
+            assert modelo_acepta_temperature(mid) is False
+        assert modelo_acepta_temperature("claude-fable-5") is False
+        assert modelo_acepta_temperature("claude-opus-4-8") is False
+
+    def test_sonnet_y_haiku_si_aceptan_temperature(self):
+        assert modelo_acepta_temperature("claude-sonnet-4-6") is True
+        assert modelo_acepta_temperature("claude-haiku-4-5") is True
+        assert modelo_acepta_temperature("claude-sonnet-4-5-20250929") is True
+        assert modelo_acepta_temperature("") is True
+
+    def test_precios_oficiales_anthropic(self):
+        assert PRECIOS_USD_1M_MODELO["claude-fable-5"] == (10.00, 50.00)
+        assert PRECIOS_USD_1M_MODELO["claude-opus-4-8"] == (5.00, 25.00)
+        assert PRECIOS_USD_1M_MODELO["claude-sonnet-4-6"] == (3.00, 15.00)
+        assert PRECIOS_USD_1M_MODELO["claude-haiku-4-5"] == (1.00, 5.00)
+
+    def test_modelos_seleccionables_tienen_precio(self):
+        for mid in LLM_PROVIDERS["claude"]["modelos"]:
+            assert mid in PRECIOS_USD_1M_MODELO, f"Sin precio: {mid}"
+
+
+class TestCostePorModelo:
+    def test_precio_de_modelo_prioriza_sobre_provider(self):
+        # Provider claude = (3, 15) pero fable-5 = (10, 50)
+        assert calcular_coste_usd("claude", 1_000_000, 0,
+                                  modelo="claude-fable-5") == pytest.approx(10.0)
+        assert calcular_coste_usd("claude", 1_000_000, 0) == pytest.approx(3.0)
+
+    def test_modelo_desconocido_cae_al_precio_del_provider(self):
+        assert calcular_coste_usd("claude", 1_000_000, 0,
+                                  modelo="claude-futuro-9") == pytest.approx(3.0)
+
+    def test_tracker_desglosa_coste_por_modelo(self):
+        t = UsageTracker()
+        t.registrar("claude", 1_000_000, 0, modelo="claude-fable-5")    # 10.0
+        t.registrar("claude", 1_000_000, 0, modelo="claude-haiku-4-5")  # 1.0
+        r = t.resumen()["claude"]
+        assert r["coste_usd"] == pytest.approx(11.0)
+        assert r["tokens_entrada"] == 2_000_000
+
+    def test_tracker_sin_modelo_usa_precio_del_provider(self):
+        t = UsageTracker()
+        t.registrar("openai", 1_000_000, 0)
+        assert t.resumen()["openai"]["coste_usd"] == pytest.approx(2.50)
+
+
+class TestSetModel:
+    def test_get_provider_respeta_modelo_elegido(self):
+        p = get_provider("claude", "test-key", model="claude-fable-5")
+        assert p.model == "claude-fable-5"
+
+    def test_get_provider_sin_modelo_usa_default(self):
+        p = get_provider("claude", "test-key")
+        assert p.model == "claude-sonnet-4-6"

@@ -211,6 +211,52 @@ class UIBuildersService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
+        # ── Selector de MODELO del cerebro activo (sesión 19) ──
+        # Editable: la lista trae los modelos conocidos del proveedor
+        # (p.ej. Claude: fable-5, opus-4-8, sonnet-4-6, haiku-4-5) pero
+        # se puede escribir cualquier ID a mano y pulsar Enter.
+        def _on_modelo_llm_cambio(valor=None):
+            try:
+                modelo = (valor or self.app.combo_modelo_llm.get() or "").strip()
+                pid = self.app.clients.provider_activo_id
+                if modelo and self.app.clients.set_model(pid, modelo):
+                    self.app.dialogs.set_estado(
+                        f"🧠 Modelo de {pid}: {modelo}", "#2ecc71")
+            except Exception as _e:
+                logger.debug(f"[silent] modelo llm: {_e}")
+
+        def _refrescar_combo_modelo_llm():
+            """Repuebla el combo con los modelos del proveedor activo."""
+            try:
+                from api_clients import LLM_PROVIDERS as _PROVS
+                pid = self.app.clients.provider_activo_id
+                info = _PROVS.get(pid, {})
+                modelos = list(info.get("modelos", []) or
+                               ([info.get("model_default")] if info.get("model_default") else []))
+                actual = self.app.clients.get_model(pid)
+                if actual and actual not in modelos:
+                    modelos.insert(0, actual)
+                self.app.combo_modelo_llm.configure(values=modelos)
+                self.app.combo_modelo_llm.set(actual or (modelos[0] if modelos else ""))
+            except Exception as _e:
+                logger.debug(f"[silent] refresco modelo llm: {_e}")
+
+        self.app.combo_modelo_llm = ctk.CTkComboBox(
+            frame_llm, values=[""], width=185, height=28,
+            fg_color=combo_bg, border_color=combo_border, button_color=combo_btn,
+            text_color=hdr_text, font=ctk.CTkFont(size=10),
+            command=_on_modelo_llm_cambio)
+        self.app.combo_modelo_llm.pack(side="left", padx=(4, 0))
+        self.app.combo_modelo_llm.bind(
+            "<Return>", lambda _e: _on_modelo_llm_cambio())
+        self.app._refrescar_combo_modelo_llm = _refrescar_combo_modelo_llm
+        _refrescar_combo_modelo_llm()
+        try:
+            CTkToolTip(self.app.combo_modelo_llm,
+                       message="Modelo del cerebro activo.\nElige de la lista o escribe un ID y pulsa Enter.")
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
         # ── Indicador de ADN visual activo ──
         # Se muestra solo cuando hay self.app._anclaje_visual. Es un botón
         # clicable que abre un menú con: ver / desactivar.

@@ -45,10 +45,18 @@ LLM_PROVIDERS = {
     "claude": {
         "name": "Claude (Anthropic)",
         "label": "💎 Claude (calidad top)",
-        "descripcion": "Calidad excelente para creatividad. Pago (~€2.40/1M).",
+        "descripcion": "Calidad excelente para creatividad. Pago (desde $3/1M).",
         "url_obtener_key": "https://console.anthropic.com/settings/keys",
         "tipo": "anthropic",
-        "model_default": "claude-sonnet-4-5-20250929",
+        # IDs oficiales junio 2026 (skill claude-api). Sonnet 4.6 como
+        # default: mejor equilibrio velocidad/inteligencia/precio.
+        "model_default": "claude-sonnet-4-6",
+        "modelos": [
+            "claude-fable-5",      # tope de gama ($10/$50 por 1M)
+            "claude-opus-4-8",     # Opus actual ($5/$25)
+            "claude-sonnet-4-6",   # equilibrio ($3/$15)
+            "claude-haiku-4-5",    # rápido y barato ($1/$5)
+        ],
         "is_paid": True,
     },
     "deepseek": {
@@ -59,6 +67,7 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.deepseek.com",
         "model_default": "deepseek-chat",
+        "modelos": ["deepseek-chat", "deepseek-reasoner"],
         "is_paid": True,
     },
     "fireworks": {
@@ -78,6 +87,7 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://aistudio.google.com/apikey",
         "tipo": "google",
         "model_default": "gemini-2.5-flash",
+        "modelos": ["gemini-2.5-flash", "gemini-2.5-pro"],
         "is_paid": False,
     },
     "github_models": {
@@ -138,6 +148,7 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.openai.com/v1",
         "model_default": "gpt-4o",
+        "modelos": ["gpt-4o", "gpt-4o-mini"],
         "is_paid": True,
     },
     "openrouter": {
@@ -209,6 +220,25 @@ IMAGE_PROVIDERS = {
 
 # PRECIOS Y TRACKING DE USO (sesión 19)
 
+# Precios por MODELO concreto (USD por 1M tokens entrada/salida).
+# Tiene prioridad sobre PRECIOS_USD_1M cuando el modelo es conocido.
+# Claude: IDs y precios oficiales de Anthropic (junio 2026).
+PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
+    "claude-fable-5":            (10.00, 50.00),
+    "claude-opus-4-8":           (5.00, 25.00),
+    "claude-opus-4-7":           (5.00, 25.00),
+    "claude-opus-4-6":           (5.00, 25.00),
+    "claude-sonnet-4-6":         (3.00, 15.00),
+    "claude-sonnet-4-5-20250929": (3.00, 15.00),
+    "claude-haiku-4-5":          (1.00, 5.00),
+    "deepseek-chat":             (0.28, 0.42),
+    "deepseek-reasoner":         (0.28, 0.42),
+    "gpt-4o":                    (2.50, 10.00),
+    "gpt-4o-mini":               (0.15, 0.60),
+    "gemini-2.5-flash":          (0.0, 0.0),   # free tier
+    "gemini-2.5-pro":            (0.0, 0.0),   # free tier (límites más bajos)
+}
+
 # Precios en USD por 1M tokens (entrada, salida) para el model_default
 # de cada proveedor. Valores de junio 2026 — revisar periódicamente.
 # - Proveedores gratuitos / locales: (0, 0).
@@ -233,9 +263,15 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
 
 
 def calcular_coste_usd(provider_id: str, tokens_entrada: int,
-                       tokens_salida: int) -> float | None:
-    """Coste estimado en USD, o None si el precio es desconocido."""
-    precios = PRECIOS_USD_1M.get(provider_id)
+                       tokens_salida: int, modelo: str = "") -> float | None:
+    """Coste estimado en USD, o None si el precio es desconocido.
+
+    Si se pasa `modelo` y está en PRECIOS_USD_1M_MODELO, su precio tiene
+    prioridad (p.ej. claude-fable-5 cuesta 3.3× más que sonnet-4-6).
+    """
+    precios = PRECIOS_USD_1M_MODELO.get(modelo) if modelo else None
+    if precios is None:
+        precios = PRECIOS_USD_1M.get(provider_id)
     if precios is None:
         return None
     p_in, p_out = precios
@@ -258,26 +294,45 @@ class UsageTracker:
         self._drenado: dict[str, dict] = {}
 
     def registrar(self, provider_id: str, tokens_entrada: int,
-                  tokens_salida: int) -> None:
+                  tokens_salida: int, modelo: str = "") -> None:
         if not provider_id:
             provider_id = "desconocido"
         with self._lock:
             d = self._datos.setdefault(provider_id, {
                 "llamadas": 0, "tokens_entrada": 0, "tokens_salida": 0,
+                "modelos": {},
             })
             d["llamadas"] += 1
-            d["tokens_entrada"] += max(0, int(tokens_entrada or 0))
-            d["tokens_salida"] += max(0, int(tokens_salida or 0))
+            t_in = max(0, int(tokens_entrada or 0))
+            t_out = max(0, int(tokens_salida or 0))
+            d["tokens_entrada"] += t_in
+            d["tokens_salida"] += t_out
+            # Desglose por modelo: el coste varía mucho dentro de un mismo
+            # proveedor (claude-fable-5 = 3.3× claude-sonnet-4-6).
+            m = d["modelos"].setdefault(modelo or "_default",
+                                        {"tokens_entrada": 0, "tokens_salida": 0})
+            m["tokens_entrada"] += t_in
+            m["tokens_salida"] += t_out
 
     def resumen(self) -> dict[str, dict]:
-        """Copia del estado con coste_usd calculado por proveedor
-        (None si el precio es desconocido)."""
+        """Copia del estado con coste_usd calculado por proveedor.
+
+        El coste se calcula por MODELO (suma de los desgloses) usando
+        PRECIOS_USD_1M_MODELO cuando el modelo es conocido; None si
+        ningún precio es conocido (p.ej. OpenRouter con modelo custom)."""
         with self._lock:
             out = {}
             for pid, d in self._datos.items():
                 out[pid] = dict(d)
-                out[pid]["coste_usd"] = calcular_coste_usd(
-                    pid, d["tokens_entrada"], d["tokens_salida"])
+                costes = []
+                for modelo, m in d.get("modelos", {}).items():
+                    costes.append(calcular_coste_usd(
+                        pid, m["tokens_entrada"], m["tokens_salida"],
+                        modelo="" if modelo == "_default" else modelo))
+                if not costes or all(c is None for c in costes):
+                    out[pid]["coste_usd"] = None
+                else:
+                    out[pid]["coste_usd"] = sum(c for c in costes if c is not None)
             return out
 
     def total_usd(self) -> float:
@@ -362,7 +417,8 @@ class BaseLLMProvider:
         """Registra tokens en el tracker global. Nunca rompe la generación."""
         try:
             usage_tracker.registrar(self.provider_id,
-                                    tokens_entrada or 0, tokens_salida or 0)
+                                    tokens_entrada or 0, tokens_salida or 0,
+                                    modelo=self.model or "")
         except Exception as e:
             logger.debug(f"[silent] registro de uso: {e}")
 
@@ -497,6 +553,17 @@ class GeminiProvider(BaseLLMProvider):
         return raw.strip()
 
 
+# Modelos Claude que RECHAZAN parámetros de sampling (temperature/top_p/
+# top_k devuelven 400): Fable 5 y Opus 4.7/4.8 los tienen eliminados.
+# Fuente: doc oficial de migración de Anthropic (junio 2026).
+MODELOS_CLAUDE_SIN_SAMPLING = ("claude-fable-5", "claude-opus-4-8", "claude-opus-4-7")
+
+
+def modelo_acepta_temperature(modelo: str) -> bool:
+    """True si el modelo Claude acepta el parámetro temperature."""
+    return not any((modelo or "").startswith(m) for m in MODELOS_CLAUDE_SIN_SAMPLING)
+
+
 class ClaudeProvider(BaseLLMProvider):
     """Adapter para Anthropic Claude."""
 
@@ -517,7 +584,7 @@ class ClaudeProvider(BaseLLMProvider):
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
         if not self._cliente:
             raise Exception("Claude no configurado (instala 'anthropic' o falta api key)")
-        modelo = model or self.model or "claude-sonnet-4-5-20250929"
+        modelo = model or self.model or "claude-sonnet-4-6"
 
         system_prompt = ""
         msgs = []
@@ -528,8 +595,12 @@ class ClaudeProvider(BaseLLMProvider):
                 msgs.append({"role": m["role"], "content": m["content"]})
 
         kwargs_api: dict = {
-            "model": modelo, "messages": msgs, "max_tokens": max_tokens, "temperature": temperature,
+            "model": modelo, "messages": msgs, "max_tokens": max_tokens,
         }
+        # Fable 5 / Opus 4.8 / 4.7 rechazan temperature con 400 — solo
+        # se envía en los modelos que lo aceptan (Sonnet, Haiku...).
+        if modelo_acepta_temperature(modelo):
+            kwargs_api["temperature"] = temperature
         if system_prompt:
             kwargs_api["system"] = system_prompt
         res = self._cliente.messages.create(**kwargs_api)
@@ -845,10 +916,16 @@ class APIClients:
             masked = f"{gkey[:6]}...{gkey[-4:]}" if len(gkey) > 12 else "(corta)"
             logger.info(f"Gemini key cargada: {masked} (longitud: {len(gkey)})")
 
+        # Modelo elegido por proveedor (persistido en active_models.json).
+        # Si no hay elección guardada, cada provider usa su model_default.
+        self.modelos_activos: dict[str, str] = self._cargar_modelos_activos()
+
         self.providers: dict[str, BaseLLMProvider | None] = {}
         for pid, info in LLM_PROVIDERS.items():
             try:
-                self.providers[pid] = get_provider(pid, self.api_keys.get(pid, ""))
+                self.providers[pid] = get_provider(
+                    pid, self.api_keys.get(pid, ""),
+                    model=self.modelos_activos.get(pid))
             except Exception as e:
                 logger.error(f"Error creando provider {pid}: {e}")
                 self.providers[pid] = None
@@ -934,6 +1011,54 @@ class APIClients:
 
     def get_active_provider(self) -> BaseLLMProvider | None:
         return self.providers.get(self.provider_activo_id)
+
+    # ── Selección de modelo por proveedor (sesión 19 round 13) ────────
+
+    def _cargar_modelos_activos(self) -> dict:
+        """Lee active_models.json: {provider_id: modelo_elegido}."""
+        try:
+            from config import ARCHIVOS
+            ruta = ARCHIVOS.get("active_models")
+            if ruta and os.path.exists(str(ruta)):
+                with open(str(ruta), encoding="utf-8") as f:
+                    datos = json.load(f)
+                if isinstance(datos, dict):
+                    return {k: str(v) for k, v in datos.items() if v}
+        except Exception as e:
+            logger.debug(f"[silent] modelos activos: {e}")
+        return {}
+
+    def set_model(self, provider_id: str, modelo: str) -> bool:
+        """Cambia el modelo de un proveedor y lo persiste.
+
+        Reconstruye la instancia del provider con el modelo nuevo para
+        que la siguiente llamada ya lo use."""
+        modelo = (modelo or "").strip()
+        if not modelo or provider_id not in LLM_PROVIDERS:
+            return False
+        self.modelos_activos[provider_id] = modelo
+        try:
+            self.providers[provider_id] = get_provider(
+                provider_id, self.api_keys.get(provider_id, ""), model=modelo)
+        except Exception as e:
+            logger.error(f"Error recreando provider {provider_id} con {modelo}: {e}")
+            return False
+        try:
+            from config import ARCHIVOS, CARPETA_APP
+            os.makedirs(str(CARPETA_APP), exist_ok=True)
+            with open(str(ARCHIVOS["active_models"]), "w", encoding="utf-8") as f:
+                json.dump(self.modelos_activos, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.debug(f"[silent] persistir modelo: {e}")
+        return True
+
+    def get_model(self, provider_id: str) -> str:
+        """Modelo actualmente activo de un proveedor."""
+        prov = self.providers.get(provider_id)
+        if prov is not None and prov.model:
+            return prov.model
+        return (self.modelos_activos.get(provider_id)
+                or LLM_PROVIDERS.get(provider_id, {}).get("model_default", ""))
 
     def actualizar_key(self, provider_id: str, nueva_key: str):
         guardar_api_key(provider_id, nueva_key)
