@@ -2613,11 +2613,32 @@ dataset "ohwx_valquiria" → imágenes en SeaArt (Z-Image-Base, truco de
 seed fija entre tandas) → consistencia de identidad confirmada en
 3 tandas de 4. Flujo 📷 desde imagen también validado.
 
+### Round 12: modo edición img2img del Avatar (`331da3f`)
+
+El usuario comprobó en vivo que imagen → ficha de texto → generación
+PIERDE la identidad exacta (con su foto B/N real, Z-Image generó "al
+primo": más pelo, barba poblada, cara angulosa). El texto es un
+cuello de botella con pérdida.
+
+Solución: `ensamblar_dataset_edicion()` — cuando hay imagen de
+referencia (📷), el export incluye TAMBIÉN `prompts_edicion/` con los
+16 ángulos como órdenes de EDICIÓN para modelos con imagen de sujeto
+(MAI-Image-2.5, Nano Banana, Reve 2.0): "Keep the EXACT same person
+from the reference image… Change ONLY the camera and pose to:
+[ángulo]". Sin descripción canónica: la identidad la ancla la imagen.
+Captions idénticas al modo texto (mismo entrenamiento). El adaptador
+de modelo procesa ambos datasets. Flujo en SeaArt: subir
+`referencia.*` como SUJETO + pegar cada prompt de edición.
+
+⚠️ Aprendizaje de la prueba: el usuario pegó por error el prompt de
+edición + el text-to-image JUNTOS — quizá merezca un aviso en el
+LEEME de que son alternativos, no acumulativos.
+
 ### Métricas sesión 19 (final)
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **484** (+99) ⭐ |
+| Tests | 385 | **491** (+106) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
 | Menús del header | invisibles (bug) | **visibles** ✅ |
