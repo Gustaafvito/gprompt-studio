@@ -415,8 +415,9 @@ class DialogsService:
                      text_color=c["panel_text"], justify="center",
                      wraplength=460).pack(pady=(0, 24))
 
-        # Autor
-        ctk.CTkLabel(v, text=f"Creado por {AUTHOR}",
+        # Autor — AUTHOR es un dict; mostrar solo el nombre (no el dict entero)
+        _autor = AUTHOR.get("nombre", "") if isinstance(AUTHOR, dict) else AUTHOR
+        ctk.CTkLabel(v, text=f"Creado por {_autor}",
                      font=ctk.CTkFont(size=11, weight="bold"),
                      text_color=c["panel_text"]).pack(pady=(8, 6))
 
