@@ -154,6 +154,12 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         lineas_todos.append(f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n")
 
     with open(os.path.join(base, "prompts_todos.txt"), "w", encoding="utf-8") as f:
+        if resultado.get("dataset_edicion"):
+            f.write(
+                "⚠️ Estos son los prompts TEXT-TO-IMAGE. Hay también un modo\n"
+                "   EDICIÓN (prompts_edicion_todos.txt). Son ALTERNATIVOS: usa\n"
+                "   uno U otro por imagen, NO pegues los dos juntos.\n\n"
+            )
         f.write("\n".join(lineas_todos))
         if resultado["dataset"] and resultado["dataset"][0]["negative"]:
             f.write(
@@ -169,6 +175,11 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         os.makedirs(dir_edicion, exist_ok=True)
         lineas_ed = [
             "=== MODO EDICIÓN (img2img con imagen de sujeto) ===",
+            "",
+            "⚠️ ALTERNATIVO al text-to-image (prompts_todos.txt): usa el modo",
+            "   edición O el text-to-image por imagen, NUNCA los dos juntos.",
+            "   Pegar ambos en el mismo prompt confunde al modelo.",
+            "",
             "1. En SeaArt elige un modelo con edición/sujeto: MAI-Image-2.5,",
             "   Nano Banana o Reve 2.0.",
             "2. Sube la imagen 'referencia.*' de esta carpeta como SUJETO.",
