@@ -155,6 +155,102 @@
       "titulo": "💡 26. CONSEJOS FINALES",
       "descripcion": "1. Sé específico en la idea — 'gato' vs 'gato persa dorado durmiendo'\n2. Limita estilos a 2-3 — más genera caos\n3. Usa negativos — evita lo que no quieres\n4. Prueba variaciones — A/B testing es tu amigo\n5. Guarda lo bueno — favoritos y estrellas\n6. Iteración > Regenerar — refina antes de empezar de nuevo\n7. Experimenta — los mejores prompts vienen de pruebas\n\n🎓 ¡Con práctica dominarás todas las herramientas. Mucho éxito!",
       "accion": null
+    },
+    {
+      "id": 27,
+      "titulo": "⚡ 27. QUICK & VARIACIONES — Genera más rápido",
+      "descripcion": "Quick (⚡ o Alt+Enter) genera un prompt en UNA pasada, sin las fases de análisis — ideal cuando ya tienes claro lo que quieres.\n\n🔄 Variaciones (Ctrl+Shift+Enter) crea 3 versiones distintas de la misma idea para que elijas la mejor.",
+      "accion": null
+    },
+    {
+      "id": 28,
+      "titulo": "🔁 28. ITERAR · PULSE · SUGERIR — Explora variantes",
+      "descripcion": "Iterar genera N versiones cambiando UN solo elemento (cámara, luz, estilo…) para comparar a igualdad de lo demás.\n\nPulse añade intensidad/energía a un prompt. Sugerir propone mejoras concretas que aplicas con un clic.",
+      "accion": null
+    },
+    {
+      "id": 29,
+      "titulo": "🤝 29. COPILOTO — Tu asistente de prompts",
+      "descripcion": "El Copiloto abre un diálogo sobre tu prompt: pídele cambios en lenguaje natural ('más oscuro', 'añade niebla') y lo reescribe respetando el formato del modelo.\n\n💡 Perfecto para ajustes finos sin regenerar desde cero.",
+      "accion": null
+    },
+    {
+      "id": 30,
+      "titulo": "🎯 30. OPTIMIZADOR EN BUCLE — Mejora hasta el objetivo",
+      "descripcion": "Distinto del Scoring puntual: el Optimizador (menú 📊 Análisis) repite generar→puntuar→mejorar hasta alcanzar el score que fijes (o agotar N iteraciones), y SIEMPRE conserva la mejor versión vista.\n\n💡 Atajo: Ctrl+Shift+O. Puntúa y mejora teniendo en cuenta el modelo activo.",
+      "accion": null
+    },
+    {
+      "id": 31,
+      "titulo": "🎯 31. ADAPTAR AL MODELO ACTIVO — Un clic al formato correcto",
+      "descripcion": "Reescribe el prompt actual al formato EXACTO del modelo seleccionado: natural vs tags, uso (o no) de pesos, límite de caracteres y negativos.\n\nDisponible como paso de Macro ('Adaptar al modelo activo'). 💡 No cambia tu idea, solo la forma.",
+      "accion": null
+    },
+    {
+      "id": 32,
+      "titulo": "🎭 32. NARRATIVA: MOOD · STORY · BOARD · WALK",
+      "descripcion": "Cuatro generadores narrativos:\n• Mood — explora el tono y la atmósfera.\n• Story — una secuencia con principio, desarrollo y final.\n• Board — un tablero de escenas relacionadas.\n• Walk — un recorrido espacial por un entorno.",
+      "accion": null
+    },
+    {
+      "id": 33,
+      "titulo": "🖼 33. STORYBOARD — Paneles cinematográficos",
+      "descripcion": "Genera N paneles (3-12) con tipo de plano (CLOSE-UP, WIDE, POV…) y descripción por panel, manteniendo coherencia visual entre ellos.\n\n💡 Solo modo IMAGEN. Atajo Ctrl+Shift+B. El botón '📋 Fusionar' los combina en un único prompt multi-panel.",
+      "accion": null
+    },
+    {
+      "id": 34,
+      "titulo": "🎬 34. →VÍDEO — De imagen a vídeo",
+      "descripcion": "Convierte el prompt de imagen actual en un prompt de VÍDEO listo para Veo/Sora/Kling/Seedance, añadiendo movimiento de cámara, duración y planos.\n\n💡 El selector 'Shots' calibra el número de planos según la duración elegida.",
+      "accion": null
+    },
+    {
+      "id": 35,
+      "titulo": "🔎 35. IMG→PROMPT & 🖼 REF — Ingeniería inversa",
+      "descripcion": "Img→Prompt sube una imagen y extrae un prompt que la describe.\n\nCon el switch 🖼 Ref activado, en lugar de copiar la imagen literal extrae solo su GUÍA visual (paleta, luz, estilo) para crear una escena NUEVA con esa estética.",
+      "accion": null
+    },
+    {
+      "id": 36,
+      "titulo": "🆚 36. COMPARADOR & GRID POLLINATIONS",
+      "descripcion": "Tras generar variaciones, el Comparador las muestra lado a lado con botones para usar o copiar cada una.\n\n👁 Grid Pollinations (Ctrl+G dentro de la ventana) genera un preview real de TODAS a la vez para elegir con la imagen delante.",
+      "accion": null
+    },
+    {
+      "id": 37,
+      "titulo": "🎨 37. PREVIEW — Boceto rápido",
+      "descripcion": "El botón 🖼 Preview (Ctrl+Shift+P) genera un boceto del prompt vía Pollinations para hacerte una idea ANTES de llevarlo a tu plataforma final.\n\n💡 Se cachea: el mismo prompt no se vuelve a generar.",
+      "accion": null
+    },
+    {
+      "id": 38,
+      "titulo": "🧑‍🎨 38. AVATAR DATASET (LoRA) — Personaje consistente",
+      "descripcion": "Genera un dataset completo para entrenar un LoRA de personaje: hasta 16 ángulos con la MISMA identidad, captions estilo kohya y consejos oficiales de SeaArt.\n\nPuede partir de una ficha de texto, una ficha automática (🎲) o una foto de referencia (📷, modo edición img2img).",
+      "accion": null
+    },
+    {
+      "id": 39,
+      "titulo": "💼 39. MODO CLIENTE & DETECTAR ESTILO",
+      "descripcion": "Modo Cliente convierte un brief profesional en 5 propuestas de prompt distintas.\n\nDetectar estilo (3 imágenes) analiza un moodboard y extrae su estética común para aplicarla a tus siguientes prompts.",
+      "accion": null
+    },
+    {
+      "id": 40,
+      "titulo": "💰 40. COSTE & SELECTOR DE MODELO",
+      "descripcion": "💰 Coste de sesión (📊 Análisis, Ctrl+Shift+M) muestra el gasto por proveedor y por modelo, el total y el histórico.\n\n🧠 Junto al cerebro puedes elegir el modelo exacto (Opus 4.8, Sonnet 4.6, DeepSeek…); cada uno tiene su precio y se recuerda entre sesiones.",
+      "accion": null
+    },
+    {
+      "id": 41,
+      "titulo": "🏠 41. DASHBOARD & PROYECTOS",
+      "descripcion": "🏠 Dashboard (Ctrl+Shift+D) es tu panel de control: estadísticas, actividad de los últimos días, logros y el reto del día.\n\n📁 Proyectos agrupa prompts y su setup por trabajo, para no mezclar campañas distintas.",
+      "accion": null
+    },
+    {
+      "id": 42,
+      "titulo": "🛠 42. EXTRAS QUE MARCAN LA DIFERENCIA",
+      "descripcion": "Más herramientas que conviene conocer:\n• 🧰 Negative builder (Ctrl+Shift+N) · 📐 Fórmulas · 🏷 Snippets / Expansión rápida\n• 🎯 Modo Focus (Ctrl+H) · ⚡ Modo Brief · 💡 Sugerencias de claridad (Ctrl+Shift+C)\n• ⏰ Cron prompts · 👥 Grupo de personajes (Ctrl+P)",
+      "accion": null
     }
   ]
 }

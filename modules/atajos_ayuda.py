@@ -68,6 +68,12 @@ class AtajosAyudaService:
             widget.bind("<Control-Shift-T>",      lambda e: (self._atajo_traducir_idea(), "break")[1])
             # Ctrl+Shift+C = mostrar modal de Claridad si hay palabras polisémicas
             widget.bind("<Control-Shift-C>",      lambda e: (self._atajo_mostrar_claridad(), "break")[1])
+            # Atajos para features de uso frecuente que no tenían tecla
+            widget.bind("<Control-Shift-R>",      lambda e: (self.app.refinar.cmd_refinar(), "break")[1])
+            widget.bind("<Control-Shift-O>",      lambda e: (self.app.analysis.cmd_optimizar_loop(), "break")[1])
+            widget.bind("<Control-Shift-D>",      lambda e: (self.app.dashboard.cmd_abrir(), "break")[1])
+            widget.bind("<Control-Shift-B>",      lambda e: (self.app.multi.cmd_storyboard_imagen(), "break")[1])
+            widget.bind("<Control-Shift-M>",      lambda e: (self.app.analysis.cmd_coste_sesion(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
@@ -236,11 +242,14 @@ class AtajosAyudaService:
                 ("Ctrl+Shift+Enter", "Generar variaciones (x3)"),
                 ("Alt+Enter", "Generación rápida (Quick)"),
                 ("Ctrl+I", "Generar 3 ideas"),
+                ("Ctrl+Shift+B", "Storyboard (paneles de imagen)"),
             ]),
             ("✏️  Edición", [
                 ("Ctrl+S", "Guardar como favorito"),
                 ("Ctrl+Shift+S", "Guardar como estrella"),
                 ("Ctrl+D", "Duplicar al historial"),
+                ("Ctrl+Shift+R", "Refinar prompt"),
+                ("Ctrl+Shift+O", "Optimizador en bucle"),
                 ("Ctrl+Shift+P", "Previsualizar (Pollinations)"),
                 ("Ctrl+Shift+T", "Traducir idea al inglés"),
                 ("Ctrl+V", "Pegar inteligente"),
@@ -266,6 +275,8 @@ class AtajosAyudaService:
                 ("Ctrl+H", "Modo Focus"),
                 ("Ctrl+Shift+L", "Cambiar tema claro/oscuro"),
                 ("Ctrl+Shift+C", "Sugerencias de claridad (palabras polisémicas)"),
+                ("Ctrl+Shift+D", "Abrir Dashboard"),
+                ("Ctrl+Shift+M", "Coste de sesión"),
             ]),
             ("⚖️ Comparador (dentro de la ventana)", [
                 ("Ctrl+G", "Abrir Grid Pollinations (previews de TODAS)"),

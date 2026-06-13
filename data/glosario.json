@@ -264,6 +264,84 @@
       "descripcion": "Palabras clave que activan un LoRA. Ej: 'sks dog' para un LoRA de perro. Van al inicio del prompt.",
       "categoria": "Pesos & parámetros",
       "accion": null
+    },
+    {
+      "titulo": "🎯 OPTIMIZADOR EN BUCLE",
+      "descripcion": "Repite generar→puntuar→mejorar hasta alcanzar el score que fijes (o N iteraciones), conservando siempre la mejor versión. Distinto del Scoring puntual. Atajo Ctrl+Shift+O.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🤝 COPILOTO",
+      "descripcion": "Asistente conversacional sobre tu prompt: le pides cambios en lenguaje natural ('más oscuro', 'añade niebla') y lo reescribe respetando el formato del modelo.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 ADAPTAR AL MODELO ACTIVO",
+      "descripcion": "Reescribe el prompt actual al formato exacto del modelo seleccionado (natural vs tags, pesos, max_chars, negativos) sin cambiar la idea. Disponible como paso de Macro.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎬 STORYBOARD",
+      "descripcion": "Genera N paneles (3-12) con tipo de plano y descripción por panel, manteniendo coherencia visual. Solo modo imagen. Atajo Ctrl+Shift+B.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎬 →VÍDEO (IMAGEN A VÍDEO)",
+      "descripcion": "Convierte el prompt de imagen actual en uno de vídeo para Veo/Sora/Kling/Seedance, añadiendo movimiento de cámara, duración y número de planos (shots).",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "💼 MODO CLIENTE",
+      "descripcion": "Convierte un brief profesional en 5 propuestas de prompt distintas. Pensado para trabajo por encargo.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🧑‍🎨 AVATAR DATASET (LoRA)",
+      "descripcion": "Genera un dataset para entrenar un LoRA de personaje: hasta 16 ángulos con la MISMA identidad + captions kohya. Parte de una ficha de texto, automática o una foto de referencia.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "💰 COSTE DE SESIÓN",
+      "descripcion": "Muestra el gasto de la sesión por proveedor y por modelo, el total y el histórico. Atajo Ctrl+Shift+M. Cada modelo tiene su precio por millón de tokens.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🏠 DASHBOARD",
+      "descripcion": "Panel de control: estadísticas, actividad de los últimos días, modo/plataforma más usados, logros y reto del día. Atajo Ctrl+Shift+D.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "📁 PROYECTOS",
+      "descripcion": "Agrupa prompts y su setup por trabajo, para no mezclar campañas distintas. Cada proyecto recuerda su configuración.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🖼 REF (REFERENCIA VISUAL)",
+      "descripcion": "Con el switch 🖼 Ref activo, Img→Prompt no copia la imagen literal: extrae solo su GUÍA visual (paleta, luz, estilo) para crear una escena NUEVA con esa estética.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎭 NARRATIVA (MOOD · STORY · BOARD · WALK)",
+      "descripcion": "Cuatro generadores narrativos: Mood (tono/atmósfera), Story (secuencia con principio-desarrollo-final), Board (tablero de escenas) y Walk (recorrido por un entorno).",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "📏 MAX_CHARS (LÍMITE DE CARACTERES)",
+      "descripcion": "Cada modelo admite un máximo de caracteres en el prompt; pasarse hace que recorte o ignore el final. G-Prompt lo conoce por modelo y avisa o adapta el prompt para respetarlo.",
+      "categoria": "Pesos & parámetros",
+      "accion": null
     }
   ]
 }

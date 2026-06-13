@@ -266,7 +266,7 @@ class ToolsAnalysisService:
     def _cmd_modo_educativo(self) -> None:
         """Abre el glosario de términos AI desde data/glosario.json.
 
-        47 entradas en 5 categorías, con buscador, filtro y botón "▶ Probar"
+        56 entradas en 5 categorías, con buscador, filtro y botón "▶ Probar"
         en las entradas que mapean a funciones reales de la app.
         """
         from modules.glosario import abrir_glosario
