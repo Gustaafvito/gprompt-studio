@@ -55,7 +55,7 @@ class BackupExportService:
 
             tot = sum(len(backup[k]) for k in
                       ("historial", "favoritos", "estrellas",
-                       "personajes", "loras", "plantillas"))
+                       "personajes", "loras", "plantillas", "paletas"))
             tam_kb = os.path.getsize(archivo) / 1024
             mensaje = (
                 f"Backup guardado correctamente.\n\n"
@@ -67,7 +67,8 @@ class BackupExportService:
                 f"  - Estrellas:  {len(backup['estrellas'])}\n"
                 f"  - Personajes: {len(backup['personajes'])}\n"
                 f"  - LoRAs:      {len(backup['loras'])}\n"
-                f"  - Plantillas: {len(backup['plantillas'])}"
+                f"  - Plantillas: {len(backup['plantillas'])}\n"
+                f"  - Paletas:    {len(backup['paletas'])}"
             )
             messagebox.showinfo("Backup completo", mensaje, parent=self.app)
             self.app.dialogs.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
@@ -86,6 +87,7 @@ class BackupExportService:
             "personajes":  self.app.store.personajes or [],
             "loras":       self.app.store.loras or [],
             "plantillas":  self.app.store.plantillas or [],
+            "paletas":     self.app.store.paletas or [],
             "preferencias": self.app.store.cargar_preferencias() or {},
         }
 
@@ -121,13 +123,15 @@ class BackupExportService:
                           len(self.app.store.estrellas or []) +
                           len(self.app.store.personajes or []) +
                           len(self.app.store.loras or []) +
-                          len(self.app.store.plantillas or []))
+                          len(self.app.store.plantillas or []) +
+                          len(self.app.store.paletas or []))
             tot_backup = (len(backup.get("historial", [])) +
                           len(backup.get("favoritos", [])) +
                           len(backup.get("estrellas", [])) +
                           len(backup.get("personajes", [])) +
                           len(backup.get("loras", [])) +
-                          len(backup.get("plantillas", [])))
+                          len(backup.get("plantillas", [])) +
+                          len(backup.get("paletas", [])))
 
             # Formatear fecha del backup en algo legible
             fecha_backup_raw = backup.get("fecha_backup", "")
@@ -189,9 +193,16 @@ class BackupExportService:
             self.app.store.personajes  = _lista_valida("personajes")
             self.app.store.loras       = _lista_valida("loras")
             self.app.store.plantillas  = _lista_valida("plantillas")
+            # paletas: solo si el backup las trae (compat con backups viejos
+            # que no incluían esta colección — no pisamos las actuales).
+            if "paletas" in backup:
+                self.app.store.paletas = _lista_valida("paletas")
 
-            for col in ["historial", "favoritos", "estrellas",
-                        "personajes", "loras", "plantillas"]:
+            cols_restaurar = ["historial", "favoritos", "estrellas",
+                              "personajes", "loras", "plantillas"]
+            if "paletas" in backup:
+                cols_restaurar.append("paletas")
+            for col in cols_restaurar:
                 self.app.store._guardar(col)
 
             prefs_backup = backup.get("preferencias")

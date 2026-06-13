@@ -359,70 +359,11 @@ class AtajosAyudaService:
         return "break"
 
     def _abrir_busqueda_global(self) -> None:
-        """Abre ventana de búsqueda global en historial, favoritos, estrellas."""
-        is_lt = ctk.get_appearance_mode().lower() == "light"
-        c = get_theme_colors(is_lt)
-
-        vent = GPromptWindow(self.app)
-        vent.title("🔍 Búsqueda global")
-        vent.geometry("550x450")
-        vent.transient(self.app)
-
-        ctk.CTkLabel(vent, text="🔍 Búsqueda global", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
-        ctk.CTkLabel(vent, text="Busca en historial, favoritos y estrellas", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
-
-        ent_buscar = ctk.CTkEntry(vent, placeholder_text="Escribe para buscar...", width=480, height=32)
-        ent_buscar.pack(pady=5)
-
-        resultados_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent")
-        resultados_frame.pack(fill="both", expand=True, padx=15, pady=5)
-
-        def _buscar(*args):
-            termino = ent_buscar.get().strip().lower()
-            for w in resultados_frame.winfo_children(): w.destroy()
-
-            if not termino:
-                ctk.CTkLabel(resultados_frame, text="Escribe algo para buscar", text_color=c["muted_text"]).pack(pady=20)
-                return
-
-            resultados = []
-
-            for item in (self.app.store.historial or [])[:50]:
-                if isinstance(item, dict):
-                    contenido = item.get("contenido", "")
-                    if termino in contenido.lower():
-                        resultados.append(("📋 Historial", contenido[:100]))
-
-            for item in (self.app.store.favoritos or []):
-                if isinstance(item, dict):
-                    contenido = item.get("contenido", "")
-                    if termino in contenido.lower():
-                        resultados.append(("⭐ Favorito", contenido[:100]))
-
-            for item in (self.app.store.estrellas or []):
-                if isinstance(item, dict):
-                    contenido = item.get("contenido", "")
-                    if termino in contenido.lower():
-                        resultados.append(("🌟 Estrella", contenido[:100]))
-
-            if not resultados:
-                ctk.CTkLabel(resultados_frame, text="No se encontraron resultados", text_color=c["muted_text"]).pack(pady=20)
-                return
-
-            for tipo, texto in resultados[:20]:
-                card = ctk.CTkFrame(resultados_frame, fg_color=c["fg_frame"], corner_radius=4)
-                card.pack(fill="x", pady=2)
-                color = {"📋": "#3498db", "⭐": "#f39c12", "🌟": "#9b59b6"}.get(tipo[:2], "#888")
-                ctk.CTkLabel(card, text=tipo, font=ctk.CTkFont(size=9, weight="bold"),
-                             text_color=color, width=60, anchor="w").pack(side="left", padx=6, pady=4)
-                ctk.CTkLabel(card, text=texto + "..." if len(texto) > 90 else texto,
-                             font=ctk.CTkFont(size=9), text_color=c["muted_text"],
-                             anchor="w").pack(side="left", padx=4, fill="x", expand=True)
-
-        ent_buscar.bind("<KeyRelease>", _buscar)
-        _buscar()
-
-        ctk.CTkButton(vent, text="Cerrar", width=100, height=28, command=vent.destroy).pack(pady=8)
+        """Búsqueda global (Ctrl+F). Delega en la implementación completa de
+        BackupExportService (con debounce + filtro por tipo) en lugar de
+        duplicar una segunda ventana de búsqueda más pobre — antes el atajo
+        abría una versión inferior a la del menú Workflow."""
+        self.app.backup.cmd_busqueda_global()
 
     def _abrir_tutorial(self) -> None:
         """Abre el tutorial interactivo (data/tutorial.json) con índice
