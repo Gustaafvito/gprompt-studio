@@ -336,11 +336,11 @@ class DataMgmtService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         v = GPromptWindow(self.app)
-        v.title("⚡ Expansión rápida")
+        v.title("⚡ Auto-expansión en la idea")
         v.geometry("680x620")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text="⚡ Snippets de expansión rápida",
+        ctk.CTkLabel(v, text="⚡ Auto-expansión rápida (en la idea)",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text="Escribe ';palabra' + Espacio en la idea y se expande automáticamente.",
                      font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 4))
@@ -670,10 +670,10 @@ class DataMgmtService:
         prefs = self.app.store.cargar_preferencias()
 
         vent = GPromptWindow(self.app)
-        vent.title("🏷️ Snippets reutilizables")
+        vent.title("🏷️ Tags reutilizables (al prompt)")
         vent.geometry("680x600")
         vent.transient(self.app)
-        ctk.CTkLabel(vent, text="🏷️ Snippets reutilizables",
+        ctk.CTkLabel(vent, text="🏷️ Tags reutilizables (al prompt)",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text="Frases cortas (tags, fórmulas de calidad, look…) que añades "

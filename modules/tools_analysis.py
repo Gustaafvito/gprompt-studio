@@ -476,7 +476,7 @@ class ToolsAnalysisService:
         # ── Selector "últimos N" ──
         vent_sel = GPromptWindow(self.app)
         vent_sel.title("🚀 Auto-mejora — ¿Cuántos prompts analizar?")
-        vent_sel.geometry("420x230")
+        vent_sel.geometry("440x300")
         vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text="🚀 Auto-mejora",
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
@@ -495,10 +495,28 @@ class ToolsAnalysisService:
         lbl_n.pack(pady=(0, 14))
         slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
 
+        # ── Caché (mismo patrón que Crítica historial): si el historial no ha
+        # cambiado y se pide el mismo N, reusa el análisis previo sin gastar tokens.
+        prefs_cache = self.app.store.cargar_preferencias() or {}
+        cache_am = prefs_cache.get("_cache_automejora", {})
+        actual_hash = f"{len(items)}_{items[0].get('fecha', '') if items and isinstance(items[0], dict) else ''}"
+        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
+                                      text_color="#2ecc71")
+        lbl_cache_info.pack(pady=(0, 6))
+        if cache_am.get("hash") == actual_hash and cache_am.get("resp"):
+            lbl_cache_info.configure(
+                text=f"💾 Hay un análisis cacheado de {cache_am.get('n', 0)} prompts")
+
         def _lanzar():
             n = int(n_var.get())
+            usar_cache = (cache_am.get("hash") == actual_hash
+                          and cache_am.get("resp") and cache_am.get("n") == n)
             vent_sel.destroy()
-            self._auto_mejora_ejecutar(items[:n])
+            if usar_cache:
+                self.app.after(0, lambda: self._auto_mejora_mostrar(
+                    items[:n], cache_am.get("resultados"), cache_am["resp"], cacheado=True))
+            else:
+                self._auto_mejora_ejecutar(items[:n])
 
         ctk.CTkButton(vent_sel, text="▶ Analizar", width=160, height=34,
                       fg_color="#1a7a3c", command=_lanzar).pack(pady=4)
@@ -540,13 +558,26 @@ class ToolsAnalysisService:
                         resultados = _json.loads(m.group(0))
                     except Exception as e:
                         logger.debug(f"JSON parse falló: {e}")
+                # Guardar en caché para no re-gastar tokens si se repite el mismo set.
+                try:
+                    prefs_p = self.app.store.cargar_preferencias() or {}
+                    am_hash = (f"{len(ultimos)}_"
+                               f"{ultimos[0].get('fecha', '') if ultimos and isinstance(ultimos[0], dict) else ''}")
+                    prefs_p["_cache_automejora"] = {
+                        "hash": am_hash, "n": len(ultimos),
+                        "resultados": resultados, "resp": resp,
+                    }
+                    self.app.store.guardar_preferencias(prefs_p)
+                except Exception as e:
+                    logger.debug(f"[silent] cache automejora: {e}")
                 self.app.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str) -> None:
+    def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str,
+                             cacheado: bool = False) -> None:
         """Render cards colapsables con originales/sugerencias y botón Aplicar."""
         is_lt = ctk.get_appearance_mode().lower() == "light"
         bg_card = "#ffffff" if is_lt else "#1a1a2e"
@@ -647,11 +678,28 @@ class ToolsAnalysisService:
                                   width=100, height=28,
                                   command=_copiar).pack(side="left", padx=4)
 
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+        fila_final = ctk.CTkFrame(vent, fg_color="transparent")
+        fila_final.pack(pady=8)
+        if cacheado:
+            def _regenerar():
+                try:
+                    prefs_r = self.app.store.cargar_preferencias() or {}
+                    prefs_r.pop("_cache_automejora", None)
+                    self.app.store.guardar_preferencias(prefs_r)
+                except Exception as e:
+                    logger.debug(f"[silent] {e}")
+                vent.destroy()
+                self._auto_mejora_ejecutar(originales)
+            ctk.CTkButton(fila_final, text="🔄 Regenerar", width=120, height=30,
+                          fg_color="#7c3aed", hover_color="#6d28d9",
+                          command=_regenerar).pack(side="left", padx=4)
+        ctk.CTkButton(fila_final, text="Cerrar", width=120, height=30,
                       fg_color="#444", hover_color="#555",
-                      command=vent.destroy).pack(pady=8)
+                      command=vent.destroy).pack(side="left", padx=4)
 
-        self.app.dialogs.set_estado(f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)", "#2ecc71")
+        self.app.dialogs.set_estado(
+            f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)"
+            + (" (caché)" if cacheado else ""), "#2ecc71")
 
     def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
@@ -1406,9 +1454,9 @@ class ToolsAnalysisService:
         """Muestra el coste estimado de la sesión por proveedor.
 
         Los tokens se acumulan en api_clients.usage_tracker cada vez que
-        un provider completa una llamada. Coste = tokens × precio del
-        model_default (tabla PRECIOS_USD_1M, junio 2026). Proveedores
-        gratuitos/locales = 0; OpenRouter = "—" (depende del modelo).
+        un provider completa una llamada. Coste = tokens × precio del modelo
+        usado (PRECIOS_USD_1M_MODELO prioriza sobre el precio por proveedor;
+        tabla junio 2026). Proveedores gratuitos/locales = 0; OpenRouter = "—".
         """
         from api_clients import LLM_PROVIDERS, coste_dia_usd, usage_tracker
 
@@ -1442,7 +1490,7 @@ class ToolsAnalysisService:
         ctk.CTkLabel(vent, text="💰 Coste estimado de esta sesión",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(14, 2))
         ctk.CTkLabel(vent,
-                     text="Tokens reales reportados por cada API × precio del modelo por defecto.",
+                     text="Tokens reales reportados por cada API × precio del modelo usado.",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         cuerpo = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -1453,7 +1501,7 @@ class ToolsAnalysisService:
         lbl_total.pack(pady=(0, 2))
 
         ctk.CTkLabel(vent,
-                     text="Estimación orientativa (precios junio 2026, model_default de cada proveedor).",
+                     text="Estimación orientativa (precios junio 2026, por modelo usado).",
                      font=ctk.CTkFont(size=9, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 4))
 

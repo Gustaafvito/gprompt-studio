@@ -320,9 +320,9 @@ class UIBuildersService:
                 ("🎨  Paleta colores", self.app.creative.cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
-                ("🏷 Añadir tags (al prompt)", self.app.data.abrir_snippets),
+                ("🏷 Tags reutilizables (al prompt)", self.app.data.abrir_snippets),
                 ("🧬  Biblioteca ADN", self.app.adn.cmd_ver_biblioteca),
-                ("⚡  Expansión rápida (en idea)", self.app.data.cmd_gestionar_snippets),
+                ("⚡  Auto-expansión (en idea)", self.app.data.cmd_gestionar_snippets),
                 ("📐  Fórmulas", self.app.data.abrir_formulas),
                 ("📋  Plantillas", self.app._cmd_plantillas_populares),
                 ("💎  Seeds favoritos", self.app.analysis.abrir_seeds_favoritos),
