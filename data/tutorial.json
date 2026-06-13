@@ -183,7 +183,7 @@
     {
       "id": 31,
       "titulo": "🎯 31. ADAPTAR AL MODELO ACTIVO — Un clic al formato correcto",
-      "descripcion": "Reescribe el prompt actual al formato EXACTO del modelo seleccionado: natural vs tags, uso (o no) de pesos, límite de caracteres y negativos.\n\nDisponible como paso de Macro ('Adaptar al modelo activo'). 💡 No cambia tu idea, solo la forma.",
+      "descripcion": "Reescribe el prompt actual al formato EXACTO del modelo seleccionado: natural vs tags, uso (o no) de pesos, límite de caracteres y negativos.\n\nDisponible en el menú 🛠 Herramientas y como paso de Macro. 💡 No cambia tu idea, solo la forma.",
       "accion": null
     },
     {

@@ -179,6 +179,9 @@ class WorkflowComponent(_Component):
     def cmd_versiones_prompt(self) -> None:
         return self._service._cmd_versiones_prompt()
 
+    def cmd_adaptar_modelo(self) -> None:
+        return self._service._cmd_adaptar_modelo()
+
     def abrir_macros(self) -> None:
         return self._service._abrir_macros()
 

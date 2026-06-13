@@ -15,6 +15,15 @@ def test_incluye_la_accion_adaptar_modelo():
     assert ACCIONES_MACRO.get("🎯 Adaptar al modelo activo") == "adaptar_modelo"
 
 
+def test_adaptar_modelo_expuesto_como_comando_directo():
+    """adaptar_modelo debe ser invocable fuera de las macros (menú Herramientas):
+    método en el servicio + delegación en el componente."""
+    from modules.components import WorkflowComponent
+    from modules.tools_workflow import ToolsWorkflowService
+    assert hasattr(ToolsWorkflowService, "_cmd_adaptar_modelo")
+    assert callable(getattr(WorkflowComponent, "cmd_adaptar_modelo", None))
+
+
 def test_ejemplos_bien_formados():
     assert MACROS_EJEMPLO, "debe haber al menos una macro de ejemplo"
     for m in MACROS_EJEMPLO:

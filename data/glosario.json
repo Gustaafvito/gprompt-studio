@@ -279,7 +279,7 @@
     },
     {
       "titulo": "🎯 ADAPTAR AL MODELO ACTIVO",
-      "descripcion": "Reescribe el prompt actual al formato exacto del modelo seleccionado (natural vs tags, pesos, max_chars, negativos) sin cambiar la idea. Disponible como paso de Macro.",
+      "descripcion": "Reescribe el prompt actual al formato exacto del modelo seleccionado (natural vs tags, pesos, max_chars, negativos) sin cambiar la idea. Disponible en 🛠 Herramientas y como paso de Macro.",
       "categoria": "Herramientas G-Prompt",
       "accion": null
     },

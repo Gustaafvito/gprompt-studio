@@ -874,7 +874,7 @@ class ToolsWorkflowService:
                 if accion_id == "generar":
                     self.app.cmd_prompt()
                 elif accion_id == "adaptar_modelo":
-                    self._cmd_adaptar_modelo_en_macro()
+                    self._cmd_adaptar_modelo()
                     self.app.after(8000, lambda: _ejecutar_paso(idx + 1))
                     return
                 elif accion_id == "idea_auto":
@@ -961,11 +961,11 @@ class ToolsWorkflowService:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _cmd_adaptar_modelo_en_macro(self):
+    def _cmd_adaptar_modelo(self):
         """Reescribe el prompt actual para el MODELO ACTIVO (formato, max_chars,
-        pesos, negativos) sin alterar la idea. Headless — pensado para macros y
-        para uso directo. Reutiliza las specs del modelo (inyectar_specs_modelo)
-        y los helpers puros del optimizador."""
+        pesos, negativos) sin alterar la idea. Headless — sirve como comando
+        directo (menú 🛠 Herramientas) y como paso de Macro. Reutiliza las specs
+        del modelo (inyectar_specs_modelo) y los helpers puros del optimizador."""
         from modules.tools_analysis import (
             asegurar_etiquetas_prompt,
             construir_peticion_adaptar,
