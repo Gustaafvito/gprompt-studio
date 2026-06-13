@@ -152,8 +152,11 @@ class TestEnsamblarDataset:
         ds = ensamblar_dataset("trig", DESC, ["face_front"],
                                "estilo_x", "fondo_y")
         p = ds[0]["prompt"]
-        # Orden: trigger, desc, ángulo, fondo, iluminación, estilo
-        assert p.index("trig") < p.index(DESC) < p.index("close-up portrait")
+        # Orden (sesión 20): trigger, ENCUADRE, desc, fondo, iluminación, estilo.
+        # El encuadre va ANTES que la descripción: si la desc (con ropa de cuerpo
+        # entero) fuese primero, el modelo se aleja a plano entero ignorando el
+        # close-up. Liderar con el tipo de plano fuerza el recorte correcto.
+        assert p.index("trig") < p.index("close-up headshot") < p.index(DESC)
         assert "fondo_y" in p
         assert AVATAR_LIGHTING in p
         assert p.endswith("estilo_x")

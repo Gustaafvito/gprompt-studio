@@ -175,7 +175,11 @@ def ensamblar_dataset(
         if not angulo:
             continue
 
-        partes = [trigger, desc, angulo["prompt"], fondo, AVATAR_LIGHTING]
+        # El ENCUADRE va justo tras el trigger, ANTES de la descripción. Si la
+        # descripción (con ropa de cuerpo entero: medias, botas...) va primero,
+        # el modelo intenta mostrarla y se aleja a plano entero, ignorando el
+        # "close-up". Liderar con el tipo de plano fuerza el recorte correcto.
+        partes = [trigger, angulo["prompt"], desc, fondo, AVATAR_LIGHTING]
         if estilo_sufijo:
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
