@@ -52,6 +52,7 @@ hiddenimports = [
     'modules.gprompt_window',
     'modules.event_bus',
     'modules.preview_service',
+    'modules.preview_pollinations',
     'modules.comfyui_exporter',
     'modules.components',
     'modules.windows',
