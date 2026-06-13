@@ -1,6 +1,7 @@
 ﻿"""Workflow Tools Mixin - Setup management, Macros, A/B Testing, Cron, Projects, Session Recording, etc."""
 import datetime
 import logging
+import re
 import threading
 
 import pyperclip
@@ -57,6 +58,39 @@ MACROS_EJEMPLO = [
     {"nombre": "🧹 Adaptar prompt pegado",
      "pasos": ["🎯 Adaptar al modelo activo", "📊 Scoring auto"]},
 ]
+
+
+def macro_valida(obj) -> dict | None:
+    """Valida y limpia una macro importada. Devuelve {'nombre','pasos'} o None.
+
+    Filtra los pasos cuyo label no exista en ACCIONES_MACRO (p.ej. de otra
+    versión de la app) para que no queden pasos no-op silenciosos. Requiere
+    un nombre no vacío y al menos un paso válido."""
+    if not isinstance(obj, dict):
+        return None
+    nombre = str(obj.get("nombre", "")).strip()
+    pasos = obj.get("pasos")
+    if not nombre or not isinstance(pasos, list):
+        return None
+    pasos_validos = [p for p in pasos if isinstance(p, str) and p in ACCIONES_MACRO]
+    if not pasos_validos:
+        return None
+    return {"nombre": nombre, "pasos": pasos_validos}
+
+
+def parsear_macros_importadas(data) -> list:
+    """Normaliza el contenido importado a una lista de macros válidas.
+
+    Acepta una macro suelta (dict), una lista de macros, o {'macros': [...]}.
+    Ignora silenciosamente lo que no valide."""
+    if isinstance(data, dict) and "macros" in data:
+        data = data.get("macros")
+    if isinstance(data, dict):
+        data = [data]
+    if not isinstance(data, list):
+        return []
+    return [m for m in (macro_valida(o) for o in data) if m]
+
 
 class ToolsWorkflowService:
     """14 herramientas de workflow: setups, cron, versiones, macros,
@@ -797,6 +831,10 @@ class ToolsWorkflowService:
                               font=ctk.CTkFont(size=10), command=_ejecutar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="✏️ Editar", width=90, height=22, fg_color="#1a4a7a",
                               font=ctk.CTkFont(size=10), command=_editar).pack(side="left", padx=2)
+                ctk.CTkButton(btn_row, text="📤", width=30, height=22, fg_color="#5a3a7a",
+                              hover_color="#46295f", font=ctk.CTkFont(size=10),
+                              command=lambda mm=m: self._exportar_macros_a_archivo(mm)
+                              ).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color="#5a1a1a",
                               font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
 
@@ -852,8 +890,84 @@ class ToolsWorkflowService:
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=cargar_ejemplos).pack(side="left", padx=4)
 
+        def importar():
+            n = self._importar_macros_de_archivo()
+            if n > 0:
+                # Sincronizar el prefs local de la ventana tras importar+guardar.
+                prefs["macros"] = (self.app.store.cargar_preferencias() or {}).get("macros", [])
+                refrescar()
+
+        # Compartir macros entre máquinas/usuarios (las "Skills" portables).
+        botones2 = ctk.CTkFrame(form, fg_color="transparent")
+        botones2.pack(pady=(0, 8))
+        ctk.CTkButton(botones2, text="📥 Importar (.json)", width=150, height=26,
+                      fg_color="#5a3a7a", hover_color="#46295f",
+                      font=ctk.CTkFont(size=10), command=importar).pack(side="left", padx=4)
+        ctk.CTkButton(botones2, text="📤 Exportar todas", width=150, height=26,
+                      fg_color="#5a3a7a", hover_color="#46295f",
+                      font=ctk.CTkFont(size=10),
+                      command=lambda: self._exportar_macros_a_archivo(
+                          prefs.get("macros", []))).pack(side="left", padx=4)
+
         _refrescar_pasos()
         refrescar()
+
+    def _exportar_macros_a_archivo(self, macros) -> None:
+        """Exporta una macro (dict) o varias (lista) a un .json compartible."""
+        from tkinter import filedialog
+        if isinstance(macros, dict):
+            macros = [macros]
+        macros = [m for m in (macros or []) if isinstance(m, dict)]
+        if not macros:
+            return self.app.dialogs.set_estado("⚠️ No hay macros para exportar.", "#e67e22")
+        base = macros[0].get("nombre", "macro") if len(macros) == 1 else "macros_gprompt"
+        base = re.sub(r"[^\w\-]+", "_", base).strip("_") or "macros"
+        ruta = filedialog.asksaveasfilename(
+            defaultextension=".json", filetypes=[("JSON", "*.json")],
+            initialfile=f"{base}.json")
+        if not ruta:
+            return
+        try:
+            import json as _json
+            with open(ruta, "w", encoding="utf-8") as f:
+                _json.dump(macros, f, ensure_ascii=False, indent=2)
+            self.app.dialogs.set_estado(
+                f"📤 {len(macros)} macro(s) exportada(s)", "#2ecc71")
+        except Exception as e:
+            self.app.dialogs.set_estado(f"❌ Error exportando: {e}", "#e74c3c")
+
+    def _importar_macros_de_archivo(self) -> int:
+        """Importa macros desde un .json y las fusiona (omite duplicados por
+        nombre). Devuelve nº de macros nuevas añadidas; -1 si cancelado/error."""
+        from tkinter import filedialog
+        ruta = filedialog.askopenfilename(
+            filetypes=[("JSON", "*.json"), ("Todos", "*.*")])
+        if not ruta:
+            return -1
+        try:
+            import json as _json
+            with open(ruta, encoding="utf-8") as f:
+                data = _json.load(f)
+        except Exception as e:
+            self.app.dialogs.set_estado(f"❌ JSON inválido: {e}", "#e74c3c")
+            return -1
+        macros_imp = parsear_macros_importadas(data)
+        if not macros_imp:
+            self.app.dialogs.set_estado(
+                "⚠️ El archivo no contiene macros válidas.", "#e67e22")
+            return 0
+        prefs = self.app.store.cargar_preferencias() or {}
+        actual = prefs.get("macros", [])
+        existentes = {m.get("nombre", "") for m in actual}
+        nuevas = [m for m in macros_imp if m["nombre"] not in existentes]
+        actual.extend(nuevas)
+        prefs["macros"] = actual
+        self.app.store.guardar_preferencias(prefs)
+        omitidas = len(macros_imp) - len(nuevas)
+        self.app.dialogs.set_estado(
+            f"📥 {len(nuevas)} macro(s) importada(s)"
+            + (f" · {omitidas} ya existían" if omitidas else ""), "#2ecc71")
+        return len(nuevas)
 
     def _ejecutar_macro(self, macro, acciones_disponibles):
         """Ejecuta una macro paso a paso."""
