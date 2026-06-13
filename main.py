@@ -36,6 +36,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger("gprompt.main")
 
+# Red anti-bugs: si GPROMPT_DEBUG está puesto, re-lanza las excepciones
+# que normalmente se tragarían (los `logger.debug("[silent] ...")`).
+from logging_utils import install_strict_silent_guard
+
+if install_strict_silent_guard():
+    logger.warning(
+        "MODO ESTRICTO activo (GPROMPT_DEBUG): las excepciones [silent] "
+        "se re-lanzarán en lugar de silenciarse."
+    )
+
 from modules.tooltip import install_ctk_tooltip_patches
 
 install_ctk_tooltip_patches(logger)
