@@ -50,9 +50,11 @@ LLM_PROVIDERS = {
         "tipo": "anthropic",
         # IDs oficiales junio 2026 (skill claude-api). Sonnet 4.6 como
         # default: mejor equilibrio velocidad/inteligencia/precio.
+        # NOTA: claude-fable-5 retirado por Anthropic el 12-jun-2026
+        # (orden gobierno EE.UU., suspensión para todos los usuarios).
+        # Si lo restauran, volver a añadirlo aquí + a PRECIOS y al guard.
         "model_default": "claude-sonnet-4-6",
         "modelos": [
-            "claude-fable-5",      # tope de gama ($10/$50 por 1M)
             "claude-opus-4-8",     # Opus actual ($5/$25)
             "claude-sonnet-4-6",   # equilibrio ($3/$15)
             "claude-haiku-4-5",    # rápido y barato ($1/$5)
@@ -224,7 +226,9 @@ IMAGE_PROVIDERS = {
 # Tiene prioridad sobre PRECIOS_USD_1M cuando el modelo es conocido.
 # Claude: IDs y precios oficiales de Anthropic (junio 2026).
 PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
-    "claude-fable-5":            (10.00, 50.00),
+    # claude-fable-5 retirado 12-jun-2026 (ver nota en LLM_PROVIDERS).
+    # Se deja el precio comentado por si se restaura el acceso.
+    # "claude-fable-5":          (10.00, 50.00),
     "claude-opus-4-8":           (5.00, 25.00),
     "claude-opus-4-7":           (5.00, 25.00),
     "claude-opus-4-6":           (5.00, 25.00),
@@ -267,7 +271,7 @@ def calcular_coste_usd(provider_id: str, tokens_entrada: int,
     """Coste estimado en USD, o None si el precio es desconocido.
 
     Si se pasa `modelo` y está en PRECIOS_USD_1M_MODELO, su precio tiene
-    prioridad (p.ej. claude-fable-5 cuesta 3.3× más que sonnet-4-6).
+    prioridad (p.ej. claude-opus-4-8 cuesta 1.67× más que sonnet-4-6).
     """
     precios = PRECIOS_USD_1M_MODELO.get(modelo) if modelo else None
     if precios is None:
@@ -308,7 +312,7 @@ class UsageTracker:
             d["tokens_entrada"] += t_in
             d["tokens_salida"] += t_out
             # Desglose por modelo: el coste varía mucho dentro de un mismo
-            # proveedor (claude-fable-5 = 3.3× claude-sonnet-4-6).
+            # proveedor (claude-opus-4-8 = 1.67× claude-sonnet-4-6).
             m = d["modelos"].setdefault(modelo or "_default",
                                         {"tokens_entrada": 0, "tokens_salida": 0})
             m["tokens_entrada"] += t_in
@@ -554,8 +558,11 @@ class GeminiProvider(BaseLLMProvider):
 
 
 # Modelos Claude que RECHAZAN parámetros de sampling (temperature/top_p/
-# top_k devuelven 400): Fable 5 y Opus 4.7/4.8 los tienen eliminados.
+# top_k devuelven 400): Opus 4.7/4.8 los tienen eliminados.
 # Fuente: doc oficial de migración de Anthropic (junio 2026).
+# claude-fable-5 se mantiene como entrada DEFENSIVA: está retirado del
+# catálogo (12-jun-2026) pero, si Anthropic restaura el acceso, ya
+# queda blindado contra el 400 sin tener que recordar añadirlo.
 MODELOS_CLAUDE_SIN_SAMPLING = ("claude-fable-5", "claude-opus-4-8", "claude-opus-4-7")
 
 

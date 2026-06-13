@@ -213,7 +213,7 @@ class UIBuildersService:
 
         # ── Selector de MODELO del cerebro activo (sesión 19) ──
         # Editable: la lista trae los modelos conocidos del proveedor
-        # (p.ej. Claude: fable-5, opus-4-8, sonnet-4-6, haiku-4-5) pero
+        # (p.ej. Claude: opus-4-8, sonnet-4-6, haiku-4-5) pero
         # se puede escribir cualquier ID a mano y pulsar Enter.
         def _on_modelo_llm_cambio(valor=None):
             try:
