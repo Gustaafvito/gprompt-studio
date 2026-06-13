@@ -2634,19 +2634,45 @@ de modelo procesa ambos datasets. Flujo en SeaArt: subir
 edición + el text-to-image JUNTOS — quizá merezca un aviso en el
 LEEME de que son alternativos, no acumulativos.
 
+### Round 13: selector de modelo por cerebro (`bcb6eb2`, `e52f39f`)
+
+Petición del usuario: poder elegir el MODELO dentro de cada cerebro
+(antes cada proveedor llevaba un `model_default` fijo y desfasado —
+Claude clavado a sonnet-4-5 de sept-2025).
+
+- `LLM_PROVIDERS[*]["modelos"]`: lista seleccionable por proveedor.
+  Claude default → `claude-sonnet-4-6`. IDs/precios verificados con la
+  skill `claude-api` (junio 2026).
+- `APIClients.set_model()`/`get_model()`: cambia el modelo del
+  proveedor, recrea la instancia y persiste en `active_models.json`.
+- UI: combo editable junto al 🔑 — lista los modelos del cerebro
+  activo, se repuebla al cambiar de cerebro, admite ID a mano + Enter.
+- **FIX crítico**: Opus 4.8/4.7 (y Fable 5) RECHAZAN `temperature` con
+  400 (sampling eliminado, doc oficial). `ClaudeProvider` solo la
+  envía a modelos que la aceptan (`modelo_acepta_temperature`).
+- **Coste por modelo**: `PRECIOS_USD_1M_MODELO` prioriza sobre el
+  precio por proveedor; `UsageTracker` desglosa tokens por modelo.
+
+**Fable 5 retirado (`e52f39f`)**: Anthropic suspendió Fable 5 + Mythos
+5 el 12-jun-2026 por orden del gobierno de EE.UU.
+(anthropic.com/news/fable-mythos-access). Quitado del catálogo y de
+precios; se MANTIENE en `MODELOS_CLAUDE_SIN_SAMPLING` como entrada
+defensiva por si restauran el acceso.
+
 ### Métricas sesión 19 (final)
 
 | Métrica | Antes | Ahora |
 |---|---:|---:|
-| Tests | 385 | **491** (+106) ⭐ |
+| Tests | 385 | **505** (+120) ⭐ |
 | Ítems menú 📊 Análisis | 3 | **5** (+ Optimizador, + Coste) |
 | Bugs de datos/arranque | 6 conocidos | 0 ✅ |
 | Menús del header | invisibles (bug) | **visibles** ✅ |
 | Optimizador validado | mocks | **end-to-end real + model-aware** ✅ |
 | Modelos con specs trabajados | 8 | **21** (11 ✅ + 10 doc oficial) |
-| Coste API | invisible | **sesión + histórico persistente** ✅ |
-| Módulo Avatar LoRA | — | **v2 validado end-to-end real** ✅ |
+| Coste API | invisible | **sesión + histórico + por modelo** ✅ |
+| Módulo Avatar LoRA | — | **v2 + img2img validado real** ✅ |
 | theme.json | 2 claves faltantes + fuera del exe | **completo + empaquetado** ✅ |
+| Cerebros LLM | model_default fijo | **modelo elegible por proveedor** ✅ |
 
 ### 🚧 Pendiente sesión 20+
 
@@ -2655,12 +2681,24 @@ LEEME de que son alternativos, no acumulativos.
 - 🟡 max_chars empírico de los 10 semi-auditados (Infinity, SD 3.5,
   Realism, NoobAI, T-Ponynai3, Counterfeit, Temporal) — prompt
   marcado o contador del panel.
-- 🟡 Validar el módulo Avatar end-to-end (generar dataset real +
-  entrenar LoRA en SeaArt) — el usuario lo prueba ahora.
-- 🟡 Revisar precios de `PRECIOS_USD_1M` periódicamente.
+- 🟡 Vigilar si Anthropic **restaura Fable 5** (descomentar precio +
+  re-añadir a `LLM_PROVIDERS["claude"]["modelos"]`; el guard de
+  temperature ya lo cubre).
+- 🟡 Revisar precios de `PRECIOS_USD_1M` / `PRECIOS_USD_1M_MODELO`.
 - 🟡 QoL: overlay de ratio sobre imagen de referencia; variante
-  SD/Comfy del storyboard.
+  SD/Comfy del storyboard; aviso en LEEME de que los prompts de
+  edición y text-to-image del Avatar son alternativos, no acumulativos.
 - 🟢 Resto: ver "Pendiente sesión 19+" arriba (sigue vigente).
+
+### 🔑 Estado para retomar (cierre round 13)
+
+- **Tests**: 505 verdes. `python -m pytest tests -q`.
+- **Arranque**: `python main.py` (keys del usuario: deepseek, gemini,
+  openrouter — SIN key de Anthropic, así que el combo de Claude no se
+  prueba hasta añadirla en 🔑).
+- **Build**: `python build.py --installer && python build.py --onefile`
+  → copiar los 3 a `~/OneDrive/Desktop/GPromptStudio-Distribuible/`.
+- **Último commit**: `e52f39f`. Working tree limpio + pusheado.
 
 ---
 
