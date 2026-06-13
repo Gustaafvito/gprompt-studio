@@ -160,6 +160,74 @@ def find_inno():
     return None
 
 
+def find_signtool():
+    """Busca signtool.exe (en PATH o en el Windows 10/11 SDK)."""
+    if shutil.which("signtool"):
+        return "signtool"
+    bases = [
+        Path(r"C:\Program Files (x86)\Windows Kits\10\bin"),
+        Path(r"C:\Program Files\Windows Kits\10\bin"),
+    ]
+    candidatos = []
+    for base in bases:
+        if base.exists():
+            candidatos += list(base.glob(r"*\x64\signtool.exe"))
+            candidatos += list(base.glob("signtool.exe"))
+    # Preferir la versión más reciente del SDK (orden lexicográfico inverso).
+    candidatos.sort(reverse=True)
+    return str(candidatos[0]) if candidatos else None
+
+
+def sign_file(path):
+    """Firma `path` con Authenticode si hay certificado configurado.
+
+    Lee la config de variables de entorno (nunca hardcodear secretos):
+        GPROMPT_SIGN_CERT        ruta a un .pfx/.p12  (opción A)
+        GPROMPT_SIGN_PASSWORD    contraseña del .pfx  (opcional)
+        GPROMPT_SIGN_THUMBPRINT  huella SHA1 de un cert ya en el almacén (opción B)
+        GPROMPT_SIGN_TIMESTAMP   URL del servidor de sellado de tiempo RFC3161
+                                 (default: http://timestamp.digicert.com)
+
+    Si no hay ni CERT ni THUMBPRINT, es un no-op informativo: el build
+    sigue siendo válido, solo sin firmar (SmartScreen mostrará aviso).
+    Devuelve True si firmó, False si se omitió o falló.
+    """
+    cert = os.environ.get("GPROMPT_SIGN_CERT")
+    thumb = os.environ.get("GPROMPT_SIGN_THUMBPRINT")
+    if not cert and not thumb:
+        log("ℹ Code-signing omitido (define GPROMPT_SIGN_CERT o "
+            "GPROMPT_SIGN_THUMBPRINT para firmar)", "yellow")
+        return False
+
+    signtool = find_signtool()
+    if not signtool:
+        log("⚠ Hay certificado configurado pero no encuentro signtool.exe "
+            "(instala el Windows SDK). Build sin firmar.", "yellow")
+        return False
+
+    ts_url = os.environ.get("GPROMPT_SIGN_TIMESTAMP", "http://timestamp.digicert.com")
+    cmd = [signtool, "sign", "/fd", "SHA256", "/tr", ts_url, "/td", "SHA256"]
+    if cert:
+        cmd += ["/f", cert]
+        pwd = os.environ.get("GPROMPT_SIGN_PASSWORD")
+        if pwd:
+            cmd += ["/p", pwd]
+    else:
+        cmd += ["/sha1", thumb]
+    cmd.append(str(path))
+
+    # Log SIN la contraseña ni la ruta del cert (datos sensibles).
+    log(f"🔏 Firmando {rel(path)}…", "blue")
+    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    _print_scrubbed(proc.stdout)
+    _print_scrubbed(proc.stderr)
+    if proc.returncode != 0:
+        log(f"⚠ Firma falló (rc={proc.returncode}). Continúo sin firmar.", "yellow")
+        return False
+    log(f"✓ Firmado: {rel(path)}", "green")
+    return True
+
+
 def clean(include_pycache=False):
     """Borra dist/ y build/ para empezar de cero.
 
@@ -237,6 +305,8 @@ def build_pyinstaller(onefile=False):
     else:
         log(f"✗ No encuentro el ejecutable en {rel(out)}", "red")
         sys.exit(1)
+    # Firma opcional del .exe (antes de empaquetarlo en el instalador).
+    sign_file(out)
     return out
 
 
@@ -280,6 +350,8 @@ def build_installer():
             inst = instaladores[0]
             size_mb = inst.stat().st_size / (1024 * 1024)
             log(f"  → {rel(inst)}  ({size_mb:.1f} MB)", "green")
+            # Firma opcional del instalador generado.
+            sign_file(inst)
             return True
     log("⚠ Inno Setup terminó pero no encuentro el instalador", "yellow")
     return False

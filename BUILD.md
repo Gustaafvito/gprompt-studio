@@ -156,7 +156,7 @@ rm -rf dist build
 
 Lista de comprobaciones rápidas:
 
-- [ ] `python -m pytest tests/ -q` → 48/48 ✅
+- [ ] `python -m pytest tests/ -q` → todo verde ✅
 - [ ] `python -c "import app; print('OK')"` → OK
 - [ ] Working tree limpio (`git status`)
 - [ ] Versión actualizada en `installer.iss`
@@ -217,3 +217,51 @@ Para evitar la advertencia de SmartScreen necesitas **firmar el .exe**
 con un certificado de code-signing (Authenticode). Es de pago (~150-400
 €/año). Sin firmar, los usuarios verán "Windows protegió tu PC" y
 tendrán que pulsar "Más info → Ejecutar de todas formas".
+
+---
+
+## Code-signing (Authenticode)
+
+`build.py` firma automáticamente el `.exe` y el instalador **si** hay un
+certificado configurado por variables de entorno. Si no, el build sigue
+funcionando igual, solo sin firmar (no-op informativo). Nunca se
+hardcodea ningún secreto en el repo.
+
+### Requisitos
+
+- Un certificado de code-signing válido (`.pfx`/`.p12`) o uno ya
+  importado en el almacén de Windows.
+- `signtool.exe` (viene con el **Windows 10/11 SDK**). `build.py` lo
+  busca en `PATH` y en `C:\Program Files (x86)\Windows Kits\10\bin\...`.
+
+### Variables de entorno
+
+| Variable | Para qué |
+|---|---|
+| `GPROMPT_SIGN_CERT` | Ruta a un `.pfx`/`.p12` (opción A) |
+| `GPROMPT_SIGN_PASSWORD` | Contraseña del `.pfx` (opcional) |
+| `GPROMPT_SIGN_THUMBPRINT` | Huella SHA1 de un cert ya en el almacén (opción B) |
+| `GPROMPT_SIGN_TIMESTAMP` | URL de sellado de tiempo RFC3161 (default `http://timestamp.digicert.com`) |
+
+Define **CERT** (opción A) **o** **THUMBPRINT** (opción B), no ambos.
+
+### Ejemplo (PowerShell)
+
+```powershell
+# Opción A: firmar con un .pfx
+$env:GPROMPT_SIGN_CERT = "C:\ruta\a\mi-cert.pfx"
+$env:GPROMPT_SIGN_PASSWORD = "********"
+python build.py --installer    # firma el .exe y el instalador
+
+# Opción B: cert ya importado en el almacén
+$env:GPROMPT_SIGN_THUMBPRINT = "a1b2c3d4e5f6...."
+python build.py --installer
+```
+
+> ⚠️ No pongas estas variables en el repo ni en scripts versionados.
+> Úsalas solo en la sesión de build (o en un secreto de CI). La firma
+> usa SHA-256 + sellado de tiempo, así que el binario sigue siendo
+> válido aunque el certificado caduque después.
+
+Si hay certificado pero falta `signtool.exe`, o la firma falla,
+`build.py` avisa y continúa generando un build **sin firmar** (no aborta).
