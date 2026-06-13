@@ -47,6 +47,10 @@ desktop.ini
 *.tmp
 *.corrupt
 
+# Material de integración ya incorporado al repo (modules/avatar_*.py).
+# El doc original se conserva en disco como referencia, fuera de git.
+INTEGRACIÓN DEL MÓDULO AVATAR EN ARQUITECTO DE PROMPTS/
+
 # PyInstaller / build artifacts
 dist/
 build/
