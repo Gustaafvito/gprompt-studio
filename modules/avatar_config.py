@@ -135,9 +135,70 @@ AVATAR_ANGLES = {
         "filename": "16_expression_serious",
         "group": "extras",
     },
+
+    # --- EXPRESIONES ADICIONALES (rango emocional para el LoRA) ---
+    # Neutrales: solo cambian la expresión, sin props ni escenario.
+    "expression_surprised": {
+        "label": "Expresión — sorpresa",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, surprised expression, wide open eyes, slightly open mouth",
+        "framing": "close-up portrait, surprised",
+        "filename": "17_expression_surprised",
+        "group": "extras",
+    },
+    "expression_angry": {
+        "label": "Expresión — enfado",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, angry determined expression, furrowed eyebrows",
+        "framing": "close-up portrait, angry",
+        "filename": "18_expression_angry",
+        "group": "extras",
+    },
+    "expression_eyes_closed": {
+        "label": "Expresión — ojos cerrados",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, eyes closed, calm peaceful expression, gentle smile",
+        "framing": "close-up portrait, eyes closed",
+        "filename": "19_expression_eyes_closed",
+        "group": "extras",
+    },
+    "expression_blush": {
+        "label": "Expresión — sonrojo tímido",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, shy blushing expression, looking slightly away",
+        "framing": "close-up portrait, blushing",
+        "filename": "20_expression_blush",
+        "group": "extras",
+    },
+
+    # --- POSES ADICIONALES (sin props ni escenario: solo pose/encuadre) ---
+    "cowboy_front": {
+        "label": "Plano americano — frontal",
+        "prompt": "cowboy shot, framed from mid-thigh up, standing, facing camera directly, front view",
+        "framing": "cowboy shot, front view",
+        "filename": "21_cowboy_front",
+        "group": "poses",
+    },
+    "seated_floor": {
+        "label": "Sentada en el suelo",
+        "prompt": "full body shot, seated cross-legged on the ground, relaxed sitting pose, entire body visible",
+        "framing": "full body, seated",
+        "filename": "22_seated_floor",
+        "group": "poses",
+    },
+    "over_shoulder": {
+        "label": "Mirando por encima del hombro",
+        "prompt": "upper body shot, three-quarter back view, head turned looking over the shoulder toward the camera, cropped at the waist",
+        "framing": "upper body, over the shoulder",
+        "filename": "23_over_shoulder",
+        "group": "poses",
+    },
+    "dynamic_action": {
+        "label": "Pose dinámica / acción",
+        "prompt": "full body shot, dynamic action pose, mid-movement, energetic stance, entire body visible",
+        "framing": "full body, action pose",
+        "filename": "24_dynamic_action",
+        "group": "poses",
+    },
 }
 
-# Set por defecto recomendado para un LoRA de personaje (16 vistas)
+# Set por defecto recomendado para un LoRA de personaje (24 vistas)
 DEFAULT_ANGLE_SET = list(AVATAR_ANGLES.keys())
 
 # Grupos para organizar los checkboxes en la UI
@@ -146,6 +207,7 @@ ANGLE_GROUPS = {
     "busto": "Busto / Medio cuerpo",
     "cuerpo": "Cuerpo entero",
     "extras": "Ángulos y expresiones",
+    "poses": "Poses adicionales",
 }
 
 # ---------------------------------------------------------------------------

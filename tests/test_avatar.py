@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from modules.avatar_config import (
+    ANGLE_GROUPS,
     AVATAR_ANGLES,
     AVATAR_FORM_FIELDS,
     AVATAR_LIGHTING,
@@ -44,9 +45,12 @@ def _llm_fake(system, user):
 # ── Configuración ─────────────────────────────────────────────────
 
 class TestAvatarConfig:
-    def test_16_angulos_canonicos(self):
-        assert len(AVATAR_ANGLES) == 16
+    def test_angulos_canonicos(self):
+        assert len(AVATAR_ANGLES) == 24
         assert DEFAULT_ANGLE_SET == list(AVATAR_ANGLES.keys())
+        # Todos los grupos referenciados existen en ANGLE_GROUPS
+        grupos_usados = {d["group"] for d in AVATAR_ANGLES.values()}
+        assert grupos_usados <= set(ANGLE_GROUPS)
 
     def test_angulos_tienen_campos_obligatorios(self):
         for key, datos in AVATAR_ANGLES.items():
@@ -143,7 +147,7 @@ class TestEnsamblarDataset:
         # La razón de ser del módulo: identidad palabra por palabra
         ds = ensamblar_dataset("ohwx_ana", DESC, DEFAULT_ANGLE_SET,
                                "photorealistic", "gray background")
-        assert len(ds) == 16
+        assert len(ds) == 24
         for item in ds:
             assert DESC in item["prompt"]
             assert item["prompt"].startswith("ohwx_ana, ")
@@ -195,9 +199,9 @@ class TestEnsamblarDataset:
 # ── Modo edición img2img (sesión 19 round 12) ─────────────────────
 
 class TestDatasetEdicion:
-    def test_16_prompts_de_edicion(self):
+    def test_prompts_de_edicion(self):
         ds = ensamblar_dataset_edicion("ohwx_t", DEFAULT_ANGLE_SET, "gray bg")
-        assert len(ds) == 16
+        assert len(ds) == 24
 
     def test_prompt_ordena_conservar_identidad_y_cambiar_camara(self):
         ds = ensamblar_dataset_edicion("t", ["face_profile_left"], "gray bg")
@@ -257,8 +261,8 @@ class TestPipeline:
             DEFAULT_ANGLE_SET, "photorealistic", "gray bg")
         assert r["trigger_word"] == "ohwx_ana"
         assert r["descripcion_canonica"] == DESC
-        assert r["total_prompts"] == 16
-        assert len(r["dataset"]) == 16
+        assert r["total_prompts"] == 24
+        assert len(r["dataset"]) == 24
 
     def test_adaptar_modelo_sin_negative_vacia_negatives(self):
         r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")

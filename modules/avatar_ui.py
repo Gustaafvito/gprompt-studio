@@ -376,7 +376,7 @@ class AvatarFrame(ctk.CTkFrame):
                       if self.adaptador else [])
             ruta = exportar_dataset(resultado, carpeta)
             # Copiar la imagen de referencia al dataset: en SeaArt se sube
-            # como "sujeto" para anclar la identidad en los 16 ángulos.
+            # como "sujeto" para anclar la identidad en todos los ángulos.
             if self._imagen_referencia:
                 try:
                     import os

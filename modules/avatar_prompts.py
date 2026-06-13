@@ -33,7 +33,7 @@ REGLAS ESTRICTAS:
 4. Estructura fija y en este orden: edad y género → rasgos faciales (cara, ojos, pelo) → rasgos distintivos → complexión → ropa exacta.
 5. PROHIBIDO: lenguaje cinematográfico, ángulos de cámara, encuadres, iluminación, fondos, estilo artístico, emociones o poses. Eso se añade después por código.
 6. PROHIBIDO: sinónimos ambiguos o adjetivos subjetivos vagos ("beautiful", "stunning"). Usa descripciones físicas concretas y verificables.
-7. La descripción debe poder repetirse palabra por palabra en 16 prompts distintos manteniendo la identidad exacta del personaje.
+7. La descripción debe poder repetirse palabra por palabra en todos los prompts del dataset manteniendo la identidad exacta del personaje.
 8. La ropa debe describirse de forma exacta y cerrada (color + prenda + detalle), porque será idéntica en todo el dataset.
 
 EJEMPLO DE SALIDA VÁLIDA:
@@ -99,7 +99,7 @@ REGLAS ESTRICTAS:
    - edad: uno de [18-25, 25-35, 35-45, 45-60, 60+] (edad APARENTE)
    - complexion: uno de [Delgada, Atlética, Media, Robusta, Curvy]
 5. Describe SOLO lo que VES: piel, cara, ojos, pelo, rasgos distintivos (cicatrices, pecas, gafas, tatuajes, joyas) y la ropa EXACTA (color + prenda + detalle).
-6. Sé concreto y verificable — nada de adjetivos vagos. La ficha se usará para recrear a esta persona de forma idéntica en 16 ángulos distintos.
+6. Sé concreto y verificable — nada de adjetivos vagos. La ficha se usará para recrear a esta persona de forma idéntica en varios ángulos distintos.
 7. NO describas el fondo, la iluminación ni el encuadre de la foto.
 
 EJEMPLO DE SALIDA VÁLIDA:

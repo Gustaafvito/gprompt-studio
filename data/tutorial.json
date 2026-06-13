@@ -225,7 +225,7 @@
     {
       "id": 38,
       "titulo": "🧑‍🎨 38. AVATAR DATASET (LoRA) — Personaje consistente",
-      "descripcion": "Genera un dataset completo para entrenar un LoRA de personaje: hasta 16 ángulos con la MISMA identidad, captions estilo kohya y consejos oficiales de SeaArt.\n\nPuede partir de una ficha de texto, una ficha automática (🎲) o una foto de referencia (📷, modo edición img2img).",
+      "descripcion": "Genera un dataset completo para entrenar un LoRA de personaje: hasta 24 ángulos con la MISMA identidad, captions estilo kohya y consejos oficiales de SeaArt.\n\nPuede partir de una ficha de texto, una ficha automática (🎲) o una foto de referencia (📷, modo edición img2img).",
       "accion": null
     },
     {

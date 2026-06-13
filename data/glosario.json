@@ -303,7 +303,7 @@
     },
     {
       "titulo": "🧑‍🎨 AVATAR DATASET (LoRA)",
-      "descripcion": "Genera un dataset para entrenar un LoRA de personaje: hasta 16 ángulos con la MISMA identidad + captions kohya. Parte de una ficha de texto, automática o una foto de referencia.",
+      "descripcion": "Genera un dataset para entrenar un LoRA de personaje: hasta 24 ángulos con la MISMA identidad + captions kohya. Parte de una ficha de texto, automática o una foto de referencia.",
       "categoria": "Herramientas G-Prompt",
       "accion": null
     },
