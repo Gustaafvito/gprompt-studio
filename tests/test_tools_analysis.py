@@ -11,11 +11,35 @@ import pytest
 from modules.tools_analysis import (
     asegurar_etiquetas_prompt,
     color_para_score,
+    construir_peticion_adaptar,
     construir_peticion_mejora,
     construir_peticion_scoring,
     ejecutar_loop_optimizacion,
     parsear_scoring,
 )
+
+# ── construir_peticion_adaptar (sesión 20) ────────────────────────
+
+class TestConstruirPeticionAdaptar:
+    def test_incluye_specs_del_modelo_y_el_prompt(self):
+        p = construir_peticion_adaptar("un gato rojo", "MAX 2000 chars; natural")
+        assert "un gato rojo" in p
+        assert "MAX 2000 chars; natural" in p
+        assert "modelo destino" in p.lower()
+
+    def test_no_pide_conservar_etiquetas_si_el_prompt_no_las_tiene(self):
+        p = construir_peticion_adaptar("solo texto plano", "specs")
+        assert "POSITIVE PROMPT" not in p
+
+    def test_pide_conservar_etiquetas_si_el_prompt_las_tiene(self):
+        p = construir_peticion_adaptar("POSITIVE PROMPT:\nun gato", "specs")
+        assert "POSITIVE PROMPT" in p
+        assert "Conserva" in p
+
+    def test_instruye_no_cambiar_la_idea(self):
+        p = construir_peticion_adaptar("x", "specs")
+        # El objetivo es de forma, no de contenido.
+        assert "NO cambies la idea" in p
 
 # ── color_para_score ──────────────────────────────────────────────
 

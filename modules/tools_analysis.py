@@ -154,6 +154,31 @@ def construir_peticion_mejora(prompt: str, debiles: str = "", sugerencia: str = 
     )
 
 
+def construir_peticion_adaptar(prompt: str, modelo_info: str) -> str:
+    """Petición para REESCRIBIR el prompt al formato exacto del modelo destino
+    sin alterar la idea.
+
+    A diferencia de construir_peticion_mejora (que añade calidad/detalle), aquí
+    el objetivo es de FORMA: convertir entre natural y tags, respetar (o no) los
+    pesos, ajustar al max_chars y a la política de negativos del modelo. La idea
+    creativa se conserva intacta — solo cambia la sintaxis y la longitud."""
+    formato = ""
+    if "POSITIVE PROMPT" in prompt.upper():
+        formato = (
+            "\n⚠️ Conserva EXACTAMENTE las etiquetas 'POSITIVE PROMPT:' y "
+            "'NEGATIVE PROMPT:' y su estructura.\n"
+        )
+    return (
+        "Reescribe el siguiente prompt para que cumpla AL 100% las reglas del "
+        "modelo destino (formato natural vs tags, uso o no de pesos, límite de "
+        "caracteres, negativos). NO cambies la idea ni el contenido creativo: "
+        "solo adapta la forma, la sintaxis y la longitud.\n\n"
+        f"REGLAS DEL MODELO DESTINO:\n{modelo_info}\n"
+        f"{formato}\n"
+        f"Devuelve SOLO el prompt adaptado, sin explicaciones:\n\n{prompt}"
+    )
+
+
 def asegurar_etiquetas_prompt(texto_original: str, texto_mejorado: str) -> str:
     """Reconstruye la etiqueta 'POSITIVE PROMPT:' si el LLM la peló.
 

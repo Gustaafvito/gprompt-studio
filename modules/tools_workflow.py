@@ -18,6 +18,46 @@ from workers import limpiar_marcadores
 if TYPE_CHECKING:
     pass
 
+# Acciones automáticas que una macro puede encadenar: label visible → id
+# interno despachado en _ejecutar_macro. A nivel de módulo para ser testeable.
+ACCIONES_MACRO = {
+    "✨ Generar prompt": "generar",
+    "🎯 Adaptar al modelo activo": "adaptar_modelo",
+    "⚡ Generar idea directa": "idea_auto",
+    "🔄 Generar 1 variación": "variacion_auto",
+    "🛡 Generar negative óptimo": "negative_optimo",
+    "🚫 Negative builder": "negative_builder",
+    "🎨 Previsualizar": "previsualizar",
+    "🔁 Refinar (estándar)": "refinar",
+    "🎬 Refinar más cinematográfico": "refinar_cinematografico",
+    "👤 Refinar más detalle facial": "refinar_facial",
+    "💡 Refinar mejor iluminación": "refinar_iluminacion",
+    "🎯 Refinar mejorado": "refinar_mejorado",
+    "✂️ Refinar simplificar": "refinar_simplificar",
+    "📊 Scoring auto": "scoring_auto",
+    "🎨 Sugerir estilos": "sugerir_estilos",
+    "⭐ Guardar Favorito": "guardar_favorito",
+    "🌟 Guardar Estrella": "guardar_estrella",
+    "🧹 Limpiar salida": "limpiar",
+    "📋 Copiar negative": "copiar_neg",
+    "📋 Copiar positive": "copiar_pos",
+    "🇪🇸 Traducir al español": "traducir",
+}
+
+# Macros de ejemplo (botón "Cargar ejemplos" en la ventana de Macros). Los
+# labels de cada paso DEBEN coincidir exactamente con las claves de
+# ACCIONES_MACRO.
+MACROS_EJEMPLO = [
+    {"nombre": "🎯 Pulir para el modelo",
+     "pasos": ["✨ Generar prompt", "🎯 Adaptar al modelo activo",
+               "📊 Scoring auto", "🌟 Guardar Estrella"]},
+    {"nombre": "🎬 Cinematográfico premium",
+     "pasos": ["✨ Generar prompt", "🎬 Refinar más cinematográfico",
+               "💡 Refinar mejor iluminación", "⭐ Guardar Favorito"]},
+    {"nombre": "🧹 Adaptar prompt pegado",
+     "pasos": ["🎯 Adaptar al modelo activo", "📊 Scoring auto"]},
+]
+
 class ToolsWorkflowService:
     """14 herramientas de workflow: setups, cron, versiones, macros,
     scoring auto, proyectos, atajos de tags.
@@ -586,29 +626,10 @@ class ToolsWorkflowService:
         ctk.CTkLabel(vent, text="Combina acciones (ej: Generar → Refinar cinematográfico → Guardar estrella)",
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-        # Acciones disponibles para construir macros (solo automáticas)
-        acciones_disponibles = {
-            "✨ Generar prompt": "generar",
-            "⚡ Generar idea directa": "idea_auto",
-            "🔄 Generar 1 variación": "variacion_auto",
-            "🛡 Generar negative óptimo": "negative_optimo",
-            "🚫 Negative builder": "negative_builder",
-            "🎨 Previsualizar": "previsualizar",
-            "🔁 Refinar (estándar)": "refinar",
-            "🎬 Refinar más cinematográfico": "refinar_cinematografico",
-            "👤 Refinar más detalle facial": "refinar_facial",
-            "💡 Refinar mejor iluminación": "refinar_iluminacion",
-            "🎯 Refinar mejorado": "refinar_mejorado",
-            "✂️ Refinar simplificar": "refinar_simplificar",
-            "📊 Scoring auto": "scoring_auto",
-            "🎨 Sugerir estilos": "sugerir_estilos",
-            "⭐ Guardar Favorito": "guardar_favorito",
-            "🌟 Guardar Estrella": "guardar_estrella",
-            "🧹 Limpiar salida": "limpiar",
-            "📋 Copiar negative": "copiar_neg",
-            "📋 Copiar positive": "copiar_pos",
-            "🇪🇸 Traducir al español": "traducir",
-        }
+        # Acciones disponibles para construir macros (solo automáticas).
+        # Definidas a nivel de módulo (ACCIONES_MACRO) para poder testear que
+        # las macros de ejemplo solo referencian labels válidos.
+        acciones_disponibles = ACCIONES_MACRO
 
         # Form crear/editar macro
         # Estado: si `editing_idx` != None, estamos editando una macro
@@ -801,11 +822,35 @@ class ToolsWorkflowService:
             _cancelar_edicion()
             refrescar()
 
-        btn_crear = ctk.CTkButton(form, text="✅ Crear macro", width=160, height=28,
+        def cargar_ejemplos():
+            """Siembra macros de ejemplo curadas (omite las que ya existan por
+            nombre). Útil porque Macros arranca vacío y la feature pasa
+            desapercibida sin un punto de partida."""
+            actual = prefs.get("macros", [])
+            existentes = {m.get("nombre", "") for m in actual}
+            nuevas = [m for m in MACROS_EJEMPLO if m["nombre"] not in existentes]
+            if not nuevas:
+                self.app.dialogs.set_estado(
+                    "ℹ️ Los ejemplos ya están cargados.", "#e67e22")
+                return
+            actual.extend(nuevas)
+            prefs["macros"] = actual
+            self.app.store.guardar_preferencias(prefs)
+            self.app.dialogs.set_estado(
+                f"📥 {len(nuevas)} macro(s) de ejemplo cargada(s)", "#2ecc71")
+            refrescar()
+
+        botones = ctk.CTkFrame(form, fg_color="transparent")
+        botones.pack(pady=(4, 8))
+        btn_crear = ctk.CTkButton(botones, text="✅ Crear macro", width=160, height=28,
                                    fg_color="#1a7a3c",
                                    font=ctk.CTkFont(size=10, weight="bold"),
                                    command=crear_o_guardar)
-        btn_crear.pack(pady=(4, 8))
+        btn_crear.pack(side="left", padx=4)
+        ctk.CTkButton(botones, text="📥 Cargar ejemplos", width=150, height=28,
+                      fg_color="#1a4a7a", hover_color="#143a5f",
+                      font=ctk.CTkFont(size=10, weight="bold"),
+                      command=cargar_ejemplos).pack(side="left", padx=4)
 
         _refrescar_pasos()
         refrescar()
@@ -828,6 +873,10 @@ class ToolsWorkflowService:
             try:
                 if accion_id == "generar":
                     self.app.cmd_prompt()
+                elif accion_id == "adaptar_modelo":
+                    self._cmd_adaptar_modelo_en_macro()
+                    self.app.after(8000, lambda: _ejecutar_paso(idx + 1))
+                    return
                 elif accion_id == "idea_auto":
                     self._cmd_idea_auto_en_macro()
                 elif accion_id == "variacion_auto":
@@ -909,6 +958,48 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda: self.app.dialogs.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _cmd_adaptar_modelo_en_macro(self):
+        """Reescribe el prompt actual para el MODELO ACTIVO (formato, max_chars,
+        pesos, negativos) sin alterar la idea. Headless — pensado para macros y
+        para uso directo. Reutiliza las specs del modelo (inyectar_specs_modelo)
+        y los helpers puros del optimizador."""
+        from modules.tools_analysis import (
+            asegurar_etiquetas_prompt,
+            construir_peticion_adaptar,
+        )
+
+        actual = self.app.txt_salida.get("1.0", "end").strip()
+        if not actual or len(actual) < 20:
+            return self.app.dialogs.set_estado(
+                "⚠️ Genera un prompt primero para adaptarlo.", "#e67e22")
+
+        # Specs del modelo activo (mismo bloque que ve el generador), capado.
+        modelo_info = ""
+        try:
+            modelo_info = (self.app.prompts.inyectar_specs_modelo("") or "")[:1800]
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+        if not modelo_info.strip():
+            return self.app.dialogs.set_estado(
+                "ℹ️ El modelo activo no expone specs; nada que adaptar.", "#e67e22")
+
+        def _worker():
+            try:
+                resp = self.app.deepseek.generar_batch(
+                    "Eres un ingeniero de prompts. Adaptas prompts al formato "
+                    "exacto de cada modelo de IA sin alterar la idea creativa.",
+                    construir_peticion_adaptar(actual, modelo_info),
+                    temperature=0.4, max_tokens=2000)
+                texto = asegurar_etiquetas_prompt(actual, limpiar_marcadores(resp))
+                self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(
+                    "🎯 Prompt adaptado al modelo activo", "#2ecc71"))
+            except Exception as e:
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
+                    f"⚠️ Error adaptando: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 
