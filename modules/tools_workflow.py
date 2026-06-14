@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 ACCIONES_MACRO = {
     "✨ Generar prompt": "generar",
     "🎯 Adaptar al modelo activo": "adaptar_modelo",
+    "⚡ Optimizar (1 pasada)": "optimizar_1pasada",
     "⚡ Generar idea directa": "idea_auto",
     "🔄 Generar 1 variación": "variacion_auto",
     "🛡 Generar negative óptimo": "negative_optimo",
@@ -991,6 +992,10 @@ class ToolsWorkflowService:
                     self._cmd_adaptar_modelo()
                     self.app.after(8000, lambda: _ejecutar_paso(idx + 1))
                     return
+                elif accion_id == "optimizar_1pasada":
+                    self._cmd_optimizar_1pasada()
+                    self.app.after(14000, lambda: _ejecutar_paso(idx + 1))
+                    return
                 elif accion_id == "idea_auto":
                     self._cmd_idea_auto_en_macro()
                 elif accion_id == "variacion_auto":
@@ -1114,6 +1119,58 @@ class ToolsWorkflowService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     f"⚠️ Error adaptando: {e}", "#e74c3c"))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _cmd_optimizar_1pasada(self):
+        """Una pasada de optimización (puntuar→mejorar) headless, para macros.
+        No abre la ventana del Optimizador en bucle. Tiene en cuenta el modelo
+        activo y reutiliza los helpers puros del optimizador."""
+        from modules.tools_analysis import (
+            asegurar_etiquetas_prompt,
+            construir_peticion_mejora,
+            construir_peticion_scoring,
+            parsear_scoring,
+        )
+
+        actual = self.app.txt_salida.get("1.0", "end").strip()
+        if not actual or len(actual) < 20:
+            return self.app.dialogs.set_estado(
+                "⚠️ Genera un prompt primero para optimizar.", "#e67e22")
+
+        modelo_info = ""
+        try:
+            modelo_info = (self.app.prompts.inyectar_specs_modelo("") or "")[:1800]
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+        def _worker():
+            try:
+                resp_s = self.app.deepseek.generar_batch(
+                    "Eres un crítico experto de prompts de IA generativa. "
+                    "Devuelves SOLO el formato de puntuación solicitado.",
+                    construir_peticion_scoring(actual, modelo_info),
+                    temperature=0.3, max_tokens=2000)
+                parsed = parsear_scoring(limpiar_marcadores(resp_s))
+                resp_m = self.app.deepseek.generar_batch(
+                    "Eres un ingeniero de prompts experto. Mejoras el prompt "
+                    "respetando el formato exacto que se te pide.",
+                    construir_peticion_mejora(
+                        actual, parsed.get("debiles", ""),
+                        parsed.get("sugerencia", ""), modelo_info),
+                    temperature=0.5, max_tokens=2000)
+                texto = asegurar_etiquetas_prompt(actual, limpiar_marcadores(resp_m))
+                score_txt = ""
+                if parsed.get("total"):
+                    v, mx = parsed["total"]
+                    if mx:
+                        score_txt = f" (partía de {int(v / mx * 100)}/100)"
+                self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(
+                    f"⚡ Optimizado en 1 pasada{score_txt}", "#2ecc71"))
+            except Exception as e:
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
+                    f"⚠️ Error optimizando: {e}", "#e74c3c"))
 
         threading.Thread(target=_worker, daemon=True).start()
 

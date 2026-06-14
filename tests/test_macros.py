@@ -20,6 +20,12 @@ def test_incluye_la_accion_adaptar_modelo():
     assert ACCIONES_MACRO.get("🎯 Adaptar al modelo activo") == "adaptar_modelo"
 
 
+def test_incluye_la_accion_optimizar_1pasada():
+    assert ACCIONES_MACRO.get("⚡ Optimizar (1 pasada)") == "optimizar_1pasada"
+    from modules.tools_workflow import ToolsWorkflowService
+    assert hasattr(ToolsWorkflowService, "_cmd_optimizar_1pasada")
+
+
 def test_adaptar_modelo_expuesto_como_comando_directo():
     """adaptar_modelo debe ser invocable fuera de las macros (menú Herramientas):
     método en el servicio + delegación en el componente."""
