@@ -122,11 +122,22 @@ def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
 #     prompts_todos.txt       -> todos los prompts seguidos (copiar/pegar rápido)
 #     captions/NN_nombre.txt  -> captions kohya (mismo nombre que la imagen)
 # ---------------------------------------------------------------------------
+def _slug_carpeta(trigger: str) -> str:
+    """Convierte el trigger en un nombre de carpeta SEGURO para Windows.
+
+    Un trigger con comas, ':', '/' o muy largo (p. ej. si el usuario pega un
+    negative prompt en el campo) rompe la creación de carpeta con WinError 123.
+    Dejamos solo [A-Za-z0-9_-], colapsamos lo demás a '_' y truncamos a 40."""
+    import re as _re
+    slug = _re.sub(r"[^\w\-]+", "_", (trigger or "").strip()).strip("_")
+    return slug[:40] or "dataset"
+
+
 def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     """Escribe el dataset en disco. Devuelve la ruta de la carpeta creada."""
     base = os.path.join(
         carpeta_salida,
-        f"avatar_{resultado['trigger_word'] or 'dataset'}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        f"avatar_{_slug_carpeta(resultado.get('trigger_word'))}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
     )
     dir_prompts = os.path.join(base, "prompts")
     dir_captions = os.path.join(base, "captions")

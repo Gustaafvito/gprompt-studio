@@ -19,6 +19,7 @@ from modules.avatar_config import (
     DEFAULT_ANGLE_SET,
 )
 from modules.avatar_generator import (
+    _slug_carpeta,
     adaptar_dataset_a_modelo,
     exportar_dataset,
     generar_dataset_avatar,
@@ -141,6 +142,23 @@ class TestFichaAutomatica:
 
 
 # ── ensamblar_dataset (núcleo de la consistencia) ─────────────────
+
+class TestSlugCarpeta:
+    def test_trigger_normal(self):
+        assert _slug_carpeta("ohwx_anime_rin") == "ohwx_anime_rin"
+
+    def test_trigger_con_caracteres_invalidos(self):
+        # Un negative pegado por error no debe romper la creación de carpeta.
+        s = _slug_carpeta("blurry, low-res, out of frame: bad/anatomy")
+        assert "," not in s and ":" not in s and "/" not in s and " " not in s
+
+    def test_trigger_largo_se_trunca(self):
+        assert len(_slug_carpeta("x" * 200)) <= 40
+
+    def test_trigger_vacio_o_basura_da_dataset(self):
+        assert _slug_carpeta("") == "dataset"
+        assert _slug_carpeta("   ,,,  ") == "dataset"
+
 
 class TestEnsamblarDataset:
     def test_descripcion_identica_en_todos_los_prompts(self):
