@@ -162,13 +162,21 @@ class TestSlugCarpeta:
 
 class TestEnsamblarDataset:
     def test_descripcion_identica_en_todos_los_prompts(self):
-        # La razón de ser del módulo: identidad palabra por palabra
+        # La identidad (cara/pelo/ojos, todo lo previo a la ropa) es idéntica
+        # en TODAS las tomas. La ropa solo se omite en los primeros planos.
         ds = ensamblar_dataset("ohwx_ana", DESC, DEFAULT_ANGLE_SET,
                                "photorealistic", "gray background")
         assert len(ds) == 24
+        core = DESC.split(", wearing")[0]  # identidad sin ropa
         for item in ds:
-            assert DESC in item["prompt"]
+            assert core in item["prompt"]
             assert item["prompt"].startswith("ohwx_ana, ")
+
+    def test_primeros_planos_omiten_la_ropa(self):
+        cara = ensamblar_dataset("t", DESC, ["face_front"], "", "")[0]["prompt"]
+        full = ensamblar_dataset("t", DESC, ["full_front"], "", "")[0]["prompt"]
+        assert "wearing" not in cara                 # headshot: sin ropa
+        assert "wearing a white t-shirt" in full     # cuerpo: ropa completa
 
     def test_estructura_del_prompt(self):
         ds = ensamblar_dataset("trig", DESC, ["face_front"],
@@ -178,7 +186,8 @@ class TestEnsamblarDataset:
         # El encuadre va ANTES que la descripción: si la desc (con ropa de cuerpo
         # entero) fuese primero, el modelo se aleja a plano entero ignorando el
         # close-up. Liderar con el tipo de plano fuerza el recorte correcto.
-        assert p.index("trig") < p.index("close-up headshot") < p.index(DESC)
+        core = DESC.split(", wearing")[0]  # en headshots la ropa se omite
+        assert p.index("trig") < p.index("close-up headshot") < p.index(core)
         assert "fondo_y" in p
         assert AVATAR_LIGHTING in p
         assert p.endswith("estilo_x")

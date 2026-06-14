@@ -22,6 +22,22 @@ from modules.avatar_config import (
 )
 
 
+def desc_para_angulo(desc: str, angulo: dict) -> str:
+    """Para primeros planos, quita la ropa (', wearing ...') de la descripción.
+
+    En un headshot la ropa de cuerpo (falda, botas) no se ve pero hace que el
+    modelo se aleje para mostrarla. La identidad (cara, pelo, ojos, rasgos,
+    complexión) se mantiene IDÉNTICA en todas las tomas; solo en los primeros
+    planos se omite la ropa. Las tomas de busto y cuerpo conservan la ropa
+    completa (ahí sí se ve y debe ser consistente)."""
+    if angulo.get("prompt", "").startswith("close-up headshot"):
+        import re as _re
+        m = _re.search(r",?\s+wearing\b", desc, _re.IGNORECASE)
+        if m:
+            return desc[:m.start()].rstrip(" ,.")
+    return desc
+
+
 def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
     """Negative del ángulo: base + términos de recorte según el encuadre.
 
@@ -198,7 +214,10 @@ def ensamblar_dataset(
         # descripción (con ropa de cuerpo entero: medias, botas...) va primero,
         # el modelo intenta mostrarla y se aleja a plano entero, ignorando el
         # "close-up". Liderar con el tipo de plano fuerza el recorte correcto.
-        partes = [trigger, angulo["prompt"], desc, fondo, AVATAR_LIGHTING]
+        # Además, en primeros planos se omite la ropa de la descripción (ver
+        # desc_para_angulo) para que el modelo recorte de verdad a la cara.
+        desc_ang = desc_para_angulo(desc, angulo)
+        partes = [trigger, angulo["prompt"], desc_ang, fondo, AVATAR_LIGHTING]
         if estilo_sufijo:
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
