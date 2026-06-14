@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **533** ✅ (`python -m pytest tests -q`) |
+| Tests | **561** ✅ (`python -m pytest tests -q`) |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -51,7 +51,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 ---
 
-## ✅ Sesión 20 — limpieza, red anti-bugs, code-signing, partición
+## ✅ Sesión 20 — limpieza, refactor, auditoría de headers, Avatar y Skills
 
 1. **`.gitignore`**: la carpeta de integración del Avatar (ya incorporada
    en `modules/avatar_*.py`) se ignora en lugar de aparecer como untracked.
@@ -74,6 +74,29 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 6. **Code-signing** (`build.py` + `BUILD.md`): firma Authenticode opcional
    del `.exe` y del instalador vía `GPROMPT_SIGN_CERT`/`_PASSWORD` o
    `GPROMPT_SIGN_THUMBPRINT`. No-op si no hay cert; nunca aborta el build.
+7. **Contenido de apoyo al día** (se había quedado atrás frente a las
+   features): tutorial **26 → 42 pasos** (sección "Funciones avanzadas"),
+   **+5 atajos** (Ctrl+Shift+R/O/D/B/M = Refinar/Optimizador/Dashboard/
+   Storyboard/Coste) + en la ayuda, glosario (Modo educativo) **43 → 56**.
+   Bug del modal **"Acerca de"** corregido (volcaba el dict `AUTHOR` entero).
+8. **Auditoría de los 8 headers** (lectura de código). 2 huecos 🔴 reales
+   arreglados: `paletas` faltaban en backup/restore (pérdida de datos al
+   restaurar) y **Ctrl+F** abría una "búsqueda global" duplicada e inferior
+   (ahora abre la buena). 🟡: caché en Auto-mejora (+ botón Regenerar), copy
+   del Coste actualizado a "por modelo", renombrados los 2 gestores de snippets
+   ("Tags reutilizables" vs "Auto-expansión") para no colisionar.
+9. **Avatar** — dos mejoras: (a) **fix de encuadre**: el encuadre lidera el
+   prompt (antes la descripción con ropa de cuerpo iba primero y cara/busto
+   salían de cuerpo entero); cara/busto piden recorte explícito. (b) dataset
+   **16 → 24 ángulos** (4 expresiones + 4 poses neutrales, grupo "poses").
+10. **Features inspiradas en YouMind ("Skills")**: `Adaptar al modelo activo`
+    como **botón de un clic** (🛠 Herramientas, antes solo en macros);
+    **import/export de macros** a `.json` (Skills portables, helpers
+    `macro_valida`/`parsear_macros_importadas`); `Optimizar (1 pasada)`
+    headless encadenable en macros.
+
+> Nota: descubrimos que **Macros ya ERA** el sistema de "recetas/Skills" y
+> **Proyectos** el "Board" — por eso se potenció Macros en vez de duplicar.
 
 ---
 
@@ -101,11 +124,17 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 - Code-signing real: conseguir el certificado (la infraestructura ya está).
 - Verificar installer end-to-end en una VM (instalación limpia → arranque →
   desinstalación con borrado de datos).
-- Performance: lazy-load de `data/*.json`, semáforo de workers, virtual
-  scrolling en historial/favoritos.
+- Performance: semáforo de workers, virtual scrolling en historial/favoritos
+  (solo si se nota lentitud). **Lazy-load JSON descartado**: medido, `import
+  config` = 21 ms (231 KB), no compensa el riesgo de volver lazy constantes
+  usadas en muchos call sites.
 - Auditar los `[silent]` que oculten bugs reales — ahora hay herramienta:
   arrancar con `GPROMPT_DEBUG=1` y reproducir el flujo sospechoso.
 - Features ambiciosos: export PDF, plugin system, API REST.
+
+### ✅ Completado en sesión 20 (antes pendiente)
+- `adaptar_modelo` como botón de un clic · import/export de macros ·
+  `optimizar_1pasada` headless · aviso Avatar prompts alternativos.
 
 ---
 
