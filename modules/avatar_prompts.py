@@ -16,10 +16,27 @@ NOTA PARA INTEGRACIÓN (Claude Code):
 from modules.avatar_config import (
     AVATAR_ANGLES,
     AVATAR_LIGHTING,
+    AVATAR_NEGATIVE_ANTIZOOM_CUERPO,
     AVATAR_NEGATIVE_CROP_BUSTO,
     AVATAR_NEGATIVE_CROP_CARA,
+    AVATAR_NEGATIVE_EDIT_ROTACION,
     AVATAR_NEGATIVE_PROMPT,
 )
+
+# Pistas de que un ángulo EXIGE girar la cabeza/cuerpo respecto a un frontal.
+# En el modo edición (img2img) estas tomas son las que el modelo de
+# referencia tiende a dejar frontales como la imagen base; las empujamos
+# con un prompt más fuerte y un negative anti-frontal.
+_ROTACION_CUES = ("three-quarter", "profile", "back view", "over the shoulder")
+
+
+def requiere_rotacion(angulo: dict) -> bool:
+    """True si la toma necesita una orientación distinta a la frontal.
+
+    Cubre 3/4, perfiles, espalda y el over-the-shoulder. Los frontales,
+    expresiones, picado/contrapicado, cowboy y sentada NO rotan la cabeza."""
+    texto = (angulo.get("framing", "") + " " + angulo.get("prompt", "")).lower()
+    return any(cue in texto for cue in _ROTACION_CUES)
 
 
 def desc_para_angulo(desc: str, angulo: dict) -> str:
@@ -38,13 +55,32 @@ def desc_para_angulo(desc: str, angulo: dict) -> str:
     return desc
 
 
+def fondo_para_indice(fondo, i: int) -> str:
+    """Devuelve el fondo de la imagen i del dataset.
+
+    `fondo` puede ser:
+      - str: el mismo fondo en todo el dataset (comportamiento clásico).
+      - list/tuple: fondos a ROTAR. Se asigna por índice (i % n) para
+        repartirlos de forma uniforme y, sobre todo, DECORRELACIONARLOS de la
+        pose — así el LoRA no aprende "frontal = gris". (Guía SeaArt: máx. 3-6
+        imágenes por fondo.) Devuelve "" si no hay fondo."""
+    if isinstance(fondo, (list, tuple)):
+        fondos = [f for f in fondo if f]
+        if not fondos:
+            return ""
+        return fondos[i % len(fondos)]
+    return fondo or ""
+
+
 def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
     """Negative del ángulo: base + términos de recorte según el encuadre.
 
     Para primeros planos (cara/expresión) y planos de busto añade el cuerpo al
     negative, porque la ropa de cuerpo de la descripción hace que el modelo se
-    aleje pese al 'close-up' del positivo. Cuerpo entero/cowboy/sentada usan
-    solo el negative base (ahí sí queremos ver el cuerpo)."""
+    aleje pese al 'close-up' del positivo. Las tomas de cuerpo entero (cowboy,
+    sentada, acción) hacen lo CONTRARIO: añaden el primer plano al negative para
+    empujar al modelo a alejarse y mostrar el cuerpo (muchos modelos de
+    personaje tienden a hacer zoom a la cara aunque pidas 'full body')."""
     if not incluir_negative:
         return ""
     prompt = angulo.get("prompt", "")
@@ -52,7 +88,7 @@ def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
         return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_CARA
     if prompt.startswith("upper body"):
         return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_BUSTO
-    return AVATAR_NEGATIVE_PROMPT
+    return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_ANTIZOOM_CUERPO
 
 # ---------------------------------------------------------------------------
 # FASE 1 — SYSTEM PROMPT: descripción canónica del personaje
@@ -186,10 +222,13 @@ def ensamblar_dataset(
     descripcion_canonica: str,
     angulos_seleccionados: list,
     estilo_sufijo: str,
-    fondo: str,
+    fondo,
     incluir_negative: bool = True,
 ) -> list:
     """Devuelve la lista de prompts del dataset.
+
+    `fondo` puede ser un str (mismo fondo en todo el dataset) o una lista de
+    fondos a rotar por imagen (ver fondo_para_indice).
 
     Cada elemento es un dict:
       {
@@ -205,10 +244,13 @@ def ensamblar_dataset(
     desc = descripcion_canonica.strip().rstrip(".,")
     dataset = []
 
-    for key in angulos_seleccionados:
+    for i, key in enumerate(angulos_seleccionados):
         angulo = AVATAR_ANGLES.get(key)
         if not angulo:
             continue
+
+        # Fondo de ESTA imagen: rota si `fondo` es una lista (consistencia LoRA).
+        fondo_i = fondo_para_indice(fondo, i)
 
         # El ENCUADRE va justo tras el trigger, ANTES de la descripción. Si la
         # descripción (con ropa de cuerpo entero: medias, botas...) va primero,
@@ -217,7 +259,7 @@ def ensamblar_dataset(
         # Además, en primeros planos se omite la ropa de la descripción (ver
         # desc_para_angulo) para que el modelo recorte de verdad a la cara.
         desc_ang = desc_para_angulo(desc, angulo)
-        partes = [trigger, angulo["prompt"], desc_ang, fondo, AVATAR_LIGHTING]
+        partes = [trigger, angulo["prompt"], desc_ang, fondo_i, AVATAR_LIGHTING]
         if estilo_sufijo:
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
@@ -228,8 +270,8 @@ def ensamblar_dataset(
         # fondo no se etiqueta, el LoRA lo "pega" al personaje. La
         # identidad NO se describe: la absorbe el trigger word.
         partes_caption = [trigger, angulo["framing"]]
-        if fondo:
-            partes_caption.append(fondo.split(",")[0].strip())
+        if fondo_i:
+            partes_caption.append(fondo_i.split(",")[0].strip())
         partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
         caption = ", ".join(partes_caption)
 
@@ -248,7 +290,7 @@ def ensamblar_dataset(
 def ensamblar_dataset_edicion(
     trigger_word: str,
     angulos_seleccionados: list,
-    fondo: str,
+    fondo,
     incluir_negative: bool = True,
 ) -> list:
     """Variante IMG2IMG del dataset: prompts de EDICIÓN por ángulo.
@@ -261,26 +303,54 @@ def ensamblar_dataset_edicion(
     """
     trigger = trigger_word.strip()
     dataset = []
-    for key in angulos_seleccionados:
+    for i, key in enumerate(angulos_seleccionados):
         angulo = AVATAR_ANGLES.get(key)
         if not angulo:
             continue
-        partes = [
-            ("Keep the EXACT same person from the reference image: "
-             "same face identity, same hairstyle, same facial hair, "
-             "same clothing"),
-            f"Change ONLY the camera and pose to: {angulo['prompt']}",
-        ]
-        if fondo:
-            partes.append(f"Background: {fondo}")
+        fondo_i = fondo_para_indice(fondo, i)
+
+        if requiere_rotacion(angulo):
+            # Tomas de ÁNGULO: lideramos con la rotación y exigimos un punto de
+            # vista NUEVO, porque el modelo de referencia tiende a clavar el
+            # frontal de la imagen base. La identidad se mantiene, la
+            # orientación NO.
+            partes = [
+                (f"Rotate the subject to a NEW viewpoint: {angulo['prompt']}. "
+                 "This is a DIFFERENT camera angle from the reference image: the "
+                 "head and body must be physically turned to present this new "
+                 "orientation, not the frontal pose of the reference"),
+                ("Keep the SAME person: same face identity, same skin tone, same "
+                 "hairstyle, same facial hair, same clothing, only the "
+                 "orientation changes"),
+            ]
+        else:
+            # Tomas FRONTALES (incl. expresiones, picado/contrapicado, cowboy,
+            # sentada): la pose ya coincide con la referencia, así que clavamos
+            # identidad y cambiamos solo cámara/expresión.
+            partes = [
+                ("Keep the EXACT same person from the reference image: "
+                 "same face identity, same hairstyle, same facial hair, "
+                 "same clothing"),
+                f"Change ONLY the camera and pose to: {angulo['prompt']}",
+            ]
+
+        if fondo_i:
+            partes.append(f"Background: {fondo_i}")
         partes.append(AVATAR_LIGHTING)
         partes.append("Preserve photorealistic detail and natural skin texture")
         prompt = ". ".join(partes) + "."
 
+        # Negative: el base por encuadre + el anti-frontal SOLO en tomas de
+        # ángulo (empuja a girar la cabeza venciendo el ancla de la referencia).
+        negative = negativo_para_angulo(angulo, incluir_negative)
+        if incluir_negative and requiere_rotacion(angulo):
+            negative = (negative + ", " + AVATAR_NEGATIVE_EDIT_ROTACION
+                        if negative else AVATAR_NEGATIVE_EDIT_ROTACION)
+
         # La caption de entrenamiento es la misma que en el modo texto
         partes_caption = [trigger, angulo["framing"]]
-        if fondo:
-            partes_caption.append(fondo.split(",")[0].strip())
+        if fondo_i:
+            partes_caption.append(fondo_i.split(",")[0].strip())
         partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
 
         dataset.append({
@@ -288,7 +358,7 @@ def ensamblar_dataset_edicion(
             "label": angulo["label"],
             "filename": angulo["filename"],
             "prompt": prompt,
-            "negative": negativo_para_angulo(angulo, incluir_negative),
+            "negative": negative,
             "caption": ", ".join(partes_caption),
         })
     return dataset

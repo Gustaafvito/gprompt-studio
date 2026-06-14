@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 20**.
+Actualizado al cierre de la **sesión 21**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **561** ✅ (`python -m pytest tests -q`) |
+| Tests | **592** ✅ (`python -m pytest tests -q`) |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -35,7 +35,8 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 | Build `.exe` | onedir + onefile + installer (Inno Setup) — al día |
 | Code-signing | Opcional vía env vars (`GPROMPT_SIGN_*`), ver BUILD.md |
-| Modelos con specs auditadas | 11 ✅ + 10 con datos doc oficial SeaArt |
+| Modelos de imagen VISIBLES | **35** vigentes (filtro `vigente:true`); el resto ocultos |
+| Familia FLUX | **CERRADA — 25** modelos ✅ (incl. `FLUX.1-Kontext-dev` edición; 3 legacy borrados) |
 | Coste API | sesión + histórico + desglose por modelo |
 
 ### Archivos más grandes (líneas)
@@ -48,6 +49,60 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1831 |
 | `modules/core.py` | 1674 |
 | `modules/data_mgmt.py` | 1581 |
+
+---
+
+## ✅ Sesión 21 — Avatar (fondos/rotación/anti-zoom), filtro de modelos vigentes y auditoría FLUX
+
+1. **Avatar — rotación de fondos** (`avatar_config.py`, `avatar_prompts.py`,
+   `avatar_ui.py`): checkbox **"Variar fondos"** (por defecto ON) que reparte
+   4 fondos neutros por índice (`fondo_para_indice`, `i % n`) → ~6 por fondo y
+   **decorrelacionados de la pose** (guía SeaArt: el LoRA absorbe un fondo único).
+2. **Avatar — modo edición (img2img) reforzado para ángulos**: las tomas que
+   rotan (3/4, perfiles, espalda, over-shoulder → `requiere_rotacion`) lideran
+   con "Rotate the subject to a NEW viewpoint…" + negative anti-frontal
+   (`AVATAR_NEGATIVE_EDIT_ROTACION`). Hallazgo: en modelos NO de edición
+   (Z-Image, Flux/Mimic) la referencia bloquea el frontal igual → para ángulos,
+   **txt2img**; edición real solo en MAI/Nano Banana/Reve/Kontext.
+3. **Avatar — anti-zoom en cuerpo entero** (`AVATAR_NEGATIVE_ANTIZOOM_CUERPO`):
+   simétrico al recorte de los primeros planos; las tomas full/cowboy/sentada/
+   acción niegan `close-up, headshot, bust…` para empujar al modelo a alejarse.
+4. **Filtro de modelos VIGENTES** (`config.py`): solo se muestran los modelos
+   de imagen con `"vigente": true` en su spec. `GRUPOS_IMAGEN` sigue siendo la
+   lista maestra; `MODELOS_IMAGEN_FLAT` = filtrado (helper `es_modelo_imagen_vigente`,
+   `MODELOS_IMAGEN_FLAT_TODOS` conserva el set completo). Oculta ~57 legacy
+   no-Flux **sin borrarlos** (decisión del usuario). Vídeo/audio/plataformas:
+   pendiente.
+5. **Auditoría FLUX completa** (`model_specs_imagen.json`): **17 modelos**
+   dados de alta/reactivados con specs reales de SeaArt (base Flux.1 D →
+   `has_negative:false`, lenguaje natural, sampler/steps/CFG del panel). Incluye
+   Midjourney Mimic Neo, CyberRealistic, Real Vision, Disney Pixar, Nai3, etc.
+   Todos en el estilo `natural_flux` de `PROMPT_TEMPLATES`.
+6. **Orden alfabético case-insensitive** en todos los grupos de imagen
+   (`GRUPOS_IMAGEN = [(cab, sorted(ms, key=str.lower)) …]`) — los nombres en
+   minúscula (lyh_anime_Flux) ya no caen al final. **Preferencia del usuario.**
+7. **`nota: null` tolerado**: algunos modelos no tienen rating; se maneja con
+   `.get('nota') or …` en `ui_events`, `dashboard` y `prompts_inyeccion`
+   (antes `float(None)` rompía el orden y mostraba "None").
+8. **Toggle "Estilo" para FLUX** (`config.ESTILOS_POR_FAMILIA["flux"]` +
+   `detectar_familia` + `_MODELOS_FLUX`): la familia FLUX ya muestra el combo
+   Estilo (Auto/Photoreal/Anime/Creative/Fantasy/SciFi) como Z-Image/GPT/Nano.
+   La selección se inyecta como hint en el prompt vía `_inyectar_estilo_flux`
+   (rama `is_natural` de `prompts_inyeccion`). Detección incluye Mimic Neo (sin
+   'flux' en el nombre) por pertenencia al grupo. Familias con estilos: **3 → 4**.
+   También: los 17 Flux entran en el template `natural_flux` de `PROMPT_TEMPLATES`.
+
+9. **Desplegable buscador+scroll** (`modules/searchable_dropdown.py`): el
+   `CTkComboBox` no tiene scroll y con 35+ modelos tapaba la pantalla.
+   `attach_searchable_dropdown()` sustituye el dropdown por un popup (Toplevel
+   plano + `grab_set` para cerrar al clic fuera, SIN tocar el root) con caja de
+   búsqueda y lista scrollable. Enganchado a los combos de **imagen, vídeo y
+   audio**. Nombres largos con ellipsis; valor real al seleccionar.
+10. **Fix "Sugerir estilos" en audio** (`tools_creative.py`): estaba bloqueado
+    a "solo imagen y vídeo" por descuido; audio sí tiene `ESTILOS_AUDIO`. Ahora
+    funciona en los 3 modos.
+
+Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searchable dropdown).
 
 ---
 
@@ -103,8 +158,14 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 ## 🚧 Pendiente
 
 ### 🔴 ALTA
-- **Auditoría de specs**: familias **Flux (17)** e **Illustrious (10)** —
-  requiere pantallazos del panel SeaArt (input del usuario).
+- **Auditoría de specs**: familia **Flux ✅ hecha (17, sesión 21)**; queda
+  **Illustrious (10)** — requiere pantallazos del panel SeaArt (input del usuario).
+- **Vigentes vídeo/audio/plataformas**: aplicar el filtro `vigente` también a
+  vídeo y audio, y ocultar plataformas no usadas (solo imagen hecho en sesión 21).
+- ✅ **Flux: líos heredados limpiados (sesión 21)**: borrados `FLUX.1` (schnell),
+  `Flux-dev` y `Mix Max Cinematic Realism`. Añadido **`FLUX.1-Kontext-dev`**
+  (modelo de EDICIÓN, `max_imagenes_referencia:1`) — pendiente PROBARLO para la
+  rotación del avatar desde referencia (debería funcionar donde Z-Image/Flux txt2img no).
 
 ### 🟡 MEDIA
 - **max_chars empírico** de los 10 modelos semi-auditados (Infinity, SD 3.5,
@@ -143,7 +204,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 533 passed
+python -m pytest tests -q                     # → 592 passed
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)

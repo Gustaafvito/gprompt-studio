@@ -353,7 +353,7 @@ class UiEventsService:
 
             badges_str = "  ·  ".join(badges)
             self.app.lbl_img_model_info.configure(
-                text=f"⭐ {specs['nota']}  ·  📝 {specs['max_chars']} chars  ·  {badges_str}  —  {specs['best_for']}",
+                text=f"⭐ {specs.get('nota') or 's/n'}  ·  📝 {specs['max_chars']} chars  ·  {badges_str}  —  {specs['best_for']}",
                 text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
 

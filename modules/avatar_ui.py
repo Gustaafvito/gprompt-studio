@@ -23,6 +23,7 @@ from modules.avatar_config import (
     ANGLE_GROUPS,
     AVATAR_ANGLES,
     AVATAR_BACKGROUNDS,
+    AVATAR_BACKGROUNDS_ROTACION,
     AVATAR_FORM_FIELDS,
     AVATAR_STYLES,
 )
@@ -156,10 +157,19 @@ class AvatarFrame(ctk.CTkFrame):
         self.menu_estilo = ctk.CTkOptionMenu(form, values=list(AVATAR_STYLES.keys()))
         self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
 
-        ctk.CTkLabel(form, text="Fondo (idéntico en todo el dataset)").grid(
+        ctk.CTkLabel(form, text="Fondo (si NO se varían fondos)").grid(
             row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
         self.menu_fondo = ctk.CTkOptionMenu(form, values=list(AVATAR_BACKGROUNDS.keys()))
-        self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+        self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+
+        # Variar fondos: rota fondos neutros por imagen (guía SeaArt: el LoRA
+        # absorbe un fondo único). Marcado por defecto; al marcarlo el menú de
+        # fondo de arriba se ignora.
+        self.check_variar_fondos = ctk.CTkCheckBox(
+            form, text="Variar fondos (recomendado LoRA)")
+        self.check_variar_fondos.select()
+        self.check_variar_fondos.grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(0, 8)); fila += 1
 
         self.check_negative = ctk.CTkCheckBox(form, text="Incluir negative prompt")
         self.check_negative.select()
@@ -351,13 +361,18 @@ class AvatarFrame(ctk.CTkFrame):
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
                         modelo_sel=""):
         try:
+            # Fondo: lista de neutros a rotar si "Variar fondos" está marcado;
+            # si no, el único fondo elegido en el menú.
+            fondo = (AVATAR_BACKGROUNDS_ROTACION
+                     if self.check_variar_fondos.get()
+                     else AVATAR_BACKGROUNDS[self.menu_fondo.get()])
             resultado = generar_dataset_avatar(
                 llm_call=self.llm_call,
                 form_data=form_data,
                 trigger_word=trigger,
                 angulos_seleccionados=seleccionados,
                 estilo_sufijo=AVATAR_STYLES[self.menu_estilo.get()],
-                fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
+                fondo=fondo,
                 incluir_negative=bool(self.check_negative.get()),
             )
             # Si hay imagen de referencia → generar TAMBIÉN los prompts
@@ -367,7 +382,7 @@ class AvatarFrame(ctk.CTkFrame):
                 resultado["dataset_edicion"] = ensamblar_dataset_edicion(
                     trigger_word=trigger,
                     angulos_seleccionados=seleccionados,
-                    fondo=AVATAR_BACKGROUNDS[self.menu_fondo.get()],
+                    fondo=fondo,
                     incluir_negative=bool(self.check_negative.get()),
                 )
             # Adaptación al modelo destino elegido (specs SeaArt) ANTES

@@ -256,6 +256,21 @@ AVATAR_BACKGROUNDS = {
     "Verde croma": "solid chroma key green background",
 }
 
+# Set de fondos NEUTROS para ROTAR a lo largo del dataset.
+# La guía oficial SeaArt pide variar el fondo (máx. 3-6 imágenes por fondo)
+# para que el LoRA no lo absorba y lo "pegue" siempre al personaje. Estos son
+# todos claros/neutros de estudio: dan variación de píxeles sin enseñar una
+# "escena" al LoRA. Se evita el negro puro a propósito, para no fundir pelo o
+# ropa oscuros con el fondo. El ensamblado los reparte por índice (i % n), lo
+# que además DECORRELACIONA el fondo de la pose (el LoRA no aprende
+# "frontal = gris").
+AVATAR_BACKGROUNDS_ROTACION = [
+    "plain solid light gray background, seamless studio backdrop",
+    "plain solid off-white background, seamless studio backdrop",
+    "soft neutral gray gradient background, seamless studio backdrop",
+    "plain solid light blue-gray background, seamless studio backdrop",
+]
+
 # ---------------------------------------------------------------------------
 # NEGATIVE PROMPT FIJO DEL DATASET
 # Se repite idéntico en todas las imágenes.
@@ -278,6 +293,27 @@ AVATAR_NEGATIVE_CROP_CARA = (
 AVATAR_NEGATIVE_CROP_BUSTO = (
     "full body, full-length shot, wide shot, long shot, "
     "legs, thighs, knees, feet, shoes, boots, lower body"
+)
+
+# Simétrico al anterior, pero en la dirección contraria: para las tomas de
+# CUERPO ENTERO (full, cowboy, sentada, acción). Muchos modelos de personaje
+# tienden a hacer zoom a la cara/busto aunque el positivo pida "full body";
+# meter el primer plano en el negative los empuja a ALEJARSE y mostrar el
+# cuerpo. No se usa en cara/busto (ahí sí queremos el zoom).
+AVATAR_NEGATIVE_ANTIZOOM_CUERPO = (
+    "close-up, close-up portrait, headshot, head and shoulders, bust shot, "
+    "portrait, face fills the frame, cropped at the chest, cropped at the waist, "
+    "zoomed in, upper body only"
+)
+
+# Negative EXTRA solo para el MODO EDICIÓN (img2img) en tomas de ángulo.
+# Los modelos de sujeto/referencia se anclan a la pose frontal de la imagen de
+# referencia e ignoran la rotación pedida en el positivo. Meter el frontal en el
+# negative es el lever que de verdad empuja al modelo a girar la cabeza. NO se
+# usa en txt2img (ahí el frontal ya se respeta sin problema).
+AVATAR_NEGATIVE_EDIT_ROTACION = (
+    "front view, frontal view, facing camera directly, "
+    "same frontal pose as the reference, no rotation, straight-on angle"
 )
 
 # Iluminación fija para coherencia entre tomas

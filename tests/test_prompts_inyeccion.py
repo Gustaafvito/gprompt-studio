@@ -112,6 +112,36 @@ class TestInyectarDestino:
         assert h._inyectar_destino("base") == "base"
 
 
+class TestInyectarEstiloFlux:
+    """Toggle 'Estilo' para la familia FLUX (Photoreal/Anime/Fantasy/...)."""
+
+    def test_flux_con_estilo_inyecta_hint(self):
+        h = _host(familia_estilo_var=_var("Photoreal"))
+        out = h._inyectar_estilo_flux("CyberRealistic Flux", "")
+        assert "ESTILO FORZADO" in out
+        assert "fotorrealismo" in out.lower()
+
+    def test_flux_anime_inyecta_anime(self):
+        h = _host(familia_estilo_var=_var("Anime"))
+        out = h._inyectar_estilo_flux("Nai3-Flux", "")
+        assert "anime" in out.lower()
+
+    def test_flux_auto_no_inyecta(self):
+        h = _host(familia_estilo_var=_var("Auto"))
+        assert h._inyectar_estilo_flux("FLUX.1 [dev]", "base") == "base"
+
+    def test_modelo_no_flux_no_inyecta(self):
+        # Z-Image no es familia flux: aunque haya estilo, no toca el prompt flux
+        h = _host(familia_estilo_var=_var("Photoreal"))
+        assert h._inyectar_estilo_flux("Z-Image-Base", "base") == "base"
+
+    def test_mimic_neo_detectado_como_flux(self):
+        # Midjourney Mimic Neo no lleva 'flux' en el nombre pero ES familia flux
+        h = _host(familia_estilo_var=_var("SciFi"))
+        out = h._inyectar_estilo_flux("Midjourney Mimic Neo", "")
+        assert "ESTILO FORZADO" in out
+
+
 class TestInyectarFormatoZImage:
     """Reglas Z-Image-Base: bloques narrativos + negative dinámico."""
 

@@ -669,6 +669,9 @@ class UIBuildersService:
         self.app.combo_modelo_video = ctk.CTkComboBox(self.app.frame_video, values=MODELOS_VIDEO_FLAT, width=215, command=self.app.events.on_motor_cambio)
         self.app.combo_modelo_video.set("Kling 3.0")
         self.app.combo_modelo_video.pack(side="left", padx=5)
+        from modules.searchable_dropdown import attach_searchable_dropdown
+        attach_searchable_dropdown(self.app.combo_modelo_video,
+                                   command=self.app.events.on_motor_cambio)
 
         ctk.CTkLabel(self.app.frame_video, text="Duración:",
                      font=ctk.CTkFont(weight="bold"),
@@ -728,6 +731,9 @@ class UIBuildersService:
         self.app.combo_modelo_audio = ctk.CTkComboBox(row1, values=MODELOS_AUDIO_FLAT, width=215, command=self.app.events.on_motor_audio_cambio)
         self.app.combo_modelo_audio.set("Suno v5")
         self.app.combo_modelo_audio.pack(side="left", padx=5)
+        from modules.searchable_dropdown import attach_searchable_dropdown
+        attach_searchable_dropdown(self.app.combo_modelo_audio,
+                                   command=self.app.events.on_motor_audio_cambio)
 
         # Destino al lado del modelo
         ctk.CTkLabel(row1, text="Destino:", font=ctk.CTkFont(weight="bold"),
@@ -807,6 +813,11 @@ class UIBuildersService:
                                                     font=ctk.CTkFont(size=11), command=self.app.events.on_modelo_imagen_cambio)
         self.app.combo_modelo_imagen.set("Z Image Turbo")
         self.app.combo_modelo_imagen.pack()
+        # Desplegable con buscador + scroll (la lista de modelos crece mucho).
+        from modules.searchable_dropdown import attach_searchable_dropdown
+        attach_searchable_dropdown(
+            self.app.combo_modelo_imagen,
+            command=self.app.events.on_modelo_imagen_cambio)
         self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message="Pasa el cursor para info del modelo")
 
         # Combo "Estilo" — visible solo cuando el modelo es de una familia

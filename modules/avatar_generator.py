@@ -41,10 +41,13 @@ def generar_dataset_avatar(
     trigger_word: str,
     angulos_seleccionados: list,
     estilo_sufijo: str,
-    fondo: str,
+    fondo,
     incluir_negative: bool = True,
 ) -> dict:
-    """Pipeline completo. Devuelve dict con la descripción canónica y el dataset."""
+    """Pipeline completo. Devuelve dict con la descripción canónica y el dataset.
+
+    `fondo` puede ser un str (mismo fondo en todo el dataset) o una lista de
+    fondos a rotar por imagen (ver ensamblar_dataset / fondo_para_indice)."""
     descripcion = generar_descripcion_canonica(llm_call, form_data)
     dataset = ensamblar_dataset(
         trigger_word=trigger_word,
@@ -231,7 +234,9 @@ CONSEJOS_LORA_SEAART = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJ
   Máximo 3-6 imágenes por término/etiqueta.
 • FONDOS: NO uses el mismo fondo en todo el dataset — el LoRA lo
   absorberá y lo generará siempre. Máximo 3-6 imágenes por fondo.
-  → Consejo: genera este dataset 2-3 veces cambiando el fondo.
+  → Esta herramienta ya rota varios fondos neutros automáticamente
+    si dejas marcado "Variar fondos" (recomendado). Si lo desmarcas,
+    usa un fondo único: genera el dataset 2-3 veces cambiándolo a mano.
 • RESOLUCIÓN: 1024x1024 para SDXL / Flux / SD 3.5 (512x512 para SD 1.5).
 • RECORTE: "Focus Crop" es el modo recomendado para personajes.
 • CAPTIONS: BLIP para fotorrealismo/SDXL/Flux; Deepbooru para

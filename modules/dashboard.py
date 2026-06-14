@@ -630,7 +630,7 @@ class DashboardService:
 
             # Ordenar por nota descendente y tomar top 3
             try:
-                top_estr = sorted(estrellas, key=lambda x: float(x.get("nota", 0)), reverse=True)[:3]
+                top_estr = sorted(estrellas, key=lambda x: float(x.get("nota") or 0), reverse=True)[:3]
             except Exception:
                 top_estr = estrellas[:3]
 

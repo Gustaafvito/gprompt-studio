@@ -161,7 +161,8 @@ class PromptsInyeccionService:
         extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         extra += f"REGLAS ESPECÍFICAS PARA {modelo.upper()}:\n"
         extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        extra += f"• Rating del modelo: ⭐ {specs['nota']}/5\n"
+        if specs.get('nota'):
+            extra += f"• Rating del modelo: ⭐ {specs['nota']}/5\n"
         extra += f"• Mejor para: {specs['best_for']}\n"
         extra += f"• Estructura del prompt: {specs['prompt_formula']}\n"
         extra += f"• Ejemplo de referencia: {specs['prompt_ejemplo']}\n"
@@ -189,6 +190,7 @@ class PromptsInyeccionService:
 
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
+            extra = self._inyectar_estilo_flux(modelo, extra)
             if specs["has_negative"]:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\nNEGATIVE PROMPT: [tags a evitar]\n"
             else:
@@ -211,6 +213,38 @@ class PromptsInyeccionService:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPOSITIVE PROMPT: [tags en inglés]\nNEGATIVE PROMPT: [tags negativos]\n"
             else:
                 extra += "• ⛔ Este modelo NO SOPORTA NEGATIVE PROMPT. Solo genera POSITIVE PROMPT.\n"
+        return extra
+
+    # Mapa estilo → orientación para la familia FLUX (toggle "Estilo").
+    _FLUX_ESTILO_HINT = {
+        "Photoreal": "fotorrealismo puro: piel, materiales y luz realistas, estética de fotografía (no ilustración)",
+        "Anime": "estilo anime / ilustración japonesa: lineart limpio, cel-shading, colores vivos",
+        "Creative": "ilustración creativa / arte conceptual estilizado (no foto)",
+        "Fantasy": "fantasía épica/mística: criaturas, magia, atmósfera de leyenda",
+        "SciFi": "ciencia ficción / cyberpunk: tecnología, neón, robots, naves, futurista",
+    }
+
+    def _inyectar_estilo_flux(self, modelo: str, extra: str) -> str:
+        """Si el modelo es de la familia FLUX y el usuario forzó un estilo en el
+        toggle 'Estilo' (Photoreal/Anime/...), orienta la descripción a esa
+        categoría. 'Auto' o familia no-FLUX → no toca nada."""
+        try:
+            from config import detectar_familia
+            if detectar_familia(modelo) != "flux":
+                return extra
+            estilo = "Auto"
+            if hasattr(self.app, "familia_estilo_var"):
+                estilo = self.app.familia_estilo_var.get() or "Auto"
+            if estilo == "Auto":
+                return extra
+            hint = self._FLUX_ESTILO_HINT.get(estilo, estilo)
+            extra += (
+                f"\n🎯 ESTILO FORZADO POR EL USUARIO: {estilo}.\n"
+                f"  • Orienta TODA la descripción a: {hint}.\n"
+                f"  • No mezcles con otras estéticas; el usuario eligió '{estilo}'.\n"
+            )
+        except Exception:
+            pass
         return extra
 
     def _inyectar_formato_z_image(self, modelo: str, specs: dict, extra: str) -> str:

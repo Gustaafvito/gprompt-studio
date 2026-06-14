@@ -228,13 +228,31 @@ GRUPOS_IMAGEN = [
         "WAI-Pluralistic-Noob",
     ])),
     ("── Familia FLUX ──", sorted([
-        "Mix Max Cinematic Realism",
         "FLUX.1 [dev]",
         "FLUX.1-dev-fp8",
-        "FLUX.1",
         "FLUX.1D UltraReal",
-        "Flux-dev",
         "MASTER FLUX (LoRA merged with flux1-dev fp16)",
+        "Midjourney Mimic Neo",
+        "CyberRealistic Flux",
+        "Realistic Amateurs Flux",
+        "Real Vision - FLUX",
+        "True Real Vision - Flux",
+        "lyh_anime_Flux",
+        "XE: Anime Hentai (FLUX)",
+        "Goddess Project (FLUX)",
+        "XE: Cosplay Flux",
+        "AnimePro FLUX",
+        "VNS - Horror World Flux",
+        "Moxie Fusion Flux",
+        "Nai3-Flux",
+        "Alpha_Fantasy_Flux",
+        "XE: Figure Flux",
+        "Disney Pixar Flux",
+        "FLUX.1 Krea dev",
+        "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]",
+        "FLUX.1-Kontext-dev",
+        "Nepotism",
+        "Splashed Flux",
     ])),
     ("── Familia Z-Image ──", sorted([
         "Z Image Turbo",
@@ -474,8 +492,36 @@ def _lista_plana(grupos):
     return r
 
 MODELOS_VIDEO_FLAT  = _lista_plana(GRUPOS_VIDEO)
-MODELOS_IMAGEN_FLAT = _lista_plana(GRUPOS_IMAGEN)
 MODELOS_AUDIO_FLAT  = _lista_plana(GRUPOS_AUDIO)
+
+# Orden alfabético INSENSIBLE A MAYÚSCULAS en TODOS los grupos de imagen, para
+# que los nombres en minúscula (p. ej. lyh_anime_Flux) no caigan al final del
+# desplegable (el sorted() por defecto es case-sensitive y ordena 'l' tras 'Z').
+GRUPOS_IMAGEN = [(cab, sorted(ms, key=str.lower)) for cab, ms in GRUPOS_IMAGEN]
+
+# ── Filtro de modelos VIGENTES (imagen) ───────────────────────────
+# Solo se MUESTRAN en los desplegables los modelos cuyo spec tiene
+# "vigente": true. El resto (specs antiguos pendientes de actualizar) quedan
+# ocultos hasta que se revisen — basta con poner "vigente": true en su spec
+# para que reaparezcan. GRUPOS_IMAGEN sigue siendo la lista MAESTRA
+# (validación/referencia) y MODELOS_IMAGEN_FLAT_TODOS conserva el set completo.
+def es_modelo_imagen_vigente(nombre):
+    """True si el modelo de imagen está marcado como vigente en su spec."""
+    spec = _get_dataset("MODEL_SPECS_IMAGEN").get(nombre)
+    return bool(spec and spec.get("vigente"))
+
+def _filtrar_grupos_vigentes(grupos):
+    """Quita de cada grupo los modelos no vigentes y descarta grupos vacíos."""
+    out = []
+    for cabecera, modelos in grupos:
+        visibles = [m for m in modelos if es_modelo_imagen_vigente(m)]
+        if visibles:
+            out.append((cabecera, visibles))
+    return out
+
+MODELOS_IMAGEN_FLAT_TODOS = _lista_plana(GRUPOS_IMAGEN)        # master, sin filtrar
+GRUPOS_IMAGEN_VIGENTES = _filtrar_grupos_vigentes(GRUPOS_IMAGEN)
+MODELOS_IMAGEN_FLAT = _lista_plana(GRUPOS_IMAGEN_VIGENTES)     # lo que se MUESTRA
 
 # ══════════════════════════════════════════════════════════════════
 # MODELOS POR PLATAFORMA — IMAGEN
@@ -714,7 +760,15 @@ ESTILOS_POR_FAMILIA = {
         "Auto", "Photoreal", "Editorial",
         "Character-Consistent", "Artistic", "Edit-Focus",
     ],
+    "flux": [
+        "Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi",
+    ],
 }
+
+# Modelos de la familia FLUX (para el toggle "Estilo"). Se deriva del grupo
+# "Familia FLUX" de GRUPOS_IMAGEN para no mantener una lista aparte; incluye
+# los que no llevan 'flux' en el nombre (p. ej. Midjourney Mimic Neo).
+_MODELOS_FLUX = {m for cab, ms in GRUPOS_IMAGEN if "flux" in cab.lower() for m in ms}
 
 
 def detectar_familia(modelo_nombre: str) -> str | None:
@@ -733,6 +787,8 @@ def detectar_familia(modelo_nombre: str) -> str | None:
         return "gpt_image"
     if "nano banana" in n or "nano-banana" in n or "nano_banana" in n:
         return "nano_banana"
+    if modelo_nombre in _MODELOS_FLUX or "flux" in n:
+        return "flux"
     return None
 
 
@@ -870,7 +926,8 @@ PROMPT_TEMPLATES = {
     },
     # ── FLUX / Natural Language ──────────────────────────────
     "natural_flux": {
-        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1", "FLUX.1D UltraReal", "Mix Max Cinematic Realism", "SeaArt Infinity", "SeaArt Infinity V2.0", "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2", "Reve 2.0", "MAI-Image-2.5", "MAI-Image-2.5-Flash"],
+        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1D UltraReal", "SeaArt Infinity", "SeaArt Infinity V2.0", "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2", "Reve 2.0", "MAI-Image-2.5", "MAI-Image-2.5-Flash",
+                    "Midjourney Mimic Neo", "CyberRealistic Flux", "Realistic Amateurs Flux", "Real Vision - FLUX", "True Real Vision - Flux", "Goddess Project (FLUX)", "lyh_anime_Flux", "XE: Anime Hentai (FLUX)", "AnimePro FLUX", "XE: Cosplay Flux", "VNS - Horror World Flux", "Moxie Fusion Flux", "Nai3-Flux", "Alpha_Fantasy_Flux", "XE: Figure Flux", "Disney Pixar Flux", "MASTER FLUX (LoRA merged with flux1-dev fp16)", "FLUX.1 Krea dev", "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]", "FLUX.1-Kontext-dev", "Nepotism", "Splashed Flux"],
         "positive_base": "A {encuadre} of {sujeto}, {accion_pose}, {entorno_detallado}, {iluminacion_descriptiva}, {atmosfera}, {estilo_referencia}, {calidad}",
         "negative_base": "",
     },

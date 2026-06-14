@@ -150,7 +150,8 @@
     "pasos": 8,
     "cfg": 1.0,
     "coste_energia": "28 (Calidad) — gratis VIP",
-    "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI."
+    "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI.",
+    "vigente": true
   },
   "Z-Image-Base": {
     "nota": 4.8,
@@ -182,7 +183,8 @@
     "cfg": "3-5",
     "negative_recomendado": "blurry, low-res, extra fingers, bad anatomy, deformed hands, distorted text, text, watermark, signature, bad proportions, cropped, out of frame, digital noise",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción."
+    "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción.",
+    "vigente": true
   },
   "NiwaStyle - Animax ColorPop (Illustrious)": {
     "nota": 5.0,
@@ -236,7 +238,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -246,13 +248,14 @@
     "prompt_formula": "Lenguaje natural simple y descriptivo. Olvida las técnicas de Midjourney o Stable Diffusion.",
     "prompt_ejemplo": "A young woman lying on a bed wearing a shirt with the words 'touch me', soft lighting, cinematic atmosphere",
     "sampler_recomendado": "Euler",
-    "pasos": 30,
+    "pasos": 25,
     "cfg": 3.5,
     "coste_energia": "Aprox. 7 por imagen",
-    "limitaciones": "Modelo muy pesado, tarda más que otros. Estrictamente SFW"
+    "limitaciones": "Modelo muy pesado, tarda más que otros. Estrictamente SFW",
+    "vigente": true
   },
   "FLUX.1-dev-fp8": {
-    "nota": 4.6,
+    "nota": 4.1,
     "has_negative": false,
     "is_natural": true,
     "ratios": [
@@ -268,7 +271,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -281,39 +284,8 @@
     "pasos": 25,
     "cfg": 1,
     "coste_energia": "Aprox. 7 por imagen",
-    "limitaciones": "Podría perder ligerísimos detalles comparado con el original."
-  },
-  "FLUX.1": {
-    "nota": 4.9,
-    "has_negative": false,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1500,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 8,
-    "best_for": "Versión 'schnell'. VELOCIDAD: genera imágenes de altísima calidad con 1-4 pasos. Ideal prototipado.",
-    "prompt_formula": "Lenguaje natural simple.",
-    "prompt_ejemplo": "A high-fashion studio portrait of a woman exuding serene elegance",
-    "sampler_recomendado": "Euler",
-    "pasos": 4,
-    "cfg": 1,
-    "coste_energia": "Aprox. 7 por imagen",
-    "limitaciones": "Podría carecer de los micro-detalles absolutos de la versión [dev]."
+    "limitaciones": "Podría perder ligerísimos detalles comparado con el original. Es el dev oficial en fp8 (cuantización): promptea idéntico a FLUX.1 [dev], solo cambia precisión/VRAM.",
+    "vigente": true
   },
   "FLUX.1D UltraReal": {
     "nota": 5.0,
@@ -321,8 +293,6 @@
     "is_natural": true,
     "ratios": [
       "1:1",
-      "1:2",
-      "2:1",
       "2:3",
       "3:2",
       "3:4",
@@ -332,20 +302,21 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 8,
-    "best_for": "FOTORREALISMO ABSOLUTO. Retratos con detalles de piel hiperrealistas.",
+    "best_for": "Ultra-realismo sobre Flux.1 D: piel con poros, microdetalle y arrugas sutiles, iluminación cinematográfica.",
     "prompt_formula": "Lenguaje natural descriptivo. Describe con detalle iluminación y textura.",
     "prompt_ejemplo": "A close-up cinematic portrait of a young woman, highly detailed skin texture, soft natural lighting",
     "sampler_recomendado": "Euler",
     "pasos": 25,
     "cfg": 3.5,
     "coste_energia": "Aprox. 7 por imagen",
-    "limitaciones": "Optimizado para 1024x1024 o superior. Licencia no comercial."
+    "limitaciones": "Base Flux.1 D: sin negative real.",
+    "vigente": true
   },
   "MASTER FLUX (LoRA merged with flux1-dev fp16)": {
     "nota": 4.3,
@@ -364,52 +335,21 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 8,
-    "best_for": "CONTENIDO NSFW. Diseñado para saltarse la censura.",
+    "best_for": "Merge de realismo sobre Flux.1 D (base flux1-dev + MASTER FLUX LoRA, ratio 0.8). Retrato/persona realista; contenido para adultos.",
     "prompt_formula": "Lenguaje natural descriptivo. Enfocado en anatomía y acción.",
     "prompt_ejemplo": "A high-fashion studio portrait...",
     "sampler_recomendado": "Euler",
-    "pasos": 30,
-    "cfg": 6,
-    "coste_energia": "Aprox. 12 por imagen",
-    "limitaciones": "Estrictamente para contenido adulto/NSFW."
-  },
-  "Flux-dev": {
-    "nota": 4.4,
-    "has_negative": true,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1500,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 4,
-    "best_for": "Flux-dev (fp8). 1.1M usos. Modelo Flux.1 D con excelente adherencia al prompt y renderizado de texto.",
-    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle.",
-    "prompt_ejemplo": "A fantasy character portrait, detailed armor, magical effects, cinematic lighting",
-    "sampler_recomendado": "Euler",
-    "pasos": 30,
+    "pasos": 25,
     "cfg": 3.5,
-    "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "fp8 quantization. Sin modo 'fast'."
+    "coste_energia": "Aprox. 12 por imagen",
+    "limitaciones": "Merge LoRA (ratio 0.8). Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
+    "vigente": true
   },
   "SD 3.5 Large": {
     "nota": 3.9,
@@ -1629,7 +1569,8 @@
     "prompt_formula": "Lenguaje natural describiendo cambios: 'Replace background with...', 'Make her wear...', 'Keep face identity, keep pose, only change...'. Para multi-turn: cada paso construye sobre el anterior. Para fusion: describe el resultado deseado combinando elementos de imágenes de referencia. Acepta prompts muy largos (5000 chars).",
     "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Sin sampler/CFG/negative. Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos y lighting complejo a veces inconsistente. Sin cropping preciso de aspect ratio (prioriza la edición generativa)."
+    "limitaciones": "Sin sampler/CFG/negative. Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos y lighting complejo a veces inconsistente. Sin cropping preciso de aspect ratio (prioriza la edición generativa).",
+    "vigente": true
   },
   "Nano Banana": {
     "nota": 3.6,
@@ -1666,7 +1607,8 @@
     "prompt_formula": "Lenguaje natural describiendo cambios: 'Replace background with...', 'Make her wear...', 'Keep face identity, only change...'. Para multi-turn: cada paso construye sobre el anterior sin perder contexto. Para fusion: máx 3 imágenes de referencia. Acepta prompts largos (5000 chars).",
     "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
     "coste_energia": "Gratis por tiempo limitado",
-    "limitaciones": "Sin sampler/CFG/negative. Text rendering débil (especialmente fuentes complejas — usar Pro Image para texto). Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos/lighting complejos a veces inconsistentes. Sin cropping preciso de aspect ratio. Máx 3 imágenes de referencia (vs 14 en Pro/2)."
+    "limitaciones": "Sin sampler/CFG/negative. Text rendering débil (especialmente fuentes complejas — usar Pro Image para texto). Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos/lighting complejos a veces inconsistentes. Sin cropping preciso de aspect ratio. Máx 3 imágenes de referencia (vs 14 en Pro/2).",
+    "vigente": true
   },
   "Nano Banana 2": {
     "nota": 4.0,
@@ -1701,7 +1643,8 @@
     "prompt_formula": "Constraints como checklist: Subject (who/what) + Scene (where) + Composition (wide/close-up, angle) + Lighting (softbox, golden hour, neon rim) + Materials (metal, glass, fabric) + Output (aspect ratio, resolution). Para editing: 'Replace background with...', 'Keep face identity, keep pose, only change outfit'. Para outpainting: 'Extend canvas upward to show...'",
     "prompt_ejemplo": "A portrait of a woman, studio lighting, golden hour, professional photography, keep the face identity, change outfit to formal suit",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio. Para editing, describe el cambio (no toda la imagen)."
+    "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio. Para editing, describe el cambio (no toda la imagen).",
+    "vigente": true
   },
   "NiwaStyle - Animax Plus (Illustrious)": {
     "nota": 5.0,
@@ -1806,38 +1749,6 @@
     "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
     "coste_energia": "Gratis VIP",
     "limitaciones": "Máx 4 imágenes. Estilo chill/suave, menos indicado para acción intensa o dark fantasy."
-  },
-  "Mix Max Cinematic Realism": {
-    "nota": 5.0,
-    "has_negative": false,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1500,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 8,
-    "best_for": "Realismo cinematográfico FLUX. 391K usos. Nota 5.0. Retratos, escenas con iluminación de cine, color grading profesional. Magia de sugerencia integrada.",
-    "prompt_formula": "Lenguaje natural descriptivo. Describe la escena como un director de fotografía: sujeto, iluminación, color grading, atmósfera.",
-    "prompt_ejemplo": "A cinematic portrait of a young woman with windswept hair, golden hour backlight, warm color grading, shallow depth of field, film grain",
-    "sampler_recomendado": "Euler",
-    "pasos": 25,
-    "cfg": 7,
-    "coste_energia": "Gratis VIP",
-    "limitaciones": "Modelo FLUX: sin negative prompt, sin clip skip. Prompts en lenguaje natural, no tags SD."
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
     "nota": 4.7,
@@ -2343,7 +2254,8 @@
     "best_for": "GPT Image 1.5 en SeaArt. Modelo OpenAI orientado a flujos profesionales con CONTROL CREATIVO PRECISO. Destaca en: (1) 4× MÁS RÁPIDO que GPT Image 1 — iteración rápida sin perder el flow; (2) INSTRUCTION FOLLOWING ESTRICTO — sigue prompts complejos al pie de la letra, sin reinterpretaciones; (3) EDICIÓN PRECISA + CONSISTENCIA — cambia ropa, iluminación, expresiones manteniendo caras, logos, branding y detalles finos coherentes; (4) TEXTO DENSO Y PEQUEÑO — infografías, posters, labels y layouts con texto legible y nítido; (5) ALTA FIDELIDAD — imágenes más nítidas, realistas y estilísticamente alineadas. Soporta hasta 7 imágenes de SUJETO como referencia (img2img composite). Ideal para refinamiento de assets, branding, ecommerce, story sequences, avatares consistentes, infografías con tipografía.",
     "prompt_formula": "Lenguaje natural en prosa fluida con instrucciones EXPLÍCITAS y precisas. Para EDICIÓN: 'Change X to Y, keep Z intact' / 'maintain the same person'. Para GENERACIÓN: describe scene → subject → spatial arrangement → lighting → style → exact text (entre comillas). Por su instruction following estricto, no temas pedir layouts complejos en grid o composiciones multi-step. Para texto literal usa comillas: 'with the words \"...\"'. Soporta hasta 2000 chars.",
     "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are, photorealistic.",
-    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos. Resolución única 2048×2048 en SeaArt. Cantidad: 1-4 (gratis) / 5-8 (premium). Sujetos referencia: máx 7 imágenes (menos que GPT Image 2 que admite 10). Creación privada: premium. Magia de sugerencia (prompt enhancement): Auto/Abrir/Cerrar."
+    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos. Resolución única 2048×2048 en SeaArt. Cantidad: 1-4 (gratis) / 5-8 (premium). Sujetos referencia: máx 7 imágenes (menos que GPT Image 2 que admite 10). Creación privada: premium. Magia de sugerencia (prompt enhancement): Auto/Abrir/Cerrar.",
+    "vigente": true
   },
   "GPT Image 2": {
     "nota": 4.5,
@@ -2382,7 +2294,8 @@
     "best_for": "GPT Image 2 en SeaArt. Pensado para creadores que necesitan prompts detallados, texto limpio dentro de la imagen y resultados nítidos a la primera. Destaca en: (1) renderizado de TEXTO EN LA IMAGEN (posters, labels, signage, menús, UI) manteniendo legibilidad y placement correctos; (2) REALISMO natural en piel, materiales, iluminación, reflejos, sombras, profundidad — sin sensación 'sobre-procesada'; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING con múltiples requisitos simultáneos; (5) CONSISTENCIA entre generaciones (series, campañas, brand visuals, story boards). Soporta hasta 10 imágenes de SUJETO como referencia (img2img composite). Ideal para marketing creatives, UI/app concepts, product storytelling, fotorrealismo, editorial/design assets, worldbuilding creativo.",
     "prompt_formula": "Lenguaje natural estructurado. Describe: subject + scene + lighting + style + mood + composition. Para texto dentro de la imagen: escribe la palabra exacta entre comillas (ej. 'with the words \"Hello World\"'). Refina iterativamente: primer prompt → mira resultado → ajusta detalles, mood, layout. Soporta prompts muy largos (hasta 5000 chars).",
     "prompt_ejemplo": "Photorealistic marketing banner for a coffee brand. Subject: a ceramic cup of espresso on a wooden table at golden hour. Soft natural light coming from the left, visible steam, reflections on the cup, shallow depth of field. Above the cup, clean modern typography with the words \"Morning Ritual\" in dark brown sans-serif. Composition: rule of thirds, cup bottom-left, copy upper-right. Cinematic still, 50mm lens, soft film grain.",
-    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos (no aplica sintaxis SD). Calidad: Baja/Media/Alta. Resolución: 1K/2K (gratis) / 4K (premium). Cantidad por generación: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 10 imágenes. Refinamiento iterativo si el resultado no encaja."
+    "limitaciones": "Sin negative prompt (modelo natural). Sin pesos numéricos (no aplica sintaxis SD). Calidad: Baja/Media/Alta. Resolución: 1K/2K (gratis) / 4K (premium). Cantidad por generación: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 10 imágenes. Refinamiento iterativo si el resultado no encaja.",
+    "vigente": true
   },
   "Ideogram v3": {
     "nota": 4.8,
@@ -3179,7 +3092,8 @@
     "prompt_formula": "Lenguaje natural ORIENTADO A LAYOUT: no describas solo el sujeto, di DÓNDE va cada cosa. Estructura: objeto principal + posición → fondo → posición del texto (entre comillas) → mood de color → iluminación → composición global. Para diseño usa términos como 'centered product', 'headline at the top', 'clean empty space', 'bold readable text', 'minimal luxury layout'. Tras generar, refina con prompts de edición dirigidos a partes concretas.",
     "prompt_ejemplo": "A minimal luxury poster for a perfume brand: centered glass bottle on a marble pedestal, soft golden side light, clean empty space around the product, elegant serif headline at the top reading \"ESSENCE\", warm beige palette, editorial photography look, balanced composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
-    "limitaciones": "max_chars=2000 MEDIDO empíricamente (corte exacto en 2000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada)."
+    "limitaciones": "max_chars=2000 MEDIDO empíricamente (corte exacto en 2000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada).",
+    "vigente": true
   },
   "MAI-Image-2.5": {
     "nota": 4.9,
@@ -3212,7 +3126,8 @@
     "prompt_formula": "Lenguaje natural con INTENCIÓN DE DISEÑO explícita: sujeto + estilo + composición + iluminación + mood + colores + ángulo de cámara + texto exacto entre comillas. En vez de 'make a product poster' → 'A premium skincare product poster with a white ceramic bottle on a marble surface, soft natural window light, clean beige background, elegant serif text reading \"ORVA\", minimal luxury brand style'. Para edición: describe exactamente QUÉ cambia y QUÉ se conserva ('Keep the same composition and lighting, change X to Y, preserve the background'). Acepta prompts muy largos (hasta 5000 chars) — aprovéchalo para capas de storytelling y micro-detalles.",
     "prompt_ejemplo": "A premium perfume bottle on a reflective black surface, soft spotlight from above, elegant gold serif text reading \"NOIR\", luxury magazine advertisement style, high-end product photography, clean composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
-    "limitaciones": "max_chars=5000 MEDIDO empíricamente (corte exacto en 5000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí."
+    "limitaciones": "max_chars=5000 MEDIDO empíricamente (corte exacto en 5000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí.",
+    "vigente": true
   },
   "MAI-Image-2.5-Flash": {
     "nota": 4.9,
@@ -3245,6 +3160,660 @@
     "prompt_formula": "Igual que MAI-Image-2.5: lenguaje natural con intención de diseño (sujeto + estilo + composición + luz + mood + texto entre comillas). Al ser el modo de ideación, prompts algo más cortos y variados funcionan bien — genera varias opciones y filtra.",
     "prompt_ejemplo": "A colorful summer drink poster with bold readable text saying \"MANGO FIZZ\", tropical fruits, bright sunlight, playful commercial design, clean layout, square format.",
     "coste_energia": "Bajo — pensado para volumen",
-    "limitaciones": "max_chars=5000 asumido igual que MAI-Image-2.5 (mismo motor; no medido por separado). Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle)."
+    "limitaciones": "max_chars=5000 asumido igual que MAI-Image-2.5 (mismo motor; no medido por separado). Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle).",
+    "vigente": true
+  },
+  "Midjourney Mimic Neo": {
+    "nota": 4.6,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Midjourney Mimic Neo (autor: Shopon skp). Merge sobre Flux.1 D que imita la estética Midjourney: anime/ilustración cinematográfica con gran adherencia al prompt. No necesita Loras.",
+    "prompt_formula": "Lenguaje natural descriptivo y detallado, estilo Midjourney: sujeto → materiales y texturas → iluminación → composición → paleta → referencia de estilo. Las exclusiones van INLINE con 'Avoid: ...' (el modelo no usa negative real).",
+    "prompt_ejemplo": "A portrait of a young woman with long black hair in twin tails, crimson red eyes, pale skin, black leather choker, soft studio lighting, anime illustration, clean lineart, cinematic atmosphere",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Basado en Flux.1 D: SIN negative prompt real (usa 'Avoid: ...' inline en el positivo), CFG bajo (~3.0). Parámetros recomendados por el autor: Euler, 25 pasos, CFG 3.0. Pesado, tarda algo más.",
+    "vigente": true
+  },
+  "CyberRealistic Flux": {
+    "nota": 4.7,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Realismo fotográfico versátil sobre Flux.1 D. Muy popular en la comunidad. Buena textura de piel y claridad. No necesita Loras.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → materiales/texturas → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A candid photo of a young woman with light freckles, natural skin texture, soft window light, shallow depth of field, photorealistic",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Versiones no-AIO requieren clip + VAE aparte. CFG bajo (2-3.5) da mejores resultados. Base Flux.1 D: sin negative real. Puede generar contenido sensible.",
+    "vigente": true
+  },
+  "Realistic Amateurs Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Retrato realista estilo casual/cotidiano (selfies, gente normal) sobre Flux.1 D. Muy realista para fotos del día a día.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → materiales/texturas → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A casual smartphone selfie of a woman in a bedroom, natural lighting, realistic skin, slightly soft focus, everyday photo",
+    "sampler_recomendado": "Euler",
+    "pasos": 40,
+    "cfg": 3.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "La página no documenta parámetros; se usan los por defecto de Flux (Euler, 25, CFG 3.0). Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Real Vision - FLUX": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Realismo potente sobre Flux.1 D (autor: Shopon skp). Resultados muy realistas, comparable a SD3.5. No necesita trigger.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → materiales/texturas → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A realistic portrait of a man with short beard, golden hour light, detailed skin, cinematic atmosphere, sharp focus on the eyes",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Algún fallo ocasional en el render de manos. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "True Real Vision - Flux": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "All-in-One realista sobre Flux.1 D: fusiona varios LoRAs en el checkpoint. VAE incluido (AIO). Supera al Flux dev base en realismo.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → materiales/texturas → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A photorealistic full body shot of a woman standing in a city street, overcast light, realistic fabric and skin detail, 50mm lens",
+    "sampler_recomendado": "DPM adaptativo",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Pasos bajos pueden fallar en cuerpo entero (usa 25-40). Sube el guidance si no sigue el prompt. Scheduler ddim_uniform, VAE incluido. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "lyh_anime_Flux": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Anime sobre Flux.1 D (autor lyh, sept 2024). Estilo anime ilustrado. Probado a 1024×1536.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "Anime illustration of a young woman with long hair under a rainy night sky, soft glow, clean lineart, cel shading",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Las manos pueden salir irregulares (modelo de autor principiante). Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Goddess Project (FLUX)": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Retrato realista de mujer sobre Flux.1 D (checkpoint para Forge, NF4). Realismo tipo selfie/glamour.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A realistic mirror selfie of a woman in a bright hotel bathroom, natural skin, soft daylight, photorealistic, casual pose",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Checkpoint SOLO para Forge (BF16 UNET + NF4 en TE). NO cargar VAE/TE/CLIP aparte salvo GGUF. Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "XE: Cosplay Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Cosplay foto-realista sobre Flux.1 D (XEZ). Personajes cosplay con maquillaje, elementos mágicos y efectos.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A photo-realistic cosplay of an anime character with lavender hair and cat ears, detailed costume, studio portrait, soft makeup",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "AnimePro FLUX": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Anime de alta calidad sobre Flux.1 SCHNELL (fine-tune, autor advokat). Calidad DEV/PRO con MUY pocos pasos. Apache 2.0.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "High quality anime image of a boy reading a newspaper in a neon-lit Tokyo street, vibrant colors, detailed background, anime illustration",
+    "sampler_recomendado": "Euler a",
+    "pasos": 30,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Fine-tune de Flux.1 Schnell. SeaArt lo presetea a Euler a / 30 pasos; el autor menciona que rinde con pocos pasos. Sin negative real.",
+    "vigente": true
+  },
+  "XE: Anime Hentai (FLUX)": {
+    "nota": 4.4,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Anime NSFW/hentai sobre Flux.1 D (XEZ). Versión de prueba entrenada en dataset pequeño; estilo anime. Contenido adulto.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "Anime style portrait of a character with mechanical angel wings, glowing neon ring halo, detailed sci-fi armor, cel shading",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Versión temprana/experimental. Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "VNS - Horror World Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Terror/horror foto-realista sobre Flux.1 D (VNStorms). Personajes y escenas de horror, estilo videojuego oscuro.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A horror scene of a hooded skeletal figure holding a scythe in a dark blood-red forest, blood moon, cinematic atmosphere, photorealistic",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "CFG recomendado 3.5. Sin sampler/pasos oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Moxie Fusion Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Fusión cyberpunk/punk sobre Flux.1 D (v1.7). Estilos punk variados, funciona bien sin trigger. Un 'detailer' ayuda.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A cyberpunk portrait of a person with pink hair and mechanical armor in a neon-lit alley, side profile, moody lighting, detailed",
+    "sampler_recomendado": "Euler",
+    "pasos": 30,
+    "cfg": 3.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Triggers opcionales embebidos (biopunk, vikingpunk, mechanical_arms...). Variante 4 pasos disponible. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Nai3-Flux": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Anime estilo NovelAI3 sobre Flux.1 Dev. Mejor para retratos estéticos con fondos simples. Trigger + descriptores de calidad recomendados.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "nai3_style_for_flux, anime portrait of a girl with short blonde hair and red tie, blue sky, detailed, dramatic lighting, best quality",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Mejor en retratos con fondo simple, no escenas complejas. Añade descriptores de calidad. Base Flux.1 Dev: sin negative real.",
+    "vigente": true,
+    "trigger_words": "nai3_style_for_flux"
+  },
+  "Alpha_Fantasy_Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Fantasía surreal/paisaje sobre Flux.1 D (Alpha). Imágenes oníricas y abstractas, escenas de fantasía.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A surreal fantasy landscape with a glowing swirling vortex of golden light in a starry sky, painterly, dreamlike, vivid colors",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SeaArt presetea Euler/25/3.5; el autor sugiere DPM++ 3M SDE Exponential con pasos altos y CFG 3-7, y 1024px + upscale 8x. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "XE: Figure Flux": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Figuras PVC sobre Flux.1 D (XEZ). Aspecto de figura coleccionable: líneas marcadas y reflexión difusa suave.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A PVC figure of an anime girl with teal twintails sitting at a desk, glossy plastic material, soft diffuse reflection, studio shot",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Disney Pixar Flux": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Estilo 3D Disney/Pixar sobre Flux.1 D (aienthusiast). Personajes cartoon 3D con acabado de película de animación.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux): sujeto → detalles → iluminación → composición. Exclusiones inline con 'Avoid: ...' (no usa negative real).",
+    "prompt_ejemplo": "A 3D Pixar style portrait of a young girl with pink ponytail and a colorful jacket in a neon city street, big expressive eyes, soft cinematic lighting",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "V1 Beta. Tiene trigger word (no mostrada en la página). Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "FLUX.1 Krea dev": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "FLUX.1 Krea [dev] — variante de realismo fotográfico de gama alta sobre Flux.1 D (12B). Calidad profesional y buena comprensión del prompt. Muy popular.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux). Exclusiones inline con 'Avoid: ...'.",
+    "prompt_ejemplo": "A photorealistic portrait of a person, natural skin texture, soft daylight, cinematic depth of field, sharp focus on the eyes",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin parámetros oficiales en la página → defaults Flux. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Flux.1 dev sin restricciones de contenido sobre Flux.1 D. Realismo, no requiere LoRA. Entrenado con 1500 imágenes.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux). Exclusiones inline con 'Avoid: ...'.",
+    "prompt_ejemplo": "A realistic portrait of a woman in a futuristic outfit, neon lighting, detailed skin, cinematic atmosphere",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 1.0,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Sin VAE/CLIP incluidos (usa fuentes aparte). CFG 1, 20+ pasos. Contenido sin restricciones. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "FLUX.1-Kontext-dev": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Modelo de EDICIÓN sobre Flux.1 Kontext (12B): edita imágenes por instrucción de texto manteniendo identidad/estilo en ediciones sucesivas. Para cambiar pose/cámara/fondo desde una imagen de referencia.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux). Exclusiones inline con 'Avoid: ...'.",
+    "prompt_ejemplo": "Keep the same person from the reference image, change the camera angle to a three-quarter left view, studio lighting, photorealistic",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Modelo de EDICIÓN (img2img con imagen de sujeto), NO txt2img puro. Base Flux.1 Kontext: sin negative real.",
+    "vigente": true,
+    "max_imagenes_referencia": 1
+  },
+  "Nepotism": {
+    "nota": 5.0,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Checkpoint premium muy versátil sobre Flux.1 D (Nepotism XII): foto-realismo, anime y arte estilizado con gran adherencia al prompt y pocos artefactos.",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux). Exclusiones inline con 'Avoid: ...'.",
+    "prompt_ejemplo": "A highly detailed portrait of a woman in an ornate dress, soft cinematic lighting, polished rendering, sharp focus",
+    "sampler_recomendado": "Euler",
+    "pasos": 25,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Modelo muy entrenado, multiestilo. Base Flux.1 D: sin negative real.",
+    "vigente": true
+  },
+  "Splashed Flux": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 8,
+    "best_for": "Realismo limpio y rápido sobre Flux.1 D: buena comprensión del prompt, render veloz (~28s a 768x1024 con 10 pasos).",
+    "prompt_formula": "Lenguaje natural descriptivo (Flux). Exclusiones inline con 'Avoid: ...'.",
+    "prompt_ejemplo": "A clean realistic portrait of a man outdoors, natural daylight, sharp focus, photorealistic",
+    "sampler_recomendado": "Euler",
+    "pasos": 10,
+    "cfg": 3.5,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Optimizado para pocos pasos (~10). Base Flux.1 D: sin negative real.",
+    "vigente": true
   }
 }

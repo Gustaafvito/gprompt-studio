@@ -864,14 +864,9 @@ class ToolsCreativeService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        modo = self.app.modo_var.get()
-        if modo == "imagen":
-            estilos_dispo = list(self.app.estilo_checks.keys())
-        elif modo == "video":
-            estilos_dispo = list(self.app.estilo_checks.keys())
-        else:
-            return self.app.dialogs.set_estado("⚠️ Función disponible solo para imagen y vídeo.", "#e67e22")
-
+        # Imagen, vídeo Y audio tienen estilo_checks poblados (audio con
+        # ESTILOS_AUDIO). Antes audio estaba bloqueado por descuido.
+        estilos_dispo = list(self.app.estilo_checks.keys())
         if not estilos_dispo:
             return self.app.dialogs.set_estado("⚠️ No hay estilos disponibles.", "#e67e22")
 

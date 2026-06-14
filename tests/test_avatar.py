@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from modules.avatar_config import (
     ANGLE_GROUPS,
     AVATAR_ANGLES,
+    AVATAR_BACKGROUNDS_ROTACION,
     AVATAR_FORM_FIELDS,
     AVATAR_LIGHTING,
     AVATAR_NEGATIVE_PROMPT,
@@ -32,6 +33,7 @@ from modules.avatar_prompts import (
     construir_user_prompt_ficha,
     ensamblar_dataset,
     ensamblar_dataset_edicion,
+    fondo_para_indice,
     parsear_ficha_json,
 )
 
@@ -219,12 +221,23 @@ class TestEnsamblarDataset:
         # Cara: añade términos de recorte (full body, legs...) al negative.
         cara = ensamblar_dataset("t", DESC, ["face_front"], "", "bg")[0]["negative"]
         assert "full body" in cara and "boots" in cara
-        # Cuerpo entero: NO añade recorte (queremos ver el cuerpo).
+        # Cuerpo entero: añade el ANTI-ZOOM (niega close-up/bust) para empujar
+        # al modelo a alejarse, NO el recorte de piernas.
         full = ensamblar_dataset("t", DESC, ["full_front"], "", "bg")[0]["negative"]
-        assert full == AVATAR_NEGATIVE_PROMPT
+        assert AVATAR_NEGATIVE_PROMPT in full
+        assert "close-up" in full and "headshot" in full
+        assert "legs" not in full  # no negamos piernas en cuerpo entero
         # Busto: añade recorte de piernas pero permite torso.
         busto = ensamblar_dataset("t", DESC, ["bust_front"], "", "bg")[0]["negative"]
         assert "legs" in busto and "full body" in busto
+        assert "close-up" not in busto  # el busto SÍ es un primer plano
+
+    def test_antizoom_en_todas_las_tomas_de_cuerpo(self):
+        # full, cowboy, sentada y acción deben llevar el anti-zoom.
+        for key in ("full_front", "full_back", "cowboy_front",
+                    "seated_floor", "dynamic_action"):
+            neg = ensamblar_dataset("t", DESC, [key], "", "bg")[0]["negative"]
+            assert "close-up" in neg and "zoomed in" in neg, key
 
     def test_angulos_desconocidos_se_ignoran(self):
         ds = ensamblar_dataset("t", DESC, ["face_front", "no_existe"], "", "bg")
@@ -235,6 +248,47 @@ class TestEnsamblarDataset:
         assert not ds[0]["prompt"].endswith(", ")
 
 
+# ── Rotación de fondos (consistencia LoRA: máx. 3-6 imágenes por fondo) ──
+
+class TestRotacionFondos:
+    def test_fondo_str_se_mantiene(self):
+        # Comportamiento clásico: un str es el mismo en cada índice.
+        assert fondo_para_indice("gray bg", 0) == "gray bg"
+        assert fondo_para_indice("gray bg", 7) == "gray bg"
+
+    def test_fondo_lista_rota_por_indice(self):
+        fondos = ["a", "b", "c"]
+        assert [fondo_para_indice(fondos, i) for i in range(7)] == \
+            ["a", "b", "c", "a", "b", "c", "a"]
+
+    def test_fondo_lista_vacia_o_none_devuelve_vacio(self):
+        assert fondo_para_indice([], 0) == ""
+        assert fondo_para_indice(None, 0) == ""
+        assert fondo_para_indice(["", None], 0) == ""
+
+    def test_dataset_con_lista_varia_el_fondo_entre_imagenes(self):
+        angulos = ["face_front", "bust_front", "full_front", "full_back"]
+        ds = ensamblar_dataset("t", DESC, angulos, "", AVATAR_BACKGROUNDS_ROTACION)
+        # Con 4 ángulos y 4 fondos, los 4 captions llevan fondos distintos.
+        fondos_en_caption = {it["caption"] for it in ds}
+        assert len(fondos_en_caption) == len(ds)
+        # El fondo de cada prompt es el que toca por índice.
+        for i, it in enumerate(ds):
+            assert AVATAR_BACKGROUNDS_ROTACION[i].split(",")[0] in it["prompt"]
+
+    def test_edicion_tambien_rota_fondos(self):
+        angulos = ["face_front", "bust_front"]
+        ds = ensamblar_dataset_edicion("t", angulos, AVATAR_BACKGROUNDS_ROTACION)
+        assert AVATAR_BACKGROUNDS_ROTACION[0].split(",")[0] in ds[0]["prompt"]
+        assert AVATAR_BACKGROUNDS_ROTACION[1].split(",")[0] in ds[1]["prompt"]
+
+    def test_rotacion_son_fondos_neutros_sin_negro(self):
+        # Guía: claros/neutros y sin negro puro (funde pelo/ropa oscuros).
+        assert len(AVATAR_BACKGROUNDS_ROTACION) >= 3
+        texto = " ".join(AVATAR_BACKGROUNDS_ROTACION).lower()
+        assert "black" not in texto
+
+
 # ── Modo edición img2img (sesión 19 round 12) ─────────────────────
 
 class TestDatasetEdicion:
@@ -242,13 +296,39 @@ class TestDatasetEdicion:
         ds = ensamblar_dataset_edicion("ohwx_t", DEFAULT_ANGLE_SET, "gray bg")
         assert len(ds) == 24
 
-    def test_prompt_ordena_conservar_identidad_y_cambiar_camara(self):
-        ds = ensamblar_dataset_edicion("t", ["face_profile_left"], "gray bg")
+    def test_prompt_frontal_conserva_identidad_y_cambia_camara(self):
+        # Las tomas frontales (la pose ya coincide con la referencia) clavan
+        # identidad y solo cambian cámara/expresión.
+        ds = ensamblar_dataset_edicion("t", ["face_front"], "gray bg")
         p = ds[0]["prompt"]
         assert "EXACT same person from the reference image" in p
         assert "Change ONLY the camera" in p
-        assert "full left side profile" in p
         assert "gray bg" in p
+
+    def test_prompt_angulo_exige_rotacion_y_niega_frontal(self):
+        # Las tomas de ángulo lideran con la rotación y meten el frontal en el
+        # negative (vence el ancla a la pose frontal de la referencia).
+        ds = ensamblar_dataset_edicion("t", ["face_profile_left"], "gray bg")
+        p, neg = ds[0]["prompt"], ds[0]["negative"]
+        assert "Rotate the subject to a NEW viewpoint" in p
+        assert "not the frontal pose of the reference" in p
+        assert "full left side profile" in p          # el ángulo concreto sigue
+        assert "Change ONLY the camera" not in p       # ya NO es el genérico
+        assert "front view" in neg and "no rotation" in neg
+
+    def test_solo_los_angulos_reales_rotan(self):
+        from modules.avatar_config import AVATAR_ANGLES
+        from modules.avatar_prompts import requiere_rotacion
+        rotan = {k for k, a in AVATAR_ANGLES.items() if requiere_rotacion(a)}
+        # 3/4, perfiles, espalda y over-shoulder rotan; frontales/expresiones no.
+        assert "face_34_left" in rotan and "full_back" in rotan
+        assert "over_shoulder" in rotan and "bust_34_right" in rotan
+        assert "face_front" not in rotan and "expression_smile" not in rotan
+        assert "low_angle" not in rotan and "cowboy_front" not in rotan
+
+    def test_frontal_no_lleva_negative_anti_frontal(self):
+        ds = ensamblar_dataset_edicion("t", ["face_front"], "bg")
+        assert "no rotation" not in ds[0]["negative"]
 
     def test_sin_descripcion_canonica(self):
         # La identidad la aporta la imagen — el texto NO describe al personaje
