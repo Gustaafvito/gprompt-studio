@@ -267,5 +267,18 @@ AVATAR_NEGATIVE_PROMPT = (
     "different hairstyle, inconsistent face, busy background, cluttered background"
 )
 
+# Términos extra de negative para FORZAR el recorte en modelos que tienden a
+# alejarse (Z-Image-Base, etc.): aunque el positivo pida "close-up", la ropa de
+# cuerpo (falda, botas) en la descripción hace que el modelo se aleje. Meter el
+# cuerpo en el negative es el lever que de verdad fuerza el encuadre.
+AVATAR_NEGATIVE_CROP_CARA = (
+    "full body, full-length shot, wide shot, long shot, distant shot, "
+    "legs, thighs, knees, feet, shoes, boots, skirt, pants, lower body"
+)
+AVATAR_NEGATIVE_CROP_BUSTO = (
+    "full body, full-length shot, wide shot, long shot, "
+    "legs, thighs, knees, feet, shoes, boots, lower body"
+)
+
 # Iluminación fija para coherencia entre tomas
 AVATAR_LIGHTING = "soft even studio lighting, no harsh shadows, neutral color temperature"

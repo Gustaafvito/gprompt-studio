@@ -151,7 +151,13 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
             f.write(item["caption"])
 
-        lineas_todos.append(f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n")
+        bloque = f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n"
+        # El negative varía por encuadre (los primeros planos añaden el cuerpo
+        # al negative para forzar el recorte), así que va por bloque, no uno
+        # compartido al final.
+        if item["negative"]:
+            bloque += f"NEGATIVE: {item['negative']}\n"
+        lineas_todos.append(bloque)
 
     with open(os.path.join(base, "prompts_todos.txt"), "w", encoding="utf-8") as f:
         if resultado.get("dataset_edicion"):
@@ -161,11 +167,6 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
                 "   uno U otro por imagen, NO pegues los dos juntos.\n\n"
             )
         f.write("\n".join(lineas_todos))
-        if resultado["dataset"] and resultado["dataset"][0]["negative"]:
-            f.write(
-                "\n=== NEGATIVE PROMPT (idéntico para todas) ===\n"
-                + resultado["dataset"][0]["negative"] + "\n"
-            )
 
     # Prompts de EDICIÓN img2img (solo si se generaron — requieren
     # imagen de referencia). Van en su propia carpeta para no mezclar

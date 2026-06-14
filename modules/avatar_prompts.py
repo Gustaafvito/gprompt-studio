@@ -16,8 +16,27 @@ NOTA PARA INTEGRACIÓN (Claude Code):
 from modules.avatar_config import (
     AVATAR_ANGLES,
     AVATAR_LIGHTING,
+    AVATAR_NEGATIVE_CROP_BUSTO,
+    AVATAR_NEGATIVE_CROP_CARA,
     AVATAR_NEGATIVE_PROMPT,
 )
+
+
+def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
+    """Negative del ángulo: base + términos de recorte según el encuadre.
+
+    Para primeros planos (cara/expresión) y planos de busto añade el cuerpo al
+    negative, porque la ropa de cuerpo de la descripción hace que el modelo se
+    aleje pese al 'close-up' del positivo. Cuerpo entero/cowboy/sentada usan
+    solo el negative base (ahí sí queremos ver el cuerpo)."""
+    if not incluir_negative:
+        return ""
+    prompt = angulo.get("prompt", "")
+    if prompt.startswith("close-up headshot"):
+        return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_CARA
+    if prompt.startswith("upper body"):
+        return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_BUSTO
+    return AVATAR_NEGATIVE_PROMPT
 
 # ---------------------------------------------------------------------------
 # FASE 1 — SYSTEM PROMPT: descripción canónica del personaje
@@ -200,7 +219,7 @@ def ensamblar_dataset(
             "label": angulo["label"],
             "filename": angulo["filename"],
             "prompt": prompt,
-            "negative": AVATAR_NEGATIVE_PROMPT if incluir_negative else "",
+            "negative": negativo_para_angulo(angulo, incluir_negative),
             "caption": caption,
         })
 
@@ -250,7 +269,7 @@ def ensamblar_dataset_edicion(
             "label": angulo["label"],
             "filename": angulo["filename"],
             "prompt": prompt,
-            "negative": AVATAR_NEGATIVE_PROMPT if incluir_negative else "",
+            "negative": negativo_para_angulo(angulo, incluir_negative),
             "caption": ", ".join(partes_caption),
         })
     return dataset

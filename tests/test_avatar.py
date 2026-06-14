@@ -184,8 +184,20 @@ class TestEnsamblarDataset:
                                 incluir_negative=True)
         sin = ensamblar_dataset("t", DESC, ["face_front"], "", "bg",
                                 incluir_negative=False)
-        assert con[0]["negative"] == AVATAR_NEGATIVE_PROMPT
+        # El negative base siempre está; los primeros planos añaden el recorte.
+        assert AVATAR_NEGATIVE_PROMPT in con[0]["negative"]
         assert sin[0]["negative"] == ""
+
+    def test_negative_por_encuadre(self):
+        # Cara: añade términos de recorte (full body, legs...) al negative.
+        cara = ensamblar_dataset("t", DESC, ["face_front"], "", "bg")[0]["negative"]
+        assert "full body" in cara and "boots" in cara
+        # Cuerpo entero: NO añade recorte (queremos ver el cuerpo).
+        full = ensamblar_dataset("t", DESC, ["full_front"], "", "bg")[0]["negative"]
+        assert full == AVATAR_NEGATIVE_PROMPT
+        # Busto: añade recorte de piernas pero permite torso.
+        busto = ensamblar_dataset("t", DESC, ["bust_front"], "", "bg")[0]["negative"]
+        assert "legs" in busto and "full body" in busto
 
     def test_angulos_desconocidos_se_ignoran(self):
         ds = ensamblar_dataset("t", DESC, ["face_front", "no_existe"], "", "bg")
