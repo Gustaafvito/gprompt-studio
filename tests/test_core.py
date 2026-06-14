@@ -24,6 +24,33 @@ class _Host(CoreMixin):
         self.txt_salida = SimpleNamespace(get=lambda *_a, **_k: salida)
 
 
+class TestContextoModeloParaIdeas:
+    """Las ideas deben ir EN FUNCIÓN del modelo seleccionado (no genéricas)."""
+
+    def _host(self, modo, modelo):
+        h = _Host()
+        h.modo_var = SimpleNamespace(get=lambda: modo)
+        h.combo_modelo_imagen = SimpleNamespace(get=lambda: modelo)
+        h.combo_modelo_video = SimpleNamespace(get=lambda: modelo)
+        h.combo_modelo_audio = SimpleNamespace(get=lambda: modelo)
+        return h
+
+    def test_inyecta_nombre_y_best_for(self):
+        h = self._host("imagen", "AnimePro FLUX")
+        out = h._contexto_modelo_para_ideas()
+        assert "AnimePro FLUX" in out
+        assert "anime" in out.lower()      # del best_for anime del modelo
+        assert "ENCAJAR" in out            # la instrucción al LLM
+
+    def test_separador_no_inyecta(self):
+        h = self._host("imagen", "── Familia FLUX ──")
+        assert h._contexto_modelo_para_ideas() == ""
+
+    def test_modelo_vacio_no_inyecta(self):
+        h = self._host("imagen", "")
+        assert h._contexto_modelo_para_ideas() == ""
+
+
 # ─────────────────────── extraer_positive ─────────────────────────────
 
 

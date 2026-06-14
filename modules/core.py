@@ -1262,12 +1262,62 @@ class CoreMixin:
         )
         return contexto
 
+    def _contexto_modelo_para_ideas(self):
+        """Contexto del modelo activo para que las 3 ideas encajen con su estilo.
+
+        Antes las ideas eran genéricas (no miraban el modelo): un modelo anime y
+        uno fotorrealista daban las MISMAS ideas. Ahora se inyecta el nombre del
+        modelo + su `best_for` para que el LLM proponga ideas acordes a sus
+        puntos fuertes."""
+        try:
+            from config import (
+                es_separador,
+                get_audio_model_specs,
+                get_image_model_specs,
+                get_model_specs,
+            )
+            modo = self.modo_var.get()
+            if modo == "imagen":
+                modelo = self.combo_modelo_imagen.get()
+                specs = get_image_model_specs(modelo)
+            elif modo == "video":
+                modelo = self.combo_modelo_video.get()
+                specs = get_model_specs(modelo)
+            else:
+                modelo = self.combo_modelo_audio.get()
+                specs = get_audio_model_specs(modelo)
+            if not modelo or es_separador(modelo):
+                return ""
+            txt = f"\n\nEl modelo destino es '{modelo}'."
+            best = (specs or {}).get("best_for", "")
+            if best:
+                txt += f" Ideal para: {best[:220]}."
+            if modo == "audio":
+                txt += (" IMPORTANTE: las 3 ideas de canción deben ENCAJAR con el "
+                        "estilo musical y los puntos fuertes de este modelo "
+                        "(género, voz, instrumentación, mood), NO ideas "
+                        "genéricas. Aprovecha sus fortalezas.")
+            else:
+                txt += (" IMPORTANTE: las 3 ideas deben ENCAJAR con el estilo y "
+                        "los puntos fuertes de este modelo, NO ideas genéricas. "
+                        "Si el modelo es anime propón escenas/personajes anime; "
+                        "si es fotorrealista, escenas fotográficas reales; si es "
+                        "de fantasía, cómic o 3D, acorde a eso. Aprovecha sus "
+                        "fortalezas.")
+            return txt
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+            return ""
+
     def cmd_ideas(self):
         self._ocultar_ideas()
         self.reiniciar_memoria()  # Evitar contaminación del historial previo
         idea = self.txt_idea.get("1.0", "end").strip()
         tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
         peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.footer.estilos_texto()}'."
+
+        # Contexto del MODELO activo → ideas a medida de su estilo
+        peticion += self._contexto_modelo_para_ideas()
 
         # Contexto LoRAs/personaje activos
         peticion += self._contexto_loras_personaje("las 3 ideas")
