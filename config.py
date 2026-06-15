@@ -658,8 +658,8 @@ ESTILOS_VIDEO = sorted([
     "Cámara Lenta / Slow Motion", "Cámara Mano (Handheld)", "Crane / Grúa",
     "Dolly Zoom", "Drone / Aéreo", "First Person POV", "Gimbal Smooth",
     "Helicóptero", "Hyperlapse", "Match Cut", "Orbital Shot",
-    "Parallax", "Pull Back / Reveal", "Steadicam", "Time-Lapse",
-    "Tracking Shot", "Whip Pan", "Zoom Burst",
+    "Parallax", "Plano Secuencia / Oner", "Pull Back / Reveal",
+    "Steadicam", "Time-Lapse", "Tracking Shot", "Whip Pan", "Zoom Burst",
     # Formatos y duración
     "Anuncio 6s (bumper)", "Anuncio 15s (TikTok/IG)", "Anuncio 30s (TV)",
     "Cortometraje", "Loop / Bucle", "Music Video Sync",
@@ -684,7 +684,7 @@ ESTILOS_VIDEO = sorted([
     "Surrealist Film", "Exploratory / Documentary",
     # ── Animación ──
     "2D Animation", "3D Animation", "Whiteboard Animation",
-    "Infographic Video", "Typography Animation",
+    "Infographic Video", "Typography Animation", "Kinetic Typography",
     # ── Corporativo ──
     "Explainer Video", "Training Video", "Onboarding Video",
     "Product Demo", "FAQ Video", "How-to / Tutorial",
@@ -696,10 +696,36 @@ ESTILOS_VIDEO = sorted([
 ])
 
 ESTILOS_AUDIO = sorted([
+    # Géneros raíz
     "Ambient", "Blues", "Cinematográfico", "Clásica", "Country",
     "Electrónica", "Flamenco", "Folk", "Funk", "Hip-hop",
     "Indie", "Jazz", "Lo-fi", "Metal", "Música Videojuegos",
     "Pop", "R&B", "Reggaeton", "Rock", "Synthwave",
+    # Electrónica (subgéneros)
+    "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Trap",
+    "EDM", "Future Bass", "Hardstyle", "Phonk", "UK Garage",
+    # Pop (subgéneros)
+    "Synth-pop", "Hyperpop", "K-pop", "J-pop", "Dream Pop", "City Pop",
+    # Rock (subgéneros)
+    "Punk", "Grunge", "Indie Rock", "Hard Rock", "Post-rock", "Emo",
+    # Urbano
+    "Boom Bap", "Drill", "Grime", "Afrobeats",
+    # Latino / World
+    "Salsa", "Bachata", "Cumbia", "Tango", "Bossa Nova", "Samba",
+    "Reggae", "Ska",
+    # Soul / Funk / Disco
+    "Soul", "Disco", "Gospel", "Motown",
+    # Folk / Acústico
+    "Indie Folk", "Bluegrass", "Celtic", "Singer-songwriter",
+    # Jazz (subgéneros)
+    "Swing", "Smooth Jazz", "Bebop",
+    # Cinemático / Orquestal
+    "Orquestal", "Épico / Trailer", "Banda Sonora",
+    # Mood / Uso
+    "Chillout", "Meditación / Relax", "Workout / Gym", "ASMR",
+    "Estudio / Focus",
+    # Otros
+    "Ópera / Coral", "Vaporwave", "Chiptune 8-bit",
 ])
 
 EMOCIONES_AUDIO = sorted([

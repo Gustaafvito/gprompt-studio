@@ -50,10 +50,13 @@ def construir_peticion_scoring(prompt: str, modelo_info: str = "") -> str:
     contexto = ""
     if modelo_info:
         contexto = (
-            f"CONTEXTO DEL MODELO DESTINO — evalúa el prompt según estas "
-            f"reglas (formato, longitud máxima, fortalezas del modelo). "
-            f"Penaliza en las categorías y refleja en PUNTOS DÉBILES "
-            f"cualquier incumplimiento:\n{modelo_info}\n\n"
+            f"CONTEXTO DEL MODELO DESTINO — evalúa la adecuación del prompt al "
+            f"FORMATO y a las fortalezas del modelo, y refleja en PUNTOS DÉBILES "
+            f"los incumplimientos de formato o estilo. "
+            f"IMPORTANTE: NO evalúes, cuentes ni menciones la longitud o el número "
+            f"de caracteres del prompt — no puedes contar caracteres de forma "
+            f"fiable y la longitud se verifica aparte por código. NUNCA afirmes "
+            f"que el prompt supera el límite de caracteres:\n{modelo_info}\n\n"
         )
     return (
         f"{contexto}"
