@@ -1,4 +1,5 @@
 """Creative Tools Mixin - Moodboard, Client Mode, ADN Visual, Negative Builder, etc."""
+import concurrent.futures
 import datetime
 import logging
 import threading
@@ -67,7 +68,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     PULSE_PRESET_3 = [
         (0.3, "🎯 Conservador (T=0.3)"),
@@ -221,28 +222,30 @@ class ToolsCreativeService:
                 resultados[label] = f"❌ Error: {e}"
 
         def _worker_all():
-            threads = []
-            for temp, label in temperaturas:
-                t = threading.Thread(target=_generar, args=(temp, label), daemon=True)
-                t.start()
-                threads.append(t)
-            for t in threads:
-                t.join()
+            try:
+                futs = [self.app._executor.submit(_generar, temp, label) for temp, label in temperaturas]
+                concurrent.futures.wait(futs)
 
-            def _mostrar():
-                # Construir lista para el comparador con label como "header"
-                variantes = []
-                for _, label in temperaturas:
-                    if label in resultados:
-                        variantes.append(f"### {label} ###\n{resultados[label]}")
-                self.app._abrir_comparador(variantes)
-                n = len(temperaturas)
-                self.app.dialogs.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
-                self.app.dialogs.toggle_botones(True)
-                self.app.dialogs._sonar_completado()
-                self.app._notificar_sistema(f"⚡ Pulse completado",
-                                         f"{n} versiones del prompt listas para comparar")
-            self.app.after(0, _mostrar)
+                def _mostrar():
+                    # Construir lista para el comparador con label como "header"
+                    variantes = []
+                    for _, label in temperaturas:
+                        if label in resultados:
+                            variantes.append(f"### {label} ###\n{resultados[label]}")
+                    self.app._abrir_comparador(variantes)
+                    n = len(temperaturas)
+                    self.app.dialogs.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
+                    self.app._notificar_sistema(f"⚡ Pulse completado",
+                                             f"{n} versiones del prompt listas para comparar")
+                self.app.after(0, _mostrar)
+            except Exception as e:
+                logger.error(f"[Pulse] _worker_all falló: {e}")
+                def _err(e=e):
+                    self.app.dialogs.set_estado(f"❌ Error en Pulse: {e}", "#e74c3c")
+                    self.app.dialogs.toggle_botones(True)
+                self.app.after(0, _err)
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
@@ -297,7 +300,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_sugerir_modelo(self):
         """Analiza la idea y sugiere TOP 3 modelos.
@@ -387,7 +390,7 @@ class ToolsCreativeService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _mostrar_sugerencias_modelo(self, idea, sugerencias, modo):
         """Modal con las 3 sugerencias de modelo + botón para probar los 3."""
@@ -541,33 +544,35 @@ class ToolsCreativeService:
                 resultados[nombre_mod] = f"❌ Error: {e}"
 
         def _worker_all():
-            threads = []
-            for nombre in modelos:
-                t = threading.Thread(target=_gen_modelo, args=(nombre,), daemon=True)
-                t.start()
-                threads.append(t)
-            for t in threads:
-                t.join()
+            try:
+                futs = [self.app._executor.submit(_gen_modelo, nombre) for nombre in modelos]
+                concurrent.futures.wait(futs)
 
-            def _mostrar():
-                variantes = []
-                labels = []
-                for nombre in modelos:
-                    if nombre in resultados:
-                        variantes.append(resultados[nombre])
-                        labels.append(f"🏆 {nombre}")
-                # Detectar si las respuestas son sospechosamente idénticas
-                # (mismo POSITIVE → LLM no diferenció entre modelos)
-                if len(set(resultados.values())) == 1 and len(resultados) > 1:
-                    self.app.dialogs.set_estado(
-                        "⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica.",
-                        "#e67e22")
-                self.app._abrir_comparador(variantes, labels=labels)
-                self.app.dialogs.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
-                                "#2ecc71")
-                self.app.dialogs.toggle_botones(True)
-                self.app.dialogs._sonar_completado()
-            self.app.after(0, _mostrar)
+                def _mostrar():
+                    variantes = []
+                    labels = []
+                    for nombre in modelos:
+                        if nombre in resultados:
+                            variantes.append(resultados[nombre])
+                            labels.append(f"🏆 {nombre}")
+                    # Detectar si las respuestas son sospechosamente idénticas
+                    # (mismo POSITIVE → LLM no diferenció entre modelos)
+                    if len(set(resultados.values())) == 1 and len(resultados) > 1:
+                        self.app.dialogs.set_estado(
+                            "⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica.",
+                            "#e67e22")
+                    self.app._abrir_comparador(variantes, labels=labels)
+                    self.app.dialogs.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
+                                    "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
+                self.app.after(0, _mostrar)
+            except Exception as e:
+                logger.error(f"[MultiModelo] _worker_all falló: {e}")
+                def _err(e=e):
+                    self.app.dialogs.set_estado(f"❌ Error en MultiModelo: {e}", "#e74c3c")
+                    self.app.dialogs.toggle_botones(True)
+                self.app.after(0, _err)
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
@@ -614,7 +619,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_grupo_personajes(self):
         """Define una escena con varios personajes y sus relaciones."""
@@ -853,7 +858,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_sugerir_estilos(self):
         """Analiza la idea y marca automáticamente los estilos más apropiados."""
@@ -923,7 +928,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_anclaje_visual(self):
         """ADN visual: extrae rasgos detallados de imagen ref y los guarda como anclaje inmutable.
@@ -1090,7 +1095,7 @@ class ToolsCreativeService:
 
         ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
                       font=ctk.CTkFont(size=12, weight="bold"),
-                      text_color="#ffffff", command=lambda: threading.Thread(target=_trabajar, daemon=True).start()
+                      text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar)
                       ).pack(pady=8)
 
     def _cmd_variar_con_anclaje(self):
@@ -1203,7 +1208,7 @@ class ToolsCreativeService:
                 self.app.dialogs._sonar_completado()
             self.app.after(0, _mostrar)
 
-        threading.Thread(target=_worker_all, daemon=True).start()
+        self.app._executor.submit(_worker_all)
 
     def _cmd_comparar_consistencia(self):
         """Compara dos prompts e indica qué difiere y qué coincide."""
@@ -1262,7 +1267,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_negative_builder(self):
         """Constructor visual de NEGATIVE PROMPT con checkboxes temáticos.
@@ -1755,7 +1760,7 @@ class ToolsCreativeService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _abrir_biblioteca_paletas(self, parent_window=None):
         """Biblioteca de paletas guardadas con búsqueda, aplicar y borrar."""

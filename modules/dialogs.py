@@ -1,5 +1,6 @@
 """Dialogs & Windows Mixin - API Keys, Preferences, Preview, Dashboard, Status, etc."""
 import logging
+import threading
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -31,6 +32,7 @@ class DialogsService:
 
     def __init__(self, app):
         self.app = app
+        self._lock_progreso = threading.Lock()
 
     def _cmd_configurar_api_keys(self, provider_focus=None):
         """Abre wizard de configuración de API keys para todos los proveedores."""
@@ -633,22 +635,40 @@ class DialogsService:
             self._iniciar_progreso()
 
     def _iniciar_progreso(self) -> None:
-        """Inicia la barra de progreso."""
-        if not getattr(self.app, '_progreso_activo', False):
+        """Inicia la barra de progreso. Thread-safe: puede llamarse desde cualquier hilo."""
+        with self._lock_progreso:
+            if getattr(self.app, '_progreso_activo', False):
+                return
             self.app._progreso_activo = True
+
+        def _start_ui():
             bar = getattr(self.app, 'progress', None) or getattr(self.app, 'barra_progreso', None)
             if bar:
                 bar.pack(side="right", padx=(10, 0))
                 bar.start()
 
+        if threading.current_thread() is threading.main_thread():
+            _start_ui()
+        else:
+            self.app.after(0, _start_ui)
+
     def _detener_progreso(self) -> None:
-        """Detiene y oculta la barra de progreso."""
-        if getattr(self.app, '_progreso_activo', False):
+        """Detiene y oculta la barra de progreso. Thread-safe: puede llamarse desde cualquier hilo."""
+        with self._lock_progreso:
+            if not getattr(self.app, '_progreso_activo', False):
+                return
             self.app._progreso_activo = False
+
+        def _stop_ui():
             bar = getattr(self.app, 'progress', None) or getattr(self.app, 'barra_progreso', None)
             if bar:
                 bar.stop()
                 bar.pack_forget()
+
+        if threading.current_thread() is threading.main_thread():
+            _stop_ui()
+        else:
+            self.app.after(0, _stop_ui)
 
     def _on_cerrar(self) -> None:
         """Guarda estado al cerrar la app y cierra Toplevels hijos.
@@ -685,6 +705,10 @@ class DialogsService:
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         finally:
+            try:
+                self.app._executor.shutdown(wait=False)
+            except Exception:
+                pass
             try:
                 self.app.destroy()
             except Exception:

@@ -86,6 +86,51 @@ def extraer_pos_de_bloque(bloque: str) -> str:
     return p.strip(" \n*")
 
 
+def extraer_positive_de_texto(texto: str):
+    """Extrae POSITIVE PROMPT de un string ya limpio (sin acceso a widgets)."""
+    if "POSITIVE PROMPT:" in texto:
+        bloque = texto.split("POSITIVE PROMPT:")[1]
+        if "NEGATIVE PROMPT:" in bloque:
+            return bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*")
+        return bloque.strip(" \n*")
+
+    if "PROMPT:" in texto:
+        bloque = texto.split("PROMPT:")[1]
+        for marca in ["\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:", "\nNEGATIVE PROMPT:"]:
+            if marca in bloque:
+                bloque = bloque.split(marca)[0]
+        for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
+            if sep in bloque:
+                bloque = bloque.split(sep)[0]
+        return bloque.strip(" \n*")
+
+    marcas_neg = ["NEGATIVE PROMPT:", "NEGATIVE:", "\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:"]
+    limpia = texto
+    for marca in marcas_neg:
+        if marca in limpia:
+            limpia = limpia.split(marca, 1)[0]
+            break
+    for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
+        if sep in limpia:
+            limpia = limpia.split(sep)[0]
+    limpia = limpia.strip(" \n*:")
+    if limpia and len(limpia.strip()) > 5:
+        return limpia
+    return None
+
+
+def extraer_negative_de_texto(texto: str):
+    """Extrae NEGATIVE PROMPT de un string ya limpio (sin acceso a widgets)."""
+    for marca in ["NEGATIVE PROMPT:", "\nNEGATIVE\n", "\nNEGATIVE:", "\nNEGATIVE "]:
+        if marca in texto:
+            bloque = texto.split(marca, 1)[1]
+            for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
+                if sep in bloque:
+                    bloque = bloque.split(sep)[0]
+            return bloque.strip(" \n*:")
+    return None
+
+
 def recortar_si_excede(
     texto: str, max_chars: int, max_chars_negative: int | None = None
 ) -> str:

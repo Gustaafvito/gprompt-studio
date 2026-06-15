@@ -28,7 +28,6 @@ Dependencias self (provistas por ArquitectoApp y demás mixins):
 """
 import datetime
 import logging
-import threading
 import tkinter as tk
 
 import customtkinter as ctk
@@ -121,7 +120,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     # Tipos de shot disponibles para Story.
     # (key, label, descripción corta)
@@ -357,7 +356,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_storyboard_video(self):
         """Para vídeo: N shots clave de la secuencia (apertura/desarrollo/climax/cierre).
@@ -440,7 +439,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _encadenar_board_a_video(self, frames, vent_comparador):
         """Encadenar storyboard como prompt de vídeo.
@@ -517,7 +516,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_storyboard_imagen(self):
         """Storyboard cinematográfico para modelos de IMAGEN.
@@ -654,7 +653,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _fusionar_storyboard_imagen(self, paneles, vent_comparador):
         """Fusiona los N paneles del storyboard en un único prompt multi-panel.
@@ -724,7 +723,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker)
 
     def _cmd_random_walk(self):
         """Walk árbol visual.
@@ -1004,7 +1003,7 @@ class MultiPromptService:
                         btn_usar.configure(state="normal")
                     self.app.after(0, _err)
 
-            threading.Thread(target=_worker, daemon=True).start()
+            self.app._executor.submit(_worker)
 
         # ─── Acción: usar este nodo (NO cierra, sigues explorando) ──
         def _usar_nodo():

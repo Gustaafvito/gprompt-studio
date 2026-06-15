@@ -22,7 +22,6 @@ v1.0:
 - Llamada a _actualizar_indicador_proveedor() tras cambio de LLM.
 """
 import logging
-import threading
 
 import pyperclip
 
@@ -31,17 +30,21 @@ from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
+import modules.prompt_logic as _pl
 from config import (
-    PLATAFORMAS_IMAGEN,
-    PLATAFORMAS_VIDEO,
-    es_separador,
     get_audio_model_specs,
     get_image_model_specs,
     get_model_specs,
 )
 from modules.gprompt_window import GPromptWindow
 from modules.prompt_helpers import (
+    extraer_negative_de_texto as _h_extraer_negative,
+)
+from modules.prompt_helpers import (
     extraer_pos_de_bloque as _h_extraer_pos_de_bloque,
+)
+from modules.prompt_helpers import (
+    extraer_positive_de_texto as _h_extraer_positive,
 )
 from modules.prompt_helpers import (
     parsear_variaciones as _h_parsear_variaciones,
@@ -637,53 +640,10 @@ class CoreMixin:
     # Nota: _cmd_toggle_tema vive en DialogsMixin — esta clase no la sobrescribe.
 
     def extraer_positive(self):
-        texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
-
-        # Buscar marcador POSITIVE PROMPT:
-        if "POSITIVE PROMPT:" in texto:
-            bloque = texto.split("POSITIVE PROMPT:")[1]
-            if "NEGATIVE PROMPT:" in bloque:
-                return bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*")
-            return bloque.strip(" \n*")
-
-        # Buscar marcador PROMPT: (sin POSITIVE)
-        if "PROMPT:" in texto:
-            bloque = texto.split("PROMPT:")[1]
-            for marca in ["\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:", "\nNEGATIVE PROMPT:"]:
-                if marca in bloque: bloque = bloque.split(marca)[0]
-            for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
-                if sep in bloque: bloque = bloque.split(sep)[0]
-            return bloque.strip(" \n*")
-
-        # Sin marcadores: buscar bloque NEGATIVE y devolver lo anterior
-        # Marcas que indican inicio del negative
-        marcas_neg = ["NEGATIVE PROMPT:", "NEGATIVE:", "\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:"]
-        limpia = texto
-        for marca in marcas_neg:
-            if marca in limpia:
-                limpia = limpia.split(marca, 1)[0]
-                break
-
-        # Si hay separadores de variantes al final, quitarlos
-        for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
-            if sep in limpia:
-                limpia = limpia.split(sep)[0]
-
-        limpia = limpia.strip(" \n*:")
-        if limpia and len(limpia.strip()) > 5:
-            return limpia
-
-        return None
+        return _h_extraer_positive(limpiar_marcadores(self.txt_salida.get("1.0", "end")))
 
     def extraer_negative(self):
-        texto = limpiar_marcadores(self.txt_salida.get("1.0", "end"))
-        for marca in ["NEGATIVE PROMPT:", "\nNEGATIVE\n", "\nNEGATIVE:", "\nNEGATIVE "]:
-            if marca in texto:
-                bloque = texto.split(marca, 1)[1]
-                for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
-                    if sep in bloque: bloque = bloque.split(sep)[0]
-                return bloque.strip(" \n*:")
-        return None
+        return _h_extraer_negative(limpiar_marcadores(self.txt_salida.get("1.0", "end")))
 
     def _copiar(self, tipo):
         try:
@@ -806,18 +766,11 @@ class CoreMixin:
         return None
 
     def is_natural_mode(self):
-        modo = self.modo_var.get()
-        plat = self.plataforma_var.get()
-        if modo == "audio": return True
-        if modo == "video": return PLATAFORMAS_VIDEO.get(plat, "natural") == "natural"
-        # Solo consultar modelo imagen si la plataforma tiene selector de modelos
-        plat_con_modelos = ("SeaArt / Tensor.Art", "ComfyUI / A1111 / Forge")
-        if plat in plat_con_modelos:
-            modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
-            if modelo and not es_separador(modelo):
-                specs_img = get_image_model_specs(modelo)
-                if specs_img and specs_img.get("is_natural"): return True
-        return PLATAFORMAS_IMAGEN.get(plat, "sd") == "natural"
+        return _pl.is_natural_mode(
+            self.modo_var.get(),
+            self.plataforma_var.get(),
+            self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else "",
+        )
 
     def _packear_negative_y_imgref(self):
         modo = self.modo_var.get()
@@ -863,36 +816,19 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
 
     def _debe_mostrar_negatives(self):
-        modo = self.modo_var.get()
-        if modo == "audio": return False
-        if modo == "video":
-            specs = get_model_specs(self.combo_modelo_video.get())
-            if specs: return specs.get("has_negative", False)
-            return PLATAFORMAS_VIDEO.get(self.plataforma_var.get(), "sd") == "sd"
-
-        plat = self.plataforma_var.get()
-        plat_con_modelos = ("SeaArt / Tensor.Art", "ComfyUI / A1111 / Forge")
-        if plat in plat_con_modelos:
-            modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
-            if modelo and not es_separador(modelo):
-                # Caso especial: modelos Turbo en ComfyUI NO aceptan negative ni pesos
-                if self._es_comfyui_turbo(plat, modelo):
-                    return False
-                specs_img = get_image_model_specs(modelo)
-                if specs_img: return specs_img.get("has_negative", False)
-        return PLATAFORMAS_IMAGEN.get(plat, "sd") == "sd"
+        return _pl.debe_mostrar_negatives(
+            self.modo_var.get(),
+            self.plataforma_var.get(),
+            self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else "",
+            self.combo_modelo_video.get() if hasattr(self, 'combo_modelo_video') else "",
+        )
 
     def _es_comfyui_turbo(self, plataforma=None, modelo=None):
-        """Detecta si estamos en ComfyUI con un modelo Turbo (CFG~1.0, sin negative ni pesos)."""
         if plataforma is None:
             plataforma = self.plataforma_var.get() if hasattr(self, 'plataforma_var') else ""
         if modelo is None:
             modelo = self.combo_modelo_imagen.get() if hasattr(self, 'combo_modelo_imagen') else ""
-        es_comfyui = "ComfyUI" in plataforma or "A1111" in plataforma or "Forge" in plataforma
-        # Modelos Turbo que en modo raw (ComfyUI) no aceptan negative ni pesos
-        modelos_turbo = ("Z Image Turbo", "Realities Edge XL Turbo V7", "SDXL Turbo", "FLUX.1 Schnell")
-        es_turbo = any(m in modelo for m in modelos_turbo)
-        return es_comfyui and es_turbo
+        return _pl.es_comfyui_turbo(plataforma, modelo)
 
     # IDEAS / VARIACIONES / COMPARADOR
 
@@ -987,8 +923,7 @@ class CoreMixin:
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
                 self.sesion._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
-                threading.Thread(target=self.workers.worker_ia,
-                                 args=(peticion, True), daemon=True).start()
+                self._executor.submit(self.workers.worker_ia, peticion, True)
 
             def _generar(t=idea_texto):
                 self.txt_idea.delete("1.0", "end")
@@ -1199,19 +1134,7 @@ class CoreMixin:
 
 
     def _contexto_loras_personaje(self, sufijo_intro: str = "") -> str:
-        """Devuelve un bloque de contexto para enriquecer cualquier petición
-        al LLM cuando hay LoRA(s) y/o Personaje activos.
-
-        Usado por cmd_ideas, cmd_prompt_quick, moodboard, story, storyboard,
-        random walk e iteración, para que TODAS las generaciones tengan en
-        cuenta el LoRA/personaje activo (no solo el comando Generar normal,
-        que ya lo recibe vía construir_modelo_info).
-
-        Devuelve "" si no hay nada activo (sin regresión).
-
-        sufijo_intro: texto opcional para personalizar la intro
-            (p.ej. "las 3 ideas", "los 5 paneles", "las variaciones").
-        """
+        """Bloque de contexto LoRA/Personaje para el LLM. Delega la lógica a prompt_logic."""
         try:
             rasgos_loras = self.footer.rasgos_loras_activos() or []
         except Exception:
@@ -1231,51 +1154,11 @@ class CoreMixin:
             pers_activo = self.footer.personaje_activo() or ""
         except Exception:
             pass
-
-        if not nombres_loras and not pers_activo:
-            return ""
-
-        intro_quien = sufijo_intro or "el resultado"
-        contexto = f"\n\n🎯 CONTEXTO IMPORTANTE — {intro_quien} DEBE encajar con:\n"
-        if rasgos_loras:
-            contexto += (
-                f"  • PERSONAJE/ESTÉTICA del LoRA: "
-                f"{' | '.join(rasgos_loras)}.\n"
-                f"    {intro_quien.capitalize()} debe PROTAGONIZAR o "
-                f"reflejar este personaje/estética.\n"
-            )
-        elif nombres_loras:
-            contexto += (
-                f"  • LoRA(s) activo(s): {', '.join(nombres_loras)}. "
-                f"{intro_quien.capitalize()} debe encajar con el "
-                f"ESTILO/personaje que sugieren esos nombres.\n"
-            )
-        if pers_activo:
-            contexto += (
-                f"  • PERSONAJE adicional: {pers_activo}. "
-                f"Inclúyelo en las escenas propuestas.\n"
-            )
-        contexto += (
-            "  • Sugiere ESCENAS/ESCENARIOS/ACCIONES diversos donde "
-            "ese personaje/estética encajen, NO descripciones del "
-            "personaje en sí (esas las maneja el sistema aparte).\n"
-        )
-        return contexto
+        return _pl.contexto_loras_personaje(rasgos_loras, nombres_loras, pers_activo, sufijo_intro)
 
     def _contexto_modelo_para_ideas(self):
-        """Contexto del modelo activo para que las 3 ideas encajen con su estilo.
-
-        Antes las ideas eran genéricas (no miraban el modelo): un modelo anime y
-        uno fotorrealista daban las MISMAS ideas. Ahora se inyecta el nombre del
-        modelo + su `best_for` para que el LLM proponga ideas acordes a sus
-        puntos fuertes."""
+        """Contexto del modelo activo para ideas. Delega la lógica a prompt_logic."""
         try:
-            from config import (
-                es_separador,
-                get_audio_model_specs,
-                get_image_model_specs,
-                get_model_specs,
-            )
             modo = self.modo_var.get()
             if modo == "imagen":
                 modelo = self.combo_modelo_imagen.get()
@@ -1286,25 +1169,7 @@ class CoreMixin:
             else:
                 modelo = self.combo_modelo_audio.get()
                 specs = get_audio_model_specs(modelo)
-            if not modelo or es_separador(modelo):
-                return ""
-            txt = f"\n\nEl modelo destino es '{modelo}'."
-            best = (specs or {}).get("best_for", "")
-            if best:
-                txt += f" Ideal para: {best[:220]}."
-            if modo == "audio":
-                txt += (" IMPORTANTE: las 3 ideas de canción deben ENCAJAR con el "
-                        "estilo musical y los puntos fuertes de este modelo "
-                        "(género, voz, instrumentación, mood), NO ideas "
-                        "genéricas. Aprovecha sus fortalezas.")
-            else:
-                txt += (" IMPORTANTE: las 3 ideas deben ENCAJAR con el estilo y "
-                        "los puntos fuertes de este modelo, NO ideas genéricas. "
-                        "Si el modelo es anime propón escenas/personajes anime; "
-                        "si es fotorrealista, escenas fotográficas reales; si es "
-                        "de fantasía, cómic o 3D, acorde a eso. Aprovecha sus "
-                        "fortalezas.")
-            return txt
+            return _pl.contexto_modelo_para_ideas(modo, modelo, specs)
         except Exception as e:
             logger.debug(f"[silent] {e}")
             return ""
@@ -1327,7 +1192,7 @@ class CoreMixin:
         self.set_estado("⏳ Generando ideas...", "#f39c12")
         self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_ia, args=(peticion, True), daemon=True).start()
+        self._executor.submit(self.workers.worker_ia, peticion, True)
 
     def cmd_prompt(self):
         self._ocultar_ideas()
@@ -1347,7 +1212,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⏳ Compilando prompt...", "#f39c12")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_prompt_traduccion, args=(idea,), daemon=True).start()
+        self._executor.submit(self.workers.worker_prompt_traduccion, idea)
 
     # ⚡ QUICK GENERATE
 
@@ -1380,7 +1245,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⚡ Quick generate...", "#d97706")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_prompt_quick, args=(idea,), daemon=True).start()
+        self._executor.submit(self.workers.worker_prompt_quick, idea)
 
     def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
                         key_pref=None):
@@ -1496,9 +1361,7 @@ class CoreMixin:
         self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
         self.sesion._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_ia,
-                          args=(peticion, False, True, n),
-                          daemon=True).start()
+        self._executor.submit(self.workers.worker_ia, peticion, False, True, n)
 
     def cmd_vision(self):
         if self.modo_var.get() == "audio": return self.set_estado("ℹ️ El análisis de imagen no aplica en modo audio.", "#3498db")
@@ -1506,7 +1369,7 @@ class CoreMixin:
         self._ocultar_ideas()
         self.sesion._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_vision, daemon=True).start()
+        self._executor.submit(self.workers.worker_vision)
 
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
@@ -1515,7 +1378,7 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.toggle_botones(False)
-        threading.Thread(target=self.workers.worker_imagen_a_prompt, daemon=True).start()
+        self._executor.submit(self.workers.worker_imagen_a_prompt)
 
     def _cmd_convertir_a_video(self):
         """Convierte un prompt de imagen a formato de vídeo."""
@@ -1570,7 +1433,7 @@ class CoreMixin:
                 self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self._executor.submit(_worker)
 
     def cmd_batch(self):
         try: self.sesion._sesion_log("📦 Abrió Batch (generación masiva)")
@@ -1717,7 +1580,7 @@ class CoreMixin:
                         self.set_estado("❌ Error en el Copiloto.", "#e74c3c")
                     self.after(0, _err)
 
-            threading.Thread(target=_worker, daemon=True).start()
+            self._executor.submit(_worker)
 
         btn_send = ctk.CTkButton(input_frame, text="Enviar", width=60, fg_color="#2980b9", hover_color="#1f608a", command=_enviar)
         btn_send.pack(side="right")

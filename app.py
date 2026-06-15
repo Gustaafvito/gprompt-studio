@@ -5,6 +5,7 @@ Las ventanas secundarias usan GPromptWindow (modules.gprompt_window).
 """
 import logging
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import customtkinter as ctk
@@ -124,76 +125,66 @@ class ArquitectoApp(
 
     def __init__(self):
         super().__init__()
+        self._setup_services()
+        if not self._setup_api_clients():
+            return
+        self._setup_state()
+        self._setup_window()
+        self._setup_tk_vars()
+        self._build_ui()
+        self._setup_post_init()
 
-        # Semáforo para serializar requests a Pollinations.ai (límite 1
-        # concurrente por IP para anónimos → si se exceden devuelve 402
-        # "Queue full"). Lo usa modules/preview_pollinations.py (self.preview).
+    # ── Fases de inicialización ───────────────────────────────────────
+
+    def _setup_services(self):
+        """Locks de Pollinations, preview service y componentes instalados."""
         self._pollinations_lock = threading.Lock()
-        # Contador de workers en cola esperando el lock (para mostrar
-        # "⏳ En cola (N por delante)" en la UI). Protegido por su propio
-        # lock para no bloquear el principal.
         self._pollinations_queue_lock = threading.Lock()
         self._pollinations_queue_size = 0
-
-        # Servicio de preview Pollinations (boceto rápido + grid). Vive en
-        # modules/preview_pollinations.py; se accede vía self.preview.
         self.preview = PreviewPollinationsService(self)
-
-        # Instala 8 componentes (self.core, self.ui, self.creative,
-        # self.workflow, self.analysis, self.data, self.backup, self.dialogs)
-        # que delegan al app. Namespace progresivo hacia composición sin
-        # romper la herencia de mixins existente.
         install_components(self)
-
-        # En v1.0 metimos un splash con root temporal que generaba errores
-        # 'invalid command name'. Ahora ocultamos la ventana principal y
-        # mostramos un Toplevel splash mientras construimos la UI.
         try:
             self.withdraw()
             self._splash = self._crear_splash()
         except Exception:
             self._splash = None
-
-        # Silenciar errores inofensivos de CTkToolTip con widgets destruidos
         def _silenciar_errores_tooltip(exc, val, tb):
             msg = str(val)
             if "bad window path" in msg or "ctktooltip" in msg.lower():
-                return  # Ignorar errores de tooltip
+                return
             import traceback
             traceback.print_exception(exc, val, tb)
         self.report_callback_exception = _silenciar_errores_tooltip
 
+    def _setup_api_clients(self) -> bool:
+        """APIClients con wizard de fallback, DataStore, workers y executor.
+        Devuelve False si la inicialización debe abortar.
+        """
         self._splash_estado("Inicializando proveedores...")
-
-        # ── Dependencias ──────────────────────────────────────────
         self.clients = APIClients()
         if self.clients.error:
             self._cerrar_splash()
-            # Mantenemos el root oculto: el wizard es Toplevel y se ve
-            # solo. Mostrar el root vacío aquí causa una ventana "CTk"
-            # fantasma en la captura.
             if not self._setup_wizard():
                 self.destroy()
-                return
-            # Reintentar con las claves nuevas
+                return False
             self.clients = APIClients()
             if self.clients.error:
                 messagebox.showerror("Error de configuración", self.clients.error)
                 self.destroy()
-                return
-
+                return False
         self._splash_estado("Cargando datos...")
         self.store    = DataStore()
         self.deepseek = DeepSeekWorker(self.clients)
         self.vision   = VisionChain(self.clients)
+        self._executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="gprompt")
+        return True
 
-        # ── Estado ────────────────────────────────────────────────
+    def _setup_state(self):
+        """Variables de estado interno de la aplicación."""
         self.imagen_cargada         = None
         self._progreso_activo       = False
         self._token_pending         = None
         self._ultimo_anclaje_visual = None
-        # ADN visual (rasgos inmutables): se restaura desde preferencias.json
-        # al arrancar y se persiste tras cada cambio.
         try:
             _prefs = self.store.cargar_preferencias() or {}
             self._anclaje_visual = _prefs.get("anclaje_visual") or None
@@ -201,67 +192,52 @@ class ArquitectoApp(
             logger.debug(f"[silent] cargar anclaje: {_e}")
             self._anclaje_visual = None
 
-        # ── Ventana ───────────────────────────────────────────────
+    def _setup_window(self):
+        """Título y geometría de la ventana principal."""
         self.title(APP_TITLE)
         self._aplicar_geometria_adaptativa()
-        # minsize bajo para que la app SIEMPRE entre en pantallas HD (1366x768)
         self.minsize(820, 620)
         self._splash_estado("Construyendo interfaz...")
 
-        # ── Variables Tk ──────────────────────────────────────────
-        # Cargamos prefs guardadas para que los switches conserven el
-        # último estado del usuario (NSFW, Auto-trad, Brief).
+    def _setup_tk_vars(self):
+        """Variables Tk con sus valores iniciales y traces de persistencia."""
         try:
-            _switches_prefs = self.store.cargar_preferencias() or {}
+            _prefs = self.store.cargar_preferencias() or {}
         except Exception as _e:
             logger.debug(f"[silent] cargar switches prefs: {_e}")
-            _switches_prefs = {}
+            _prefs = {}
 
-        self.llm_var             = ctk.StringVar(value="DeepSeek V4")
-        self.modo_var            = ctk.StringVar(value="imagen")
-        self.plataforma_var      = ctk.StringVar(value="SeaArt / Tensor.Art")
-        self.switch_nsfw_var     = ctk.BooleanVar(value=_switches_prefs.get("switch_nsfw", False))
-        self.duracion_var        = ctk.StringVar(value="10s")
-        # Número de shots en prompts de vídeo. "Auto" deduce de la duración
-        # (4s→1, 5s→2, 10s→3, 15s→4). Manual 1-6 fuerza ese N exacto.
-        self.shots_var           = ctk.StringVar(value="Auto")
-        self.ratio_var           = ctk.StringVar(value="1:1")
-        self.switch_traduccion_var = ctk.BooleanVar(value=_switches_prefs.get("switch_traduccion", True))
-        self.destino_var         = ctk.StringVar(value="— Personal —")
-        self.brief_var           = ctk.BooleanVar(value=_switches_prefs.get("brief", False))
-        # Switch "Img→Prompt como referencia visual" — para storyboards/moodboards
-        # subidos que NO se deben describir literalmente sino usar como guía de
-        # estilo/paleta/personajes para el prompt resultante.
-        self.switch_ref_visual_var = ctk.BooleanVar(value=_switches_prefs.get("switch_ref_visual", False))
-        # Toggle "Estilo" — hint de categoría al LLM para cada familia
-        # de modelos. Los valores disponibles dependen de la familia
-        # activa (ver config.ESTILOS_POR_FAMILIA). Cuando cambias de
-        # familia, el combo se repuebla y resetea a "Auto".
-        # Compat: leemos también el nombre viejo "z_image_estilo" para
-        # no perder la preferencia de usuarios de sesiones anteriores.
+        self.llm_var               = ctk.StringVar(value="DeepSeek V4")
+        self.modo_var              = ctk.StringVar(value="imagen")
+        self.plataforma_var        = ctk.StringVar(value="SeaArt / Tensor.Art")
+        self.switch_nsfw_var       = ctk.BooleanVar(value=_prefs.get("switch_nsfw", False))
+        self.duracion_var          = ctk.StringVar(value="10s")
+        self.shots_var             = ctk.StringVar(value="Auto")
+        self.ratio_var             = ctk.StringVar(value="1:1")
+        self.switch_traduccion_var = ctk.BooleanVar(value=_prefs.get("switch_traduccion", True))
+        self.destino_var           = ctk.StringVar(value="— Personal —")
+        self.brief_var             = ctk.BooleanVar(value=_prefs.get("brief", False))
+        self.switch_ref_visual_var = ctk.BooleanVar(value=_prefs.get("switch_ref_visual", False))
         _estilo_inicial = (
-            _switches_prefs.get("familia_estilo")
-            or _switches_prefs.get("z_image_estilo")
-            or "Auto"
+            _prefs.get("familia_estilo") or _prefs.get("z_image_estilo") or "Auto"
         )
-        self.familia_estilo_var  = ctk.StringVar(value=_estilo_inicial)
-        # Multi-LoRA: lista de nombres EXTRA seleccionados (además del
-        # primario del combo_lora). Persistido en prefs como lista.
+        self.familia_estilo_var    = ctk.StringVar(value=_estilo_inicial)
         try:
-            _multi_loras = _switches_prefs.get("loras_multi", [])
+            _multi_loras = _prefs.get("loras_multi", [])
             if not isinstance(_multi_loras, list):
                 _multi_loras = []
         except Exception:
             _multi_loras = []
         self.loras_multi: list = list(_multi_loras)
-        self.estilo_checks       = {}
-        self.preset_vars         = {}
-        self.preset_btns         = {}
+        self.estilo_checks  = {}
+        self.preset_vars    = {}
+        self.preset_btns    = {}
+        self._bind_switch_persistence()
+        self._bind_switch_sesion_traces()
 
-        # ── Persistencia automática de switches ───────────────────
-        # Cada cambio en estos switches se guarda en preferences.json
-        # para que el estado se mantenga entre sesiones.
-        def _persistir_switch(key, getter):
+    def _bind_switch_persistence(self):
+        """Traces que persisten el estado de los switches en preferences.json."""
+        def _persistir(key, getter):
             def _trace(*_a):
                 try:
                     p = self.store.cargar_preferencias() or {}
@@ -270,22 +246,22 @@ class ArquitectoApp(
                 except Exception as _e:
                     logger.debug(f"[silent] persistir {key}: {_e}")
             return _trace
-
         try:
             self.switch_nsfw_var.trace_add(
-                "write", _persistir_switch("switch_nsfw", self.switch_nsfw_var.get))
+                "write", _persistir("switch_nsfw", self.switch_nsfw_var.get))
             self.switch_traduccion_var.trace_add(
-                "write", _persistir_switch("switch_traduccion", self.switch_traduccion_var.get))
+                "write", _persistir("switch_traduccion", self.switch_traduccion_var.get))
             self.brief_var.trace_add(
-                "write", _persistir_switch("brief", self.brief_var.get))
+                "write", _persistir("brief", self.brief_var.get))
             self.switch_ref_visual_var.trace_add(
-                "write", _persistir_switch("switch_ref_visual", self.switch_ref_visual_var.get))
+                "write", _persistir("switch_ref_visual", self.switch_ref_visual_var.get))
             self.familia_estilo_var.trace_add(
-                "write", _persistir_switch("familia_estilo", self.familia_estilo_var.get))
+                "write", _persistir("familia_estilo", self.familia_estilo_var.get))
         except Exception as _e:
             logger.debug(f"[silent] trace switches: {_e}")
 
-        # ── Mejora 14: traces para sesión grabada (ratio/destino/NSFW/brief) ──
+    def _bind_switch_sesion_traces(self):
+        """Traces que registran cambios de ratio/destino/switches en la sesión grabada."""
         try:
             self.ratio_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"📐 Cambió ratio → {self.ratio_var.get()}") if hasattr(self, "_sesion_eventos") else None)
             self.destino_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🎯 Cambió destino → {self.destino_var.get()}") if hasattr(self, "_sesion_eventos") else None)
@@ -295,71 +271,47 @@ class ArquitectoApp(
             self.switch_ref_visual_var.trace_add("write", lambda *a: self.sesion._sesion_log(f"🖼 Ref visual → {'ON' if self.switch_ref_visual_var.get() else 'OFF'}") if hasattr(self, "_sesion_eventos") else None)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-        # ── Construir UI Organizada ───────────────────────────────
+
+    def _build_ui(self):
+        """Construye todos los widgets de la interfaz en orden."""
         self.dialogs._build_author()
         self.footer._build_footer()
-
-        # Zona 1: Contexto Global
         self.ui._build_header()
         self.ui._build_modo()
-
         self.ui._build_video_panel()
         self.ui._build_audio_panel()
         self.ui._build_modelo_imagen_panel()
         self.ui._build_destino_panel()
-
-        self.lbl_img_model_info = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=10),
-                                                text_color="#3498db",
-                                                corner_radius=6, wraplength=1800,
-                                                justify="left", anchor="w")
-
-        # Zona 2: Modificadores y Ajustes (Pestañas Centrales)
+        self.lbl_img_model_info = ctk.CTkLabel(
+            self, text="", font=ctk.CTkFont(size=10), text_color="#3498db",
+            corner_radius=6, wraplength=1800, justify="left", anchor="w")
         self.ui._build_tabs_centrales()
-
-        # Zona 3: Ideación y Acción
         self.ui._build_imagen_ref()
         self.ui._build_entrada()
         self.ui._build_acciones()
         self.ui._build_estado()
         self.ui._build_salida()
-
-        # ── Atajos ────────────────────────────────────────────────
         self.atajos.bind_shortcuts()
 
-        # ── Inicializar ───────────────────────────────────────────
+    def _setup_post_init(self):
+        """Datos iniciales, preferencias, atajos, timers y cierre del splash."""
         self.data.actualizar_combo_personajes()
         self.data.actualizar_combo_loras()
         self.data.actualizar_combo_plantillas()
-        # Refrescar panel "Fuentes activas" tras cargar prefs (puede haber
-        # anclaje persistido o loras_multi precargados).
         try:
             self.footer.actualizar_fuentes_activas()
         except Exception as _e:
             logger.debug(f"[silent fuentes init] {_e}")
-
-        # Cargar estado y forzar pintado correcto
         self.data._cargar_preferencias()
         self.events._on_modo_cambio()
         self.reiniciar_memoria()
-
-        # Sin esto, si el usuario arranca con tema claro guardado, los
-        # widgets que tienen colores hardcodeados de modo dark salen
-        # con texto blanco sobre fondo claro = invisibles.
         try:
             self._apply_theme_colors()
         except Exception as e:
-            import logging as _log
-            _log.getLogger(__name__).warning(f"_apply_theme_colors inicial falló: {e}")
-
-        # Restaurar borrador no guardado de sesión anterior si existe
+            logger.warning(f"_apply_theme_colors inicial falló: {e}")
         self.data._restaurar_borrador()
-        # Iniciar auto-guardado cada 30s
         self.after(30000, self.data._auto_guardar_borrador)
-
-        # Backup automático semanal (v1.0)
         self.after(5000, self._backup_semanal_check)
-
-        # Atajo global Ctrl+Enter para generar prompt (v1.0)
         try:
             self.bind_all("<Control-Return>", self._atajo_generar_prompt, add="+")
         except Exception as _e:
@@ -369,13 +321,9 @@ class ArquitectoApp(
             self.bind("<Escape>", self._exit_fullscreen_principal)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
-        # Indicador de proveedor activo (v1.0)
         self.after(800, self._actualizar_indicador_proveedor)
-        # Indicador de ADN visual activo (si se cargó desde preferencias)
         self.after(900, self._actualizar_indicador_adn)
-
         self.protocol("WM_DELETE_WINDOW", self.dialogs._on_cerrar)
-
         try:
             self._splash_estado("¡Listo!")
             self.after(150, self._cerrar_splash)
@@ -387,28 +335,22 @@ class ArquitectoApp(
                 self.deiconify()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-        # Flag que lee _get_real_is_light() en ui_builders.py para decidir
-        # si fiarse de ctk.get_appearance_mode() (post-init) o leer
-        # preferencias.json (durante init, donde hay race con el
-        # set_appearance_mode diferido a 200ms). Delay generoso (800ms).
-        def _marcar_init_completo():
-            try:
-                import sys
-                app_mod = sys.modules.get('app')
-                if app_mod is not None:
-                    setattr(app_mod, '_gprompt_init_done', True)
-                main_mod = sys.modules.get('__main__')
-                if main_mod is not None:
-                    setattr(main_mod, '_gprompt_init_done', True)
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-        self.after(900, _marcar_init_completo)
-
-        # de 1.2s (cuando todo está cargado y la ventana visible).
+        self.after(900, self._marcar_init_completo)
         try:
-            prefs_actuales = self.store.cargar_preferencias() or {}
-            if not prefs_actuales.get("nombre"):
+            prefs = self.store.cargar_preferencias() or {}
+            if not prefs.get("nombre"):
                 self.after(1200, self._wizard_nombre)
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def _marcar_init_completo(self):
+        """Activa el flag _gprompt_init_done en sys.modules (post-init)."""
+        try:
+            import sys
+            for mod_name in ('app', '__main__'):
+                mod = sys.modules.get(mod_name)
+                if mod is not None:
+                    setattr(mod, '_gprompt_init_done', True)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _wizard_nombre(self):

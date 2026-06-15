@@ -21,6 +21,7 @@ Uso:
     bus.off("LLM_CHANGED", on_llm_changed)
 """
 import logging
+import time
 from collections import defaultdict
 from typing import Any, Callable
 
@@ -94,6 +95,3 @@ class EventBus:
     def get_history(self, limit: int = 10) -> list[dict]:
         """Devuelve el historial de eventos recientes."""
         return self._event_history[-limit:]
-
-
-import time

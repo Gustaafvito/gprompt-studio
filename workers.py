@@ -20,6 +20,7 @@ import io
 import json as _json
 import logging
 import re
+import threading
 import time
 import urllib.request
 from typing import TYPE_CHECKING, Callable
@@ -149,8 +150,6 @@ class DeepSeekWorker:
         **kwargs se ignora (retrocompat: el provider activo se obtiene
         siempre desde self.clients.get_active_provider()).
         """
-        import time
-
         self.historial.append({"role": "user", "content": peticion})
         max_tokens_escalado = self._escalar_max_tokens(max_tokens)
 
@@ -174,7 +173,7 @@ class DeepSeekWorker:
                 if intento < max_reintentos - 1:
                     delay = delay_base * (2 ** intento)  # 1s, 2s, 4s
                     logger.warning(f"DeepSeekWorker.generar() intento {intento+1} falló: {e}. Reintentando en {delay}s...")
-                    time.sleep(delay)
+                    threading.Event().wait(delay)  # interruptible; no bloquea el hilo UI
                 else:
                     logger.error(f"DeepSeekWorker.generar() falló después de {max_reintentos} intentos: {e}")
                     # Eliminar la petición fallida del historial

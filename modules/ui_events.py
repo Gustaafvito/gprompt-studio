@@ -223,11 +223,6 @@ class UiEventsService:
             self.app.dialogs.set_estado(f"🎬 {motor_name}", "#3498db")
 
             try:
-                if hasattr(self.app, '_tooltip_motor_video') and self.app._tooltip_motor_video is not None:
-                    try:
-                        self.app._tooltip_motor_video.hide()
-                    except Exception as _e:
-                        logger.debug(f"[silent] {_e}")
                 tip_rico = (
                     f"⭐ Nota: {specs.get('nota', '?')}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n"
@@ -250,8 +245,20 @@ class UiEventsService:
                 if specs.get('has_audio'):
                     tip_rico += f"\n\n🔊 Audio: {specs.get('audio_desc', 'Sí')}"
 
-                self.app._tooltip_motor_video = CTkToolTip(self.app.combo_modelo_video, delay=0.6, message=tip_rico,
-                                                      wraplength=450, justify="left")
+                # REUSAR el tooltip en vez de crear un Toplevel nuevo cada cambio
+                # (antes se recreaba y el anterior se quedaba sin destruir → se
+                # acumulaban bindings y el cambio de modelo se volvía lento).
+                existente = getattr(self.app, '_tooltip_motor_video', None)
+                if existente is not None:
+                    try:
+                        existente.hide()
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+                    existente.configure(message=tip_rico)
+                else:
+                    self.app._tooltip_motor_video = CTkToolTip(
+                        self.app.combo_modelo_video, delay=0.6, message=tip_rico,
+                        wraplength=450, justify="left")
             except Exception as e:
                 logger.debug(f"Tooltip video error: {e}")
         else:
@@ -321,11 +328,6 @@ class UiEventsService:
             if self.app.ratio_var.get() not in specs["ratios"]: self.app.ratio_var.set(specs["ratios"][0])
 
             try:
-                if hasattr(self.app, '_tooltip_modelo_actual') and self.app._tooltip_modelo_actual is not None:
-                    try:
-                        self.app._tooltip_modelo_actual.hide()
-                    except Exception as _e:
-                        logger.debug(f"[silent] {_e}")
                 tip_rico = (
                     f"⭐ Nota: {specs.get('nota', '?')}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n\n"
@@ -333,8 +335,18 @@ class UiEventsService:
                     f"📐 Fórmula:\n{specs.get('prompt_formula', '?')[:200]}\n\n"
                     f"💡 Ejemplo:\n{specs.get('prompt_ejemplo', '?')[:250]}"
                 )
-                self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message=tip_rico,
-                                                          wraplength=400, justify="left")
+                # Reusar el tooltip (no recrear Toplevel cada cambio → evita lag/leak)
+                existente = getattr(self.app, '_tooltip_modelo_actual', None)
+                if existente is not None:
+                    try:
+                        existente.hide()
+                    except Exception as _e:
+                        logger.debug(f"[silent] {_e}")
+                    existente.configure(message=tip_rico)
+                else:
+                    self.app._tooltip_modelo_actual = CTkToolTip(
+                        self.app.combo_modelo_imagen, delay=0.6, message=tip_rico,
+                        wraplength=400, justify="left")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
             badges = []
