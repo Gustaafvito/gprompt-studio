@@ -8,7 +8,6 @@ from .ab_testing import AbTestingService  # A1 fase 2 (sesión 14)
 from .adn_visual import AdnVisualService  # A1 fase 2 (sesión 14)
 from .atajos_ayuda import AtajosAyudaService  # A1 fase 2
 from .backup_export import BackupExportService  # A1 fase 2 (sesión 14)
-from .comfyui_exporter import ComfyUIWorkflowExporter
 from .components import install_components
 from .core import CoreMixin
 from .dashboard import DashboardService  # A1 fase 2 (sesión 11)
@@ -19,7 +18,6 @@ from .gprompt_window import GPromptWindow
 from .json_prompt import JsonPromptService  # A1 fase 2: era JsonPromptMixin
 from .modo_cliente import ModoClienteService  # A1 fase 2 (sesión 14)
 from .multiprompt import MultiPromptService  # A1 fase 2 (sesión 14)
-from .preview_service import PreviewService
 from .prompts_inyeccion import PromptsInyeccionService  # A1 fase 2
 from .refinamiento import RefinamientoService  # A1 fase 2 (sesión 14)
 from .sesion_video import SesionVideoService  # A1 fase 2 (sesión 14)
@@ -55,7 +53,5 @@ __all__ = [
     "UiFooterService",
     "GPromptWindow",
     "EventBus",
-    "PreviewService",
-    "ComfyUIWorkflowExporter",
     "install_components",
 ]
