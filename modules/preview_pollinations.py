@@ -11,7 +11,6 @@ La identidad/estado de cola (locks, contador) vive en la app:
 `app._pollinations_queue_size`.
 """
 import logging
-import threading
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
@@ -19,6 +18,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from workers import log_future_exc
 
 logger = logging.getLogger("gprompt")
 
@@ -268,7 +268,7 @@ class PreviewPollinationsService:
                     with self.app._pollinations_queue_lock:
                         self.app._pollinations_queue_size -= 1
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def abrir_grid(self, variaciones, labels=None):
         """Ventana con grid 3-col de previews Pollinations de todas las variantes.

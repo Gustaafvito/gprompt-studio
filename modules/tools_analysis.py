@@ -1,7 +1,6 @@
 """Analysis Tools Mixin - Statistics, Auto-improve, Critique, Scoring, Education Mode, etc."""
 import logging
 import re
-import threading
 from collections import Counter
 from typing import TYPE_CHECKING
 
@@ -9,7 +8,7 @@ import customtkinter as ctk
 import pyperclip
 
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -409,7 +408,7 @@ class ToolsAnalysisService:
             except Exception as e:
                 self.app.after(0, lambda: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False) -> None:
         """Ventana de resultados de la crítica."""
@@ -577,7 +576,7 @@ class ToolsAnalysisService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _auto_mejora_mostrar(self, originales: list, resultados, resp_raw: str,
                              cacheado: bool = False) -> None:
@@ -1137,7 +1136,7 @@ class ToolsAnalysisService:
                                 self.app.after(0, _aplicar)
                             except Exception as e:
                                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
-                        threading.Thread(target=_worker_mejorar, daemon=True).start()
+                        self.app._executor.submit(_worker_mejorar).add_done_callback(log_future_exc)
 
                     ctk.CTkButton(btn_frame, text="✨ Mejorar prompt", width=140, height=30,
                                   fg_color="#7c3aed", command=_generar_mejorado).pack(side="left", padx=4)
@@ -1147,7 +1146,7 @@ class ToolsAnalysisService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     # ── Optimizador en bucle (sesión 19) ──────────────────────────
 
@@ -1451,7 +1450,7 @@ class ToolsAnalysisService:
                     text=f"❌ Error: {e}", text_color="#e74c3c"))
                 self.app.after(0, lambda: btn_detener.configure(state="disabled"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_coste_sesion(self) -> None:
         """Muestra el coste estimado de la sesión por proveedor.
@@ -2086,7 +2085,7 @@ class ToolsAnalysisService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _mostrar_ventana_traduccion(self, texto: str) -> None:
         """Ventana con la traducción y opciones: Usar / Copiar."""

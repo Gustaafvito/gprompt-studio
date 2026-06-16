@@ -34,12 +34,13 @@ from modules.avatar_prompts import (
     construir_user_prompt_ficha,
     parsear_ficha_json,
 )
+from workers import log_future_exc
 
 
 class AvatarFrame(ctk.CTkFrame):
     def __init__(self, master, llm_call, carpeta_salida_default=".",
                  adaptador=None, modelo_destino="", modelos_destino=None,
-                 vision_call=None, **kwargs):
+                 vision_call=None, executor=None, **kwargs):
         """adaptador: callable(resultado, modelo) -> list[str] de avisos.
         Se aplica tras generar y antes de exportar (adaptación al modelo).
         modelo_destino: modelo inicial seleccionado en el desplegable.
@@ -47,8 +48,11 @@ class AvatarFrame(ctk.CTkFrame):
         muestra el selector (modo standalone).
         vision_call: callable(imagen_pil, prompt) -> str. Si se pasa,
         aparece el botón "📷 Desde imagen" que rellena la ficha
-        analizando una imagen de referencia."""
+        analizando una imagen de referencia.
+        executor: concurrent.futures.Executor opcional para lanzar hilos
+        de fondo sin crear threading.Thread manualmente."""
         super().__init__(master, **kwargs)
+        self._executor = executor
         self.llm_call = llm_call
         self.carpeta_salida = carpeta_salida_default
         self.adaptador = adaptador
@@ -231,7 +235,10 @@ class AvatarFrame(ctk.CTkFrame):
             except Exception as e:
                 self.after(0, lambda e=e: self._fin_ficha_error(str(e)))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        if self._executor is not None:
+            self._executor.submit(_worker).add_done_callback(log_future_exc)
+        else:
+            threading.Thread(target=_worker, daemon=True).start()
 
     def _on_ficha_desde_imagen(self):
         """Analiza una imagen de referencia con visión y rellena la ficha."""
@@ -289,7 +296,10 @@ class AvatarFrame(ctk.CTkFrame):
                     self._fin_ficha_error(str(e))
                 self.after(0, _err)
 
-        threading.Thread(target=_worker, daemon=True).start()
+        if self._executor is not None:
+            self._executor.submit(_worker).add_done_callback(log_future_exc)
+        else:
+            threading.Thread(target=_worker, daemon=True).start()
 
     def _aplicar_ficha(self, ficha: dict, origen: str = "🎲 Ficha generada"):
         """Vuelca la ficha generada en los widgets del formulario."""
@@ -352,11 +362,15 @@ class AvatarFrame(ctk.CTkFrame):
         self.label_estado.configure(text="Generando descripción canónica con el LLM…")
 
         modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
-        hilo = threading.Thread(
-            target=self._worker_generar,
-            args=(form_data, trigger, seleccionados, carpeta, modelo_sel),
-            daemon=True)
-        hilo.start()
+        if self._executor is not None:
+            self._executor.submit(
+                self._worker_generar, form_data, trigger, seleccionados, carpeta, modelo_sel
+            ).add_done_callback(log_future_exc)
+        else:
+            threading.Thread(
+                target=self._worker_generar,
+                args=(form_data, trigger, seleccionados, carpeta, modelo_sel),
+                daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
                         modelo_sel=""):
@@ -505,7 +519,8 @@ def abrir_avatar_window(app) -> None:
         vent, llm_call=_llm_call,
         carpeta_salida_default=str(Path.home()),
         adaptador=adaptador, modelo_destino=modelo_activo,
-        modelos_destino=modelos, vision_call=vision_call)
+        modelos_destino=modelos, vision_call=vision_call,
+        executor=app._executor)
     frame.pack(fill="both", expand=True, padx=4, pady=4)
 
 

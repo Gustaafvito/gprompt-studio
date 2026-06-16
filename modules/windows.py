@@ -11,7 +11,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
-from workers import contar_tokens_aprox
+from workers import contar_tokens_aprox, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -904,7 +904,7 @@ def abrir_batch(app):
         btn_gen.configure(state="disabled")
         btn_exp.configure(state="disabled")
         _set_batch("⏳ Procesando batch...")
-        threading.Thread(target=_worker, args=(peticion,), daemon=True).start()
+        app._executor.submit(_worker, peticion).add_done_callback(log_future_exc)
 
     def exportar():
         texto = txt_batch.get("1.0", "end").strip()

@@ -35,7 +35,7 @@ import pyperclip
 
 from config import get_image_model_specs, get_theme_colors
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     # Tipos de shot disponibles para Story.
     # (key, label, descripción corta)
@@ -356,7 +356,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_storyboard_video(self):
         """Para vídeo: N shots clave de la secuencia (apertura/desarrollo/climax/cierre).
@@ -439,7 +439,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _encadenar_board_a_video(self, frames, vent_comparador):
         """Encadenar storyboard como prompt de vídeo.
@@ -516,7 +516,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_storyboard_imagen(self):
         """Storyboard cinematográfico para modelos de IMAGEN.
@@ -653,7 +653,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _fusionar_storyboard_imagen(self, paneles, vent_comparador):
         """Fusiona los N paneles del storyboard en un único prompt multi-panel.
@@ -723,7 +723,7 @@ class MultiPromptService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_random_walk(self):
         """Walk árbol visual.
@@ -1003,7 +1003,7 @@ class MultiPromptService:
                         btn_usar.configure(state="normal")
                     self.app.after(0, _err)
 
-            self.app._executor.submit(_worker)
+            self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
         # ─── Acción: usar este nodo (NO cierra, sigues explorando) ──
         def _usar_nodo():

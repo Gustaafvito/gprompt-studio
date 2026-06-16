@@ -2,7 +2,6 @@
 import datetime
 import logging
 import re
-import threading
 
 import pyperclip
 
@@ -14,7 +13,7 @@ import customtkinter as ctk
 
 from config import get_theme_colors as _get_tc
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 if TYPE_CHECKING:
     pass
@@ -526,7 +525,7 @@ class ToolsWorkflowService:
                                 text=f"⏲ Generando variante {num}/{cantidad}...",
                                 text_color="#f39c12")
 
-                threading.Thread(target=lambda n=num: _generar_variante(n), daemon=True).start()
+                self.app._executor.submit(_generar_variante, num).add_done_callback(log_future_exc)
 
                 if num < cantidad and cron_state["activo"]:
                     cron_state["after_id"] = vent.after(
@@ -1078,7 +1077,7 @@ class ToolsWorkflowService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_adaptar_modelo(self):
         """Reescribe el prompt actual para el MODELO ACTIVO (formato, max_chars,
@@ -1120,7 +1119,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     f"⚠️ Error adaptando: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_optimizar_1pasada(self):
         """Una pasada de optimización (puntuar→mejorar) headless, para macros.
@@ -1172,7 +1171,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     f"⚠️ Error optimizando: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_idea_auto_en_macro(self):
         """Genera 1 idea directamente sin popup - para macros."""
@@ -1193,7 +1192,7 @@ class ToolsWorkflowService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_variacion_auto_en_macro(self):
         """Genera 1 variación directamente sin popup - para macros."""
@@ -1216,7 +1215,7 @@ class ToolsWorkflowService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_proyectos(self):
         """Sistema de proyectos con setup propio: organiza prompts y guarda configuración por proyecto."""

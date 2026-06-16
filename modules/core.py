@@ -69,7 +69,7 @@ from prompts import (
     SYSTEM_VIDEO,
     SYSTEM_VIDEO_NSFW,
 )
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 if TYPE_CHECKING:
     pass
@@ -923,7 +923,7 @@ class CoreMixin:
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
                 self.sesion._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
-                self._executor.submit(self.workers.worker_ia, peticion, True)
+                self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
 
             def _generar(t=idea_texto):
                 self.txt_idea.delete("1.0", "end")
@@ -1192,7 +1192,7 @@ class CoreMixin:
         self.set_estado("⏳ Generando ideas...", "#f39c12")
         self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_ia, peticion, True)
+        self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
 
     def cmd_prompt(self):
         self._ocultar_ideas()
@@ -1212,7 +1212,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⏳ Compilando prompt...", "#f39c12")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_prompt_traduccion, idea)
+        self._executor.submit(self.workers.worker_prompt_traduccion, idea).add_done_callback(log_future_exc)
 
     # ⚡ QUICK GENERATE
 
@@ -1245,7 +1245,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
         self.set_estado("⚡ Quick generate...", "#d97706")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_prompt_quick, idea)
+        self._executor.submit(self.workers.worker_prompt_quick, idea).add_done_callback(log_future_exc)
 
     def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
                         key_pref=None):
@@ -1361,7 +1361,7 @@ class CoreMixin:
         self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
         self.sesion._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_ia, peticion, False, True, n)
+        self._executor.submit(self.workers.worker_ia, peticion, False, True, n).add_done_callback(log_future_exc)
 
     def cmd_vision(self):
         if self.modo_var.get() == "audio": return self.set_estado("ℹ️ El análisis de imagen no aplica en modo audio.", "#3498db")
@@ -1369,7 +1369,7 @@ class CoreMixin:
         self._ocultar_ideas()
         self.sesion._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_vision)
+        self._executor.submit(self.workers.worker_vision).add_done_callback(log_future_exc)
 
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
@@ -1378,7 +1378,7 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
         self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_imagen_a_prompt)
+        self._executor.submit(self.workers.worker_imagen_a_prompt).add_done_callback(log_future_exc)
 
     def _cmd_convertir_a_video(self):
         """Convierte un prompt de imagen a formato de vídeo."""
@@ -1433,7 +1433,7 @@ class CoreMixin:
                 self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
-        self._executor.submit(_worker)
+        self._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def cmd_batch(self):
         try: self.sesion._sesion_log("📦 Abrió Batch (generación masiva)")
@@ -1580,7 +1580,7 @@ class CoreMixin:
                         self.set_estado("❌ Error en el Copiloto.", "#e74c3c")
                     self.after(0, _err)
 
-            self._executor.submit(_worker)
+            self._executor.submit(_worker).add_done_callback(log_future_exc)
 
         btn_send = ctk.CTkButton(input_frame, text="Enviar", width=60, fg_color="#2980b9", hover_color="#1f608a", command=_enviar)
         btn_send.pack(side="right")

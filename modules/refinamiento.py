@@ -13,13 +13,12 @@ Contiene:
 import datetime
 import logging
 import re
-import threading
 import tkinter as tk
 
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger("gprompt")
 
@@ -108,7 +107,7 @@ class RefinamientoService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_iteracion(self) -> None:
         """Genera N variantes del prompt cambiando solo 1 elemento (iluminación, encuadre, etc).
@@ -220,7 +219,7 @@ class RefinamientoService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def cmd_refinar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
@@ -264,12 +263,10 @@ class RefinamientoService:
 
         self.app.dialogs.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
         self.app.dialogs.toggle_botones(False)
-        threading.Thread(
-            target=self.app.workers.worker_ia,
-            args=(peticion,),
-            kwargs={"es_refinamiento": True, "texto_previo": texto},
-            daemon=True,
-        ).start()
+        self.app._executor.submit(
+            self.app.workers.worker_ia, peticion,
+            es_refinamiento=True, texto_previo=texto,
+        ).add_done_callback(log_future_exc)
 
     def _mostrar_diff_refinamiento(self, texto_previo: str, texto_nuevo: str) -> None:
         """Modal de diff visual antes de aplicar el refinamiento.

@@ -41,6 +41,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def log_future_exc(fut):
+    """Callback para Future.add_done_callback: loguea excepciones silenciosas del executor."""
+    exc = fut.exception()
+    if exc is not None:
+        logger.error(
+            "[executor] excepción en hilo de fondo: %s: %s",
+            type(exc).__name__, exc,
+            exc_info=(type(exc), exc, exc.__traceback__),
+        )
+
+
 # ── Helpers ───────────────────────────────────────────────────────
 
 def contar_tokens_aprox(texto: str) -> int:

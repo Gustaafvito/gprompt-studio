@@ -27,7 +27,6 @@ Dependencias self (provistas por ArquitectoApp):
 """
 import logging
 import re as _re
-import threading
 from tkinter import messagebox
 
 import customtkinter as ctk
@@ -43,7 +42,7 @@ from config import (
 )
 from config import get_theme_colors as _get_tc
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +229,7 @@ class AbTestingService:
 
             self.app.after(0, lambda: self._mostrar_ab_grid(idea_base, dimensiones, prompts_generados, is_lt, c))
 
-        threading.Thread(target=_generar, daemon=True).start()
+        self.app._executor.submit(_generar).add_done_callback(log_future_exc)
 
     def _mostrar_ab_grid(self, idea_base, dimensiones, prompts_generados, is_lt, c):
         """Muestra la grid de resultados."""
@@ -620,6 +619,6 @@ class AbTestingService:
 
             def _todos():
                 for m in modelos_compare:
-                    threading.Thread(target=_generar, args=(m,), daemon=True).start()
+                    self.app._executor.submit(_generar, m).add_done_callback(log_future_exc)
 
-            threading.Thread(target=_todos, daemon=True).start()
+            _todos()

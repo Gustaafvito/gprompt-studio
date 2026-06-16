@@ -22,14 +22,13 @@ Dependencias self (provistas por ArquitectoApp):
 """
 import datetime
 import logging
-import threading
 
 import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +145,7 @@ class ModoClienteService:
                         lbl_estado_img.configure(text=f"✅ Imagen analizada (vision: {motor})", text_color="#2ecc71")
                     except Exception as e:
                         lbl_estado_img.configure(text=f"❌ Error al analizar: {e}", text_color="#e74c3c")
-                threading.Thread(target=_analizar, daemon=True).start()
+                self.app._executor.submit(_analizar).add_done_callback(log_future_exc)
             except Exception as e:
                 lbl_estado_img.configure(text=f"❌ Error: {e}", text_color="#e74c3c")
 
@@ -318,7 +317,7 @@ class ModoClienteService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _abrir_comparador_propuestas(self, propuestas, brief=""):
         """Muestra propuestas como cards interactivos.
@@ -749,7 +748,7 @@ class ModoClienteService:
                     self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-            threading.Thread(target=_trabajar, daemon=True).start()
+            self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
 
         botones_finales = ctk.CTkFrame(vent, fg_color="transparent")
         botones_finales.pack(pady=8)

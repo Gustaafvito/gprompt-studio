@@ -16,7 +16,7 @@ from config import (
     get_model_specs,
     get_theme_colors,
 )
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 from typing import TYPE_CHECKING
@@ -68,7 +68,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     PULSE_PRESET_3 = [
         (0.3, "🎯 Conservador (T=0.3)"),
@@ -300,7 +300,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_sugerir_modelo(self):
         """Analiza la idea y sugiere TOP 3 modelos.
@@ -390,7 +390,7 @@ class ToolsCreativeService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _mostrar_sugerencias_modelo(self, idea, sugerencias, modo):
         """Modal con las 3 sugerencias de modelo + botón para probar los 3."""
@@ -619,7 +619,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_grupo_personajes(self):
         """Define una escena con varios personajes y sus relaciones."""
@@ -858,7 +858,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_sugerir_estilos(self):
         """Analiza la idea y marca automáticamente los estilos más apropiados."""
@@ -928,7 +928,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_anclaje_visual(self):
         """ADN visual: extrae rasgos detallados de imagen ref y los guarda como anclaje inmutable.
@@ -1095,7 +1095,7 @@ class ToolsCreativeService:
 
         ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
                       font=ctk.CTkFont(size=12, weight="bold"),
-                      text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar)
+                      text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
                       ).pack(pady=8)
 
     def _cmd_variar_con_anclaje(self):
@@ -1267,7 +1267,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_negative_builder(self):
         """Constructor visual de NEGATIVE PROMPT con checkboxes temáticos.
@@ -1760,7 +1760,7 @@ class ToolsCreativeService:
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
 
-        self.app._executor.submit(_worker)
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _abrir_biblioteca_paletas(self, parent_window=None):
         """Biblioteca de paletas guardadas con búsqueda, aplicar y borrar."""

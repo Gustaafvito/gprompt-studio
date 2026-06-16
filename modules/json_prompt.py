@@ -30,7 +30,6 @@ Dependencias self (provistas por ArquitectoApp):
 """
 import json
 import logging
-import threading
 from tkinter import filedialog
 
 import customtkinter as ctk
@@ -38,7 +37,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
-from workers import limpiar_marcadores
+from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -633,7 +632,7 @@ class JsonPromptService:
                                                        "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _mostrar_modal_export(self, json_texto, json_valido=True):
         """Modal con el JSON exportado + copiar / guardar como archivo."""

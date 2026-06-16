@@ -15,13 +15,13 @@ Dependencias self (provistas por ArquitectoApp):
 import datetime
 import json
 import logging
-import threading
 
 import customtkinter as ctk
 import pyperclip
 
 from config import ADN_A_PLATAFORMA, get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from workers import log_future_exc
 
 logger = logging.getLogger(__name__)
 
@@ -669,4 +669,4 @@ class AdnVisualService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        threading.Thread(target=_worker, daemon=True).start()
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
