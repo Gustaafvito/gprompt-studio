@@ -962,7 +962,7 @@ PROMPT_TEMPLATES = {
     },
     # ── FLUX / Natural Language ──────────────────────────────
     "natural_flux": {
-        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1D UltraReal", "SeaArt Infinity", "SeaArt Infinity V2.0", "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2", "Reve 2.0", "MAI-Image-2.5", "MAI-Image-2.5-Flash",
+        "modelos": ["FLUX.1 [dev]", "FLUX.1-dev-fp8", "FLUX.1D UltraReal", "SeaArt Infinity", "SeaArt Infinity V2.0", "Reve 2.0", "MAI-Image-2.5", "MAI-Image-2.5-Flash",
                     "Midjourney Mimic Neo", "CyberRealistic Flux", "Realistic Amateurs Flux", "Real Vision - FLUX", "True Real Vision - Flux", "Goddess Project (FLUX)", "lyh_anime_Flux", "XE: Anime Hentai (FLUX)", "AnimePro FLUX", "XE: Cosplay Flux", "VNS - Horror World Flux", "Moxie Fusion Flux", "Nai3-Flux", "Alpha_Fantasy_Flux", "XE: Figure Flux", "Disney Pixar Flux", "MASTER FLUX (LoRA merged with flux1-dev fp16)", "FLUX.1 Krea dev", "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]", "FLUX.1-Kontext-dev", "Nepotism", "Splashed Flux"],
         "positive_base": "A {encuadre} of {sujeto}, {accion_pose}, {entorno_detallado}, {iluminacion_descriptiva}, {atmosfera}, {estilo_referencia}, {calidad}",
         "negative_base": "",
