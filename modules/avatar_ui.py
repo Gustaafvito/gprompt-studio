@@ -40,12 +40,14 @@ from workers import log_future_exc
 class AvatarFrame(ctk.CTkFrame):
     def __init__(self, master, llm_call, carpeta_salida_default=".",
                  adaptador=None, modelo_destino="", modelos_destino=None,
+                 plataformas_destino=None,
                  vision_call=None, executor=None, **kwargs):
         """adaptador: callable(resultado, modelo) -> list[str] de avisos.
         Se aplica tras generar y antes de exportar (adaptación al modelo).
         modelo_destino: modelo inicial seleccionado en el desplegable.
-        modelos_destino: lista de modelos elegibles; si None, no se
-        muestra el selector (modo standalone).
+        modelos_destino: lista plana de modelos (modo legacy/standalone).
+        plataformas_destino: dict {plat: [(grupo, [modelos])]} para el
+        selector en tres niveles plataforma→grupo→modelo.
         vision_call: callable(imagen_pil, prompt) -> str. Si se pasa,
         aparece el botón "📷 Desde imagen" que rellena la ficha
         analizando una imagen de referencia.
@@ -58,6 +60,7 @@ class AvatarFrame(ctk.CTkFrame):
         self.adaptador = adaptador
         self.modelo_destino = modelo_destino
         self.modelos_destino = modelos_destino or []
+        self.plataformas_destino = plataformas_destino or {}
         self.vision_call = vision_call
         self._imagen_referencia = ""   # ruta de la imagen usada para la ficha
         self._campos = {}
@@ -78,7 +81,45 @@ class AvatarFrame(ctk.CTkFrame):
 
         # Selector de modelo destino: el dataset se adapta a sus specs
         # (negative, max_chars) sin tener que cambiar el modelo de la app.
-        if self.modelos_destino:
+        if self.plataformas_destino:
+            # Selector en tres niveles: Plataforma → Grupo → Modelo
+            fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
+            fila_modelo.grid(row=0, column=0, columnspan=2, pady=(42, 0), sticky="n")
+
+            plat_ini, grupo_ini = self._encontrar_plataforma_grupo(self.modelo_destino)
+            plats = list(self.plataformas_destino.keys())
+
+            ctk.CTkLabel(fila_modelo, text="🌐",
+                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+            self.menu_plataforma = ctk.CTkOptionMenu(
+                fila_modelo, values=plats, width=145,
+                command=self._on_plataforma_change,
+                font=ctk.CTkFont(size=11))
+            self.menu_plataforma.set(plat_ini)
+            self.menu_plataforma.pack(side="left", padx=(0, 10))
+
+            ctk.CTkLabel(fila_modelo, text="📁",
+                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+            grupos_ini = [g for g, _ in self.plataformas_destino.get(plat_ini, [])]
+            self.menu_grupo = ctk.CTkOptionMenu(
+                fila_modelo, values=grupos_ini or [""],
+                width=210, command=self._on_grupo_change,
+                font=ctk.CTkFont(size=11))
+            self.menu_grupo.set(grupo_ini if grupo_ini in grupos_ini else (grupos_ini[0] if grupos_ini else ""))
+            self.menu_grupo.pack(side="left", padx=(0, 10))
+
+            ctk.CTkLabel(fila_modelo, text="🎯",
+                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+            modelos_ini = self._get_modelos_grupo(plat_ini, self.menu_grupo.get())
+            inicial_m = (self.modelo_destino if self.modelo_destino in modelos_ini
+                         else (modelos_ini[0] if modelos_ini else ""))
+            self.menu_modelo = ctk.CTkOptionMenu(
+                fila_modelo, values=modelos_ini or [""], width=220,
+                font=ctk.CTkFont(size=11))
+            self.menu_modelo.set(inicial_m)
+            self.menu_modelo.pack(side="left")
+
+        elif self.modelos_destino:
             fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
             fila_modelo.grid(row=0, column=0, columnspan=2, pady=(42, 0), sticky="n")
             ctk.CTkLabel(
@@ -421,6 +462,36 @@ class AvatarFrame(ctk.CTkFrame):
             # captura, el callback diferido lanza NameError (patrón sesión 10)
             self.after(0, lambda e=e: self._fin_error(str(e)))
 
+    # ── Helpers selector plataforma/grupo/modelo ──────────────────────
+    def _get_modelos_grupo(self, plataforma: str, grupo: str) -> list:
+        for g, ms in self.plataformas_destino.get(plataforma, []):
+            if g == grupo:
+                return list(ms)
+        return []
+
+    def _encontrar_plataforma_grupo(self, modelo: str) -> tuple:
+        for plat, grupos in self.plataformas_destino.items():
+            for grupo, modelos in grupos:
+                if modelo in modelos:
+                    return plat, grupo
+        plat = next(iter(self.plataformas_destino), "")
+        grupos = self.plataformas_destino.get(plat, [])
+        return plat, (grupos[0][0] if grupos else "")
+
+    def _on_plataforma_change(self, plat: str) -> None:
+        grupos = self.plataformas_destino.get(plat, [])
+        nombres = [g for g, _ in grupos]
+        self.menu_grupo.configure(values=nombres or [""])
+        nuevo = nombres[0] if nombres else ""
+        self.menu_grupo.set(nuevo)
+        self._on_grupo_change(nuevo)
+
+    def _on_grupo_change(self, grupo: str) -> None:
+        plat = self.menu_plataforma.get()
+        modelos = self._get_modelos_grupo(plat, grupo)
+        self.menu_modelo.configure(values=modelos or [""])
+        self.menu_modelo.set(modelos[0] if modelos else "")
+
     def _fin_ok(self, resultado, ruta, avisos=None):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
@@ -473,22 +544,27 @@ def abrir_avatar_window(app) -> None:
         return app.deepseek.generar_batch(
             system_prompt, user_prompt, temperature=temperature, max_tokens=900)
 
-    # Selector de modelo destino: mismos modelos que el combo de la app
-    # (plataforma actual), sin separadores. El adaptador resuelve los
-    # specs DEL MODELO ELEGIDO al generar: quita el negative si no lo
-    # soporta y avisa si algún prompt excede su max_chars. Sin LLM extra.
+    # Selector de modelo destino: organizado por plataforma y grupo.
+    # El adaptador resuelve specs del modelo elegido al generar.
     modelo_activo = ""
-    modelos = []
+    plataformas_destino = {}
     adaptador = None
     try:
-        from config import es_separador, get_image_model_specs
+        from config import (
+            GRUPOS_DALLE_IMAGEN,
+            GRUPOS_IDEOGRAM_IMAGEN,
+            GRUPOS_IMAGEN_VIGENTES,
+            GRUPOS_MIDJOURNEY_IMAGEN,
+            get_image_model_specs,
+        )
         from modules.avatar_generator import adaptar_dataset_a_modelo
 
-        try:
-            valores = list(app.combo_modelo_imagen.cget("values"))
-        except Exception:
-            valores = []
-        modelos = [v for v in valores if v and not es_separador(v)]
+        plataformas_destino = {
+            "SeaArt": GRUPOS_IMAGEN_VIGENTES,
+            "Midjourney": GRUPOS_MIDJOURNEY_IMAGEN,
+            "ChatGPT / GPT Image": GRUPOS_DALLE_IMAGEN,
+            "Ideogram / Recraft": GRUPOS_IDEOGRAM_IMAGEN,
+        }
         modelo_activo = app.footer.modelo_imagen_valido() or ""
 
         def adaptador(resultado, modelo):
@@ -497,7 +573,7 @@ def abrir_avatar_window(app) -> None:
             specs = get_image_model_specs(modelo) or {}
             return adaptar_dataset_a_modelo(resultado, modelo, specs)
     except Exception:
-        modelos = []
+        plataformas_destino = {}
         adaptador = None
 
     vent = GPromptWindow(app)
@@ -519,7 +595,8 @@ def abrir_avatar_window(app) -> None:
         vent, llm_call=_llm_call,
         carpeta_salida_default=str(Path.home()),
         adaptador=adaptador, modelo_destino=modelo_activo,
-        modelos_destino=modelos, vision_call=vision_call,
+        plataformas_destino=plataformas_destino,
+        vision_call=vision_call,
         executor=app._executor)
     frame.pack(fill="both", expand=True, padx=4, pady=4)
 
