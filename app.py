@@ -2550,13 +2550,19 @@ class ArquitectoApp(
             texto_limpio = texto_limpio[:400]
         cache_key = hashlib.md5(texto_limpio.encode("utf-8")).hexdigest()
 
-        # Cache hit → mostrar instantáneamente
+        # Cache hit → mostrar instantáneamente (TTL 30 min)
+        _PREVIEW_CACHE_TTL = 1800  # segundos
         if cache_key in self._preview_cache:
-            image_pil, url_imagen, _ = self._preview_cache[cache_key]
-            img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
-            self.preview.mostrar_window(image_pil, img_ctk, url_imagen, desde_cache=True)
-            self.dialogs.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
-            return
+            image_pil, url_imagen, ts = self._preview_cache[cache_key]
+            import time as _time_ttl
+            if _time_ttl.time() - ts <= _PREVIEW_CACHE_TTL:
+                img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
+                self.preview.mostrar_window(image_pil, img_ctk, url_imagen, desde_cache=True)
+                self.dialogs.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
+                return
+            else:
+                # Entrada expirada: eliminar y regenerar
+                del self._preview_cache[cache_key]
 
         self.dialogs.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
         self.dialogs.toggle_botones(False)
