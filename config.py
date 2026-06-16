@@ -315,6 +315,15 @@ GRUPOS_IMAGEN = [
         "SD 3.5 Medium",
         "SD 3.5 Large Turbo",
     ])),
+    ("── Estilos Únicos SD ──", sorted([
+        "Inkpunk Diffusion",
+        "Arcane Diffusion",
+        "Cyberpunk Anime Diffusion",
+        "Robo-Diffusion",
+        "anima_pencil-XL",
+        "Hollie Mengert Illustration",
+        "Fred Herzog Photography Style",
+    ])),
 ]
 
 # ══════════════════════════════════════════════════════════════════

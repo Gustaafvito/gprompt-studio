@@ -364,7 +364,8 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -378,8 +379,9 @@
     "pasos": "20 (máx 40)",
     "cfg": "4.5 (7 anime)",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "fp8 quantization. Sin modo 'fast'. Requiere negative prompt para mejores resultados. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
-    "no_weights": true
+    "limitaciones": "fp8 quantization. DOC OFICIAL: lenguaje natural (no tags con comas); pesos y BREAK no funcionan; no ideal NSFW; anatomía de cuello/pómulos irregular.",
+    "no_weights": true,
+    "vigente": true
   },
   "SD 3.5 Medium": {
     "nota": 3.8,
@@ -394,7 +396,8 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -408,8 +411,9 @@
     "pasos": "20-35",
     "cfg": "4.5 (7 anime)",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Menor capacidad que Large para detalles finos. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
-    "no_weights": true
+    "limitaciones": "Menor capacidad que Large para detalles finos. DOC OFICIAL: lenguaje natural (no tags con comas); pesos y BREAK no funcionan; no ideal NSFW; anatomía de cuello/pómulos irregular.",
+    "no_weights": true,
+    "vigente": true
   },
   "SD 3.5 Large Turbo": {
     "nota": 3.7,
@@ -770,7 +774,8 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1200,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -783,7 +788,8 @@
     "cfg": 7,
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo. DOC OFICIAL: empezar con score_9, score_8_up...score_4_up + source_anime (o 'anime'); NO usar 'masterpiece/best quality'; rating_* para seguridad. Negative oficial: '(score_4, score_3, score_2, score_1), ugly, bad anatomy, bad hands'. No fotorrealista, no furry."
+    "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo. DOC OFICIAL: score_9, score_8_up...score_4_up + source_anime; NO usar 'masterpiece/best quality'. Negative oficial: '(score_4, score_3, score_2, score_1), ugly, bad anatomy, bad hands'.",
+    "vigente": true
   },
   "NoobAI-XL (NAI-XL)": {
     "nota": 4.5,
@@ -798,10 +804,11 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar",
-      "Quality"
+      "Calidad"
     ],
     "max_imagenes": 4,
     "best_for": "NoobAI-XL (NAI-XL). 796.5K usos. V-prediction model. Excelente para anime y furry. 13M imágenes Danbooru+e621. Reconoce personajes, artistas, series.",
@@ -811,7 +818,39 @@
     "pasos": "28-40",
     "cfg": "3.5-5.5",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. Compatible con LoRA PonyV6 y Animagine. DOC OFICIAL: sin guiones bajos en tags; paréntesis escapados \\(...\\); artistas SOLO por nombre (sin 'by'); personajes como 'nombre (serie), serie'; sin CLIP Skip ni VAE extra. Negative oficial: 'nsfw, low quality, worst quality, normal quality, text, signature, jpeg artifacts, bad anatomy, old'."
+    "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. DOC OFICIAL: sin guiones bajos en tags; paréntesis escapados \\(...\\); artistas SOLO por nombre; personajes como 'nombre (serie), serie'. Negative oficial: 'nsfw, low quality, worst quality, normal quality, text, signature, jpeg artifacts, bad anatomy, old'.",
+    "vigente": true
+  },
+  "WAI-Illustrious-SDXL": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "WAI-Illustrious-SDXL. Modelo anime/ilustración de alta calidad sobre base Illustrious-XL. Excelente detalle en personajes, ropa y fondos. Compatible con LoRA Illustrious.",
+    "prompt_formula": "Tag-based Illustrious: calidad al inicio (masterpiece, best quality, absurdres, highres), luego personaje, serie, ropa, pose, entorno, iluminación.",
+    "prompt_ejemplo": "masterpiece, best quality, absurdres, highres, 1girl, long silver hair, blue eyes, school uniform, cherry blossom background, soft lighting, detailed face",
+    "sampler_recomendado": "Euler a / DPM++ 2M Karras",
+    "pasos": "20-28",
+    "cfg": "5-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Base Illustrious-XL. Orientado a anime/ilustración, no fotorrealismo.",
+    "vigente": true
   },
   "WAI-Pluralistic-Noob": {
     "nota": 4.6,
@@ -849,7 +888,8 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -862,7 +902,8 @@
     "cfg": "8-10",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. Solo personajes conocidos limitados. DOC OFICIAL: el embedding EasyNegativeV2 es ESENCIAL en el negative (v3; no mezclar con EasyNegative v1). Mayor riesgo de errores anatómicos en manos; no reconoce la mayoría de personajes conocidos."
+    "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. DOC OFICIAL: el embedding EasyNegativeV2 es ESENCIAL en el negative (v3; no mezclar con EasyNegative v1).",
+    "vigente": true
   },
   "Temporal Paradox Mix": {
     "nota": 4.5,
@@ -973,21 +1014,23 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 800,
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
     "best_for": "Clásico del fotorrealismo SD. 1.2M usos, nota 5.0. Excelente para retratos, fotografía y fantasía realista. Reparación de rostros/personajes.",
-    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad. Modelo SD 1.5, prompts más cortos.",
+    "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad. Modelo SD 1.5.",
     "prompt_ejemplo": "close-up portrait, 1girl, detailed face, soft studio light, (skin pores:1.2), natural makeup, blurred background, professional photo, masterpiece",
     "sampler_recomendado": "Euler",
     "pasos": 30,
     "cfg": 7,
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "SD 1.5, resolución base 512x768. Prompts cortos funcionan mejor (~800 chars max)."
+    "limitaciones": "SD 1.5, resolución base 512x768.",
+    "vigente": true
   },
   "Realities Edge XL Turbo V7": {
     "nota": 4.7,
@@ -1040,6 +1083,7 @@
       "16:9"
     ],
     "max_chars": 2000,
+    "max_chars_negative": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -3853,6 +3897,203 @@
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
     "limitaciones": "Turbo DPO: CFG ~7, 25 steps. Base SDXL.",
+    "vigente": true
+  },
+  "Inkpunk Diffusion": {
+    "nota": 4.2,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Inkpunk Diffusion (Envvi). 23.6K favoritos. SD 1.5 dreambooth inspirado en Gorillaz, FLCL y Yoji Shinkawa. Estética punk-ink muy característica para personajes y escenas.",
+    "prompt_formula": "nvinkpunk + sujeto + detalles de estilo ink/punk. Tag-based SD 1.5.",
+    "prompt_ejemplo": "nvinkpunk, portrait of a warrior woman, ink lines, cyberpunk city background, dramatic lighting, detailed, masterpiece",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "20-30",
+    "cfg": "7-9",
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 dreambooth. Requiere trigger 'nvinkpunk'. Estilo muy específico, no apto para fotorrealismo.",
+    "vigente": true
+  },
+  "Arcane Diffusion": {
+    "nota": 4.1,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Arcane Diffusion (Nitrosocke). 1.9K likes. SD 1.5 fine-tuned en 95 imágenes de la serie Arcane (Netflix). Ilustración animada cinematográfica con paleta oscura y texturas expresivas.",
+    "prompt_formula": "arcane style + sujeto + detalles + entorno + iluminación dramática. Tag-based SD 1.5.",
+    "prompt_ejemplo": "arcane style, portrait of a young mage, glowing eyes, detailed face, dark city background, dramatic blue lighting, masterpiece, best quality",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "20-30",
+    "cfg": "7-8",
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 fine-tuned en solo 95 imágenes. Requiere trigger 'arcane style'. Estilo ligado a la estética de la serie.",
+    "vigente": true
+  },
+  "Cyberpunk Anime Diffusion": {
+    "nota": 4.1,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Cyberpunk Anime Diffusion V1. 3.6K likes. Waifu Diffusion V1.3 + SD 1.5 dreambooth. Personajes anime ciberpunk con estética futurista y neón. Trigger: 'dgs illustration style'.",
+    "prompt_formula": "dgs illustration style + sujeto + detalles anime + entorno cyberpunk + iluminación neón.",
+    "prompt_ejemplo": "dgs illustration style, 1girl, cyberpunk city, neon lights, detailed face, futuristic outfit, rain, glowing tattoos, best quality",
+    "sampler_recomendado": "Euler a",
+    "pasos": 20,
+    "cfg": 7,
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 dreambooth. Trigger obligatorio: 'dgs'. Resolución recomendada 704×704px. Mejor con escenas nocturnas y futuristas.",
+    "vigente": true
+  },
+  "Robo-Diffusion": {
+    "nota": 4.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Robo-Diffusion (nousr). 970 likes. SD 1.5 dreambooth especializado en robots y mechas. Genera robots con gran detalle en piezas metálicas y estética sci-fi. Trigger 'nousr robot'.",
+    "prompt_formula": "nousr robot + tipo de robot + detalles mecánicos + entorno sci-fi + iluminación + calidad.",
+    "prompt_ejemplo": "nousr robot, humanoid robot warrior, chrome armor, glowing eyes, futuristic factory background, dramatic lighting, highly detailed, masterpiece",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "20-30",
+    "cfg": "7-9",
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 dreambooth. Requiere trigger 'nousr robot'. Orientado a mechas/robots, no ideal para personas.",
+    "vigente": true
+  },
+  "anima_pencil-XL": {
+    "nota": 4.7,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "anima_pencil-XL (blue_pen5805). 52K likes. Merge de blue_pencil-XL + ANIMAGINE XL 3.0/3.1 en 25 pasos. Fácil, simple y alta calidad. Ilustración anime con textura de lápiz y líneas expresivas.",
+    "prompt_formula": "Tag-based SDXL: calidad + sujeto + estilo pencil/sketch + detalles + iluminación suave.",
+    "prompt_ejemplo": "masterpiece, best quality, 1girl, pencil sketch style, detailed face, school uniform, soft background, expressive lines, anime illustration",
+    "sampler_recomendado": "Euler a / DPM++ 2M Karras",
+    "pasos": "20-28",
+    "cfg": "5-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SDXL 1.0 base (Fair AI Public License 1.0-SD). Orientado a ilustración/boceto anime, no fotorrealismo.",
+    "vigente": true
+  },
+  "Hollie Mengert Illustration": {
+    "nota": 4.0,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Hollie Mengert Illustration Diffusion (ogkalu). 722 likes. SD 1.5 fine-tuned en el estilo 2D de la ilustradora Hollie Mengert. Paleta pastel, formas redondeadas, estética storybook.",
+    "prompt_formula": "holliemengert artstyle + sujeto + colores pastel + ambiente cálido + detalles del estilo.",
+    "prompt_ejemplo": "holliemengert artstyle, portrait of a fox in autumn forest, warm pastel colors, soft lighting, storybook style, detailed, whimsical",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "20-30",
+    "cfg": "7-8",
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5. Trigger: 'holliemengert artstyle'. Mejor con escenas de cuento, animales y personajes fantásticos. La artista no está afiliada al modelo.",
+    "vigente": true
+  },
+  "Fred Herzog Photography Style": {
+    "nota": 3.9,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Estándar"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Fred Herzog Photography Style (TheLastBen). 157 likes. SD 1.5 entrenado en 30 imágenes de Fred Herzog. Fotografía callejera Kodachrome años 50-60, Vancouver. Colores vívidos, luz natural, composición casual.",
+    "prompt_formula": "in the style of fred herzog + escena callejera + época retro + colores Kodachrome + luz natural.",
+    "prompt_ejemplo": "in the style of fred herzog, street photography, man walking in rainy city, 1960s clothing, vivid kodachrome colors, natural light, storefronts",
+    "sampler_recomendado": "DPM++ 2M Karras",
+    "pasos": "20-30",
+    "cfg": "7-8",
+    "clip_skip": 1,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "SD 1.5 entrenado en solo 30 imágenes. Trigger: 'in the style of fred herzog'. Mejor con escenas callejeras y arquitectura urbana retro.",
     "vigente": true
   }
 }
