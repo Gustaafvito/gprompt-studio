@@ -80,6 +80,12 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.fireworks.ai/inference/v1",
         "model_default": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "modelos": [
+            "accounts/fireworks/models/llama-v3p3-70b-instruct",  # Llama 3.3 70B
+            "accounts/fireworks/models/qwen2p5-72b-instruct",     # Qwen 2.5 72B
+            "accounts/fireworks/models/deepseek-r1",              # DeepSeek R1
+            "accounts/fireworks/models/mixtral-8x22b-instruct",   # Mixtral 8x22B
+        ],
         "is_paid": True,
     },
     "gemini": {
@@ -89,7 +95,11 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://aistudio.google.com/apikey",
         "tipo": "google",
         "model_default": "gemini-2.5-flash",
-        "modelos": ["gemini-2.5-flash", "gemini-2.5-pro"],
+        "modelos": [
+            "gemini-2.5-flash",   # rápido, gratis tier generoso
+            "gemini-2.5-pro",     # mayor calidad, límites más bajos
+            "gemini-2.0-flash",   # estable, buena relación velocidad/coste
+        ],
         "is_paid": False,
     },
     "github_models": {
@@ -100,6 +110,14 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://models.inference.ai.azure.com",
         "model_default": "gpt-4o-mini",
+        "modelos": [
+            "gpt-4o-mini",                      # OpenAI económico
+            "gpt-4o",                           # OpenAI flagship
+            "Meta-Llama-3.3-70B-Instruct",      # Llama 3.3 70B
+            "Phi-4",                            # Microsoft Phi-4 14B
+            "Phi-4-mini",                       # Microsoft Phi-4 mini
+            "Mistral-large",                    # Mistral Large
+        ],
         "is_paid": False,
     },
     "groq": {
@@ -110,6 +128,13 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.groq.com/openai/v1",
         "model_default": "llama-3.3-70b-versatile",
+        "modelos": [
+            "llama-3.3-70b-versatile",        # más capaz, gratis
+            "llama-3.1-8b-instant",            # ultra-rápido
+            "llama-3.2-90b-vision-preview",    # con visión
+            "gemma2-9b-it",                    # Google Gemma 2
+            "mixtral-8x7b-32768",              # Mixtral MoE, contexto largo
+        ],
         "is_paid": False,
     },
     "lm_studio": {
@@ -130,6 +155,13 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.mistral.ai/v1",
         "model_default": "mistral-large-latest",
+        "modelos": [
+            "mistral-large-latest",   # flagship Mistral
+            "mistral-small-latest",   # económico, muy rápido
+            "codestral-latest",       # especializado en código
+            "mistral-nemo",           # 12B, Apache 2.0, contexto 128k
+            "open-mistral-7b",        # open-source ligero
+        ],
         "is_paid": True,
     },
     "ollama": {
@@ -139,18 +171,37 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://ollama.com/download",
         "tipo": "openai_compatible",
         "base_url": "http://localhost:11434/v1",
-        "model_default": "llama3.1",
+        "model_default": "llama3.2",
+        "modelos": [
+            "llama3.2",        # más reciente, 3B/11B
+            "llama3.1",        # 8B/70B/405B
+            "mistral",         # Mistral 7B
+            "codellama",       # código, 7B-70B
+            "phi3",            # Microsoft Phi-3, ligero
+            "qwen2.5",         # Qwen 2.5, excelente en asiático/código
+            "gemma2",          # Google Gemma 2
+            "llava",           # visión multimodal local
+            "deepseek-r1",     # razonamiento local
+        ],
         "is_paid": False,
     },
     "openai": {
-        "name": "OpenAI GPT-4o",
-        "label": "💎 OpenAI GPT-4o",
-        "descripcion": "Pago (~€2.40/1M). Calidad alta, requiere cuenta de pago.",
+        "name": "OpenAI",
+        "label": "💎 OpenAI",
+        "descripcion": "GPT-4o, GPT-4.1 y modelos de razonamiento o3/o4. Pago.",
         "url_obtener_key": "https://platform.openai.com/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.openai.com/v1",
         "model_default": "gpt-4o",
-        "modelos": ["gpt-4o", "gpt-4o-mini"],
+        "modelos": [
+            "gpt-4o",          # flagship multimodal
+            "gpt-4o-mini",     # económico, rápido
+            "gpt-4.1",         # contexto 1M, mejor en código/instrucciones
+            "gpt-4.1-mini",    # 4.1 económico
+            "gpt-4.1-nano",    # 4.1 ultra-rápido y barato
+            "o3",              # razonamiento máximo
+            "o4-mini",         # razonamiento rápido
+        ],
         "is_paid": True,
     },
     "openrouter": {
@@ -163,6 +214,20 @@ LLM_PROVIDERS = {
         # Modelo gratis y siempre disponible en OpenRouter. Antes era
         # "deepseek/deepseek-chat" pero ese ID legacy devuelve 404.
         "model_default": "meta-llama/llama-3.1-8b-instruct:free",
+        "modelos": [
+            # Gratuitos (sufijo :free)
+            "meta-llama/llama-3.1-8b-instruct:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "google/gemma-2-9b-it:free",
+            "mistralai/mistral-7b-instruct:free",
+            "qwen/qwen-2.5-72b-instruct:free",
+            "deepseek/deepseek-r1:free",
+            # De pago (acceso a los mejores modelos con una sola key)
+            "anthropic/claude-sonnet-4-6",
+            "openai/gpt-4o",
+            "google/gemini-2.5-pro",
+            "meta-llama/llama-3.3-70b-instruct",
+        ],
         "is_paid": True,
     },
     "perplexity": {
@@ -173,6 +238,11 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.perplexity.ai",
         "model_default": "sonar-pro",
+        "modelos": [
+            "sonar-pro",        # con búsqueda web en tiempo real, máxima calidad
+            "sonar",            # con búsqueda, económico
+            "sonar-reasoning",  # razonamiento + búsqueda web
+        ],
         "is_paid": True,
     },
     "togetherai": {
@@ -183,6 +253,13 @@ LLM_PROVIDERS = {
         "tipo": "openai_compatible",
         "base_url": "https://api.together.xyz/v1",
         "model_default": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "modelos": [
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo",   # flagship open-source
+            "Qwen/Qwen2.5-72B-Instruct-Turbo",            # Qwen 2.5 72B
+            "deepseek-ai/DeepSeek-R1",                     # razonamiento
+            "mistralai/Mistral-7B-Instruct-v0.3",          # ligero
+            "google/gemma-2-27b-it",                       # Gemma 2 27B
+        ],
         "is_paid": True,
     },
     "xai": {
@@ -192,7 +269,12 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://console.x.ai/",
         "tipo": "openai_compatible",
         "base_url": "https://api.x.ai/v1",
-        "model_default": "grok-2-1212",
+        "model_default": "grok-3",
+        "modelos": [
+            "grok-3",       # flagship xAI, excelente creatividad
+            "grok-3-mini",  # rápido y económico
+            "grok-2-1212",  # generación anterior, estable
+        ],
         "is_paid": True,
     },
 }
@@ -241,6 +323,25 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "gpt-4o-mini":               (0.15, 0.60),
     "gemini-2.5-flash":          (0.0, 0.0),   # free tier
     "gemini-2.5-pro":            (0.0, 0.0),   # free tier (límites más bajos)
+    "gemini-2.0-flash":          (0.0, 0.0),   # free tier
+    # OpenAI GPT-4.1 y razonamiento (precios abril 2025)
+    "gpt-4.1":                   (2.00,  8.00),
+    "gpt-4.1-mini":              (0.40,  1.60),
+    "gpt-4.1-nano":              (0.10,  0.40),
+    "o3":                        (10.00, 40.00),
+    "o4-mini":                   (1.10,  4.40),
+    # xAI Grok 3
+    "grok-3":                    (3.00, 15.00),
+    "grok-3-mini":               (0.30,  0.50),
+    # Mistral
+    "mistral-large-latest":      (2.00,  6.00),
+    "mistral-small-latest":      (0.10,  0.30),
+    "codestral-latest":          (0.30,  0.90),
+    "mistral-nemo":              (0.15,  0.15),
+    # Perplexity Sonar
+    "sonar-pro":                 (3.00, 15.00),
+    "sonar":                     (1.00,  1.00),
+    "sonar-reasoning":           (5.00,  5.00),
 }
 
 # Precios en USD por 1M tokens (entrada, salida) para el model_default
@@ -262,7 +363,7 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "openrouter":    None,            # depende del modelo elegido
     "perplexity":    (3.00, 15.00),   # sonar-pro
     "togetherai":    (0.88, 0.88),    # Llama-3.3-70B-Turbo
-    "xai":           (2.00, 10.00),   # grok-2
+    "xai":           (3.00, 15.00),   # grok-3
 }
 
 
