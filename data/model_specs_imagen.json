@@ -16,7 +16,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -30,7 +30,8 @@
     "cfg": 3.5,
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin prompt negativo visible en UI. Modelo cerrado de SeaArt. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
-    "no_weights": true
+    "no_weights": true,
+    "vigente": true
   },
   "SeaArt Infinity V2.0": {
     "nota": 4.7,
@@ -49,7 +50,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -59,7 +60,8 @@
     "prompt_ejemplo": "Cinematic portrait of an old man reading a book in a cozy library, warm lamp light, dust particles in the air, shallow depth of field",
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin control avanzado (no sampler, no CFG, no steps, no negative). Solo semilla fija. Máx 4 imágenes. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
-    "no_weights": true
+    "no_weights": true,
+    "vigente": true
   },
   "SeaArt Realism": {
     "nota": 3.6,
@@ -78,7 +80,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -89,7 +91,8 @@
     "prompt_ejemplo": "A beautiful woman portrait, detailed skin texture, natural lighting, soft bokeh background, professional photography",
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin prompt negativo visible en UI. Modelo basado en Flux.1 D. DOC OFICIAL: base FLUX — ignora el negative (alternativa: negaciones en el positivo, p.ej. 'una carretera sin coches'); pesos, corchetes y BREAK no funcionan; texto entre comillas; términos artísticos pueden romper el realismo.",
-    "no_weights": true
+    "no_weights": true,
+    "vigente": true
   },
   "Luma Uni-1.1 Image": {
     "nota": 4.3,
@@ -446,7 +449,7 @@
   },
   "SeaArt Film": {
     "nota": 4.5,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -469,11 +472,12 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Optimizado para cinematografía. Menos versátil que Infinity para estilos variados."
+    "limitaciones": "Optimizado para cinematografía. Menos versátil que Infinity para estilos variados.",
+    "vigente": true
   },
   "SeaArt Film V2.0": {
     "nota": 4.4,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -496,11 +500,12 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Nuevo modelo (sep 2025). Menos documentación de settings óptimos."
+    "limitaciones": "Nuevo modelo (sep 2025). Menos documentación de settings óptimos.",
+    "vigente": true
   },
   "SeaArt Film Edit": {
     "nota": 4.3,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -509,7 +514,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -522,11 +527,12 @@
     "cfg": 4,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Editor, no generador puro. Requiere imagen de referencia."
+    "limitaciones": "Editor, no generador puro. Requiere imagen de referencia.",
+    "vigente": true
   },
   "SeaArt Film Edit 2.0": {
     "nota": 4.0,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -535,7 +541,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -548,7 +554,8 @@
     "cfg": 4,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Editor especializado. Multi-referencia puede reducir consistencia si son muy diferentes."
+    "limitaciones": "Editor especializado. Multi-referencia puede reducir consistencia si son muy diferentes.",
+    "vigente": true
   },
   "SeaArt Film Edit 3.0": {
     "nota": 4.4,
@@ -588,7 +595,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -601,7 +608,9 @@
     "cfg": 7,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Especializado en furry. No fotorrealismo general."
+    "limitaciones": "Especializado en furry. No fotorrealismo general.",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "SeaArt Story": {
     "nota": 4.6,
@@ -628,7 +637,9 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Optimizado para narrativa, menos para static portraits aislados."
+    "limitaciones": "Optimizado para narrativa, menos para static portraits aislados.",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "SeaArt Story 2.0": {
     "nota": 4.7,
@@ -655,11 +666,13 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Mejor para escenas narrativas que para static portraits aislados."
+    "limitaciones": "Mejor para escenas narrativas que para static portraits aislados.",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "SeaArt Fusion": {
     "nota": 5.0,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -668,7 +681,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 1000,
     "modos_gen": [
       "Estándar",
       "Pro"
@@ -682,7 +695,8 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Mejor para contenido conceptual/educativo que para arte puro."
+    "limitaciones": "Mejor para contenido conceptual/educativo que para arte puro.",
+    "vigente": true
   },
   "SeaArt Genesis": {
     "nota": 3.5,
@@ -708,7 +722,9 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "SFW solo. Enfoque en moda. Menos versátil para otros estilos. Nota baja (3.5)."
+    "limitaciones": "SFW solo. Enfoque en moda. Menos versátil para otros estilos. Nota baja (3.5).",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "SeaArt Story Edit": {
     "nota": 4.4,
@@ -721,7 +737,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar"
     ],
@@ -734,7 +750,9 @@
     "cfg": 4,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Editor especializado. Más edición que generación pura."
+    "limitaciones": "Editor especializado. Más edición que generación pura.",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "SeaArt Ultra Edit": {
     "nota": 4.6,
@@ -747,7 +765,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2500,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Pro"
@@ -761,7 +779,9 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Multi-referencia puede reducir consistencia si son muy diferentes."
+    "limitaciones": "Multi-referencia puede reducir consistencia si son muy diferentes.",
+    "max_chars_negative": 2000,
+    "vigente": true
   },
   "T-Ponynai3 V6": {
     "nota": 4.7,

@@ -18,7 +18,10 @@ from datetime import datetime
 from modules.avatar_prompts import (
     SYSTEM_PROMPT_AVATAR_CANONICO,
     construir_user_prompt_canonico,
+    construir_user_prompt_para_tipo,
     ensamblar_dataset,
+    ensamblar_dataset_generico,
+    system_prompt_canonico_para_tipo,
 )
 
 
@@ -58,6 +61,64 @@ def generar_dataset_avatar(
         incluir_negative=incluir_negative,
     )
     return {
+        "trigger_word": trigger_word.strip(),
+        "descripcion_canonica": descripcion,
+        "creado": datetime.now().isoformat(timespec="seconds"),
+        "total_prompts": len(dataset),
+        "dataset": dataset,
+    }
+
+
+def generar_dataset_lora(
+    tipo: str,
+    llm_call,
+    form_data: dict,
+    trigger_word: str,
+    angulos_seleccionados: list,
+    estilo_sufijo: str,
+    fondo,
+    incluir_negative: bool = True,
+) -> dict:
+    """Pipeline completo para cualquier tipo de LoRA (Personaje/Paisaje/Objeto/Estilo).
+
+    Para 'Personaje' delega en el pipeline original (descripción canónica de
+    personaje con lógica de ropa y recorte). Para el resto usa el pipeline
+    genérico que no modifica la descripción por ángulo."""
+    from modules.avatar_config import LORA_TYPES
+
+    if tipo == "Personaje":
+        return generar_dataset_avatar(
+            llm_call=llm_call,
+            form_data=form_data,
+            trigger_word=trigger_word,
+            angulos_seleccionados=angulos_seleccionados,
+            estilo_sufijo=estilo_sufijo,
+            fondo=fondo,
+            incluir_negative=incluir_negative,
+        )
+
+    cfg = LORA_TYPES[tipo]
+    system_p = system_prompt_canonico_para_tipo(tipo)
+    user_p = construir_user_prompt_para_tipo(tipo, form_data)
+    descripcion = llm_call(system_p, user_p)
+    descripcion = descripcion.strip().replace("\n", " ").replace("```", "").strip()
+    descripcion = descripcion.strip('"').strip("'").strip()
+
+    dataset = ensamblar_dataset_generico(
+        tipo=tipo,
+        trigger_word=trigger_word,
+        descripcion_canonica=descripcion,
+        angulos_seleccionados=angulos_seleccionados,
+        angles_dict=cfg["angles"],
+        estilo_sufijo=estilo_sufijo,
+        fondo=fondo,
+        lighting=cfg["lighting"],
+        negative_base=cfg["negative"],
+        incluir_negative=incluir_negative,
+    )
+
+    return {
+        "tipo_lora": tipo,
         "trigger_word": trigger_word.strip(),
         "descripcion_canonica": descripcion,
         "creado": datetime.now().isoformat(timespec="seconds"),

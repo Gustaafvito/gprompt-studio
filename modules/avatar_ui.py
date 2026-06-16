@@ -20,19 +20,15 @@ import tkinter.messagebox as messagebox
 import customtkinter as ctk
 
 from modules.avatar_config import (
-    ANGLE_GROUPS,
-    AVATAR_ANGLES,
-    AVATAR_BACKGROUNDS,
-    AVATAR_BACKGROUNDS_ROTACION,
-    AVATAR_FORM_FIELDS,
-    AVATAR_STYLES,
+    LORA_TYPES,
 )
-from modules.avatar_generator import exportar_dataset, generar_dataset_avatar
+from modules.avatar_generator import exportar_dataset, generar_dataset_lora
 from modules.avatar_prompts import (
     PROMPT_VISION_FICHA,
-    SYSTEM_PROMPT_AVATAR_FICHA,
     construir_user_prompt_ficha,
+    construir_user_prompt_ficha_tipo,
     parsear_ficha_json,
+    system_prompt_ficha_para_tipo,
 )
 from workers import log_future_exc
 
@@ -65,26 +61,42 @@ class AvatarFrame(ctk.CTkFrame):
         self._imagen_referencia = ""   # ruta de la imagen usada para la ficha
         self._campos = {}
         self._angulo_vars = {}
+        self._tipo_lora = "Personaje"  # tipo activo
+        self._frame_form = None        # ref al scrollable de formulario
+        self._frame_angulos = None     # ref al scrollable de ángulos
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
     def _construir_ui(self):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
 
+        # Fila 0 — Título
         titulo = ctk.CTkLabel(
-            self, text="🧑‍🎨 Generador de Dataset de Avatar (LoRA)",
+            self, text="🧑‍🎨 Generador de Dataset LoRA",
             font=ctk.CTkFont(size=18, weight="bold"),
         )
-        titulo.grid(row=0, column=0, columnspan=2, pady=(12, 6), sticky="n")
+        titulo.grid(row=0, column=0, columnspan=2, pady=(12, 2), sticky="n")
+
+        # Fila 1 — Selector de tipo de LoRA
+        fila_tipo = ctk.CTkFrame(self, fg_color="transparent")
+        fila_tipo.grid(row=1, column=0, columnspan=2, pady=(0, 4), sticky="n")
+        ctk.CTkLabel(fila_tipo, text="Tipo de LoRA:",
+                     font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+        self._seg_tipo = ctk.CTkSegmentedButton(
+            fila_tipo,
+            values=["🧑 Personaje", "🏔 Paisaje", "📦 Objeto", "🎨 Estilo"],
+            command=self._on_tipo_change,
+            font=ctk.CTkFont(size=12),
+        )
+        self._seg_tipo.set("🧑 Personaje")
+        self._seg_tipo.pack(side="left")
 
         # Selector de modelo destino: el dataset se adapta a sus specs
-        # (negative, max_chars) sin tener que cambiar el modelo de la app.
         if self.plataformas_destino:
-            # Selector en tres niveles: Plataforma → Grupo → Modelo
             fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
-            fila_modelo.grid(row=0, column=0, columnspan=2, pady=(42, 0), sticky="n")
+            fila_modelo.grid(row=1, column=0, columnspan=2, pady=(32, 0), sticky="n")
 
             plat_ini, grupo_ini = self._encontrar_plataforma_grupo(self.modelo_destino)
             plats = list(self.plataformas_destino.keys())
@@ -121,7 +133,7 @@ class AvatarFrame(ctk.CTkFrame):
 
         elif self.modelos_destino:
             fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
-            fila_modelo.grid(row=0, column=0, columnspan=2, pady=(42, 0), sticky="n")
+            fila_modelo.grid(row=1, column=0, columnspan=2, pady=(32, 0), sticky="n")
             ctk.CTkLabel(
                 fila_modelo, text="🎯 Modelo destino:",
                 font=ctk.CTkFont(size=11, weight="bold"),
@@ -141,106 +153,23 @@ class AvatarFrame(ctk.CTkFrame):
         else:
             self.menu_modelo = None
 
-        # --- Columna izquierda: formulario de rasgos ---
-        form = ctk.CTkScrollableFrame(self, label_text="Ficha del personaje")
-        form.grid(row=1, column=0, padx=(12, 6), pady=6, sticky="nsew")
+        # --- Columna izquierda: formulario dinámico ---
+        cfg = LORA_TYPES[self._tipo_lora]
+        form = ctk.CTkScrollableFrame(self, label_text=cfg["label_form"])
+        form.grid(row=2, column=0, padx=(12, 6), pady=6, sticky="nsew")
+        self._frame_form = form
 
-        fila = 0
-        # Ficha automática: la IA inventa el personaje y rellena el form
-        ctk.CTkLabel(form, text="🎲 Ficha automática — tema opcional (vacío = aleatorio)").grid(
-            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
-        fila_auto = ctk.CTkFrame(form, fg_color="transparent")
-        fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
-        fila_auto.grid_columnconfigure(0, weight=1)
-        self.entry_tema = ctk.CTkEntry(
-            fila_auto, placeholder_text="ej: guerrera élfica, detective noir, chef robot…")
-        self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
-        self.boton_auto = ctk.CTkButton(
-            fila_auto, text="🎲 Generar ficha", width=130,
-            fg_color="#7c3aed", hover_color="#6d28d9",
-            command=self._on_ficha_auto)
-        self.boton_auto.grid(row=0, column=1)
-        # Ficha desde imagen de referencia (visión) — solo si hay vision_call
-        if self.vision_call:
-            self.boton_imagen = ctk.CTkButton(
-                fila_auto, text="📷 Desde imagen", width=120,
-                fg_color="#0e7490", hover_color="#155e75",
-                command=self._on_ficha_desde_imagen)
-            self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
-        else:
-            self.boton_imagen = None
-        # Feedback visual de la imagen cargada (miniatura + nombre +
-        # estado del análisis). Sin esto el usuario no sabía si la
-        # imagen se había cargado (feedback sesión 19 round 11).
-        self.label_imagen_ref = ctk.CTkLabel(
-            form, text="", anchor="w", compound="left",
-            font=ctk.CTkFont(size=10), text_color="#9ca3af")
-        self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
-                                   padx=8, pady=(0, 4)); fila += 1
+        self._poblar_form(form, cfg)
 
-        # Trigger word
-        ctk.CTkLabel(form, text="Trigger word (LoRA)").grid(
-            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
-        self.entry_trigger = ctk.CTkEntry(form, placeholder_text="ej: ohwx_ana")
-        self.entry_trigger.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
-
-        for campo in AVATAR_FORM_FIELDS:
-            ctk.CTkLabel(form, text=campo["label"]).grid(
-                row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
-            if campo["type"] == "option":
-                widget = ctk.CTkOptionMenu(form, values=campo["options"])
-            else:
-                widget = ctk.CTkEntry(
-                    form, placeholder_text=campo.get("placeholder", ""))
-            widget.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
-            self._campos[campo["key"]] = widget
-        form.grid_columnconfigure(0, weight=1)
-
-        # Estilo y fondo
-        ctk.CTkLabel(form, text="Estilo visual").grid(
-            row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
-        self.menu_estilo = ctk.CTkOptionMenu(form, values=list(AVATAR_STYLES.keys()))
-        self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
-
-        ctk.CTkLabel(form, text="Fondo (si NO se varían fondos)").grid(
-            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
-        self.menu_fondo = ctk.CTkOptionMenu(form, values=list(AVATAR_BACKGROUNDS.keys()))
-        self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
-
-        # Variar fondos: rota fondos neutros por imagen (guía SeaArt: el LoRA
-        # absorbe un fondo único). Marcado por defecto; al marcarlo el menú de
-        # fondo de arriba se ignora.
-        self.check_variar_fondos = ctk.CTkCheckBox(
-            form, text="Variar fondos (recomendado LoRA)")
-        self.check_variar_fondos.select()
-        self.check_variar_fondos.grid(
-            row=fila, column=0, sticky="w", padx=8, pady=(0, 8)); fila += 1
-
-        self.check_negative = ctk.CTkCheckBox(form, text="Incluir negative prompt")
-        self.check_negative.select()
-        self.check_negative.grid(row=fila, column=0, sticky="w", padx=8, pady=(4, 12))
-
-        # --- Columna derecha: ángulos ---
-        angulos = ctk.CTkScrollableFrame(self, label_text="Ángulos del dataset")
-        angulos.grid(row=1, column=1, padx=(6, 12), pady=6, sticky="nsew")
-
-        fila = 0
-        for grupo, titulo_grupo in ANGLE_GROUPS.items():
-            ctk.CTkLabel(
-                angulos, text=titulo_grupo,
-                font=ctk.CTkFont(weight="bold"),
-            ).grid(row=fila, column=0, sticky="w", padx=8, pady=(10, 2)); fila += 1
-            for key, datos in AVATAR_ANGLES.items():
-                if datos["group"] != grupo:
-                    continue
-                var = ctk.BooleanVar(value=True)
-                chk = ctk.CTkCheckBox(angulos, text=datos["label"], variable=var)
-                chk.grid(row=fila, column=0, sticky="w", padx=16, pady=2); fila += 1
-                self._angulo_vars[key] = var
+        # --- Columna derecha: ángulos dinámicos ---
+        angulos = ctk.CTkScrollableFrame(self, label_text=cfg["label_angles"])
+        angulos.grid(row=2, column=1, padx=(6, 12), pady=6, sticky="nsew")
+        self._frame_angulos = angulos
+        self._poblar_angulos(cfg)
 
         # --- Pie: botón y estado ---
         pie = ctk.CTkFrame(self, fg_color="transparent")
-        pie.grid(row=2, column=0, columnspan=2, sticky="ew", padx=12, pady=(4, 12))
+        pie.grid(row=3, column=0, columnspan=2, sticky="ew", padx=12, pady=(4, 12))
         pie.grid_columnconfigure(0, weight=1)
 
         self.label_estado = ctk.CTkLabel(pie, text="Listo.")
@@ -250,23 +179,147 @@ class AvatarFrame(ctk.CTkFrame):
             pie, text="⚡ Generar dataset", command=self._on_generar)
         self.boton_generar.grid(row=0, column=1, padx=(8, 0))
 
+    # ----------------------------------------------------------- tipo LoRA
+    def _on_tipo_change(self, valor: str) -> None:
+        # "🧑 Personaje" → "Personaje"
+        tipo = valor.split(" ", 1)[1] if " " in valor else valor
+        self._tipo_lora = tipo
+        self._imagen_referencia = ""
+        cfg = LORA_TYPES[tipo]
+
+        # Reconstruir form
+        self._frame_form.configure(label_text=cfg["label_form"])
+        for w in self._frame_form.winfo_children():
+            w.destroy()
+        self._campos = {}
+        self._poblar_form(self._frame_form, cfg)
+
+        # Reconstruir ángulos
+        self._frame_angulos.configure(label_text=cfg["label_angles"])
+        for w in self._frame_angulos.winfo_children():
+            w.destroy()
+        self._angulo_vars = {}
+        self._poblar_angulos(cfg)
+
+    def _poblar_form(self, form, cfg: dict) -> None:
+        """Rellena el scrollable frame del formulario según el cfg del tipo."""
+        fila = 0
+        form.grid_columnconfigure(0, weight=1)
+
+        # Ficha automática
+        ctk.CTkLabel(form,
+                     text="🎲 Ficha automática — tema opcional (vacío = aleatorio)"
+                     ).grid(row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+        fila_auto = ctk.CTkFrame(form, fg_color="transparent")
+        fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+        fila_auto.grid_columnconfigure(0, weight=1)
+        self.entry_tema = ctk.CTkEntry(
+            fila_auto, placeholder_text="ej: guerrera élfica, volcán japonés, reloj steampunk…")
+        self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+        self.boton_auto = ctk.CTkButton(
+            fila_auto, text="🎲 Generar ficha", width=130,
+            fg_color="#7c3aed", hover_color="#6d28d9",
+            command=self._on_ficha_auto)
+        self.boton_auto.grid(row=0, column=1)
+
+        # Imagen de referencia — solo si el tipo lo admite
+        if cfg.get("tiene_imagen_ref") and self.vision_call:
+            self.boton_imagen = ctk.CTkButton(
+                fila_auto, text="📷 Desde imagen", width=120,
+                fg_color="#0e7490", hover_color="#155e75",
+                command=self._on_ficha_desde_imagen)
+            self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
+        else:
+            self.boton_imagen = None
+
+        self.label_imagen_ref = ctk.CTkLabel(
+            form, text="", anchor="w", compound="left",
+            font=ctk.CTkFont(size=10), text_color="#9ca3af")
+        self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
+                                   padx=8, pady=(0, 4)); fila += 1
+
+        # Trigger word
+        ctk.CTkLabel(form, text=cfg["label_trigger"]).grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+        self.entry_trigger = ctk.CTkEntry(
+            form, placeholder_text=cfg["placeholder_trigger"])
+        self.entry_trigger.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+
+        # Campos específicos del tipo
+        for campo in cfg["form_fields"]:
+            ctk.CTkLabel(form, text=campo["label"]).grid(
+                row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+            if campo["type"] == "option":
+                widget = ctk.CTkOptionMenu(form, values=campo["options"])
+            else:
+                widget = ctk.CTkEntry(form, placeholder_text=campo.get("placeholder", ""))
+            widget.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+            self._campos[campo["key"]] = widget
+
+        # Estilo visual
+        ctk.CTkLabel(form, text="Estilo visual").grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
+        self.menu_estilo = ctk.CTkOptionMenu(form, values=list(cfg["styles"].keys()))
+        self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+
+        # Fondo — solo si el tipo tiene fondos
+        if cfg.get("backgrounds"):
+            ctk.CTkLabel(form, text="Fondo (si NO se varían fondos)").grid(
+                row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+            self.menu_fondo = ctk.CTkOptionMenu(
+                form, values=list(cfg["backgrounds"].keys()))
+            self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+
+            self.check_variar_fondos = ctk.CTkCheckBox(
+                form, text="Variar fondos (recomendado LoRA)")
+            self.check_variar_fondos.select()
+            self.check_variar_fondos.grid(
+                row=fila, column=0, sticky="w", padx=8, pady=(0, 8)); fila += 1
+        else:
+            self.menu_fondo = None
+            self.check_variar_fondos = None
+
+        self.check_negative = ctk.CTkCheckBox(form, text="Incluir negative prompt")
+        self.check_negative.select()
+        self.check_negative.grid(row=fila, column=0, sticky="w", padx=8, pady=(4, 12))
+
+    def _poblar_angulos(self, cfg: dict) -> None:
+        """Rellena el scrollable frame de ángulos según el cfg del tipo."""
+        fila = 0
+        self._frame_angulos.grid_columnconfigure(0, weight=1)
+        for grupo, titulo_grupo in cfg["angle_groups"].items():
+            ctk.CTkLabel(
+                self._frame_angulos, text=titulo_grupo,
+                font=ctk.CTkFont(weight="bold"),
+            ).grid(row=fila, column=0, sticky="w", padx=8, pady=(10, 2)); fila += 1
+            for key, datos in cfg["angles"].items():
+                if datos["group"] != grupo:
+                    continue
+                var = ctk.BooleanVar(value=True)
+                chk = ctk.CTkCheckBox(
+                    self._frame_angulos, text=datos["label"], variable=var)
+                chk.grid(row=fila, column=0, sticky="w", padx=16, pady=2); fila += 1
+                self._angulo_vars[key] = var
+
     # ------------------------------------------------------------- acciones
     def _on_ficha_auto(self):
-        """La IA inventa el personaje (con tema opcional) y rellena el form."""
+        """La IA inventa la ficha (con tema opcional) y rellena el form."""
         tema = self.entry_tema.get().strip()
+        tipo = self._tipo_lora
         self.boton_auto.configure(state="disabled")
-        self.label_estado.configure(text="🎲 Inventando personaje con la IA…")
+        self.label_estado.configure(text=f"🎲 Inventando {tipo.lower()} con la IA…")
 
         def _worker():
             try:
-                user_p = construir_user_prompt_ficha(tema)
-                # T alta para variedad — si el llm_call inyectado no acepta
-                # temperature (standalone), caer a la firma de 2 args.
+                sys_p = system_prompt_ficha_para_tipo(tipo)
+                if tipo == "Personaje":
+                    user_p = construir_user_prompt_ficha(tema)
+                else:
+                    user_p = construir_user_prompt_ficha_tipo(tipo, tema)
                 try:
-                    resp = self.llm_call(SYSTEM_PROMPT_AVATAR_FICHA, user_p,
-                                         temperature=0.9)
+                    resp = self.llm_call(sys_p, user_p, temperature=0.9)
                 except TypeError:
-                    resp = self.llm_call(SYSTEM_PROMPT_AVATAR_FICHA, user_p)
+                    resp = self.llm_call(sys_p, user_p)
                 ficha = parsear_ficha_json(resp)
                 if not ficha:
                     raise ValueError(
@@ -416,17 +469,24 @@ class AvatarFrame(ctk.CTkFrame):
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
                         modelo_sel=""):
         try:
-            # Fondo: lista de neutros a rotar si "Variar fondos" está marcado;
-            # si no, el único fondo elegido en el menú.
-            fondo = (AVATAR_BACKGROUNDS_ROTACION
-                     if self.check_variar_fondos.get()
-                     else AVATAR_BACKGROUNDS[self.menu_fondo.get()])
-            resultado = generar_dataset_avatar(
+            cfg = LORA_TYPES[self._tipo_lora]
+            # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
+            if cfg.get("backgrounds") and self.check_variar_fondos and self.check_variar_fondos.get():
+                fondo = cfg["backgrounds_rotacion"]
+            elif cfg.get("backgrounds") and self.menu_fondo:
+                fondo = cfg["backgrounds"][self.menu_fondo.get()]
+            else:
+                fondo = None
+
+            estilo_sufijo = cfg["styles"].get(self.menu_estilo.get(), "")
+
+            resultado = generar_dataset_lora(
+                tipo=self._tipo_lora,
                 llm_call=self.llm_call,
                 form_data=form_data,
                 trigger_word=trigger,
                 angulos_seleccionados=seleccionados,
-                estilo_sufijo=AVATAR_STYLES[self.menu_estilo.get()],
+                estilo_sufijo=estilo_sufijo,
                 fondo=fondo,
                 incluir_negative=bool(self.check_negative.get()),
             )

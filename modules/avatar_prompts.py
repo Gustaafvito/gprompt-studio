@@ -287,6 +287,256 @@ def ensamblar_dataset(
     return dataset
 
 
+# ---------------------------------------------------------------------------
+# SYSTEM PROMPTS Y CONSTRUCTORES PARA TIPOS NO-PERSONAJE
+# ---------------------------------------------------------------------------
+
+SYSTEM_PROMPT_PAISAJE_CANONICO = """Eres un experto en prompts para generación de imágenes con IA, especializado en CONSISTENCIA DE ESCENA para datasets de entrenamiento LoRA de paisaje.
+
+Tu tarea: convertir la ficha de paisaje que recibirás en UNA ÚNICA descripción canónica en INGLÉS.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO la descripción, en una sola línea, sin comillas, sin preámbulo, sin explicaciones, sin markdown.
+2. Idioma de salida: inglés. La ficha llega en español.
+3. Longitud: entre 30 y 60 palabras. Compacta pero concreta.
+4. Estructura fija: tipo de paisaje → ubicación/región → elementos característicos → paleta de colores → estación.
+5. PROHIBIDO: hora del día, clima, ángulos de cámara, encuadres, iluminación concreta, personas. Eso se añade por código.
+6. Usa descripciones geográficas y visuales concretas y verificables.
+7. La descripción debe repetirse idéntica en todos los prompts del dataset.
+
+EJEMPLO DE SALIDA VÁLIDA:
+a dramatic mountain landscape in Patagonia, jagged granite peaks with snow caps, turquoise glacial lakes, sparse lenga beech forest, ochre and emerald color palette, autumn season"""
+
+
+def construir_user_prompt_paisaje(form_data: dict) -> str:
+    etiquetas = {
+        "tipo_paisaje": "Tipo de paisaje",
+        "pais_region": "País / Región",
+        "epoca": "Estación",
+        "elementos": "Elementos característicos",
+        "paleta": "Paleta de colores",
+        "estilo_foto": "Estilo fotográfico",
+    }
+    lineas = ["FICHA DEL PAISAJE:"]
+    for key, etiqueta in etiquetas.items():
+        valor = (form_data.get(key) or "").strip()
+        if valor:
+            lineas.append(f"- {etiqueta}: {valor}")
+    lineas.append("\nGenera la descripción canónica del paisaje.")
+    return "\n".join(lineas)
+
+
+SYSTEM_PROMPT_OBJETO_CANONICO = """Eres un experto en prompts para generación de imágenes con IA, especializado en CONSISTENCIA DE OBJETO para datasets de entrenamiento LoRA de producto/objeto.
+
+Tu tarea: convertir la ficha del objeto que recibirás en UNA ÚNICA descripción canónica en INGLÉS.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO la descripción, en una sola línea, sin comillas, sin preámbulo, sin explicaciones, sin markdown.
+2. Idioma de salida: inglés. La ficha llega en español.
+3. Longitud: entre 25 y 50 palabras. Compacta y descriptiva.
+4. Estructura fija: nombre y categoría del objeto → materiales → colores exactos → forma/silueta → rasgos distintivos.
+5. PROHIBIDO: ángulos de cámara, encuadres, iluminación, fondo, personas. Eso se añade por código.
+6. Usa descripciones físicas concretas y verificables (material + color + detalle).
+7. La descripción debe repetirse idéntica en todos los prompts del dataset.
+
+EJEMPLO DE SALIDA VÁLIDA:
+a vintage brass pocket watch, polished gold-toned case with engraved floral pattern, white enamel dial with roman numerals, open-face design, worn brown leather chain attachment"""
+
+
+def construir_user_prompt_objeto(form_data: dict) -> str:
+    etiquetas = {
+        "nombre_objeto": "Nombre del objeto",
+        "categoria": "Categoría",
+        "materiales": "Materiales",
+        "colores": "Colores",
+        "forma": "Forma / silueta",
+        "rasgos_distintos": "Rasgos distintivos",
+    }
+    lineas = ["FICHA DEL OBJETO:"]
+    for key, etiqueta in etiquetas.items():
+        valor = (form_data.get(key) or "").strip()
+        if valor:
+            lineas.append(f"- {etiqueta}: {valor}")
+    lineas.append("\nGenera la descripción canónica del objeto.")
+    return "\n".join(lineas)
+
+
+SYSTEM_PROMPT_ESTILO_CANONICO = """Eres un experto en prompts para generación de imágenes con IA, especializado en CONSISTENCIA DE ESTILO para datasets de entrenamiento LoRA de estilo artístico.
+
+Tu tarea: convertir la ficha de estilo que recibirás en UNA ÚNICA descripción de estilo en INGLÉS para usar como sufijo en todos los prompts del dataset.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO el sufijo de estilo, en una sola línea, sin comillas, sin preámbulo, sin explicaciones, sin markdown.
+2. Idioma de salida: inglés. La ficha llega en español.
+3. Longitud: entre 20 y 45 palabras. Lista de descriptores de estilo separados por comas.
+4. Debe describir CÓMO se ve, no QUÉ se ve: técnica, trazo, paleta, textura, atmósfera.
+5. PROHIBIDO: describir sujetos, personas, objetos o escenas concretas. Solo el ESTILO.
+6. El sufijo se añadirá al final de cada prompt del dataset.
+
+EJEMPLO DE SALIDA VÁLIDA:
+in the style of ohwx_moebius, clean precise linework, flat cel shading, muted earth tones with turquoise accents, retro-futurist aesthetic, french bande dessinee comic art style"""
+
+
+def construir_user_prompt_estilo(form_data: dict) -> str:
+    etiquetas = {
+        "nombre_estilo": "Nombre / descripción del estilo",
+        "artista_ref": "Artista o referencia",
+        "tecnica": "Técnica principal",
+        "paleta": "Paleta de colores",
+        "rasgos_estilo": "Rasgos visuales distintivos",
+        "epoca": "Época / período",
+    }
+    lineas = ["FICHA DEL ESTILO:"]
+    for key, etiqueta in etiquetas.items():
+        valor = (form_data.get(key) or "").strip()
+        if valor:
+            lineas.append(f"- {etiqueta}: {valor}")
+    lineas.append("\nGenera el sufijo de estilo canónico.")
+    return "\n".join(lineas)
+
+
+# Fichas automáticas para tipos no-personaje
+SYSTEM_PROMPT_PAISAJE_FICHA = """Eres un diseñador de datasets para LoRA de paisaje.
+
+Tu tarea: inventar UNA ficha de paisaje coherente y devolverla EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown.
+2. Claves EXACTAS: trigger, tipo_paisaje, pais_region, epoca, elementos, paleta, estilo_foto.
+3. trigger: formato ohwx_nombre (minúsculas, sin espacios).
+4. tipo_paisaje: uno de [Montaña, Bosque, Playa / Costa, Desierto, Pradera, Ciudad / Urbano, Lago / Río, Valle, Volcán, Tundra / Ártico].
+5. epoca: uno de [Primavera, Verano, Otoño, Invierno].
+6. Descripciones concretas y visuales.
+
+EJEMPLO:
+{"trigger": "ohwx_fjord", "tipo_paisaje": "Lago / Río", "pais_region": "Noruega", "epoca": "Otoño", "elementos": "fiordos profundos, cascadas, abedules dorados, niebla baja sobre el agua", "paleta": "azul acero, dorado, gris piedra", "estilo_foto": "Fotografía naturaleza (National Geographic)"}"""
+
+SYSTEM_PROMPT_OBJETO_FICHA = """Eres un diseñador de datasets para LoRA de objeto/producto.
+
+Tu tarea: inventar UNA ficha de objeto coherente y devolverla EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown.
+2. Claves EXACTAS: trigger, nombre_objeto, categoria, materiales, colores, forma, rasgos_distintos.
+3. trigger: formato ohwx_nombre (minúsculas, sin espacios).
+4. Objeto visualmente distintivo y fotogénico.
+
+EJEMPLO:
+{"trigger": "ohwx_linterna", "nombre_objeto": "linterna de minero victoriana", "categoria": "Herramienta", "materiales": "hierro forjado oxidado y latón pulido", "colores": "negro óxido con detalles dorados y vidrio ámbar", "forma": "cilíndrica con asa en arco y gancho superior", "rasgos_distintos": "ventilación con patrón de estrellas, llama de aceite visible interior"}"""
+
+SYSTEM_PROMPT_ESTILO_FICHA = """Eres un diseñador de datasets para LoRA de estilo artístico.
+
+Tu tarea: inventar UN estilo artístico coherente y devolverlo EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown.
+2. Claves EXACTAS: trigger, nombre_estilo, artista_ref, tecnica, paleta, rasgos_estilo, epoca.
+3. trigger: formato ohwx_estilo_nombre.
+4. Estilo visualmente distintivo y entrenable con LoRA.
+
+EJEMPLO:
+{"trigger": "ohwx_estilo_grabado", "nombre_estilo": "grabado en madera xilografía", "artista_ref": "Hokusai", "tecnica": "Grabado / Litografía", "paleta": "negro y blanco con toques de rojo bermellón", "rasgos_estilo": "líneas paralelas de corte manual, texturas rugosas, alto contraste, siluetas planas", "epoca": "Edo japonés, 1800s"}"""
+
+
+def construir_user_prompt_ficha_tipo(tipo: str, tema: str = "") -> str:
+    """Devuelve el user prompt para ficha automática según el tipo de LoRA."""
+    tema = (tema or "").strip()
+    base = {
+        "Paisaje": "Inventa una ficha de paisaje",
+        "Objeto": "Inventa una ficha de objeto / producto",
+        "Estilo": "Inventa una ficha de estilo artístico",
+    }.get(tipo, "Inventa una ficha")
+    if tema:
+        return f"{base} basado en: {tema}\n\nDevuelve SOLO el JSON."
+    return f"{base} original y visualmente interesante.\n\nDevuelve SOLO el JSON."
+
+
+def system_prompt_ficha_para_tipo(tipo: str) -> str:
+    """Devuelve el system prompt de ficha automática según el tipo."""
+    return {
+        "Paisaje": SYSTEM_PROMPT_PAISAJE_FICHA,
+        "Objeto": SYSTEM_PROMPT_OBJETO_FICHA,
+        "Estilo": SYSTEM_PROMPT_ESTILO_FICHA,
+    }.get(tipo, SYSTEM_PROMPT_AVATAR_FICHA)
+
+
+def system_prompt_canonico_para_tipo(tipo: str) -> str:
+    """Devuelve el system prompt canónico según el tipo de LoRA."""
+    return {
+        "Personaje": SYSTEM_PROMPT_AVATAR_CANONICO,
+        "Paisaje": SYSTEM_PROMPT_PAISAJE_CANONICO,
+        "Objeto": SYSTEM_PROMPT_OBJETO_CANONICO,
+        "Estilo": SYSTEM_PROMPT_ESTILO_CANONICO,
+    }.get(tipo, SYSTEM_PROMPT_AVATAR_CANONICO)
+
+
+def construir_user_prompt_para_tipo(tipo: str, form_data: dict) -> str:
+    """Devuelve el user prompt canónico según el tipo de LoRA."""
+    if tipo == "Paisaje":
+        return construir_user_prompt_paisaje(form_data)
+    if tipo == "Objeto":
+        return construir_user_prompt_objeto(form_data)
+    if tipo == "Estilo":
+        return construir_user_prompt_estilo(form_data)
+    return construir_user_prompt_canonico(form_data)
+
+
+def ensamblar_dataset_generico(
+    tipo: str,
+    trigger_word: str,
+    descripcion_canonica: str,
+    angulos_seleccionados: list,
+    angles_dict: dict,
+    estilo_sufijo: str,
+    fondo,
+    lighting: str,
+    negative_base: str,
+    incluir_negative: bool = True,
+) -> list:
+    """Ensambla un dataset para cualquier tipo de LoRA (Paisaje, Objeto, Estilo).
+
+    A diferencia del personaje, no hay lógica de recorte ni de ropa: la
+    descripción canónica va entera en cada prompt sin modificar."""
+    trigger = trigger_word.strip()
+    desc = descripcion_canonica.strip().rstrip(".,")
+    dataset = []
+
+    for i, key in enumerate(angulos_seleccionados):
+        angulo = angles_dict.get(key)
+        if not angulo:
+            continue
+
+        fondo_i = fondo_para_indice(fondo, i) if fondo else ""
+        partes = [trigger, angulo["prompt"], desc]
+        if fondo_i:
+            partes.append(fondo_i)
+        if lighting:
+            partes.append(lighting)
+        if estilo_sufijo:
+            partes.append(estilo_sufijo)
+        prompt = ", ".join(p for p in partes if p)
+
+        partes_caption = [trigger, angulo["framing"]]
+        if fondo_i:
+            partes_caption.append(fondo_i.split(",")[0].strip())
+        if lighting:
+            partes_caption.append(lighting.split(",")[0].strip())
+        caption = ", ".join(partes_caption)
+
+        negative = negative_base if incluir_negative else ""
+
+        dataset.append({
+            "angle_key": key,
+            "label": angulo["label"],
+            "filename": angulo["filename"],
+            "prompt": prompt,
+            "negative": negative,
+            "caption": caption,
+        })
+
+    return dataset
+
+
 def ensamblar_dataset_edicion(
     trigger_word: str,
     angulos_seleccionados: list,
