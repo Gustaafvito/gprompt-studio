@@ -4227,5 +4227,33 @@
     "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle: sujeto, entorno, iluminación, estilo y atmósfera.",
     "prompt_ejemplo": "A lone lighthouse on a rocky cliff at sunset, dramatic storm clouds approaching, waves crashing against the rocks, cinematic lighting, highly detailed, photorealistic",
     "limitaciones": "Sin negative prompt. Max 2000 chars."
+  },
+  "Grok Imagine Image": {
+    "nota": 3.2,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": false,
+    "max_chars": 1000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Modelo de generación de imágenes de xAI (Grok) disponible en SeaArt. Tag-based estilo SD/SDXL. Retratos, personajes con rasgos detallados, fotografía estilizada, skin texture, iluminación cinematográfica. Límite reducido de 1000 chars: prompts densos y precisos.",
+    "prompt_formula": "Tags SD separados por comas. Orden: encuadre, sujeto, rasgos físicos, ropa, iluminación, estilo fotográfico, cámara/óptica, calidad. Sin negative prompt. Máx 1000 chars.",
+    "prompt_ejemplo": "close-up portrait, 1girl, european features, vivid red hair, piercing amber eyes, sharp jawline, dark gothic wardrobe, leather collar with studs, soft natural lighting, shallow depth of field, professional photography, 85mm portrait lens, f/1.4, 8K ultra-detailed, hyperrealistic",
+    "limitaciones": "Sin negative prompt. Límite de 1000 caracteres. Disponible en SeaArt como Grok Imagine Image (xAI)."
   }
 }
