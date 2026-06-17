@@ -121,8 +121,7 @@
     "prompt_formula": "Modo Create: descripción nueva. Modo Modify: 'Use IMAGE1 for style, IMAGE2 for lighting'. Naming references + roles es clave.",
     "prompt_ejemplo": "Create: a cinematic portrait of a woman in dramatic lighting. Modify: lighting shift, mood change to darker tone",
     "coste_energia": "Gratis (evento) — VIP",
-    "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora.",
-    "vigente": true
+    "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora."
   },
   "Z Image Turbo": {
     "nota": 4.3,
@@ -207,7 +206,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 800,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -223,8 +222,7 @@
     "resolucion_recomendada": "936x1536",
     "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
     "coste_energia": "6 (mín) - 40 (máx) — gratis VIP",
-    "limitaciones": "No diseñado para fotorrealismo extremo.",
-    "vigente": true
+    "limitaciones": "No diseñado para fotorrealismo extremo."
   },
   "FLUX.1 [dev]": {
     "nota": 4.4,
@@ -433,7 +431,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 1500,
     "modos_gen": [
       "Estándar"
     ],
@@ -447,8 +445,7 @@
     "cfg": "3-5",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Modo 'fast' no funciona. Menor calidad que la versión completa. DOC OFICIAL: requiere lenguaje natural (no tags con comas); pesos, herramientas de combinación y BREAK no funcionan; negative opcional (no necesario); no ideal NSFW; anatomía de cuello/pómulos irregular.",
-    "no_weights": true,
-    "vigente": true
+    "no_weights": true
   },
   "SeaArt Film": {
     "nota": 4.5,
@@ -585,8 +582,7 @@
     "cfg": 5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP (evento)",
-    "limitaciones": "Producción industrial. Resultados más técnicos/artísticos según el caso.",
-    "vigente": true
+    "limitaciones": "Producción industrial. Resultados más técnicos/artísticos según el caso."
   },
   "SeaArt Furry XL V1.0": {
     "nota": 4.5,
@@ -899,8 +895,7 @@
     "pasos": "28-35",
     "cfg": "4-5",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Basado en SDXL. No soporta weights como Flux.",
-    "vigente": true
+    "limitaciones": "Basado en SDXL. No soporta weights como Flux."
   },
   "Counterfeit V3.0": {
     "nota": 4.4,
@@ -954,8 +949,7 @@
     "cfg": "7-8",
     "clip_skip": "1-2",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales).",
-    "vigente": true
+    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales)."
   },
   "Illustrious Realism by Klaabu": {
     "nota": 4.9,
@@ -988,8 +982,7 @@
     "cfg": "4-6.5",
     "clip_skip": 1,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes simultáneas. Tiene reparación avanzada (rostros/personajes).",
-    "vigente": true
+    "limitaciones": "Máx 4 imágenes simultáneas. Tiene reparación avanzada (rostros/personajes)."
   },
   "Real Dream SDXL": {
     "nota": 4.6,
@@ -1022,8 +1015,7 @@
     "cfg": 6,
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes simultáneas. Resolución por defecto 768x1152.",
-    "vigente": true
+    "limitaciones": "Máx 4 imágenes simultáneas. Resolución por defecto 768x1152."
   },
   "MajicMIX Realistic v6": {
     "nota": 5.0,
@@ -1091,8 +1083,7 @@
     "cfg": 2,
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "CFG muy bajo (2.0). Resolución por defecto 1152x1536. Prompts largos pueden dar resultados inconsistentes.",
-    "vigente": true
+    "limitaciones": "CFG muy bajo (2.0). Resolución por defecto 1152x1536. Prompts largos pueden dar resultados inconsistentes."
   },
   "CyberRealistic": {
     "nota": 4.6,
@@ -1161,8 +1152,7 @@
     "cfg": 7,
     "clip_skip": 1,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "SD 1.5 base. Resolución nativa 512x768. Orientado a retratos femeninos principalmente.",
-    "vigente": true
+    "limitaciones": "SD 1.5 base. Resolución nativa 512x768. Orientado a retratos femeninos principalmente."
   },
   "DreamShaper": {
     "nota": 4.9,
@@ -1221,8 +1211,7 @@
     "pasos": "15-25",
     "cfg": "6-8",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "CC BY-NC-ND 4.0 (comercial requiere permiso). v4 (abr 2026).",
-    "vigente": true
+    "limitaciones": "CC BY-NC-ND 4.0 (comercial requiere permiso). v4 (abr 2026)."
   },
   "PornRealistic": {
     "nota": 3.0,
@@ -1272,8 +1261,7 @@
     "pasos": 15,
     "cfg": 6,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Trigger words: Realism, Photorealism, Woman, Vestido, Minifalda. Base SD 2.1.",
-    "vigente": true
+    "limitaciones": "Trigger words: Realism, Photorealism, Woman, Vestido, Minifalda. Base SD 2.1."
   },
   "Alchemist Mix (Illustrious Realism)": {
     "nota": 4.9,
@@ -1327,8 +1315,7 @@
     "cfg": 7,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere VAE: vae-ft-mse-840000-ema-pruned. Base SD 1.5.",
-    "vigente": true
+    "limitaciones": "Requiere VAE: vae-ft-mse-840000-ema-pruned. Base SD 1.5."
   },
   "Juggernaut XL": {
     "nota": 4.9,
@@ -1389,8 +1376,7 @@
     "cfg": "4-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5.",
-    "vigente": true
+    "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5."
   },
   "Disney Pixar Cartoon type B": {
     "nota": 4.1,
@@ -1417,8 +1403,7 @@
     "cfg": 7,
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5.",
-    "vigente": true
+    "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5."
   },
   "MiaoMiao Harem": {
     "nota": 4.8,
@@ -1445,8 +1430,7 @@
     "cfg": "5-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
-    "vigente": true
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
   },
   "REED_XXX_illustrious_SDXL": {
     "nota": 4.4,
@@ -1479,8 +1463,7 @@
     "cfg": "5-8",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
-    "vigente": true
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
   },
   "Lily-Illustrious XL": {
     "nota": 4.9,
@@ -1506,8 +1489,7 @@
     "pasos": "20-30",
     "cfg": "5-8",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "v3.0. No vender imágenes sin editar.",
-    "vigente": true
+    "limitaciones": "v3.0. No vender imágenes sin editar."
   },
   "Pixel Illustrious": {
     "nota": 4.0,
@@ -1532,8 +1514,7 @@
     "pasos": "25-45",
     "cfg": "5-7",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "A veces no dispara pixel. Ver trigger words.",
-    "vigente": true
+    "limitaciones": "A veces no dispara pixel. Ver trigger words."
   },
   "SDXL FaeTastic": {
     "nota": 4.9,
@@ -1560,8 +1541,7 @@
     "cfg": "5-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso.",
-    "vigente": true
+    "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso."
   },
   "Pie - Models 🥧": {
     "nota": 5.0,
@@ -1587,8 +1567,7 @@
     "pasos": 30,
     "cfg": 5,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon.",
-    "vigente": true
+    "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon."
   },
   "Nano Banana Pro Image": {
     "nota": 3.6,
@@ -1719,7 +1698,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 800,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -1735,8 +1714,7 @@
     "resolucion_recomendada": "936x1536",
     "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Optimizado para anime/2.5D, no fotorrealismo.",
-    "vigente": true
+    "limitaciones": "Máx 4 imágenes. Optimizado para anime/2.5D, no fotorrealismo."
   },
   "Pipi-iL-CG6.5": {
     "nota": 4.7,
@@ -1770,8 +1748,7 @@
     "clip_skip": 2,
     "resolucion_recomendada": "720x1280",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos.",
-    "vigente": true
+    "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos."
   },
   "NiwaStyle - Animax Chill (Illustrious)": {
     "nota": 5.0,
@@ -1790,7 +1767,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 800,
     "modos_gen": [
       "Estándar",
       "Calidad"
@@ -1806,8 +1783,7 @@
     "resolucion_recomendada": "936x1536",
     "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Estilo chill/suave, menos indicado para acción intensa o dark fantasy.",
-    "vigente": true
+    "limitaciones": "Máx 4 imágenes. Estilo chill/suave, menos indicado para acción intensa o dark fantasy."
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
     "nota": 4.7,
