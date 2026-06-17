@@ -106,10 +106,8 @@
       "4:3",
       "9:16",
       "16:9",
-      "9:1",
-      "1:9",
-      "4:5",
-      "5:4"
+      "9:21",
+      "21:9"
     ],
     "max_chars": 2000,
     "modos_gen": [
@@ -121,7 +119,8 @@
     "prompt_formula": "Modo Create: descripción nueva. Modo Modify: 'Use IMAGE1 for style, IMAGE2 for lighting'. Naming references + roles es clave.",
     "prompt_ejemplo": "Create: a cinematic portrait of a woman in dramatic lighting. Modify: lighting shift, mood change to darker tone",
     "coste_energia": "Gratis (evento) — VIP",
-    "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora."
+    "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora.",
+    "vigente": true
   },
   "Z Image Turbo": {
     "nota": 4.3,
