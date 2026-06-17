@@ -4342,5 +4342,33 @@
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada de la imagen. NEGATIVE PROMPT: elementos a evitar. Máx 2000 chars cada uno.",
     "prompt_ejemplo": "A dramatic aerial view of a futuristic city at night, glowing skyscrapers reflected in a river, light trails from vehicles, cinematic composition, ultra-detailed, photorealistic",
     "limitaciones": "Max 2000 chars. Disponible como imagen en SeaArt (Kling 3.0 Image)."
+  },
+  "Kling 3.0 Omni Image Editing": {
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "max_chars": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Modelo de edición de imagen de Kling (Kuaishou) en SeaArt. Edición omni: modificación y transformación de imágenes existentes con instrucciones en lenguaje natural. Retoque, cambio de estilo, composición y edición creativa.",
+    "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción de la edición o imagen resultado. NEGATIVE PROMPT: elementos a evitar. Máx 2000 chars.",
+    "prompt_ejemplo": "Transform the background to a snowy mountain landscape, keep the subject unchanged, add soft winter lighting and falling snowflakes, photorealistic, cinematic quality",
+    "limitaciones": "Modelo orientado a edición img2img. Max 2000 chars."
   }
 }
