@@ -255,6 +255,7 @@ GRUPOS_IMAGEN = [
         "Splashed Flux",
     ])),
     ("── Familia Z-Image ──", sorted([
+        "GLM-Image",
         "Z Image Turbo",
         "Z-Image-Base",
     ])),

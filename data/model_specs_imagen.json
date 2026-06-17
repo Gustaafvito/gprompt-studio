@@ -4391,5 +4391,21 @@
     ],
     "max_chars": 2000,
     "best_for": "imágenes cinematográficas y fotorrealistas de alta fidelidad con iluminación dramática"
+  },
+  "GLM-Image": {
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "best_for": "imágenes con texto legible y limpio, comunicación visual, infografías"
   }
 }
