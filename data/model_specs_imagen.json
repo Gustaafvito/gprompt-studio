@@ -188,41 +188,6 @@
     "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción.",
     "vigente": true
   },
-  "NiwaStyle - Animax ColorPop (Illustrious)": {
-    "nota": 5.0,
-    "has_negative": true,
-    "is_natural": false,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 800,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 4,
-    "best_for": "Anime / Digital Painting de altísima calidad. Ideal para ilustración, personajes anime, obras masterpiece.",
-    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
-    "prompt_ejemplo": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, 1girl, silver hair, blue eyes",
-    "sampler_recomendado": "Euler a / DPM++ 2M",
-    "pasos": "25-40",
-    "cfg": "4-7",
-    "clip_skip": 2,
-    "resolucion_recomendada": "936x1536",
-    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
-    "coste_energia": "6 (mín) - 40 (máx) — gratis VIP",
-    "limitaciones": "No diseñado para fotorrealismo extremo."
-  },
   "FLUX.1 [dev]": {
     "nota": 4.4,
     "has_negative": false,
@@ -1680,41 +1645,6 @@
     "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio. Para editing, describe el cambio (no toda la imagen).",
     "vigente": true
   },
-  "NiwaStyle - Animax Plus (Illustrious)": {
-    "nota": 5.0,
-    "has_negative": true,
-    "is_natural": false,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 800,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 4,
-    "best_for": "Hermana mayor de Animax ColorPop. Anime/2.5D de altísima calidad. 285K usos. Illustrious SDXL. Ideal para personajes anime detallados con toques semi-realistas.",
-    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
-    "prompt_ejemplo": "masterpiece, 8k, Highest Quality, ultra detailed, 1girl, long white hair, violet eyes, gothic lolita dress, moonlit balcony, (cinematic lighting:1.2), cherry blossoms",
-    "sampler_recomendado": "DPM++ 2M Karras",
-    "pasos": 25,
-    "cfg": 7,
-    "clip_skip": 2,
-    "resolucion_recomendada": "936x1536",
-    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
-    "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Optimizado para anime/2.5D, no fotorrealismo."
-  },
   "Pipi-iL-CG6.5": {
     "nota": 4.7,
     "has_negative": true,
@@ -1748,41 +1678,6 @@
     "resolucion_recomendada": "720x1280",
     "coste_energia": "Gratis VIP",
     "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos."
-  },
-  "NiwaStyle - Animax Chill (Illustrious)": {
-    "nota": 5.0,
-    "has_negative": true,
-    "is_natural": false,
-    "ratios": [
-      "1:1",
-      "1:2",
-      "2:1",
-      "2:3",
-      "3:2",
-      "3:4",
-      "4:3",
-      "4:5",
-      "5:4",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 800,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 4,
-    "best_for": "Anime relajado, slice-of-life, personajes suaves. 316K usos. Illustrious v3.0. Estética chill/dreamy, tonos suaves, iluminación atmosférica.",
-    "prompt_formula": "Tag-based Danbooru style: masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed, [tags]",
-    "prompt_ejemplo": "masterpiece, 8k, ultra detailed, 1girl, short brown hair, cozy sweater, sitting by window, rainy day, (warm lighting:1.2), soft focus background, slice of life",
-    "sampler_recomendado": "DPM++ 2M Karras",
-    "pasos": 25,
-    "cfg": 6,
-    "clip_skip": 2,
-    "resolucion_recomendada": "936x1536",
-    "trigger_words": "masterpiece, 8k, Highest Quality, detail, high resolution, Digital Painting, ultra detailed",
-    "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Estilo chill/suave, menos indicado para acción intensa o dark fantasy."
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
     "nota": 4.7,
