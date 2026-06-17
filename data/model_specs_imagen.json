@@ -1369,33 +1369,6 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5."
   },
-  "MiaoMiao Harem": {
-    "nota": 4.8,
-    "has_negative": true,
-    "is_natural": false,
-    "ratios": [
-      "1:1",
-      "2:3",
-      "3:2",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1000,
-    "modos_gen": [
-      "Estándar",
-      "Calidad"
-    ],
-    "max_imagenes": 4,
-    "best_for": "MiaoMiao Harem V2.0. 1.7M usos. Estilo anime/harem con concepto 2026. CKXL05 architecture. Excelente manos/pies, LoRA compatible, prompts simples.",
-    "prompt_formula": "very aesthetic, masterpiece, best quality, ultra-detailed, high contrast + sujeto + detalles.",
-    "prompt_ejemplo": "very aesthetic, masterpiece, best quality, ultra-detailed, 1girl, elegant dress, beautiful face, soft lighting",
-    "sampler_recomendado": "Euler a / DPM++ 2M Exponential",
-    "pasos": "20-30",
-    "cfg": "5-7",
-    "clip_skip": 2,
-    "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
-  },
   "REED_XXX_illustrious_SDXL": {
     "nota": 4.4,
     "has_negative": true,
@@ -4485,5 +4458,32 @@
     "max_chars": 2000,
     "max_chars_negative": 2000,
     "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL"
+  },
+  "MiaoMiao Harem V2.0": {
+    "nota": 4.8,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "MiaoMiao Harem V2.0. 1.7M usos. Estilo anime/harem con concepto 2026. CKXL05 architecture. Excelente manos/pies, LoRA compatible, prompts simples.",
+    "prompt_formula": "very aesthetic, masterpiece, best quality, ultra-detailed, high contrast + sujeto + detalles.",
+    "prompt_ejemplo": "very aesthetic, masterpiece, best quality, ultra-detailed, 1girl, elegant dress, beautiful face, soft lighting",
+    "sampler_recomendado": "Euler a / DPM++ 2M Exponential",
+    "pasos": "20-30",
+    "cfg": "5-7",
+    "clip_skip": 2,
+    "coste_energia": "Variable — gratis VIP",
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
   }
 }

@@ -209,7 +209,7 @@ GRUPOS_IMAGEN = [
         "Illustrious-xl-v3.5-vpred",
         "Lily-Illustrious XL",
         "majicMIX fantasy",
-        "MiaoMiao Harem",
+        "MiaoMiao Harem V2.0",
         "NoobAI-XL (NAI-XL)",
         "Pie - Models 🥧",
         "Pipi-iL-CG6.5",
