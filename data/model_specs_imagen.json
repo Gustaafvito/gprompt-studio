@@ -4451,5 +4451,28 @@
     ],
     "max_chars": 2000,
     "best_for": "síntesis texto-imagen, edición avanzada y composición multi-imagen con alta calidad visual"
+  },
+  "Kling O1 Image Model": {
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "9:21",
+      "21:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "best_for": "generación de imágenes fotorrealistas con razonamiento avanzado y alta precisión visual"
   }
 }

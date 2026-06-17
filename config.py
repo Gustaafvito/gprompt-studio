@@ -272,6 +272,7 @@ GRUPOS_IMAGEN = [
     ("── Kling Image (Kuaishou en SeaArt) ──", sorted([
         "Kling 3.0 Image",
         "Kling 3.0 Omni Image Editing",
+        "Kling O1 Image Model",
     ])),
     ("── Qwen (Alibaba en SeaArt) ──", sorted([
         "Qwen Image 2.0 Pro",
