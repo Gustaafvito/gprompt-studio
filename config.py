@@ -265,6 +265,9 @@ GRUPOS_IMAGEN = [
     ("── Grok (xAI en SeaArt) ──", sorted([
         "Grok Imagine Image",
     ])),
+    ("── Kling Image (Kuaishou en SeaArt) ──", sorted([
+        "Kling 3.0 Image",
+    ])),
     ("── Qwen (Alibaba en SeaArt) ──", sorted([
         "Qwen Image 2.0 Pro",
     ])),
