@@ -207,6 +207,7 @@ GRUPOS_IMAGEN = [
         "Disney Pixar Cartoon type B",
         "GhostMix",
         "Hassaku XL (Illustrious)",
+        "Illustrious XL V3.6",
         "Lily-Illustrious XL",
         "majicMIX fantasy",
         "MiaoMiao Harem",
