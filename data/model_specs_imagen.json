@@ -4428,5 +4428,28 @@
     "max_chars": 2000,
     "max_chars_negative": 2000,
     "best_for": "generación de imágenes fotorrealistas y artísticas de alta calidad"
+  },
+  "Seedream 4.0": {
+    "nota": 4.8,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "9:21",
+      "21:9"
+    ],
+    "max_chars": 2000,
+    "best_for": "síntesis texto-imagen, edición avanzada y composición multi-imagen con alta calidad visual"
   }
 }
