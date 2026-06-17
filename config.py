@@ -296,17 +296,12 @@ GRUPOS_IMAGEN = [
         "Seedream 4.5",
         "Seedream 5.0 Lite",
     ])),
-    ("── Wan 2.2 ──", sorted([
+    ("── Wan ──", sorted([
         "Wan 2.2",
-    ])),
-    ("── Wan 2.5 ──", sorted([
         "Wan2.5 Image",
-    ])),
-    ("── Wan 2.6 ──", sorted([
         "Wan 2.6 Text to Image",
-    ])),
-    ("── Wan 2.7 ──", sorted([
-        "Wan 2.7 Image", "Wan 2.7 Image Pro",
+        "Wan 2.7 Image",
+        "Wan 2.7 Image Pro",
     ])),
     ("── Realismo SD ──", sorted([
         "Alchemist Mix (Illustrious Realism)",
