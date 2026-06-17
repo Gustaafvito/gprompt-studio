@@ -25,7 +25,12 @@ import time
 import urllib.request
 from typing import TYPE_CHECKING, Callable
 
-from google.genai import types as genai_types
+try:
+    from google.genai import types as genai_types
+    _HAS_GENAI = True
+except ImportError:
+    genai_types = None  # type: ignore[assignment]
+    _HAS_GENAI = False
 
 from config import (
     MAX_HIST_IA,

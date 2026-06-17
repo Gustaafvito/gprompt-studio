@@ -487,10 +487,10 @@ for g, ms in GRUPOS_VIDEO_COMFYUI:
 # ══════════════════════════════════════════════════════════════════
 GRUPOS_AUDIO = [
     ("── Motores Externos ──", sorted([
-        "Suno v5", "Suno v4.5", "Suno v4",
+        "Suno v5.5", "Suno v5", "Suno v4.5", "Suno v4",
     ])),
     ("── SeaArt Audio ──", sorted([
-        "Minimax Music 2.5", "SeaArt MusicGo",
+        "Minimax Music 2.6", "Minimax Music 2.5", "SeaArt MusicGo",
     ])),
 ]
 

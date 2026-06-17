@@ -52,7 +52,6 @@ class UiFooterService:
 
     def _build_footer(self):
         is_light = _get_real_is_light()
-        from config import get_theme_colors
         c = get_theme_colors(is_light)
         outer = ctk.CTkFrame(self.app, fg_color="transparent")
         outer.pack(side="bottom", fill="x", padx=16, pady=(1, 2))
