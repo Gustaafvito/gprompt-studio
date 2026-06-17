@@ -4255,5 +4255,35 @@
     "prompt_formula": "Tags SD separados por comas. Orden: encuadre, sujeto, rasgos físicos, ropa, iluminación, estilo fotográfico, cámara/óptica, calidad. Sin negative prompt. Máx 1000 chars.",
     "prompt_ejemplo": "close-up portrait, 1girl, european features, vivid red hair, piercing amber eyes, sharp jawline, dark gothic wardrobe, leather collar with studs, soft natural lighting, shallow depth of field, professional photography, 85mm portrait lens, f/1.4, 8K ultra-detailed, hyperrealistic",
     "limitaciones": "Sin negative prompt. Límite de 1000 caracteres. Disponible en SeaArt como Grok Imagine Image (xAI)."
+  },
+  "Qwen Image 2.0 Pro": {
+    "nota": 5.0,
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "max_chars": 1500,
+    "max_chars_negative": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Modelo de imagen de Alibaba Qwen disponible en SeaArt. Versión Pro con alta calidad. Lenguaje natural, buena comprensión de composición, retratos, escenas detalladas y diseño. Nota máxima 5.0.",
+    "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción completa de la imagen (máx 1500 chars). NEGATIVE PROMPT: elementos a evitar (máx 2000 chars).",
+    "prompt_ejemplo": "A serene mountain lake at golden hour, crystal clear water reflecting snow-capped peaks, lone pine tree on rocky shore, dramatic cloud formations, cinematic lighting, photorealistic, 8K",
+    "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars."
   }
 }
