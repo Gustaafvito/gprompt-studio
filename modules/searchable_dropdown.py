@@ -46,10 +46,20 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                 p.grab_release()
             except Exception:
                 pass
+            # Ocultar inmediatamente para que la UI responda al instante,
+            # y destruir en diferido (el Toplevel tiene ~80 widgets CTk y
+            # destruirlos síncronamente bloquea el hilo principal ~200ms).
             try:
-                p.destroy()
+                p.withdraw()
             except Exception:
                 pass
+            try:
+                combo.after(0, p.destroy)
+            except Exception:
+                try:
+                    p.destroy()
+                except Exception:
+                    pass
 
     def _elegir(valor):
         _cerrar()
