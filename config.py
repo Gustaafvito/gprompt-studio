@@ -295,6 +295,9 @@ GRUPOS_IMAGEN = [
     ("── Seedream (ByteDance en SeaArt) ──", sorted([
         "Seedream 5.0 Lite",
     ])),
+    ("── Wan 2.6 ──", sorted([
+        "Wan 2.6 Text to Image",
+    ])),
     ("── Wan 2.7 ──", sorted([
         "Wan 2.7 Image", "Wan 2.7 Image Pro",
     ])),
