@@ -4285,5 +4285,34 @@
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción completa de la imagen (máx 1500 chars). NEGATIVE PROMPT: elementos a evitar (máx 2000 chars).",
     "prompt_ejemplo": "A serene mountain lake at golden hour, crystal clear water reflecting snow-capped peaks, lone pine tree on rocky shore, dramatic cloud formations, cinematic lighting, photorealistic, 8K",
     "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars."
+  },
+  "Seedream 5.0 Lite": {
+    "nota": 3.7,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "max_chars": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Modelo de ByteDance disponible en SeaArt. Versión ligera de Seedream 5.0, generación de imágenes en lenguaje natural. Buena comprensión de escenas, personajes y composición general.",
+    "prompt_formula": "Lenguaje natural descriptivo. Sin negative prompt. Describe la escena, el sujeto, la iluminación y el estilo en prosa fluida. Máx 2000 chars.",
+    "prompt_ejemplo": "A young woman walking through a neon-lit Tokyo street at night, rain-soaked pavement reflecting colorful lights, casual street fashion, cinematic atmosphere, photorealistic",
+    "limitaciones": "Sin negative prompt. Max 2000 chars."
   }
 }
