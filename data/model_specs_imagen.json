@@ -4370,5 +4370,26 @@
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción de la edición o imagen resultado. NEGATIVE PROMPT: elementos a evitar. Máx 2000 chars.",
     "prompt_ejemplo": "Transform the background to a snowy mountain landscape, keep the subject unchanged, add soft winter lighting and falling snowflakes, photorealistic, cinematic quality",
     "limitaciones": "Modelo orientado a edición img2img. Max 2000 chars."
+  },
+  "Higgsfield Image": {
+    "nota": 5.0,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "best_for": "imágenes cinematográficas y fotorrealistas de alta fidelidad con iluminación dramática"
   }
 }
