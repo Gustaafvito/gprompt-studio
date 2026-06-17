@@ -263,6 +263,9 @@ GRUPOS_IMAGEN = [
         "GPT Image 1.5",
         "GPT Image 2",
     ])),
+    ("── Sora (OpenAI en SeaArt) ──", sorted([
+        "Sora2 Image",
+    ])),
     ("── Grok (xAI en SeaArt) ──", sorted([
         "Grok Imagine Image",
     ])),
