@@ -4493,5 +4493,27 @@
     ],
     "max_chars": 2000,
     "best_for": "imágenes fotorrealistas y cinematográficas de alta fidelidad"
+  },
+  "Wan2.5 Image": {
+    "nota": 4.0,
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "best_for": "generación de imágenes con precisión y control profesional"
   }
 }
