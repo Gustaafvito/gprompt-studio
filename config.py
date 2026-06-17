@@ -208,6 +208,7 @@ GRUPOS_IMAGEN = [
         "GhostMix",
         "Hassaku XL (Illustrious)",
         "Illustrious XL V3.6",
+        "Illustrious-xl-v3.5-vpred",
         "Lily-Illustrious XL",
         "majicMIX fantasy",
         "MiaoMiao Harem",
