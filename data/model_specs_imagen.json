@@ -95,7 +95,7 @@
     "vigente": true
   },
   "Luma Uni-1.1 Image": {
-    "nota": 4.3,
+    "nota": 5.0,
     "has_negative": false,
     "is_natural": true,
     "ratios": [
@@ -4109,7 +4109,7 @@
     "vigente": true
   },
   "Ideogram 4": {
-    "nota": 4.8,
+    "nota": 3.7,
     "vigente": true,
     "has_negative": false,
     "is_natural": true,
@@ -4139,7 +4139,7 @@
     "limitaciones": "Sin negative prompt. Máx ~150-160 palabras para mejores resultados. Scripts no latinos (árabe, chino) pueden renderizar mal."
   },
   "Wan 2.7 Image": {
-    "nota": 4.5,
+    "nota": 3.5,
     "vigente": true,
     "has_negative": true,
     "is_natural": true,
@@ -4169,7 +4169,7 @@
     "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
   },
   "Wan 2.7 Image Pro": {
-    "nota": 4.7,
+    "nota": 4.3,
     "vigente": true,
     "has_negative": true,
     "is_natural": true,
@@ -4200,7 +4200,7 @@
     "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
   },
   "Luma Uni-1 Image": {
-    "nota": 4.3,
+    "nota": 4.5,
     "vigente": true,
     "has_negative": false,
     "is_natural": true,
