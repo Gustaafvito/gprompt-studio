@@ -817,24 +817,28 @@ class CoreMixin:
             return ""
 
     def cmd_ideas(self):
-        self._ocultar_ideas()
-        self.reiniciar_memoria()  # Evitar contaminación del historial previo
-        idea = self.txt_idea.get("1.0", "end").strip()
-        tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
-        peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.footer.estilos_texto()}'."
+        try:
+            self._ocultar_ideas()
+            self.reiniciar_memoria()  # Evitar contaminación del historial previo
+            idea = self.txt_idea.get("1.0", "end").strip()
+            tipo = "canción" if self.modo_var.get() == "audio" else "vídeo" if self.modo_var.get() == "video" else "imagen"
+            peticion = f"MODO A: Devuelve SOLO 3 ideas, una por línea con formato '1. Idea', '2. Idea', '3. Idea'. Tema: {tipo} con estilos: '{self.footer.estilos_texto()}'."
 
-        # Contexto del MODELO activo → ideas a medida de su estilo
-        peticion += self._contexto_modelo_para_ideas()
+            # Contexto del MODELO activo → ideas a medida de su estilo
+            peticion += self._contexto_modelo_para_ideas()
 
-        # Contexto LoRAs/personaje activos
-        peticion += self._contexto_loras_personaje("las 3 ideas")
+            # Contexto LoRAs/personaje activos
+            peticion += self._contexto_loras_personaje("las 3 ideas")
 
-        if idea: peticion += f"\n\nTema añadido por el usuario: {idea}."
+            if idea: peticion += f"\n\nTema añadido por el usuario: {idea}."
 
-        self.set_estado("⏳ Generando ideas...", "#f39c12")
-        self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
-        self.toggle_botones(False)
-        self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
+            self.set_estado("⏳ Generando ideas...", "#f39c12")
+            self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
+            self.toggle_botones(False)
+            self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
+        except Exception as e:
+            logger.exception("cmd_ideas falló")
+            self.set_estado(f"❌ Error al preparar ideas: {e}", "#e74c3c")
 
     def cmd_prompt(self):
         self._ocultar_ideas()

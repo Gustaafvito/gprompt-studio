@@ -152,7 +152,7 @@ class PromptsInyeccionService:
         if not specs:
             return system_prompt
 
-        max_c = specs["max_chars"]
+        max_c = specs.get("max_chars") or 2000
         if max_c >= 1000:
             palabras_obj, detalle = "80-150", "MUY DETALLADO"
         else:
@@ -163,9 +163,12 @@ class PromptsInyeccionService:
         extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         if specs.get('nota'):
             extra += f"• Rating del modelo: ⭐ {specs['nota']}/5\n"
-        extra += f"• Mejor para: {specs['best_for']}\n"
-        extra += f"• Estructura del prompt: {specs['prompt_formula']}\n"
-        extra += f"• Ejemplo de referencia: {specs['prompt_ejemplo']}\n"
+        if specs.get('best_for'):
+            extra += f"• Mejor para: {specs['best_for']}\n"
+        if specs.get('prompt_formula'):
+            extra += f"• Estructura del prompt: {specs['prompt_formula']}\n"
+        if specs.get('prompt_ejemplo'):
+            extra += f"• Ejemplo de referencia: {specs['prompt_ejemplo']}\n"
         extra += f"• OBJETIVO DE LONGITUD: {palabras_obj} palabras (~{max_c} caracteres). {detalle}.\n"
         extra += f"• ⛔ LÍMITE ABSOLUTO INNEGOCIABLE: {max_c} caracteres totales.\n"
 
