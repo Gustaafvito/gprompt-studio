@@ -278,6 +278,7 @@ GRUPOS_IMAGEN = [
         "Kling O1 Image Model",
     ])),
     ("── Qwen (Alibaba en SeaArt) ──", sorted([
+        "Qwen-Image",
         "Qwen Image 2.0 Pro",
     ])),
     ("── Ideogram (en SeaArt) ──", sorted([

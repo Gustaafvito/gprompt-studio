@@ -4530,5 +4530,21 @@
     ],
     "max_chars": 5500,
     "best_for": "generación de imágenes de alta calidad con prompts detallados y extendidos"
+  },
+  "Qwen-Image": {
+    "nota": 4.6,
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "best_for": "generación de imágenes realistas con control preciso mediante prompt negativo"
   }
 }
