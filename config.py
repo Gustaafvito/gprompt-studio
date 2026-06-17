@@ -278,6 +278,9 @@ GRUPOS_IMAGEN = [
     ("── Reve ──", sorted([
         "Reve 2.0",
     ])),
+    ("── Wan 2.7 ──", sorted([
+        "Wan 2.7 Image", "Wan 2.7 Image Pro",
+    ])),
     ("── Realismo SD ──", sorted([
         "Alchemist Mix (Illustrious Realism)",
         "CyberRealistic",

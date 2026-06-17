@@ -4137,5 +4137,66 @@
     "prompt_formula": "Lenguaje natural descriptivo. Texto que aparecerá en la imagen entre comillas dobles. Estructura: [Resumen de imagen]. [Sujeto principal], [Pose/acción], [Entorno], [Iluminación], [Estilo], [Detalles técnicos].",
     "prompt_ejemplo": "A vintage 1970s rock concert poster with bold typography saying \"MIDNIGHT TOUR\" in golden letters, psychedelic background with swirling colors, retro design, warm tones, professional typography, concert photography style",
     "limitaciones": "Sin negative prompt. Máx ~150-160 palabras para mejores resultados. Scripts no latinos (árabe, chino) pueden renderizar mal."
+  },
+  "Wan 2.7 Image": {
+    "nota": 4.5,
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "max_chars": 5000,
+    "max_chars_negative": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Modelo Wan 2.7 de SeaArt para generación de imágenes en lenguaje natural. Buena comprensión de prompt, portrait, diseño general y escenas complejas. Soporte para prompts largos (hasta 5000 chars).",
+    "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada de la escena. NEGATIVE PROMPT: elementos a evitar (max 2000 chars).",
+    "prompt_ejemplo": "A serene Japanese garden at dawn, stone lanterns casting warm light on a koi pond, cherry blossoms floating on the water, soft morning mist, cinematic composition, highly detailed",
+    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
+  },
+  "Wan 2.7 Image Pro": {
+    "nota": 4.7,
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": true,
+    "max_chars": 5000,
+    "max_chars_negative": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality",
+      "Pro"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Versión Pro de Wan 2.7: mayor detalle y claridad profesional. Especializada en retratos, renderizado de texto en imagen, composición multi-elemento, diseño gráfico, marketing y product shots.",
+    "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada con énfasis en calidad y detalle. NEGATIVE PROMPT: elementos a evitar (max 2000 chars).",
+    "prompt_ejemplo": "Professional product shot of a luxury perfume bottle on a marble surface, dramatic studio lighting, bokeh background, ultra-sharp focus, 8K resolution, commercial photography style",
+    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
   }
 }
