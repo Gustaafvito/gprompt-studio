@@ -2872,29 +2872,27 @@
     "limitaciones": "Más lento que Flux Klein."
   },
   "Seedream 4.5": {
-    "nota": 4.6,
+    "nota": 3.1,
+    "vigente": true,
     "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",
-      "16:9",
-      "9:16",
+      "1:2",
+      "2:1",
       "2:3",
-      "3:2"
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9",
+      "9:21",
+      "21:9"
     ],
     "max_chars": 2000,
-    "modos_gen": [
-      "High Resolution"
-    ],
-    "best_for": "Seedream 4.5. Salida 2K-4K. ~1m 5s. Alta resolución, fotorrealismo, soporta referencias.",
-    "prompt_formula": "Lenguaje natural detallado. Mencionar resolución target.",
-    "prompt_ejemplo": "Highly detailed product photo of a luxury watch, macro lens, perfect studio lighting, 4K resolution, commercial quality",
-    "prompt_tips": [
-      "RESOLUCIÓN EXPLÍCITA: Menciona 2K, 4K si necesitas alta calidad.",
-      "REFERENCIAS: Soporta imágenes de estilo.",
-      "MACRO/DETALLE: Excelente para productos y texturas."
-    ],
-    "limitaciones": "Lento (~1m 5s)."
+    "best_for": "generación y edición de imágenes de alta fidelidad con capacidades multimodales avanzadas"
   },
   "Seedream 4 4K": {
     "nota": 4.5,

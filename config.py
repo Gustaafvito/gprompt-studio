@@ -295,6 +295,7 @@ GRUPOS_IMAGEN = [
     ])),
     ("── Seedream (ByteDance en SeaArt) ──", sorted([
         "Seedream 4.0",
+        "Seedream 4.5",
         "Seedream 5.0 Lite",
     ])),
     ("── Wan 2.6 ──", sorted([
