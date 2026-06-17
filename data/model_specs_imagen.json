@@ -4515,5 +4515,20 @@
     "max_chars": 2000,
     "max_chars_negative": 2000,
     "best_for": "generación de imágenes con precisión y control profesional"
+  },
+  "Wan 2.2": {
+    "nota": 4.2,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 5500,
+    "best_for": "generación de imágenes de alta calidad con prompts detallados y extendidos"
   }
 }
