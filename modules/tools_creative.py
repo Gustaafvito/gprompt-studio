@@ -46,11 +46,37 @@ class ToolsCreativeService:
         self.app.dialogs.set_estado("🎲 Pensando algo creativo...", "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
+        # Contexto del modelo activo para generar ideas acordes a sus fortalezas
+        contexto_modelo = ""
+        try:
+            if modo == "imagen":
+                modelo = self.app.combo_modelo_imagen.get()
+                specs = get_image_model_specs(modelo) if modelo else None
+                if specs and specs.get("best_for"):
+                    best = specs["best_for"][:200]
+                    tipo = "prosa natural" if specs.get("is_natural") else "tags SD/SDXL"
+                    contexto_modelo = (
+                        f" El modelo activo es '{modelo}', ideal para: {best}. "
+                        f"Genera una idea especialmente adecuada para ese modelo (formato {tipo})."
+                    )
+            elif modo == "video":
+                modelo = self.app.combo_modelo_video.get()
+                specs = get_model_specs(modelo) if modelo else None
+                if specs and specs.get("best_for"):
+                    contexto_modelo = f" El modelo activo es '{modelo}', ideal para: {specs['best_for'][:200]}. Genera una idea de vídeo que aproveche sus puntos fuertes."
+            elif modo == "audio":
+                modelo = self.app.combo_modelo_audio.get() if hasattr(self.app, "combo_modelo_audio") else ""
+                specs = get_audio_model_specs(modelo) if modelo else None
+                if specs and specs.get("best_for"):
+                    contexto_modelo = f" El modelo activo es '{modelo}', ideal para: {specs['best_for'][:200]}. Genera una idea musical acorde."
+        except Exception as e:
+            logger.debug(f"[silent sorprendeme ctx] {e}")
+
         peticion = (
             f"Genera UNA SOLA idea creativa, original y visualmente interesante para un prompt de {modo}. "
             f"Debe ser una escena con: sujeto específico + acción/situación + atmósfera + un toque de originalidad. "
             f"Estilo: ni demasiado cliché ni demasiado abstracta. Algo que dé ganas de generarla. "
-            f"Evita conceptos sobreusados (cyberpunk genérico, dragones simples, etc). "
+            f"Evita conceptos sobreusados (cyberpunk genérico, dragones simples, etc).{contexto_modelo} "
             f"Responde con UNA SOLA frase en español, máximo 30 palabras, sin explicaciones."
         )
 

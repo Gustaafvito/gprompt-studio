@@ -2057,21 +2057,16 @@
   },
   "Midjourney v8.1": {
     "nota": 5.0,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": true,
     "ratios": [
       "1:1",
+      "1:2",
       "2:3",
-      "3:2",
-      "9:16",
-      "16:9",
-      "4:5",
-      "5:4",
-      "21:9",
-      "3:1",
-      "1:3"
+      "4:3",
+      "9:16"
     ],
-    "max_chars": 4000,
+    "max_chars": 2000,
     "modos_gen": [
       "Standard",
       "Turbo",
@@ -2081,7 +2076,8 @@
     "best_for": "Modelo más reciente de Midjourney (lanzado 30 abril 2026, default actual). 4-5× más rápido que V7 en jobs estándar. Primer modelo con HD 2K nativo (sin upscale). Mejor lectura de prompt, retención de detalles pequeños, --raw para más adherencia. Ideal para: arte conceptual de máxima calidad, fotografía profesional editorial, branding corporativo, marketing premium, personajes consistentes con Omni Reference, series narrativas, product shots, wallpapers HD. Requiere Global V7/V8 Personalization Profile desbloqueado.",
     "prompt_formula": "Lenguaje natural en frases completas (no keywords). ORDEN: scene/setting → subject → action → style/medium → lighting → mood → camera/lens → composition. Parámetros al final, todos opcionales:\n  --ar X:Y → ratio (1:1 hasta 4:1 panorámico)\n  --v 8.1 → fuerza versión (default si está en settings)\n  --hd → activa salida HD 2K\n  --raw → elimina estilo MJ por defecto (más fotográfico)\n  --stylize 0-1000 (default 100) → fuerza del estilo MJ\n  --chaos 0-100 (default 0) → variedad entre los 4 results\n  --weird 0-3000 → composiciones extrañas/únicas\n  --q .25/.5/1/2 → tiempo de render (más = más detalle)\n  --sref [url/code] → referencia de estilo\n  --oref [url] → personaje consistente (V7/V8)\n  --p [code] → personalization profile\n  --no [items] → exclusión (equivalente a negative)\n  --seed N → reproducibilidad",
     "prompt_ejemplo": "Cinematic portrait of an elderly fisherman mending nets on a wooden boat at golden hour, weathered hands and face full of stories, soft warm light from the setting sun, deep blue ocean in the background, shot on 35mm film with shallow depth of field --ar 16:9 --stylize 250 --raw --no boat name, watermark, text",
-    "limitaciones": "Plan gratuito: NO existe (Midjourney retiró el free trial; Basic desde $10/mes). Sin negative tradicional (usar --no). Sin pesos numéricos estilo SD. Solo Discord o midjourney.com. Text rendering mejor que V7 pero no perfecto. Aspect ratios >2:1 marcados experimentales. --sv 6 con Style References cuesta 4× más GPU. --hd y --q 4 cuestan 4× más GPU cada uno; combinados, 16× más."
+    "limitaciones": "Plan gratuito: NO existe (Midjourney retiró el free trial; Basic desde $10/mes). Sin negative tradicional (usar --no). Sin pesos numéricos estilo SD. Solo Discord o midjourney.com. Text rendering mejor que V7 pero no perfecto. Aspect ratios >2:1 marcados experimentales. --sv 6 con Style References cuesta 4× más GPU. --hd y --q 4 cuestan 4× más GPU cada uno; combinados, 16× más.",
+    "vigente": true
   },
   "Midjourney v8": {
     "nota": 4.9,
@@ -2187,19 +2183,16 @@
   },
   "Niji 7": {
     "nota": 4.9,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": true,
     "ratios": [
       "1:1",
+      "1:2",
       "2:3",
-      "3:2",
-      "9:16",
-      "16:9",
-      "4:5",
-      "5:4",
-      "21:9"
+      "4:3",
+      "9:16"
     ],
-    "max_chars": 4000,
+    "max_chars": 2000,
     "modos_gen": [
       "Standard",
       "Turbo",
@@ -2208,22 +2201,21 @@
     "best_for": "Lanzado 9 enero 2026. Modelo especializado en anime/manga, la línea Niji actual. Mejoras clave: ojos crystal-clear, reflejos, detalles finos de fondo, coherencia mejorada en poses complejas y multi-arm setups, interpretación MÁS LITERAL del prompt (respeta colores específicos y peinados exactos), mejor text rendering Japanese, mejor --sref performance. Soporta Personalization y Moodboards. Perfecto para: anime/manga art, ilustraciones japonesas, character design, wallpapers, game assets, illustration commercial work.",
     "prompt_formula": "Lenguaje natural + CLI (misma sintaxis que MJ). ORDEN: character/subject → outfit/style → pose/action → scene → details (hair color, eye color, expression) → mood. Parámetros: --niji 7, --ar X:Y, --stylize 0-1000, --sref [url/code], --cref [url] (Niji 6/V6-era control; en Niji 7 algunas implementaciones todavía lo usan), --p [code] (Personalization), --no [items], --seed N. Más literal que Niji 6: prompts vagos dan resultados diferentes a Niji 6/5.",
     "prompt_ejemplo": "Beautiful anime girl with long silver hair tied in a ponytail, large expressive violet eyes, wearing a traditional Japanese school uniform, cherry blossom petals falling around her, soft afternoon light, detailed background of a Japanese garden --niji 7 --ar 3:4 --stylize 500 --no background clutter, watermark",
-    "limitaciones": "Solo anime/ilustración (NO usar para fotorrealismo). Interpretación más literal: prompts vagos rinden distinto que Niji 6. --cref en Niji 7 es Niji 6/V6-era (no V7-path completo). Sin --oref nativo. Sin --raw. Plan gratuito no existe (igual que Midjourney general)."
+    "limitaciones": "Solo anime/ilustración (NO usar para fotorrealismo). Interpretación más literal: prompts vagos rinden distinto que Niji 6. --cref en Niji 7 es Niji 6/V6-era (no V7-path completo). Sin --oref nativo. Sin --raw. Plan gratuito no existe (igual que Midjourney general).",
+    "vigente": true
   },
   "Niji 6": {
     "nota": 4.7,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": true,
     "ratios": [
       "1:1",
+      "1:2",
       "2:3",
-      "3:2",
-      "9:16",
-      "16:9",
-      "4:5",
-      "5:4"
+      "4:3",
+      "9:16"
     ],
-    "max_chars": 4000,
+    "max_chars": 2000,
     "modos_gen": [
       "Standard",
       "Turbo",
@@ -2232,7 +2224,8 @@
     "best_for": "Lanzado junio 2024. Default Niji hasta enero 2026. Japanese text rendering mejorado (kana, kanji básicos, Chinese simple). Mejor estructura de ojos anime vs Niji 5. Menos artifacts. Sigue siendo buena opción para diseño de personajes con texto japonés visible (signage, manga panels, posters anime). Estilo ligeramente más estilizado/expresivo que Niji 7 (que es más literal).",
     "prompt_formula": "Lenguaje natural anime-focused. ORDEN: character → outfit → scene → style → mood. Parámetros: --niji 6, --ar X:Y, --stylize 0-1000, --cref [url] (Character Reference, funciona bien), --sref [url/code], --no [items], --q .25/.5/1, --seed N. Acepta multi-prompts con :: para weight.",
     "prompt_ejemplo": "Anime warrior princess with flowing white dress and silver armor, holding a katana, standing on a cliff overlooking a stormy ocean, dramatic clouds, epic cinematic lighting, manga illustration style --niji 6 --ar 16:9 --stylize 300",
-    "limitaciones": "Niji 7 superior en coherencia, ojos, multi-poses y --sref. Sin Personalization completa (Niji 7 sí). Más estilizado que Niji 7 (puede ser pro o contra según uso). Sin --oref."
+    "limitaciones": "Niji 7 superior en coherencia, ojos, multi-poses y --sref. Sin Personalization completa (Niji 7 sí). Más estilizado que Niji 7 (puede ser pro o contra según uso). Sin --oref.",
+    "vigente": true
   },
   "Niji 5": {
     "nota": 4.5,
@@ -4115,5 +4108,35 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 entrenado en solo 30 imágenes. Trigger: 'in the style of fred herzog'. Mejor con escenas callejeras y arquitectura urbana retro.",
     "vigente": true
+  },
+  "Ideogram 4": {
+    "nota": 4.8,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "max_chars": 2000,
+    "ratios": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "4:5",
+      "5:4",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality",
+      "Turbo"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Última versión de Ideogram disponible en SeaArt. Líder en text-in-image: renderizado de tipografías, logos, carteles, branding y diseño gráfico con texto visible. Excelente comprensión de prompts en lenguaje natural.",
+    "prompt_formula": "Lenguaje natural descriptivo. Texto que aparecerá en la imagen entre comillas dobles. Estructura: [Resumen de imagen]. [Sujeto principal], [Pose/acción], [Entorno], [Iluminación], [Estilo], [Detalles técnicos].",
+    "prompt_ejemplo": "A vintage 1970s rock concert poster with bold typography saying \"MIDNIGHT TOUR\" in golden letters, psychedelic background with swirling colors, retro design, warm tones, professional typography, concert photography style",
+    "limitaciones": "Sin negative prompt. Máx ~150-160 palabras para mejores resultados. Scripts no latinos (árabe, chino) pueden renderizar mal."
   }
 }

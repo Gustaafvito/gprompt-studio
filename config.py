@@ -262,9 +262,15 @@ GRUPOS_IMAGEN = [
         "GPT Image 1.5",
         "GPT Image 2",
     ])),
+    ("── Ideogram (en SeaArt) ──", sorted([
+        "Ideogram 4",
+    ])),
     ("── MAI Image (Microsoft en SeaArt) ──", sorted([
         "MAI-Image-2.5",
         "MAI-Image-2.5-Flash",
+    ])),
+    ("── Midjourney / Niji (en SeaArt) ──", sorted([
+        "Midjourney v8.1", "Niji 6", "Niji 7",
     ])),
     ("── Nano Banana ──", sorted([
         "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2",
