@@ -330,6 +330,7 @@ class ArquitectoApp(
             self.after(180, self.deiconify)
             self.after(220, lambda: self.lift())
             self.after(250, lambda: self.focus_force())
+            self.after(300, lambda: self.txt_idea.focus_set() if hasattr(self, "txt_idea") else None)
         except Exception:
             try:
                 self.deiconify()
