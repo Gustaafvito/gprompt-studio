@@ -3,7 +3,7 @@
     "titulo": "Caída cazarecompensas",
     "modo": "video",
     "modelo": "Seedance 2.0",
-    "plataforma": "SeaArt Video",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "multi-shot",
@@ -24,7 +24,7 @@
     "titulo": "Chica espejo (Seedance)",
     "modo": "video",
     "modelo": "Seedance 2.0",
-    "plataforma": "SeaArt Video",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "multi-shot",
@@ -45,7 +45,7 @@
     "titulo": "Henshin - Jinete Enmascarado",
     "modo": "imagen",
     "modelo": "Z Image Turbo",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "medio",
     "tags": [
       "tokusatsu",
@@ -64,7 +64,7 @@
     "titulo": "Hoja táctica NEON APOCALYPSE",
     "modo": "imagen",
     "modelo": "GPT Image 2",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "UI design",
@@ -84,7 +84,7 @@
     "titulo": "Infografía AURORA-7 smartphone",
     "modo": "imagen",
     "modelo": "GPT Image 2",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "producto",
@@ -103,7 +103,7 @@
     "titulo": "Persecución cazarecompensas",
     "modo": "video",
     "modelo": "Seedance 2.0",
-    "plataforma": "SeaArt Video",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "multi-shot",
@@ -123,7 +123,7 @@
     "titulo": "Póster cinematográfico combate MMA",
     "modo": "imagen",
     "modelo": "GPT Image 2",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "medio",
     "tags": [
       "póster",
@@ -162,7 +162,7 @@
     "titulo": "Retrato cyberpunk con reflejos neon",
     "modo": "imagen",
     "modelo": "Z Image Turbo",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "principiante",
     "tags": [
       "retrato",
@@ -181,7 +181,7 @@
     "titulo": "Steampunk Wonderland infografía",
     "modo": "imagen",
     "modelo": "Z Image Turbo",
-    "plataforma": "SeaArt / Tensor.Art",
+    "plataforma": "SeaArt",
     "dificultad": "avanzado",
     "tags": [
       "steampunk",

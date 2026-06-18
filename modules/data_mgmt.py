@@ -1051,7 +1051,8 @@ class DataMgmtService:
         lbl_subtitulo.pack(pady=(0, 6))
 
         # ── Estado de filtros ────────────────────────────────────────
-        filtro_modo_var = ctk.StringVar(value="todos")
+        modo_actual = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "todos"
+        filtro_modo_var = ctk.StringVar(value=modo_actual)
         filtro_plat_var = ctk.StringVar(value="todas")
         filtro_dif_var = ctk.StringVar(value="todas")
         busqueda_var = ctk.StringVar(value="")
@@ -1088,7 +1089,7 @@ class DataMgmtService:
                          ("🎬 Vídeo", "video"), ("🎵 Audio", "audio")]:
             b = ctk.CTkButton(
                 fila_modos, text=txt, width=78, height=24,
-                fg_color=c["fg_frame"] if val == "todos" else c["fg_dark"],
+                fg_color=c["fg_frame"] if val == modo_actual else c["fg_dark"],
                 hover_color="#2a2a3a", font=ctk.CTkFont(size=10),
                 command=lambda v=val: _set_modo(v)
             )
