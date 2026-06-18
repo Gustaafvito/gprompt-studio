@@ -791,19 +791,66 @@ NEGATIVE_PRESETS = {
     "Censura":       "censored, mosaic, blur, bar censor, black bar, pixelated censor, safe, covered",
     "Deformación":   "deformed, distorted, mutation, mutated, disfigured, bad proportions, cropped, out of frame, duplicate",
     "Fondos":        "ugly background, cluttered, messy, distracting background, busy background, multiple subjects",
+    "Fotografía":    "film grain, chromatic aberration, motion blur, out of focus, heavy noise, lens flare, overexposed highlights",
+    "Pose":          "awkward pose, impossible pose, bad posture, twisted body, unnatural position, floating limbs, stiff pose",
     "Realismo":      "cartoon, anime, illustration, painting, drawing, 3d render, CGI, unrealistic, plastic skin, doll-like",
     "Texto/Marcas":  "text, watermark, signature, logo, username, caption, title, subtitle, letters, numbers, copyright",
 }
 
 PRESET_COLORES = {
     "Anatomía":     ("#3a2020", "#5a3030"),
-    "Texto/Marcas": ("#2a2a3a", "#3a3a5a"),
-    "Baja Calidad": ("#3a3020", "#5a4a30"),
-    "Realismo":     ("#203a2a", "#305a3a"),
     "Anime/2D":     ("#2a203a", "#3a305a"),
+    "Baja Calidad": ("#3a3020", "#5a4a30"),
     "Censura":      ("#3a2030", "#5a3050"),
-    "Fondos":       ("#203030", "#304a4a"),
     "Deformación":  ("#3a2a20", "#5a3a30"),
+    "Fondos":       ("#203030", "#304a4a"),
+    "Fotografía":   ("#1a2a3a", "#2a3a5a"),
+    "Pose":         ("#2a1a3a", "#3a2a5a"),
+    "Realismo":     ("#203a2a", "#305a3a"),
+    "Texto/Marcas": ("#2a2a3a", "#3a3a5a"),
+}
+
+NEGATIVE_PAQUETES = {
+    "📸 Foto Pro":    ["Anatomía", "Baja Calidad", "Texto/Marcas", "Deformación"],
+    "🎨 Ilustración": ["Realismo", "Baja Calidad", "Texto/Marcas"],
+    "🖼 Anime Pro":   ["Realismo", "Baja Calidad", "Anatomía"],
+    "🧹 Limpieza":    ["Baja Calidad", "Texto/Marcas", "Fondos"],
+}
+
+TAG_PICKER_CATEGORIES = {
+    "💡 Iluminación": [
+        "golden hour", "dramatic lighting", "soft light", "rim lighting",
+        "backlit", "neon glow", "studio lighting", "volumetric light",
+        "cinematic lighting", "chiaroscuro", "moonlight", "candlelight",
+        "sunbeams", "hard shadows", "god rays",
+    ],
+    "📷 Cámara": [
+        "close-up", "macro shot", "wide angle", "telephoto lens", "bokeh",
+        "shallow depth of field", "fisheye lens", "tilt-shift", "aerial view",
+        "dutch angle", "over the shoulder", "POV shot", "low angle",
+        "high angle", "bird's eye view",
+    ],
+    "🎭 Mood": [
+        "melancholic", "euphoric", "mysterious", "peaceful", "tense",
+        "dreamy", "nostalgic", "eerie", "romantic", "epic", "serene",
+        "haunting", "joyful", "somber", "whimsical",
+    ],
+    "🖼 Composición": [
+        "rule of thirds", "centered composition", "symmetric", "leading lines",
+        "framed shot", "minimalist", "layered depth", "negative space",
+        "dynamic composition", "silhouette", "foreground elements",
+    ],
+    "✨ Calidad": [
+        "ultra detailed", "masterpiece", "8k resolution", "photorealistic",
+        "sharp focus", "professional", "award-winning", "intricate details",
+        "hyper realistic", "high resolution", "RAW photo", "film photography",
+    ],
+    "🎨 Arte/Estilo": [
+        "hyperrealistic", "impressionist", "art nouveau", "cyberpunk",
+        "vintage", "watercolor", "oil painting", "concept art",
+        "digital painting", "anime style", "film noir", "baroque",
+        "surrealism", "pixel art", "sketch",
+    ],
 }
 
 # ── Constantes IA ─────────────────────────────────────────────────

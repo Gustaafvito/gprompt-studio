@@ -53,7 +53,7 @@ from modules.prompt_helpers import (
     recortar_si_excede as _h_recortar_si_excede,
 )
 from modules.theme import apply_theme_colors
-from modules.windows import abrir_batch
+from modules.windows import abrir_batch, abrir_batch_variables
 from prompts import (
     BRIEF_MODIFIER,
     NEGATIVE_BASE_NSFW,
@@ -1086,6 +1086,12 @@ class CoreMixin:
         except Exception as e:
             logger.debug(f"[silent] {e}")
         abrir_batch(self)
+
+    def cmd_batch_variables(self):
+        try: self.sesion._sesion_log("⚡ Abrió Batch Variables")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+        abrir_batch_variables(self)
 
     def cmd_reset(self):
         # Comprobar si hay trabajo no guardado

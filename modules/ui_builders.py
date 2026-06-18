@@ -97,11 +97,13 @@ from config import (
     MODELOS_AUDIO_FLAT,
     MODELOS_IMAGEN_FLAT,
     MODELOS_VIDEO_FLAT,
+    NEGATIVE_PAQUETES,
     NEGATIVE_PRESETS,
     PLATAFORMAS_IMAGEN_LISTA,
     PRESET_COLORES,
     RATIOS_IMAGEN,
     RATIOS_VIDEO,
+    TAG_PICKER_CATEGORIES,
     VOCES_AUDIO,
     get_theme_colors,
 )
@@ -975,9 +977,10 @@ class UIBuildersService:
         self.app.tabview.add("⚙️ Ajustes Extra")
         self.app.tabview.add("🎨 Estilos")
         self.app.tabview.add("🚫 Negativos")
+        self.app.tabview.add("🏷️ Tags")
 
         # Forzar el color del contenido de cada tab
-        for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
+        for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"):
             try:
                 self.app.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
             except Exception as _e:
@@ -997,6 +1000,9 @@ class UIBuildersService:
             tab_neg, text="🚫 El modelo o plataforma actual NO utiliza Negative Prompts.",
             fg_color="transparent",
             text_color=c["muted_text"], font=ctk.CTkFont(size=12, slant="italic"))
+
+        # Tab 4: Tags picker
+        self._build_tags_tab(self.app.tabview.tab("🏷️ Tags"))
 
     def _build_ajustes_extra(self, parent):
         is_light = _get_real_is_light()
@@ -1246,6 +1252,51 @@ class UIBuildersService:
             if hasattr(self.app, 'lbl_estilos_sel'):
                 self.app.lbl_estilos_sel.configure(text=f"✦ {' + '.join(sel)}")
 
+    def _build_tags_tab(self, parent):
+        is_light = _get_real_is_light()
+        c = get_theme_colors(is_light)
+        tab_bg = c["panel_bg"]
+
+        # Header con hint
+        hdr = ctk.CTkFrame(parent, fg_color=tab_bg)
+        hdr.pack(fill="x", padx=4, pady=(2, 0))
+        ctk.CTkLabel(hdr, text="Clic para añadir al final de la idea",
+                     font=ctk.CTkFont(size=9), fg_color="transparent",
+                     text_color=c["muted_text"]).pack(side="left")
+
+        scroll = ctk.CTkScrollableFrame(parent, fg_color=tab_bg, scrollbar_button_color=c["combo_border"])
+        scroll.pack(fill="both", expand=True, padx=2, pady=(2, 0))
+
+        btn_tag_s = {"height": 20, "corner_radius": 4, "font": ctk.CTkFont(size=9),
+                     "fg_color": c.get("fg_dark", "#1e2533"),
+                     "hover_color": c.get("combo_border", "#374151"),
+                     "text_color": c["panel_text"]}
+
+        for cat_name, tags in TAG_PICKER_CATEGORIES.items():
+            ctk.CTkLabel(scroll, text=cat_name,
+                         font=ctk.CTkFont(size=9, weight="bold"),
+                         fg_color="transparent",
+                         text_color=c["muted_text"], anchor="w").pack(
+                         fill="x", padx=2, pady=(5, 1))
+
+            COLS = 3
+            for i, tag in enumerate(tags):
+                if i % COLS == 0:
+                    row_f = ctk.CTkFrame(scroll, fg_color="transparent")
+                    row_f.pack(fill="x", pady=1)
+
+                def _insert_tag(t=tag):
+                    try:
+                        current = self.app.txt_idea.get("1.0", "end-1c")
+                        sep = ", " if current.strip() else ""
+                        self.app.txt_idea.insert("end", sep + t)
+                        self.app.txt_idea.see("end")
+                    except Exception:
+                        pass
+
+                ctk.CTkButton(row_f, text=tag, width=110, command=_insert_tag,
+                              **btn_tag_s).pack(side="left", padx=2)
+
     def _build_negative(self, parent):
         is_light = _get_real_is_light()
         c = get_theme_colors(is_light)
@@ -1264,6 +1315,30 @@ class UIBuildersService:
                       text_color="#ffffff",
                       command=self.app.footer._limpiar_negatives).pack(side="right", padx=4)
 
+        # Paquetes predefinidos (activan múltiples presets a la vez)
+        frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)
+        frame_paquetes.pack(fill="x", pady=(0, 3))
+        ctk.CTkLabel(frame_paquetes, text="Paquetes:",
+                     font=ctk.CTkFont(size=9, weight="bold"),
+                     fg_color="transparent",
+                     text_color=c["muted_text"]).pack(side="left", padx=(2, 4))
+
+        def _aplicar_paquete(nombres_presets):
+            for n in nombres_presets:
+                if n in self.app.preset_vars:
+                    self.app.preset_vars[n].set(True)
+                    fg_off = PRESET_COLORES.get(n, ("#333", "#555"))[0]
+                    if n in self.app.preset_btns:
+                        self.app.preset_btns[n].configure(fg_color="#2ecc71", text=f"✓ {n}")
+            self.app.footer._rebuild_negative_text()
+
+        for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
+            ctk.CTkButton(frame_paquetes, text=paq_nombre, height=22, width=100,
+                          fg_color="#1e3a5f", hover_color="#162d49",
+                          text_color="#ffffff", font=ctk.CTkFont(size=9),
+                          command=lambda p=paq_presets: _aplicar_paquete(p)).pack(
+                          side="left", padx=2)
+
         self.app._frame_neg_presets = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app._frame_neg_presets.pack(fill="x", pady=(2, 4))
         frame_presets = self.app._frame_neg_presets  # alias
@@ -1279,7 +1354,7 @@ class UIBuildersService:
                 self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
                 self.app.footer._rebuild_negative_text()
 
-            btn = ctk.CTkButton(frame_presets, text=nombre_p, height=24, width=100,
+            btn = ctk.CTkButton(frame_presets, text=nombre_p, height=22, width=90,
                                 fg_color=fg, hover_color=hv, text_color="#ffffff",
                                 font=ctk.CTkFont(size=10), command=_toggle)
             btn.pack(side="left", padx=2)
@@ -1674,6 +1749,7 @@ class UIBuildersService:
             ]),
             ("📦 UTILIDADES", GRIS_UTIL, [
                 ("📦 Batch",           80, GRIS_UTIL,    self.app.cmd_batch,              "Generación masiva"),
+                ("⚡ Vars",            75, GRIS_UTIL,    self.app.cmd_batch_variables,    "Batch de variables: sustituye {var} con múltiples valores"),
                 ("🖼 Preview",         90, GRIS_UTIL,    self.app.cmd_previsualizar,      "Boceto rápido"),
             ]),
         ]

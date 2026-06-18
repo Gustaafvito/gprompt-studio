@@ -572,6 +572,166 @@ def abrir_loras(app):
     entry_buscar.focus_set()
 
 
+# BATCH VARIABLES
+
+def abrir_batch_variables(app):
+    """Modal para sustituir {variables} en la idea actual con múltiples valores."""
+    import itertools
+    import re
+    cc = _card_colors()
+    is_lt = _is_light()
+
+    plantilla = app.txt_idea.get("1.0", "end").strip()
+    vars_detectadas = list(dict.fromkeys(re.findall(r'\{(\w+)\}', plantilla)))
+
+    ventana = GPromptWindow(app)
+    ventana.title("⚡ Batch de Variables")
+    ventana.geometry("600x620")
+    ventana.grab_set()
+
+    ctk.CTkLabel(ventana, text="⚡ Batch de Variables",
+                 font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 2))
+    ctk.CTkLabel(ventana, text="Usa {variable} en tu idea y aquí define múltiples valores",
+                 font=ctk.CTkFont(size=10),
+                 text_color=cc["card_text2"]).pack(pady=(0, 8))
+
+    # Plantilla editable
+    frame_tmpl = ctk.CTkFrame(ventana)
+    frame_tmpl.pack(fill="x", padx=15, pady=(0, 8))
+    ctk.CTkLabel(frame_tmpl, text="Plantilla (idea con {variables}):",
+                 font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
+    txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=12))
+    txt_tmpl.pack(fill="x", padx=8, pady=(0, 8))
+    txt_tmpl.insert("1.0", plantilla)
+
+    # Frame de variables dinámico
+    frame_vars_outer = ctk.CTkFrame(ventana)
+    frame_vars_outer.pack(fill="x", padx=15, pady=(0, 8))
+    ctk.CTkLabel(frame_vars_outer, text="Variables detectadas (valores separados por coma):",
+                 font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
+
+    entries_vars = {}  # var_name → CTkEntry
+
+    def _refrescar_vars():
+        for w in frame_vars_outer.winfo_children():
+            if hasattr(w, "_es_var_row"):
+                w.destroy()
+        tmpl_text = txt_tmpl.get("1.0", "end").strip()
+        detectadas = list(dict.fromkeys(re.findall(r'\{(\w+)\}', tmpl_text)))
+        entries_vars.clear()
+        for vname in detectadas:
+            row = ctk.CTkFrame(frame_vars_outer, fg_color="transparent")
+            row._es_var_row = True
+            row.pack(fill="x", padx=8, pady=2)
+            ctk.CTkLabel(row, text=f"{{{vname}}}",
+                         font=ctk.CTkFont(size=11, weight="bold"),
+                         text_color="#3b82f6", width=100).pack(side="left", padx=(0, 8))
+            ent = ctk.CTkEntry(row, placeholder_text="val1, val2, val3", font=ctk.CTkFont(size=11))
+            ent.pack(side="left", fill="x", expand=True)
+            entries_vars[vname] = ent
+        if not detectadas:
+            row = ctk.CTkFrame(frame_vars_outer, fg_color="transparent")
+            row._es_var_row = True
+            row.pack(fill="x", padx=8)
+            ctk.CTkLabel(row, text="No se detectaron {variables} en la plantilla.",
+                         font=ctk.CTkFont(size=10), text_color=cc["card_text2"]).pack(anchor="w")
+
+    _refrescar_vars()
+
+    ctk.CTkButton(frame_vars_outer, text="🔄 Detectar variables", height=26, width=160,
+                  fg_color="#374151", hover_color="#4b5563",
+                  font=ctk.CTkFont(size=10),
+                  command=_refrescar_vars).pack(anchor="e", padx=8, pady=(4, 8))
+
+    # Modo: lineal vs combinaciones
+    modo_var = ctk.StringVar(value="lineal")
+    frame_modo = ctk.CTkFrame(ventana, fg_color="transparent")
+    frame_modo.pack(fill="x", padx=15, pady=(0, 6))
+    ctk.CTkLabel(frame_modo, text="Modo:", font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", padx=(0, 8))
+    ctk.CTkRadioButton(frame_modo, text="Lineal (zip)", variable=modo_var, value="lineal").pack(side="left", padx=6)
+    ctk.CTkRadioButton(frame_modo, text="Combinaciones (product, máx 20)", variable=modo_var, value="product").pack(side="left", padx=6)
+
+    # Resultado
+    ctk.CTkLabel(ventana, text="Variaciones generadas:",
+                 font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=15, pady=(0, 2))
+    txt_resultado = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=11), wrap="word")
+    txt_resultado.pack(fill="both", expand=True, padx=15, pady=(0, 4))
+
+    lbl_count = ctk.CTkLabel(ventana, text="", font=ctk.CTkFont(size=10), text_color=cc["card_text2"])
+    lbl_count.pack(pady=(0, 2))
+
+    def _generar():
+        tmpl = txt_tmpl.get("1.0", "end").strip()
+        if not tmpl:
+            return
+        vals_por_var = {}
+        for vname, ent in entries_vars.items():
+            raw = ent.get().strip()
+            if raw:
+                vals_por_var[vname] = [v.strip() for v in raw.split(",") if v.strip()]
+            else:
+                vals_por_var[vname] = [f"{{{vname}}}"]
+
+        if not vals_por_var:
+            txt_resultado.delete("1.0", "end")
+            txt_resultado.insert("1.0", tmpl)
+            lbl_count.configure(text="1 variación (sin variables)")
+            return
+
+        keys = list(vals_por_var.keys())
+        listas = [vals_por_var[k] for k in keys]
+
+        if modo_var.get() == "product":
+            combinaciones = list(itertools.product(*listas))[:20]
+        else:
+            max_len = max(len(l) for l in listas)
+            combinaciones = list(zip(*[l + [l[-1]] * (max_len - len(l)) for l in listas]))
+
+        variaciones = []
+        for combo in combinaciones:
+            texto = tmpl
+            for k, v in zip(keys, combo):
+                texto = texto.replace(f"{{{k}}}", v)
+            variaciones.append(texto)
+
+        txt_resultado.delete("1.0", "end")
+        txt_resultado.insert("1.0", "\n\n---\n\n".join(
+            f"[{i+1}] {v}" for i, v in enumerate(variaciones)
+        ))
+        lbl_count.configure(text=f"{len(variaciones)} variación(es) generadas")
+
+    def _copiar_todo():
+        contenido = txt_resultado.get("1.0", "end").strip()
+        if contenido:
+            ventana.clipboard_clear()
+            ventana.clipboard_append(contenido)
+            lbl_count.configure(text="✅ Copiado al portapapeles")
+
+    def _enviar_a_salida():
+        contenido = txt_resultado.get("1.0", "end").strip()
+        if contenido:
+            app.txt_salida.delete("1.0", "end")
+            app.txt_salida.insert("1.0", contenido)
+            ventana.destroy()
+            app.dialogs.set_estado("⚡ Variaciones volcadas al resultado", "#22c55e")
+
+    frame_btns = ctk.CTkFrame(ventana, fg_color="transparent")
+    frame_btns.pack(fill="x", padx=15, pady=(0, 12))
+    ctk.CTkButton(frame_btns, text="⚡ Generar variaciones", height=32, width=160,
+                  fg_color="#1a8a3c", hover_color="#166d30",
+                  font=ctk.CTkFont(size=11, weight="bold"),
+                  command=_generar).pack(side="left", padx=4)
+    ctk.CTkButton(frame_btns, text="📋 Copiar todo", height=32, width=120,
+                  fg_color="#374151", hover_color="#4b5563",
+                  font=ctk.CTkFont(size=11), command=_copiar_todo).pack(side="left", padx=4)
+    ctk.CTkButton(frame_btns, text="→ Enviar a resultado", height=32, width=150,
+                  fg_color="#1e3a8a", hover_color="#162d6e",
+                  font=ctk.CTkFont(size=11), command=_enviar_a_salida).pack(side="left", padx=4)
+
+    if vars_detectadas:
+        ventana.after(200, _generar)
+
+
 # BATCH
 
 def abrir_batch(app):
