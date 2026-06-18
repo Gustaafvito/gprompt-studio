@@ -323,12 +323,12 @@ class UIBuildersService:
                 ("🎨  Paleta colores", self.app.creative.cmd_color_palette),
             ]),
             ("📝 Plantillas", "#2ea866", [
-                ("🏷 Tags reutilizables (al prompt)", self.app.data.abrir_snippets),
-                ("🧬  Biblioteca ADN", self.app.adn.cmd_ver_biblioteca),
                 ("⚡  Auto-expansión (en idea)", self.app.data.cmd_gestionar_snippets),
+                ("🧬  Biblioteca ADN", self.app.adn.cmd_ver_biblioteca),
                 ("📐  Fórmulas", self.app.data.abrir_formulas),
                 ("📋  Plantillas", self.app._cmd_plantillas_populares),
                 ("💎  Seeds favoritos", self.app.analysis.abrir_seeds_favoritos),
+                ("🏷  Tags reutilizables (al prompt)", self.app.data.abrir_snippets),
             ]),
             ("🎨 UI", "#7a7a8a", [
                 ("⚙️  Ajustes", self.app.dialogs.cmd_preferencias),
