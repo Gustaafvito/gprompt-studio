@@ -1340,25 +1340,31 @@ class UIBuildersService:
                           side="left", padx=2)
 
         self.app._frame_neg_presets = ctk.CTkFrame(parent, fg_color=tab_bg)
-        self.app._frame_neg_presets.pack(fill="x", pady=(2, 4))
-        frame_presets = self.app._frame_neg_presets  # alias
+        self.app._frame_neg_presets.pack(fill="x", pady=(2, 2))
 
-        for nombre_p in NEGATIVE_PRESETS:
-            var = ctk.BooleanVar(value=False)
-            self.app.preset_vars[nombre_p] = var
-            fg, hv = PRESET_COLORES.get(nombre_p, ("#333", "#555"))
+        presets_list = list(NEGATIVE_PRESETS.keys())
+        mitad = (len(presets_list) + 1) // 2
+        filas = [presets_list[:mitad], presets_list[mitad:]]
 
-            def _toggle(n=nombre_p, fg_off=fg):
-                self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
-                activo = self.app.preset_vars[n].get()
-                self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
-                self.app.footer._rebuild_negative_text()
+        for fila in filas:
+            row_f = ctk.CTkFrame(self.app._frame_neg_presets, fg_color="transparent")
+            row_f.pack(fill="x", pady=1)
+            for nombre_p in fila:
+                var = ctk.BooleanVar(value=False)
+                self.app.preset_vars[nombre_p] = var
+                fg, hv = PRESET_COLORES.get(nombre_p, ("#333", "#555"))
 
-            btn = ctk.CTkButton(frame_presets, text=nombre_p, height=22, width=90,
-                                fg_color=fg, hover_color=hv, text_color="#ffffff",
-                                font=ctk.CTkFont(size=10), command=_toggle)
-            btn.pack(side="left", padx=2)
-            self.app.preset_btns[nombre_p] = btn
+                def _toggle(n=nombre_p, fg_off=fg):
+                    self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
+                    activo = self.app.preset_vars[n].get()
+                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
+                    self.app.footer._rebuild_negative_text()
+
+                btn = ctk.CTkButton(row_f, text=nombre_p, height=22, width=90,
+                                    fg_color=fg, hover_color=hv, text_color="#ffffff",
+                                    font=ctk.CTkFont(size=10), command=_toggle)
+                btn.pack(side="left", padx=2)
+                self.app.preset_btns[nombre_p] = btn
 
         self.app.txt_negative = ctk.CTkTextbox(parent, height=36, font=ctk.CTkFont(size=12))
         self.app.txt_negative.pack(fill="x")
@@ -1749,7 +1755,7 @@ class UIBuildersService:
             ]),
             ("📦 UTILIDADES", GRIS_UTIL, [
                 ("📦 Batch",           80, GRIS_UTIL,    self.app.cmd_batch,              "Generación masiva"),
-                ("⚡ Vars",            75, GRIS_UTIL,    self.app.cmd_batch_variables,    "Batch de variables: sustituye {var} con múltiples valores"),
+                ("🎛 Vars",            75, GRIS_UTIL,    self.app.cmd_batch_variables,    "Batch de variables: sustituye {var} con múltiples valores"),
                 ("🖼 Preview",         90, GRIS_UTIL,    self.app.cmd_previsualizar,      "Boceto rápido"),
             ]),
         ]

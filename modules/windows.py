@@ -602,7 +602,7 @@ def abrir_batch_variables(app):
                  font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
     txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=12))
     txt_tmpl.pack(fill="x", padx=8, pady=(0, 8))
-    txt_tmpl.insert("1.0", plantilla)
+    txt_tmpl.insert("1.0", plantilla or "una {animal} en {lugar} con iluminación {luz}")
 
     # Frame de variables dinámico
     frame_vars_outer = ctk.CTkFrame(ventana)
@@ -648,8 +648,8 @@ def abrir_batch_variables(app):
     frame_modo = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_modo.pack(fill="x", padx=15, pady=(0, 6))
     ctk.CTkLabel(frame_modo, text="Modo:", font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", padx=(0, 8))
-    ctk.CTkRadioButton(frame_modo, text="Lineal (zip)", variable=modo_var, value="lineal").pack(side="left", padx=6)
-    ctk.CTkRadioButton(frame_modo, text="Combinaciones (product, máx 20)", variable=modo_var, value="product").pack(side="left", padx=6)
+    ctk.CTkRadioButton(frame_modo, text="Secuencial (valor a valor, mismo índice)", variable=modo_var, value="lineal").pack(side="left", padx=6)
+    ctk.CTkRadioButton(frame_modo, text="Todas las combis (máx 20)", variable=modo_var, value="product").pack(side="left", padx=6)
 
     # Resultado
     ctk.CTkLabel(ventana, text="Variaciones generadas:",
