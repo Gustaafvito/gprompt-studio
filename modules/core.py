@@ -1183,6 +1183,9 @@ class CoreMixin:
                     peticion = (
                         f"Actúa como un editor experto de prompts. Tu tarea es MODIFICAR el prompt base siguiendo EXCLUSIVAMENTE la instrucción del usuario.\n"
                         f"MANTÉN la misma estructura y tags que el original.\n"
+                        f"INVARIANTES: preserva SIEMPRE los elementos que el usuario no menciona explícitamente — cara, iluminación, outfit, composición, estilo. "
+                        f"Si el usuario solo pide cambiar el fondo, el resto permanece idéntico. "
+                        f"Si el prompt tiene texto literal entre comillas, manténlo verbatim salvo instrucción contraria.\n"
                     )
                     modo = self.modo_var.get()
                     # Forzar formato según modo

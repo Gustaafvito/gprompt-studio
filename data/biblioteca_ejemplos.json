@@ -195,5 +195,193 @@
       "Steampunk",
       "Infografía"
     ]
+  },
+  {
+    "titulo": "Hoja de personaje — concept art multi-vista",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "concept art",
+      "character sheet",
+      "multi-view",
+      "front/side/back",
+      "expressions"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Concept Art",
+      "Ilustración Digital"
+    ],
+    "prompt": "Professional character concept sheet for a female cyberpunk hacker, age 25. Layout: 3-column grid — front view left, side view center, back view right. Each view full-body, same scale, white background with subtle grid lines. Character details: silver short hair, electric-blue LED implants on temples, dark tactical jacket with orange stripe, fingerless gloves, cargo pants, heavy boots. Below the three views: 4 facial expression close-ups in a row (neutral, smirk, surprised, angry). Bottom strip: 3 outfit color variants (black/orange, white/gold, dark green/red). Style: clean digital illustration, bold outlines, flat cel shading, professional concept art quality. Typography: label each view and expression in small thin sans-serif. Restrictions: no background clutter, no watermarks, no extra characters."
+  },
+  {
+    "titulo": "Captura de livestream TikTok — showroom de producto",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "livestream",
+      "TikTok",
+      "UI",
+      "product",
+      "social media",
+      "mockup"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "UI/UX",
+      "Fotografía Comercial"
+    ],
+    "prompt": "Photorealistic screenshot of a TikTok LIVE stream. Main content: a young woman in a bright studio holding up a luxury skincare serum bottle, smiling at camera. UI overlay elements exactly as TikTok: top-left avatar circle + username 'glowlab_official' + red LIVE badge; top-right viewer count '12.4K' with eye icon; right side floating hearts animation; bottom chat feed with 5 comments in white bubbles (omg need this, whats the price, adding to cart rn, love your skin, promo code); bottom-left pink gradient 'Shop Now' button with cart icon. Lighting: ring light on subject, clean bright background. Style: 9:16 vertical frame, photorealistic UI, authentic social media aesthetic. Restrictions: no real brand logos, verbatim text as specified, perfectly legible."
+  },
+  {
+    "titulo": "Banner publicitario — café lifestyle con tipografía",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "banner",
+      "advertising",
+      "typography",
+      "lifestyle",
+      "coffee",
+      "marketing"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Fotografía Comercial",
+      "Diseño Gráfico"
+    ],
+    "prompt": "Lifestyle advertising banner for a premium coffee brand. Subject: a ceramic cup of black espresso on a rough stone surface, golden steam rising, dark roasted beans scattered around. Lighting: golden hour backlight from upper-right, warm amber tones, soft rim light on cup. Background: blurred warm bokeh of a cafe interior. Composition: rule of thirds — cup lower-left, right side clear for copy. Typography: upper-right quadrant, clean bold sans-serif headline reading WAKE UP BOLD in off-white, below it thin serif subline reading Single Origin Small Batch in light gold — verbatim, perfectly legible. Style: 50mm prime lens, f/2.0, shallow depth of field, commercial food photography, warm film grade. Restrictions: no watermarks, no extra text, no logos."
+  },
+  {
+    "titulo": "Póster de menú — bebidas artesanales bubble tea",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "menu",
+      "poster",
+      "food",
+      "typography",
+      "restaurant",
+      "branding"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Diseño Gráfico",
+      "Fotografía Comercial"
+    ],
+    "prompt": "Clean restaurant menu poster for an artisan bubble tea shop. Layout: vertical A3 format, cream white background, sage green accent elements. Top: illustrated loose-leaf tea branch decoration in thin ink style. Center: 4 drinks displayed as photorealistic product shots in a 2x2 grid — taro milk tea (purple), matcha latte (green), strawberry yakult (pink), brown sugar boba (caramel). Each drink labeled below: Taro Dream, Matcha Cloud, Strawberry Yakult, Brown Sugar Classic — verbatim, perfectly legible. Prices in small sans-serif: $6.50, $6.00, $5.50, $6.00. Bottom: shop name OCHA in large elegant serif, tagline Handcrafted Since 2019 in thin italic. Style: clean graphic design — NOT 3D render, NOT photoshoot background, flat design with realistic drink photography. Restrictions: no extra text, no clutter, verbatim all labels and prices."
+  },
+  {
+    "titulo": "Infografía de datos — KPIs de ecommerce",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "infographic",
+      "data",
+      "KPI",
+      "ecommerce",
+      "editorial",
+      "dashboard"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Diseño Editorial",
+      "UI/UX"
+    ],
+    "prompt": "Editorial data infographic for an ecommerce annual report. Layout: A4 landscape, dark navy background, white and electric-blue accent palette. Header: 2024 ECOMMERCE PERFORMANCE in bold white uppercase sans-serif, verbatim. Three KPI cards in a row: Card 1 — large number $4.2M revenue in electric blue, label Annual Revenue in white thin sans-serif; Card 2 — +127% in green, label YoY Growth; Card 3 — 98.3% in orange, label Customer Satisfaction. Below cards: horizontal bar chart with 4 Q labels (Q1, Q2, Q3, Q4) and proportional bars in gradient blue-to-teal. Right section: donut chart showing traffic sources (Direct 45%, Social 32%, Organic 23%) with legend. Style: clean corporate editorial, grid-aligned, professional data visualization. All numbers and labels verbatim. Restrictions: no decorative elements outside described layout, no logos."
+  },
+  {
+    "titulo": "Mockup de packaging — botella de perfume de lujo",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "packaging",
+      "mockup",
+      "product",
+      "perfume",
+      "studio",
+      "luxury"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Fotografía Comercial",
+      "Diseño de Producto"
+    ],
+    "prompt": "Luxury perfume bottle product mockup, studio photography. Subject: elegant rectangular glass bottle, deep emerald green glass, gold metal cap, smooth label reading VERDURE in embossed thin serif gold lettering, below it Eau de Parfum 50ml in small thin sans-serif — all text verbatim, perfectly legible. Composition: slightly angled 3/4 view, placed on a white marble surface with a small sprig of eucalyptus beside it. Lighting: soft studio light from upper-left, clean specular highlight on the glass, natural shadow cast on marble. Background: pure white with subtle gradient, out of focus. Style: high-end commercial product photography, 85mm lens, sharp on label, slight depth-of-field blur on background, cool neutral color grade. Restrictions: no extra props, no text other than specified, no watermarks."
+  },
+  {
+    "titulo": "UI Dashboard — app de fitness con glassmorphism",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "UI",
+      "dashboard",
+      "app",
+      "glassmorphism",
+      "fitness",
+      "dark mode"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "UI/UX",
+      "Diseño Digital"
+    ],
+    "prompt": "Mobile fitness app dashboard UI mockup, dark mode. Background: deep charcoal with subtle purple-to-teal gradient radial glow. Top: greeting text Good morning, Alex in thin white sans-serif, below it date Thursday June 12. Main card: glassmorphism panel (frosted dark glass, white border at low opacity, blurred background) containing today's stats — circular progress ring 78% in electric purple, center label Daily Goal in white serif, below ring 6240 of 8000 steps in thin white. Below main card: 3 smaller stat chips in a row (Calories 420 kcal, Active 47 min, Heart Rate 72 bpm) each with matching icon in accent color. Bottom nav bar: 5 icons (Home filled purple, Stats, Workouts, Nutrition, Profile) clean minimal icons. Style: premium mobile UI, Inter font system, iPhone 15 frame ratio 390x844px. All text verbatim, perfectly legible. Restrictions: no Android UI elements, no placeholder text."
+  },
+  {
+    "titulo": "Storyboard de cómic — persecución en ciudad",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "comic",
+      "storyboard",
+      "action",
+      "Marvel style",
+      "halftone",
+      "speech bubbles"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Cómic / Manga",
+      "Ilustración Digital"
+    ],
+    "prompt": "Comic book storyboard page, Marvel/DC style. 4-panel grid layout (2x2). Panel 1 top-left: wide establishing shot of a rain-slicked city rooftop at night, hero in red-and-black suit crouching at the edge, neon signs below, dramatic low-angle perspective. Panel 2 top-right: close-up on masked hero's determined eyes, rain droplets on visor, blue rim light. Panel 3 bottom-left: dynamic action — hero leaping between buildings, motion blur on cape, city lights blurred below, cinematic dutch angle. Panel 4 bottom-right: villain in shadow on opposite rooftop, face obscured, speech bubble reading You can't stop what's coming in classic comic font — verbatim, perfectly legible. Style: bold black ink outlines, Ben-Day halftone dots in shadows, flat primary colors, hand-lettered sound effect CRACK in yellow starburst on Panel 1. Panel borders: thick black. Restrictions: no grey-tone shading (halftone only), no digital painting look."
+  },
+  {
+    "titulo": "Material educativo — diagrama del sistema solar",
+    "modo": "imagen",
+    "modelo": "GPT Image 2",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "educational",
+      "diagram",
+      "science",
+      "solar system",
+      "textbook",
+      "poster"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Diseño Editorial",
+      "Ilustración Científica"
+    ],
+    "prompt": "Educational poster: The Solar System, textbook illustration style for ages 10-14. Layout: horizontal A3, dark space background with subtle star field. Center: the Sun in warm yellow-orange with glowing corona. Eight planets arranged in elliptical orbital paths left to right: Mercury (grey, small), Venus (pale yellow), Earth (blue-green with cloud swirls), Mars (rusty red), Jupiter (large, brown-orange bands with Great Red Spot), Saturn (golden with ring system and shadow), Uranus (pale teal, tilted ring), Neptune (deep blue). Each planet labeled above with name in bold white sans-serif and diameter below in thin white — verbatim: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune. Top-center title: THE SOLAR SYSTEM in large bold white uppercase, verbatim. Bottom strip: relative size comparison bar of all planets side by side. Style: scientific illustration, accurate proportions, clean educational aesthetic. Restrictions: Pluto not included, all labels verbatim, no cartoon style."
   }
 ]
