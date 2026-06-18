@@ -383,5 +383,171 @@
       "Ilustración Científica"
     ],
     "prompt": "Educational poster: The Solar System, textbook illustration style for ages 10-14. Layout: horizontal A3, dark space background with subtle star field. Center: the Sun in warm yellow-orange with glowing corona. Eight planets arranged in elliptical orbital paths left to right: Mercury (grey, small), Venus (pale yellow), Earth (blue-green with cloud swirls), Mars (rusty red), Jupiter (large, brown-orange bands with Great Red Spot), Saturn (golden with ring system and shadow), Uranus (pale teal, tilted ring), Neptune (deep blue). Each planet labeled above with name in bold white sans-serif and diameter below in thin white — verbatim: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune. Top-center title: THE SOLAR SYSTEM in large bold white uppercase, verbatim. Bottom strip: relative size comparison bar of all planets side by side. Style: scientific illustration, accurate proportions, clean educational aesthetic. Restrictions: Pluto not included, all labels verbatim, no cartoon style."
+  },
+  {
+    "titulo": "Trailer cinematico — superviviente apocaliptico",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "cinematic",
+      "postapocaliptico",
+      "personaje",
+      "atmosfera",
+      "push-in"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Cinematografico",
+      "Ciencia Ficcion"
+    ],
+    "prompt": "Woman on ruined structure, gray tattered cape, dust-covered face, protective head angle. Discovers mechanical creature silhouette in distance, expression shifts confusion to determination. Medium-to-close-up push-in camera over 8 seconds. Postapocalyptic desaturated earth tones, realistic wind and dust physics, film grain, heavy atmosphere."
+  },
+  {
+    "titulo": "Trailer cinematico — soldado bajo la lluvia neon",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "cinematic",
+      "noir",
+      "rain",
+      "neon",
+      "character",
+      "push-in"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Cinematografico",
+      "Noir / Neo-Noir"
+    ],
+    "prompt": "Man at factory edge, gray military coat soaked in rain, facial scar, trembling hand lights cigarette. Smoke dispersed by rain, neon reflections in puddles below. Expression transition: tiredness to cold resolve. Camera: rear lateral to frontal push-in over 10 seconds. Style: realistic rain physics, wet fabric adherence, neon-lit noir atmosphere, desaturated with cold blue-amber contrast."
+  },
+  {
+    "titulo": "Danza callejera — sincronizada con audio y neon",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "danza",
+      "neon",
+      "audio sync",
+      "street",
+      "referencias @",
+      "hip-hop"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Danza",
+      "Urbano / Callejero"
+    ],
+    "prompt": "Dancer based on @Image1, black hoodie and cargo pants, wet rain-lit street with neon signs behind, blurred crowd background. 0-3s: shoulder warming movements, camera slow drift. 3-7s: footwork entry with @Audio1 beat, tight ground-level tracking shot. 7-10s: rapid spins and leg lifts at rhythm peak, whip pan following movement. 10-15s: freeze at drop, slow push-in finale, color particle bursts on beat. Style: cinematic street photography, cold blue-purple neon contrast."
+  },
+  {
+    "titulo": "Presentadora corporativa con lip-sync",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "avatar",
+      "corporate",
+      "lip-sync",
+      "presentadora",
+      "studio",
+      "referencias @"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Corporativo",
+      "Educativo"
+    ],
+    "prompt": "Woman based on @Image1, long black straight hair, red lipstick, white professional shirt. Studio setting with three-point soft lighting, blurred premium background. Slow camera advance toward subject over 12 seconds. Delivers speech synchronized to @Audio1 with natural hand gestures matching speech rhythm, firm eye contact maintained. Refined subtle expressions, visible breathing, no mechanical repetition. Style: corporate presenter aesthetic, cinematic lighting, shallow depth of field."
+  },
+  {
+    "titulo": "Video de producto — smartphone premium 360",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "medio",
+    "tags": [
+      "producto",
+      "smartphone",
+      "360",
+      "premium",
+      "macro",
+      "referencias @"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Publicidad",
+      "Tecnologia"
+    ],
+    "prompt": "High-end smartphone product shot based on @Image1, metal and glass body, diffuse studio lighting. 0-3s: floating device slow 360 degree rotation revealing all edges and material details. 3-7s: macro lateral shot with light sliding across metallic surface, highlighting manufacturing precision and surface texture. 7-10s: screen subtle illumination revealing fingerprint sensor animation and UI transition. 10-15s: gentle camera advance to screen center, breathing UI effect, depth-of-field pull. Style: minimalist technological premium aesthetic, realistic metal reflection, glass refraction, screen light transition physics."
+  },
+  {
+    "titulo": "Vlog cotidiano — tarde de lluvia en casa",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "facil",
+    "tags": [
+      "vlog",
+      "lluvia",
+      "cotidiano",
+      "interior",
+      "atmosfera",
+      "cozy"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Slice of Life",
+      "Cinematografico"
+    ],
+    "prompt": "Young woman, oversized cream sweater, curled in sofa corner reading a book. Large window behind with rain sliding slowly down glass. 0-5s: wide room shot establishing cozy atmosphere, rain sound ambient. 5-10s: slight camera advance to medium shot showing page turns and soft smile, warm light from floor lamp. 10-15s: close-up on window rain droplets while hot chocolate steam rises from mug in foreground. Style: warm cozy palette, natural light, relaxed slow-paced rhythm, realistic water flow, vapor dispersion, book page subtle movement."
+  },
+  {
+    "titulo": "Storyboard animado — guerrera vs cibernetico",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "storyboard",
+      "anime",
+      "accion",
+      "multi-plano",
+      "conversion"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Anime",
+      "Accion"
+    ],
+    "prompt": "Transform this 3x3 storyboard image into a 15-second cinematic video at rapid pace. An anime warrior battles a giant cyborg across sequential combat stages. Dark energy crackles around her glowing sword as she leaps between attack positions. Dust swirls in ruined industrial environment with dramatic back lighting. Camera: rapid cuts between wide establishing and close-up action, dutch angles during impact moments, slow-motion at key hits. Style: anime cinematic quality, dynamic action choreography, high contrast lighting, particle effects on energy impacts."
+  },
+  {
+    "titulo": "Duelo samurai — tension y desenlace",
+    "modo": "video",
+    "modelo": "Seedance 2.0",
+    "plataforma": "SeaArt",
+    "dificultad": "avanzado",
+    "tags": [
+      "samurai",
+      "duelo",
+      "slow-motion",
+      "accion",
+      "naturaleza",
+      "referencias @"
+    ],
+    "autor": "GpromptStudio",
+    "estilos": [
+      "Cinematografico",
+      "Historico / Feudal"
+    ],
+    "prompt": "Two fighters following @Video1 choreography, forest clearing with slowly rotating leaves, tense wind-blown atmosphere. 0-5s: static medium shot, both fighters assessing each other, controlled breathing, leaves suggest wind tension. 5-10s: sudden clash, rapid push-pull camera following blade rhythm, realistic metal collision sparks, slow-motion blood trajectory physics on impact. 10-15s: victor rotates as defeated opponent falls, winner pauses confirming victory, dust settles gradually. Style: cinematic samurai aesthetics, desaturated earth tones, natural lighting through canopy, realistic material physics."
   }
 ]

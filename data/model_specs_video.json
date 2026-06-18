@@ -157,9 +157,25 @@
       "Calidad"
     ],
     "best_for": "DIRECTOR DE CINE. Multi-shot storytelling. Lenguaje cámara+ritmo+iluminación. Audio nativo integrado. Prompts hasta 5000 chars.",
-    "prompt_formula": "Shot 1: [wide/plano/cámara]. Shot 2: [medium/acción]. Shot 3: [close-up/detail]. Audio: [SFX, ambiente, música]",
-    "prompt_ejemplo": "Shot 1: Wide establishing shot, minimalist studio. Shot 2: Medium shot, product on pedestal. Shot 3: Close-up on label. Audio: soft room tone, subtle whoosh.",
-    "limitaciones": "NO caras reales (usar avatares IA o anime). Sin prompt negativo. Coste energía 540-4275pts"
+    "prompt_formula": "FORMULA BASICA — 5 segmentos encadenados:\n[Sujeto] + [Escena/atmosfera] + [Accion/performance] + [Movimientos de camara] + [Estilo/iluminacion]\n\nFORMULA MULTIMODAL CRAFT (con referencias @):\nContext + Reference(@recursos) + Action + Framing/Timing + Tone/Audio\nTags de referencia: @Image (ancla apariencia/cara), @Video (transfiere movimiento/camara), @Audio (lip-sync + ritmo)\n\nFORMULA STORYBOARD TIMELINE (narrativa multi-plano):\nDividir en bloques de tiempo con descripcion por segmento: '0-5s [...], 5-10s [...], 10-15s [...]'\n\nREGLAS CLAVE:\n- Jerarquia: Sujeto -> Accion -> Camara -> Estilo (el modelo prioriza lo primero)\n- Longitud optima: 120-280 palabras\n- Lenguaje afirmativo: 'ultra sharp' en vez de 'no blur'; 'natural motion' en vez de 'dont move'\n- Temporizar explicitamente: 'walks 3s, stops, turns 2s' en vez de 'walks and then turns'\n- Referencias: maximo 7 utiles (1-6 optimo); mas de 8 degrada calidad\n- Roles explicitos por @: siempre declarar que aporta cada archivo\n- Consistencia de personaje: reforzar rasgos en texto aunque exista @Image",
+    "prompt_ejemplo": "# Ejemplo basico (5 segmentos):\nWoman on ruined rooftop, gray tattered cape, dust-covered face. Discovers mechanical creature silhouette in distance, expression shifts confusion to determination. Medium-to-close-up push in. Postapocalyptic desaturated earth tones, realistic wind and dust physics.\n\n# Ejemplo con referencias y timeline:\n@Image1 dancer identity and outfit, black hoodie, wet rain-lit street with neon signs behind. 0-3s: shoulder warming movements, slow camera drift. 3-7s: footwork entry synchronized with @Audio1 beat, tight ground-level tracking. 7-10s: rapid spins and leg lifts at rhythm peak, whip pan follow. 10-15s: freeze at drop, slow push-in finale, color particle burst on beat.",
+    "limitaciones": "NO caras reales (usar avatares IA o anime). Sin prompt negativo. Coste energía 540-4275pts",
+    "prompt_tips": [
+      "JERARQUIA: el modelo prioriza lo primero del prompt — Sujeto > Accion > Camara > Estilo",
+      "LONGITUD OPTIMA: 120-280 palabras; por debajo pierde detalle, por encima puede confundir",
+      "LENGUAJE AFIRMATIVO: 'ultra sharp' en vez de 'no blur'; 'physically accurate' en vez de 'dont move'",
+      "TEMPORIZAR: '0-5s: accion A, 5-10s: accion B' supera ampliamente a descripciones vagas",
+      "REFERENCIAS @Image: ancla cara/vestuario — usar retratos frontales limpios, plano medio, fondo simple",
+      "REFERENCIAS @Video: transfiere movimientos de camara y trayectorias — mas efectivo para movimientos complejos",
+      "REFERENCIAS @Audio: habilita lip-sync automatico (nivel de fonema) y sync-cuts a beats musicales",
+      "LIMITE REFERENCIAS: 1-6 archivos = optimo; 7 = limite practico; 8-9 = confusion; 10-12 = degradacion",
+      "ROL EXPLICITO: siempre declara que aporta cada @ ('usa @image1 como referencia de cara, @video1 para los movimientos')",
+      "MOVIMIENTOS DE CAMARA: push-in, pull-back, orbit shot, tracking shot, whip pan, rack focus, dutch angle, 360 orbit",
+      "EXTENSIONES: maximo 2-3 antes de degradacion; reafirmar estilo y restricciones en cada prompt de extension",
+      "TEXTO EN VIDEO: agregar texto en post-produccion — el modelo no renderiza texto pequeño (bajo 24pt) con fiabilidad",
+      "FLUJO RECOMENDADO: crear frames en GPT Image 2 -> subir como @Image a Seedance para video con personaje consistente",
+      "FISICA COMPLEJA (agua, humo, fuego): rendimiento inferior a Sora 2 — evitar si eso es el foco principal"
+    ]
   },
   "Seedance 2.0 Fast": {
     "nota": 3.0,
@@ -184,9 +200,15 @@
       "Calidad"
     ],
     "best_for": "Velocidad y VLOGs. Image/Text/Video-ref. 8-15s. Prompts hasta 5000 letras.",
-    "prompt_formula": "Natural description of scene + subject + action + camera",
+    "prompt_formula": "Misma estructura que Seedance 2.0 pero priorizar prompts mas cortos y concretos (80-150 palabras). Ideal para iteracion rapida: generar 1-2 variaciones de prueba antes de comprometerse con la version larga.\n\nFORMULA RAPIDA: [Sujeto + apariencia] + [Accion principal] + [Camara clave] + [Atmosfera/estilo]",
     "prompt_ejemplo": "Young woman walks through colorful Tokyo streets at night, handheld camera following, neon reflections.",
-    "limitaciones": "SIN audio, SIN negative, SIN Ultra HD/Pro."
+    "limitaciones": "SIN audio, SIN negative, SIN Ultra HD/Pro.",
+    "prompt_tips": [
+      "VERSION RAPIDA: ideal para iterar y probar variaciones antes del prompt completo",
+      "PROMPTS CORTOS: 80-150 palabras — suficiente para definir sujeto, accion, camara y estilo",
+      "MISMAS REGLAS de referencias @ que Seedance 2.0 (maximo 7 utiles)",
+      "USAR PARA: probar composicion, movimiento de camara y apariencia de personaje antes del render final"
+    ]
   },
   "Nano Banana Pro Video": {
     "nota": 3.3,
