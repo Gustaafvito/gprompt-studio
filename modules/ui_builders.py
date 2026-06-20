@@ -1001,8 +1001,16 @@ class UIBuildersService:
             fg_color="transparent",
             text_color=c["muted_text"], font=ctk.CTkFont(size=12, slant="italic"))
 
-        # Tab 4: Tags picker
-        self._build_tags_tab(self.app.tabview.tab("🏷️ Tags"))
+        # Tab 4: Tags picker — lazy: se construye la primera vez que el usuario
+        # abre la pestaña para no bloquear el startup con 83 botones + tooltips.
+        self._tags_tab_built = False
+
+        def _on_tab_change():
+            if self.app.tabview.get() == "🏷️ Tags" and not self._tags_tab_built:
+                self._tags_tab_built = True
+                self._build_tags_tab(self.app.tabview.tab("🏷️ Tags"))
+
+        self.app.tabview.configure(command=_on_tab_change)
 
     def _build_ajustes_extra(self, parent):
         is_light = _get_real_is_light()
