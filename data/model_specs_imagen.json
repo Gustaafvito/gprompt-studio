@@ -4498,7 +4498,7 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
