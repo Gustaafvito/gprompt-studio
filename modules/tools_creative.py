@@ -275,6 +275,59 @@ class ToolsCreativeService:
 
         threading.Thread(target=_worker_all, daemon=True).start()
 
+    def _cmd_sugerir_negative_tab(self):
+        """Variante para el botón en la pestaña Negativos: inserta el resultado
+        en txt_negative (campo manual) en vez de actualizar el output principal."""
+        if not self.app._debe_mostrar_negatives():
+            return self.app.dialogs.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
+
+        modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
+            self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
+        pos = self.app.extraer_positive() or self.app.txt_idea.get("1.0", "end").strip() or "imagen general"
+
+        self.app.dialogs.set_estado("🛡 Generando negative sugerido...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
+
+        peticion = (
+            f"Genera el NEGATIVE PROMPT MÁS COMPLETO Y ÓPTIMO para este modelo y contenido.\n\n"
+            f"MODELO: {modelo}\n"
+            f"POSITIVE PROMPT (contexto):\n{pos[:500]}\n\n"
+            f"REGLAS:\n"
+            f"- Usa pesos (tag:1.4) para las protecciones más críticas.\n"
+            f"- Cubre: baja calidad, deformaciones, artefactos JPEG, anatomía mala, manos/dedos malformados.\n"
+            f"- Si el positive es realista, añade tags contra anime/cartoon/3D/painting.\n"
+            f"- Si el positive es anime, añade tags contra photorealistic/photograph.\n"
+            f"- Si hay personas: refuerza anatomía, ojos, dedos.\n"
+            f"- Adapta a las debilidades conocidas del modelo {modelo}.\n\n"
+            f"Responde SOLO con los tags negativos separados por comas, sin prefijos ni explicaciones."
+        )
+
+        def _worker():
+            try:
+                import re as _re
+                resp = self.app.deepseek.generar_batch(
+                    "Eres un experto en negative prompts para imagen IA. "
+                    "Responde SOLO con los tags negativos separados por comas, sin explicaciones ni prefijos.",
+                    peticion, temperature=0.2, max_tokens=500,
+                )
+                resp = limpiar_marcadores(resp).strip()
+                m = _re.search(r'NEGATIVE\s+PROMPT\s*:?\s*(.+?)$', resp, _re.DOTALL | _re.IGNORECASE)
+                negative = (m.group(1) if m else resp).strip()
+
+                def _aplicar():
+                    # Insertar como porción manual; _rebuild_negative_text añade los presets activos encima
+                    self.app.txt_negative.delete("1.0", "end")
+                    self.app.txt_negative.insert("1.0", negative)
+                    self.app.footer._rebuild_negative_text()
+                    self.app.dialogs.set_estado("🛡 Negative sugerido aplicado", "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                self.app.after(0, _aplicar)
+            except Exception as e:
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+
     def _cmd_negative_optimo(self):
         """Genera el NEGATIVE ÓPTIMO según el modelo y tipo de prompt actual."""
         if not self.app._debe_mostrar_negatives():

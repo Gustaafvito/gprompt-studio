@@ -1336,9 +1336,9 @@ class UIBuildersService:
         btn_sug_neg = ctk.CTkButton(hdr, text="🛡 Sugerir", width=80, height=24,
                       fg_color="#1a5a8a", hover_color="#154a72",
                       text_color="#ffffff",
-                      command=self.app._cmd_negative_optimo)
+                      command=self.app.creative.cmd_sugerir_negative_tab)
         btn_sug_neg.pack(side="right", padx=2)
-        CTkToolTip(btn_sug_neg, message="LLM genera el negative óptimo para el modelo y prompt actuales", delay=0.4)
+        CTkToolTip(btn_sug_neg, message="LLM genera el negative óptimo e inserta en el campo", delay=0.4)
 
         # Paquetes predefinidos (activan múltiples presets a la vez)
         frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)

@@ -122,6 +122,9 @@ class CreativeComponent(_Component):
     def cmd_negative_optimo(self) -> None:
         return self._service._cmd_negative_optimo()
 
+    def cmd_sugerir_negative_tab(self) -> None:
+        return self._service._cmd_sugerir_negative_tab()
+
     def cmd_sugerir_tags(self) -> None:
         return self._service._cmd_sugerir_tags()
 
