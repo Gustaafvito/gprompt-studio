@@ -1265,12 +1265,20 @@ class UIBuildersService:
         c = get_theme_colors(is_light)
         tab_bg = c["panel_bg"]
 
-        # Header con hint
+        # Header con hint y botón Sugerir
         hdr = ctk.CTkFrame(parent, fg_color=tab_bg)
         hdr.pack(fill="x", padx=4, pady=(2, 0))
         ctk.CTkLabel(hdr, text="Clic para añadir al final de la idea",
                      font=ctk.CTkFont(size=9), fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left")
+        btn_sug_tags = ctk.CTkButton(
+            hdr, text="✨ Sugerir", width=80, height=20,
+            font=ctk.CTkFont(size=9),
+            fg_color="#1a5a8a", hover_color="#154a72",
+            command=self.app.creative.cmd_sugerir_tags,
+        )
+        btn_sug_tags.pack(side="right", padx=2)
+        CTkToolTip(btn_sug_tags, message="LLM analiza tu idea y añade 3-5 tags técnicos apropiados", delay=0.4)
 
         scroll = ctk.CTkScrollableFrame(parent, fg_color=tab_bg, scrollbar_button_color=c["combo_border"])
         scroll.pack(fill="both", expand=True, padx=2, pady=(2, 0))
@@ -1325,6 +1333,12 @@ class UIBuildersService:
                       hover_color="#b91c1c" if is_light else "#222",
                       text_color="#ffffff",
                       command=self.app.footer._limpiar_negatives).pack(side="right", padx=4)
+        btn_sug_neg = ctk.CTkButton(hdr, text="🛡 Sugerir", width=80, height=24,
+                      fg_color="#1a5a8a", hover_color="#154a72",
+                      text_color="#ffffff",
+                      command=self.app._cmd_negative_optimo)
+        btn_sug_neg.pack(side="right", padx=2)
+        CTkToolTip(btn_sug_neg, message="LLM genera el negative óptimo para el modelo y prompt actuales", delay=0.4)
 
         # Paquetes predefinidos (activan múltiples presets a la vez)
         frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)

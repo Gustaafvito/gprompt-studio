@@ -918,15 +918,26 @@ class ToolsCreativeService:
 
         def _worker():
             try:
-                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=300)
+                # generar_batch: stateless, sin historial — evita contaminación
+                # de contexto con Gemini y otros LLMs multi-turno.
+                resp = self.app.deepseek.generar_batch(
+                    "Eres un asistente experto en estilos de imagen IA. "
+                    "Responde SOLO con los nombres exactos de la lista, separados por comas. "
+                    "Sin explicaciones, sin numeración, sin puntos al final.",
+                    peticion,
+                    temperature=0.3, max_tokens=300,
+                )
                 resp = limpiar_marcadores(resp).strip()
 
-                # Parsear lista de estilos
-                sugeridos = [s.strip() for s in resp.split(",") if s.strip()]
-                # Filtrar solo los que existen
+                # Parsear CSV o bullet-list (Gemini devuelve * estilo a veces)
+                if "," in resp:
+                    sugeridos = [s.strip(" *-•.\n") for s in resp.split(",") if s.strip(" *-•.\n")]
+                else:
+                    sugeridos = [s.strip(" *-•.\n") for s in resp.splitlines() if s.strip(" *-•.\n")]
+
                 validos = [s for s in sugeridos if s in estilos_dispo]
 
-                # Fallback: matching fuzzy si no hay match exacto
+                # Fallback fuzzy
                 if not validos:
                     for s in sugeridos:
                         for est in estilos_dispo:
@@ -940,14 +951,80 @@ class ToolsCreativeService:
                     return
 
                 def _aplicar():
-                    # Limpiar selección actual
                     for n, v in self.app.estilo_checks.items():
                         v.set(False)
-                    # Marcar los sugeridos
                     for est in validos:
                         if est in self.app.estilo_checks:
                             self.app.estilo_checks[est].set(True)
                     self.app.dialogs.set_estado(f"🎨 Estilos aplicados: {', '.join(validos)}", "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                self.app.after(0, _aplicar)
+            except Exception as e:
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+
+    def _cmd_sugerir_tags(self):
+        """Analiza la idea y añade al campo idea los tags técnicos más apropiados."""
+        from config import TAG_PICKER_CATEGORIES
+        idea = self.app.txt_idea.get("1.0", "end").strip()
+        if not idea or len(idea) < 5:
+            return self.app.dialogs.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
+
+        todos_tags_en = [val_en for tags in TAG_PICKER_CATEGORIES.values() for _, val_en, _ in tags]
+        if not todos_tags_en:
+            return self.app.dialogs.set_estado("⚠️ No hay tags disponibles.", "#e67e22")
+
+        self.app.dialogs.set_estado("🏷️ Analizando idea para sugerir tags...", "#f39c12")
+        self.app.dialogs.toggle_botones(False)
+
+        peticion = (
+            f"Analiza esta idea y sugiere 3-5 TAGS TÉCNICOS de la lista que la mejorarían visualmente.\n\n"
+            f"IDEA: {idea}\n\n"
+            f"TAGS DISPONIBLES:\n{', '.join(todos_tags_en)}\n\n"
+            f"REGLAS:\n"
+            f"- Devuelve SOLO los valores EXACTOS de la lista (no inventes nuevos).\n"
+            f"- Elige tags que complementen la idea sin contradecirse.\n\n"
+            f"FORMATO: Lista separada por COMAS, una sola línea.\n"
+            f"EJEMPLO: cinematic lighting, shallow depth of field, golden hour"
+        )
+
+        def _worker():
+            try:
+                resp = self.app.deepseek.generar_batch(
+                    "Eres un experto en prompts de imagen IA. Sugiere tags técnicos visuales. "
+                    "Responde SOLO con los valores exactos de la lista separados por comas.",
+                    peticion,
+                    temperature=0.3, max_tokens=200,
+                )
+                resp = limpiar_marcadores(resp).strip()
+
+                if "," in resp:
+                    sugeridos = [t.strip(" *-•.\n") for t in resp.split(",") if t.strip(" *-•.\n")]
+                else:
+                    sugeridos = [t.strip(" *-•.\n") for t in resp.splitlines() if t.strip(" *-•.\n")]
+
+                validos = [t for t in sugeridos if t in todos_tags_en]
+
+                if not validos:
+                    for t in sugeridos:
+                        for tag in todos_tags_en:
+                            if t.lower() in tag.lower() or tag.lower() in t.lower():
+                                validos.append(tag)
+                                break
+
+                if not validos:
+                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ No se encontraron tags válidos. Intenta de nuevo.", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+                    return
+
+                def _aplicar():
+                    current = self.app.txt_idea.get("1.0", "end-1c").strip()
+                    sep = ", " if current else ""
+                    self.app.txt_idea.insert("end", sep + ", ".join(validos))
+                    self.app.txt_idea.see("end")
+                    self.app.dialogs.set_estado(f"🏷️ Tags añadidos: {', '.join(validos)}", "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
