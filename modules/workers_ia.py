@@ -80,6 +80,10 @@ class WorkersIaService:
         if not trigger or not trigger.strip():
             return texto
         trigger = trigger.strip()
+        # Para triggers multi-término (ej: "Nyra, Amber Eyes, Undercut"), el
+        # safety-net usa solo el primer término como clave de búsqueda, ya que
+        # la regex de palabra-completa no funciona con cadenas que incluyen comas.
+        trigger_key = trigger.split(",")[0].strip()
 
         m_bloque = re.search(
             r"\[LoRA Activation & Style\]\s*",
@@ -97,24 +101,20 @@ class WorkersIaService:
             bloque_fin = bloque_inicio + (m_next.start()
                                           if m_next else len(texto) - bloque_inicio)
             bloque_contenido = texto[bloque_inicio:bloque_fin]
-            ya_en_bloque = trigger.lower() in bloque_contenido.lower()
+            ya_en_bloque = trigger_key.lower() in bloque_contenido.lower()
 
             # 1. Asegurar el trigger DENTRO del bloque
             if not ya_en_bloque:
-                texto = (texto[:bloque_inicio] + f"{trigger} style, "
+                insert_str = f"{trigger}, " if "," in trigger else f"{trigger} style, "
+                texto = (texto[:bloque_inicio] + insert_str
                          + texto[bloque_inicio:].lstrip())
-                # Recalcular posiciones tras la inserción
-                bloque_fin += len(f"{trigger} style, ")
+                bloque_fin += len(insert_str)
 
-            # 2. Eliminar TODAS las apariciones del trigger FUERA del bloque
-            #    (case-insensitive, palabra completa). Una sola pasada por
-            #    texto, conservando solo las apariciones dentro del bloque.
+            # 2. Eliminar TODAS las apariciones del trigger_key FUERA del bloque.
             antes = texto[:bloque_inicio]
             despues = texto[bloque_fin:]
-            # Eliminar "trigger, " "trigger " ", trigger" o "trigger" suelto.
-            # Patrón: \b{trigger}\b con comas/espacios opcionales alrededor.
             patron = re.compile(
-                rf"(?:,\s*)?\b{re.escape(trigger)}\b(?:\s*,)?",
+                rf"(?:,\s*)?\b{re.escape(trigger_key)}\b(?:\s*,)?",
                 re.IGNORECASE,
             )
             antes_limpio = patron.sub("", antes)

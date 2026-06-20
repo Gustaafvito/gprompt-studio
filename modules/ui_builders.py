@@ -1280,12 +1280,13 @@ class UIBuildersService:
                          fill="x", padx=2, pady=(5, 1))
 
             COLS = 3
-            for i, tag in enumerate(tags):
+            for i, tag_pair in enumerate(tags):
+                label_es, val_en, descripcion = tag_pair
                 if i % COLS == 0:
                     row_f = ctk.CTkFrame(scroll, fg_color="transparent")
                     row_f.pack(fill="x", pady=1)
 
-                def _insert_tag(t=tag):
+                def _insert_tag(t=val_en):
                     try:
                         current = self.app.txt_idea.get("1.0", "end-1c")
                         sep = ", " if current.strip() else ""
@@ -1294,8 +1295,10 @@ class UIBuildersService:
                     except Exception:
                         pass
 
-                ctk.CTkButton(row_f, text=tag, width=110, command=_insert_tag,
-                              **btn_tag_s).pack(side="left", padx=2)
+                btn = ctk.CTkButton(row_f, text=label_es, width=120, command=_insert_tag,
+                                    **btn_tag_s)
+                btn.pack(side="left", padx=2)
+                CTkToolTip(btn, message=f"{val_en}\n{descripcion}", delay=0.4)
 
     def _build_negative(self, parent):
         is_light = _get_real_is_light()

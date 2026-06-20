@@ -286,10 +286,19 @@ class PromptsInyeccionService:
             triggers_lora = []
             rasgos_lora = []
         lora_trigger = triggers_lora[0] if triggers_lora else ""
-        # String para mostrar en el bloque [LoRA Activation & Style]
-        # Ej con 1: "lmnlhrr style"
-        # Ej con 2: "lmnlhrr style + flux_anime style"
-        triggers_bloque = " + ".join(f"{t} style" for t in triggers_lora) if triggers_lora else ""
+        # Construir el bloque de triggers para [LoRA Activation & Style].
+        # Triggers de una sola palabra → "palabra style" (ej: "lmnlhrr style").
+        # Triggers con comas (multi-término, ej: "Nyra, Amber Eyes, Undercut")
+        # → se aplanan como términos individuales sin " style".
+        # Resultado ej: "lmnlhrr style, Nyra, Amber Eyes, Undercut"
+        _trigger_terms: list[str] = []
+        for _t in triggers_lora:
+            _parts = [p.strip() for p in _t.split(",") if p.strip()]
+            if len(_parts) == 1:
+                _trigger_terms.append(f"{_parts[0]} style")
+            else:
+                _trigger_terms.extend(_parts)
+        triggers_bloque = ", ".join(_trigger_terms) if _trigger_terms else ""
         # Rasgos visuales combinados (si hay)
         rasgos_combinados = " | ".join(rasgos_lora) if rasgos_lora else ""
 
