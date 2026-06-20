@@ -30,6 +30,7 @@ def _load_json_data(filename: str):
 # atributo por primera vez (vía __getattr__) se hace I/O y se cachea.
 _LAZY_DATASETS = {
     "MODEL_SPECS":          "model_specs_video.json",
+    "MODEL_SPECS_VIDEO":    "model_specs_video.json",
     "MODEL_SPECS_IMAGEN":   "model_specs_imagen.json",
     "MODEL_SPECS_AUDIO":    "model_specs_audio.json",
     "ESTILO_NEGATIVO_AUTO": "estilo_negativo_auto.json",
@@ -532,8 +533,37 @@ def _lista_plana(grupos):
         r.extend(ms)
     return r
 
-MODELOS_VIDEO_FLAT  = _lista_plana(GRUPOS_VIDEO)
-MODELOS_AUDIO_FLAT  = _lista_plana(GRUPOS_AUDIO)
+MODELOS_VIDEO_FLAT_TODOS = _lista_plana(GRUPOS_VIDEO)
+MODELOS_AUDIO_FLAT_TODOS = _lista_plana(GRUPOS_AUDIO)
+
+def es_modelo_video_vigente(nombre):
+    spec = _get_dataset("MODEL_SPECS_VIDEO").get(nombre)
+    return bool(spec and spec.get("vigente"))
+
+def es_modelo_audio_vigente(nombre):
+    spec = _get_dataset("MODEL_SPECS_AUDIO").get(nombre)
+    return bool(spec and spec.get("vigente"))
+
+def _filtrar_grupos_vigentes_video(grupos):
+    out = []
+    for cabecera, modelos in grupos:
+        visibles = [m for m in modelos if es_modelo_video_vigente(m)]
+        if visibles:
+            out.append((cabecera, visibles))
+    return out
+
+def _filtrar_grupos_vigentes_audio(grupos):
+    out = []
+    for cabecera, modelos in grupos:
+        visibles = [m for m in modelos if es_modelo_audio_vigente(m)]
+        if visibles:
+            out.append((cabecera, visibles))
+    return out
+
+GRUPOS_VIDEO_VIGENTES = _filtrar_grupos_vigentes_video(GRUPOS_VIDEO)
+GRUPOS_AUDIO_VIGENTES = _filtrar_grupos_vigentes_audio(GRUPOS_AUDIO)
+MODELOS_VIDEO_FLAT    = _lista_plana(GRUPOS_VIDEO_VIGENTES)
+MODELOS_AUDIO_FLAT    = _lista_plana(GRUPOS_AUDIO_VIGENTES)
 
 # Orden alfabético INSENSIBLE A MAYÚSCULAS en TODOS los grupos de imagen, para
 # que los nombres en minúscula (p. ej. lyh_anime_Flux) no caigan al final del

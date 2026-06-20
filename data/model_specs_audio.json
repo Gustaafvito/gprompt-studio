@@ -58,7 +58,8 @@
       "[Harmonies]",
       "[Tag: descriptors]"
     ],
-    "limitaciones": "Pro/Premier para v5.5. Credits no se acumulan. Extensiones >6min pueden derivar estilísticamente."
+    "limitaciones": "Pro/Premier para v5.5. Credits no se acumulan. Extensiones >6min pueden derivar estilísticamente.",
+    "vigente": true
   },
   "Suno v5": {
     "nota": 4.8,
@@ -108,7 +109,8 @@
       "[Spoken]",
       "[Whispered]"
     ],
-    "limitaciones": "Pro/Premier. Extensiones largas pueden perder coherencia. No tiene Voice Cloning ni Custom Models (v5.5)."
+    "limitaciones": "Pro/Premier. Extensiones largas pueden perder coherencia. No tiene Voice Cloning ni Custom Models (v5.5).",
+    "vigente": true
   },
   "Suno v4.5": {
     "nota": 4.7,
@@ -154,7 +156,8 @@
       "[Intro]",
       "[Instrumental]"
     ],
-    "limitaciones": "Vocales menos naturales que v5. Prompts muy complejos pueden confundirse. v5 supera en audio quality."
+    "limitaciones": "Vocales menos naturales que v5. Prompts muy complejos pueden confundirse. v5 supera en audio quality.",
+    "vigente": true
   },
   "Suno v4": {
     "nota": 4.5,
@@ -195,7 +198,8 @@
       "[Intro]",
       "[Outro]"
     ],
-    "limitaciones": "Máx 4 min. Vocales menos expresivas. Reemplazado por v4.5+ y v5."
+    "limitaciones": "Máx 4 min. Vocales menos expresivas. Reemplazado por v4.5+ y v5.",
+    "vigente": true
   },
   "Udio v4": {
     "nota": 4.7,
@@ -248,7 +252,8 @@
       "[Build]",
       "[Breakdown]"
     ],
-    "limitaciones": "Vocales menos expresivas que Suno v5. Generación nativa más corta (30s). Requiere extender para songs completos."
+    "limitaciones": "Vocales menos expresivas que Suno v5. Generación nativa más corta (30s). Requiere extender para songs completos.",
+    "vigente": true
   },
   "Udio v1.5": {
     "nota": 4.6,
@@ -298,7 +303,8 @@
       "[Choir]",
       "[Announcer]"
     ],
-    "limitaciones": "Stem export limitado (Standard/Pro). Vocales menos naturales que Suno. Manual mode puede producir lyrics genéricos."
+    "limitaciones": "Stem export limitado (Standard/Pro). Vocales menos naturales que Suno. Manual mode puede producir lyrics genéricos.",
+    "vigente": true
   },
   "Minimax Music 2.6": {
     "nota": 4.6,
@@ -347,7 +353,8 @@
       "[Inst]",
       "[Break]"
     ],
-    "limitaciones": "Up to ~5 min por generación. No stem export. Sin negative prompt nativo. Español/otros idiomas menos precisos que inglés/chino."
+    "limitaciones": "Up to ~5 min por generación. No stem export. Sin negative prompt nativo. Español/otros idiomas menos precisos que inglés/chino.",
+    "vigente": true
   },
   "Minimax Music 2.5": {
     "nota": 4.5,
@@ -390,7 +397,8 @@
       "[Solo]",
       "[Tag]"
     ],
-    "limitaciones": "Lyrics obligatorios (no instrumental mode). No stem export. Max ~5min. Sin negative prompt."
+    "limitaciones": "Lyrics obligatorios (no instrumental mode). No stem export. Max ~5min. Sin negative prompt.",
+    "vigente": true
   },
   "SeaArt MusicGo": {
     "nota": 4.3,
@@ -432,7 +440,8 @@
       "ESTILO SIMPLE: 'electronic synthwave', 'acoustic folk', 'jazz ballad'.",
       "ECONÓMICO: Coste de energía bajo comparado con otras plataformas."
     ],
-    "limitaciones": "Sin tags estructurales. Menor variedad de géneros que Suno/Udio. Max 3 min. Sin control de sección."
+    "limitaciones": "Sin tags estructurales. Menor variedad de géneros que Suno/Udio. Max 3 min. Sin control de sección.",
+    "vigente": true
   },
   "Suno v4.5-All (Free)": {
     "nota": 4.5,
@@ -464,6 +473,7 @@
       "BUENA CALIDAD: Las mismas mejoras de v4.5 disponibles sin pagar.",
       "LIMITADO EN: No tiene Studio, stems limitados, menos créditos."
     ],
-    "limitaciones": "Credits limitados. Sin Studio features. Stem export básico."
+    "limitaciones": "Credits limitados. Sin Studio features. Stem export básico.",
+    "vigente": true
   }
 }

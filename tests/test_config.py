@@ -63,8 +63,8 @@ class TestModelosVigentes:
         assert es_modelo_imagen_vigente("Z-Image-Base") is True
         assert es_modelo_imagen_vigente("Nano Banana") is True
         assert es_modelo_imagen_vigente("Reve 2.0") is True
-        # Un modelo antiguo NO vigente
-        assert es_modelo_imagen_vigente("SeaArt Infinity") is False
+        # Un modelo NO vigente
+        assert es_modelo_imagen_vigente("SD 3.5 Large Turbo") is False
         # Inexistente
         assert es_modelo_imagen_vigente("Modelo Fake") is False
 
@@ -73,8 +73,8 @@ class TestModelosVigentes:
         modelos = [m for m in MODELOS_IMAGEN_FLAT if not es_separador(m)]
         assert modelos, "no debería quedar vacío"
         assert all(es_modelo_imagen_vigente(m) for m in modelos)
-        # El antiguo no aparece; el vigente sí
-        assert "SeaArt Infinity" not in modelos
+        # El no-vigente no aparece; el vigente sí
+        assert "SD 3.5 Large Turbo" not in modelos
         assert "Z-Image-Base" in modelos
 
     def test_master_conserva_todos(self):
@@ -82,7 +82,7 @@ class TestModelosVigentes:
         todos = [m for m in MODELOS_IMAGEN_FLAT_TODOS if not es_separador(m)]
         vis = [m for m in MODELOS_IMAGEN_FLAT if not es_separador(m)]
         assert len(todos) > len(vis)         # el master sigue completo
-        assert "SeaArt Infinity" in todos    # el antiguo sigue en el master
+        assert "SD 3.5 Large Turbo" in todos    # el no-vigente sigue en el master
 
     def test_no_quedan_grupos_vacios(self):
         from config import GRUPOS_IMAGEN_VIGENTES

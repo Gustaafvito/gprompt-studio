@@ -859,7 +859,8 @@
     "pasos": "28-35",
     "cfg": "4-5",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Basado en SDXL. No soporta weights como Flux."
+    "limitaciones": "Basado en SDXL. No soporta weights como Flux.",
+    "vigente": true
   },
   "Counterfeit V3.0": {
     "nota": 4.4,
@@ -913,7 +914,8 @@
     "cfg": "7-8",
     "clip_skip": "1-2",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales)."
+    "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales).",
+    "vigente": true
   },
   "Illustrious Realism by Klaabu": {
     "nota": 4.9,
@@ -1340,7 +1342,8 @@
     "cfg": "4-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5."
+    "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5.",
+    "vigente": true
   },
   "Disney Pixar Cartoon type B": {
     "nota": 4.1,
@@ -1367,7 +1370,8 @@
     "cfg": 7,
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5."
+    "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5.",
+    "vigente": true
   },
   "REED_XXX_illustrious_SDXL": {
     "nota": 4.4,
@@ -1400,7 +1404,8 @@
     "cfg": "5-8",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
+    "vigente": true
   },
   "Lily-Illustrious XL": {
     "nota": 4.9,
@@ -1426,7 +1431,8 @@
     "pasos": "20-30",
     "cfg": "5-8",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "v3.0. No vender imágenes sin editar."
+    "limitaciones": "v3.0. No vender imágenes sin editar.",
+    "vigente": true
   },
   "Pixel Illustrious": {
     "nota": 4.0,
@@ -1451,7 +1457,8 @@
     "pasos": "25-45",
     "cfg": "5-7",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "A veces no dispara pixel. Ver trigger words."
+    "limitaciones": "A veces no dispara pixel. Ver trigger words.",
+    "vigente": true
   },
   "SDXL FaeTastic": {
     "nota": 4.9,
@@ -1478,7 +1485,8 @@
     "cfg": "5-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso."
+    "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso.",
+    "vigente": true
   },
   "Pie - Models 🥧": {
     "nota": 5.0,
@@ -1504,7 +1512,8 @@
     "pasos": 30,
     "cfg": 5,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon."
+    "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon.",
+    "vigente": true
   },
   "Nano Banana Pro Image": {
     "nota": 3.6,
@@ -1650,7 +1659,8 @@
     "clip_skip": 2,
     "resolucion_recomendada": "720x1280",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos."
+    "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos.",
+    "vigente": true
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
     "nota": 4.7,
@@ -4502,6 +4512,7 @@
     "cfg": "5-7",
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles."
+    "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
+    "vigente": true
   }
 }

@@ -9,6 +9,15 @@ from unittest.mock import MagicMock
 from modules.adn_visual import AdnVisualService
 
 
+class _SyncExec:
+    def submit(self, fn, *args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            pass
+        return SimpleNamespace(add_done_callback=lambda _cb: None)
+
+
 def _host(**overrides):
     app = SimpleNamespace()
     defaults = dict(
@@ -24,6 +33,7 @@ def _host(**overrides):
             insert=lambda *_a, **_k: None,
         ),
         after=lambda *a, **k: None,
+        _executor=_SyncExec(),
     )
     defaults.update(overrides)
     for k, v in defaults.items():
@@ -52,17 +62,15 @@ class TestCmdAdnVisual:
         h._cmd_adn_visual()
         h.app.dialogs.set_estado.assert_called_once()
 
-    def test_con_imagen_lanza_thread_y_pone_estado_extrayendo(self, monkeypatch):
-        # Mock threading.Thread para no lanzar realmente
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.adn_visual.threading.Thread", spy_thread)
-        h = _host(imagen_cargada=object())
+    def test_con_imagen_lanza_thread_y_pone_estado_extrayendo(self):
+        mock_exec = MagicMock()
+        mock_exec.submit.return_value = SimpleNamespace(add_done_callback=lambda _cb: None)
+        h = _host(imagen_cargada=object(), _executor=mock_exec)
         h._cmd_adn_visual()
-        # Primer set_estado: "extrayendo"
         called_msgs = [c.args[0] for c in h.app.dialogs.set_estado.call_args_list]
         assert any("Extrayendo" in m or "🧬" in m for m in called_msgs)
         h.app.dialogs.toggle_botones.assert_called_with(False)
-        spy_thread.assert_called_once()
+        mock_exec.submit.assert_called_once()
 
 
 # ─────────────────────── _cmd_ver_biblioteca_adn ──────────────────────

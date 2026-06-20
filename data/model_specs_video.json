@@ -24,7 +24,8 @@
     "best_for": "DIRECTOR DE CINE. Prompts negativos. Multi-toma, secuencias narrativas, coherencia brutal de personajes. Audio: lip-sync, diálogos, SFX, música.",
     "prompt_formula": "Subject + action → setting → time → camera → motion → mood → audio (opcional)",
     "prompt_ejemplo": "10-15 seconds. Slow push-in on subject's face. Subtle breathing, soft blink. Golden hour rim light, shallow depth of field. Quiet city ambience.",
-    "limitaciones": "Prompts muy cargados pueden fallar; simplificar cámara a un movimiento"
+    "limitaciones": "Prompts muy cargados pueden fallar; simplificar cámara a un movimiento",
+    "vigente": true
   },
   "Kling 3.0 Omni": {
     "nota": 4.5,
@@ -51,7 +52,8 @@
     "best_for": "Continuidad personaje/voz. Referencia multi-imagen. Secuencias coherentes. Lip-sync avanzado, SFX, voz consistente entre clips",
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio",
     "prompt_ejemplo": "12s. Wide establishing shot, slow pan left. Light rain, wet reflections, neon signs. Distant traffic ambience.",
-    "limitaciones": "Demasiadas referencias conflictivas causan inconsistencia"
+    "limitaciones": "Demasiadas referencias conflictivas causan inconsistencia",
+    "vigente": true
   },
   "Kling 01 Video Model": {
     "nota": 4.3,
@@ -76,7 +78,8 @@
     "best_for": "Creador básico y estable. Genera clips 3-10s desde texto o imagen. Punto fuerte: imagen inicio+fin para transición perfecta.",
     "prompt_formula": "Scene description + subject + action + camera movement",
     "prompt_ejemplo": "A cyberpunk city at dusk with neon lights reflecting on wet pavement, cinematic dolly shot.",
-    "limitaciones": "Sin audio nativo, máximo 10 segundos"
+    "limitaciones": "Sin audio nativo, máximo 10 segundos",
+    "vigente": true
   },
   "Kling 2.6": {
     "nota": 3.1,
@@ -101,7 +104,8 @@
     "best_for": "ESPECIALISTA EN SONIDO. Personaje hablando a cámara con sincronización labial. Diálogos, vlogs con voz, performances musicales",
     "prompt_formula": "Scene description + subject + movement + [Character, Emotion] says: 'dialogue' + audio description",
     "prompt_ejemplo": "[Ana, excited] says: 'Welcome to my channel!' Bright studio, warm key light, slight camera push-in. Upbeat pop BGM.",
-    "limitaciones": "Sin prompt negativo, calidad visual inferior a Kling 3.0"
+    "limitaciones": "Sin prompt negativo, calidad visual inferior a Kling 3.0",
+    "vigente": true
   },
   "Seedance 1.5 PRO": {
     "nota": 4.3,
@@ -131,7 +135,8 @@
     "best_for": "Audio nativo integrado (BGM+SFX+doblaje). Text/Image-to-Video. 480p-4K. Multi-ratios. Realismo cine, ads, naturaleza",
     "prompt_formula": "Scene + subject + action + camera + lighting + audio description",
     "prompt_ejemplo": "Drone shot over crashing ocean coastline during storm. Audio: roaring waves, howling wind, distant thunder.",
-    "limitaciones": "Máx 5000 letras. Coste energía variable 230-3840pts"
+    "limitaciones": "Máx 5000 letras. Coste energía variable 230-3840pts",
+    "vigente": true
   },
   "Seedance 2.0": {
     "nota": 4.2,
@@ -175,7 +180,8 @@
       "TEXTO EN VIDEO: agregar texto en post-produccion — el modelo no renderiza texto pequeño (bajo 24pt) con fiabilidad",
       "FLUJO RECOMENDADO: crear frames en GPT Image 2 -> subir como @Image a Seedance para video con personaje consistente",
       "FISICA COMPLEJA (agua, humo, fuego): rendimiento inferior a Sora 2 — evitar si eso es el foco principal"
-    ]
+    ],
+    "vigente": true
   },
   "Seedance 2.0 Fast": {
     "nota": 3.0,
@@ -208,7 +214,8 @@
       "PROMPTS CORTOS: 80-150 palabras — suficiente para definir sujeto, accion, camara y estilo",
       "MISMAS REGLAS de referencias @ que Seedance 2.0 (maximo 7 utiles)",
       "USAR PARA: probar composicion, movimiento de camara y apariencia de personaje antes del render final"
-    ]
+    ],
+    "vigente": true
   },
   "Nano Banana Pro Video": {
     "nota": 3.3,
@@ -237,7 +244,8 @@
     "best_for": "Gemini 3. Alta fidelidad profesional. Image-to-Video 2K/4K. Text-to-Video 6s@720p/10s@1080p. Control cámara avanzado.",
     "prompt_formula": "Subject + action + camera movement + style + lighting",
     "prompt_ejemplo": "Hyper-realistic racing car drifting around wet track corner, fixed camera, smoke billowing from tires.",
-    "limitaciones": "Clips reales 6-10s (UI muestra 15s), manos ocasionalmente inconsistentes"
+    "limitaciones": "Clips reales 6-10s (UI muestra 15s), manos ocasionalmente inconsistentes",
+    "vigente": true
   },
   "Nano Banana Video": {
     "nota": 4.5,
@@ -260,7 +268,8 @@
     "best_for": "Modelo estándar rápido. Image/Text-to-Video 6-10s. Estilos: cine, anime, sci-fi, Disney. Control cámara en prompt.",
     "prompt_formula": "Subject + action + camera control + style description",
     "prompt_ejemplo": "Majestic lion in jungle, paw moves to adjust camera, jungle background sways gently, cinematic quality.",
-    "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo"
+    "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo",
+    "vigente": true
   },
   "SeaArt Film Video": {
     "nota": 4.5,
@@ -284,7 +293,8 @@
     "best_for": "El modelo de vídeo más usado de SeaArt (10.4M usos). Cinematográfico, HQ, fotogramas. Sujetos múltiples, magia de sugerencia. Image-to-Video y Text-to-Video.",
     "prompt_formula": "Subject + action + camera + lighting + style. Prompts descriptivos con magia de sugerencia.",
     "prompt_ejemplo": "A woman in a flowing white dress walks through golden wheat fields at sunset, cinematic slow motion, warm golden hour light, shallow DOF.",
-    "limitaciones": "Máx 10s. Coste ~480-2400 energía."
+    "limitaciones": "Máx 10s. Coste ~480-2400 energía.",
+    "vigente": true
   },
   "SeaArt Ultra Pro": {
     "nota": 4.6,
@@ -311,7 +321,8 @@
     "best_for": "Versión Pro del Ultra. 4.4M usos. 15s, calidad profesional. Sujetos múltiples, magia de sugerencia, prompt negativo. Ideal para producción seria.",
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Kling 3.0 pero con slider de similitud.",
     "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic 4K, slow crane movement.",
-    "limitaciones": "Coste alto (~600-3000 energía). Similitud 0.5 por defecto."
+    "limitaciones": "Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
+    "vigente": true
   },
   "Wan 2.6": {
     "nota": 4.3,
@@ -338,7 +349,8 @@
     "best_for": "Motor Wan (ByteDance). 88K usos. Image-to-Video con prompt negativo. Magia de sugerencia. Semilla fija disponible.",
     "prompt_formula": "Subject + action + camera movement + style + lighting. Prompts descriptivos.",
     "prompt_ejemplo": "A samurai drawing his sword in a bamboo forest, slow motion, dramatic backlight, leaves falling, cinematic atmosphere.",
-    "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía."
+    "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía.",
+    "vigente": true
   },
   "Sora2 Video": {
     "nota": 4.8,
@@ -409,7 +421,8 @@
       "SFX",
       "voiceover"
     ],
-    "limitaciones": "Coste más alto que otros. Requiere referencia de personaje para consistencia. Duración máxima ~20s."
+    "limitaciones": "Coste más alto que otros. Requiere referencia de personaje para consistencia. Duración máxima ~20s.",
+    "vigente": true
   },
   "Veo 3.1": {
     "nota": 4.7,
@@ -496,7 +509,8 @@
       "footsteps",
       "breathing"
     ],
-    "limitaciones": "Solo 2 ratios básicos (9:16, 16:9). Máx ~12s. Sin negative prompt. Mejor para cinematografía que para acciones complejas."
+    "limitaciones": "Solo 2 ratios básicos (9:16, 16:9). Máx ~12s. Sin negative prompt. Mejor para cinematografía que para acciones complejas.",
+    "vigente": true
   },
   "Gemini Omni": {
     "nota": 4.9,
@@ -579,6 +593,7 @@
       "shadow casting",
       "reflection"
     ],
-    "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo."
+    "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo.",
+    "vigente": true
   }
 }

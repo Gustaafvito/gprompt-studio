@@ -25,6 +25,15 @@ def _txt(value):
                            insert=lambda *_a, **_k: None)
 
 
+class _SyncExec:
+    def submit(self, fn, *args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            pass
+        return SimpleNamespace(add_done_callback=lambda _cb: None)
+
+
 def _host(modo="imagen", idea="una idea bastante larga", **overrides):
     app = SimpleNamespace()
     defaults = dict(
@@ -43,6 +52,7 @@ def _host(modo="imagen", idea="una idea bastante larga", **overrides):
         _on_modo_cambio=MagicMock(),
         guardar_en_historial=MagicMock(),
         STORY_SHOT_TYPES=MultiPromptService.STORY_SHOT_TYPES,
+        _executor=_SyncExec(),
     )
     defaults.update(overrides)
     for k, v in defaults.items():
@@ -111,20 +121,19 @@ class TestCmdMoodboard:
         h._cmd_moodboard()
         h.app.dialogs.set_estado.assert_called_once()
 
-    def test_cancelar_pedir_n_aborta(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.multiprompt.threading.Thread", spy_thread)
-        h = _host()
+    def test_cancelar_pedir_n_aborta(self):
+        mock_exec = MagicMock()
+        h = _host(_executor=mock_exec)
         h.app._pedir_n_modal = lambda *a, **k: None  # usuario cancela
         h._cmd_moodboard()
-        spy_thread.assert_not_called()
+        mock_exec.submit.assert_not_called()
 
-    def test_inicia_worker_con_idea_valida(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.multiprompt.threading.Thread", spy_thread)
-        h = _host()
+    def test_inicia_worker_con_idea_valida(self):
+        mock_exec = MagicMock()
+        mock_exec.submit.return_value = SimpleNamespace(add_done_callback=lambda _cb: None)
+        h = _host(_executor=mock_exec)
         h._cmd_moodboard()
-        spy_thread.assert_called_once()
+        mock_exec.submit.assert_called_once()
         h.app.dialogs.toggle_botones.assert_called_once_with(False)
 
 
@@ -187,10 +196,10 @@ class TestEncadenarBoardAVideo:
         h.app.dialogs.set_estado.assert_called_once()
         assert "frames" in h.app.dialogs.set_estado.call_args[0][0].lower()
 
-    def test_con_frames_lanza_worker(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.multiprompt.threading.Thread", spy_thread)
-        h = _host()
+    def test_con_frames_lanza_worker(self):
+        mock_exec = MagicMock()
+        mock_exec.submit.return_value = SimpleNamespace(add_done_callback=lambda _cb: None)
+        h = _host(_executor=mock_exec)
         h._encadenar_board_a_video(["frame A", "frame B"], vent_comparador=None)
-        spy_thread.assert_called_once()
+        mock_exec.submit.assert_called_once()
         h.app.dialogs.toggle_botones.assert_called_once_with(False)

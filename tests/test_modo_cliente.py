@@ -20,6 +20,15 @@ def _txt(value):
                            insert=lambda *_a, **_k: None)
 
 
+class _SyncExec:
+    def submit(self, fn, *args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            pass
+        return SimpleNamespace(add_done_callback=lambda _cb: None)
+
+
 def _host(**overrides):
     app = SimpleNamespace()
     defaults = dict(
@@ -37,6 +46,7 @@ def _host(**overrides):
         _parsear_bloques_numerados=lambda txt, n_esperado=None: [],
         imagen_cargada=None,
         vision=SimpleNamespace(describir=lambda *a, **k: ("desc", "vision")),
+        _executor=_SyncExec(),
     )
     defaults.update(overrides)
     for k, v in defaults.items():
@@ -55,22 +65,20 @@ def _host(**overrides):
 
 class TestGenerarPropuestasCliente:
 
-    def test_marca_estado_y_desactiva_botones_al_iniciar(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.modo_cliente.threading.Thread", spy_thread)
-        h = _host()
+    def test_marca_estado_y_desactiva_botones_al_iniciar(self):
+        mock_exec = MagicMock()
+        mock_exec.submit.return_value = SimpleNamespace(add_done_callback=lambda _cb: None)
+        h = _host(_executor=mock_exec)
         h._generar_propuestas_cliente("brief test")
         h.app.dialogs.set_estado.assert_called_once()
         msg = h.app.dialogs.set_estado.call_args[0][0]
         assert "5 propuestas" in msg or "💼" in msg
         h.app.dialogs.toggle_botones.assert_called_once_with(False)
-        spy_thread.assert_called_once()
+        mock_exec.submit.assert_called_once()
 
-    def test_modelo_sin_negative_omite_negative_prompt_en_peticion(self, monkeypatch):
+    def test_modelo_sin_negative_omite_negative_prompt_en_peticion(self):
         """Cuando specs.has_negative=False, la petición indica explícitamente
         NO incluir NEGATIVE PROMPT."""
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.modo_cliente.threading.Thread", spy_thread)
         captured = {}
 
         def _stub_generar(peticion, **_kw):
@@ -82,14 +90,9 @@ class TestGenerarPropuestasCliente:
             get_current_model_specs=lambda: {"has_negative": False, "is_natural": True},
         )
         h._generar_propuestas_cliente("brief test")
-        # Ejecutar el worker manualmente
-        target = spy_thread.call_args.kwargs["target"]
-        target()
         assert "NO incluyas NEGATIVE" in captured["peticion"]
 
-    def test_modelo_natural_pide_lenguaje_natural(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.modo_cliente.threading.Thread", spy_thread)
+    def test_modelo_natural_pide_lenguaje_natural(self):
         captured = {}
 
         def _stub_generar(peticion, **_kw):
@@ -101,12 +104,9 @@ class TestGenerarPropuestasCliente:
             get_current_model_specs=lambda: {"has_negative": True, "is_natural": True},
         )
         h._generar_propuestas_cliente("brief test")
-        spy_thread.call_args.kwargs["target"]()
         assert "lenguaje natural" in captured["peticion"]
 
-    def test_modelo_tag_based_pide_tags(self, monkeypatch):
-        spy_thread = MagicMock()
-        monkeypatch.setattr("modules.modo_cliente.threading.Thread", spy_thread)
+    def test_modelo_tag_based_pide_tags(self):
         captured = {}
 
         def _stub_generar(peticion, **_kw):
@@ -118,7 +118,6 @@ class TestGenerarPropuestasCliente:
             get_current_model_specs=lambda: {"has_negative": True, "is_natural": False},
         )
         h._generar_propuestas_cliente("brief test")
-        spy_thread.call_args.kwargs["target"]()
         assert "tags con pesos" in captured["peticion"]
 
 

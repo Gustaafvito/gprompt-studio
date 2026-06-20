@@ -26,6 +26,16 @@ def _txt(value):
     return SimpleNamespace(get=lambda *_a, **_k: value + "\n")
 
 
+class _SyncExec:
+    """Executor síncrono falso: ejecuta submit() en el hilo actual."""
+    def submit(self, fn, *args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+        except Exception:
+            pass
+        return SimpleNamespace(add_done_callback=lambda _cb: None)
+
+
 def _host(**attrs):
     """Construye un RefinamientoService(app) con app simulado."""
     app = SimpleNamespace()
@@ -45,6 +55,7 @@ def _host(**attrs):
         is_natural_mode=lambda: False,
         get_current_model_specs=lambda: None,
         _ultimo_anclaje_visual="",
+        _executor=_SyncExec(),
     )
     defaults.update(attrs)
     for k, v in defaults.items():
@@ -178,7 +189,7 @@ class TestCmdRefinar:
 
     def _setup(self, *, txt="POSITIVE PROMPT: a cat", modo="imagen",
                is_natural=False, specs=None, anclaje="",
-               idea="", pers="", lora="", monkeypatch_thread=None):
+               idea="", pers="", lora=""):
         worker_mock = MagicMock()
         h = _host(
             txt_salida=_txt(txt),
@@ -190,113 +201,91 @@ class TestCmdRefinar:
             get_current_model_specs=lambda: specs,
             _ultimo_anclaje_visual=anclaje,
             _worker_ia=worker_mock,
-            # cmd_refinar usa self.workers.worker_ia tras migración A1
             workers=SimpleNamespace(worker_ia=worker_mock),
         )
-        if monkeypatch_thread is not None:
-            monkeypatch_thread.setattr(
-                "modules.refinamiento.threading.Thread",
-                lambda **kw: SimpleNamespace(
-                    start=lambda: (kw.get("target") or (lambda *a, **kw: None))
-                    (*kw.get("args", ()), **kw.get("kwargs", {})),
-                    _kw=kw,
-                ),
-            )
         return h
 
-    def test_sin_texto_devuelve_warning(self, monkeypatch):
-        h = self._setup(txt="", monkeypatch_thread=monkeypatch)
+    def test_sin_texto_devuelve_warning(self):
+        h = self._setup(txt="")
         h.cmd_refinar()
         h.app.set_estado.assert_called_once()
         assert "Genera un prompt primero" in h.app.set_estado.call_args[0][0]
         h.app._worker_ia.assert_not_called()
 
-    def test_texto_sin_marcadores_devuelve_warning(self, monkeypatch):
-        h = self._setup(txt="solo texto plano sin keys", monkeypatch_thread=monkeypatch)
+    def test_texto_sin_marcadores_devuelve_warning(self):
+        h = self._setup(txt="solo texto plano sin keys")
         h.cmd_refinar()
         assert "Genera un prompt primero" in h.app.set_estado.call_args[0][0]
 
-    def test_imagen_tag_based_incluye_reglas_tag(self, monkeypatch):
-        h = self._setup(txt="POSITIVE PROMPT: x", is_natural=False,
-                        monkeypatch_thread=monkeypatch)
+    def test_imagen_tag_based_incluye_reglas_tag(self):
+        h = self._setup(txt="POSITIVE PROMPT: x", is_natural=False)
         h.cmd_refinar()
         h.app._worker_ia.assert_called_once()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "Tags separados por comas" in peticion
         assert "tag:1.2" in peticion
 
-    def test_imagen_natural_incluye_texto_natural(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", is_natural=True,
-                        monkeypatch_thread=monkeypatch)
+    def test_imagen_natural_incluye_texto_natural(self):
+        h = self._setup(txt="PROMPT: x", is_natural=True)
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "NATURAL" in peticion
         assert "prosa descriptiva" in peticion
 
-    def test_video_menciona_cinematografico(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", modo="video",
-                        monkeypatch_thread=monkeypatch)
+    def test_video_menciona_cinematografico(self):
+        h = self._setup(txt="PROMPT: x", modo="video")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "cinematográfico" in peticion or "vídeo" in peticion.lower()
 
-    def test_audio_menciona_instrumentacion(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", modo="audio",
-                        monkeypatch_thread=monkeypatch)
+    def test_audio_menciona_instrumentacion(self):
+        h = self._setup(txt="PROMPT: x", modo="audio")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "instrumentación" in peticion or "género" in peticion
 
-    def test_incluye_idea_si_presente(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", idea="mi nueva idea genial",
-                        monkeypatch_thread=monkeypatch)
+    def test_incluye_idea_si_presente(self):
+        h = self._setup(txt="PROMPT: x", idea="mi nueva idea genial")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "mi nueva idea genial" in peticion
         assert "Incorpora:" in peticion
 
-    def test_incluye_personaje_si_presente(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", pers="Alicia",
-                        monkeypatch_thread=monkeypatch)
+    def test_incluye_personaje_si_presente(self):
+        h = self._setup(txt="PROMPT: x", pers="Alicia")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "Alicia" in peticion
         assert "personaje" in peticion.lower()
 
-    def test_incluye_lora_si_presente(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", lora="AnimeStyle",
-                        monkeypatch_thread=monkeypatch)
+    def test_incluye_lora_si_presente(self):
+        h = self._setup(txt="PROMPT: x", lora="AnimeStyle")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "AnimeStyle" in peticion
 
-    def test_incluye_anclaje_visual_si_presente(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", anclaje="ojos verdes, pelo plateado",
-                        monkeypatch_thread=monkeypatch)
+    def test_incluye_anclaje_visual_si_presente(self):
+        h = self._setup(txt="PROMPT: x", anclaje="ojos verdes, pelo plateado")
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "ojos verdes, pelo plateado" in peticion
         assert "GEOMETRÍA VISUAL" in peticion
 
-    def test_limite_chars_desde_specs(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x",
-                        specs={"max_chars": 1500},
-                        monkeypatch_thread=monkeypatch)
+    def test_limite_chars_desde_specs(self):
+        h = self._setup(txt="PROMPT: x", specs={"max_chars": 1500})
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "1500" in peticion
         assert "LÍMITE" in peticion or "límite" in peticion.lower()
 
-    def test_limite_chars_fallback_2000_si_no_hay_specs(self, monkeypatch):
-        h = self._setup(txt="PROMPT: x", specs=None,
-                        monkeypatch_thread=monkeypatch)
+    def test_limite_chars_fallback_2000_si_no_hay_specs(self):
+        h = self._setup(txt="PROMPT: x", specs=None)
         h.cmd_refinar()
         peticion = h.app._worker_ia.call_args[0][0]
         assert "2000" in peticion
 
-    def test_pasa_es_refinamiento_y_texto_previo_al_worker(self, monkeypatch):
-        h = self._setup(txt="POSITIVE PROMPT: x",
-                        monkeypatch_thread=monkeypatch)
+    def test_pasa_es_refinamiento_y_texto_previo_al_worker(self):
+        h = self._setup(txt="POSITIVE PROMPT: x")
         h.cmd_refinar()
         kwargs = h.app._worker_ia.call_args.kwargs
         assert kwargs["es_refinamiento"] is True
@@ -309,74 +298,64 @@ class TestCmdRefinar:
 class TestIterarElemento:
     """Solo testeamos el parsing de VARIANTE N en la respuesta del LLM."""
 
-    def _setup(self, monkeypatch, *, resp="", n=5, txt_actual="prompt base"):
-        # Suplantamos threading.Thread para ejecutar el worker sincronamente
-        monkeypatch.setattr(
-            "modules.refinamiento.threading.Thread",
-            lambda **kw: SimpleNamespace(
-                start=lambda: kw["target"](*kw.get("args", ()),
-                                            **kw.get("kwargs", {})),
-            ),
-        )
+    def _setup(self, *, resp="", n=5, txt_actual="prompt base"):
         deepseek = SimpleNamespace(generar=lambda *a, **k: resp)
         h = _host(
             txt_salida=_txt(txt_actual),
             deepseek=deepseek,
-            # _iterar_elemento usa _extraer_neg_de_bloque del CoreMixin para
-            # decidir si pedir formato POSITIVE/NEGATIVE al LLM
             _extraer_neg_de_bloque=lambda bloque: None,
         )
         return h
 
-    def test_parsea_n_variantes_validas(self, monkeypatch):
+    def test_parsea_n_variantes_validas(self):
         resp = (
             "VARIANTE 1: una variante con iluminación suave y dorada, ambiente cálido\n"
             "VARIANTE 2: otra variante con iluminación dura y azul, ambiente frío\n"
             "VARIANTE 3: tercera variante con iluminación lateral y verde, mood neutro"
         )
-        h = self._setup(monkeypatch, resp=resp, n=3)
+        h = self._setup(resp=resp, n=3)
         h._iterar_elemento("iluminación", n=3)
         h.app._abrir_comparador.assert_called_once()
         variantes = h.app._abrir_comparador.call_args[0][0]
         assert len(variantes) == 3
         assert "iluminación suave" in variantes[0]
 
-    def test_filtra_strings_muy_cortos(self, monkeypatch):
+    def test_filtra_strings_muy_cortos(self):
         resp = (
             "VARIANTE 1: x\n"  # demasiado corto, se filtra
             "VARIANTE 2: descripción suficientemente larga con detalles ricos\n"
             "VARIANTE 3: otra descripción suficientemente larga con muchos detalles"
         )
-        h = self._setup(monkeypatch, resp=resp, n=3)
+        h = self._setup(resp=resp, n=3)
         h._iterar_elemento("iluminación", n=3)
         variantes = h.app._abrir_comparador.call_args[0][0]
         assert len(variantes) == 2  # la corta se filtró
 
-    def test_menos_de_2_variantes_valida_avisa_y_no_abre_comparador(self, monkeypatch):
+    def test_menos_de_2_variantes_valida_avisa_y_no_abre_comparador(self):
         resp = "VARIANTE 1: solo una variante larga suficiente"
-        h = self._setup(monkeypatch, resp=resp, n=3)
+        h = self._setup(resp=resp, n=3)
         h._iterar_elemento("iluminación", n=3)
         h.app._abrir_comparador.assert_not_called()
         msg = h.app.set_estado.call_args_list[-1][0][0]
         assert "Solo se generó" in msg or "intenta de nuevo" in msg
 
-    def test_respeta_n_aunque_haya_mas_variantes(self, monkeypatch):
+    def test_respeta_n_aunque_haya_mas_variantes(self):
         resp = "\n".join(
             f"VARIANTE {i+1}: descripción larga número {i+1} suficiente"
             for i in range(7)
         )
-        h = self._setup(monkeypatch, resp=resp, n=3)
+        h = self._setup(resp=resp, n=3)
         h._iterar_elemento("iluminación", n=3)
         variantes = h.app._abrir_comparador.call_args[0][0]
         assert len(variantes) == 3
 
-    def test_parsing_es_case_insensitive(self, monkeypatch):
+    def test_parsing_es_case_insensitive(self):
         resp = (
             "variante 1: descripción uno suficientemente larga\n"
             "Variante 2: descripción dos suficientemente larga\n"
             "VARIANTE 3: descripción tres suficientemente larga"
         )
-        h = self._setup(monkeypatch, resp=resp, n=3)
+        h = self._setup(resp=resp, n=3)
         h._iterar_elemento("iluminación", n=3)
         variantes = h.app._abrir_comparador.call_args[0][0]
         assert len(variantes) == 3
