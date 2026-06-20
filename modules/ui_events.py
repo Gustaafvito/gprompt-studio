@@ -79,6 +79,9 @@ class UiEventsService:
             try: self.app._seg_modo.set(mapa_inv.get(modo, "Imagen"))
             except: pass
 
+        _TABS_CON_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"]
+        _TABS_SIN_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"]
+
         if modo == "video":
             self.app.combo_plataforma.configure(values=PLATAFORMAS_VIDEO_LISTA)
             self.app.plataforma_var.set("SeaArt Video")
@@ -93,6 +96,7 @@ class UiEventsService:
             self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
             self.app.footer._construir_checkboxes(ESTILOS_VIDEO)
             self._actualizar_motores_video()
+            self._set_tabs_visibles(_TABS_CON_TAGS)
 
         elif modo == "audio":
             self.app.combo_plataforma.configure(values=PLATAFORMAS_AUDIO_LISTA)
@@ -108,6 +112,7 @@ class UiEventsService:
             self.app.btn_img_prompt.configure(text="🎯 (no aplica)", state="disabled")
             self.app.footer._construir_checkboxes(ESTILOS_AUDIO)
             self._on_motor_audio_cambio()
+            self._set_tabs_visibles(_TABS_SIN_TAGS)
 
         else:
             self.app.combo_plataforma.configure(values=PLATAFORMAS_IMAGEN_LISTA)
@@ -125,6 +130,7 @@ class UiEventsService:
             self.app.ratio_var.set("1:1")
             self.app.footer._construir_checkboxes(ESTILOS_IMAGEN)
             self._on_modelo_imagen_cambio()
+            self._set_tabs_visibles(_TABS_CON_TAGS)
 
         try:
             if hasattr(self.app, 'btn_story'):
@@ -147,6 +153,16 @@ class UiEventsService:
         self._on_plataforma_cambio()
         self.app._ocultar_ideas()
         self.app.reiniciar_memoria()
+
+    def _set_tabs_visibles(self, tabs: list) -> None:
+        """Muestra solo las pestañas indicadas en el CTkTabview."""
+        try:
+            sb = self.app.tabview._segmented_button
+            sb.configure(values=tabs)
+            if self.app.tabview.get() not in tabs:
+                self.app.tabview.set(tabs[0])
+        except Exception as _e:
+            logger.debug(f"[silent set_tabs_visibles] {_e}")
 
     def _on_plataforma_cambio(self, valor: str | None = None) -> None:
         modo = self.app.modo_var.get()
