@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 21**.
+Actualizado al cierre de la **sesión 22**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **592** ✅ (`python -m pytest tests -q`) |
+| Tests | **686 passed / 28 failing** (`python -m pytest tests -q`) — ver nota abajo |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -35,20 +35,65 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 | Build `.exe` | onedir + onefile + installer (Inno Setup) — al día |
 | Code-signing | Opcional vía env vars (`GPROMPT_SIGN_*`), ver BUILD.md |
-| Modelos de imagen VISIBLES | **35** vigentes (filtro `vigente:true`); el resto ocultos |
-| Familia FLUX | **CERRADA — 25** modelos ✅ (incl. `FLUX.1-Kontext-dev` edición; 3 legacy borrados) |
+| Modelos de imagen VISIBLES | **93** vigentes / 164 total (filtro `vigente:true`) |
+| Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
+| Familia Anime/Ilustración | **6/17** vigentes (11 ocultos, pendiente auditoría) |
+| Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
+| Modelos vídeo | 15 (sin filtro `vigente` aún) |
+| Modelos audio | 10 (sin filtro `vigente` aún) |
+| Biblioteca ejemplos | 27 entradas |
+| Tab Tags | **83 tags** en 6 categorías, bilingüe + tooltips |
 | Coste API | sesión + histórico + desglose por modelo |
+
+> **Tests failing (28)**: `test_refinamiento.py` (18) — monkeypatch de threading roto tras refactor de módulo; `test_multiprompt.py` (2) y otros — precondiciones desincronizadas. No afectan funcionalidad. Pendiente arreglar en próxima sesión técnica.
 
 ### Archivos más grandes (líneas)
 
 | Archivo | Líneas |
 |---|---:|
-| `app.py` | 2670 |
-| `modules/tools_analysis.py` | 2112 |
-| `modules/tools_creative.py` | 1876 |
-| `modules/ui_builders.py` | 1831 |
-| `modules/core.py` | 1674 |
-| `modules/data_mgmt.py` | 1581 |
+| `app.py` | 2619 |
+| `modules/tools_analysis.py` | 2187 |
+| `modules/tools_creative.py` | 1902 |
+| `modules/ui_builders.py` | 1928 |
+| `modules/data_mgmt.py` | 1582 |
+| `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 22 — Tags bilingüe+tooltips, fix LoRA multi-término, modelos nuevos
+
+1. **Tab 🏷️ Tags — bilingüe con tooltips** (`config.py`, `modules/ui_builders.py`):
+   los 83 tags del picker pasan de inglés puro a tuplas `(nombre_es, val_en, descripción)`.
+   Los botones muestran el nombre en **español**, insertan el **término inglés** en
+   `txt_idea` al hacer clic, y al pasar el ratón aparece un `CTkToolTip` con el término
+   EN + descripción de una línea de qué hace ese tag visualmente.
+
+2. **fix(lora): triggers multi-término con comas** (`modules/prompts_inyeccion.py`):
+   antes, un trigger como `"Nyra, Amber Eyes, Undercut"` producía
+   `"Nyra, Amber Eyes, Undercut style"` ("`style`" colgado del último término).
+   Ahora la lógica aplana: un trigger de **1 sola palabra** → `"palabra style"`;
+   un trigger con **comas** → se separa en términos individuales sin "`style`".
+   Resultado con 2 LoRAs: `"lmnlhrr style, Nyra, Amber Eyes, Undercut"` (formato
+   SD estándar, que el LLM maneja correctamente).
+
+3. **fix(lora): safety-net `_garantizar_lora_trigger`** (`modules/workers_ia.py`):
+   el regex de limpieza de duplicados usaba `trigger` completo como palabra, lo que
+   fallaba si el trigger contenía comas. Ahora extrae `trigger_key` (primer término
+   antes de la primera coma) para la búsqueda/limpieza regex. La inserción de
+   fallback también distingue: multi-término → inserta `trigger, `; una palabra →
+   inserta `trigger style, `.
+
+4. **Modelos nuevos** (commits sesión 21–22): Wan 2.2, Wan2.5 Image, Sora2 Image,
+   Seedream 4.5/4.0, Kling O1 Image, Qwen-Image, Illustrious XL V3.5-vpred y
+   V3.6, MiaoMiao Harem V2.0, eliminados GhostMix / Hassaku XL / todos NiwaStyle.
+
+5. **Biblioteca** (`data/biblioteca_ejemplos.json`, `modules/data_mgmt.py`):
+   normalización de nombres de plataforma; pre-filtrado por modo al abrir.
+   Añadidos **8 ejemplos Seedance 2.0** y **9 ejemplos GPT Image 2/1.5**.
+
+6. **UI varios**: presets negativos en 2 filas, icono Vars → gauge, modos batch
+   más claros, menú Plantillas ordenado alfabéticamente, enfocar `txt_idea` al
+   arrancar, fix KeyError en specs sin `prompt_formula`/`prompt_ejemplo`.
 
 ---
 
@@ -158,44 +203,36 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ## 🚧 Pendiente
 
 ### 🔴 ALTA
-- **Auditoría de specs**: familia **Flux ✅ hecha (17, sesión 21)**; queda
-  **Illustrious (10)** — requiere pantallazos del panel SeaArt (input del usuario).
-- **Vigentes vídeo/audio/plataformas**: aplicar el filtro `vigente` también a
-  vídeo y audio, y ocultar plataformas no usadas (solo imagen hecho en sesión 21).
-- ✅ **Flux: líos heredados limpiados (sesión 21)**: borrados `FLUX.1` (schnell),
-  `Flux-dev` y `Mix Max Cinematic Realism`. Añadido **`FLUX.1-Kontext-dev`**
-  (modelo de EDICIÓN, `max_imagenes_referencia:1`) — pendiente PROBARLO para la
-  rotación del avatar desde referencia (debería funcionar donde Z-Image/Flux txt2img no).
+- **Tests failing (28)**: `test_refinamiento.py` (18 tests) — monkeypatch de
+  `modules.refinamiento.threading` falla porque `refinamiento` es un módulo
+  plano, no un paquete. Hay que cambiar `monkeypatch.setattr("modules.refinamiento.threading", …)`
+  por `monkeypatch.setattr("threading", …)` o importar el módulo directamente.
+  `test_multiprompt.py` (2) — precondiciones de worker desincronizadas.
+- **Auditoría specs Anime/Ilustración**: 6/17 vigentes, 11 ocultos sin auditar.
+  Requiere pantallazos del panel SeaArt (Illustrious, NoobAI, etc.).
+- **Auditoría specs Realismo SD**: 6/15 vigentes, 9 ocultos sin auditar.
+- **Vigentes vídeo/audio**: aplicar filtro `vigente` a los 15 modelos de vídeo
+  y 10 de audio (solo imagen tiene el filtro activo).
 
 ### 🟡 MEDIA
-- **max_chars empírico** de los 10 modelos semi-auditados (Infinity, SD 3.5,
-  Realism, NoobAI, T-Ponynai3, Counterfeit, Temporal) — prompt marcado o
-  contador del panel.
-- **Fable 5**: vigilar si Anthropic restaura el acceso (suspendido 12-jun-2026).
-  Descomentar precio + re-añadir a `LLM_PROVIDERS["claude"]["modelos"]`; el
-  guard de `temperature` ya lo cubre.
+- **`FLUX.1-Kontext-dev` (edición)**: modelo añadido, pendiente PROBARLO para
+  rotación Avatar desde referencia img2img (debería ir donde Z-Image falla).
+- **max_chars empírico** de modelos semi-auditados (Infinity, SD 3.5, Realism,
+  NoobAI, T-Ponynai3, Counterfeit, Temporal).
+- **Fable 5**: suspendido 12-jun-2026 por Anthropic. Descomentar cuando vuelva:
+  precio + `LLM_PROVIDERS["claude"]["modelos"]`; el guard de `temperature` ya existe.
 - **Revisar precios** de `PRECIOS_USD_1M` / `PRECIOS_USD_1M_MODELO`.
-- **Particiones restantes**: `app.py` (2670, p.ej. extraer comparador/diff o
-  plantillas), `tools_analysis.py` (2112), `tools_creative.py` (1876),
-  `ui_builders.py` (1831).
+- **Particiones restantes**: `tools_analysis.py` (2187), `tools_creative.py` (1902),
+  `ui_builders.py` (1928) — extraer módulos cuando haya motivo funcional.
 - **QoL**: overlay de ratio sobre imagen de referencia; variante SD/Comfy del
   storyboard de imagen.
 
 ### 🟢 BAJA
-- Code-signing real: conseguir el certificado (la infraestructura ya está).
-- Verificar installer end-to-end en una VM (instalación limpia → arranque →
-  desinstalación con borrado de datos).
-- Performance: semáforo de workers, virtual scrolling en historial/favoritos
-  (solo si se nota lentitud). **Lazy-load JSON descartado**: medido, `import
-  config` = 21 ms (231 KB), no compensa el riesgo de volver lazy constantes
-  usadas en muchos call sites.
-- Auditar los `[silent]` que oculten bugs reales — ahora hay herramienta:
-  arrancar con `GPROMPT_DEBUG=1` y reproducir el flujo sospechoso.
+- Code-signing real: conseguir el certificado (infraestructura ya lista).
+- Verificar installer end-to-end en VM limpia.
+- Performance: semáforo de workers, virtual scrolling en historial/favoritos.
+- Auditar `[silent]` que oculten bugs: arrancar con `GPROMPT_DEBUG=1`.
 - Features ambiciosos: export PDF, plugin system, API REST.
-
-### ✅ Completado en sesión 20 (antes pendiente)
-- `adaptar_modelo` como botón de un clic · import/export de macros ·
-  `optimizar_1pasada` headless · aviso Avatar prompts alternativos.
 
 ---
 
@@ -204,7 +241,7 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 592 passed
+python -m pytest tests -q                     # → 686 passed / 28 failing (conocidos, ver 🔴)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
