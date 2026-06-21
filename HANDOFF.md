@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **719 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **720 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -39,7 +39,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
 | Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
-| Modelos vídeo | **45 totales** (32 SeaArt oficiales auditados ✅ + 13 otros). 2ª tanda ~30 modelos pendiente (ver abajo) |
+| Modelos vídeo | **64 totales**, agrupados por familia (SeaArt Oficiales · Kling · Seedance · Nano Banana · Wan · StarDream · PixVerse · Hailuo · Vidu · Otros). Faltan pocos motores externos (ver abajo) |
 | Modelos audio | **10/10** vigentes ✅ (filtro activo desde sesión 23) |
 | Biblioteca ejemplos | 27 entradas |
 | Tab Tags | **83 tags** en 6 categorías, bilingüe + tooltips + botón ✨ Sugerir |
@@ -83,21 +83,24 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
    copiados al distribuible del escritorio (`GPromptStudio-Portable/`,
    `-Portable-Onefile.exe`, `-Setup-1.0.0.exe`). Borrados 2 sobrantes viejos.
 
-### 🎬 2ª tanda de vídeo SeaArt — PENDIENTE (descubierta en vídeo del usuario)
-El grid completo de SeaArt tiene MÁS modelos. Notas en captura, panel a panel:
-- **SeaArt-branded (~18):** Clip Remake 5.0, Spark Refer 5.0, Magic Rise 4.7,
-  Flow 2.0 4.0, Ultra Remix Video 4.0, Opera Refer 4.0, Ultra 3.0 turbo, Ultra
-  Frame Video 3.7, Stage 3.6, Clip Refer 3.5, Magic Pro, Flow, Magic Star 2.7,
-  Genesis Video 2.6, Jump Go 2.5, Sono Epic 2.4, Pony 2.3, Sono Blink.
-- **Otros motores en SeaArt (~12):** Wan 2.7 5.0, Vidu Q3 Reference 4.5, Wan 2.2 4.2,
-  Vidu Q3 Pro 4.1, Kling 3.0 turbo 4.0, Kling O1 4.0, Grok Imagine Video 4.0,
-  StarDream 2.0 (Fast) 4.0, Wan 2.5 3.5, Happy Horse 3.3, Grok Imagine 1.5 Video 3.0,
-  Hailuo 2.3 fast 2.0.
-- **DECISIÓN: los modelos de remake/edición/referencia se descartan** (Clip Remake,
-  Clip Refer, Spark Refer, Opera Refer, Ultra Remix, Vidu Q3 Reference…): son
-  vídeo-a-vídeo / edición, no generación desde texto/imagen, así que un generador de
-  prompts aporta poco. Confirmar caso por caso.
+### 🎬 2ª/3ª tanda de vídeo SeaArt — casi cerrada (commits `3aab79f`, `0fe8ba7`)
+Auditado el grid COMPLETO de SeaArt panel a panel. Catálogo **64 modelos**, por familia.
+- **SeaArt-branded: COMPLETO** ✅ (Stage, Flow 2.0, Jump Go, Magic Star, Ultra Frame
+  Video, Sono Blink, Genesis Video, Sono Epic, Pony, Flow, Magic Rise, Magic Pro,
+  Ultra 3.0 Turbo… + los 32 de la 1ª tanda).
+- **Motores externos en SUS PROPIAS familias** (decisión usuario: "aunque sean de
+  SeaArt, ponlos con su familia"). Grupos nuevos en `GRUPOS_VIDEO`: **Wan** (2.2/2.5/2.6),
+  **StarDream** (2.0), **PixVerse** (V6), **Hailuo** (2.0), **Vidu** (Q3 Turbo).
+  Reauditados: Seedance 2.0/2.0 Fast/1.5 PRO, Nano Banana Video/Pro, Kling 3.0/2.6,
+  Sora2, Wan 2.6 (muchos pasaron a modos por RESOLUCIÓN 480p–4K).
+- **FALTAN (motores externos):** Wan 2.7, Vidu Q3 Pro/Reference, Kling 3.0 turbo,
+  Kling O1, Grok Imagine Video (+1.5), StarDream 2.0 Fast, Happy Horse, Hailuo 2.3 fast.
+- **DECISIÓN: remake/edición/referencia DESCARTADOS** (Clip Remake/Refer, Spark/Opera
+  Refer, Ultra Remix, Vidu Q3 Reference…): vídeo-a-vídeo, no generación → el generador
+  de prompts aporta poco.
 - **Fuera de scope:** checkpoints ComfyUI/HuggingFace ("SeaArt Comfy Helper").
+- **Bug corregido** (`9eb295b`): la descripción de vídeo no cargaba con `ratios:[]`
+  (IndexError) ni con `nota:null` ("None/5") — fallback a `RATIOS_VIDEO` + guardas. +1 test.
 - Discrepancias nota: Veo 3.1 lo tenemos 4.7 / SeaArt 3.0; Wan 2.6 4.3 / SeaArt 3.5.
 
 ---
@@ -284,8 +287,9 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ## 🚧 Pendiente
 
 ### 🔴 ALTA
-- **2ª tanda vídeo SeaArt (~30 modelos)**: ver sección Sesión 24. Panel a panel,
-  descartando los de remake/edición/referencia. Notas ya recogidas.
+- **Vídeo SeaArt — quedan ~8 motores externos**: Wan 2.7, Vidu Q3 Pro/Reference,
+  Kling 3.0 turbo, Kling O1, Grok Imagine (+1.5), StarDream 2.0 Fast, Happy Horse,
+  Hailuo 2.3 fast. Panel a panel; remake/edición/referencia se descartan.
 - **Auditoría specs Anime/Ilustración**: 6/17 vigentes, 11 ocultos sin auditar.
   Requiere pantallazos del panel SeaArt (Illustrious, NoobAI, etc.).
 - **Auditoría specs Realismo SD**: 6/15 vigentes, 9 ocultos sin auditar.
