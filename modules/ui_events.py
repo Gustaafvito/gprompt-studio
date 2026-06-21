@@ -238,6 +238,22 @@ class UiEventsService:
             ratios = specs.get("ratios") or RATIOS_VIDEO
             self.app.combo_ratio_v.configure(values=ratios)
             if self.app.ratio_var.get() not in ratios: self.app.ratio_var.set(ratios[0])
+            # Repoblar el combo "Estilo" según la familia del modelo de vídeo
+            # (cada motor tiene su paleta; fallback al set genérico).
+            try:
+                from config import (
+                    ESTILOS_POR_FAMILIA_VIDEO,
+                    ESTILOS_VISUAL_VIDEO,
+                    detectar_familia_video,
+                )
+                estilos_v = (ESTILOS_POR_FAMILIA_VIDEO.get(detectar_familia_video(motor_name))
+                             or ESTILOS_VISUAL_VIDEO)
+                if hasattr(self.app, "combo_estilo_video"):
+                    self.app.combo_estilo_video.configure(values=estilos_v)
+                    if self.app.estilo_video_var.get() not in estilos_v:
+                        self.app.estilo_video_var.set("Auto")
+            except Exception as _e:
+                logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
             self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {specs.get('best_for', '')}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)

@@ -142,6 +142,40 @@ class TestInyectarEstiloFlux:
         assert "ESTILO FORZADO" in out
 
 
+class TestInyectarEstiloImagenGenerico:
+    """Estilo por familia (genérico) para familias de imagen no-especiales."""
+
+    def _modelo_no_especial(self):
+        import config
+        for _cab, ms in config.GRUPOS_IMAGEN:
+            for m in ms:
+                f = config.detectar_familia(m)
+                if f not in (None, "flux", "z_image", "gpt_image", "nano_banana"):
+                    return m
+        return None
+
+    def test_familia_generica_inyecta_hint(self):
+        modelo = self._modelo_no_especial()
+        assert modelo is not None
+        h = _host(familia_estilo_var=_var("Anime"))
+        out = h._inyectar_estilo_imagen_generico(modelo, "")
+        assert "ESTILO FORZADO" in out
+        assert "anime" in out.lower()
+
+    def test_auto_no_inyecta(self):
+        h = _host(familia_estilo_var=_var("Auto"))
+        assert h._inyectar_estilo_imagen_generico(self._modelo_no_especial(), "base") == "base"
+
+    def test_familia_especial_no_inyecta(self):
+        # flux es especial → se gestiona en su propio camino, aquí no-op
+        h = _host(familia_estilo_var=_var("Photoreal"))
+        assert h._inyectar_estilo_imagen_generico("FLUX.1 [dev]", "base") == "base"
+
+    def test_sin_var_no_rompe(self):
+        h = _host()
+        assert h._inyectar_estilo_imagen_generico(self._modelo_no_especial(), "base") == "base"
+
+
 class TestInyectarEstiloVideo:
     """Combo 'Estilo' (look visual) de la barra de vídeo."""
 

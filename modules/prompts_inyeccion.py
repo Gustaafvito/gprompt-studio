@@ -156,6 +156,11 @@ class PromptsInyeccionService:
         "Blanco y Negro": "blanco y negro / monocromo: alto contraste, grano, estética noir",
         "Vintage / Retro": "estética vintage/retro: colores desaturados, grano de película, look analógico",
         "Acuarela / Artístico": "estilo artístico/pictórico: pinceladas, acuarela, textura ilustrada",
+        "Documental": "estética documental: cámara observacional, luz natural, realismo crudo",
+        "Acción": "secuencia de acción dinámica: movimiento rápido, cortes enérgicos, cámara ágil",
+        "Cámara lenta": "cámara súper lenta (slow motion): detalle del movimiento, gotas y partículas suspendidas",
+        "Cartoon": "estilo cartoon / animación 2D: contornos marcados, colores planos, expresividad exagerada",
+        "Cómic": "estética de cómic: viñetas, entintado marcado, colores saturados",
     }
 
     def _inyectar_estilo_video(self, extra: str) -> str:
@@ -208,6 +213,7 @@ class PromptsInyeccionService:
         extra += f"• ⛔ LÍMITE ABSOLUTO INNEGOCIABLE: {max_c} caracteres totales.\n"
 
         extra = self._inyectar_specs_formato(modelo, specs, extra)
+        extra = self._inyectar_estilo_imagen_generico(modelo, extra)
         if specs.get("limitaciones"):
             extra += f"• Limitaciones: {specs['limitaciones']}\n"
 
@@ -251,6 +257,61 @@ class PromptsInyeccionService:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPOSITIVE PROMPT: [tags en inglés]\nNEGATIVE PROMPT: [tags negativos]\n"
             else:
                 extra += "• ⛔ Este modelo NO SOPORTA NEGATIVE PROMPT. Solo genera POSITIVE PROMPT.\n"
+        return extra
+
+    # Mapa estilo → orientación para familias SIN inyección a medida (toggle
+    # "Estilo" genérico). Cubre todas las paletas de config.ESTILOS_POR_FAMILIA.
+    _ESTILO_HINT_IMG = {
+        "Photoreal": "fotorrealismo puro: piel, materiales y luz realistas",
+        "Fotorrealista": "fotorrealismo puro: piel, materiales y luz realistas",
+        "Anime": "estilo anime / ilustración japonesa: lineart limpio, cel-shading, colores vivos",
+        "Manga": "estilo manga: blanco y negro, screentones, lineart entintado",
+        "Ilustración": "ilustración digital estilizada (no foto)",
+        "Chibi": "estilo chibi: proporciones super-deformed, cabezón, tierno",
+        "Realista": "render realista, materiales y luz creíbles",
+        "Acuarela": "acuarela / pintura tradicional: pinceladas, textura de papel",
+        "Creative": "ilustración creativa / arte conceptual estilizado",
+        "Fantasy": "fantasía épica/mística: criaturas, magia, atmósfera de leyenda",
+        "Fantasía": "fantasía épica/mística: criaturas, magia, atmósfera de leyenda",
+        "SciFi": "ciencia ficción / cyberpunk: tecnología, neón, futurista",
+        "Sci-Fi": "ciencia ficción / cyberpunk: tecnología, neón, futurista",
+        "Retrato": "retrato: encuadre de busto, foco en rostro y expresión, fondo difuminado",
+        "Cinematográfico": "look cinematográfico: lente de cine, profundidad de campo, gradación de color fílmica",
+        "Editorial": "fotografía editorial / moda: limpio, estilizado, iluminación de estudio",
+        "Pintura": "pintura digital al óleo: pinceladas visibles, empaste",
+        "Concept-Art": "concept art: diseño de personajes/entornos, exploración visual",
+        "Surrealista": "surrealismo: composición onírica, elementos imposibles",
+        "Dramático": "iluminación dramática, alto contraste, claroscuro",
+        "Tipografía": "diseño tipográfico: texto protagonista, jerarquía clara",
+        "Póster": "diseño de póster: composición gráfica, impacto visual",
+        "Logo": "diseño de logo: vectorial, limpio, memorable",
+        "Flat-Design": "ilustración flat: colores planos, formas simples, sin sombras realistas",
+        "3D-Render": "render 3D estilizado: materiales suaves, iluminación global",
+    }
+
+    def _inyectar_estilo_imagen_generico(self, modelo: str, extra: str) -> str:
+        """Estilo forzado para familias de imagen SIN inyección a medida. Las 4
+        especiales (flux/z_image/gpt_image/nano_banana) se gestionan en su propio
+        camino, así que aquí se ignoran. 'Auto' o estilo desconocido → no toca."""
+        try:
+            from config import detectar_familia
+            familia = detectar_familia(modelo)
+            if familia in (None, "flux", "z_image", "gpt_image", "nano_banana"):
+                return extra
+            estilo = "Auto"
+            if hasattr(self.app, "familia_estilo_var"):
+                estilo = self.app.familia_estilo_var.get() or "Auto"
+            if estilo == "Auto":
+                return extra
+            hint = self._ESTILO_HINT_IMG.get(estilo)
+            if not hint:
+                return extra
+            extra += (
+                "\n🎯 ESTILO FORZADO POR EL USUARIO 🎯\n"
+                f"• Orienta TODA la imagen a: {hint}.\n"
+            )
+        except Exception:
+            return extra
         return extra
 
     # Mapa estilo → orientación para la familia FLUX (toggle "Estilo").

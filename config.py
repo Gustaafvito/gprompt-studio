@@ -1007,7 +1007,19 @@ MAX_HIST_IA = 12
 # Cada familia define sus estilos. "Auto" significa que el LLM decide
 # según la idea. El resto fuerza una categoría que se inyecta como hint
 # en la plantilla específica de cada familia.
+# Paletas de estilo reutilizables por TIPO de familia (imagen). Las 4 familias
+# con inyección a medida (flux/z_image/gpt_image/nano_banana) conservan su set;
+# el resto usa una paleta acorde a su naturaleza, inyectada de forma genérica
+# (_inyectar_estilo_imagen_generico) a partir de _ESTILO_HINT_IMG.
+_PAL_FOTO     = ["Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi"]
+_PAL_ANIME    = ["Auto", "Anime", "Manga", "Ilustración", "Chibi", "Realista", "Acuarela"]
+_PAL_REALISMO = ["Auto", "Fotorrealista", "Retrato", "Cinematográfico", "Editorial", "Fantasía", "SciFi"]
+_PAL_ARTE     = ["Auto", "Cinematográfico", "Ilustración", "Pintura", "Concept-Art", "Surrealista", "Anime"]
+_PAL_DISENO   = ["Auto", "Tipografía", "Póster", "Logo", "Ilustración", "Flat-Design", "3D-Render"]
+_PAL_CINE_IMG = ["Auto", "Cinematográfico", "Fotorrealista", "Dramático", "Editorial", "Fantasía", "SciFi"]
+
 ESTILOS_POR_FAMILIA = {
+    # ── Especiales (inyección a medida, NO tocar las claves) ──
     "z_image": [
         "Auto", "Photoreal", "Creative", "Fantasy", "SciFi",
     ],
@@ -1022,6 +1034,24 @@ ESTILOS_POR_FAMILIA = {
     "flux": [
         "Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi",
     ],
+    # ── Resto de familias (clave = cabecera de GRUPOS_IMAGEN), por paleta ──
+    "── Anime / Ilustración ──": _PAL_ANIME,
+    "── Estilos Únicos SD ──": _PAL_ARTE,
+    "── Grok (xAI en SeaArt) ──": _PAL_FOTO,
+    "── Higgsfield ──": _PAL_CINE_IMG,
+    "── Ideogram (en SeaArt) ──": _PAL_DISENO,
+    "── Kling Image (Kuaishou en SeaArt) ──": _PAL_FOTO,
+    "── MAI Image (Microsoft en SeaArt) ──": _PAL_FOTO,
+    "── Midjourney / Niji (en SeaArt) ──": _PAL_ARTE,
+    "── Qwen (Alibaba en SeaArt) ──": _PAL_FOTO,
+    "── Realismo SD ──": _PAL_REALISMO,
+    "── Reve ──": _PAL_FOTO,
+    "── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──": _PAL_ARTE,
+    "── SeaArt Oficiales ──": _PAL_ARTE,
+    "── Seedream (ByteDance en SeaArt) ──": _PAL_FOTO,
+    "── Sora (OpenAI en SeaArt) ──": _PAL_FOTO,
+    "── Stable Diffusion 3.5 ──": _PAL_REALISMO,
+    "── Wan ──": _PAL_FOTO,
 }
 
 # Modelos de la familia FLUX (para el toggle "Estilo"). Se deriva del grupo
@@ -1029,26 +1059,69 @@ ESTILOS_POR_FAMILIA = {
 # los que no llevan 'flux' en el nombre (p. ej. Midjourney Mimic Neo).
 _MODELOS_FLUX = {m for cab, ms in GRUPOS_IMAGEN if "flux" in cab.lower() for m in ms}
 
+# Membresía por grupo para las 4 familias especiales (más robusto que el nombre:
+# p. ej. GLM-Image está en el grupo Z-Image pero no lleva 'z-image' en el nombre).
+def _modelos_de_grupo(substr):
+    return {m for cab, ms in GRUPOS_IMAGEN if substr in cab.lower() for m in ms}
+
+_MODELOS_ZIMAGE = _modelos_de_grupo("z-image")
+_MODELOS_GPTIMG = _modelos_de_grupo("gpt image")
+_MODELOS_NANO   = _modelos_de_grupo("nano banana")
+
+# Mapa modelo → cabecera de familia (para el resto de familias no-especiales).
+_FAMILIA_IMG_DE_MODELO = {m: cab for cab, ms in GRUPOS_IMAGEN for m in ms}
+
 
 def detectar_familia(modelo_nombre: str) -> str | None:
-    """Detecta la familia de un modelo a partir de su nombre.
+    """Detecta la familia de un modelo (clave de ESTILOS_POR_FAMILIA).
 
-    Devuelve la clave de familia (ej. "z_image", "gpt_image") o None
-    si no se detecta. Usada por el combo "Estilo" para repoblar
-    opciones cuando el usuario cambia de modelo.
+    Las 4 familias especiales devuelven su clave semántica (inyección a
+    medida); el resto devuelve la cabecera del grupo de GRUPOS_IMAGEN.
+    None si no se detecta. Usada por el combo "Estilo" para repoblar opciones.
     """
     if not modelo_nombre:
         return None
     n = modelo_nombre.lower()
-    if "z-image" in n or "z image" in n or "z_image" in n:
+    if modelo_nombre in _MODELOS_ZIMAGE or "z-image" in n or "z image" in n or "z_image" in n:
         return "z_image"
-    if "gpt image" in n or "gpt-image" in n:
+    if modelo_nombre in _MODELOS_GPTIMG or "gpt image" in n or "gpt-image" in n:
         return "gpt_image"
-    if "nano banana" in n or "nano-banana" in n or "nano_banana" in n:
+    if modelo_nombre in _MODELOS_NANO or "nano banana" in n or "nano-banana" in n or "nano_banana" in n:
         return "nano_banana"
     if modelo_nombre in _MODELOS_FLUX or "flux" in n:
         return "flux"
-    return None
+    return _FAMILIA_IMG_DE_MODELO.get(modelo_nombre)
+
+
+# ── Estilo por familia para VÍDEO (paletas acordes al motor) ──
+_PALV_CINE  = ["Auto", "Cinematográfico", "Anime", "Realista", "3D / Pixar",
+               "Cyberpunk / Neón", "Vintage / Retro"]
+_PALV_REAL  = ["Auto", "Realista", "Cinematográfico", "Documental", "Acción", "Cámara lenta"]
+_PALV_ANIME = ["Auto", "Anime", "Cartoon", "3D / Pixar", "Cómic", "Acuarela / Artístico"]
+
+ESTILOS_POR_FAMILIA_VIDEO = {
+    "── SeaArt Oficiales ──": _PALV_CINE,
+    "── Kling ──": _PALV_CINE,
+    "── Seedance ──": _PALV_CINE,
+    "── StarDream ──": _PALV_CINE,
+    "── Vidu ──": _PALV_CINE,
+    "── Otros Motores ──": _PALV_CINE,
+    "── Wan ──": _PALV_REAL,
+    "── Hailuo ──": _PALV_REAL,
+    "── PixVerse ──": _PALV_REAL,
+    "── Grok ──": _PALV_REAL,
+    "── Happy Horse ──": _PALV_ANIME,
+    "── Nano Banana ──": _PALV_ANIME,
+}
+
+_FAMILIA_VID_DE_MODELO = {m: cab for cab, ms in GRUPOS_VIDEO for m in ms}
+
+
+def detectar_familia_video(modelo_nombre: str) -> str | None:
+    """Cabecera de familia de un modelo de vídeo (clave de ESTILOS_POR_FAMILIA_VIDEO)."""
+    if not modelo_nombre:
+        return None
+    return _FAMILIA_VID_DE_MODELO.get(modelo_nombre)
 
 
 # ══════════════════════════════════════════════════════════════════
