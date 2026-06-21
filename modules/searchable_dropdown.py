@@ -35,7 +35,10 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
     `combo.set()` no dispara el command, por eso se invoca a mano).
     Devuelve la función de apertura.
     """
-    state = {"popup": None}
+    # `collapsed`: conjunto de cabeceras de familia plegadas. Persiste entre
+    # aperturas del popup (estado en el closure), así el usuario no tiene que
+    # volver a plegar lo mismo. Por defecto todas desplegadas.
+    state = {"popup": None, "collapsed": set()}
     original_open = combo._open_dropdown_menu  # fallback defensivo
 
     def _cerrar():
@@ -111,22 +114,40 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
             lista = ctk.CTkScrollableFrame(cont, fg_color="transparent")
             lista.pack(fill="both", expand=True, padx=4, pady=(0, 6))
 
+            def _toggle_fam(fam):
+                if fam in state["collapsed"]:
+                    state["collapsed"].discard(fam)
+                else:
+                    state["collapsed"].add(fam)
+                _repintar()
+
             def _repintar(*_):
                 for w in lista.winfo_children():
                     w.destroy()
                 filtro = buscar_var.get().strip().lower()
                 hay = False
+                fam_colapsada = False  # ¿la familia en curso está plegada?
                 for v in valores:
                     if _es_separador(v):
                         if filtro:  # al buscar se ocultan las cabeceras de grupo
+                            fam_colapsada = False
                             continue
-                        ctk.CTkLabel(
-                            lista, text=v, anchor="w",
+                        colapsada = v in state["collapsed"]
+                        fam_colapsada = colapsada
+                        flecha = "▸" if colapsada else "▾"
+                        # Cabecera clicable: pliega/despliega los modelos de la familia.
+                        ctk.CTkButton(
+                            lista, text=f"{flecha} {v.strip('─ ')}", anchor="w",
+                            height=24, fg_color="transparent",
+                            text_color=("gray25", "gray75"),
                             font=ctk.CTkFont(size=10, weight="bold"),
-                        ).pack(fill="x", padx=4, pady=(6, 0))
+                            command=lambda fam=v: _toggle_fam(fam),
+                        ).pack(fill="x", padx=2, pady=(6, 0))
                         continue
                     if filtro and filtro not in v.lower():
                         continue
+                    if not filtro and fam_colapsada:
+                        continue  # familia plegada: ocultar sus modelos
                     hay = True
                     # Truncar SOLO el texto mostrado (el valor real va en command).
                     texto = v if len(v) <= 42 else v[:41] + "…"

@@ -202,6 +202,7 @@ GRUPOS_VIDEO = [
     ])),
     ("── Kling ──", sorted([
         "Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
+        "Kling 3.0 Turbo",
     ])),
     ("── Seedance ──", sorted([
         "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast",
@@ -210,24 +211,32 @@ GRUPOS_VIDEO = [
         "Nano Banana Video", "Nano Banana Pro Video",
     ])),
     ("── Wan ──", sorted([
-        "Wan 2.2", "Wan 2.5", "Wan 2.6",
+        "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7",
     ])),
     ("── StarDream ──", sorted([
-        "StarDream 2.0",
+        "StarDream 2.0", "StarDream 2.0 Fast",
     ])),
     ("── PixVerse ──", sorted([
         "PixVerse V6",
     ])),
     ("── Hailuo ──", sorted([
-        "Hailuo 2.0",
+        "Hailuo 2.0", "Hailuo 2.3 Fast",
     ])),
     ("── Vidu ──", sorted([
-        "Vidu Q3 Turbo",
+        "Vidu Q3 Pro", "Vidu Q3 Turbo",
+    ])),
+    ("── Grok ──", sorted([
+        "Grok Imagine Video", "Grok Imagine Video 1.5",
+    ])),
+    ("── Happy Horse ──", sorted([
+        "Happy Horse",
     ])),
     ("── Otros Motores ──", sorted([
         "Sora2 Video", "Veo 3.1", "Gemini Omni",
     ])),
 ]
+# Familias en orden alfabético (case-insensitive), ignorando los ── decorativos.
+GRUPOS_VIDEO = sorted(GRUPOS_VIDEO, key=lambda g: g[0].strip("─ ").lower())
 
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE IMAGEN
@@ -599,6 +608,8 @@ MODELOS_AUDIO_FLAT    = _lista_plana(GRUPOS_AUDIO_VIGENTES)
 # que los nombres en minúscula (p. ej. lyh_anime_Flux) no caigan al final del
 # desplegable (el sorted() por defecto es case-sensitive y ordena 'l' tras 'Z').
 GRUPOS_IMAGEN = [(cab, sorted(ms, key=str.lower)) for cab, ms in GRUPOS_IMAGEN]
+# Familias también en orden alfabético (case-insensitive), ignorando los ──.
+GRUPOS_IMAGEN = sorted(GRUPOS_IMAGEN, key=lambda g: g[0].strip("─ ").lower())
 
 # ── Filtro de modelos VIGENTES (imagen) ───────────────────────────
 # Solo se MUESTRAN en los desplegables los modelos cuyo spec tiene
