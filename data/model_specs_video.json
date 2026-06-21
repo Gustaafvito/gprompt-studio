@@ -16,12 +16,13 @@
     ],
     "max_chars": 2500,
     "modos_gen": [
-      "Estándar",
-      "Calidad",
-      "Ultra HD",
-      "Profesional"
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
     ],
-    "best_for": "DIRECTOR DE CINE. Prompts negativos. Multi-toma, secuencias narrativas, coherencia brutal de personajes. Audio: lip-sync, diálogos, SFX, música.",
+    "max_imagenes": 4,
+    "best_for": "DIRECTOR DE CINE. Prompts negativos. Multi-toma (toggle 'Múltiples tomas'), secuencias narrativas, coherencia brutal de personajes. Hasta 4K. Audio: lip-sync, diálogos, SFX, música.",
     "prompt_formula": "Subject + action → setting → time → camera → motion → mood → audio (opcional)",
     "prompt_ejemplo": "10-15 seconds. Slow push-in on subject's face. Subtle breathing, soft blink. Golden hour rim light, shallow depth of field. Quiet city ambience.",
     "limitaciones": "Prompts muy cargados pueden fallar; simplificar cámara a un movimiento",
@@ -81,8 +82,25 @@
     "limitaciones": "Sin audio nativo, máximo 10 segundos",
     "vigente": true
   },
+  "Hailuo 2.0": {
+    "nota": 3.8,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "best_for": "Motor Hailuo 2.0 (MiniMax, vía SeaArt). Generación de vídeo a partir de sujeto subido (imagen). Magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A boxer trains intensely in a gritty gym, sweat flying, dynamic handheld camera, dramatic side lighting.",
+    "limitaciones": "Máx 10s. El panel no expone modo de generación ni cantidad de generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
   "Kling 2.6": {
-    "nota": 3.1,
+    "nota": 2.9,
     "has_negative": false,
     "has_audio": true,
     "audio_desc": "Voz nativa, lip-sync, monólogos, diálogos, música, SFX ambientales",
@@ -101,10 +119,31 @@
       "Estándar",
       "Calidad"
     ],
+    "max_imagenes": 4,
     "best_for": "ESPECIALISTA EN SONIDO. Personaje hablando a cámara con sincronización labial. Diálogos, vlogs con voz, performances musicales",
     "prompt_formula": "Scene description + subject + movement + [Character, Emotion] says: 'dialogue' + audio description",
     "prompt_ejemplo": "[Ana, excited] says: 'Welcome to my channel!' Bright studio, warm key light, slight camera push-in. Upbeat pop BGM.",
     "limitaciones": "Sin prompt negativo, calidad visual inferior a Kling 3.0",
+    "vigente": true
+  },
+  "PixVerse V6": {
+    "nota": 4.3,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Motor PixVerse V6 (vía SeaArt). Generación de vídeo a partir de sujeto subido (imagen). Modos 720p/1080p, magia de sugerencia.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A mystical figure in flowing purple robes raises her hands as magical light swirls around, smooth cinematic camera, ethereal glow.",
+    "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no expone Sonido (sin audio) ni Cantidad de Generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "Seedance 1.5 PRO": {
@@ -127,19 +166,20 @@
     ],
     "max_chars": 1500,
     "modos_gen": [
-      "Estándar",
-      "Calidad",
-      "Ultra HD",
-      "Profesional"
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
     ],
-    "best_for": "Audio nativo integrado (BGM+SFX+doblaje). Text/Image-to-Video. 480p-4K. Multi-ratios. Realismo cine, ads, naturaleza",
+    "max_imagenes": 4,
+    "best_for": "Audio nativo integrado (BGM+SFX+doblaje). Text/Image-to-Video (primer/último fotograma). Hasta 4K. Multi-ratios. Realismo cine, ads, naturaleza",
     "prompt_formula": "Scene + subject + action + camera + lighting + audio description",
     "prompt_ejemplo": "Drone shot over crashing ocean coastline during storm. Audio: roaring waves, howling wind, distant thunder.",
-    "limitaciones": "Máx 5000 letras. Coste energía variable 230-3840pts",
+    "limitaciones": "Máx 1500 chars (contador 0/1500). Coste energía variable 230-3840pts",
     "vigente": true
   },
   "Seedance 2.0": {
-    "nota": 4.2,
+    "nota": 4.7,
     "has_negative": false,
     "has_audio": true,
     "audio_desc": "Audio nativo: ambiental, SFX, señales de audio alineadas con prompt",
@@ -150,18 +190,23 @@
       "15s"
     ],
     "ratios": [
+      "16:9",
+      "4:3",
+      "1:1",
       "3:4",
       "9:16",
-      "1:1",
-      "4:3",
-      "16:9"
+      "21:9"
     ],
     "max_chars": 5000,
     "modos_gen": [
-      "Estándar",
-      "Calidad"
+      "480p",
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
     ],
-    "best_for": "DIRECTOR DE CINE. Multi-shot storytelling. Lenguaje cámara+ritmo+iluminación. Audio nativo integrado. Prompts hasta 5000 chars.",
+    "max_imagenes": 4,
+    "best_for": "DIRECTOR DE CINE. Multi-shot storytelling. Lenguaje cámara+ritmo+iluminación. Audio nativo integrado. Referencias @ (imagen/vídeo/texto) + librería de personajes. Hasta 4K. Prompts hasta 5000 chars.",
     "prompt_formula": "FORMULA BASICA — 5 segmentos encadenados:\n[Sujeto] + [Escena/atmosfera] + [Accion/performance] + [Movimientos de camara] + [Estilo/iluminacion]\n\nFORMULA MULTIMODAL CRAFT (con referencias @):\nContext + Reference(@recursos) + Action + Framing/Timing + Tone/Audio\nTags de referencia: @Image (ancla apariencia/cara), @Video (transfiere movimiento/camara), @Audio (lip-sync + ritmo)\n\nFORMULA STORYBOARD TIMELINE (narrativa multi-plano):\nDividir en bloques de tiempo con descripcion por segmento: '0-5s [...], 5-10s [...], 10-15s [...]'\n\nREGLAS CLAVE:\n- Jerarquia: Sujeto -> Accion -> Camara -> Estilo (el modelo prioriza lo primero)\n- Longitud optima: 120-280 palabras\n- Lenguaje afirmativo: 'ultra sharp' en vez de 'no blur'; 'natural motion' en vez de 'dont move'\n- Temporizar explicitamente: 'walks 3s, stops, turns 2s' en vez de 'walks and then turns'\n- Referencias: maximo 7 utiles (1-6 optimo); mas de 8 degrada calidad\n- Roles explicitos por @: siempre declarar que aporta cada archivo\n- Consistencia de personaje: reforzar rasgos en texto aunque exista @Image",
     "prompt_ejemplo": "# Ejemplo basico (5 segmentos):\nWoman on ruined rooftop, gray tattered cape, dust-covered face. Discovers mechanical creature silhouette in distance, expression shifts confusion to determination. Medium-to-close-up push in. Postapocalyptic desaturated earth tones, realistic wind and dust physics.\n\n# Ejemplo con referencias y timeline:\n@Image1 dancer identity and outfit, black hoodie, wet rain-lit street with neon signs behind. 0-3s: shoulder warming movements, slow camera drift. 3-7s: footwork entry synchronized with @Audio1 beat, tight ground-level tracking. 7-10s: rapid spins and leg lifts at rhythm peak, whip pan follow. 10-15s: freeze at drop, slow push-in finale, color particle burst on beat.",
     "limitaciones": "NO caras reales (usar avatares IA o anime). Sin prompt negativo. Coste energía 540-4275pts",
@@ -184,7 +229,7 @@
     "vigente": true
   },
   "Seedance 2.0 Fast": {
-    "nota": 3.0,
+    "nota": 4.0,
     "has_negative": false,
     "has_audio": false,
     "audio_desc": "",
@@ -202,10 +247,13 @@
     ],
     "max_chars": 5000,
     "modos_gen": [
-      "Estándar",
-      "Calidad"
+      "480p",
+      "720p",
+      "2K",
+      "4K"
     ],
-    "best_for": "Velocidad y VLOGs. Image/Text/Video-ref. 8-15s. Prompts hasta 5000 letras.",
+    "max_imagenes": 4,
+    "best_for": "Velocidad y VLOGs (Gratis por tiempo limitado). Image/Text/Video-ref con referencias @ + librería de personajes. 8-15s. Hasta 4K. Prompts hasta 5000 letras.",
     "prompt_formula": "Misma estructura que Seedance 2.0 pero priorizar prompts mas cortos y concretos (80-150 palabras). Ideal para iteracion rapida: generar 1-2 variaciones de prueba antes de comprometerse con la version larga.\n\nFORMULA RAPIDA: [Sujeto + apariencia] + [Accion principal] + [Camara clave] + [Atmosfera/estilo]",
     "prompt_ejemplo": "Young woman walks through colorful Tokyo streets at night, handheld camera following, neon reflections.",
     "limitaciones": "SIN audio, SIN negative, SIN Ultra HD/Pro.",
@@ -241,6 +289,7 @@
       "Ultra HD",
       "Profesional"
     ],
+    "max_imagenes": 4,
     "best_for": "Gemini 3. Alta fidelidad profesional. Image-to-Video 2K/4K. Text-to-Video 6s@720p/10s@1080p. Control cámara avanzado.",
     "prompt_formula": "Subject + action + camera movement + style + lighting",
     "prompt_ejemplo": "Hyper-realistic racing car drifting around wet track corner, fixed camera, smoke billowing from tires.",
@@ -261,11 +310,12 @@
       "16:9",
       "1:1"
     ],
-    "max_chars": 1500,
+    "max_chars": 5500,
     "modos_gen": [
       "Estándar"
     ],
-    "best_for": "Modelo estándar rápido. Image/Text-to-Video 6-10s. Estilos: cine, anime, sci-fi, Disney. Control cámara en prompt.",
+    "max_imagenes": 4,
+    "best_for": "Modelo estándar rápido. Image/Text-to-Video 6-10s (primer/último fotograma). Estilos: cine, anime, sci-fi, Disney. Control cámara en prompt.",
     "prompt_formula": "Subject + action + camera control + style description",
     "prompt_ejemplo": "Majestic lion in jungle, paw moves to adjust camera, jungle background sways gently, cinematic quality.",
     "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo",
@@ -460,6 +510,20 @@
     "limitaciones": "Máx 10s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
     "vigente": true
   },
+  "SeaArt Flow": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Generación de vídeo con movimiento fluido (familia Flow). SOLO Image-to-Video. Sujetos múltiples, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A figure walks forward through a moody cyberpunk alley, neon reflections, smooth flowing camera motion.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). El panel no expone modo de generación ni duración. Sin nota en la página. has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
   "SeaArt Flow 2.0": {
     "nota": 4.0,
     "has_negative": false,
@@ -489,6 +553,24 @@
     "prompt_formula": "Prompt CORTO (máx 800 chars): combina con la imagen para describir la acción y el movimiento. Ratio/duración heredados de la referencia.",
     "prompt_ejemplo": "The subject turns toward camera with a confident smile, hair flowing, smooth cinematic motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). max_chars muy bajo (800). El panel no expone duración/ratio (se infieren de la referencia).",
+    "vigente": true
+  },
+  "SeaArt Genesis Video": {
+    "nota": 2.6,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Motor visual creativo y artístico. Image-to-Video con primer y último fotograma y control 'Dinámico' (Estándar / Vivaz) para la intensidad del movimiento. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen (primer/último fotograma) para describir escena y movimiento; usa el modo Dinámico Vivaz para más energía. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A figure emerges from swirling cosmic energy, particles forming and dispersing, artistic surreal motion, vibrant color palette.",
+    "limitaciones": "El panel no expone selector de duración. has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "SeaArt Jump": {
@@ -637,6 +719,57 @@
     "prompt_formula": "Subject + action + camera + style. El modelo entiende bien el lenguaje; elige Estilo en el dropdown y activa 'Modo fluido' para movimiento más suave. Prompt máx 2048 chars.",
     "prompt_ejemplo": "A fluffy orange cat sits in front of a starry Van Gogh-style night sky, gently blinking, swirling brushstroke motion in the background.",
     "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048.",
+    "vigente": true
+  },
+  "SeaArt Magic Pro": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "8s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2048,
+    "modos_gen": [
+      "Ultrarrápido 380P",
+      "Estándar 540P",
+      "Alta definición 720P",
+      "Calidad 1080P"
+    ],
+    "max_imagenes": 2,
+    "best_for": "Versión Pro de Magic: fuerte comprensión del prompt, selector de Estilo. Image-to-Video (primer/último fotograma) y Text-to-Video. Sujetos múltiples, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Elige Estilo en el dropdown; combina con la imagen si usas primer/último fotograma. Prompt máx 2048 chars.",
+    "prompt_ejemplo": "A knight in ornate armor raises a glowing sword as magical runes ignite around him, dramatic slow camera push-in, cinematic lighting.",
+    "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048. Sin nota en la página.",
+    "vigente": true
+  },
+  "SeaArt Magic Rise": {
+    "nota": 4.7,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio nativo integrado (modelo audiovisual avanzado). El panel no expone toggle de Sonido (audio automático).",
+    "duraciones": [
+      "5s",
+      "8s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo audiovisual avanzado: movimiento fluido y fotogramas estables. Acepta sujeto subido (imagen). Sujetos múltiples, magia de sugerencia, prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A sorceress rises into the air as magical energy swirls around her, robes billowing, fluid dramatic motion, cinematic lighting.",
+    "limitaciones": "Máx 10s. has_audio inferido del catálogo ('Advanced Audiovisual Model'); el panel no muestra toggle de Sonido.",
     "vigente": true
   },
   "SeaArt Magic Star": {
@@ -802,6 +935,32 @@
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. has_audio inferido del nombre 'Sono' (el panel no expone Sonido ni subida de audio).",
     "vigente": true
   },
+  "SeaArt Pony": {
+    "nota": 2.3,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Modelo multimodal con referencias: sube hasta 9 imágenes para combinar personajes, objetos, escenas y efectos especiales con precisión. CUATRO modos: Referencia al vídeo, Image-to-Video, Text-to-Video y Cambiar vídeo. Librería de personajes.",
+    "prompt_formula": "Usa referencias con @ y combina elementos: '@imagen1 personaje, @imagen2 escena, @imagen3 efecto'. Compón el contenido con precisión. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "@image1 as the main character in @image2 scene, with the special effects of @image3, cinematic composition and camera movement.",
+    "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
+    "vigente": true
+  },
   "SeaArt Sono Blink": {
     "nota": null,
     "has_negative": false,
@@ -857,6 +1016,29 @@
     "prompt_formula": "Describe la historia multi-plano y la acción; combina con la imagen/vídeo de referencia. Prompt máx 1500 chars.",
     "prompt_ejemplo": "Anime girl smiling and waving, hair softly swaying, then turning toward the camera with a cheerful expression, soft cinematic light.",
     "limitaciones": "Sin audio nativo (subida manual opcional). max_chars 1500. Gratis por tiempo limitado (puede cambiar).",
+    "vigente": true
+  },
+  "SeaArt Sono Epic": {
+    "nota": 2.4,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "15s",
+      "20s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "best_for": "Vídeos largos de 15-20s con movimiento estable y coherencia. SOLO Image-to-Video. 4 modos hasta Profesional. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Combina con la imagen para describir escena y movimiento; aprovecha la duración larga (15-20s) para un arco narrativo. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "An epic dragon soars over a burning fantasy battlefield, embers rising, sweeping cinematic camera, dramatic orchestral mood.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Duración larga (15-20s). El panel no expone 'Cantidad de Generación'.",
     "vigente": true
   },
   "SeaArt Sono Lite": {
@@ -1130,6 +1312,33 @@
     "limitaciones": "Máx 10s. Nota baja (2.3). El panel no expone 'Modo de generación'.",
     "vigente": true
   },
+  "SeaArt Ultra 3.0 Turbo": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio sincronizado integrado. El panel no expone toggle de Sonido (audio automático).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Turbo de Ultra 3.0: creación de vídeo de alta calidad con movimiento cinematográfico, personajes estables y audio sincronizado. Image-to-Video y Text-to-Video. Prompt negativo.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood. Combina con la imagen si la usas. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A lone warrior walks across a snowy battlefield at dawn, cape blowing, slow cinematic tracking shot, stable character detail.",
+    "limitaciones": "Máx 15s. Sin nota en la página. has_audio inferido del catálogo ('synced audio'); el panel no muestra toggle de Sonido.",
+    "vigente": true
+  },
   "SeaArt Ultra Frame Video": {
     "nota": 3.7,
     "has_negative": true,
@@ -1181,8 +1390,76 @@
     "limitaciones": "SOLO desde imagen (no text-to-video): necesita subir el primer fotograma. Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
     "vigente": true
   },
+  "Vidu Q3 Turbo": {
+    "nota": 4.2,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Motor Vidu Q3 Turbo (vía SeaArt). Generación rápida. Image-to-Video y Text-to-Video. Modos 720p/1080p, magia de sugerencia.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "A sports car drifts around a neon-lit city corner at night, smoke trailing, fast dynamic tracking shot.",
+    "limitaciones": "Máx 15s. max_chars 2000. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "Wan 2.2": {
+    "nota": 4.2,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 5500,
+    "best_for": "Motor Wan 2.2 (vía SeaArt). Calidad de alta resolución refinada y control de estilo preciso. Image-to-Video con primer y último fotograma y sección 'Adicional'. Sujetos múltiples, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A woman in a denim jacket leans against a neon-lit wall, hair gently moving, refined high-resolution detail, smooth cinematic motion.",
+    "limitaciones": "Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone modo de generación, duración ni cantidad de generación.",
+    "vigente": true
+  },
+  "Wan 2.5": {
+    "nota": 3.5,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual opcional (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Motor Wan 2.5 (vía SeaArt). Image-to-Video y Text-to-Video. 4 modos hasta Profesional. Permite subir audio propio opcional. Sujetos múltiples, magia de sugerencia, prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas; el audio subido se sincroniza con el clip. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "A warrior stands atop a cliff at sunset, cape flowing in the wind, slow cinematic camera pull-back, dramatic golden light.",
+    "limitaciones": "Máx 10s. Sin audio nativo: el audio es subida manual opcional. max_chars 2000.",
+    "vigente": true
+  },
   "Wan 2.6": {
-    "nota": 4.3,
+    "nota": 3.5,
     "has_negative": true,
     "has_audio": false,
     "audio_desc": "Subir audio manual (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
@@ -1203,22 +1480,53 @@
       "Ultra HD",
       "Profesional"
     ],
-    "best_for": "Motor Wan (ByteDance). 88K usos. Image-to-Video con prompt negativo. Magia de sugerencia. Semilla fija disponible.",
+    "max_imagenes": 4,
+    "best_for": "Motor Wan 2.6 (ByteDance). Image-to-Video, Text-to-Video y Referencia de vídeo (3 pestañas) con prompt negativo. Magia de sugerencia. Audio manual opcional.",
     "prompt_formula": "Subject + action + camera movement + style + lighting. Prompts descriptivos.",
     "prompt_ejemplo": "A samurai drawing his sword in a bamboo forest, slow motion, dramatic backlight, leaves falling, cinematic atmosphere.",
     "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía.",
     "vigente": true
   },
+  "StarDream 2.0": {
+    "nota": 4.7,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "16:9",
+      "4:3",
+      "1:1",
+      "3:4",
+      "9:16",
+      "21:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "480p",
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo multimodal con referencias @ (estilo Seedance 2.0): combina libremente personajes, accesorios, vestuario y escenas. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Librería de personajes. Hasta 4K, prompts hasta 5000 chars.",
+    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
+    "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs an epic action sequence, dynamic cinematic camera, dramatic lighting.",
+    "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
+    "vigente": true
+  },
   "Sora2 Video": {
-    "nota": 4.8,
+    "nota": 4.4,
     "has_negative": true,
     "has_audio": true,
-    "audio_desc": "Audio nativo integrado (diálogos, música, SFX automáticos)",
+    "audio_desc": "Audio nativo integrado (diálogos, música, SFX automáticos) + opción de subir audio propio (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
     "duraciones": [
       "5s",
       "10s",
-      "15s",
-      "20s"
+      "15s"
     ],
     "ratios": [
       "9:16",
@@ -1233,6 +1541,7 @@
       "Ultra HD",
       "Profesional"
     ],
+    "max_imagenes": 4,
     "best_for": "CONSISTENCIA DE PERSONAJES superior. Manejo excepcional de física de materiales (ropa ondeando, colisiones, telas). API de referencias para personajes consistentes. Audio nativo con diálogos sincronizados. Timing preciso de acciones.",
     "prompt_formula": "BLOQUES SEPARADOS: [Scene Description] + Cinematography: + Physics & Motion: + Dialogue: + Background Sound:. Descriptivo con peso y velocidad de movimientos.",
     "prompt_ejemplo": "A weathered blacksmith hammers molten metal in his forge. The sparks fly in precise timing with each strike, ember particles drifting slowly in the cool air.\n\nCinematography:\n- Camera: Medium close-up, slow push-in with parallax effect on the sparks\n- Lighting: Warm orange glow from the forge, deep shadows on face, dramatic contrast\n\nPhysics & Motion:\nThe heavy leather apron moves with realistic weight as he swings the hammer. Sweat droplets fly off with each impact, cloth physics perfectly synced to movement. Metal rings with each collision.\n\nDialogue:\n- Blacksmith: \"This blade will outlive us all.\"\n\nBackground Sound:\nMetallic clang of hammer striking steel, crackling fire, heavy breathing, distant town ambiance, no background music.",

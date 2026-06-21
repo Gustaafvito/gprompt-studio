@@ -186,15 +186,18 @@ GRUPOS_VIDEO = [
         "SeaArt Dance", "SeaArt Depth", "SeaArt Film Video", "SeaArt Film Video Boost",
         "SeaArt Film Video Melody", "SeaArt Film Video Neo", "SeaArt Film Video Nova",
         "SeaArt Film Video Pro",
-        "SeaArt Flash", "SeaArt Flow 2.0", "SeaArt Jump", "SeaArt Jump Go",
-        "SeaArt Jump Lite",
-        "SeaArt Jump Pro", "SeaArt Lite", "SeaArt Magic", "SeaArt Magic Star",
+        "SeaArt Flash", "SeaArt Flow", "SeaArt Flow 2.0", "SeaArt Genesis Video",
+        "SeaArt Jump", "SeaArt Jump Go", "SeaArt Jump Lite",
+        "SeaArt Jump Pro", "SeaArt Lite", "SeaArt Magic", "SeaArt Magic Pro",
+        "SeaArt Magic Rise", "SeaArt Magic Star",
         "SeaArt Muse",
-        "SeaArt Opera", "SeaArt Opera Lite", "SeaArt Plus", "SeaArt Sono Blink",
-        "SeaArt Sono Cast", "SeaArt Sono Lite",
+        "SeaArt Opera", "SeaArt Opera Lite", "SeaArt Plus", "SeaArt Pony",
+        "SeaArt Sono Blink",
+        "SeaArt Sono Cast", "SeaArt Sono Epic", "SeaArt Sono Lite",
         "SeaArt SonoVision", "SeaArt Sono Wave", "SeaArt Sparkle", "SeaArt Stage",
         "SeaArt Turbo", "SeaArt Ultra", "SeaArt Ultra 2.0", "SeaArt Ultra 3.0",
-        "SeaArt Ultra Frame Video", "SeaArt Ultra Plus", "SeaArt Ultra Pro",
+        "SeaArt Ultra 3.0 Turbo", "SeaArt Ultra Frame Video", "SeaArt Ultra Plus",
+        "SeaArt Ultra Pro",
         "SeaArt Ultra2 Pro", "SeaArt UltraVision", "SeaArt Vibe",
     ])),
     ("── Kling ──", sorted([
@@ -206,8 +209,23 @@ GRUPOS_VIDEO = [
     ("── Nano Banana ──", sorted([
         "Nano Banana Video", "Nano Banana Pro Video",
     ])),
+    ("── Wan ──", sorted([
+        "Wan 2.2", "Wan 2.5", "Wan 2.6",
+    ])),
+    ("── StarDream ──", sorted([
+        "StarDream 2.0",
+    ])),
+    ("── PixVerse ──", sorted([
+        "PixVerse V6",
+    ])),
+    ("── Hailuo ──", sorted([
+        "Hailuo 2.0",
+    ])),
+    ("── Vidu ──", sorted([
+        "Vidu Q3 Turbo",
+    ])),
     ("── Otros Motores ──", sorted([
-        "Wan 2.6", "Sora2 Video", "Veo 3.1", "Gemini Omni",
+        "Sora2 Video", "Veo 3.1", "Gemini Omni",
     ])),
 ]
 
