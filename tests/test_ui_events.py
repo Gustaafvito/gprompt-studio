@@ -233,6 +233,23 @@ class TestOnMotorCambio:
         # debe resetearse al primero
         h.app.ratio_var.set.assert_called_with("16:9")
 
+    def test_ratios_vacios_y_nota_null_no_rompe(self, monkeypatch):
+        # Regresión: modelos solo-imagen con ratios=[] y nota=None reventaban
+        # el handler (specs["ratios"][0] -> IndexError) y la descripción no
+        # cargaba. Debe caer al fallback RATIOS_VIDEO y no lanzar.
+        specs = {**self.SPECS, "ratios": [], "nota": None}
+        monkeypatch.setattr(
+            "modules.ui_events.get_model_specs", lambda m: specs,
+        )
+        monkeypatch.setattr(
+            "modules.ui_events.RATIOS_VIDEO", ["16:9", "9:16", "1:1"],
+        )
+        h = _host(ratio_var=_var("21:9"))  # fuerza reset al primero del fallback
+        h._on_motor_cambio("SoloImagen")  # no debe lanzar
+        assert h.app.combo_ratio_v._state["values"] == ["16:9", "9:16", "1:1"]
+        h.app.ratio_var.set.assert_called_with("16:9")
+        assert h.app.lbl_img_model_info.configure.called  # descripción cargada
+
     def test_motor_name_por_defecto_lee_del_combo(self, monkeypatch):
         monkeypatch.setattr(
             "modules.ui_events.get_model_specs", lambda m: None,

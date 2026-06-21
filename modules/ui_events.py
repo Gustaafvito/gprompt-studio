@@ -232,15 +232,20 @@ class UiEventsService:
         specs = get_model_specs(motor_name)
 
         if specs:
-            self.app.combo_ratio_v.configure(values=specs["ratios"])
-            if self.app.ratio_var.get() not in specs["ratios"]: self.app.ratio_var.set(specs["ratios"][0])
-            self.app.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | 🎬 {specs['best_for']}", text_color="#8bb4d4")
+            # Algunos modelos no declaran ratios (se hereda de la imagen/referencia):
+            # fallback a la lista completa para que el combo siga usable y no
+            # reviente con specs["ratios"][0] sobre una lista vacía.
+            ratios = specs.get("ratios") or RATIOS_VIDEO
+            self.app.combo_ratio_v.configure(values=ratios)
+            if self.app.ratio_var.get() not in ratios: self.app.ratio_var.set(ratios[0])
+            nota_txt = specs.get('nota') or 's/n'
+            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {specs.get('best_for', '')}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(f"🎬 {motor_name}", "#3498db")
 
             try:
                 tip_rico = (
-                    f"⭐ Nota: {specs.get('nota', '?')}/5\n"
+                    f"⭐ Nota: {specs.get('nota') or '?'}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n"
                     f"⏱ Duraciones: {', '.join(specs.get('duraciones', []))}\n"
                     f"📐 Ratios: {', '.join(specs.get('ratios', []))}\n\n"
@@ -345,7 +350,7 @@ class UiEventsService:
 
             try:
                 tip_rico = (
-                    f"⭐ Nota: {specs.get('nota', '?')}/5\n"
+                    f"⭐ Nota: {specs.get('nota') or '?'}/5\n"
                     f"📝 Max: {specs.get('max_chars', '?')} chars\n\n"
                     f"🎯 Ideal para:\n{specs.get('best_for', '')[:300]}\n\n"
                     f"📐 Fórmula:\n{specs.get('prompt_formula', '?')[:200]}\n\n"
