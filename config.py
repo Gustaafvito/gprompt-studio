@@ -561,7 +561,7 @@ GRUPOS_AUDIO = [
         "Suno v5.5", "Suno v5", "Suno v4.5", "Suno v4",
     ])),
     ("── SeaArt Audio ──", sorted([
-        "Minimax Music 2.6", "Minimax Music 2.5", "SeaArt MusicGo",
+        "Minimax Music 2.6", "Minimax Music 2.5", "Mureka V9", "SeaArt MusicGo",
     ])),
 ]
 

@@ -475,5 +475,25 @@
     ],
     "limitaciones": "Credits limitados. Sin Studio features. Stem export básico.",
     "vigente": true
+  },
+  "Mureka V9": {
+    "nota": null,
+    "has_negative": false,
+    "has_lyrics": true,
+    "has_instrumental_toggle": true,
+    "usa_tags_estructurales": true,
+    "duracion_max_min": null,
+    "max_chars_letra": null,
+    "max_chars_estilo": null,
+    "idiomas": [
+      "inglés",
+      "chino mandarín",
+      "español"
+    ],
+    "best_for": "Generación de música de calidad estudio con control preciso (studio-grade). Producción profesional.",
+    "prompt_formula": "Prompt de estilo: [Género], [Mood], [Voz], [Tempo], [Instrumentos], [Producción]. Letra con tags de sección [Verse]/[Chorus].",
+    "prompt_ejemplo_estilo": "cinematic orchestral epic uplifting strings brass choir wide dynamic studio production",
+    "limitaciones": "PROVISIONAL: añadido desde la lista de modelos (sin panel). Faltan por medir nota, duración máx, max_chars de letra/estilo y toggles reales. Reauditar con el panel del modelo.",
+    "vigente": true
   }
 }

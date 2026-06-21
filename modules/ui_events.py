@@ -434,7 +434,9 @@ class UiEventsService:
 
         specs = get_audio_model_specs(motor_name)
         if specs:
-            self.app.lbl_img_model_info.configure(text=f"⭐ {specs['nota']} | ⏱ {specs['duracion_max_min']} min — {specs['best_for']}", text_color="#8bb4d4")
+            nota_a = specs.get('nota') or 's/n'
+            dur_a = specs.get('duracion_max_min') or '?'
+            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_a} | ⏱ {dur_a} min — {specs.get('best_for', '')}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(f"🎵 {motor_name}", "#9b59b6")
         else:

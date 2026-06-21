@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **720 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **724 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -39,8 +39,10 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
 | Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
-| Modelos vídeo | **64 totales**, agrupados por familia (SeaArt Oficiales · Kling · Seedance · Nano Banana · Wan · StarDream · PixVerse · Hailuo · Vidu · Otros). Faltan pocos motores externos (ver abajo) |
-| Modelos audio | **10/10** vigentes ✅ (filtro activo desde sesión 23) |
+| Modelos vídeo | **72 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Catálogo SeaArt vídeo CERRADO (queda solo "Kling O1" 4.0 suelto, opcional) |
+| Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
+| Combo "Estilo" | **por familia** en imagen y vídeo (cada familia su paleta). config.ESTILOS_POR_FAMILIA(_VIDEO) + detectar_familia(_video) |
+| Desplegable modelos | Buscador + scroll + **familias colapsables** (▾/▸) + familias alfabéticas |
 | Biblioteca ejemplos | 27 entradas |
 | Tab Tags | **83 tags** en 6 categorías, bilingüe + tooltips + botón ✨ Sugerir |
 | Tab Negativos | presets + campo manual + botón 🛡 Sugerir |
@@ -57,6 +59,34 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 25 — Vídeo SeaArt completo (72), familias UX, Estilo por familia, audio
+
+1. **Catálogo vídeo SeaArt CERRADO: 72 modelos** (commits `3aab79f`, `0fe8ba7` +
+   4ª tanda). Motores externos en SUS familias: Wan (2.2/2.5/2.6/2.7), Kling (+3.0
+   Turbo, O1), Seedance, StarDream (2.0/Fast), Vidu (Q3 Pro/Turbo), Grok (Video/1.5),
+   Hailuo (2.0/2.3 Fast), PixVerse (V6), Happy Horse, Nano Banana, Otros (Sora2/Veo/
+   Gemini). Reauditorías: muchos pasaron a modos por RESOLUCIÓN (480p–4K).
+   Descartados: remake/edición/referencia. Queda opcional "Kling O1" 4.0 suelto.
+
+2. **UX desplegable** (`feat(ui)` `9514ddf`): familias **alfabéticas** (imagen y
+   vídeo) + cabeceras **colapsables** ▾/▸ en `searchable_dropdown` (estado por sesión).
+
+3. **Combo "Estilo" por familia** (`feat(estilo)` `e4848af`): TODAS las familias de
+   imagen y vídeo tienen su propia paleta. `config.ESTILOS_POR_FAMILIA` (imagen, las 4
+   especiales con set a medida; resto por tipo: foto/anime/realismo/arte/diseño/cine)
+   + `ESTILOS_POR_FAMILIA_VIDEO` (por motor) + `detectar_familia(_video)`. Inyección:
+   `_inyectar_estilo_imagen_generico` (familias sin plantilla) y repoblado del combo
+   vídeo al cambiar de modelo.
+
+4. **Audio**: añadido **Mureka V9** al grupo SeaArt Audio (⚠️ PROVISIONAL, sin panel:
+   nota/duración/max_chars por medir). Fix de robustez: la descripción de audio
+   reventaba con `nota` nula / `duracion_max_min` ausente (mismo patrón que vídeo).
+
+5. **Bug descripción vídeo** (`9eb295b`): `ratios:[]` → IndexError; corregido con
+   fallback a `RATIOS_VIDEO` + guardas de `nota:null` en tooltips.
 
 ---
 

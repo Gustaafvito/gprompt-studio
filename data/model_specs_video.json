@@ -29,7 +29,7 @@
     "vigente": true
   },
   "Kling 3.0 Omni": {
-    "nota": 4.5,
+    "nota": 3.4,
     "has_negative": true,
     "has_audio": true,
     "audio_desc": "Lip-sync avanzado, SFX, voz consistente entre clips",
@@ -45,24 +45,75 @@
     ],
     "max_chars": 2500,
     "modos_gen": [
-      "Estándar",
-      "Calidad",
-      "Ultra HD",
-      "Profesional"
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
     ],
-    "best_for": "Continuidad personaje/voz. Referencia multi-imagen. Secuencias coherentes. Lip-sync avanzado, SFX, voz consistente entre clips",
+    "max_imagenes": 4,
+    "best_for": "Continuidad personaje/voz. CUATRO entradas: Image-to-Video, Text-to-Video, Referencia al vídeo y Cambiar vídeo. Referencia multi-imagen, secuencias coherentes. Hasta 4K. Lip-sync avanzado, SFX, voz consistente entre clips.",
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio",
     "prompt_ejemplo": "12s. Wide establishing shot, slow pan left. Light rain, wet reflections, neon signs. Distant traffic ambience.",
     "limitaciones": "Demasiadas referencias conflictivas causan inconsistencia",
     "vigente": true
   },
-  "Kling 01 Video Model": {
-    "nota": 4.3,
-    "has_negative": false,
+  "Happy Horse": {
+    "nota": 3.3,
+    "has_negative": true,
     "has_audio": false,
     "audio_desc": "",
     "duraciones": [
-      "3s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Motor Happy Horse (vía SeaArt). CUATRO entradas: Image-to-Video, Text-to-Video, Referencia al vídeo y Cambiar vídeo. Modos 720p/1080p, magia de sugerencia, prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen o referencia. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A woman leans out of a moving car window at sunset, hair blowing in the wind, golden light, smooth tracking shot.",
+    "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no expone Sonido (sin audio) ni Cantidad de Generación.",
+    "vigente": true
+  },
+  "Kling 3.0 Turbo": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Turbo de Kling 3.0: generación rápida. Image-to-Video y Text-to-Video. Modos 720p/1080p, magia de sugerencia, prompt negativo.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood. Combina con la imagen si la usas. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A close-up of a woman's face as she turns toward the camera, soft natural light, gentle hair movement, smooth cinematic motion.",
+    "limitaciones": "Máx 15s. Sin nota en la página. El panel no expone Sonido (sin audio, a diferencia de Kling 3.0 base).",
+    "vigente": true
+  },
+  "Kling 01 Video Model": {
+    "nota": 4.3,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
       "5s",
       "10s"
     ],
@@ -76,10 +127,82 @@
       "Estándar",
       "Calidad"
     ],
-    "best_for": "Creador básico y estable. Genera clips 3-10s desde texto o imagen. Punto fuerte: imagen inicio+fin para transición perfecta.",
+    "max_imagenes": 4,
+    "best_for": "Creador básico y estable (Kling O1). Genera clips desde texto o imagen. Punto fuerte: primer+último fotograma para transición perfecta. Sonido nativo (SFX + BGM).",
     "prompt_formula": "Scene description + subject + action + camera movement",
     "prompt_ejemplo": "A cyberpunk city at dusk with neon lights reflecting on wet pavement, cinematic dolly shot.",
-    "limitaciones": "Sin audio nativo, máximo 10 segundos",
+    "limitaciones": "Máx 10 segundos. Sin prompt negativo.",
+    "vigente": true
+  },
+  "Grok Imagine Video": {
+    "nota": 4.0,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "16:9",
+      "9:16",
+      "1:1",
+      "4:3",
+      "3:4"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "best_for": "Motor Grok Imagine (xAI, vía SeaArt). Image-to-Video y Text-to-Video con la última generación de xAI. Modos 480p/720p, magia de sugerencia.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A futuristic motorcycle races through a neon-drenched cyberpunk city, motion blur, dynamic low-angle tracking shot.",
+    "limitaciones": "Máx 10s. El panel no expone Sonido (sin audio) ni prompt negativo.",
+    "vigente": true
+  },
+  "Grok Imagine Video 1.5": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "best_for": "Motor Grok Imagine 1.5 (xAI, vía SeaArt). Última generación de Grok. SOLO Image-to-Video. Modos 480p/720p, magia de sugerencia.",
+    "prompt_formula": "Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A sleek hypercar accelerates down a coastal highway at golden hour, motion blur, dynamic chase camera.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. Sin nota en la página. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "Hailuo 2.3 Fast": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 2000,
+    "modos_gen": [
+      "768p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Fast de Hailuo (MiniMax, vía SeaArt): generación veloz. SOLO Image-to-Video. Modos 768p/1080p, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen para describir escena y movimiento. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "The subject turns toward the camera with a confident expression, hair gently moving, smooth cinematic motion.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Sin nota en la página. has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "Hailuo 2.0": {
@@ -1390,6 +1513,33 @@
     "limitaciones": "SOLO desde imagen (no text-to-video): necesita subir el primer fotograma. Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
     "vigente": true
   },
+  "Vidu Q3 Pro": {
+    "nota": 4.1,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Motor Vidu Q3 Pro (vía SeaArt). Image-to-Video y Text-to-Video, calidad superior a la versión Turbo. Modos 720p/1080p, magia de sugerencia.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "A graceful dancer performs a contemporary routine in a sunlit studio, fabric flowing, smooth elegant camera movement.",
+    "limitaciones": "Máx 15s. max_chars 2000. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
   "Vidu Q3 Turbo": {
     "nota": 4.2,
     "has_negative": true,
@@ -1458,6 +1608,34 @@
     "limitaciones": "Máx 10s. Sin audio nativo: el audio es subida manual opcional. max_chars 2000.",
     "vigente": true
   },
+  "Wan 2.7": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "10s"
+    ],
+    "ratios": [
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "Motor Wan 2.7 (vía SeaArt). Multimodal con referencias @ (estilo Seedance) + librería de personajes. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 4K. Gratis por tiempo limitado.",
+    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs a dynamic action, cinematic camera, dramatic lighting.",
+    "limitaciones": "Sin nota en la página. duración: solo confirmado 10s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo. Gratis por tiempo limitado (puede cambiar).",
+    "vigente": true
+  },
   "Wan 2.6": {
     "nota": 3.5,
     "has_negative": true,
@@ -1515,6 +1693,35 @@
     "best_for": "Modelo multimodal con referencias @ (estilo Seedance 2.0): combina libremente personajes, accesorios, vestuario y escenas. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Librería de personajes. Hasta 4K, prompts hasta 5000 chars.",
     "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
     "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs an epic action sequence, dynamic cinematic camera, dramatic lighting.",
+    "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
+    "vigente": true
+  },
+  "StarDream 2.0 Fast": {
+    "nota": 4.0,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "480p",
+      "720p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Fast de StarDream 2.0: multimodal con referencias @ (estilo Seedance) + librería de personajes, priorizando velocidad. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 4K, prompts hasta 5000 chars.",
+    "prompt_formula": "Usa referencias con @ y prompts más cortos/concretos para iteración rápida. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
+    "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; quick dynamic action shot, cinematic camera, dramatic lighting.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
     "vigente": true
   },
@@ -1591,28 +1798,25 @@
     "vigente": true
   },
   "Veo 3.1": {
-    "nota": 4.7,
+    "nota": null,
     "has_negative": false,
     "has_audio": true,
     "audio_desc": "Audio nativo (música ambiental, SFX, diálogos)",
     "duraciones": [
       "4s",
       "6s",
-      "8s",
-      "12s"
+      "8s"
     ],
     "ratios": [
       "9:16",
-      "16:9",
-      "1:1",
-      "4:3"
+      "16:9"
     ],
-    "max_chars": 1500,
+    "max_chars": 5500,
     "modos_gen": [
       "720p",
-      "1080p",
-      "4K"
+      "1080p"
     ],
+    "max_imagenes": 4,
     "best_for": "ÓPTICA Y LENTE cinematográfica avanzada. Consistencia de fluidos, reflejos, texturas (fuego, cristales, espejos, agua). Iluminación fotorrealista. Mejor comprensión de lenguaje natural (no tan rígido como versiones anteriores).",
     "prompt_formula": "FOCALIZACIÓN PROGRESIVA: [CÁMARA/PLANO] + [SUJETO EN ACCIÓN] + [ILUMINACIÓN/ÓPTICA] + [TEXTURAS/MATERIALES] + [AUDIO]. Front-loading: lo más importante al principio.",
     "prompt_ejemplo": "Medium close-up filmed with a 35mm cinematic lens, shallow depth of field. An artisan with weathered hands shapes molten blown glass in his dark workshop. The scene features dramatic lighting coming solely from the incandescent glass glow, creating deep shadows and orange glints on his face. Highlights include subtle rising smoke, imperfections in the molten glass, and sweat on the skin. Audio: the crackle of fire, the hiss of cooling glass, and a deep steady breathing.",
