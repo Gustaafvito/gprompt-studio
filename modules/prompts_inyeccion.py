@@ -140,9 +140,44 @@ class PromptsInyeccionService:
         if specs.get("limitaciones"):
             extra += f"• Limitaciones a respetar: {specs['limitaciones']}\n"
 
+        extra = self._inyectar_estilo_video(extra)
         extra = self._inyectar_template(motor, extra)
         extra += REGLAS_APROVECHAR_BUDGET
         return system_prompt + extra
+
+    # Mapa estilo visual → orientación de look para el combo "Estilo" de vídeo.
+    _VIDEO_ESTILO_HINT = {
+        "Cinematográfico": "look cinematográfico: lentes de cine, profundidad de campo, gradación de color fílmica, grano sutil",
+        "Anime": "estética anime / animación japonesa: cel-shading, lineart limpio, colores vivos",
+        "Realista": "fotorrealismo: materiales, piel y luz realistas, como metraje real de cámara",
+        "3D / Pixar": "animación 3D estilo Pixar/Disney: render estilizado, materiales suaves, iluminación cálida",
+        "Cómic / Cartoon": "estilo cartoon / cómic: contornos marcados, colores planos, expresividad exagerada",
+        "Cyberpunk / Neón": "cyberpunk: neón, ciudad futurista, atmósfera nocturna, alto contraste",
+        "Blanco y Negro": "blanco y negro / monocromo: alto contraste, grano, estética noir",
+        "Vintage / Retro": "estética vintage/retro: colores desaturados, grano de película, look analógico",
+        "Acuarela / Artístico": "estilo artístico/pictórico: pinceladas, acuarela, textura ilustrada",
+    }
+
+    def _inyectar_estilo_video(self, extra: str) -> str:
+        """Si el usuario forzó un look en el combo 'Estilo' de la barra de vídeo,
+        añade una orientación estética al system prompt. 'Auto' no toca nada."""
+        estilo = "Auto"
+        try:
+            if hasattr(self.app, "estilo_video_var"):
+                estilo = self.app.estilo_video_var.get() or "Auto"
+        except Exception:
+            estilo = "Auto"
+        if estilo == "Auto":
+            return extra
+        hint = self._VIDEO_ESTILO_HINT.get(estilo)
+        if not hint:
+            return extra
+        extra += (
+            "\n🎯 ESTILO VISUAL FORZADO POR EL USUARIO 🎯\n"
+            f"• Orienta TODA la estética del vídeo a: {hint}.\n"
+            "• Mantén este look de forma coherente en todos los shots.\n"
+        )
+        return extra
 
     def _inyectar_specs_imagen(self, system_prompt: str) -> str:
         modelo = self.app.combo_modelo_imagen.get()

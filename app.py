@@ -222,6 +222,7 @@ class ArquitectoApp(
             _prefs.get("familia_estilo") or _prefs.get("z_image_estilo") or "Auto"
         )
         self.familia_estilo_var    = ctk.StringVar(value=_estilo_inicial)
+        self.estilo_video_var      = ctk.StringVar(value=_prefs.get("estilo_video") or "Auto")
         try:
             _multi_loras = _prefs.get("loras_multi", [])
             if not isinstance(_multi_loras, list):
@@ -257,6 +258,8 @@ class ArquitectoApp(
                 "write", _persistir("switch_ref_visual", self.switch_ref_visual_var.get))
             self.familia_estilo_var.trace_add(
                 "write", _persistir("familia_estilo", self.familia_estilo_var.get))
+            self.estilo_video_var.trace_add(
+                "write", _persistir("estilo_video", self.estilo_video_var.get))
         except Exception as _e:
             logger.debug(f"[silent] trace switches: {_e}")
 

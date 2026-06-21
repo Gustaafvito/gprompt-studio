@@ -93,6 +93,7 @@ from config import (
     DESTINOS,
     EMOCIONES_AUDIO,
     ESTILOS_IMAGEN,
+    ESTILOS_VISUAL_VIDEO,
     IDIOMAS_AUDIO,
     MODELOS_AUDIO_FLAT,
     MODELOS_IMAGEN_FLAT,
@@ -699,6 +700,27 @@ class UIBuildersService:
                         delay=0.5)
         except Exception as _e:
             logger.debug(f"[silent] tooltip shots: {_e}")
+        # Combo "Estilo" (look visual): complementa los géneros narrativos del
+        # footer (ESTILOS_VIDEO). La selección se inyecta como hint en el system
+        # prompt vía prompts_inyeccion._inyectar_estilo_video.
+        ctk.CTkLabel(self.app.frame_video, text="Estilo:",
+                     font=ctk.CTkFont(weight="bold"),
+                     fg_color="transparent",
+                     text_color=lbl_color).pack(side="left", padx=(10, 5))
+        self.app.combo_estilo_video = ctk.CTkComboBox(
+            self.app.frame_video, values=ESTILOS_VISUAL_VIDEO,
+            variable=self.app.estilo_video_var, width=140,
+            font=ctk.CTkFont(size=11),
+            command=lambda v: self.app.estilo_video_var.set(v))
+        self.app.combo_estilo_video.set("Auto")
+        self.app.combo_estilo_video.pack(side="left", padx=5)
+        try:
+            CTkToolTip(self.app.combo_estilo_video, delay=0.4,
+                       message="Look visual del vídeo (estética de render). "
+                               "Complementa los géneros del footer. Auto = no fuerza nada.")
+        except Exception as _e:
+            logger.debug(f"[silent] tooltip estilo video: {_e}")
+
         ctk.CTkLabel(self.app.frame_video, text="Ratio:",
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",

@@ -271,6 +271,41 @@
     "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo",
     "vigente": true
   },
+  "SeaArt Dance": {
+    "nota": 4.4,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 5500,
+    "best_for": "Modelo de baile / imitación de movimiento (pestaña 'Imitación de movimiento'). SOLO Image-to-Video: anima un sujeto subido con movimiento estable y de alta calidad para vídeos largos. Sujetos múltiples. Sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen del sujeto: describir el baile/movimiento y el estilo deseado. La duración y el ratio los hereda del clip/imagen de referencia.",
+    "prompt_ejemplo": "The subject performs an energetic street dance, smooth and stable motion, dynamic camera, cinematic lighting.",
+    "limitaciones": "SOLO desde imagen (no text-to-video): requiere subir el sujeto. Sin prompt negativo. El panel no expone selector de duración/ratio (se infieren de la referencia).",
+    "vigente": true
+  },
+  "SeaArt Depth": {
+    "nota": 3.7,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM) + slider de Similitud (0-1)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "SOLO Image-to-Video con primer y último fotograma y slider de similitud. Movimiento con sensación de profundidad. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Combina con la imagen para describir escena y movimiento; ajusta el slider de similitud para fidelidad a la referencia.",
+    "prompt_ejemplo": "An eagle soars over a coastal cliff, camera following with parallax depth, waves crashing below, cinematic aerial motion.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Similitud 0.5 por defecto.",
+    "vigente": true
+  },
   "SeaArt Film Video": {
     "nota": 4.5,
     "has_negative": true,
@@ -287,17 +322,694 @@
     ],
     "max_chars": 1500,
     "modos_gen": [
-      "Estándar",
-      "Calidad"
+      "480p",
+      "720p"
     ],
+    "max_imagenes": 4,
     "best_for": "El modelo de vídeo más usado de SeaArt (10.4M usos). Cinematográfico, HQ, fotogramas. Sujetos múltiples, magia de sugerencia. Image-to-Video y Text-to-Video.",
     "prompt_formula": "Subject + action + camera + lighting + style. Prompts descriptivos con magia de sugerencia.",
     "prompt_ejemplo": "A woman in a flowing white dress walks through golden wheat fields at sunset, cinematic slow motion, warm golden hour light, shallow DOF.",
     "limitaciones": "Máx 10s. Coste ~480-2400 energía.",
     "vigente": true
   },
-  "SeaArt Ultra Pro": {
+  "SeaArt Film Video Boost": {
+    "nota": 3.3,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "12s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Velocidad, estética y valor: todo en uno. Acepta sujeto subido (imagen). Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen para describir escena y movimiento.",
+    "prompt_ejemplo": "A woman in a beige coat walks through a desert landscape at sunset, wind blowing her hair, warm golden cinematic light, smooth tracking shot.",
+    "limitaciones": "Máx 12s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija).",
+    "vigente": true
+  },
+  "SeaArt Film Video Melody": {
+    "nota": 3.6,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio/música sincronizada al ritmo (audio-visual harmony). El panel no expone toggle de Sonido (audio automático).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "12s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "480p",
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Visuales perfectamente sincronizados con cada beat: armonía audiovisual. Image-to-Video (primer/último fotograma) y Text-to-Video. Hasta 4K. Magia de sugerencia y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style + ritmo. Combina con la imagen si usas primer/último fotograma; describe el ritmo/energía para la sincronización. Prompt máx 1500 chars.",
+    "prompt_ejemplo": "A dancer moves in sync with an energetic beat, neon lights pulsing on each drop, dynamic camera cuts matching the rhythm.",
+    "limitaciones": "Máx 12s. max_chars 1500. has_audio inferido del nombre/catálogo ('audio-visual harmony'); el panel no muestra toggle de Sonido.",
+    "vigente": true
+  },
+  "SeaArt Film Video Neo": {
+    "nota": 3.0,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Equilibrado y asequible, estética redefinida. Image-to-Video con primer y último fotograma. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento.",
+    "prompt_ejemplo": "A queen in an ornate gown stands in a gothic cathedral, candlelight flickering, slow reverent camera push-in, rich cinematic color.",
+    "limitaciones": "Máx 15s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
+    "vigente": true
+  },
+  "SeaArt Film Video Nova": {
+    "nota": 4.1,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Mejor relación calidad-precio (128 créditos, generación veloz, calidad artística). VIP. Image-to-Video (primer/último fotograma) y Text-to-Video. Magia de sugerencia y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si usas primer/último fotograma. Prompt máx 1500 chars.",
+    "prompt_ejemplo": "A woman's profile dissolves into blooming flowers and water ripples, surreal artistic transition, soft ethereal lighting.",
+    "limitaciones": "Máx 10s. max_chars 1500. Sin audio (el panel no expone Sonido ni subida de audio).",
+    "vigente": true
+  },
+  "SeaArt Film Video Pro": {
+    "nota": 3.8,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Versión Pro de Film Video: movimiento de cámara sedoso, estética realista de alta gama, rendimiento mejorado. Image-to-Video con primer y último fotograma. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento.",
+    "prompt_ejemplo": "A woman in an emerald silk dress turns slowly as the fabric flows, silky camera movement, high-end cinematic lighting, shallow depth of field.",
+    "limitaciones": "Máx 10s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
+    "vigente": true
+  },
+  "SeaArt Flash": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 800,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "Modelo rápido de SeaArt (Top-Speed). SOLO Image-to-Video, movimiento suave y generación veloz. Modo 'Imitación de movimiento'. Sujetos múltiples. Sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Prompt CORTO (máx 800 chars): combina con la imagen para describir la acción y el movimiento. Ratio/duración heredados de la referencia.",
+    "prompt_ejemplo": "The subject turns toward camera with a confident smile, hair flowing, smooth cinematic motion.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). max_chars muy bajo (800). El panel no expone duración/ratio (se infieren de la referencia).",
+    "vigente": true
+  },
+  "SeaArt Jump": {
+    "nota": 4.1,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Visuals & Motion - Dual TOP, precio bajo. Image-to-Video (primer y último fotograma) y Text-to-Video. 4 modos hasta Profesional. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si usas primer/último fotograma.",
+    "prompt_ejemplo": "A parkour runner leaps between rooftops at sunset, dynamic tracking shot, dust and motion blur, energetic cinematic feel.",
+    "limitaciones": "Máx 10s. has_negative asumido (panel recortado antes de Configuración avanzada; tier Profesional como Ultra Pro).",
+    "vigente": true
+  },
+  "SeaArt Jump Lite": {
+    "nota": 2.5,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Versión Lite de Jump: más rápida y barata, referencia en generación ligera. SOLO Image-to-Video. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen para describir acción y movimiento. Ratio heredado de la referencia.",
+    "prompt_ejemplo": "The subject jumps and lands dynamically, energetic motion, simple cinematic lighting.",
+    "limitaciones": "SOLO desde imagen. Nota baja (2.5). El panel no expone 'Modo de generación' (modelo Lite). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "SeaArt Jump Pro": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "768p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Pro de Jump: maestro de escenas ultrarrápido, redefine los estándares de control dinámico. Image-to-Video (primer/último fotograma) y Text-to-Video. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action → camera → motion → style. Combina con la imagen si usas primer/último fotograma.",
+    "prompt_ejemplo": "A boxer throws a rapid combination of punches in a dim gym, sweat flying, fast dynamic camera, high-contrast dramatic lighting.",
+    "limitaciones": "Máx 10s. max_chars 2000. has_negative asumido (panel recortado antes de Configuración avanzada; tier Pro como Jump).",
+    "vigente": true
+  },
+  "SeaArt Lite": {
+    "nota": 3.3,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM) + slider de Similitud (0-1)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo Lite económico. Image-to-Video con primer y último fotograma y slider de similitud. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma); ajusta el slider de similitud para fidelidad a la referencia.",
+    "prompt_ejemplo": "A young woman gently turns her head and smiles, soft hair movement, natural light, subtle cinematic motion.",
+    "limitaciones": "Máx 10s. Calidad inferior (modelo Lite). Similitud 0.5 por defecto.",
+    "vigente": true
+  },
+  "SeaArt Magic": {
+    "nota": 3.9,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "8s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2048,
+    "modos_gen": [
+      "Ultrarrápido 380P",
+      "Estándar 540P",
+      "Alta definición 720P",
+      "Calidad 1080P"
+    ],
+    "max_imagenes": 2,
+    "best_for": "Fuerte comprensión del prompt, generación rápida, ideal para creación eficiente. Selector de Estilo y modo de Fluidez (Estándar / Modo fluido). Image-to-Video (primer/último fotograma) y Text-to-Video.",
+    "prompt_formula": "Subject + action + camera + style. El modelo entiende bien el lenguaje; elige Estilo en el dropdown y activa 'Modo fluido' para movimiento más suave. Prompt máx 2048 chars.",
+    "prompt_ejemplo": "A fluffy orange cat sits in front of a starry Van Gogh-style night sky, gently blinking, swirling brushstroke motion in the background.",
+    "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048.",
+    "vigente": true
+  },
+  "SeaArt Muse": {
+    "nota": 3.9,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 800,
+    "modos_gen": [
+      "480p",
+      "1080p"
+    ],
+    "best_for": "Control estable y movimiento fiel a la realidad (true-to-life), generación creativa. Image-to-Video y Text-to-Video. Modo 'Imitación de movimiento'. Sujetos múltiples. Sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Prompt CORTO (máx 800 chars): describe sujeto, acción y movimiento. Combina con la imagen si la hay.",
+    "prompt_ejemplo": "A woman in a flowing dress walks gracefully through a sunlit garden, natural lifelike motion, soft cinematic light.",
+    "limitaciones": "max_chars bajo (800). El panel no expone duración (se infiere de la referencia).",
+    "vigente": true
+  },
+  "SeaArt Opera": {
+    "nota": 3.6,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Visuales de calidad estudio de 15s: resolución HD/4K con salida profesional de texto en CN/JP/EN. Gratis por tiempo limitado. Image-to-Video y Text-to-Video. 4 modos de calidad.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "A woman in elegant vintage attire sits on an ornate chair holding a white lamb, soft studio lighting, refined cinematic composition.",
+    "limitaciones": "Sin audio (el panel no expone Sonido ni subida de audio). Gratis por tiempo limitado (puede cambiar). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "SeaArt Opera Lite": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Paradigma de bajo coste: vídeo de 5s desde 200+ créditos, generación rápida de vídeo largo. Versión Lite de Opera. Image-to-Video y Text-to-Video.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "A woman in a headscarf and sunglasses sips coffee against a bright yellow wall, relaxed pose, clean fashion-editorial lighting.",
+    "limitaciones": "Sin audio (el panel no expone Sonido ni subida de audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "SeaArt Plus": {
+    "nota": 3.8,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Calidad de imagen profesional, estructura de contenido compleja, expresividad sobresaliente. Acepta sujeto subido (imagen). Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + style. Prompt descriptivo y detallado; el modelo maneja estructuras de contenido complejas.",
+    "prompt_ejemplo": "A majestic whale glides through deep blue ocean waters, sunlight rays filtering from above, tiny fish scattering, serene cinematic atmosphere.",
+    "limitaciones": "Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación' ni selector de duración.",
+    "vigente": true
+  },
+  "SeaArt Sparkle": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Escenas de alto detalle, manejo de iluminación compleja y ángulos de cámara, ideal para creación dinámica realista. TRES modos de entrada: Image-to-Video, Gráficos Live2D y Text-to-Video. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen o el modelo Live2D; describe iluminación y ángulo de cámara para mayor detalle.",
+    "prompt_ejemplo": "A futuristic sports car speeds through neon-lit city streets at night, rain reflections, complex dynamic lighting, low tracking camera angle.",
+    "limitaciones": "El panel no expone selector de duración. has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "SeaArt Sono Wave": {
+    "nota": 4.5,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio integrado (familia Sono). El panel no expone toggle de Sonido ni subida de audio (audio automático).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Salida rápida y calidad fiable, lista cuando llega la inspiración. SOLO Image-to-Video. Sujetos múltiples, magia de sugerencia, prompt negativo.",
+    "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Ratio heredado de la referencia. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "An angelic figure with feathered wings stands in a sunlit forest, soft light rays filtering through leaves, gentle wind, serene cinematic motion.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. has_audio inferido del nombre 'Sono' (el panel no expone Sonido ni subida de audio).",
+    "vigente": true
+  },
+  "SeaArt Sono Cast": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual opcional (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Historias multi-shot de hasta 15 segundos, imaginación sin límites. Gratis por tiempo limitado. TRES modos de entrada: Image-to-Video, Text-to-Video y Referencia de vídeo. 4 modos de calidad. Permite subir audio propio opcional.",
+    "prompt_formula": "Describe la historia multi-plano y la acción; combina con la imagen/vídeo de referencia. Prompt máx 1500 chars.",
+    "prompt_ejemplo": "Anime girl smiling and waving, hair softly swaying, then turning toward the camera with a cheerful expression, soft cinematic light.",
+    "limitaciones": "Sin audio nativo (subida manual opcional). max_chars 1500. Gratis por tiempo limitado (puede cambiar).",
+    "vigente": true
+  },
+  "SeaArt Sono Lite": {
+    "nota": 3.8,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual opcional (MP3/WAV/AAC/M4A, 3-30s, <15MB)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo ligero de SeaArt. Image-to-Video y Text-to-Video (dos pestañas). Permite subir audio propio opcional para sincronizar el clip. Magia de sugerencia y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y acción (ej: 'chica anime sonriendo haciendo un gesto, con el pelo moviéndose suavemente').",
+    "prompt_ejemplo": "Anime girl smiling and making a gentle gesture, hair softly swaying in the breeze, soft cinematic lighting.",
+    "limitaciones": "Modelo Lite (calidad inferior a Ultra Pro/Film). Sin audio nativo: el audio es subida manual opcional. Máx 10s.",
+    "vigente": true
+  },
+  "SeaArt SonoVision": {
+    "nota": 4.3,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "Subir audio manual opcional (MP3/WAV/AAC/M4A, 3-30s, <15MB) — sincronización de sonido",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Motor Wan 2.5. Image-to-Video y Text-to-Video. Vídeo HD con sonido sincronizado: permite subir audio propio para alinear el clip. Hasta 4K. Magia de sugerencia y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen (si la hay) para describir escena y acción; el audio subido se sincroniza con el clip.",
+    "prompt_ejemplo": "A singer performing on stage under colorful spotlights, hair swaying, camera slowly pushing in, cinematic concert lighting.",
+    "limitaciones": "Sin audio nativo: el audio es subida manual opcional. Máx 15s.",
+    "vigente": true
+  },
+  "SeaArt Turbo": {
+    "nota": 3.8,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "3s",
+      "4s",
+      "5s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Modelo Turbo: generación rápida, expresión de estilo rica y mejor comprensión del prompt. Acepta sujeto subido (imagen). Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + style. Clips cortos (3-5s); prompt descriptivo, el modelo entiende bien el lenguaje.",
+    "prompt_ejemplo": "A butterfly flutters over blooming flowers in a sunny meadow, soft breeze, vivid colors, fast smooth motion.",
+    "limitaciones": "Clips cortos (máx 5s). Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
+    "vigente": true
+  },
+  "SeaArt Ultra": {
     "nota": 4.6,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM) + slider de Similitud (0-1)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Modelo Ultra de SeaArt. Image-to-Video y Text-to-Video (dos pestañas; el modo imagen admite primer y último fotograma). Modo extra 'Imitación de movimiento'. Sujetos múltiples, magia de sugerencia, prompt negativo, slider de similitud. 15s, alta calidad.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Ultra Pro pero con modos 720p/1080p y modo Imitación de movimiento.",
+    "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic, slow crane movement.",
+    "limitaciones": "Coste alto. Similitud 0.5 por defecto. Máx 15s.",
+    "vigente": true
+  },
+  "SeaArt Ultra 2.0": {
+    "nota": 3.7,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM) + slider de Similitud (0-1)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Generación de alta calidad de captura de movimiento y efectos de cámara (motion + camera work). Acepta sujeto subido (imagen) con slider de similitud. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen; ajusta el slider de similitud para fidelidad a la referencia.",
+    "prompt_ejemplo": "A dancer performs a fluid contemporary routine on a dark stage, dynamic camera tracking the motion, dramatic spotlight, smooth cinematic movement.",
+    "limitaciones": "Máx 10s. El panel no expone 'Modo de generación'. Similitud 0.5 por defecto.",
+    "vigente": true
+  },
+  "SeaArt Ultra 3.0": {
+    "nota": 4.5,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio nativo integrado (rendimiento audiovisual). El panel no expone toggle de Sonido (audio automático).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Generación versátil de formato largo (15s): rendimiento audiovisual inteligente y preciso. Toggle 'Múltiples tomas' para narrativa multi-shot. Image-to-Video (primer/último fotograma) y Text-to-Video. Hasta 4K. Prompt negativo.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood. Activa 'Múltiples tomas' para secuencias multi-plano; combina con la imagen si usas primer/último fotograma.",
+    "prompt_ejemplo": "A lone warrior walks across a snowy battlefield at dawn, cape blowing in the wind, slow cinematic tracking shot, then a close-up of his determined eyes.",
+    "limitaciones": "max_chars 2500. has_audio inferido del catálogo ('audiovisual'); el panel no muestra toggle de Sonido.",
+    "vigente": true
+  },
+  "SeaArt Ultra Plus": {
+    "nota": 4.0,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad",
+      "Ultra HD",
+      "Profesional"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Fluidez dinámica de alta velocidad, desbloquea creatividad avanzada (motor Wan 2.5). Image-to-Video y Text-to-Video. 4 modos hasta Profesional. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si la usas.",
+    "prompt_ejemplo": "A surfer rides a massive barreling wave at golden hour, spray flying, fast dynamic tracking shot, high-energy cinematic fluidity.",
+    "limitaciones": "Máx 15s. max_chars 2500.",
+    "vigente": true
+  },
+  "SeaArt UltraVision": {
+    "nota": 3.7,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "Audio nativo integrado ('Sound Meets Vision'). El panel no expone toggle de Sonido (audio automático).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "max_imagenes": 4,
+    "best_for": "Sonido se encuentra con la visión: calidad cinematográfica desbloqueada. Image-to-Video y Text-to-Video. Magia de sugerencia.",
+    "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si la usas. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A cellist plays passionately in an empty concert hall, warm spotlight, slow orbiting camera, rich cinematic depth.",
+    "limitaciones": "Máx 15s. El panel no expone 'Modo de generación'. has_audio inferido del catálogo ('Sound Meets Vision') y has_negative asumido (panel recortado antes de Configuración avanzada).",
+    "vigente": true
+  },
+  "SeaArt Vibe": {
+    "nota": 2.2,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 1500,
+    "max_imagenes": 4,
+    "best_for": "Calidad HD 1080p, experto en consistencia de sujeto. Control de 'Amplitud de movimiento' (Automático). Image-to-Video y Text-to-Video. Sujetos múltiples, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + style. Ajusta la 'Amplitud de movimiento' para controlar cuánto se mueve la escena. Combina con la imagen si la usas. Prompt máx 1500 chars.",
+    "prompt_ejemplo": "A woman leans out of a car window at night, city neon lights streaking past, hair blowing in the wind, vibrant cinematic mood.",
+    "limitaciones": "Nota baja (2.2). Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación' ni selector de duración.",
+    "vigente": true
+  },
+  "SeaArt Ultra2 Pro": {
+    "nota": 2.3,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Experiencia de nivel profesional, generación de calidad ultra alta. Acepta sujeto subido (imagen). Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM) y prompt negativo.",
+    "prompt_formula": "Subject + action + camera + style. Prompt descriptivo y detallado.",
+    "prompt_ejemplo": "A dancer in a flowing red dress spins gracefully in an elegant ballroom, fabric swirling, smooth cinematic camera, warm chandelier lighting.",
+    "limitaciones": "Máx 10s. Nota baja (2.3). El panel no expone 'Modo de generación'.",
+    "vigente": true
+  },
+  "SeaArt Ultra Pro": {
+    "nota": 4.4,
     "has_negative": true,
     "has_audio": true,
     "audio_desc": "SFX + BGM integrados + slider de Similitud (0-1)",
@@ -311,17 +1023,18 @@
       "16:9",
       "1:1"
     ],
-    "max_chars": 3000,
+    "max_chars": 5500,
     "modos_gen": [
       "Estándar",
       "Calidad",
       "Ultra HD",
       "Profesional"
     ],
-    "best_for": "Versión Pro del Ultra. 4.4M usos. 15s, calidad profesional. Sujetos múltiples, magia de sugerencia, prompt negativo. Ideal para producción seria.",
+    "max_imagenes": 4,
+    "best_for": "Versión Pro del Ultra. 4.4M usos. SOLO Image-to-Video (requiere primer fotograma; admite cuadro final). 15s, calidad profesional. Sujetos múltiples, magia de sugerencia, prompt negativo. Ideal para producción seria.",
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Kling 3.0 pero con slider de similitud.",
     "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic 4K, slow crane movement.",
-    "limitaciones": "Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
+    "limitaciones": "SOLO desde imagen (no text-to-video): necesita subir el primer fotograma. Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
     "vigente": true
   },
   "Wan 2.6": {

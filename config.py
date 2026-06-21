@@ -183,7 +183,17 @@ ADN_A_PLATAFORMA = {
 # ══════════════════════════════════════════════════════════════════
 GRUPOS_VIDEO = [
     ("── SeaArt Oficiales ──", sorted([
-        "SeaArt Film Video", "SeaArt Ultra Pro",
+        "SeaArt Dance", "SeaArt Depth", "SeaArt Film Video", "SeaArt Film Video Boost",
+        "SeaArt Film Video Melody", "SeaArt Film Video Neo", "SeaArt Film Video Nova",
+        "SeaArt Film Video Pro",
+        "SeaArt Flash", "SeaArt Jump", "SeaArt Jump Lite",
+        "SeaArt Jump Pro", "SeaArt Lite", "SeaArt Magic", "SeaArt Muse",
+        "SeaArt Opera", "SeaArt Opera Lite", "SeaArt Plus", "SeaArt Sono Cast",
+        "SeaArt Sono Lite",
+        "SeaArt SonoVision", "SeaArt Sono Wave", "SeaArt Sparkle",
+        "SeaArt Turbo", "SeaArt Ultra", "SeaArt Ultra 2.0", "SeaArt Ultra 3.0",
+        "SeaArt Ultra Plus", "SeaArt Ultra Pro", "SeaArt Ultra2 Pro",
+        "SeaArt UltraVision", "SeaArt Vibe",
     ])),
     ("── Kling ──", sorted([
         "Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
@@ -765,6 +775,17 @@ ESTILOS_VIDEO = sorted([
     "360° Video", "VR Experience", "Interactive Video",
     "Gamified Content", "Immersive / AR",
 ])
+
+# Presets de LOOK visual para el combo "Estilo" de la barra de vídeo.
+# Complementan los géneros narrativos de ESTILOS_VIDEO (checkboxes): aquí se
+# define la estética de render, no el género. "Auto" = no fuerza nada.
+# La selección se inyecta como hint en el system prompt vía
+# prompts_inyeccion._inyectar_estilo_video.
+ESTILOS_VISUAL_VIDEO = [
+    "Auto", "Cinematográfico", "Anime", "Realista", "3D / Pixar",
+    "Cómic / Cartoon", "Cyberpunk / Neón", "Blanco y Negro",
+    "Vintage / Retro", "Acuarela / Artístico",
+]
 
 ESTILOS_AUDIO = sorted([
     # Géneros raíz

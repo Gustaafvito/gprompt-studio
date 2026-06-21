@@ -142,6 +142,35 @@ class TestInyectarEstiloFlux:
         assert "ESTILO FORZADO" in out
 
 
+class TestInyectarEstiloVideo:
+    """Combo 'Estilo' (look visual) de la barra de vídeo."""
+
+    def test_estilo_inyecta_hint(self):
+        h = _host(estilo_video_var=_var("Cinematográfico"))
+        out = h._inyectar_estilo_video("")
+        assert "ESTILO VISUAL FORZADO" in out
+        assert "cinematográfico" in out.lower()
+
+    def test_anime_inyecta_anime(self):
+        h = _host(estilo_video_var=_var("Anime"))
+        out = h._inyectar_estilo_video("base")
+        assert "anime" in out.lower()
+        assert out.startswith("base")
+
+    def test_auto_no_inyecta(self):
+        h = _host(estilo_video_var=_var("Auto"))
+        assert h._inyectar_estilo_video("base") == "base"
+
+    def test_sin_var_no_inyecta(self):
+        # Si la app no tiene estilo_video_var, no debe romper ni inyectar
+        h = _host()
+        assert h._inyectar_estilo_video("base") == "base"
+
+    def test_estilo_desconocido_no_inyecta(self):
+        h = _host(estilo_video_var=_var("NoExiste"))
+        assert h._inyectar_estilo_video("base") == "base"
+
+
 class TestInyectarFormatoZImage:
     """Reglas Z-Image-Base: bloques narrativos + negative dinámico."""
 
