@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 22**.
+Actualizado al cierre de la **sesión 24**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **686 passed / 28 failing** (`python -m pytest tests -q`) — ver nota abajo |
+| Tests | **719 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -35,17 +35,17 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 | Build `.exe` | onedir + onefile + installer (Inno Setup) — al día |
 | Code-signing | Opcional vía env vars (`GPROMPT_SIGN_*`), ver BUILD.md |
-| Modelos de imagen VISIBLES | **93** vigentes / 164 total (filtro `vigente:true`) |
+| Modelos de imagen VISIBLES | ~93 vigentes / 164 total (filtro `vigente:true`) |
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
-| Familia Anime/Ilustración | **6/17** vigentes (11 ocultos, pendiente auditoría) |
+| Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
-| Modelos vídeo | 15 (sin filtro `vigente` aún) |
-| Modelos audio | 10 (sin filtro `vigente` aún) |
+| Modelos vídeo | **45 totales** (32 SeaArt oficiales auditados ✅ + 13 otros). 2ª tanda ~30 modelos pendiente (ver abajo) |
+| Modelos audio | **10/10** vigentes ✅ (filtro activo desde sesión 23) |
 | Biblioteca ejemplos | 27 entradas |
-| Tab Tags | **83 tags** en 6 categorías, bilingüe + tooltips |
+| Tab Tags | **83 tags** en 6 categorías, bilingüe + tooltips + botón ✨ Sugerir |
+| Tab Negativos | presets + campo manual + botón 🛡 Sugerir |
+| Tab Estilos | botón 🎨 Sugerir estilos (fix Gemini: usa generar_batch) |
 | Coste API | sesión + histórico + desglose por modelo |
-
-> **Tests failing (28)**: `test_refinamiento.py` (18) — monkeypatch de threading roto tras refactor de módulo; `test_multiprompt.py` (2) y otros — precondiciones desincronizadas. No afectan funcionalidad. Pendiente arreglar en próxima sesión técnica.
 
 ### Archivos más grandes (líneas)
 
@@ -57,6 +57,87 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 24 — Catálogo vídeo SeaArt 32/32, combo Estilo vídeo, build
+
+1. **Catálogo de vídeo SeaArt: 32/32 oficiales** (`data/model_specs_video.json`,
+   `config.GRUPOS_VIDEO`, commit `dc33f97`). Auditados **uno a uno con panel real**
+   (sin defaults inventados, decisión del usuario): 28 modelos nuevos + 4 reauditados
+   (Film Video, Ultra Pro, Ultra, Sono Lite). Catálogo vídeo total: **45** (32 SeaArt
+   + Kling/Seedance/Nano Banana/Sora2/Veo/Wan/Gemini). Convención: `max_chars` del
+   contador `0/XXXX`; `has_negative` por la sección "Configuración avanzada"
+   (Etiqueta negativa) o anotado *asumido* si el recorte la tapaba; audio manual →
+   `has_audio:false`, Sonido nativo → `true`; `max_imagenes` para badge 🖼×N.
+
+2. **Combo "Estilo" (look visual) en la barra de vídeo** (commit `dc33f97`).
+   Complementa los géneros narrativos del footer (`ESTILOS_VIDEO`), no los duplica:
+   - `config.ESTILOS_VISUAL_VIDEO` (Auto/Cinematográfico/Anime/Realista/3D-Pixar/
+     Cómic/Cyberpunk/B&N/Vintage/Acuarela) + `estilo_video_var` (app.py) con persistencia.
+   - `ui_builders`: combo + tooltip en `frame_video` (entre Shots y Ratio).
+   - `prompts_inyeccion._inyectar_estilo_video`: inyecta hint estético al system prompt
+     de vídeo (patrón espejo de `_inyectar_estilo_flux`). +5 tests.
+
+3. **Build regenerado** (ciclo completo): instalador + onefile; los 3 artefactos
+   copiados al distribuible del escritorio (`GPromptStudio-Portable/`,
+   `-Portable-Onefile.exe`, `-Setup-1.0.0.exe`). Borrados 2 sobrantes viejos.
+
+### 🎬 2ª tanda de vídeo SeaArt — PENDIENTE (descubierta en vídeo del usuario)
+El grid completo de SeaArt tiene MÁS modelos. Notas en captura, panel a panel:
+- **SeaArt-branded (~18):** Clip Remake 5.0, Spark Refer 5.0, Magic Rise 4.7,
+  Flow 2.0 4.0, Ultra Remix Video 4.0, Opera Refer 4.0, Ultra 3.0 turbo, Ultra
+  Frame Video 3.7, Stage 3.6, Clip Refer 3.5, Magic Pro, Flow, Magic Star 2.7,
+  Genesis Video 2.6, Jump Go 2.5, Sono Epic 2.4, Pony 2.3, Sono Blink.
+- **Otros motores en SeaArt (~12):** Wan 2.7 5.0, Vidu Q3 Reference 4.5, Wan 2.2 4.2,
+  Vidu Q3 Pro 4.1, Kling 3.0 turbo 4.0, Kling O1 4.0, Grok Imagine Video 4.0,
+  StarDream 2.0 (Fast) 4.0, Wan 2.5 3.5, Happy Horse 3.3, Grok Imagine 1.5 Video 3.0,
+  Hailuo 2.3 fast 2.0.
+- **DECISIÓN: los modelos de remake/edición/referencia se descartan** (Clip Remake,
+  Clip Refer, Spark Refer, Opera Refer, Ultra Remix, Vidu Q3 Reference…): son
+  vídeo-a-vídeo / edición, no generación desde texto/imagen, así que un generador de
+  prompts aporta poco. Confirmar caso por caso.
+- **Fuera de scope:** checkpoints ComfyUI/HuggingFace ("SeaArt Comfy Helper").
+- Discrepancias nota: Veo 3.1 lo tenemos 4.7 / SeaArt 3.0; Wan 2.6 4.3 / SeaArt 3.5.
+
+---
+
+## ✅ Sesión 23 — Tests 0 fallos, lazy Tags, sugerir tags/negativos, fix Gemini
+
+1. **Tests: 28 fallos → 0** (`tests/test_refinamiento.py`, `test_multiprompt.py`,
+   `test_adn_visual.py`, `test_modo_cliente.py`): todos los módulos usan
+   `_executor.submit()` no `threading.Thread`. Añadido `_SyncExec` (ejecutor
+   síncrono fake) a los 4 archivos de test; eliminados los `monkeypatch.setattr`
+   de threading que fallaban. Además: `config.py` registró `MODEL_SPECS_VIDEO` en
+   `_LAZY_DATASETS` (KeyError en arranque); `test_config.py` actualizado con
+   modelo no-vigente válido (`SD 3.5 Large Turbo`).
+
+2. **MiaoMiao Harem V2.0**: `max_chars` corregido 1000 → 2000 según specs reales.
+
+3. **perf(startup): lazy build pestaña Tags** (`ui_builders.py`): los 83
+   `CTkButton` + 83 `CTkToolTip` bloqueaban el hilo principal durante el arranque.
+   Ahora se construyen la primera vez que el usuario abre la pestaña
+   (`tabview.configure(command=…)`). La app es interactiva desde el primer instante.
+
+4. **feat: pestaña Tags oculta en modo Audio** (`ui_events.py`): los tags son
+   descriptores visuales que no aplican a audio. `_set_tabs_visibles()` manipula
+   el `_segmented_button` del tabview para mostrar/ocultar la pestaña según modo.
+   Imagen y Vídeo → 4 tabs; Audio → 3 tabs (sin Tags).
+
+5. **fix Gemini en "Sugerir estilos"** (`tools_creative.py`): usaba `generar()`
+   (stateful con historial) que con Gemini contaminaba el contexto.
+   Ahora usa `generar_batch()` (stateless). Parser mejorado: soporta CSV y
+   bullet-list (`* Estilo`, `- Estilo`) que algunos LLMs devuelven.
+
+6. **feat: "✨ Sugerir" en pestaña Tags** (`tools_creative._cmd_sugerir_tags`,
+   `ui_builders.py`): el LLM analiza la idea y añade 3-5 tags técnicos del
+   catálogo directamente al campo idea. Usa `generar_batch()`.
+
+7. **feat: "🛡 Sugerir" en pestaña Negativos** (`tools_creative._cmd_sugerir_negative_tab`,
+   `ui_builders.py`): genera el negative óptimo con el LLM e inserta el resultado
+   en `txt_negative`, llamando después a `_rebuild_negative_text()` para
+   combinarlo con los presets activos. Diferente a `_cmd_negative_optimo` que
+   actualizaba el output principal o copiaba al portapapeles.
 
 ---
 
@@ -203,16 +284,11 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ## 🚧 Pendiente
 
 ### 🔴 ALTA
-- **Tests failing (28)**: `test_refinamiento.py` (18 tests) — monkeypatch de
-  `modules.refinamiento.threading` falla porque `refinamiento` es un módulo
-  plano, no un paquete. Hay que cambiar `monkeypatch.setattr("modules.refinamiento.threading", …)`
-  por `monkeypatch.setattr("threading", …)` o importar el módulo directamente.
-  `test_multiprompt.py` (2) — precondiciones de worker desincronizadas.
+- **2ª tanda vídeo SeaArt (~30 modelos)**: ver sección Sesión 24. Panel a panel,
+  descartando los de remake/edición/referencia. Notas ya recogidas.
 - **Auditoría specs Anime/Ilustración**: 6/17 vigentes, 11 ocultos sin auditar.
   Requiere pantallazos del panel SeaArt (Illustrious, NoobAI, etc.).
 - **Auditoría specs Realismo SD**: 6/15 vigentes, 9 ocultos sin auditar.
-- **Vigentes vídeo/audio**: aplicar filtro `vigente` a los 15 modelos de vídeo
-  y 10 de audio (solo imagen tiene el filtro activo).
 
 ### 🟡 MEDIA
 - **`FLUX.1-Kontext-dev` (edición)**: modelo añadido, pendiente PROBARLO para
@@ -241,7 +317,7 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 686 passed / 28 failing (conocidos, ver 🔴)
+python -m pytest tests -q                     # → 719 passed / 0 failing ✅
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
