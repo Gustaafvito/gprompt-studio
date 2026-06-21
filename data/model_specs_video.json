@@ -460,6 +460,20 @@
     "limitaciones": "Máx 10s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
     "vigente": true
   },
+  "SeaArt Flow 2.0": {
+    "nota": 4.0,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "ratios": [],
+    "max_chars": 5500,
+    "max_imagenes": 4,
+    "best_for": "Generación rápida de vídeo con movimiento fluido (familia Flow). Panel mínimo de un clic: subir sujeto (imagen) y generar. Sujetos múltiples.",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento.",
+    "prompt_ejemplo": "A figure walks forward through a stylized abstract environment, smooth flowing motion, vibrant gradient lighting.",
+    "limitaciones": "Panel mínimo: solo subir sujeto + cantidad de generación. NO expone modo de generación, duración, sonido ni prompt negativo.",
+    "vigente": true
+  },
   "SeaArt Flash": {
     "nota": 4.0,
     "has_negative": true,
@@ -503,6 +517,28 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si usas primer/último fotograma.",
     "prompt_ejemplo": "A parkour runner leaps between rooftops at sunset, dynamic tracking shot, dust and motion blur, energetic cinematic feel.",
     "limitaciones": "Máx 10s. has_negative asumido (panel recortado antes de Configuración avanzada; tier Profesional como Ultra Pro).",
+    "vigente": true
+  },
+  "SeaArt Jump Go": {
+    "nota": null,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [],
+    "max_chars": 2000,
+    "modos_gen": [
+      "768p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Variante Jump Go: SOLO Image-to-Video. Modos 768p/1080p, magia de sugerencia, sonido nativo (SFX + BGM). Sujetos múltiples.",
+    "prompt_formula": "Combina con la imagen (primer fotograma) para describir escena, acción y movimiento. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "The subject leaps forward with energetic motion, dynamic camera follow, smooth cinematic feel.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Sin nota en la página del modelo (el grid del catálogo mostraba 2.5). has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "SeaArt Jump Lite": {
@@ -601,6 +637,37 @@
     "prompt_formula": "Subject + action + camera + style. El modelo entiende bien el lenguaje; elige Estilo en el dropdown y activa 'Modo fluido' para movimiento más suave. Prompt máx 2048 chars.",
     "prompt_ejemplo": "A fluffy orange cat sits in front of a starry Van Gogh-style night sky, gently blinking, swirling brushstroke motion in the background.",
     "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048.",
+    "vigente": true
+  },
+  "SeaArt Magic Star": {
+    "nota": 2.7,
+    "has_negative": true,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "4s",
+      "5s",
+      "6s",
+      "7s",
+      "8s",
+      "9s",
+      "10s",
+      "11s",
+      "12s",
+      "13s",
+      "14s",
+      "15s"
+    ],
+    "ratios": [],
+    "max_chars": 5500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Variante Magic Star: acepta sujeto subido (imagen) y genera clips largos (hasta 15s). Modos 720p/1080p, magia de sugerencia.",
+    "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Prompt máx 5500 chars.",
+    "prompt_ejemplo": "A figure stands under a starry sky as gentle light particles drift around, slow cinematic camera rise.",
+    "limitaciones": "Duración larga (4-15s). El panel no expone Sonido (sin audio) ni Cantidad de Generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "SeaArt Muse": {
@@ -735,6 +802,34 @@
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. has_audio inferido del nombre 'Sono' (el panel no expone Sonido ni subida de audio).",
     "vigente": true
   },
+  "SeaArt Sono Blink": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "10s"
+    ],
+    "ratios": [
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "1:1"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "Modelo multimodal con referencias @: combina libremente personajes, accesorios, vestuario y escenas. TRES modos de entrada: Referencia al vídeo (@Image/@Video), Image-to-Video y Text-to-Video. Librería de personajes. Hasta 4K.",
+    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos y define sus interacciones. Prompt máx 2000 chars.",
+    "prompt_ejemplo": "@image1 as the initial frame, @image2 as the final frame; the character performs the dance movements of @video1, smooth cinematic camera.",
+    "limitaciones": "Sin nota en la página. duración: solo confirmado 10s (dropdown, puede tener más). El panel no muestra Sonido (sin audio pese al nombre 'Sono') ni prompt negativo.",
+    "vigente": true
+  },
   "SeaArt Sono Cast": {
     "nota": 4.0,
     "has_negative": true,
@@ -817,6 +912,33 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen (si la hay) para describir escena y acción; el audio subido se sincroniza con el clip.",
     "prompt_ejemplo": "A singer performing on stage under colorful spotlights, hair swaying, camera slowly pushing in, cinematic concert lighting.",
     "limitaciones": "Sin audio nativo: el audio es subida manual opcional. Máx 15s.",
+    "vigente": true
+  },
+  "SeaArt Stage": {
+    "nota": 3.6,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "2s",
+      "3s",
+      "4s",
+      "5s",
+      "6s",
+      "7s",
+      "8s"
+    ],
+    "ratios": [],
+    "max_chars": 1500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Expresión emocional precisa y movimiento de cámara sobrenaturalmente suave. SOLO Image-to-Video. Control de 'Amplitud de movimiento' (Automático / Pequeño / Medio / Grande). Sujetos múltiples, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Combina con la imagen para describir escena, acción y emoción. Ajusta la amplitud de movimiento para controlar la intensidad. Prompt máx 1500 chars.",
+    "prompt_ejemplo": "A woman turns slowly toward the camera with a subtle, emotional expression, hair gently moving, smooth elegant camera drift.",
+    "limitaciones": "SOLO desde imagen (no text-to-video). Máx 8s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija).",
     "vigente": true
   },
   "SeaArt Turbo": {
@@ -1006,6 +1128,28 @@
     "prompt_formula": "Subject + action + camera + style. Prompt descriptivo y detallado.",
     "prompt_ejemplo": "A dancer in a flowing red dress spins gracefully in an elegant ballroom, fabric swirling, smooth cinematic camera, warm chandelier lighting.",
     "limitaciones": "Máx 10s. Nota baja (2.3). El panel no expone 'Modo de generación'.",
+    "vigente": true
+  },
+  "SeaArt Ultra Frame Video": {
+    "nota": 3.7,
+    "has_negative": true,
+    "has_audio": true,
+    "audio_desc": "SFX + BGM integrados (toggles Efecto de sonido / Agregar BGM)",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9",
+      "1:1"
+    ],
+    "max_chars": 2500,
+    "max_imagenes": 4,
+    "best_for": "Enfocado en control de fotogramas (primer y último fotograma). Image-to-Video y Text-to-Video. Sujetos múltiples, magia de sugerencia, sonido nativo (SFX + BGM).",
+    "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma) para definir el arranque y el final del clip. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A dancer begins mid-pose and unfolds into a sweeping spin, fabric trailing, smooth cinematic camera arc.",
+    "limitaciones": "Máx 10s. El panel no expone 'Modo de generación'. has_negative asumido (panel recortado antes de Configuración avanzada).",
     "vigente": true
   },
   "SeaArt Ultra Pro": {
