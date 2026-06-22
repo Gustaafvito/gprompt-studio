@@ -23,6 +23,7 @@ from config import (
     es_separador,
     get_theme_colors,
 )
+from modules.i18n import tr
 from modules.style_guide import tooltip_para
 from workers import detectar_idioma_es
 
@@ -673,7 +674,7 @@ class UiFooterService:
         vent.geometry("520x560")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🔗 Multi-LoRA",
+        ctk.CTkLabel(vent, text=tr("🔗 Multi-LoRA"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(vent,
                      text=("Marca los LoRAs adicionales a usar junto con el "
@@ -707,7 +708,7 @@ class UiFooterService:
         if not loras:
             ctk.CTkLabel(
                 scroll,
-                text="(No hay LoRAs guardados — añádelos desde 📁 Datos → 🔗 LoRAs)",
+                text=tr("(No hay LoRAs guardados — añádelos desde 📁 Datos → 🔗 LoRAs)"),
                 text_color=c["muted_text"],
             ).pack(pady=20)
         else:
@@ -765,13 +766,13 @@ class UiFooterService:
             for v in chk_vars.values():
                 v.set(False)
 
-        ctk.CTkButton(btns, text="💾 Guardar", width=110, height=30,
+        ctk.CTkButton(btns, text=tr("💾 Guardar"), width=110, height=30,
                       fg_color="#1a7a3c",
                       command=_guardar).pack(side="left", padx=4)
-        ctk.CTkButton(btns, text="✕ Limpiar todo", width=120, height=30,
+        ctk.CTkButton(btns, text=tr("✕ Limpiar todo"), width=120, height=30,
                       fg_color="#7a1a1a",
                       command=_limpiar).pack(side="left", padx=4)
-        ctk.CTkButton(btns, text="Cancelar", width=100, height=30,
+        ctk.CTkButton(btns, text=tr("Cancelar"), width=100, height=30,
                       fg_color=c["fg_dark"],
                       command=vent.destroy).pack(side="left", padx=4)
 

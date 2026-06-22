@@ -35,6 +35,7 @@ import pyperclip
 
 from config import get_image_model_specs, get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -164,9 +165,9 @@ class MultiPromptService:
         v.geometry("520x540")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text="🎞 Story Sequence — configura tu secuencia",
+        ctk.CTkLabel(v, text=tr("🎞 Story Sequence — configura tu secuencia"),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(v, text="Misma iluminación/paleta/sujeto · solo cambia el encuadre",
+        ctk.CTkLabel(v, text=tr("Misma iluminación/paleta/sujeto · solo cambia el encuadre"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 12))
 
         # Slider N
@@ -191,7 +192,7 @@ class MultiPromptService:
         def _redraw_checkboxes():
             for w in chk_frame.winfo_children():
                 w.destroy()
-            ctk.CTkLabel(chk_frame, text="Marca los tipos de shot a usar (en orden de marca):",
+            ctk.CTkLabel(chk_frame, text=tr("Marca los tipos de shot a usar (en orden de marca):"),
                           font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(anchor="w", padx=10, pady=(6, 4))
             grid = ctk.CTkFrame(chk_frame, fg_color="transparent")
             grid.pack(fill="x", padx=10, pady=(0, 6))
@@ -204,7 +205,7 @@ class MultiPromptService:
                                        font=ctk.CTkFont(size=10))
                 cb.grid(row=i, column=0, sticky="w", padx=4, pady=2)
 
-        chk_toggle = ctk.CTkCheckBox(v, text="🤖 Que el LLM elija los tipos automáticamente",
+        chk_toggle = ctk.CTkCheckBox(v, text=tr("🤖 Que el LLM elija los tipos automáticamente"),
                                        variable=auto_var,
                                        font=ctk.CTkFont(size=11, weight="bold"),
                                        command=lambda: chk_frame.pack_forget() if auto_var.get()
@@ -254,11 +255,11 @@ class MultiPromptService:
 
         btn_row = ctk.CTkFrame(v, fg_color="transparent")
         btn_row.pack(side="bottom", pady=10)
-        ctk.CTkButton(btn_row, text="▶ Generar", width=130, height=34,
+        ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=130, height=34,
                        fg_color="#1a7a3c", hover_color="#15633a",
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_generar).pack(side="left", padx=6)
-        ctk.CTkButton(btn_row, text="Cancelar", width=110, height=34,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=110, height=34,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=v.destroy).pack(side="left", padx=6)
 
@@ -773,9 +774,9 @@ class MultiPromptService:
         vent.geometry("1240x740")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🌀 Walk árbol — Explora derivaciones evolutivas",
+        ctk.CTkLabel(vent, text=tr("🌀 Walk árbol — Explora derivaciones evolutivas"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
-        ctk.CTkLabel(vent, text="Click en un nodo para inspeccionarlo · 🌿 Ramificar genera 3 hijos vía LLM",
+        ctk.CTkLabel(vent, text=tr("Click en un nodo para inspeccionarlo · 🌿 Ramificar genera 3 hijos vía LLM"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         main = ctk.CTkFrame(vent, fg_color="transparent")
@@ -801,10 +802,10 @@ class MultiPromptService:
         panel = ctk.CTkFrame(main, fg_color=c["fg_dark"], corner_radius=8)
         panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
 
-        lbl_titulo = ctk.CTkLabel(panel, text="🌿 Nodo: Raíz",
+        lbl_titulo = ctk.CTkLabel(panel, text=tr("🌿 Nodo: Raíz"),
                                    font=ctk.CTkFont(size=13, weight="bold"))
         lbl_titulo.pack(anchor="w", padx=12, pady=(10, 2))
-        lbl_ruta = ctk.CTkLabel(panel, text="Ruta: Raíz",
+        lbl_ruta = ctk.CTkLabel(panel, text=tr("Ruta: Raíz"),
                                  font=ctk.CTkFont(size=10),
                                  text_color=c["muted_text"], wraplength=420, justify="left")
         lbl_ruta.pack(anchor="w", padx=12, pady=(0, 8))
@@ -931,10 +932,10 @@ class MultiPromptService:
             nid_padre = sel["id"]
             padre = nodos[nid_padre]
             if padre["depth"] >= 6:
-                lbl_status.configure(text="⚠️ Máxima profundidad alcanzada (6)", text_color="#e67e22")
+                lbl_status.configure(text=tr("⚠️ Máxima profundidad alcanzada (6)"), text_color="#e67e22")
                 return
 
-            lbl_status.configure(text="🌿 Generando 3 derivaciones...", text_color="#fbbf24")
+            lbl_status.configure(text=tr("🌿 Generando 3 derivaciones..."), text_color="#fbbf24")
             btn_ramificar.configure(state="disabled")
             btn_usar.configure(state="disabled")
 
@@ -1053,7 +1054,7 @@ class MultiPromptService:
             def _copiar_clipboard():
                 try:
                     pyperclip.copy(texto_copia)
-                    estado_lbl.configure(text="✅ Copiado al portapapeles",
+                    estado_lbl.configure(text=tr("✅ Copiado al portapapeles"),
                                           text_color="#2ecc71")
                     lbl_status.configure(text=f"📂 Ruta copiada ({len(ruta)} nodos)",
                                           text_color="#2ecc71")
@@ -1102,15 +1103,15 @@ class MultiPromptService:
 
             btn_bar = ctk.CTkFrame(v, fg_color="transparent")
             btn_bar.pack(pady=(0, 12))
-            ctk.CTkButton(btn_bar, text="💾 Guardar en Versiones prompt", width=230, height=32,
+            ctk.CTkButton(btn_bar, text=tr("💾 Guardar en Versiones prompt"), width=230, height=32,
                           fg_color="#1a4a7a", hover_color="#15396a",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_guardar_en_versiones).pack(side="left", padx=5)
-            ctk.CTkButton(btn_bar, text="📋 Copiar al portapapeles", width=200, height=32,
+            ctk.CTkButton(btn_bar, text=tr("📋 Copiar al portapapeles"), width=200, height=32,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_copiar_clipboard).pack(side="left", padx=5)
-            ctk.CTkButton(btn_bar, text="Cerrar", width=100, height=32,
+            ctk.CTkButton(btn_bar, text=tr("Cerrar"), width=100, height=32,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           command=v.destroy).pack(side="left", padx=5)
             v.bind("<Escape>", lambda _e: v.destroy())
@@ -1119,7 +1120,7 @@ class MultiPromptService:
         def _borrar_subarbol():
             nid = sel["id"]
             if nid == 0:
-                lbl_status.configure(text="⚠️ No puedes borrar la raíz", text_color="#e67e22")
+                lbl_status.configure(text=tr("⚠️ No puedes borrar la raíz"), text_color="#e67e22")
                 return
             from tkinter import messagebox
             n = nodos[nid]
@@ -1170,25 +1171,25 @@ class MultiPromptService:
             lbl_status.configure(text=f"🗑 Subárbol borrado ({len(a_borrar)} nodos)",
                                   text_color="#2ecc71")
 
-        btn_ramificar = ctk.CTkButton(btn_row1, text="🌿 Ramificar (3 hijos)",
+        btn_ramificar = ctk.CTkButton(btn_row1, text=tr("🌿 Ramificar (3 hijos)"),
                                         fg_color="#7c3aed", hover_color="#5b21b6",
                                         font=ctk.CTkFont(size=11, weight="bold"),
                                         command=_ramificar)
         btn_ramificar.pack(side="left", padx=2, fill="x", expand=True)
 
-        btn_usar = ctk.CTkButton(btn_row1, text="📋 Usar este",
+        btn_usar = ctk.CTkButton(btn_row1, text=tr("📋 Usar este"),
                                   fg_color="#1a7a3c", hover_color="#15633a",
                                   font=ctk.CTkFont(size=11, weight="bold"),
                                   command=_usar_nodo)
         btn_usar.pack(side="left", padx=2, fill="x", expand=True)
 
-        ctk.CTkButton(btn_row2, text="💾 Guardar ruta", fg_color="#1a4a7a",
+        ctk.CTkButton(btn_row2, text=tr("💾 Guardar ruta"), fg_color="#1a4a7a",
                        hover_color="#15396a", font=ctk.CTkFont(size=10),
                        command=_copiar_ruta).pack(side="left", padx=2, fill="x", expand=True)
-        ctk.CTkButton(btn_row2, text="🗑 Borrar subárbol", fg_color="#8a1a1a",
+        ctk.CTkButton(btn_row2, text=tr("🗑 Borrar subárbol"), fg_color="#8a1a1a",
                        hover_color="#6b1414", font=ctk.CTkFont(size=10),
                        command=_borrar_subarbol).pack(side="left", padx=2, fill="x", expand=True)
-        ctk.CTkButton(btn_row2, text="✖ Cerrar", fg_color=c["fg_dark"],
+        ctk.CTkButton(btn_row2, text=tr("✖ Cerrar"), fg_color=c["fg_dark"],
                        hover_color=c["fg_dark_hover"], font=ctk.CTkFont(size=10),
                        command=vent.destroy).pack(side="left", padx=2, fill="x", expand=True)
 

@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import contar_tokens_aprox, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -54,20 +55,20 @@ def abrir_personajes(app):
     # ── Cabecera ──
     head = ctk.CTkFrame(ventana, fg_color="transparent")
     head.pack(fill="x", padx=15, pady=(12, 4))
-    ctk.CTkLabel(head, text="🧑 Personajes Guardados",
+    ctk.CTkLabel(head, text=tr("🧑 Personajes Guardados"),
                  font=ctk.CTkFont(size=18, weight="bold"),
                  text_color=cc["label_main"]).pack(side="left")
     lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
                              text_color=cc["empty_text"])
     lbl_count.pack(side="left", padx=10)
 
-    btn_toggle_form = ctk.CTkButton(head, text="+ Nuevo personaje", width=160,
+    btn_toggle_form = ctk.CTkButton(head, text=tr("+ Nuevo personaje"), width=160,
                                     height=28, fg_color="#1a7a3c",
                                     hover_color="#145e2d")
     btn_toggle_form.pack(side="right")
 
     ctk.CTkLabel(ventana,
-                 text="Los personajes se insertan automáticamente en el prompt al seleccionarlos.",
+                 text=tr("Los personajes se insertan automáticamente en el prompt al seleccionarlos."),
                  font=ctk.CTkFont(size=10),
                  text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
@@ -95,12 +96,12 @@ def abrir_personajes(app):
     frame_nuevo = ctk.CTkFrame(ventana)
     # No empaqueto aún: el toggle se encarga
 
-    ctk.CTkLabel(frame_nuevo, text="Nombre:", font=ctk.CTkFont(weight="bold"),
+    ctk.CTkLabel(frame_nuevo, text=tr("Nombre:"), font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=10, pady=8)
     entry_nombre = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text="ej: Luna, Detective…")
     entry_nombre.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Descripción:", font=ctk.CTkFont(weight="bold"),
+    ctk.CTkLabel(frame_nuevo, text=tr("Descripción:"), font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=(12, 5))
     entry_desc = ctk.CTkEntry(frame_nuevo, width=260,
                               placeholder_text="ej: young woman, silver hair, blue eyes…")
@@ -111,11 +112,11 @@ def abrir_personajes(app):
     def _toggle_form():
         if form_visible[0]:
             frame_nuevo.pack_forget()
-            btn_toggle_form.configure(text="+ Nuevo personaje")
+            btn_toggle_form.configure(text=tr("+ Nuevo personaje"))
             form_visible[0] = False
         else:
             frame_nuevo.pack(fill="x", padx=15, pady=(2, 6), after=frame_busqueda)
-            btn_toggle_form.configure(text="× Cerrar form")
+            btn_toggle_form.configure(text=tr("× Cerrar form"))
             form_visible[0] = True
             entry_nombre.focus_set()
 
@@ -138,7 +139,7 @@ def abrir_personajes(app):
                 app.store.personajes[i] = {"nombre": nombre, "descripcion": desc}
                 app.store._guardar("personajes")
                 editando_idx[0] = None
-                btn_guardar.configure(text="💾 Guardar")
+                btn_guardar.configure(text=tr("💾 Guardar"))
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo editar: {e}", parent=ventana)
                 return
@@ -155,7 +156,7 @@ def abrir_personajes(app):
         refrescar()
         app.set_estado(f"🧑 Personaje '{nombre}' guardado.", "#2ecc71")
 
-    btn_guardar = ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
+    btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
                                 fg_color="#1a7a3c", hover_color="#145e2d",
                                 command=guardar)
     btn_guardar.pack(side="left", padx=8)
@@ -222,7 +223,7 @@ def abrir_personajes(app):
                 entry_desc.delete(0, "end")
                 entry_desc.insert(0, p_["descripcion"])
                 editando_idx[0] = i
-                btn_guardar.configure(text="✏️ Actualizar")
+                btn_guardar.configure(text=tr("✏️ Actualizar"))
                 entry_desc.focus_set()
 
             def copiar(p_=p):
@@ -236,15 +237,15 @@ def abrir_personajes(app):
                     app.actualizar_combo_personajes()
                     refrescar()
 
-            ctk.CTkButton(btn_row, text="✅ Usar", width=70, height=26,
+            ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=70, height=26,
                           fg_color=cc_loc["btn_use"],
                           hover_color=cc_loc["btn_use_hov"],
                           command=usar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=26,
                           command=editar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 Copiar", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=26,
                           command=copiar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="🗑 Borrar", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("🗑 Borrar"), width=80, height=26,
                           fg_color=cc_loc["btn_del"],
                           hover_color=cc_loc["btn_del_hov"],
                           command=borrar).pack(side="left", padx=2)
@@ -269,20 +270,20 @@ def abrir_loras(app):
     # ── Cabecera ──
     head = ctk.CTkFrame(ventana, fg_color="transparent")
     head.pack(fill="x", padx=15, pady=(12, 4))
-    ctk.CTkLabel(head, text="🔗 LoRAs Guardados",
+    ctk.CTkLabel(head, text=tr("🔗 LoRAs Guardados"),
                  font=ctk.CTkFont(size=18, weight="bold"),
                  text_color=cc["label_main"]).pack(side="left")
     lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
                              text_color=cc["empty_text"])
     lbl_count.pack(side="left", padx=10)
 
-    btn_toggle_form = ctk.CTkButton(head, text="+ Nuevo LoRA", width=140,
+    btn_toggle_form = ctk.CTkButton(head, text=tr("+ Nuevo LoRA"), width=140,
                                     height=28, fg_color="#5b2c8e",
                                     hover_color="#3d1a6a")
     btn_toggle_form.pack(side="right")
 
     ctk.CTkLabel(ventana,
-                 text="Los LoRAs insertan su trigger word al inicio del prompt automáticamente.",
+                 text=tr("Los LoRAs insertan su trigger word al inicio del prompt automáticamente."),
                  font=ctk.CTkFont(size=10),
                  text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
@@ -307,7 +308,7 @@ def abrir_loras(app):
                   command=lambda: (entry_buscar.delete(0, "end"), refrescar())
                   ).pack(side="left", padx=(6, 8))
 
-    ctk.CTkLabel(frame_busqueda, text="Familia:").pack(side="left", padx=(8, 4))
+    ctk.CTkLabel(frame_busqueda, text=tr("Familia:")).pack(side="left", padx=(8, 4))
     filtro_familia_var = ctk.StringVar(value="Todas")
     combo_filtro = ctk.CTkComboBox(frame_busqueda, width=120,
                                    values=FAMILIAS, variable=filtro_familia_var,
@@ -317,24 +318,24 @@ def abrir_loras(app):
     # ── Form de creación/edición (colapsable) ──
     frame_nuevo = ctk.CTkFrame(ventana)
 
-    ctk.CTkLabel(frame_nuevo, text="Nombre:",
+    ctk.CTkLabel(frame_nuevo, text=tr("Nombre:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=10, pady=8)
     entry_nombre = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="ej: Detail Enhancer")
     entry_nombre.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Trigger:",
+    ctk.CTkLabel(frame_nuevo, text=tr("Trigger:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
     entry_trigger = ctk.CTkEntry(frame_nuevo, width=140, placeholder_text="ej: add_detail")
     entry_trigger.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Familia:",
+    ctk.CTkLabel(frame_nuevo, text=tr("Familia:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
     combo_familia_form = ctk.CTkComboBox(frame_nuevo, width=100,
                                          values=["—"] + FAMILIAS[1:])
     combo_familia_form.set("—")
     combo_familia_form.pack(side="left", padx=5)
 
-    ctk.CTkLabel(frame_nuevo, text="Nota:",
+    ctk.CTkLabel(frame_nuevo, text=tr("Nota:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
     entry_nota = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="opcional")
     entry_nota.pack(side="left", padx=5)
@@ -348,7 +349,7 @@ def abrir_loras(app):
     rasgos_row.pack(fill="x", padx=10, pady=(0, 6))
     ctk.CTkLabel(
         rasgos_row,
-        text="Rasgos visuales (opcional):",
+        text=tr("Rasgos visuales (opcional):"),
         font=ctk.CTkFont(size=10, weight="bold"),
     ).pack(anchor="w")
     ctk.CTkLabel(
@@ -372,14 +373,14 @@ def abrir_loras(app):
         if form_visible[0]:
             frame_nuevo.pack_forget()
             frame_nuevo_2.pack_forget()
-            btn_toggle_form.configure(text="+ Nuevo LoRA")
+            btn_toggle_form.configure(text=tr("+ Nuevo LoRA"))
             form_visible[0] = False
             editando_idx[0] = None
-            btn_guardar.configure(text="💾 Guardar")
+            btn_guardar.configure(text=tr("💾 Guardar"))
         else:
             frame_nuevo.pack(fill="x", padx=15, pady=(2, 0), after=frame_busqueda)
             frame_nuevo_2.pack(fill="x", padx=15, pady=(0, 6), after=frame_nuevo)
-            btn_toggle_form.configure(text="× Cerrar form")
+            btn_toggle_form.configure(text=tr("× Cerrar form"))
             form_visible[0] = True
             entry_nombre.focus_set()
 
@@ -439,7 +440,7 @@ def abrir_loras(app):
                 app.store.loras[i] = _entry
                 app.store._guardar("loras")
                 editando_idx[0] = None
-                btn_guardar.configure(text="💾 Guardar")
+                btn_guardar.configure(text=tr("💾 Guardar"))
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo editar: {e}",
                                      parent=ventana)
@@ -460,7 +461,7 @@ def abrir_loras(app):
         refrescar()
         app.set_estado(f"🔗 LoRA '{nombre}' guardado.", "#9b59b6")
 
-    btn_guardar = ctk.CTkButton(frame_nuevo, text="💾 Guardar", width=90, height=30,
+    btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
                                 fg_color="#5b2c8e", hover_color="#3d1a6a",
                                 command=guardar)
     btn_guardar.pack(side="left", padx=8)
@@ -540,7 +541,7 @@ def abrir_loras(app):
                 txt_rasgos.delete("1.0", "end")
                 txt_rasgos.insert("1.0", l_.get("rasgos_visuales", ""))
                 editando_idx[0] = i
-                btn_guardar.configure(text="✏️ Actualizar")
+                btn_guardar.configure(text=tr("✏️ Actualizar"))
 
             def copiar(l_=l):
                 import pyperclip
@@ -555,15 +556,15 @@ def abrir_loras(app):
                     app.actualizar_combo_loras()
                     refrescar()
 
-            ctk.CTkButton(btn_row, text="✅ Usar", width=70, height=26,
+            ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=70, height=26,
                           fg_color="#7c3aed" if _is_light() else "#3a1a5a",
                           hover_color="#6d28d9" if _is_light() else "#2a0f4a",
                           command=usar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=26,
                           command=editar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 Trigger", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("📋 Trigger"), width=80, height=26,
                           command=copiar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="🗑 Borrar", width=80, height=26,
+            ctk.CTkButton(btn_row, text=tr("🗑 Borrar"), width=80, height=26,
                           fg_color="#dc2626" if _is_light() else "#6a1a1a",
                           hover_color="#b91c1c" if _is_light() else "#4a0f0f",
                           command=borrar).pack(side="left", padx=2)
@@ -589,16 +590,16 @@ def abrir_batch_variables(app):
     ventana.geometry("600x620")
     ventana.grab_set()
 
-    ctk.CTkLabel(ventana, text="⚡ Batch de Variables",
+    ctk.CTkLabel(ventana, text=tr("⚡ Batch de Variables"),
                  font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 2))
-    ctk.CTkLabel(ventana, text="Usa {variable} en tu idea y aquí define múltiples valores",
+    ctk.CTkLabel(ventana, text=tr("Usa {variable} en tu idea y aquí define múltiples valores"),
                  font=ctk.CTkFont(size=10),
                  text_color=cc["card_text2"]).pack(pady=(0, 8))
 
     # Plantilla editable
     frame_tmpl = ctk.CTkFrame(ventana)
     frame_tmpl.pack(fill="x", padx=15, pady=(0, 8))
-    ctk.CTkLabel(frame_tmpl, text="Plantilla (idea con {variables}):",
+    ctk.CTkLabel(frame_tmpl, text=tr("Plantilla (idea con {variables}):"),
                  font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
     txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=12))
     txt_tmpl.pack(fill="x", padx=8, pady=(0, 8))
@@ -607,7 +608,7 @@ def abrir_batch_variables(app):
     # Frame de variables dinámico
     frame_vars_outer = ctk.CTkFrame(ventana)
     frame_vars_outer.pack(fill="x", padx=15, pady=(0, 8))
-    ctk.CTkLabel(frame_vars_outer, text="Variables detectadas (valores separados por coma):",
+    ctk.CTkLabel(frame_vars_outer, text=tr("Variables detectadas (valores separados por coma):"),
                  font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
 
     entries_vars = {}  # var_name → CTkEntry
@@ -633,12 +634,12 @@ def abrir_batch_variables(app):
             row = ctk.CTkFrame(frame_vars_outer, fg_color="transparent")
             row._es_var_row = True
             row.pack(fill="x", padx=8)
-            ctk.CTkLabel(row, text="No se detectaron {variables} en la plantilla.",
+            ctk.CTkLabel(row, text=tr("No se detectaron {variables} en la plantilla."),
                          font=ctk.CTkFont(size=10), text_color=cc["card_text2"]).pack(anchor="w")
 
     _refrescar_vars()
 
-    ctk.CTkButton(frame_vars_outer, text="🔄 Detectar variables", height=26, width=160,
+    ctk.CTkButton(frame_vars_outer, text=tr("🔄 Detectar variables"), height=26, width=160,
                   fg_color="#374151", hover_color="#4b5563",
                   font=ctk.CTkFont(size=10),
                   command=_refrescar_vars).pack(anchor="e", padx=8, pady=(4, 8))
@@ -647,12 +648,12 @@ def abrir_batch_variables(app):
     modo_var = ctk.StringVar(value="lineal")
     frame_modo = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_modo.pack(fill="x", padx=15, pady=(0, 6))
-    ctk.CTkLabel(frame_modo, text="Modo:", font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", padx=(0, 8))
-    ctk.CTkRadioButton(frame_modo, text="Secuencial (valor a valor, mismo índice)", variable=modo_var, value="lineal").pack(side="left", padx=6)
-    ctk.CTkRadioButton(frame_modo, text="Todas las combis (máx 20)", variable=modo_var, value="product").pack(side="left", padx=6)
+    ctk.CTkLabel(frame_modo, text=tr("Modo:"), font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", padx=(0, 8))
+    ctk.CTkRadioButton(frame_modo, text=tr("Secuencial (valor a valor, mismo índice)"), variable=modo_var, value="lineal").pack(side="left", padx=6)
+    ctk.CTkRadioButton(frame_modo, text=tr("Todas las combis (máx 20)"), variable=modo_var, value="product").pack(side="left", padx=6)
 
     # Resultado
-    ctk.CTkLabel(ventana, text="Variaciones generadas:",
+    ctk.CTkLabel(ventana, text=tr("Variaciones generadas:"),
                  font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=15, pady=(0, 2))
     txt_resultado = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=11), wrap="word")
     txt_resultado.pack(fill="both", expand=True, padx=15, pady=(0, 4))
@@ -675,7 +676,7 @@ def abrir_batch_variables(app):
         if not vals_por_var:
             txt_resultado.delete("1.0", "end")
             txt_resultado.insert("1.0", tmpl)
-            lbl_count.configure(text="1 variación (sin variables)")
+            lbl_count.configure(text=tr("1 variación (sin variables)"))
             return
 
         keys = list(vals_por_var.keys())
@@ -705,7 +706,7 @@ def abrir_batch_variables(app):
         if contenido:
             ventana.clipboard_clear()
             ventana.clipboard_append(contenido)
-            lbl_count.configure(text="✅ Copiado al portapapeles")
+            lbl_count.configure(text=tr("✅ Copiado al portapapeles"))
 
     def _enviar_a_salida():
         contenido = txt_resultado.get("1.0", "end").strip()
@@ -717,14 +718,14 @@ def abrir_batch_variables(app):
 
     frame_btns = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_btns.pack(fill="x", padx=15, pady=(0, 12))
-    ctk.CTkButton(frame_btns, text="⚡ Generar variaciones", height=32, width=160,
+    ctk.CTkButton(frame_btns, text=tr("⚡ Generar variaciones"), height=32, width=160,
                   fg_color="#1a8a3c", hover_color="#166d30",
                   font=ctk.CTkFont(size=11, weight="bold"),
                   command=_generar).pack(side="left", padx=4)
-    ctk.CTkButton(frame_btns, text="📋 Copiar todo", height=32, width=120,
+    ctk.CTkButton(frame_btns, text=tr("📋 Copiar todo"), height=32, width=120,
                   fg_color="#374151", hover_color="#4b5563",
                   font=ctk.CTkFont(size=11), command=_copiar_todo).pack(side="left", padx=4)
-    ctk.CTkButton(frame_btns, text="→ Enviar a resultado", height=32, width=150,
+    ctk.CTkButton(frame_btns, text=tr("→ Enviar a resultado"), height=32, width=150,
                   fg_color="#1e3a8a", hover_color="#162d6e",
                   font=ctk.CTkFont(size=11), command=_enviar_a_salida).pack(side="left", padx=4)
 
@@ -741,17 +742,17 @@ def abrir_batch(app):
     ventana.geometry("850x750")
     ventana.grab_set()
 
-    ctk.CTkLabel(ventana, text="📦 Generación Batch",
+    ctk.CTkLabel(ventana, text=tr("📦 Generación Batch"),
                  font=ctk.CTkFont(size=18, weight="bold")).pack(pady=12)
 
     batch_modo_var = ctk.StringVar(value="auto")
     frame_bmodo = ctk.CTkFrame(ventana)
     frame_bmodo.pack(fill="x", padx=15, pady=(0, 8))
-    ctk.CTkLabel(frame_bmodo, text="Modo:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=12, pady=10)
-    ctk.CTkRadioButton(frame_bmodo, text="🔁 Auto (1 idea → N prompts)",
+    ctk.CTkLabel(frame_bmodo, text=tr("Modo:"), font=ctk.CTkFont(weight="bold")).pack(side="left", padx=12, pady=10)
+    ctk.CTkRadioButton(frame_bmodo, text=tr("🔁 Auto (1 idea → N prompts)"),
                        variable=batch_modo_var, value="auto",
                        command=lambda: actualizar_panel()).pack(side="left", padx=12)
-    ctk.CTkRadioButton(frame_bmodo, text="📋 Lista (N ideas → N prompts)",
+    ctk.CTkRadioButton(frame_bmodo, text=tr("📋 Lista (N ideas → N prompts)"),
                        variable=batch_modo_var, value="lista",
                        command=lambda: actualizar_panel()).pack(side="left", padx=12)
 
@@ -766,7 +767,7 @@ def abrir_batch(app):
         for w in frame_panel.winfo_children():
             w.destroy()
         if batch_modo_var.get() == "auto":
-            ctk.CTkLabel(frame_panel, text="Idea base:", font=ctk.CTkFont(weight="bold")).pack(
+            ctk.CTkLabel(frame_panel, text=tr("Idea base:"), font=ctk.CTkFont(weight="bold")).pack(
                 anchor="w", padx=12, pady=(8, 2))
             entry_bidea[0] = ctk.CTkTextbox(frame_panel, height=55, font=ctk.CTkFont(size=13))
             entry_bidea[0].pack(fill="x", padx=12, pady=(0, 6))
@@ -775,7 +776,7 @@ def abrir_batch(app):
                 entry_bidea[0].insert("1.0", idea_actual)
             frame_bn = ctk.CTkFrame(frame_panel, fg_color="transparent")
             frame_bn.pack(fill="x", padx=12, pady=(0, 8))
-            ctk.CTkLabel(frame_bn, text="Número de prompts:", font=ctk.CTkFont(weight="bold")).pack(side="left")
+            ctk.CTkLabel(frame_bn, text=tr("Número de prompts:"), font=ctk.CTkFont(weight="bold")).pack(side="left")
             lbl_bn = ctk.CTkLabel(frame_bn, text=str(batch_n_var.get()),
                                    font=ctk.CTkFont(size=14, weight="bold"), text_color="#3498db", width=28)
             ctk.CTkSlider(frame_bn, from_=2, to=10, number_of_steps=8, variable=batch_n_var,
@@ -783,7 +784,7 @@ def abrir_batch(app):
                 side="left", padx=10, fill="x", expand=True)
             lbl_bn.pack(side="left")
         else:
-            ctk.CTkLabel(frame_panel, text="Lista de ideas (una por línea, máx 10):",
+            ctk.CTkLabel(frame_panel, text=tr("Lista de ideas (una por línea, máx 10):"),
                          font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=12, pady=(8, 2))
             entry_blista[0] = ctk.CTkTextbox(frame_panel, height=140, font=ctk.CTkFont(size=13))
             entry_blista[0].pack(fill="x", padx=12, pady=(0, 8))
@@ -797,7 +798,7 @@ def abrir_batch(app):
     # Selector de prompts individuales (aparece tras generar)
     frame_selector = ctk.CTkFrame(ventana, fg_color="transparent")
 
-    ctk.CTkLabel(ventana, text="Resultado batch:",
+    ctk.CTkLabel(ventana, text=tr("Resultado batch:"),
                  font=ctk.CTkFont(size=12), text_color=cc["card_text"]).pack(anchor="w", padx=15, pady=(4, 2))
     txt_batch = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=12), wrap="word")
     txt_batch.pack(fill="both", expand=True, padx=15, pady=(0, 4))
@@ -890,7 +891,7 @@ def abrir_batch(app):
         # Fila de botones de prompt completo
         row1 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row1.pack(fill="x", pady=(0, 2))
-        ctk.CTkLabel(row1, text="📋 Copiar completo:",
+        ctk.CTkLabel(row1, text=tr("📋 Copiar completo:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#f39c12").pack(side="left", padx=(0, 6))
 
@@ -918,7 +919,7 @@ def abrir_batch(app):
         # Fila de botones positive
         row2 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row2.pack(fill="x", pady=(0, 2))
-        ctk.CTkLabel(row2, text="🟢 Solo POSITIVE:",
+        ctk.CTkLabel(row2, text=tr("🟢 Solo POSITIVE:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#2ecc71").pack(side="left", padx=(0, 6))
 
@@ -942,7 +943,7 @@ def abrir_batch(app):
         # Fila de botones negative
         row3 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row3.pack(fill="x")
-        ctk.CTkLabel(row3, text="🔴 Solo NEGATIVE:",
+        ctk.CTkLabel(row3, text=tr("🔴 Solo NEGATIVE:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#e74c3c").pack(side="left", padx=(0, 6))
 
@@ -1016,7 +1017,7 @@ def abrir_batch(app):
         if _batch_cancelado.is_set() or not _ventana_existe():
             return
         _set_batch(f"❌ Error: {error_msg}")
-        lbl_batch_estado.configure(text="❌ Error en batch", text_color="#e74c3c")
+        lbl_batch_estado.configure(text=tr("❌ Error en batch"), text_color="#e74c3c")
         btn_gen.configure(state="normal")
 
     def _set_batch(texto):
@@ -1038,7 +1039,7 @@ def abrir_batch(app):
                 return
             idea = entry_bidea[0].get("1.0", "end").strip()
             if not idea:
-                lbl_batch_estado.configure(text="⚠️ Escribe una idea base.", text_color="#e67e22")
+                lbl_batch_estado.configure(text=tr("⚠️ Escribe una idea base."), text_color="#e67e22")
                 return
             n = int(batch_n_var.get())
             if app.switch_traduccion_var.get() and app.detectar_idioma(idea):
@@ -1051,7 +1052,7 @@ def abrir_batch(app):
                 return
             lista_raw = entry_blista[0].get("1.0", "end").strip()
             if not lista_raw:
-                lbl_batch_estado.configure(text="⚠️ Escribe al menos una idea.", text_color="#e67e22")
+                lbl_batch_estado.configure(text=tr("⚠️ Escribe al menos una idea."), text_color="#e67e22")
                 return
             ideas = [l.strip() for l in lista_raw.splitlines() if l.strip()][:10]
             if app.switch_traduccion_var.get():
@@ -1060,7 +1061,7 @@ def abrir_batch(app):
             peticion = (f"MODO E: Genera un prompt para CADA idea ({len(ideas)} ideas). "
                         f"Estilos: {estilos}.{modelo_info}\n\n{lista_fmt}")
 
-        lbl_batch_estado.configure(text="⏳ Generando batch...", text_color="#f39c12")
+        lbl_batch_estado.configure(text=tr("⏳ Generando batch..."), text_color="#f39c12")
         btn_gen.configure(state="disabled")
         btn_exp.configure(state="disabled")
         _set_batch("⏳ Procesando batch...")
@@ -1081,15 +1082,15 @@ def abrir_batch(app):
 
     import pyperclip
     is_lt = _is_light()
-    btn_gen = ctk.CTkButton(frame_bfoot, text="⚡ Generar Batch", width=160, height=36,
+    btn_gen = ctk.CTkButton(frame_bfoot, text=tr("⚡ Generar Batch"), width=160, height=36,
                              fg_color=cc["btn_use"], hover_color=cc["btn_use_hov"], command=generar)
     btn_gen.pack(side="left", padx=4)
-    btn_exp = ctk.CTkButton(frame_bfoot, text="💾 Exportar .txt", width=140, height=36,
+    btn_exp = ctk.CTkButton(frame_bfoot, text=tr("💾 Exportar .txt"), width=140, height=36,
                              fg_color="#15803d" if is_lt else "#1a3a2a",
                              hover_color="#166534" if is_lt else "#0f2a1a",
                              state="disabled", command=exportar)
     btn_exp.pack(side="left", padx=4)
-    ctk.CTkButton(frame_bfoot, text="📋 Copiar todo", width=130, height=36,
+    ctk.CTkButton(frame_bfoot, text=tr("📋 Copiar todo"), width=130, height=36,
                   fg_color="#475569" if is_lt else "#2c3e50",
                   hover_color="#334155" if is_lt else "#1a252f",
                   command=lambda: pyperclip.copy(txt_batch.get("1.0", "end").strip())).pack(side="left", padx=4)
@@ -1138,7 +1139,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         refrescar()
         app.set_estado(f"🗑 {titulo} limpiado.")
 
-    ctk.CTkButton(frame_vtitulo, text="🗑 Limpiar todo", width=130, height=28,
+    ctk.CTkButton(frame_vtitulo, text=tr("🗑 Limpiar todo"), width=130, height=28,
                   fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=limpiar_todo).pack(side="right", padx=4)
 
     lbl_contador = ctk.CTkLabel(frame_vtitulo, text="", font=ctk.CTkFont(size=11), text_color=cc["empty_text"])
@@ -1165,7 +1166,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                   command=lambda: (entry_buscar.delete(0, "end"), refrescar())).pack(side="left")
 
     # ── Filtro por modo ──
-    ctk.CTkLabel(frame_busqueda, text="Modo:").pack(side="left", padx=(12, 4))
+    ctk.CTkLabel(frame_busqueda, text=tr("Modo:")).pack(side="left", padx=(12, 4))
     filtro_modo_var = ctk.StringVar(value="Todos")
     combo_filtro_modo = ctk.CTkComboBox(
         frame_busqueda, width=110, variable=filtro_modo_var,
@@ -1397,10 +1398,10 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             except Exception as _e:
                 app.set_estado(f"❌ No se pudo copiar: {_e}", "#e74c3c")
 
-        ctk.CTkButton(btn_row, text="Cargar", width=80, height=26,
+        ctk.CTkButton(btn_row, text=tr("Cargar"), width=80, height=26,
                       fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],
                       command=cargar).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="📋 Copiar", width=90, height=26,
+        ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=90, height=26,
                       command=copiar).pack(side="left", padx=2)
 
         def borrar(i=idx):
@@ -1411,7 +1412,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                 app.store.borrar_entrada(coleccion, i)
                 refrescar()
 
-        ctk.CTkButton(btn_row, text="🗑 Borrar", width=88, height=26,
+        ctk.CTkButton(btn_row, text=tr("🗑 Borrar"), width=88, height=26,
                       fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=borrar).pack(side="left", padx=2)
 
     refrescar()

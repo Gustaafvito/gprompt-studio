@@ -28,6 +28,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -56,9 +57,9 @@ class ModoClienteService:
         vent.geometry("640x720")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="💼 Modo Cliente — Brief profesional",
+        ctk.CTkLabel(vent, text=tr("💼 Modo Cliente — Brief profesional"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Define un brief y genera 5 propuestas profesionales coherentes",
+        ctk.CTkLabel(vent, text=tr("Define un brief y genera 5 propuestas profesionales coherentes"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         # ── Plantillas predefinidas ──
@@ -102,7 +103,7 @@ class ModoClienteService:
 
         plantilla_row = ctk.CTkFrame(vent, fg_color="transparent")
         plantilla_row.pack(fill="x", padx=20, pady=(0, 8))
-        ctk.CTkLabel(plantilla_row, text="Plantilla:",
+        ctk.CTkLabel(plantilla_row, text=tr("Plantilla:"),
                      font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
         plantilla_var = ctk.StringVar(value="— Personalizada —")
         combo_plantilla = ctk.CTkComboBox(
@@ -114,13 +115,13 @@ class ModoClienteService:
         # Imagen de referencia opcional (logo, moodboard, etc.)
         frame_img = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         frame_img.pack(fill="x", padx=20, pady=(0, 8))
-        ctk.CTkLabel(frame_img, text="📎 Imagen de referencia (opcional):",
+        ctk.CTkLabel(frame_img, text=tr("📎 Imagen de referencia (opcional):"),
                      font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
-        ctk.CTkLabel(frame_img, text="Logo del cliente, moodboard, ejemplo de estilo deseado...",
+        ctk.CTkLabel(frame_img, text=tr("Logo del cliente, moodboard, ejemplo de estilo deseado..."),
                      font=ctk.CTkFont(size=9), text_color=c["muted_text"]).pack(anchor="w", padx=10)
 
         cliente_state = {"imagen": None, "descripcion": ""}
-        lbl_estado_img = ctk.CTkLabel(frame_img, text="(sin imagen cargada)",
+        lbl_estado_img = ctk.CTkLabel(frame_img, text=tr("(sin imagen cargada)"),
                                         font=ctk.CTkFont(size=10), text_color=c["muted_text"])
         lbl_estado_img.pack(anchor="w", padx=10, pady=2)
 
@@ -152,13 +153,13 @@ class ModoClienteService:
         def _quitar_imagen():
             cliente_state["imagen"] = None
             cliente_state["descripcion"] = ""
-            lbl_estado_img.configure(text="(sin imagen cargada)", text_color=c["muted_text"])
+            lbl_estado_img.configure(text=tr("(sin imagen cargada)"), text_color=c["muted_text"])
 
         f_btns_img = ctk.CTkFrame(frame_img, fg_color="transparent")
         f_btns_img.pack(fill="x", padx=10, pady=(2, 8))
-        ctk.CTkButton(f_btns_img, text="📂 Cargar imagen", width=140, height=26, fg_color="#1a4a5a",
+        ctk.CTkButton(f_btns_img, text=tr("📂 Cargar imagen"), width=140, height=26, fg_color="#1a4a5a",
                       command=_cargar_imagen_cliente).pack(side="left", padx=2)
-        ctk.CTkButton(f_btns_img, text="✕ Quitar", width=80, height=26, fg_color="#5a1a1a",
+        ctk.CTkButton(f_btns_img, text=tr("✕ Quitar"), width=80, height=26, fg_color="#5a1a1a",
                       command=_quitar_imagen).pack(side="left", padx=2)
 
         # Campos del brief
@@ -222,7 +223,7 @@ class ModoClienteService:
             vent.destroy()
             self._generar_propuestas_cliente(brief)
 
-        ctk.CTkButton(vent, text="✨ Generar 5 propuestas", width=220, height=34,
+        ctk.CTkButton(vent, text=tr("✨ Generar 5 propuestas"), width=220, height=34,
                       fg_color="#1a7a3c",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_generar_propuestas).pack(pady=15)
@@ -441,19 +442,19 @@ class ModoClienteService:
                 except Exception as e:
                     self.app.dialogs.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
 
-            ctk.CTkButton(btn_row, text="✅ Usar propuesta", width=150, height=30, fg_color="#1a7a3c",
+            ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
                           ).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 Copiar", width=100, height=30, fg_color="#1a4a5a",
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, fg_color="#1a4a5a",
                           font=ctk.CTkFont(size=10), command=_copiar
                           ).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="💾 Guardar", width=100, height=30, fg_color="#4a1a6a",
+            ctk.CTkButton(btn_row, text=tr("💾 Guardar"), width=100, height=30, fg_color="#4a1a6a",
                           font=ctk.CTkFont(size=10), command=_guardar_prop
                           ).pack(side="left", padx=2)
             ctk.CTkLabel(btn_row, text=f"   {len(positivo)} chars",
                          font=ctk.CTkFont(size=9), text_color="#666666").pack(side="left", padx=(4, 0))
 
-        ctk.CTkButton(vent, text="Cerrar", width=140, height=30, fg_color="#475569",
+        ctk.CTkButton(vent, text=tr("Cerrar"), width=140, height=30, fg_color="#475569",
                       command=vent.destroy).pack(pady=(0, 8))
 
     def _cmd_companero_moodboard(self):
@@ -475,9 +476,9 @@ class ModoClienteService:
         vent.geometry("720x680")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🎭 Moodboard — Detecta el estilo común de tus imágenes",
+        ctk.CTkLabel(vent, text=tr("🎭 Moodboard — Detecta el estilo común de tus imágenes"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Añade imágenes con estilo similar (mínimo 2). Usa la imagen ya cargada como referencia.",
+        ctk.CTkLabel(vent, text=tr("Añade imágenes con estilo similar (mínimo 2). Usa la imagen ya cargada como referencia."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
 
         # ── Imagen ya cargada ──
@@ -486,9 +487,9 @@ class ModoClienteService:
             frame_ref.pack(fill="x", padx=15, pady=(0, 6))
             hdr_ref = ctk.CTkFrame(frame_ref, fg_color="transparent")
             hdr_ref.pack(fill="x", padx=10, pady=(6, 2))
-            ctk.CTkLabel(hdr_ref, text="🖼 Imagen de referencia ya cargada",
+            ctk.CTkLabel(hdr_ref, text=tr("🖼 Imagen de referencia ya cargada"),
                           font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
-            ctk.CTkLabel(hdr_ref, text="Se usará automáticamente",
+            ctk.CTkLabel(hdr_ref, text=tr("Se usará automáticamente"),
                           font=ctk.CTkFont(size=9), text_color="#2ecc71").pack(side="left", padx=(6, 0))
             preview_lbl = ctk.CTkLabel(frame_ref, text="")
             preview_lbl.pack(padx=10, pady=(0, 4))
@@ -499,7 +500,7 @@ class ModoClienteService:
 
         archivos_state = {"rutas": list(archivos_seleccionados)}
 
-        lbl_count = ctk.CTkLabel(frame_arch, text="0 imágenes seleccionadas",
+        lbl_count = ctk.CTkLabel(frame_arch, text=tr("0 imágenes seleccionadas"),
                                  font=ctk.CTkFont(size=10), text_color=c["muted_text"])
         lbl_count.pack(anchor="w", padx=10, pady=(6, 2))
 
@@ -590,9 +591,9 @@ class ModoClienteService:
 
         btn_row = ctk.CTkFrame(frame_arch, fg_color="transparent")
         btn_row.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkButton(btn_row, text="➕ Añadir imágenes", width=140, height=26, fg_color="#1a4a5a",
+        ctk.CTkButton(btn_row, text=tr("➕ Añadir imágenes"), width=140, height=26, fg_color="#1a4a5a",
                       command=_anadir_mas).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="🗑 Limpiar", width=100, height=26,
+        ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=100, height=26,
                       command=_limpiar).pack(side="left", padx=2)
 
         # ── Barra de progreso ──
@@ -656,7 +657,7 @@ class ModoClienteService:
                         desc, _ = self.app.vision.describir(img, "imagen", lambda m: None)
                         descripciones.append(desc)
 
-                    self.app.after(0, lambda: lbl_prog.configure(text="Extrayendo estilo común..."))
+                    self.app.after(0, lambda: lbl_prog.configure(text=tr("Extrayendo estilo común...")))
                     peticion = (
                         f"Has analizado {len(descripciones)} imágenes con estilo similar. "
                         f"Extrae el ESTILO COMÚN entre ellas.\n\n"
@@ -732,11 +733,11 @@ class ModoClienteService:
                             self.app.store.guardar_preferencias(prefs_g)
                             self.app.dialogs.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
 
-                        ctk.CTkButton(btn_row2, text="✅ Aplicar template", width=140, height=28,
+                        ctk.CTkButton(btn_row2, text=tr("✅ Aplicar template"), width=140, height=28,
                                       fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
-                        ctk.CTkButton(btn_row2, text="💾 Guardar estilo", width=140, height=28, fg_color="#4a1a6a",
+                        ctk.CTkButton(btn_row2, text=tr("💾 Guardar estilo"), width=140, height=28, fg_color="#4a1a6a",
                                       command=_guardar_estilo).pack(side="left", padx=4)
-                        ctk.CTkButton(btn_row2, text="📋 Copiar análisis", width=140, height=28,
+                        ctk.CTkButton(btn_row2, text=tr("📋 Copiar análisis"), width=140, height=28,
                                       command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
 
                         self.app.dialogs.toggle_botones(True)
@@ -752,13 +753,13 @@ class ModoClienteService:
 
         botones_finales = ctk.CTkFrame(vent, fg_color="transparent")
         botones_finales.pack(pady=8)
-        ctk.CTkButton(botones_finales, text="🎭 Analizar estilo común",
+        ctk.CTkButton(botones_finales, text=tr("🎭 Analizar estilo común"),
                       width=240, height=38,
                       fg_color="#a64aa6", hover_color="#7a2a7a",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       text_color="#ffffff",
                       command=_ejecutar_moodboard).pack(side="left", padx=4)
-        ctk.CTkButton(botones_finales, text="📚 Mis estilos",
+        ctk.CTkButton(botones_finales, text=tr("📚 Mis estilos"),
                       width=140, height=38,
                       fg_color="#4a1a6a", hover_color="#3a1050",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -776,7 +777,7 @@ class ModoClienteService:
         win.geometry("640x560")
         win.transient(parent_window or self.app)
 
-        ctk.CTkLabel(win, text="📚 Estilos detectados con moodboard",
+        ctk.CTkLabel(win, text=tr("📚 Estilos detectados con moodboard"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         cont_var = ctk.StringVar(value="")
         ctk.CTkLabel(win, textvariable=cont_var,
@@ -836,7 +837,7 @@ class ModoClienteService:
                     txt.pack(fill="both", expand=True, padx=10, pady=10)
                     txt.insert("1.0", e.get("descripcion", ""))
                     txt.configure(state="disabled")
-                    ctk.CTkButton(ver, text="Cerrar", command=ver.destroy
+                    ctk.CTkButton(ver, text=tr("Cerrar"), command=ver.destroy
                                   ).pack(pady=8)
 
                 def _borrar(i=idx, nombre=est.get("nombre","?")):
@@ -855,13 +856,13 @@ class ModoClienteService:
 
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
                 btn_row.pack(fill="x", padx=10, pady=(4, 8))
-                ctk.CTkButton(btn_row, text="✅ Aplicar template",
+                ctk.CTkButton(btn_row, text=tr("✅ Aplicar template"),
                               width=160, height=26,
                               fg_color="#1a7a3c" if tiene_template else c["fg_dark"],
                               state="normal" if tiene_template else "disabled",
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="👁 Ver análisis",
+                ctk.CTkButton(btn_row, text=tr("👁 Ver análisis"),
                               width=120, height=26,
                               font=ctk.CTkFont(size=10),
                               command=_ver).pack(side="left", padx=2)
@@ -870,5 +871,5 @@ class ModoClienteService:
                               command=_borrar).pack(side="right", padx=2)
 
         _refrescar()
-        ctk.CTkButton(win, text="Cerrar", width=110, height=28,
+        ctk.CTkButton(win, text=tr("Cerrar"), width=110, height=28,
                       command=win.destroy).pack(pady=(0, 12))

@@ -5,6 +5,8 @@ import re
 
 import pyperclip
 
+from modules.i18n import tr
+
 logger = logging.getLogger(__name__)
 from tkinter import messagebox
 from typing import TYPE_CHECKING
@@ -282,7 +284,7 @@ class ToolsWorkflowService:
         v.title("📋 Cargar setup")
         v.geometry("560x520")
         v.transient(self.app)
-        ctk.CTkLabel(v, text="📋 Setups guardados", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(v, text=tr("📋 Setups guardados"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 8))
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(0, 10))
 
@@ -290,7 +292,7 @@ class ToolsWorkflowService:
             for w in scroll.winfo_children(): w.destroy()
             setups_act = self.app.store.cargar_preferencias().get("setups", {}) or {}
             if not setups_act:
-                ctk.CTkLabel(scroll, text="(sin setups)", text_color="#666").pack(pady=20)
+                ctk.CTkLabel(scroll, text=tr("(sin setups)"), text_color="#666").pack(pady=20)
                 return
             for nombre, setup in sorted(setups_act.items()):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=8)
@@ -334,13 +336,13 @@ class ToolsWorkflowService:
                         self.app.store.guardar_preferencias(prefs2)
                         _refrescar_lista()
 
-                ctk.CTkButton(btn_row, text="Aplicar", width=90, height=26,
+                ctk.CTkButton(btn_row, text=tr("Aplicar"), width=90, height=26,
                               fg_color="#1e5f3a", hover_color="#16492d", command=_aplicar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="🗑 Borrar", width=90, height=26,
+                ctk.CTkButton(btn_row, text=tr("🗑 Borrar"), width=90, height=26,
                               fg_color="#6a1a1a", hover_color="#4a0f0f", command=_borrar).pack(side="left", padx=2)
 
         _refrescar_lista()
-        ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy,
+        ctk.CTkButton(v, text=tr("Cerrar"), width=110, command=v.destroy,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(pady=(0, 12))
 
     def _cmd_cron_prompts(self):
@@ -357,8 +359,8 @@ class ToolsWorkflowService:
         vent.geometry("520x620")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="⏲ Cron — Variantes programadas", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
-        ctk.CTkLabel(vent, text="Genera N VARIANTES distintas espaciadas en el tiempo.\nCada una añade variación (encuadre, iluminación, paleta...) automáticamente.",
+        ctk.CTkLabel(vent, text=tr("⏲ Cron — Variantes programadas"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(vent, text=tr("Genera N VARIANTES distintas espaciadas en el tiempo.\nCada una añade variación (encuadre, iluminación, paleta...) automáticamente."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"], justify="center").pack(pady=(0, 12))
 
         ctk.CTkLabel(vent, text=f"Idea base:\n{idea[:120]}{'...' if len(idea) > 120 else ''}",
@@ -368,7 +370,7 @@ class ToolsWorkflowService:
         # Cantidad
         f1 = ctk.CTkFrame(vent, fg_color="transparent")
         f1.pack(fill="x", padx=20, pady=5)
-        ctk.CTkLabel(f1, text="Cantidad de variantes:", width=160, anchor="w").pack(side="left")
+        ctk.CTkLabel(f1, text=tr("Cantidad de variantes:"), width=160, anchor="w").pack(side="left")
         ent_cantidad = ctk.CTkEntry(f1, width=80)
         ent_cantidad.insert(0, "5")
         ent_cantidad.pack(side="left")
@@ -376,13 +378,13 @@ class ToolsWorkflowService:
         # Intervalo
         f2 = ctk.CTkFrame(vent, fg_color="transparent")
         f2.pack(fill="x", padx=20, pady=5)
-        ctk.CTkLabel(f2, text="Cada cuántos minutos:", width=160, anchor="w").pack(side="left")
+        ctk.CTkLabel(f2, text=tr("Cada cuántos minutos:"), width=160, anchor="w").pack(side="left")
         ent_intervalo = ctk.CTkEntry(f2, width=80)
         ent_intervalo.insert(0, "10")
         ent_intervalo.pack(side="left")
 
         # Qué variar
-        ctk.CTkLabel(vent, text="Qué cambiar entre variantes:", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(12, 3))
+        ctk.CTkLabel(vent, text=tr("Qué cambiar entre variantes:"), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(12, 3))
         var_aspecto = ctk.StringVar(value="Variar todo aleatoriamente")
         opciones = [
             "Variar todo aleatoriamente",
@@ -397,13 +399,13 @@ class ToolsWorkflowService:
         cb_aspecto.pack(anchor="w", padx=20)
 
         # Campo personalizado
-        ctk.CTkLabel(vent, text="Instrucción personalizada (opcional):",
+        ctk.CTkLabel(vent, text=tr("Instrucción personalizada (opcional):"),
                      font=ctk.CTkFont(size=10, weight="bold"), text_color=c["muted_text"]).pack(anchor="w", padx=20, pady=(8, 2))
         ent_personalizado = ctk.CTkEntry(vent,
                                           placeholder_text='ej: "cambia el animal en cada variante" o "varía el color del coche"',
                                           width=460, height=28)
         ent_personalizado.pack(anchor="w", padx=20)
-        ctk.CTkLabel(vent, text="Si rellenas esto, se usa SIEMPRE (independientemente del selector de arriba).",
+        ctk.CTkLabel(vent, text=tr("Si rellenas esto, se usa SIEMPRE (independientemente del selector de arriba)."),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#666666").pack(anchor="w", padx=20, pady=(2, 0))
 
         lbl_progreso = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
@@ -555,11 +557,11 @@ class ToolsWorkflowService:
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
         btn_row.pack(pady=10)
-        ctk.CTkButton(btn_row, text="▶ Iniciar cron", width=130, height=32, fg_color="#1a7a3c",
+        ctk.CTkButton(btn_row, text=tr("▶ Iniciar cron"), width=130, height=32, fg_color="#1a7a3c",
                       command=_ejecutar_cron).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="⏹ Detener", width=100, height=32, fg_color="#5a1a1a",
+        ctk.CTkButton(btn_row, text=tr("⏹ Detener"), width=100, height=32, fg_color="#5a1a1a",
                       command=_detener).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="👁 Ver todas", width=110, height=32, fg_color="#1a4a7a",
+        ctk.CTkButton(btn_row, text=tr("👁 Ver todas"), width=110, height=32, fg_color="#1a4a7a",
                       command=_ver_todas).pack(side="left", padx=4)
 
     def _guardar_version_prompt(self):
@@ -594,7 +596,7 @@ class ToolsWorkflowService:
 
         ctk.CTkLabel(vent, text=f"📜 {len(self.app._versiones_prompt)} versiones en esta sesión",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Click en una versión para restaurarla",
+        ctk.CTkLabel(vent, text=tr("Click en una versión para restaurarla"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -637,9 +639,9 @@ class ToolsWorkflowService:
                 self.app.dialogs.actualizar_salida(t)
                 vent.destroy()
                 self.app.dialogs.set_estado(f"⏪ Versión restaurada", "#2ecc71")
-            ctk.CTkButton(btn_row, text="⏪ Restaurar esta", width=130, height=22, fg_color="#1a7a3c",
+            ctk.CTkButton(btn_row, text=tr("⏪ Restaurar esta"), width=130, height=22, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10), command=_restaurar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 Copiar", width=80, height=22, fg_color=c["fg_dark"],
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
                           font=ctk.CTkFont(size=10),
                           command=lambda t=ver["texto"]: pyperclip.copy(t)).pack(side="left", padx=2)
 
@@ -655,9 +657,9 @@ class ToolsWorkflowService:
         vent.geometry("700x600")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="⚡ Macros — Secuencias de acciones automatizadas",
+        ctk.CTkLabel(vent, text=tr("⚡ Macros — Secuencias de acciones automatizadas"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Combina acciones (ej: Generar → Refinar cinematográfico → Guardar estrella)",
+        ctk.CTkLabel(vent, text=tr("Combina acciones (ej: Generar → Refinar cinematográfico → Guardar estrella)"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         # Acciones disponibles para construir macros (solo automáticas).
@@ -672,7 +674,7 @@ class ToolsWorkflowService:
 
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         form.pack(fill="x", padx=10, pady=5)
-        lbl_form_titulo = ctk.CTkLabel(form, text="➕ Nueva macro",
+        lbl_form_titulo = ctk.CTkLabel(form, text=tr("➕ Nueva macro"),
                                         font=ctk.CTkFont(size=11, weight="bold"))
         lbl_form_titulo.pack(anchor="w", padx=10, pady=(8, 2))
 
@@ -690,7 +692,7 @@ class ToolsWorkflowService:
             for w in pasos_box.winfo_children():
                 w.destroy()
             if not pasos_state["lista"]:
-                ctk.CTkLabel(pasos_box, text="(añade pasos abajo)",
+                ctk.CTkLabel(pasos_box, text=tr("(añade pasos abajo)"),
                              font=ctk.CTkFont(size=10, slant="italic"),
                              text_color=c["muted_text"]).pack(anchor="w")
                 return
@@ -749,7 +751,7 @@ class ToolsWorkflowService:
             pasos_state["lista"].append(label)
             _refrescar_pasos()
 
-        ctk.CTkButton(f_add, text="➕ Añadir paso", width=120, height=24,
+        ctk.CTkButton(f_add, text=tr("➕ Añadir paso"), width=120, height=24,
                       command=_add_paso).pack(side="left", padx=2)
 
         def _cancelar_edicion():
@@ -757,11 +759,11 @@ class ToolsWorkflowService:
             ent_nombre_m.delete(0, "end")
             pasos_state["lista"] = []
             _refrescar_pasos()
-            lbl_form_titulo.configure(text="➕ Nueva macro")
-            btn_crear.configure(text="✅ Crear macro", fg_color="#1a7a3c")
+            lbl_form_titulo.configure(text=tr("➕ Nueva macro"))
+            btn_crear.configure(text=tr("✅ Crear macro"), fg_color="#1a7a3c")
             btn_cancelar.pack_forget()
 
-        btn_cancelar = ctk.CTkButton(f_add, text="❌ Cancelar edición",
+        btn_cancelar = ctk.CTkButton(f_add, text=tr("❌ Cancelar edición"),
                                       width=160, height=24,
                                       fg_color="#5a1a1a",
                                       font=ctk.CTkFont(size=10),
@@ -775,7 +777,7 @@ class ToolsWorkflowService:
             for w in scroll.winfo_children(): w.destroy()
             actual = prefs.get("macros", [])
             if not actual:
-                ctk.CTkLabel(scroll, text="Aún no tienes macros. Crea la primera arriba.",
+                ctk.CTkLabel(scroll, text=tr("Aún no tienes macros. Crea la primera arriba."),
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
             for i, m in enumerate(actual):
@@ -801,7 +803,7 @@ class ToolsWorkflowService:
                     _refrescar_pasos()
                     lbl_form_titulo.configure(
                         text=f"✏️ Editando: {macro.get('nombre', '?')}")
-                    btn_crear.configure(text="💾 Guardar cambios",
+                    btn_crear.configure(text=tr("💾 Guardar cambios"),
                                          fg_color="#1a5a8a")
                     btn_cancelar.pack(side="left", padx=2)
                     # Scroll al form
@@ -827,9 +829,9 @@ class ToolsWorkflowService:
                             _cancelar_edicion()
                         refrescar()
 
-                ctk.CTkButton(btn_row, text="▶ Ejecutar", width=100, height=22, fg_color="#1a7a3c",
+                ctk.CTkButton(btn_row, text=tr("▶ Ejecutar"), width=100, height=22, fg_color="#1a7a3c",
                               font=ctk.CTkFont(size=10), command=_ejecutar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="✏️ Editar", width=90, height=22, fg_color="#1a4a7a",
+                ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=90, height=22, fg_color="#1a4a7a",
                               font=ctk.CTkFont(size=10), command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="📤", width=30, height=22, fg_color="#5a3a7a",
                               hover_color="#46295f", font=ctk.CTkFont(size=10),
@@ -880,12 +882,12 @@ class ToolsWorkflowService:
 
         botones = ctk.CTkFrame(form, fg_color="transparent")
         botones.pack(pady=(4, 8))
-        btn_crear = ctk.CTkButton(botones, text="✅ Crear macro", width=160, height=28,
+        btn_crear = ctk.CTkButton(botones, text=tr("✅ Crear macro"), width=160, height=28,
                                    fg_color="#1a7a3c",
                                    font=ctk.CTkFont(size=10, weight="bold"),
                                    command=crear_o_guardar)
         btn_crear.pack(side="left", padx=4)
-        ctk.CTkButton(botones, text="📥 Cargar ejemplos", width=150, height=28,
+        ctk.CTkButton(botones, text=tr("📥 Cargar ejemplos"), width=150, height=28,
                       fg_color="#1a4a7a", hover_color="#143a5f",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=cargar_ejemplos).pack(side="left", padx=4)
@@ -900,10 +902,10 @@ class ToolsWorkflowService:
         # Compartir macros entre máquinas/usuarios (las "Skills" portables).
         botones2 = ctk.CTkFrame(form, fg_color="transparent")
         botones2.pack(pady=(0, 8))
-        ctk.CTkButton(botones2, text="📥 Importar (.json)", width=150, height=26,
+        ctk.CTkButton(botones2, text=tr("📥 Importar (.json)"), width=150, height=26,
                       fg_color="#5a3a7a", hover_color="#46295f",
                       font=ctk.CTkFont(size=10), command=importar).pack(side="left", padx=4)
-        ctk.CTkButton(botones2, text="📤 Exportar todas", width=150, height=26,
+        ctk.CTkButton(botones2, text=tr("📤 Exportar todas"), width=150, height=26,
                       fg_color="#5a3a7a", hover_color="#46295f",
                       font=ctk.CTkFont(size=10),
                       command=lambda: self._exportar_macros_a_archivo(
@@ -1242,9 +1244,9 @@ class ToolsWorkflowService:
         vent.geometry("680x600")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🏷 Sistema de proyectos",
+        ctk.CTkLabel(vent, text=tr("🏷 Sistema de proyectos"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Organiza tus prompts en proyectos. Cada proyecto puede tener su propio setup.",
+        ctk.CTkLabel(vent, text=tr("Organiza tus prompts en proyectos. Cada proyecto puede tener su propio setup."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         # Indicador del proyecto activo
@@ -1276,7 +1278,7 @@ class ToolsWorkflowService:
             ent_proy.delete(0, "end")
             refrescar()
 
-        ctk.CTkButton(f_crear, text="➕ Crear", width=80, height=28, fg_color="#1a7a3c",
+        ctk.CTkButton(f_crear, text=tr("➕ Crear"), width=80, height=28, fg_color="#1a7a3c",
                       command=_crear_proy).pack(side="left", padx=4)
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -1289,25 +1291,25 @@ class ToolsWorkflowService:
             if not isinstance(proys, dict): proys = {}
             activo_a = prefs_act.get("proyecto_activo", "")
             if not proys:
-                ctk.CTkLabel(scroll, text="Aún no tienes proyectos. Crea el primero arriba.",
+                ctk.CTkLabel(scroll, text=tr("Aún no tienes proyectos. Crea el primero arriba."),
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
             # Opción "Sin proyecto"
             card = ctk.CTkFrame(scroll, fg_color=c["fg_dark"] if not activo_a else c["fg_frame"], corner_radius=6)
             card.pack(fill="x", pady=2)
-            ctk.CTkLabel(card, text="📌 (Sin proyecto activo)", font=ctk.CTkFont(size=11, weight="bold"),
+            ctk.CTkLabel(card, text=tr("📌 (Sin proyecto activo)"), font=ctk.CTkFont(size=11, weight="bold"),
                          text_color=c["muted_text"]).pack(side="left", padx=10, pady=6)
 
             def _activar_ninguno():
                 p2 = self.app.store.cargar_preferencias()
                 p2["proyecto_activo"] = ""
                 self.app.store.guardar_preferencias(p2)
-                lbl_activo.configure(text="📌 Proyecto activo: (ninguno)", text_color=c["muted_text"])
+                lbl_activo.configure(text=tr("📌 Proyecto activo: (ninguno)"), text_color=c["muted_text"])
                 refrescar()
                 self.app.dialogs.set_estado("📌 Sin proyecto activo")
 
-            ctk.CTkButton(card, text="✅ Activar", width=80, height=22, fg_color="#1a4a5a",
+            ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color="#1a4a5a",
                           font=ctk.CTkFont(size=10), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
 
             for nombre_p in sorted(proys.keys()):
@@ -1397,21 +1399,21 @@ class ToolsWorkflowService:
                     proys2.pop(n, None)
                     if p2.get("proyecto_activo") == n:
                         p2["proyecto_activo"] = ""
-                        lbl_activo.configure(text="📌 Proyecto activo: (ninguno)", text_color=c["muted_text"])
+                        lbl_activo.configure(text=tr("📌 Proyecto activo: (ninguno)"), text_color=c["muted_text"])
                     p2["proyectos"] = proys2
                     self.app.store.guardar_preferencias(p2)
                     refrescar()
 
                 if not es_activo:
-                    ctk.CTkButton(btn_row, text="✅ Activar", width=70, height=24, fg_color="#1a7a3c",
+                    ctk.CTkButton(btn_row, text=tr("✅ Activar"), width=70, height=24, fg_color="#1a7a3c",
                                   font=ctk.CTkFont(size=10), command=_activar).pack(side="left", padx=2)
                 if tiene_setup:
-                    ctk.CTkButton(btn_row, text="🔄 Aplicar setup", width=110, height=24, fg_color="#1e5f3a",
+                    ctk.CTkButton(btn_row, text=tr("🔄 Aplicar setup"), width=110, height=24, fg_color="#1e5f3a",
                                   hover_color="#16492d",
                                   font=ctk.CTkFont(size=10), command=_aplicar_setup_proy).pack(side="left", padx=2)
-                    ctk.CTkButton(btn_row, text="🗑 setup", width=70, height=24, fg_color="#5a4a1a",
+                    ctk.CTkButton(btn_row, text=tr("🗑 setup"), width=70, height=24, fg_color="#5a4a1a",
                                   font=ctk.CTkFont(size=10), command=_borrar_setup_proy).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="💾 Guardar setup actual", width=160, height=24, fg_color="#1a4a5a",
+                ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, fg_color="#1a4a5a",
                               font=ctk.CTkFont(size=10), command=_guardar_setup_proy).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=28, height=24, fg_color="#5a1a1a",
                               font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)

@@ -10,6 +10,8 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from modules.i18n import tr
+
 logger = logging.getLogger(__name__)
 
 from tkinter import messagebox
@@ -394,12 +396,12 @@ class ArquitectoApp(
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        ctk.CTkLabel(win, text="👋 ¡Hola!",
+        ctk.CTkLabel(win, text=tr("👋 ¡Hola!"),
                      font=ctk.CTkFont(size=22, weight="bold")).pack(pady=(20, 4))
-        ctk.CTkLabel(win, text="¿Cómo quieres que te llamemos?",
+        ctk.CTkLabel(win, text=tr("¿Cómo quieres que te llamemos?"),
                      font=ctk.CTkFont(size=12),
                      text_color=c.get("muted_text")).pack(pady=(0, 4))
-        ctk.CTkLabel(win, text="Aparecerá en el saludo del Dashboard.",
+        ctk.CTkLabel(win, text=tr("Aparecerá en el saludo del Dashboard."),
                      font=ctk.CTkFont(size=10),
                      text_color=c.get("muted_text")).pack(pady=(0, 12))
 
@@ -427,10 +429,10 @@ class ArquitectoApp(
 
         btn_frame = ctk.CTkFrame(win, fg_color="transparent")
         btn_frame.pack(pady=14)
-        ctk.CTkButton(btn_frame, text="✅ Guardar", width=130, height=32,
+        ctk.CTkButton(btn_frame, text=tr("✅ Guardar"), width=130, height=32,
                       fg_color="#2ecc71", hover_color="#27ae60",
                       command=_guardar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_frame, text="Saltar", width=80, height=32,
+        ctk.CTkButton(btn_frame, text=tr("Saltar"), width=80, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=_guardar).pack(side="left", padx=4)
 
@@ -462,7 +464,7 @@ class ArquitectoApp(
                          font=ctk.CTkFont(size=48)).pack(pady=(20, 0))
 
             # Título
-            ctk.CTkLabel(frame, text="G-Prompt Studio",
+            ctk.CTkLabel(frame, text=tr("G-Prompt Studio"),
                          font=ctk.CTkFont(size=20, weight="bold"),
                          text_color="#e5e7eb").pack()
 
@@ -474,7 +476,7 @@ class ArquitectoApp(
 
             # Estado
             splash._lbl_estado = ctk.CTkLabel(
-                frame, text="Iniciando...",
+                frame, text=tr("Iniciando..."),
                 font=ctk.CTkFont(size=10),
                 text_color="#9ca3af"
             )
@@ -585,7 +587,7 @@ class ArquitectoApp(
 
         Use:
             v = self.open_child_window("Mi ventana", "600x400")
-            ctk.CTkLabel(v, text="hola").pack()
+            ctk.CTkLabel(v, text=tr("hola")).pack()
         """
         v = GPromptWindow(self)
         if title:
@@ -751,7 +753,7 @@ class ArquitectoApp(
         win.geometry("520x400")
         win.transient(self)
 
-        ctk.CTkLabel(win, text="🧬 ADN visual activo en próximas generaciones",
+        ctk.CTkLabel(win, text=tr("🧬 ADN visual activo en próximas generaciones"),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
 
         txt = ctk.CTkTextbox(win, font=ctk.CTkFont(size=11), wrap="word")
@@ -771,10 +773,10 @@ class ArquitectoApp(
                 logger.debug(f"[silent] {_e}")
             win.destroy()
 
-        ctk.CTkButton(btn_row, text="🚫 Desactivar ADN", width=160, height=30,
+        ctk.CTkButton(btn_row, text=tr("🚫 Desactivar ADN"), width=160, height=30,
                       fg_color="#7a1a1a", hover_color="#5a0f0f",
                       command=_desactivar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cerrar", width=100, height=30,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=100, height=30,
                       fg_color="#444", hover_color="#555",
                       command=win.destroy).pack(side="left", padx=4)
     def _backup_semanal_check(self):
@@ -1056,7 +1058,7 @@ class ArquitectoApp(
                 try:
                     if on_cancel: on_cancel()
                 finally: v.destroy()
-            ctk.CTkButton(btn_row, text="✅ Aplicar refinamiento", width=200, height=34,
+            ctk.CTkButton(btn_row, text=tr("✅ Aplicar refinamiento"), width=200, height=34,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=12, weight="bold"),
                           command=_aplicar).pack(side="left", padx=5)
@@ -1064,11 +1066,11 @@ class ArquitectoApp(
                 def _deshacer():
                     try: on_undo()
                     finally: v.destroy()
-                ctk.CTkButton(btn_row, text="↩️ Deshacer refinamiento previo", width=230, height=34,
+                ctk.CTkButton(btn_row, text=tr("↩️ Deshacer refinamiento previo"), width=230, height=34,
                               fg_color="#8a5a1a", hover_color="#6a4515",
                               font=ctk.CTkFont(size=11),
                               command=_deshacer).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text="❌ Cancelar (mantener original)", width=220, height=34,
+            ctk.CTkButton(btn_row, text=tr("❌ Cancelar (mantener original)"), width=220, height=34,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           font=ctk.CTkFont(size=11),
                           command=_cancelar).pack(side="left", padx=5)
@@ -1090,7 +1092,7 @@ class ArquitectoApp(
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=11),
                           command=lambda: _usar(texto_b, label_b)).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text="Cerrar", width=110, height=32, command=v.destroy,
+            ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, height=32, command=v.destroy,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="left", padx=5)
 
     def _notificar_sistema(self, titulo, mensaje):
@@ -1243,7 +1245,7 @@ class ArquitectoApp(
         # ── Cabecera ──
         hdr_frame = ctk.CTkFrame(vent, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(10, 3), padx=12)
-        ctk.CTkLabel(hdr_frame, text="📑 Plantillas probadas",
+        ctk.CTkLabel(hdr_frame, text=tr("📑 Plantillas probadas"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(side="left")
         contador_var = ctk.StringVar(value="")
         ctk.CTkLabel(hdr_frame, textvariable=contador_var,
@@ -1296,7 +1298,7 @@ class ArquitectoApp(
         if estado["cats"]:
             cat_row = ctk.CTkFrame(vent, fg_color="transparent")
             cat_row.pack(fill="x", padx=12, pady=(0, 4))
-            ctk.CTkLabel(cat_row, text="Categoría:",
+            ctk.CTkLabel(cat_row, text=tr("Categoría:"),
                          font=ctk.CTkFont(size=10)).pack(side="left", padx=(0, 6))
             ctk.CTkComboBox(
                 cat_row, width=180, variable=cat_var,
@@ -1305,7 +1307,7 @@ class ArquitectoApp(
             ).pack(side="left")
 
         ctk.CTkLabel(vent,
-                     text="Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final.",
+                     text=tr("Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final."),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 4), padx=12, anchor="w")
 
@@ -1428,11 +1430,11 @@ class ArquitectoApp(
                     _refrescar()
                     self.dialogs.set_estado(f"🗑 '{name}' borrada", "#e67e22")
 
-                ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
+                ctk.CTkButton(btns_frame, text=tr("🗑 Borrar"), width=90, height=24,
                               fg_color="#8b2c2c", hover_color="#6e2020",
                               font=ctk.CTkFont(size=10),
                               command=_borrar).pack(side="left")
-                ctk.CTkButton(btns_frame, text="✅ Cargar plantilla", width=160, height=24,
+                ctk.CTkButton(btns_frame, text=tr("✅ Cargar plantilla"), width=160, height=24,
                               fg_color="#1a7a3c", hover_color="#15642f",
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="right")
@@ -1514,7 +1516,7 @@ class ArquitectoApp(
                 logger.warning(f"_limpiar_memoria wizard: {e}")
 
         # Previsualización
-        ctk.CTkLabel(wiz, text="👁 Previsualización del prompt final:",
+        ctk.CTkLabel(wiz, text=tr("👁 Previsualización del prompt final:"),
                      font=ctk.CTkFont(size=11, weight="bold")
                      ).pack(anchor="w", padx=15, pady=(8, 2))
         preview_txt = ctk.CTkTextbox(wiz,
@@ -1583,22 +1585,22 @@ class ArquitectoApp(
             ventana_padre.destroy()
             self.dialogs.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
 
-        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=32,
+        ctk.CTkButton(btn_row, text=tr("✅ Aplicar al prompt"), width=170, height=32,
                       fg_color="#1a7a3c", hover_color="#15642f",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_aplicar_final).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="📋 Copiar", width=90, height=32,
+        ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=90, height=32,
                       fg_color="#1a4a5a",
                       command=lambda: (_persistir_valores(),
                                        pyperclip.copy(preview_txt.get("1.0", "end").strip()),
                                        self.dialogs.set_estado("📋 Copiado", "#2ecc71"))
                       ).pack(side="left", padx=4)
         if ultimos:
-            ctk.CTkButton(btn_row, text="🧹 Olvidar valores", width=130, height=32,
+            ctk.CTkButton(btn_row, text=tr("🧹 Olvidar valores"), width=130, height=32,
                           fg_color="#8b6914", hover_color="#6e5310",
                           font=ctk.CTkFont(size=10),
                           command=_limpiar_memoria).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=80, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=80, height=32,
                       fg_color="#444", hover_color="#555",
                       command=wiz.destroy).pack(side="left", padx=4)
 
@@ -1690,12 +1692,12 @@ class ArquitectoApp(
                     if len(seleccionadas) == 2:
                         btn.configure(
                             state="normal", fg_color="#7c3aed",
-                            text="🆚 Comparar 2 lado-a-lado",
+                            text=tr("🆚 Comparar 2 lado-a-lado"),
                         )
                     else:
                         btn.configure(
                             state="disabled", fg_color="#4b5563",
-                            text="🆚 Selecciona 2 cards para comparar",
+                            text=tr("🆚 Selecciona 2 cards para comparar"),
                         )
                 except Exception as _e:
                     logger.debug(f"[silent] compare btn: {_e}")
@@ -1728,12 +1730,12 @@ class ArquitectoApp(
             scroll = ctk.CTkScrollableFrame(col, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=5, pady=(0, 3))
 
-            ctk.CTkLabel(scroll, text="🟢 POSITIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#2ecc71").pack(anchor="w")
+            ctk.CTkLabel(scroll, text=tr("🟢 POSITIVE:"), font=ctk.CTkFont(size=10, weight="bold"), text_color="#2ecc71").pack(anchor="w")
             lbl_pos = ctk.CTkLabel(scroll, text=pos_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=10), text_color=c["muted_text"], anchor="w")
             lbl_pos.pack(fill="x", pady=(0, 6))
 
             if neg_text and tiene_neg:
-                ctk.CTkLabel(scroll, text="🔴 NEGATIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#e74c3c").pack(anchor="w")
+                ctk.CTkLabel(scroll, text=tr("🔴 NEGATIVE:"), font=ctk.CTkFont(size=10, weight="bold"), text_color="#e74c3c").pack(anchor="w")
                 ctk.CTkLabel(scroll, text=neg_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=10), text_color="#999999", anchor="w").pack(fill="x", pady=(0, 4))
 
             # Label para traducción (inicialmente vacío)
@@ -1821,13 +1823,13 @@ class ArquitectoApp(
 
             def _traducir(p=pos_text, lbl=lbl_trad):
                 lbl.pack(fill="x", pady=(6, 4))
-                lbl.configure(text="🌐 Traduciendo...")
+                lbl.configure(text=tr("🌐 Traduciendo..."))
                 def _worker():
                     try:
                         trad = self.deepseek.traducir_a_espanol(p)
                         vent.after(0, lambda: lbl.configure(text=f"🇪🇸 {trad}"))
                     except Exception:
-                        vent.after(0, lambda: lbl.configure(text="❌ Error al traducir"))
+                        vent.after(0, lambda: lbl.configure(text=tr("❌ Error al traducir")))
                 threading.Thread(target=_worker, daemon=True).start()
 
             # Placeholder donde irá la preview Pollinations (oculto hasta click)
@@ -1835,7 +1837,7 @@ class ArquitectoApp(
             preview_lbl.pack(fill="x", pady=(4, 0))
 
             def _preview_pollinations(p=pos_text, lbl=preview_lbl):
-                lbl.configure(text="⏳ Preparando...", text_color="#888")
+                lbl.configure(text=tr("⏳ Preparando..."), text_color="#888")
                 def _on_img(img):
                     try:
                         from PIL import Image as _Image
@@ -1847,7 +1849,7 @@ class ArquitectoApp(
                         lbl.image = ctk_img  # evitar GC
                     except Exception as _e:
                         logger.debug(f"[silent] preview thumb: {_e}")
-                        lbl.configure(text="❌ Error mostrando", text_color="#e74c3c")
+                        lbl.configure(text=tr("❌ Error mostrando"), text_color="#e74c3c")
 
                 def _on_err(msg):
                     lbl.configure(text=f"❌ {msg[:60]}", text_color="#e74c3c")
@@ -1864,7 +1866,7 @@ class ArquitectoApp(
                 ctk.CTkButton(btn_row, text="🔴", width=28, height=24, fg_color="#5a1a1a", hover_color="#3a0f0f", command=_copiar_neg).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="🇪🇸", width=28, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="👁", width=28, height=24, fg_color="#0891b2", hover_color="#0e7490", command=_preview_pollinations).pack(side="left", padx=1)
-            ctk.CTkButton(btn_row, text="✅ Usar", width=56, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
+            ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=56, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
         # Pie de ventana: botones extras (encadenar Board→Vídeo)
         # + Comparar 2 lado-a-lado + Cerrar comparador
@@ -1899,7 +1901,7 @@ class ArquitectoApp(
         # default + fg_color #4b5563 hacían que el botón se fundiera con
         # el fondo del pie del comparador — bug detectado sesión 18).
         compare_btn_ref["btn"] = ctk.CTkButton(
-            pie, text="🆚 Selecciona 2 cards para comparar", width=240, height=32,
+            pie, text=tr("🆚 Selecciona 2 cards para comparar"), width=240, height=32,
             fg_color="#4b5563", hover_color="#7c3aed",
             text_color="#e5e7eb",
             text_color_disabled="#cbd5e1",
@@ -1913,12 +1915,12 @@ class ArquitectoApp(
         def _abrir_grid():
             self.preview.abrir_grid(variaciones, labels)
 
-        ctk.CTkButton(pie, text="👁 Grid Pollinations", width=180, height=32,
+        ctk.CTkButton(pie, text=tr("👁 Grid Pollinations"), width=180, height=32,
                       fg_color="#0891b2", hover_color="#0e7490",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_abrir_grid).pack(side="left", padx=6)
 
-        ctk.CTkButton(pie, text="Cerrar comparador", width=180, height=32,
+        ctk.CTkButton(pie, text=tr("Cerrar comparador"), width=180, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=6)
@@ -1943,7 +1945,7 @@ class ArquitectoApp(
         # Hint visual debajo del pie sobre los atajos disponibles
         ctk.CTkLabel(
             vent,
-            text="⌨️ Atajos: Ctrl+G = Grid · Alt+C = Comparar 2 · Esc = Cerrar",
+            text=tr("⌨️ Atajos: Ctrl+G = Grid · Alt+C = Comparar 2 · Esc = Cerrar"),
             font=ctk.CTkFont(size=9, slant="italic"),
             text_color=c["muted_text"],
         ).pack(pady=(2, 6))
@@ -2051,7 +2053,7 @@ class ArquitectoApp(
                       fg_color="#1a7a3c", hover_color="#0f4a22",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_b).pack(side="left", padx=4)
-        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
@@ -2117,7 +2119,7 @@ class ArquitectoApp(
 
         ctk.CTkLabel(
             wizard,
-            text="🧠 ¡Bienvenido a G-Prompt Studio!",
+            text=tr("🧠 ¡Bienvenido a G-Prompt Studio!"),
             font=ctk.CTkFont(size=20, weight="bold"),
         ).pack(pady=(18, 4))
         ctk.CTkLabel(
@@ -2136,11 +2138,11 @@ class ArquitectoApp(
         frame = ctk.CTkFrame(scroll)
         frame.pack(fill="x", padx=4, pady=4)
 
-        ctk.CTkLabel(frame, text="👤 ¿Cómo quieres que te llamemos?",
+        ctk.CTkLabel(frame, text=tr("👤 ¿Cómo quieres que te llamemos?"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
         entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
         entry_nombre.pack(padx=10)
-        ctk.CTkLabel(frame, text="Aparecerá en el saludo del dashboard. Puedes dejarlo vacío.",
+        ctk.CTkLabel(frame, text=tr("Aparecerá en el saludo del dashboard. Puedes dejarlo vacío."),
                      font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
 
         # ── Definición declarativa de los 5 proveedores del wizard ──
@@ -2320,7 +2322,7 @@ class ArquitectoApp(
                     return
 
             if not guardadas:
-                lbl_estado.configure(text="❌ No se pudo guardar ninguna key.", text_color="#e74c3c")
+                lbl_estado.configure(text=tr("❌ No se pudo guardar ninguna key."), text_color="#e74c3c")
                 return
 
             try:
@@ -2339,11 +2341,11 @@ class ArquitectoApp(
 
         btn_frame = ctk.CTkFrame(wizard, fg_color="transparent")
         btn_frame.pack(pady=10)
-        ctk.CTkButton(btn_frame, text="🧪 Test conexión", width=140, height=36,
+        ctk.CTkButton(btn_frame, text=tr("🧪 Test conexión"), width=140, height=36,
                       fg_color="#3498db", hover_color="#2980b9", command=_test_keys).pack(side="left", padx=6)
-        ctk.CTkButton(btn_frame, text="✅ Guardar y Empezar", width=200, height=36,
+        ctk.CTkButton(btn_frame, text=tr("✅ Guardar y Empezar"), width=200, height=36,
                       fg_color="#2ecc71", hover_color="#27ae60", command=guardar).pack(side="left", padx=6)
-        ctk.CTkButton(btn_frame, text="❌ Cancelar", width=110, height=36,
+        ctk.CTkButton(btn_frame, text=tr("❌ Cancelar"), width=110, height=36,
                       fg_color="#555", hover_color="#333", command=cancelar).pack(side="left", padx=6)
 
         wizard.wait_window()
@@ -2366,7 +2368,7 @@ class ArquitectoApp(
         except Exception:
             _prefs_llm_labels = ["DeepSeek V4", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
 
-        ctk.CTkLabel(tab_gen, text="👤 Tu nombre (saludo del Dashboard):",
+        ctk.CTkLabel(tab_gen, text=tr("👤 Tu nombre (saludo del Dashboard):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.entry_nombre_pref = ctk.CTkEntry(tab_gen, width=250,
                                                 placeholder_text="Tu nombre o apodo")
@@ -2379,12 +2381,12 @@ class ArquitectoApp(
             logger.debug(f"[silent] {e}")
         self.entry_nombre_pref.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="🧠 Cerebro por defecto al iniciar:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("🧠 Cerebro por defecto al iniciar:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.combo_default_llm = ctk.CTkComboBox(tab_gen, values=_prefs_llm_labels, width=250)
         self.combo_default_llm.set(self.llm_var.get())
         self.combo_default_llm.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="▶️ Modo por defecto al iniciar:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("▶️ Modo por defecto al iniciar:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         _modos_display = ["Audio", "Imagen", "Vídeo"]
         _modo_to_display = {"audio": "Audio", "imagen": "Imagen", "video": "Vídeo"}
         _modo_from_display = {"Audio": "audio", "Imagen": "imagen", "Vídeo": "video"}
@@ -2393,7 +2395,7 @@ class ArquitectoApp(
         self.combo_default_modo.set(_modo_to_display.get(self.modo_var.get(), "Imagen"))
         self.combo_default_modo.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="🎨 Tema de interfaz:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("🎨 Tema de interfaz:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         _temas_display = ["Dark", "Light", "System"]
         _tema_to_display = {"dark": "Dark", "light": "Light", "system": "System"}
         _tema_from_display = {"Dark": "dark", "Light": "light", "System": "system"}
@@ -2405,7 +2407,7 @@ class ArquitectoApp(
 
         # Estilo unificado con los switches del header (colores por tema)
         self.switch_sonido_var = ctk.BooleanVar(value=self._sonido_activo if hasattr(self, '_sonido_activo') else False)
-        ctk.CTkSwitch(tab_gen, text="🔔 Sonido al completar generación",
+        ctk.CTkSwitch(tab_gen, text=tr("🔔 Sonido al completar generación"),
                       variable=self.switch_sonido_var,
                       progress_color="#3498db",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -2417,7 +2419,7 @@ class ArquitectoApp(
 
         # ── Toggle: grabar vídeo de la sesión ──
         self.switch_video_sesion_var = ctk.BooleanVar(value=self._sesion_grabar_video if hasattr(self, '_sesion_grabar_video') else False)
-        ctk.CTkSwitch(tab_gen, text="🎥 Grabar vídeo (MP4) al usar 🎬 Sesión grabada",
+        ctk.CTkSwitch(tab_gen, text=tr("🎥 Grabar vídeo (MP4) al usar 🎬 Sesión grabada"),
                       variable=self.switch_video_sesion_var,
                       progress_color="#e74c3c",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -2427,10 +2429,10 @@ class ArquitectoApp(
                       button_hover_color="#f3f4f6",
                       border_width=1).pack(anchor="w", padx=10, pady=(5, 2))
         ctk.CTkLabel(tab_gen,
-                     text="    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]",
+                     text=tr("    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]"),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
 
-        ctk.CTkLabel(tab_gen, text="📁 Ruta de ComfyUI (opcional, para auto-discovery):",
+        ctk.CTkLabel(tab_gen, text=tr("📁 Ruta de ComfyUI (opcional, para auto-discovery):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
 
         frame_ruta = ctk.CTkFrame(tab_gen, fg_color="transparent")
@@ -2453,11 +2455,11 @@ class ArquitectoApp(
         ctk.CTkButton(frame_ruta, text="📂", width=35, command=_seleccionar_carpeta).pack(side="left", padx=(5, 0))
 
         ctk.CTkLabel(tab_gen,
-                     text="    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente.",
+                     text=tr("    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente."),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
 
         # Botón Guardar Abajo
-        btn_guardar = ctk.CTkButton(ventana, text="💾 Guardar Preferencias", fg_color="#2ecc71", hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
+        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color="#2ecc71", hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
         btn_guardar.pack(pady=(0, 20))
 
     def _guardar_y_cerrar_preferencias(self, ventana):

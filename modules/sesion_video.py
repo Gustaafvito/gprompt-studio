@@ -27,6 +27,7 @@ import pyperclip
 
 from config import get_theme_colors as _get_tc
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -197,19 +198,19 @@ class SesionVideoService:
                     sel.transient(self.app)
                     sel.grab_set()
 
-                    ctk.CTkLabel(sel, text="¿Qué quieres grabar en vídeo?", font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
-                    ctk.CTkLabel(sel, text="(La grabación de texto siempre está activa)", font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 15))
+                    ctk.CTkLabel(sel, text=tr("¿Qué quieres grabar en vídeo?"), font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
+                    ctk.CTkLabel(sel, text=tr("(La grabación de texto siempre está activa)"), font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 15))
 
                     def _iniciar(tipo):
                         self.app._sesion_tipo_video = tipo
                         sel.destroy()
                         self._iniciar_grabacion(tipo)
 
-                    ctk.CTkButton(sel, text="📱 Solo ventana de la app", width=250, height=35, fg_color="#1a6a3a",
+                    ctk.CTkButton(sel, text=tr("📱 Solo ventana de la app"), width=250, height=35, fg_color="#1a6a3a",
                                   command=lambda: _iniciar("app")).pack(pady=5)
-                    ctk.CTkButton(sel, text="🖥️ Toda la pantalla", width=250, height=35, fg_color="#1a4a7a",
+                    ctk.CTkButton(sel, text=tr("🖥️ Toda la pantalla"), width=250, height=35, fg_color="#1a4a7a",
                                   command=lambda: _iniciar("pantalla")).pack(pady=5)
-                    ctk.CTkButton(sel, text="❌ Sin vídeo (solo texto)", width=250, height=30, fg_color="#5a1a1a",
+                    ctk.CTkButton(sel, text=tr("❌ Sin vídeo (solo texto)"), width=250, height=30, fg_color="#5a1a1a",
                                   command=lambda: _iniciar("nada")).pack(pady=5)
                     return
                 else:
@@ -269,7 +270,7 @@ class SesionVideoService:
         v.geometry("780x640")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text="🎬 Registro de sesión",
+        ctk.CTkLabel(v, text=tr("🎬 Registro de sesión"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         dur = ""
         if self.app._sesion_inicio:
@@ -320,10 +321,10 @@ class SesionVideoService:
                 except Exception as e:
                     self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
-            ctk.CTkButton(video_banner, text="📁 Abrir carpeta", width=120, height=24,
+            ctk.CTkButton(video_banner, text=tr("📁 Abrir carpeta"), width=120, height=24,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           command=_abrir_carpeta).pack(side="right", padx=4, pady=6)
-            ctk.CTkButton(video_banner, text="▶ Reproducir", width=110, height=24,
+            ctk.CTkButton(video_banner, text=tr("▶ Reproducir"), width=110, height=24,
                           fg_color="#1e5f3a", hover_color="#16492d",
                           command=_abrir_video).pack(side="right", padx=4, pady=6)
 
@@ -384,16 +385,16 @@ class SesionVideoService:
                 v.destroy()
                 self.app.dialogs.set_estado("🗑 Registro de sesión limpiado")
 
-        ctk.CTkButton(btn_row, text="📄 Exportar .md", width=130, command=_exp_md,
+        ctk.CTkButton(btn_row, text=tr("📄 Exportar .md"), width=130, command=_exp_md,
                       fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="📄 Exportar .txt", width=130, command=_exp_txt,
+        ctk.CTkButton(btn_row, text=tr("📄 Exportar .txt"), width=130, command=_exp_txt,
                       fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="📚 Modo Tutorial", width=140,
+        ctk.CTkButton(btn_row, text=tr("📚 Modo Tutorial"), width=140,
                       command=lambda: self._cmd_sesion_modo_tutorial(),
                       fg_color="#5b2c8e", hover_color="#3d1a6a").pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="🗑 Limpiar", width=110, command=_limpiar,
+        ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=110, command=_limpiar,
                       fg_color="#6a1a1a", hover_color="#4a0f0f").pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="Cerrar", width=110, command=v.destroy,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, command=v.destroy,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="right", padx=2)
 
     def _cmd_sesion_modo_tutorial(self) -> None:
@@ -412,7 +413,7 @@ class SesionVideoService:
         v.geometry("900x700")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text="📚 Guion de tutorial",
+        ctk.CTkLabel(v, text=tr("📚 Guion de tutorial"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=f"{len(pasos)} pasos · {len(self.app._sesion_eventos)} acciones",
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 10))
@@ -467,13 +468,13 @@ class SesionVideoService:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
-        ctk.CTkButton(btn_row, text="📄 Exportar .md", width=130,
+        ctk.CTkButton(btn_row, text=tr("📄 Exportar .md"), width=130,
                       fg_color="#1e5f3a", hover_color="#16492d",
                       command=_exportar_md).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="📋 Copiar todo", width=130,
+        ctk.CTkButton(btn_row, text=tr("📋 Copiar todo"), width=130,
                       fg_color="#1e3a5f", hover_color="#162d49",
                       command=_copiar).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="Cerrar", width=110, command=v.destroy,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, command=v.destroy,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="right", padx=2)
 
     def _sesion_agrupar_pasos(self, eventos):

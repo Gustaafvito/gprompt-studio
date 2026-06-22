@@ -37,6 +37,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -199,7 +200,7 @@ class JsonPromptService:
         vent.geometry("780x640")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="📥 Importar prompt JSON profesional",
+        ctk.CTkLabel(vent, text=tr("📥 Importar prompt JSON profesional"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(
             vent,
@@ -258,7 +259,7 @@ class JsonPromptService:
         def _importar():
             texto = txt_json.get("1.0", "end").strip()
             if not texto:
-                lbl_status.configure(text="⚠️ Pega un JSON primero",
+                lbl_status.configure(text=tr("⚠️ Pega un JSON primero"),
                                       text_color="#e67e22")
                 return
             # Intenta reparar el JSON probando varias estrategias.
@@ -271,7 +272,7 @@ class JsonPromptService:
                 )
                 return
             if not isinstance(data, dict):
-                lbl_status.configure(text="❌ El JSON debe ser un objeto {} en raíz",
+                lbl_status.configure(text=tr("❌ El JSON debe ser un objeto {} en raíz"),
                                       text_color="#e74c3c")
                 return
             estrategias = info  # lista de strategies aplicadas
@@ -285,17 +286,17 @@ class JsonPromptService:
             # Resumen → modal nuevo con lo aplicado + metadatos extras
             self._mostrar_resumen_import(data, resumen)
 
-        ctk.CTkButton(btn_row, text="📋 Pegar portapapeles", width=170, height=32,
+        ctk.CTkButton(btn_row, text=tr("📋 Pegar portapapeles"), width=170, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=_pegar_portapapeles).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="📂 Cargar .json", width=130, height=32,
+        ctk.CTkButton(btn_row, text=tr("📂 Cargar .json"), width=130, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=_cargar_desde_archivo).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="✅ Importar", width=140, height=32,
+        ctk.CTkButton(btn_row, text=tr("✅ Importar"), width=140, height=32,
                        fg_color="#1a7a3c", hover_color="#15633a",
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_importar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=110, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=110, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=vent.destroy).pack(side="left", padx=4)
 
@@ -413,7 +414,7 @@ class JsonPromptService:
         vent.geometry("760x640")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="📥 Importación completada",
+        ctk.CTkLabel(vent, text=tr("📥 Importación completada"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
 
         # Aviso si se aplicó autolimpieza
@@ -488,7 +489,7 @@ class JsonPromptService:
                               justify="left", anchor="w").pack(anchor="w",
                               padx=12, pady=(0, 6))
         else:
-            ctk.CTkLabel(vent, text="(Sin metadatos avanzados detectados)",
+            ctk.CTkLabel(vent, text=tr("(Sin metadatos avanzados detectados)"),
                          font=ctk.CTkFont(size=10),
                          text_color=c["muted_text"]).pack(pady=10)
 
@@ -505,10 +506,10 @@ class JsonPromptService:
                 self.app.dialogs.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
 
         if extras:
-            ctk.CTkButton(btn_row, text="📋 Copiar metadatos extras", width=210, height=32,
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar metadatos extras"), width=210, height=32,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           command=_copiar_extras).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cerrar", width=120, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=120, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=vent.destroy).pack(side="left", padx=4)
         vent.bind("<Escape>", lambda _e: vent.destroy())
@@ -651,7 +652,7 @@ class JsonPromptService:
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(
             vent,
-            text="Listo para enviar a Veo / Sora / Kling u otros motores con JSON API."
+            text=tr("Listo para enviar a Veo / Sora / Kling u otros motores con JSON API.")
                  if json_valido
                  else "El LLM no devolvió JSON 100% válido — revisa antes de usar.",
             font=ctk.CTkFont(size=10),
@@ -677,7 +678,7 @@ class JsonPromptService:
             contenido = txt.get("1.0", "end").strip()
             try:
                 pyperclip.copy(contenido)
-                lbl_status.configure(text="✅ JSON copiado al portapapeles",
+                lbl_status.configure(text=tr("✅ JSON copiado al portapapeles"),
                                       text_color="#2ecc71")
             except Exception as e:
                 lbl_status.configure(text=f"❌ No se pudo copiar: {e}",
@@ -706,23 +707,23 @@ class JsonPromptService:
             contenido = txt.get("1.0", "end").strip()
             try:
                 json.loads(contenido)
-                lbl_status.configure(text="✅ JSON válido (parsea correctamente)",
+                lbl_status.configure(text=tr("✅ JSON válido (parsea correctamente)"),
                                       text_color="#2ecc71")
             except json.JSONDecodeError as e:
                 lbl_status.configure(text=f"❌ Error de sintaxis: {e}",
                                       text_color="#e74c3c")
 
-        ctk.CTkButton(btn_row, text="📋 Copiar JSON", width=140, height=32,
+        ctk.CTkButton(btn_row, text=tr("📋 Copiar JSON"), width=140, height=32,
                        fg_color="#1a7a3c", hover_color="#15633a",
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_copiar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="💾 Guardar .json", width=140, height=32,
+        ctk.CTkButton(btn_row, text=tr("💾 Guardar .json"), width=140, height=32,
                        fg_color="#1a4a7a", hover_color="#15396a",
                        command=_guardar_archivo).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="✓ Validar sintaxis", width=140, height=32,
+        ctk.CTkButton(btn_row, text=tr("✓ Validar sintaxis"), width=140, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=_validar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cerrar", width=110, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=vent.destroy).pack(side="left", padx=4)
         vent.bind("<Escape>", lambda _e: vent.destroy())

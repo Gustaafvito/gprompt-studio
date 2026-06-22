@@ -12,6 +12,7 @@ import pyperclip
 
 from config import VERSION
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -247,9 +248,9 @@ class BackupExportService:
         sel.geometry("420x300")
         sel.transient(self.app)
 
-        ctk.CTkLabel(sel, text="📊 Exportar a CSV",
+        ctk.CTkLabel(sel, text=tr("📊 Exportar a CSV"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
-        ctk.CTkLabel(sel, text="¿Qué quieres exportar?",
+        ctk.CTkLabel(sel, text=tr("¿Qué quieres exportar?"),
                      font=ctk.CTkFont(size=11),
                      text_color="#888").pack(pady=(0, 12))
 
@@ -281,9 +282,9 @@ class BackupExportService:
             sel.destroy()
             self._exportar_csv_ejecutar(seleccion)
 
-        ctk.CTkButton(sel, text="▶ Exportar", width=160, height=34,
+        ctk.CTkButton(sel, text=tr("▶ Exportar"), width=160, height=34,
                       fg_color="#1a7a3c", command=_lanzar).pack(pady=(14, 4))
-        ctk.CTkButton(sel, text="Cancelar", width=100, height=28,
+        ctk.CTkButton(sel, text=tr("Cancelar"), width=100, height=28,
                       fg_color="#444", hover_color="#555",
                       command=sel.destroy).pack(pady=2)
 
@@ -485,10 +486,10 @@ class BackupExportService:
         vent.geometry("820x680")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="📤 Export en múltiples formatos",
+        ctk.CTkLabel(vent, text=tr("📤 Export en múltiples formatos"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
-                     text="Filtra por modo y pulsa 📋 en la plataforma deseada.",
+                     text=tr("Filtra por modo y pulsa 📋 en la plataforma deseada."),
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
 
         # Formatos: (nombre, contenido, color, modo)
@@ -515,7 +516,7 @@ class BackupExportService:
         # Filtro arriba
         filtro_row = ctk.CTkFrame(vent, fg_color="transparent")
         filtro_row.pack(fill="x", padx=12, pady=(0, 4))
-        ctk.CTkLabel(filtro_row, text="Modo:").pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(filtro_row, text=tr("Modo:")).pack(side="left", padx=(0, 8))
         modo_activo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
         valor_inicial = {
             "imagen": "🖼 Imagen", "video": "🎬 Vídeo", "audio": "🎵 Audio"
@@ -569,7 +570,7 @@ class BackupExportService:
             lbl_count.configure(text=f"{len(filtrados)} formatos disponibles")
 
             if not filtrados:
-                ctk.CTkLabel(scroll, text="(sin formatos para este modo)",
+                ctk.CTkLabel(scroll, text=tr("(sin formatos para este modo)"),
                              text_color="#888").pack(pady=20)
                 return
 
@@ -585,7 +586,7 @@ class BackupExportService:
                 ctk.CTkLabel(hdr, text=f"{len(contenido)} chars",
                              font=ctk.CTkFont(size=10),
                              text_color="#888").pack(side="left", padx=10)
-                ctk.CTkButton(hdr, text="📋 Copiar", width=100, height=26,
+                ctk.CTkButton(hdr, text=tr("📋 Copiar"), width=100, height=26,
                               fg_color=color,
                               font=ctk.CTkFont(size=10, weight="bold"),
                               command=_make_copy(contenido, nombre, color)
@@ -616,7 +617,7 @@ class BackupExportService:
             self.app.dialogs.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
                             "#2ecc71")
 
-        ctk.CTkButton(vent, text="📋 Copiar todos los del filtro actual",
+        ctk.CTkButton(vent, text=tr("📋 Copiar todos los del filtro actual"),
                       width=280, height=34, fg_color="#0f172a", hover_color="#1e293b",
                       text_color="#e2e8f0",
                       command=_copiar_filtrados).pack(pady=(4, 12))
@@ -634,7 +635,7 @@ class BackupExportService:
         vent.geometry("780x680")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🔎 Búsqueda en todas las colecciones",
+        ctk.CTkLabel(vent, text=tr("🔎 Búsqueda en todas las colecciones"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
 
         f_search = ctk.CTkFrame(vent, fg_color="transparent")
@@ -671,7 +672,7 @@ class BackupExportService:
 
         f_filtros = ctk.CTkFrame(vent, fg_color="transparent")
         f_filtros.pack(fill="x", padx=15, pady=(2, 6))
-        ctk.CTkLabel(f_filtros, text="Filtrar:",
+        ctk.CTkLabel(f_filtros, text=tr("Filtrar:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#888").pack(side="left", padx=(0, 6))
         for key, label in filtro_labels:
@@ -687,7 +688,7 @@ class BackupExportService:
             for w in scroll.winfo_children(): w.destroy()
             termino = ent.get().strip().lower()
             if not termino or len(termino) < 2:
-                ctk.CTkLabel(scroll, text="Escribe al menos 2 caracteres para buscar.",
+                ctk.CTkLabel(scroll, text=tr("Escribe al menos 2 caracteres para buscar."),
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
@@ -804,7 +805,7 @@ class BackupExportService:
                 ctk.CTkLabel(card, text=contenido, font=ctk.CTkFont(size=10),
                              text_color="#888888", wraplength=680, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
 
-                btn = ctk.CTkButton(card, text="✅ Aplicar", width=90, height=22, fg_color="#1a7a3c",
+                btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color="#1a7a3c",
                                       font=ctk.CTkFont(size=10),
                                       command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))

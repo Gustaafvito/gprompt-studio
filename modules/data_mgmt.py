@@ -4,6 +4,8 @@ import logging
 
 import pyperclip
 
+from modules.i18n import tr
+
 logger = logging.getLogger(__name__)
 import tkinter.filedialog as filedialog
 import tkinter.simpledialog as simpledialog
@@ -236,7 +238,7 @@ class DataMgmtService:
         self.app.lbl_img_preview.configure(image=ctk_thumb, text="")
         self.app.lbl_img_preview._ctk_image = ctk_thumb
         self.app.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
-        self.app.btn_cargar_img.configure(text="✅ OK", fg_color="#1a7a3c")
+        self.app.btn_cargar_img.configure(text=tr("✅ OK"), fg_color="#1a7a3c")
         self.app.dialogs.set_estado(f"✅ Imagen: {nombre}", "#2ecc71")
         self.app.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
 
@@ -247,8 +249,8 @@ class DataMgmtService:
         self.app.imagen_cargada = None
         self.app._ultimo_anclaje_visual = None
         self.app.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
-        self.app.lbl_img_nombre.configure(text="Sin imagen", text_color="#666666")
-        self.app.btn_cargar_img.configure(text="📂 Cargar", fg_color=["#3B8ED0", "#1F6AA5"])
+        self.app.lbl_img_nombre.configure(text=tr("Sin imagen"), text_color="#666666")
+        self.app.btn_cargar_img.configure(text=tr("📂 Cargar"), fg_color=["#3B8ED0", "#1F6AA5"])
         self.app.dialogs.set_estado("Imagen eliminada.")
 
     def _agregar_img_historial(self, pil_img, nombre):
@@ -340,21 +342,21 @@ class DataMgmtService:
         v.geometry("680x620")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text="⚡ Auto-expansión rápida (en la idea)",
+        ctk.CTkLabel(v, text=tr("⚡ Auto-expansión rápida (en la idea)"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(v, text="Escribe ';palabra' + Espacio en la idea y se expande automáticamente.",
+        ctk.CTkLabel(v, text=tr("Escribe ';palabra' + Espacio en la idea y se expande automáticamente."),
                      font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 4))
-        ctk.CTkLabel(v, text="Los custom sobrescriben a los default si comparten trigger.",
+        ctk.CTkLabel(v, text=tr("Los custom sobrescriben a los default si comparten trigger."),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#666").pack(pady=(0, 10))
 
         # Form añadir/editar
         form = ctk.CTkFrame(v, fg_color=c["fg_dark"])
         form.pack(fill="x", padx=12, pady=4)
-        ctk.CTkLabel(form, text="Trigger (sin ;):",
+        ctk.CTkLabel(form, text=tr("Trigger (sin ;):"),
                      font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4), pady=8)
         ent_trigger = ctk.CTkEntry(form, width=110, placeholder_text="ej: cine")
         ent_trigger.pack(side="left", padx=4)
-        ctk.CTkLabel(form, text="Expansión:",
+        ctk.CTkLabel(form, text=tr("Expansión:"),
                      font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4))
         ent_expansion = ctk.CTkEntry(form, width=320, placeholder_text="ej: cinematic lighting, film grain")
         ent_expansion.pack(side="left", padx=4)
@@ -449,7 +451,7 @@ class DataMgmtService:
                               command=_borrar).pack(side="right", padx=2, pady=4)
 
         refrescar()
-        ctk.CTkButton(v, text="Cerrar", width=110, command=v.destroy,
+        ctk.CTkButton(v, text=tr("Cerrar"), width=110, command=v.destroy,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(pady=(0, 12))
 
     def _cmd_duplicar_a_historial(self, event=None):
@@ -673,7 +675,7 @@ class DataMgmtService:
         vent.title("🏷️ Tags reutilizables (al prompt)")
         vent.geometry("680x600")
         vent.transient(self.app)
-        ctk.CTkLabel(vent, text="🏷️ Tags reutilizables (al prompt)",
+        ctk.CTkLabel(vent, text=tr("🏷️ Tags reutilizables (al prompt)"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text="Frases cortas (tags, fórmulas de calidad, look…) que añades "
@@ -708,7 +710,7 @@ class DataMgmtService:
 
         # Form añadir/editar (colapsado por defecto)
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
-        ctk.CTkLabel(form, text="➕ Nuevo / editar snippet",
+        ctk.CTkLabel(form, text=tr("➕ Nuevo / editar snippet"),
                      font=ctk.CTkFont(size=11, weight="bold")
                      ).pack(anchor="w", padx=10, pady=(8, 2))
         ent_nombre = ctk.CTkEntry(form,
@@ -726,7 +728,7 @@ class DataMgmtService:
         head_form_row = ctk.CTkFrame(vent, fg_color="transparent")
         head_form_row.pack(fill="x", padx=10, pady=(4, 2))
 
-        btn_toggle = ctk.CTkButton(head_form_row, text="➕ Nuevo snippet",
+        btn_toggle = ctk.CTkButton(head_form_row, text=tr("➕ Nuevo snippet"),
                                    width=160, height=28,
                                    fg_color="#1a7a3c", hover_color="#15642f")
         btn_toggle.pack(side="left")
@@ -734,13 +736,13 @@ class DataMgmtService:
         def _toggle_form():
             if form_visible["valor"]:
                 form.pack_forget()
-                btn_toggle.configure(text="➕ Nuevo snippet")
+                btn_toggle.configure(text=tr("➕ Nuevo snippet"))
                 form_visible["valor"] = False
                 editando_idx["valor"] = None
-                btn_crear.configure(text="✅ Crear snippet")
+                btn_crear.configure(text=tr("✅ Crear snippet"))
             else:
                 form.pack(fill="x", padx=10, pady=4, after=head_form_row)
-                btn_toggle.configure(text="× Cerrar form")
+                btn_toggle.configure(text=tr("× Cerrar form"))
                 form_visible["valor"] = True
                 ent_nombre.focus_set()
         btn_toggle.configure(command=_toggle_form)
@@ -796,7 +798,7 @@ class DataMgmtService:
                     ent_nombre.delete(0, "end"); ent_nombre.insert(0, s_l.get("nombre", ""))
                     ent_tags.delete(0, "end"); ent_tags.insert(0, s_l.get("tags", ""))
                     editando_idx["valor"] = idx_l
-                    btn_crear.configure(text="✏️ Actualizar")
+                    btn_crear.configure(text=tr("✏️ Actualizar"))
 
                 def _borrar(idx_l=i):
                     prefs_b = self.app.store.cargar_preferencias()
@@ -807,11 +809,11 @@ class DataMgmtService:
                         self.app.store.guardar_preferencias(prefs_b)
                     refrescar()
 
-                ctk.CTkButton(btn_row, text="➕ Añadir", width=80, height=22,
+                ctk.CTkButton(btn_row, text=tr("➕ Añadir"), width=80, height=22,
                               fg_color="#1a7a3c",
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="✏️ Editar", width=80, height=22,
+                ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=22,
                               font=ctk.CTkFont(size=10),
                               command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
@@ -832,7 +834,7 @@ class DataMgmtService:
                 if 0 <= idx_e < len(actual):
                     actual[idx_e] = {"nombre": nombre, "tags": tags}
                 editando_idx["valor"] = None
-                btn_crear.configure(text="✅ Crear snippet")
+                btn_crear.configure(text=tr("✅ Crear snippet"))
             else:
                 actual.append({"nombre": nombre, "tags": tags})
             prefs_c["snippets"] = actual
@@ -841,7 +843,7 @@ class DataMgmtService:
             ent_tags.delete(0, "end")
             refrescar()
 
-        btn_crear = ctk.CTkButton(form, text="✅ Crear snippet", width=140, height=26,
+        btn_crear = ctk.CTkButton(form, text=tr("✅ Crear snippet"), width=140, height=26,
                                   fg_color="#1a7a3c",
                                   font=ctk.CTkFont(size=10, weight="bold"),
                                   command=crear)
@@ -862,7 +864,7 @@ class DataMgmtService:
         vent.title("📐 Fórmulas guardadas")
         vent.geometry("680x550")
         vent.transient(self.app)
-        ctk.CTkLabel(vent, text="📐 Fórmulas guardadas",
+        ctk.CTkLabel(vent, text=tr("📐 Fórmulas guardadas"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text="Prompts COMPLETOS (positive + negative) guardados como receta "
@@ -896,7 +898,7 @@ class DataMgmtService:
             refrescar()
             self.app.dialogs.set_estado(f"📐 Fórmula '{nombre}' guardada", "#2ecc71")
 
-        ctk.CTkButton(vent, text="💾 Guardar POSITIVE actual como fórmula", width=300, height=28,
+        ctk.CTkButton(vent, text=tr("💾 Guardar POSITIVE actual como fórmula"), width=300, height=28,
                       fg_color="#1a7a3c", hover_color="#145e2d",
                       font=ctk.CTkFont(size=11), command=_guardar_actual).pack(pady=5)
 
@@ -1007,11 +1009,11 @@ class DataMgmtService:
                         self.app.store.guardar_preferencias(prefs_b)
                     refrescar()
 
-                ctk.CTkButton(btn_row, text="✅ Cargar", width=80, height=22,
+                ctk.CTkButton(btn_row, text=tr("✅ Cargar"), width=80, height=22,
                               fg_color="#1a7a3c",
                               font=ctk.CTkFont(size=10),
                               command=_cargar).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="✏️ Renombrar", width=100, height=22,
+                ctk.CTkButton(btn_row, text=tr("✏️ Renombrar"), width=100, height=22,
                               font=ctk.CTkFont(size=10),
                               command=_renombrar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
@@ -1041,11 +1043,11 @@ class DataMgmtService:
 
         # ── Encabezado ───────────────────────────────────────────────
         ctk.CTkLabel(
-            vent, text="📚 Prompts de ejemplo probados",
+            vent, text=tr("📚 Prompts de ejemplo probados"),
             font=ctk.CTkFont(size=16, weight="bold")
         ).pack(pady=(10, 2))
         lbl_subtitulo = ctk.CTkLabel(
-            vent, text="Filtra, busca y carga uno en el resultado",
+            vent, text=tr("Filtra, busca y carga uno en el resultado"),
             font=ctk.CTkFont(size=10), text_color=c["muted_text"]
         )
         lbl_subtitulo.pack(pady=(0, 6))
@@ -1074,7 +1076,7 @@ class DataMgmtService:
         fila_modos = ctk.CTkFrame(vent, fg_color="transparent")
         fila_modos.pack(fill="x", padx=15, pady=(2, 2))
         ctk.CTkLabel(
-            fila_modos, text="Modo:", font=ctk.CTkFont(size=10, weight="bold"),
+            fila_modos, text=tr("Modo:"), font=ctk.CTkFont(size=10, weight="bold"),
             text_color=c["muted_text"], width=55, anchor="w"
         ).pack(side="left")
         btns_modo = []  # para poder cambiar su color visualmente
@@ -1106,7 +1108,7 @@ class DataMgmtService:
         })
 
         ctk.CTkLabel(
-            fila_combos, text="Plataforma:", font=ctk.CTkFont(size=10, weight="bold"),
+            fila_combos, text=tr("Plataforma:"), font=ctk.CTkFont(size=10, weight="bold"),
             text_color=c["muted_text"], width=80, anchor="w"
         ).pack(side="left")
         combo_plat = ctk.CTkComboBox(
@@ -1117,7 +1119,7 @@ class DataMgmtService:
         combo_plat.pack(side="left", padx=(0, 12))
 
         ctk.CTkLabel(
-            fila_combos, text="Dificultad:", font=ctk.CTkFont(size=10, weight="bold"),
+            fila_combos, text=tr("Dificultad:"), font=ctk.CTkFont(size=10, weight="bold"),
             text_color=c["muted_text"], width=72, anchor="w"
         ).pack(side="left")
         combo_dif = ctk.CTkComboBox(
@@ -1136,7 +1138,7 @@ class DataMgmtService:
             _set_modo("todos")
 
         ctk.CTkButton(
-            fila_combos, text="✖ Limpiar", width=80, height=24,
+            fila_combos, text=tr("✖ Limpiar"), width=80, height=24,
             fg_color=c["fg_dark"], hover_color="#2a2a3a",
             font=ctk.CTkFont(size=10), command=_limpiar
         ).pack(side="right")
@@ -1199,7 +1201,7 @@ class DataMgmtService:
 
             if not ejemplos:
                 ctk.CTkLabel(
-                    scroll, text="🔎  Ningún ejemplo coincide con los filtros.",
+                    scroll, text=tr("🔎  Ningún ejemplo coincide con los filtros."),
                     font=ctk.CTkFont(size=12), text_color=c["muted_text"]
                 ).pack(pady=30)
                 return
@@ -1309,17 +1311,17 @@ class DataMgmtService:
                         self.app.dialogs.set_estado("⚠️ Error al guardar favorito", "#e67e22")
 
                 ctk.CTkButton(
-                    btn_row, text="✅ Usar", width=68, height=22,
+                    btn_row, text=tr("✅ Usar"), width=68, height=22,
                     fg_color="#1a7a3c", hover_color="#145e2d",
                     font=ctk.CTkFont(size=10), command=_usar
                 ).pack(side="left", padx=2)
                 ctk.CTkButton(
-                    btn_row, text="📋 Copiar", width=68, height=22,
+                    btn_row, text=tr("📋 Copiar"), width=68, height=22,
                     fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                     font=ctk.CTkFont(size=10), command=_copiar
                 ).pack(side="left", padx=2)
                 ctk.CTkButton(
-                    btn_row, text="⭐ Favorito", width=78, height=22,
+                    btn_row, text=tr("⭐ Favorito"), width=78, height=22,
                     fg_color="#b8860b", hover_color="#8b6508",
                     font=ctk.CTkFont(size=10), command=_favorito
                 ).pack(side="left", padx=2)

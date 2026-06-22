@@ -8,6 +8,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger("gprompt")
 
@@ -55,11 +56,11 @@ class DialogsService:
         v.title("🔑 Configurar API Keys")
         v.geometry("780x720")
 
-        ctk.CTkLabel(v, text="🔑 Configura tus motores de IA",
+        ctk.CTkLabel(v, text=tr("🔑 Configura tus motores de IA"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(14, 4))
-        ctk.CTkLabel(v, text="Tu app puede usar varios proveedores. Cada uno tiene su API key.",
+        ctk.CTkLabel(v, text=tr("Tu app puede usar varios proveedores. Cada uno tiene su API key."),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
-        ctk.CTkLabel(v, text="🏆 = gratis (con límites)   💎 = de pago",
+        ctk.CTkLabel(v, text=tr("🏆 = gratis (con límites)   💎 = de pago"),
                      font=ctk.CTkFont(size=10, slant="italic"), text_color="#666").pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
@@ -85,7 +86,7 @@ class DialogsService:
             # Estado
             if refs.get("lbl_estado"):
                 refs["lbl_estado"].configure(
-                    text="✅ configurado" if current else "⚠️ sin configurar",
+                    text=tr("✅ configurado") if current else "⚠️ sin configurar",
                     text_color="#2ecc71" if current else "#e67e22",
                 )
             # Origen
@@ -156,7 +157,7 @@ class DialogsService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
-            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
+            ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn()).pack(side="left", padx=2)
@@ -205,7 +206,7 @@ class DialogsService:
         sep = ctk.CTkFrame(scroll, fg_color="#1a2a3a", height=2)
         sep.pack(fill="x", pady=(12, 4))
         ctk.CTkLabel(
-            scroll, text="🖼 Proveedores de IMAGEN (no LLM)",
+            scroll, text=tr("🖼 Proveedores de IMAGEN (no LLM)"),
             font=ctk.CTkFont(size=12, weight="bold"),
             text_color="#7c3aed",
         ).pack(anchor="w", padx=4, pady=(4, 2))
@@ -275,7 +276,7 @@ class DialogsService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
-            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
+            ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn_img()).pack(side="left", padx=2)
@@ -346,10 +347,10 @@ class DialogsService:
                 self.set_estado("Sin cambios")
             v.destroy()
 
-        ctk.CTkButton(btn_row, text="💾 Guardar todas", width=140,
+        ctk.CTkButton(btn_row, text=tr("💾 Guardar todas"), width=140,
                       fg_color="#1e5f3a", hover_color="#16492d",
                       command=_guardar_todas).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="Cerrar", width=110,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=v.destroy).pack(side="right", padx=2)
 
@@ -438,7 +439,7 @@ class DialogsService:
                           command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=5)
 
         # Botón cerrar
-        ctk.CTkButton(v, text="Cerrar", width=120, height=32,
+        ctk.CTkButton(v, text=tr("Cerrar"), width=120, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=v.destroy).pack(pady=(8, 16))
 

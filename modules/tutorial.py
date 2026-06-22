@@ -11,6 +11,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ def abrir_tutorial(app):
                                        corner_radius=8, width=280)
     idx_frame.pack(side="left", fill="y", padx=(0, 10))
 
-    ctk.CTkLabel(idx_frame, text="📋 Pasos",
+    ctk.CTkLabel(idx_frame, text=tr("📋 Pasos"),
                  font=ctk.CTkFont(size=14, weight="bold"),
                  text_color=text_main).pack(anchor="w", padx=10, pady=(8, 4))
 
@@ -142,13 +143,13 @@ def abrir_tutorial(app):
     acciones = ctk.CTkFrame(main, fg_color="transparent")
     acciones.pack(fill="x", pady=(8, 0))
 
-    btn_probar = ctk.CTkButton(acciones, text="▶ Probar ahora", width=140, height=32,
+    btn_probar = ctk.CTkButton(acciones, text=tr("▶ Probar ahora"), width=140, height=32,
                                fg_color=accent,
                                hover_color=("#1d4ed8" if is_lt else "#3b82f6"))
     btn_probar.pack(side="left")
 
     btn_completado_var = ctk.BooleanVar(value=False)
-    chk_completado = ctk.CTkCheckBox(acciones, text="✅ Marcar como completado",
+    chk_completado = ctk.CTkCheckBox(acciones, text=tr("✅ Marcar como completado"),
                                      variable=btn_completado_var,
                                      command=lambda: on_toggle_completado())
     chk_completado.pack(side="left", padx=14)
@@ -156,11 +157,11 @@ def abrir_tutorial(app):
     # Navegación
     nav = ctk.CTkFrame(acciones, fg_color="transparent")
     nav.pack(side="right")
-    btn_ant = ctk.CTkButton(nav, text="⬅ Anterior", width=100, height=32)
+    btn_ant = ctk.CTkButton(nav, text=tr("⬅ Anterior"), width=100, height=32)
     btn_ant.pack(side="left", padx=4)
-    btn_sig = ctk.CTkButton(nav, text="Siguiente ➡", width=100, height=32)
+    btn_sig = ctk.CTkButton(nav, text=tr("Siguiente ➡"), width=100, height=32)
     btn_sig.pack(side="left", padx=4)
-    btn_close = ctk.CTkButton(nav, text="Cerrar", width=80, height=32,
+    btn_close = ctk.CTkButton(nav, text=tr("Cerrar"), width=80, height=32,
                               fg_color="#444", hover_color="#555",
                               command=win.destroy)
     btn_close.pack(side="left", padx=4)
@@ -195,7 +196,7 @@ def abrir_tutorial(app):
         # Probar
         accion = paso.get("accion")
         if accion:
-            btn_probar.configure(state="normal", text="▶ Probar ahora",
+            btn_probar.configure(state="normal", text=tr("▶ Probar ahora"),
                                  command=lambda a=accion: _probar(a))
         else:
             btn_probar.configure(state="disabled", text="—")

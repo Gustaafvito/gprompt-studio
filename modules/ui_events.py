@@ -16,6 +16,8 @@ buttons del panel superior:
 """
 import logging
 
+from modules.i18n import tr
+
 try:
     from CTkToolTip import CTkToolTip
 except ImportError:
@@ -92,8 +94,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack(side="right", padx=20)
-            self.app.btn_vision.configure(text="👁 Analizar", state="normal")
-            self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
+            self.app.btn_vision.configure(text=tr("👁 Analizar"), state="normal")
+            self.app.btn_img_prompt.configure(text=tr("🎯 Img→Prompt"), state="normal")
             self.app.footer._construir_checkboxes(ESTILOS_VIDEO)
             self._actualizar_motores_video()
             self._set_tabs_visibles(_TABS_CON_TAGS)
@@ -108,8 +110,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack_forget()
-            self.app.btn_vision.configure(text="👁 (no aplica)", state="disabled")
-            self.app.btn_img_prompt.configure(text="🎯 (no aplica)", state="disabled")
+            self.app.btn_vision.configure(text=tr("👁 (no aplica)"), state="disabled")
+            self.app.btn_img_prompt.configure(text=tr("🎯 (no aplica)"), state="disabled")
             self.app.footer._construir_checkboxes(ESTILOS_AUDIO)
             self._on_motor_audio_cambio()
             self._set_tabs_visibles(_TABS_SIN_TAGS)
@@ -124,8 +126,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack(side="right", padx=20)
-            self.app.btn_vision.configure(text="👁 Analizar", state="normal")
-            self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
+            self.app.btn_vision.configure(text=tr("👁 Analizar"), state="normal")
+            self.app.btn_img_prompt.configure(text=tr("🎯 Img→Prompt"), state="normal")
             self.app.combo_ratio.set("1:1")
             self.app.ratio_var.set("1:1")
             self.app.footer._construir_checkboxes(ESTILOS_IMAGEN)
@@ -136,17 +138,17 @@ class UiEventsService:
             if hasattr(self.app, 'btn_story'):
                 if modo == "imagen":
                     self.app.btn_story.configure(state="normal", fg_color="#be185d",
-                                              text="🎞 Story")
+                                              text=tr("🎞 Story"))
                 else:
                     self.app.btn_story.configure(state="disabled", fg_color="#3a3a3a",
-                                              text="🎞 Story")
+                                              text=tr("🎞 Story"))
             if hasattr(self.app, 'btn_board'):
                 if modo == "video":
                     self.app.btn_board.configure(state="normal", fg_color="#be185d",
-                                              text="📽 Board")
+                                              text=tr("📽 Board"))
                 else:
                     self.app.btn_board.configure(state="disabled", fg_color="#3a3a3a",
-                                              text="📽 Board")
+                                              text=tr("📽 Board"))
         except Exception as _e:
             logger.debug(f"[silent on_modo_cambio btns] {_e}")
 

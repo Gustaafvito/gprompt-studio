@@ -12,6 +12,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ def abrir_glosario(app):
 
     fila1 = ctk.CTkFrame(header, fg_color="transparent")
     fila1.pack(fill="x", padx=20, pady=(12, 6))
-    ctk.CTkLabel(fila1, text="📚 Glosario de términos AI",
+    ctk.CTkLabel(fila1, text=tr("📚 Glosario de términos AI"),
                  font=ctk.CTkFont(size=18, weight="bold")).pack(side="left")
     contador_var = ctk.StringVar(value=f"{len(entradas)} términos")
     ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
@@ -81,7 +82,7 @@ def abrir_glosario(app):
     # Fila 2: filtro por categoría
     fila2 = ctk.CTkFrame(header, fg_color="transparent")
     fila2.pack(fill="x", padx=20, pady=(0, 12))
-    ctk.CTkLabel(fila2, text="Categoría:", text_color=text_muted).pack(side="left", padx=(0, 10))
+    ctk.CTkLabel(fila2, text=tr("Categoría:"), text_color=text_muted).pack(side="left", padx=(0, 10))
 
     opciones_cat = ["📚 Todas"] + categorias
     filtro_var = ctk.StringVar(value="📚 Todas")
@@ -145,7 +146,7 @@ def abrir_glosario(app):
         accion = entrada.get("accion")
         if accion:
             ctk.CTkButton(
-                fila_top, text="▶ Probar", width=80, height=24,
+                fila_top, text=tr("▶ Probar"), width=80, height=24,
                 fg_color=accent,
                 hover_color=("#1d4ed8" if is_lt else "#3b82f6"),
                 font=ctk.CTkFont(size=10),
@@ -189,7 +190,7 @@ def abrir_glosario(app):
             contador_var.set(f"{n} de {len(entradas)}" if f else f"{len(entradas)} términos")
 
         if n == 0:
-            ctk.CTkLabel(scroll, text="Sin resultados.", text_color=text_muted,
+            ctk.CTkLabel(scroll, text=tr("Sin resultados."), text_color=text_muted,
                          font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 

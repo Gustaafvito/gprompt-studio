@@ -18,6 +18,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger("gprompt")
@@ -138,7 +139,7 @@ class RefinamientoService:
         sel.transient(self.app)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
-        ctk.CTkLabel(sel, text="🔂 Modo Iteración",
+        ctk.CTkLabel(sel, text=tr("🔂 Modo Iteración"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel,
                      text=f"Genera {n} variantes cambiando SOLO un elemento:",

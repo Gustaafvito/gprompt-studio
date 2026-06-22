@@ -17,6 +17,7 @@ import logging
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger("gprompt")
 
@@ -159,7 +160,7 @@ class DashboardService:
         ctk.CTkLabel(header_box, text=f"{saludo}, {nombre_user}",
                      font=ctk.CTkFont(size=22, weight="bold"),
                      text_color=text_primary, fg_color="transparent").pack(anchor="w")
-        ctk.CTkLabel(header_box, text="🏠 Panel de control · G-Prompt Studio",
+        ctk.CTkLabel(header_box, text=tr("🏠 Panel de control · G-Prompt Studio"),
                      font=ctk.CTkFont(size=11),
                      text_color=text_secondary, fg_color="transparent").pack(anchor="w", pady=(0, 12))
 
@@ -291,7 +292,7 @@ class DashboardService:
                         logger.debug(f"[silent] {e}")
                     self.app.dialogs.set_estado("✅ Cargado desde búsqueda", accent_green)
                     v.destroy()
-                ctk.CTkButton(row, text="Cargar", width=60, height=22,
+                ctk.CTkButton(row, text=tr("Cargar"), width=60, height=22,
                               fg_color=accent_blue, hover_color="#1d4ed8",
                               font=ctk.CTkFont(size=9),
                               command=_cargar).pack(side="right", padx=6, pady=2)
@@ -314,7 +315,7 @@ class DashboardService:
         search_entry.bind("<KeyRelease>", _on_typing)
         search_entry.bind("<Return>", _buscar_inline)
 
-        ctk.CTkButton(search_inner, text="Buscar", width=80, height=32,
+        ctk.CTkButton(search_inner, text=tr("Buscar"), width=80, height=32,
                       fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_buscar_inline).pack(side="left")
@@ -366,7 +367,7 @@ class DashboardService:
         chart_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                     border_color=card_border, border_width=1)
         chart_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(chart_frame, text="📈 Actividad — últimos 7 días",
+        ctk.CTkLabel(chart_frame, text=tr("📈 Actividad — últimos 7 días"),
                      font=ctk.CTkFont(size=12, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=14, pady=(10, 4))
 
@@ -449,7 +450,7 @@ class DashboardService:
         modo_card = ctk.CTkFrame(models_platforms_frame, fg_color=card_bg, corner_radius=10,
                                   border_color=card_border, border_width=1)
         modo_card.grid(row=0, column=0, padx=(0, 4), sticky="nsew")
-        ctk.CTkLabel(modo_card, text="🎯 Modo más usado",
+        ctk.CTkLabel(modo_card, text=tr("🎯 Modo más usado"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
         if contador_modo:
@@ -467,7 +468,7 @@ class DashboardService:
                              font=ctk.CTkFont(size=10, weight="bold"),
                              fg_color="transparent", text_color=accent_blue).pack(side="right")
         else:
-            ctk.CTkLabel(modo_card, text="Aún sin datos. Genera prompts para ver tu modo favorito.",
+            ctk.CTkLabel(modo_card, text=tr("Aún sin datos. Genera prompts para ver tu modo favorito."),
                          font=ctk.CTkFont(size=9), wraplength=200,
                          fg_color="transparent", text_color=text_muted).pack(padx=12, pady=(0, 10))
         ctk.CTkLabel(modo_card, text="", fg_color="transparent").pack(pady=2)
@@ -476,7 +477,7 @@ class DashboardService:
         plat_card = ctk.CTkFrame(models_platforms_frame, fg_color=card_bg, corner_radius=10,
                                   border_color=card_border, border_width=1)
         plat_card.grid(row=0, column=1, padx=(4, 0), sticky="nsew")
-        ctk.CTkLabel(plat_card, text="🌐 Plataforma favorita",
+        ctk.CTkLabel(plat_card, text=tr("🌐 Plataforma favorita"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
         if contador_plat:
@@ -495,7 +496,7 @@ class DashboardService:
                              font=ctk.CTkFont(size=10, weight="bold"),
                              fg_color="transparent", text_color=accent_purple).pack(side="right")
         else:
-            ctk.CTkLabel(plat_card, text="Aún sin datos.",
+            ctk.CTkLabel(plat_card, text=tr("Aún sin datos."),
                          font=ctk.CTkFont(size=9),
                          fg_color="transparent", text_color=text_muted).pack(padx=12, pady=(0, 10))
         ctk.CTkLabel(plat_card, text="", fg_color="transparent").pack(pady=2)
@@ -504,7 +505,7 @@ class DashboardService:
         info_sesion = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                     border_color=card_border, border_width=1)
         info_sesion.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(info_sesion, text="📊 Datos de uso",
+        ctk.CTkLabel(info_sesion, text=tr("📊 Datos de uso"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
 
@@ -537,14 +538,14 @@ class DashboardService:
         info_grid.grid_columnconfigure(0, weight=1)
         info_grid.grid_columnconfigure(1, weight=1)
         # Última sesión
-        ctk.CTkLabel(info_grid, text="🕒 Última sesión",
+        ctk.CTkLabel(info_grid, text=tr("🕒 Última sesión"),
                      font=ctk.CTkFont(size=9),
                      fg_color="transparent", text_color=text_secondary).grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(info_grid, text=ultima_str,
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_green).grid(row=1, column=0, sticky="w", pady=(0, 4))
         # Tokens
-        ctk.CTkLabel(info_grid, text="🪙 Tokens consumidos (estim.)",
+        ctk.CTkLabel(info_grid, text=tr("🪙 Tokens consumidos (estim.)"),
                      font=ctk.CTkFont(size=9),
                      fg_color="transparent", text_color=text_secondary).grid(row=0, column=1, sticky="w")
         ctk.CTkLabel(info_grid, text=f"~{tokens_estimados:,}".replace(",", "."),
@@ -555,7 +556,7 @@ class DashboardService:
         continuar_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                         border_color=card_border, border_width=1)
         continuar_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(continuar_frame, text="▶️ Continuar trabajando",
+        ctk.CTkLabel(continuar_frame, text=tr("▶️ Continuar trabajando"),
                      font=ctk.CTkFont(size=12, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=14, pady=(10, 4))
 
@@ -578,7 +579,7 @@ class DashboardService:
                 except Exception:
                     self.app.dialogs.set_estado("⚠️ No se pudo restaurar el borrador", accent_red)
                 v.destroy()
-            ctk.CTkButton(cont_inner, text="📝 Restaurar borrador no guardado",
+            ctk.CTkButton(cont_inner, text=tr("📝 Restaurar borrador no guardado"),
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           text_color="#ffffff",
@@ -597,7 +598,7 @@ class DashboardService:
                           text_color="#ffffff", anchor="w",
                           command=_cargar_ultimo).pack(fill="x", pady=2)
         else:
-            ctk.CTkLabel(cont_inner, text="Aún no hay nada que continuar. ¡Genera tu primer prompt!",
+            ctk.CTkLabel(cont_inner, text=tr("Aún no hay nada que continuar. ¡Genera tu primer prompt!"),
                          font=ctk.CTkFont(size=10), wraplength=380,
                          fg_color="transparent", text_color=text_muted).pack(pady=4)
 
@@ -624,7 +625,7 @@ class DashboardService:
             estr_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                        border_color=card_border, border_width=1)
             estr_frame.pack(fill="x", pady=(0, 10))
-            ctk.CTkLabel(estr_frame, text="🌟 Tus prompts estrella",
+            ctk.CTkLabel(estr_frame, text=tr("🌟 Tus prompts estrella"),
                          font=ctk.CTkFont(size=12, weight="bold"),
                          fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=14, pady=(10, 4))
 
@@ -655,7 +656,7 @@ class DashboardService:
                     self.app.dialogs.actualizar_salida(c)
                     self.app.dialogs.set_estado("🌟 Prompt estrella cargado", accent_green)
                     v.destroy()
-                ctk.CTkButton(hdr_e, text="Cargar", width=60, height=20,
+                ctk.CTkButton(hdr_e, text=tr("Cargar"), width=60, height=20,
                               fg_color=accent_blue, hover_color="#1d4ed8",
                               font=ctk.CTkFont(size=9), command=_cargar_estrella).pack(side="right")
                 ctk.CTkLabel(row, text=preview_e,
@@ -670,7 +671,7 @@ class DashboardService:
         llm_card = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                  border_color=card_border, border_width=1)
         llm_card.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(llm_card, text="🧠 LLM activo",
+        ctk.CTkLabel(llm_card, text=tr("🧠 LLM activo"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 2))
 
@@ -705,7 +706,7 @@ class DashboardService:
                     self.app._cmd_api_keys()
                 except Exception:
                     self.app.dialogs.set_estado("Configura tu key en 🔑 (header)", accent_amber)
-            ctk.CTkButton(estado_row, text="🔑 Configurar", width=100, height=22,
+            ctk.CTkButton(estado_row, text=tr("🔑 Configurar"), width=100, height=22,
                           fg_color=accent_purple, hover_color="#6d28d9",
                           font=ctk.CTkFont(size=9), command=_abrir_keys).pack(side="right")
 
@@ -737,7 +738,7 @@ class DashboardService:
             avisos_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                          border_color=card_border, border_width=1)
             avisos_frame.pack(fill="x", pady=(0, 10))
-            ctk.CTkLabel(avisos_frame, text="🔔 Avisos",
+            ctk.CTkLabel(avisos_frame, text=tr("🔔 Avisos"),
                          font=ctk.CTkFont(size=11, weight="bold"),
                          fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
             for emoji_av, txt_av, col_av in avisos[:5]:
@@ -869,7 +870,7 @@ class DashboardService:
             blocked_list = [(e, n, d, ok, pg) for (e, n, d, ok, pg) in TODOS_LOS_LOGROS if not ok]
 
             if desbloq_list:
-                ctk.CTkLabel(scroll, text="✅ Desbloqueados",
+                ctk.CTkLabel(scroll, text=tr("✅ Desbloqueados"),
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color=accent_green).pack(anchor="w", pady=(4, 4))
                 for emoji_l, nombre_l, desc_l, _ok, (val, obj) in desbloq_list:
@@ -893,7 +894,7 @@ class DashboardService:
                                  text_color=accent_green, width=30).pack(side="right")
 
             if blocked_list:
-                ctk.CTkLabel(scroll, text="🔒 Por desbloquear",
+                ctk.CTkLabel(scroll, text=tr("🔒 Por desbloquear"),
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color=text_muted).pack(anchor="w", pady=(12, 4))
                 for emoji_l, nombre_l, desc_l, _ok, (val, obj) in blocked_list:
@@ -912,11 +913,11 @@ class DashboardService:
                                  font=ctk.CTkFont(size=9),
                                  text_color=text_muted, anchor="w").pack(anchor="w")
 
-            ctk.CTkButton(win, text="Cerrar", width=120, height=30,
+            ctk.CTkButton(win, text=tr("Cerrar"), width=120, height=30,
                           fg_color="#6b7280", hover_color="#4b5563",
                           command=win.destroy).pack(pady=10)
 
-        ctk.CTkButton(logros_hdr, text="Ver todos", width=80, height=22,
+        ctk.CTkButton(logros_hdr, text=tr("Ver todos"), width=80, height=22,
                       fg_color=accent_amber, hover_color="#b45309",
                       font=ctk.CTkFont(size=9, weight="bold"),
                       text_color="#ffffff",
@@ -1177,7 +1178,7 @@ class DashboardService:
         reto_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                    border_color=accent_blue, border_width=2)
         reto_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(reto_frame, text="🎯 Reto del día",
+        ctk.CTkLabel(reto_frame, text=tr("🎯 Reto del día"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_blue).pack(anchor="w", padx=12, pady=(10, 4))
         ctk.CTkLabel(reto_frame, text=reto_desc,
@@ -1203,7 +1204,7 @@ class DashboardService:
             self.app.dialogs.set_estado(f"🎯 Reto activado: {emoji_modo_r} {reto_modelo}", accent_blue)
             v.destroy()
 
-        ctk.CTkButton(reto_frame, text="🎯 Aceptar reto",
+        ctk.CTkButton(reto_frame, text=tr("🎯 Aceptar reto"),
                       height=28, fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       text_color="#ffffff",
@@ -1268,7 +1269,7 @@ class DashboardService:
             except Exception as ex:
                 self.app.dialogs.set_estado(f"⚠️ Error en mood: {ex}", accent_red)
 
-        ctk.CTkButton(col_der, text="🎲 Inspírame con Mood Aleatorio",
+        ctk.CTkButton(col_der, text=tr("🎲 Inspírame con Mood Aleatorio"),
                       height=36, fg_color=accent_pink, hover_color="#be185d",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       text_color="#ffffff",
@@ -1278,7 +1279,7 @@ class DashboardService:
         atajos_frame = ctk.CTkFrame(col_izq, fg_color=card_bg, corner_radius=10,
                                      border_color=card_border, border_width=1)
         atajos_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(atajos_frame, text="⌨️ Atajos de teclado",
+        ctk.CTkLabel(atajos_frame, text=tr("⌨️ Atajos de teclado"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
         atajos = [
@@ -1342,7 +1343,7 @@ class DashboardService:
         mant_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                    border_color=card_border, border_width=1)
         mant_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(mant_frame, text="🧹 Mantenimiento",
+        ctk.CTkLabel(mant_frame, text=tr("🧹 Mantenimiento"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
 
@@ -1398,7 +1399,7 @@ class DashboardService:
                 self.app.dialogs.set_estado("💾 Backup hecho", accent_green)
             except Exception as ex:
                 self.app.dialogs.set_estado(f"⚠️ Error backup: {ex}", accent_red)
-        ctk.CTkButton(mant_frame, text="💾 Hacer backup ahora",
+        ctk.CTkButton(mant_frame, text=tr("💾 Hacer backup ahora"),
                       height=28, fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=9, weight="bold"),
                       text_color="#ffffff",
@@ -1423,7 +1424,7 @@ class DashboardService:
         tip_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                  border_color=accent_amber, border_width=2)
         tip_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(tip_frame, text="💡 Tip del día",
+        ctk.CTkLabel(tip_frame, text=tr("💡 Tip del día"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_amber).pack(anchor="w", padx=12, pady=(10, 4))
         ctk.CTkLabel(tip_frame, text=tip,
@@ -1432,7 +1433,7 @@ class DashboardService:
                      wraplength=280, justify="left").pack(fill="x", padx=12, pady=(0, 10))
 
         # ACCIONES RÁPIDAS — Bloque inferior, ancho completo
-        ctk.CTkLabel(main, text="✨ Acciones rápidas",
+        ctk.CTkLabel(main, text=tr("✨ Acciones rápidas"),
                      font=ctk.CTkFont(size=14, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
 
@@ -1469,7 +1470,7 @@ class DashboardService:
             card.grid(row=row, column=col, padx=4, pady=4, sticky="nsew")
 
         # HERRAMIENTAS — Bloque inferior
-        ctk.CTkLabel(main, text="🛠 Herramientas",
+        ctk.CTkLabel(main, text=tr("🛠 Herramientas"),
                      font=ctk.CTkFont(size=14, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", pady=(8, 4))
 
@@ -1507,7 +1508,7 @@ class DashboardService:
             card.grid(row=row, column=col, padx=4, pady=4, sticky="nsew")
 
         # Botón cerrar al final
-        ctk.CTkButton(main, text="🚪 Cerrar Dashboard", width=180, height=34,
+        ctk.CTkButton(main, text=tr("🚪 Cerrar Dashboard"), width=180, height=34,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       text_color="#ffffff",

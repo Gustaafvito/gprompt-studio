@@ -24,6 +24,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from modules.tutorial import abrir_tutorial
 from modules.windows import abrir_loras
 
@@ -214,10 +215,10 @@ class AtajosAyudaService:
         vent.geometry("620x640")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado",
+        ctk.CTkLabel(vent, text=tr("⌨️ Atajos de teclado"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
         ctk.CTkLabel(vent,
-                     text="Click sobre un atajo para copiarlo · busca por tecla o acción",
+                     text=tr("Click sobre un atajo para copiarlo · busca por tecla o acción"),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 6))
 
@@ -353,7 +354,7 @@ class AtajosAyudaService:
         entry_buscar.bind("<KeyRelease>", _on_buscar)
 
         _refrescar()
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30,
                       command=vent.destroy).pack(pady=12)
         entry_buscar.focus_set()
         return "break"

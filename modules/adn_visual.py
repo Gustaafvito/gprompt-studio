@@ -21,6 +21,7 @@ import pyperclip
 
 from config import ADN_A_PLATAFORMA, get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ class AdnVisualService:
         # Header con contador dinámico
         hdr = ctk.CTkFrame(vent, fg_color=c["fg_dark"])
         hdr.pack(fill="x", padx=10, pady=10)
-        ctk.CTkLabel(hdr, text="🧬 ADNs Guardados",
+        ctk.CTkLabel(hdr, text=tr("🧬 ADNs Guardados"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
         contador_var = ctk.StringVar(value=f"{len(adns)} guardado(s)")
         ctk.CTkLabel(hdr, textvariable=contador_var,
@@ -203,9 +204,9 @@ class AdnVisualService:
 
                     btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
                     btn_frame2.pack(pady=(0, 10))
-                    ctk.CTkButton(btn_frame2, text="🎯 Usar en idea",
+                    ctk.CTkButton(btn_frame2, text=tr("🎯 Usar en idea"),
                                   command=_usar_en_idea).pack(side="left", padx=5)
-                    ctk.CTkButton(btn_frame2, text="Cerrar",
+                    ctk.CTkButton(btn_frame2, text=tr("Cerrar"),
                                   command=ver.destroy).pack(side="left", padx=5)
 
                 def _borrar(idx_l=idx, nombre_l=nombre):
@@ -223,7 +224,7 @@ class AdnVisualService:
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
                     self.app.dialogs.set_estado(f"🧬 '{nombre_l}' eliminado", "#e67e22")
 
-                ctk.CTkButton(btn_frame, text="👁 Ver", width=70, height=25,
+                ctk.CTkButton(btn_frame, text=tr("👁 Ver"), width=70, height=25,
                               command=_cargar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_frame, text="🗑", width=40, height=25,
                               fg_color="#c0392b", hover_color="#e74c3c",
@@ -247,13 +248,13 @@ class AdnVisualService:
             # _cmd_adn_visual abre su propio modal con botón "💾 Guardar".
             self._cmd_adn_visual()
 
-        ctk.CTkButton(accion_frame, text="➕ Crear nuevo ADN",
+        ctk.CTkButton(accion_frame, text=tr("➕ Crear nuevo ADN"),
                       width=180, height=28, fg_color="#1a5a8a",
                       command=_crear_nuevo_adn).pack(side="left", padx=4)
-        ctk.CTkButton(accion_frame, text="🔄 Refrescar", width=110, height=28,
+        ctk.CTkButton(accion_frame, text=tr("🔄 Refrescar"), width=110, height=28,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=_refrescar).pack(side="left", padx=4)
-        ctk.CTkButton(accion_frame, text="Cerrar", width=110, height=28,
+        ctk.CTkButton(accion_frame, text=tr("Cerrar"), width=110, height=28,
                       command=vent.destroy).pack(side="left", padx=4)
 
     def _cmd_adn_visual(self):
@@ -280,7 +281,7 @@ class AdnVisualService:
                     vent.geometry("700x650")
                     vent.transient(self.app)
 
-                    ctk.CTkLabel(vent, text="🧬 ADN Visual de tu imagen",
+                    ctk.CTkLabel(vent, text=tr("🧬 ADN Visual de tu imagen"),
                                  font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
                     ctk.CTkLabel(vent, text=f"Analizado con: {motor}",
                                  font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
@@ -339,7 +340,7 @@ class AdnVisualService:
                         bloqueos[cat_key]["btn"] = btn_lock
 
                         # Etiqueta de estado
-                        estado_lbl = ctk.CTkLabel(hdr, text="🔓 DESBLOQUEADO", text_color="#27ae60", font=ctk.CTkFont(size=9))
+                        estado_lbl = ctk.CTkLabel(hdr, text=tr("🔓 DESBLOQUEADO"), text_color="#27ae60", font=ctk.CTkFont(size=9))
                         estado_lbl.pack(side="left", padx=(2, 0))
                         bloqueos[cat_key]["label"] = estado_lbl
 
@@ -524,13 +525,13 @@ class AdnVisualService:
                         self.app.store.guardar_preferencias(prefs)
                         self.app.dialogs.set_estado(f"🧬 ADN '{nombre}' guardado", "#2ecc71")
 
-                    ctk.CTkButton(btn_frame, text="📋 Copiar JSON", width=110, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("📋 Copiar JSON"), width=110, height=30,
                                   command=_copiar_json).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="🎯 Usar en prompt", width=130, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("🎯 Usar en prompt"), width=130, height=30,
                                   fg_color="#1a7a3c", command=_usar_en_prompt).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="💾 Guardar ADN", width=110, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("💾 Guardar ADN"), width=110, height=30,
                                   command=_guardar_adn).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="📚 Mi biblioteca", width=130, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("📚 Mi biblioteca"), width=130, height=30,
                                   fg_color="#4a1a6a", hover_color="#3a1050",
                                   command=self._cmd_ver_biblioteca_adn
                                   ).pack(side="left", padx=4)
@@ -539,7 +540,7 @@ class AdnVisualService:
                     plat_frame = ctk.CTkFrame(vent, fg_color="transparent")
                     plat_frame.pack(pady=(8, 0))
 
-                    lbl_plat = ctk.CTkLabel(plat_frame, text="🎨 Convertir a:", font=ctk.CTkFont(size=11))
+                    lbl_plat = ctk.CTkLabel(plat_frame, text=tr("🎨 Convertir a:"), font=ctk.CTkFont(size=11))
                     lbl_plat.pack(side="left", padx=(0, 5))
 
                     def _convertir_plataforma(plataforma):
@@ -657,7 +658,7 @@ class AdnVisualService:
                                       font=ctk.CTkFont(size=9),
                                       command=lambda p=plat: _convertir_plataforma(p)).pack(side="left", padx=2)
 
-                    ctk.CTkButton(vent, text="Cerrar", width=100, height=28,
+                    ctk.CTkButton(vent, text=tr("Cerrar"), width=100, height=28,
                                   command=vent.destroy).pack(pady=(5, 12))
 
                     self.app.dialogs.toggle_botones(True)

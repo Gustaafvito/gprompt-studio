@@ -25,6 +25,8 @@ import logging
 
 import pyperclip
 
+from modules.i18n import tr
+
 logger = logging.getLogger("gprompt")
 from typing import TYPE_CHECKING
 
@@ -146,7 +148,7 @@ class CoreMixin:
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             # Botón flotante para salir
-            self._focus_exit_btn = ctk.CTkButton(self, text="✕ Salir de Focus", width=140, height=28,
+            self._focus_exit_btn = ctk.CTkButton(self, text=tr("✕ Salir de Focus"), width=140, height=28,
                                                   fg_color="#7c3aed", hover_color="#6d28d9",
                                                   font=ctk.CTkFont(size=11, weight="bold"),
                                                   corner_radius=14,
@@ -504,12 +506,12 @@ class CoreMixin:
                             corner_radius=6, height=30)
         hdr.pack(fill="x", pady=(0, 4), padx=4)
         hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text="💡 Ideas — click en una para aplicarla",
+        ctk.CTkLabel(hdr, text=tr("💡 Ideas — click en una para aplicarla"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      text_color="#f39c12").pack(side="left", padx=8)
 
         # Botón "🔁 Más" — regenera otras 3 ideas distintas
-        ctk.CTkButton(hdr, text="🔁 Más", width=70, height=22,
+        ctk.CTkButton(hdr, text=tr("🔁 Más"), width=70, height=22,
                       fg_color="#2a6a4a", hover_color="#1f5037",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=self.cmd_ideas).pack(side="right", padx=4)
@@ -583,7 +585,7 @@ class CoreMixin:
                 w.bind("<Leave>",
                        lambda _e, cd=card: cd.configure(fg_color=card_bg))
 
-            ctk.CTkButton(btn_frame, text="✨ Similares", width=85, height=26,
+            ctk.CTkButton(btn_frame, text=tr("✨ Similares"), width=85, height=26,
                           fg_color="#7c3aed", hover_color="#5d2ab5",
                           font=ctk.CTkFont(size=10),
                           command=_mas_como_esta).pack(side="left", padx=2)
@@ -592,7 +594,7 @@ class CoreMixin:
                           hover_color="#1d4ed8" if is_lt else "#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_copiar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_frame, text="🚀 Generar", width=85, height=26,
+            ctk.CTkButton(btn_frame, text=tr("🚀 Generar"), width=85, height=26,
                           fg_color="#15803d",
                           hover_color="#166534" if is_lt else "#0d5026",
                           font=ctk.CTkFont(size=10, weight="bold"),
@@ -731,27 +733,27 @@ class CoreMixin:
                 else:
                     self.set_estado(f"⚠️ No se encontró NEGATIVE en #{n}", "#e74c3c")
 
-            ctk.CTkButton(btn_row, text="✅ Aplicar al resultado",
+            ctk.CTkButton(btn_row, text=tr("✅ Aplicar al resultado"),
                           width=170, height=28,
                           fg_color="#1a8a3c", hover_color="#127a30",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_aplicar).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 Todo", width=80, height=28,
+            ctk.CTkButton(btn_row, text=tr("📋 Todo"), width=80, height=28,
                           fg_color=accent, hover_color=self._darker(accent),
                           font=ctk.CTkFont(size=10),
                           command=_copiar_todo).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text="📋 POS", width=80, height=28,
+            ctk.CTkButton(btn_row, text=tr("📋 POS"), width=80, height=28,
                           fg_color="#15803d", hover_color="#0f5f29",
                           font=ctk.CTkFont(size=10),
                           command=_copiar_pos).pack(side="left", padx=2)
             if debe_mostrar_neg:
-                ctk.CTkButton(btn_row, text="📋 NEG", width=80, height=28,
+                ctk.CTkButton(btn_row, text=tr("📋 NEG"), width=80, height=28,
                               fg_color="#dc2626", hover_color="#b91c1c",
                               font=ctk.CTkFont(size=10),
                               command=_copiar_neg).pack(side="left", padx=2)
 
         # Cerrar
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30,
                       command=vent.destroy).pack(pady=(0, 12))
 
     def _extraer_pos_de_bloque(self, bloque):
@@ -962,11 +964,11 @@ class CoreMixin:
 
         btn_row = ctk.CTkFrame(sel, fg_color="transparent")
         btn_row.pack(pady=(0, 12))
-        ctk.CTkButton(btn_row, text="▶ Generar", width=140, height=32,
+        ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=140, height=32,
                       fg_color="#1a7a3c", hover_color="#145e2d",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_aceptar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=100, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=32,
                       fg_color="#444444", hover_color="#222222",
                       command=sel.destroy).pack(side="left", padx=4)
 
@@ -1237,6 +1239,6 @@ class CoreMixin:
 
             self._executor.submit(_worker).add_done_callback(log_future_exc)
 
-        btn_send = ctk.CTkButton(input_frame, text="Enviar", width=60, fg_color="#2980b9", hover_color="#1f608a", command=_enviar)
+        btn_send = ctk.CTkButton(input_frame, text=tr("Enviar"), width=60, fg_color="#2980b9", hover_color="#1f608a", command=_enviar)
         btn_send.pack(side="right")
         txt_input.bind("<Return>", _enviar)

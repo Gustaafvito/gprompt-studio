@@ -16,6 +16,7 @@ from config import (
     get_model_specs,
     get_theme_colors,
 )
+from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -132,10 +133,10 @@ class ToolsCreativeService:
         cfg.transient(self.app)
         cfg.grab_set()
 
-        ctk.CTkLabel(cfg, text="⚡ Pulse — Configuración",
+        ctk.CTkLabel(cfg, text=tr("⚡ Pulse — Configuración"),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 4))
         ctk.CTkLabel(cfg,
-                     text="Cada nivel = un prompt con distinta temperatura.\nMenor T = más consistente, mayor T = más creativo.",
+                     text=tr("Cada nivel = un prompt con distinta temperatura.\nMenor T = más consistente, mayor T = más creativo."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"],
                      justify="center").pack(pady=(0, 12))
 
@@ -160,7 +161,7 @@ class ToolsCreativeService:
                                ).pack(anchor="w", padx=30, pady=4)
 
         # Sliders custom (3 sliders)
-        ctk.CTkLabel(custom_frame, text="Temperaturas custom (3 niveles):",
+        ctk.CTkLabel(custom_frame, text=tr("Temperaturas custom (3 niveles):"),
                      font=ctk.CTkFont(size=10, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
         temps_init = ultima.get("custom_temps", [0.3, 0.6, 0.9])
         for i in range(3):
@@ -199,11 +200,11 @@ class ToolsCreativeService:
 
         btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
         btn_row.pack(side="bottom", pady=(0, 15))
-        ctk.CTkButton(btn_row, text="▶ Generar", width=140, height=34,
+        ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=140, height=34,
                       fg_color="#1a8a3c", hover_color="#127a30",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_ejecutar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=100, height=34,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=34,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=cfg.destroy).pack(side="left", padx=4)
 
@@ -481,7 +482,7 @@ class ToolsCreativeService:
         vent.geometry("680x520")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🤖 Top 3 modelos para tu idea",
+        ctk.CTkLabel(vent, text=tr("🤖 Top 3 modelos para tu idea"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(vent, text=f"Idea: {idea[:80]}{'…' if len(idea) > 80 else ''}",
                      font=ctk.CTkFont(size=10, slant="italic"),
@@ -545,7 +546,7 @@ class ToolsCreativeService:
                       fg_color="#7c3aed", hover_color="#5d2ab5",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_probar_los_3).pack(side="left", padx=4)
-        ctk.CTkButton(accion_row, text="Cerrar", width=100, height=34,
+        ctk.CTkButton(accion_row, text=tr("Cerrar"), width=100, height=34,
                       fg_color=c["fg_dark"],
                       command=vent.destroy).pack(side="left", padx=4)
 
@@ -709,8 +710,8 @@ class ToolsCreativeService:
         vent.geometry("600x500")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="👥 Definir grupo de personajes", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text="Define hasta 3 personajes que aparecerán juntos en la escena",
+        ctk.CTkLabel(vent, text=tr("👥 Definir grupo de personajes"), font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text=tr("Define hasta 3 personajes que aparecerán juntos en la escena"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         personajes_data = []
@@ -738,7 +739,7 @@ class ToolsCreativeService:
         # así que simulamos uno: texto inicial gris, se borra al hacer focus.
         # Antes el placeholder se colaba en la idea generada si el usuario
         # no lo borraba manualmente.
-        ctk.CTkLabel(vent, text="Relación / contexto entre ellos:",
+        ctk.CTkLabel(vent, text=tr("Relación / contexto entre ellos:"),
                      font=ctk.CTkFont(size=11, weight="bold")
                      ).pack(anchor="w", padx=15, pady=(10, 2))
         txt_relacion = ctk.CTkTextbox(vent, height=60,
@@ -810,7 +811,7 @@ class ToolsCreativeService:
             vent.destroy()
             self.app.dialogs.set_estado(f"👥 {len(personajes_def)} personajes preparados — pulsa ✨ Generar", "#2ecc71")
 
-        ctk.CTkButton(vent, text="✅ Aplicar a la idea", width=200, height=32,
+        ctk.CTkButton(vent, text=tr("✅ Aplicar a la idea"), width=200, height=32,
                       fg_color="#1a7a3c", hover_color="#145e2d",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_generar_grupo).pack(pady=10)
@@ -865,7 +866,7 @@ class ToolsCreativeService:
                     vent.title("🔍 Análisis inverso")
                     vent.geometry("700x600")
                     vent.transient(self.app)
-                    ctk.CTkLabel(vent, text="🔍 Análisis inverso: imagen vs prompt", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                    ctk.CTkLabel(vent, text=tr("🔍 Análisis inverso: imagen vs prompt"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
                     ctk.CTkLabel(vent, text=f"Visión: {motor}", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
@@ -920,13 +921,13 @@ class ToolsCreativeService:
                             vent.destroy()
                             self.app.dialogs.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
 
-                    ctk.CTkButton(btn_frame, text="📋 Copiar análisis", width=140, height=28,
+                    ctk.CTkButton(btn_frame, text=tr("📋 Copiar análisis"), width=140, height=28,
                                   fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                                   command=_copiar_analisis_completo).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="📋 Solo corregido", width=130, height=28,
+                    ctk.CTkButton(btn_frame, text=tr("📋 Solo corregido"), width=130, height=28,
                                   fg_color="#475569", hover_color="#374151",
                                   command=_copiar_solo_corregido).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="✅ Aplicar (con diff)", width=160, height=28,
+                    ctk.CTkButton(btn_frame, text=tr("✅ Aplicar (con diff)"), width=160, height=28,
                                   fg_color="#1a7a3c", hover_color="#15633a",
                                   command=_aplicar_corregido).pack(side="left", padx=4)
 
@@ -1107,15 +1108,15 @@ class ToolsCreativeService:
         vent.geometry("720x580")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🧬 Extracción de ADN visual",
+        ctk.CTkLabel(vent, text=tr("🧬 Extracción de ADN visual"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
-        ctk.CTkLabel(vent, text="Analizando imagen de referencia para extraer rasgos inmutables",
+        ctk.CTkLabel(vent, text=tr("Analizando imagen de referencia para extraer rasgos inmutables"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
 
         # Preview de la imagen cargada
         prev_frame = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=8)
         prev_frame.pack(fill="x", padx=15, pady=(0, 6))
-        ctk.CTkLabel(prev_frame, text="🖼 Imagen de referencia",
+        ctk.CTkLabel(prev_frame, text=tr("🖼 Imagen de referencia"),
                      font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
         img_preview = ctk.CTkLabel(prev_frame, text="")
         img_preview.pack(padx=10, pady=(0, 4))
@@ -1127,7 +1128,7 @@ class ToolsCreativeService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Estado / progreso
-        lbl_estado = ctk.CTkLabel(vent, text="⏳ Iniciando extracción...",
+        lbl_estado = ctk.CTkLabel(vent, text=tr("⏳ Iniciando extracción..."),
                                    font=ctk.CTkFont(size=11), text_color="#f39c12")
         lbl_estado.pack(anchor="w", padx=15, pady=(0, 4))
         prog_bar = ctk.CTkProgressBar(vent, height=8)
@@ -1172,7 +1173,7 @@ class ToolsCreativeService:
                     vent2.title("🧬 ADN visual extraído")
                     vent2.geometry("700x500")
                     vent2.transient(self.app)
-                    ctk.CTkLabel(vent2, text="🧬 ADN visual — Rasgos inmutables",
+                    ctk.CTkLabel(vent2, text=tr("🧬 ADN visual — Rasgos inmutables"),
                                  font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
                     estado_activo = "🟢 ACTIVO" if self.app._anclaje_visual else "⚪ Inactivo"
                     ctk.CTkLabel(vent2, text=f"Vision: {motor}  ·  Estado: {estado_activo}",
@@ -1228,17 +1229,17 @@ class ToolsCreativeService:
                         self.app.store.guardar_preferencias(prefs_b)
                         self.app.dialogs.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
 
-                    ctk.CTkButton(btn_frame, text="✅ Guardar y activar", width=150, height=30, fg_color="#1a7a3c",
+                    ctk.CTkButton(btn_frame, text=tr("✅ Guardar y activar"), width=150, height=30, fg_color="#1a7a3c",
                                   command=_guardar_editado).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="💾 Guardar en biblioteca", width=160, height=30, fg_color="#4a1a6a",
+                    ctk.CTkButton(btn_frame, text=tr("💾 Guardar en biblioteca"), width=160, height=30, fg_color="#4a1a6a",
                                   command=_guardar_biblioteca).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="📚 Ver biblioteca", width=130, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("📚 Ver biblioteca"), width=130, height=30,
                                   fg_color="#6a4a8a", hover_color="#503870",
                                   command=self.app.adn.cmd_ver_biblioteca
                                   ).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="🚫 Desactivar", width=100, height=30, fg_color="#5a1a1a",
+                    ctk.CTkButton(btn_frame, text=tr("🚫 Desactivar"), width=100, height=30, fg_color="#5a1a1a",
                                   command=_desactivar).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_frame, text="📋 Copiar", width=80, height=30,
+                    ctk.CTkButton(btn_frame, text=tr("📋 Copiar"), width=80, height=30,
                                   command=lambda: pyperclip.copy(adn)).pack(side="left", padx=4)
 
                     self.app.dialogs.toggle_botones(True)
@@ -1249,7 +1250,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        ctk.CTkButton(vent, text="🧬 Iniciar extracción", width=200, height=34, fg_color="#7c3aed",
+        ctk.CTkButton(vent, text=tr("🧬 Iniciar extracción"), width=200, height=34, fg_color="#7c3aed",
                       font=ctk.CTkFont(size=12, weight="bold"),
                       text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
                       ).pack(pady=8)
@@ -1271,18 +1272,18 @@ class ToolsCreativeService:
         sel.title("🧬 Variar con ADN")
         sel.geometry("520x520")
         sel.transient(self.app)
-        ctk.CTkLabel(sel, text="🧬 Variar con ADN visual", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
-        ctk.CTkLabel(sel, text="El sujeto mantendrá sus rasgos exactos. Solo cambia el contexto:",
+        ctk.CTkLabel(sel, text=tr("🧬 Variar con ADN visual"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel, text=tr("El sujeto mantendrá sus rasgos exactos. Solo cambia el contexto:"),
                      font=ctk.CTkFont(size=11), text_color=c["muted_text"]).pack(pady=(0, 12))
 
         # Cantidad
         f = ctk.CTkFrame(sel, fg_color="transparent")
         f.pack(pady=5)
-        ctk.CTkLabel(f, text="Cantidad de variantes:").pack(side="left", padx=8)
+        ctk.CTkLabel(f, text=tr("Cantidad de variantes:")).pack(side="left", padx=8)
         ent_n = ctk.CTkEntry(f, width=60); ent_n.insert(0, "5"); ent_n.pack(side="left")
 
         # Qué variar (10 opciones)
-        ctk.CTkLabel(sel, text="Qué cambiar (ADN se mantiene):", font=ctk.CTkFont(size=11, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel, text=tr("Qué cambiar (ADN se mantiene):"), font=ctk.CTkFont(size=11, weight="bold")).pack(pady=(15, 3))
         opciones = [
             "Localización / fondo",
             "Ropa diferente (cambiar prendas)",
@@ -1311,7 +1312,7 @@ class ToolsCreativeService:
             sel.destroy()
             self._generar_variantes_con_anclaje(idea, elemento, extra, cantidad)
 
-        ctk.CTkButton(sel, text="🧬 Generar variantes", width=200, height=32,
+        ctk.CTkButton(sel, text=tr("🧬 Generar variantes"), width=200, height=32,
                       fg_color="#1a7a3c", command=_ejecutar).pack(pady=15)
 
     def _generar_variantes_con_anclaje(self, idea, elemento, extra, cantidad):
@@ -1409,12 +1410,12 @@ class ToolsCreativeService:
                     vent.title("🔍 Análisis de consistencia")
                     vent.geometry("700x550")
                     vent.transient(self.app)
-                    ctk.CTkLabel(vent, text="🔍 Consistencia entre prompts", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+                    ctk.CTkLabel(vent, text=tr("🔍 Consistencia entre prompts"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", resp)
                     txt.configure(state="disabled")
-                    ctk.CTkButton(vent, text="📋 Copiar", width=100, height=28,
+                    ctk.CTkButton(vent, text=tr("📋 Copiar"), width=100, height=28,
                                   command=lambda: pyperclip.copy(resp)).pack(pady=10)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs.set_estado("🔍 Consistencia analizada", "#2ecc71")
@@ -1440,7 +1441,7 @@ class ToolsCreativeService:
         vent.geometry("700x720")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🧰 Constructor de NEGATIVE", font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+        ctk.CTkLabel(vent, text=tr("🧰 Constructor de NEGATIVE"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
         lbl_activos = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=9), text_color="#2ecc71")
         lbl_activos.pack(pady=(0, 4))
 
@@ -1615,7 +1616,7 @@ class ToolsCreativeService:
             win.title("💾 Presets de NEGATIVE")
             win.geometry("440x400")
             win.transient(vent)
-            ctk.CTkLabel(win, text="💾 Presets guardados",
+            ctk.CTkLabel(win, text=tr("💾 Presets guardados"),
                          font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(10, 4))
             scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=15, pady=5)
@@ -1625,7 +1626,7 @@ class ToolsCreativeService:
                     w.destroy()
                 presets_act = _cargar_presets()
                 if not presets_act:
-                    ctk.CTkLabel(scroll, text="(sin presets)").pack(pady=20)
+                    ctk.CTkLabel(scroll, text=tr("(sin presets)")).pack(pady=20)
                     return
                 for preset in presets_act:
                     row = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
@@ -1653,7 +1654,7 @@ class ToolsCreativeService:
                         _persistir_presets(nuevos)
                         _refrescar_presets()
 
-                    ctk.CTkButton(hdr, text="Aplicar", width=70, height=22,
+                    ctk.CTkButton(hdr, text=tr("Aplicar"), width=70, height=22,
                                   fg_color="#1a7a3c",
                                   command=_aplicar).pack(side="right", padx=2)
                     ctk.CTkButton(hdr, text="🗑", width=32, height=22,
@@ -1668,24 +1669,24 @@ class ToolsCreativeService:
                     ).pack(anchor="w", padx=10, pady=(0, 5))
             _refrescar_presets()
 
-        ctk.CTkButton(preset_row, text="✓ Básicos", width=85, height=24, fg_color="#1a4a5a",
+        ctk.CTkButton(preset_row, text=tr("✓ Básicos"), width=85, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Manos malas", "Baja calidad", "Texto / letras", "Marca de agua"])
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text="👤 Retrato", width=85, height=24, fg_color="#1a4a5a",
+        ctk.CTkButton(preset_row, text=tr("👤 Retrato"), width=85, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Manos malas", "Cara mal", "Ojos raros", "Boca / dientes",
                                                 "Proporciones malas", "Piel plástica", "Baja calidad",
                                                 "Texto / letras", "Marca de agua"])
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text="🏆 Calidad", width=100, height=24, fg_color="#1a4a5a",
+        ctk.CTkButton(preset_row, text=tr("🏆 Calidad"), width=100, height=24, fg_color="#1a4a5a",
                       command=lambda: _marcar(["Baja calidad", "Pixelado", "Ruido", "Desenfoque",
                                                 "Tinte amarillo", "Texto / letras", "Marca de agua", "Logos / firmas"])
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text="🧹 Limpiar", width=75, height=24, fg_color="#5a3a1a",
+        ctk.CTkButton(preset_row, text=tr("🧹 Limpiar"), width=75, height=24, fg_color="#5a3a1a",
                       command=lambda: [tup[0].set(False) for tup in check_vars.values()]
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text="💾 Guardar", width=90, height=24, fg_color="#4a1a6a",
+        ctk.CTkButton(preset_row, text=tr("💾 Guardar"), width=90, height=24, fg_color="#4a1a6a",
                       command=_guardar_preset).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text="📂 Presets", width=80, height=24, fg_color="#1a4a5a",
+        ctk.CTkButton(preset_row, text=tr("📂 Presets"), width=80, height=24, fg_color="#1a4a5a",
                       command=_mostrar_presets).pack(side="left", padx=2)
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1716,9 +1717,9 @@ class ToolsCreativeService:
             self.app.dialogs.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
 
-        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=30, fg_color="#1a7a3c",
+        ctk.CTkButton(btn_row, text=tr("✅ Aplicar al prompt"), width=170, height=30, fg_color="#1a7a3c",
                       command=_aplicar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="📋 Solo copiar", width=130, height=30, fg_color="#475569",
+        ctk.CTkButton(btn_row, text=tr("📋 Solo copiar"), width=130, height=30, fg_color="#475569",
                       command=_copiar).pack(side="left", padx=4)
 
 
@@ -1792,9 +1793,9 @@ class ToolsCreativeService:
                     vent.title("🎨 Paleta de colores extraída")
                     vent.geometry("580x600")
                     vent.transient(self.app)
-                    ctk.CTkLabel(vent, text="🎨 Paleta extraída de la imagen",
+                    ctk.CTkLabel(vent, text=tr("🎨 Paleta extraída de la imagen"),
                                  font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 4))
-                    ctk.CTkLabel(vent, text="Haz clic en un color para copiarlo. Añade al prompt para aplicar la paleta.",
+                    ctk.CTkLabel(vent, text=tr("Haz clic en un color para copiarlo. Añade al prompt para aplicar la paleta."),
                                  font=ctk.CTkFont(size=9), text_color="#888888").pack(pady=(0, 8))
 
                     # Colores principales
@@ -1831,7 +1832,7 @@ class ToolsCreativeService:
                     # Tabla de valores
                     val_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
                     val_frame.pack(fill="x", padx=15, pady=4)
-                    ctk.CTkLabel(val_frame, text="Valores detallados", font=ctk.CTkFont(size=11, weight="bold")
+                    ctk.CTkLabel(val_frame, text=tr("Valores detallados"), font=ctk.CTkFont(size=11, weight="bold")
                                  ).pack(anchor="w", padx=10, pady=(6, 2))
                     for i, (r, g, b) in enumerate(colores_raw[:5]):
                         hex_c = rgb_to_hex(r, g, b)
@@ -1862,7 +1863,7 @@ class ToolsCreativeService:
                     analogo = analog_colors(r0, g0, b0)
                     comp_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
                     comp_frame.pack(fill="x", padx=15, pady=4)
-                    ctk.CTkLabel(comp_frame, text="Colores complementarios y análogos",
+                    ctk.CTkLabel(comp_frame, text=tr("Colores complementarios y análogos"),
                                  font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
                     analogs_row = ctk.CTkFrame(comp_frame, fg_color="transparent")
                     analogs_row.pack(padx=10, pady=(0, 6))
@@ -1901,14 +1902,14 @@ class ToolsCreativeService:
                         self.app.store._guardar("paletas")  # FIX: era store.guardar() inexistente
                         self.app.dialogs.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
 
-                    ctk.CTkButton(btn_row, text="📋 Copiar HEX", width=120, height=28,
+                    ctk.CTkButton(btn_row, text=tr("📋 Copiar HEX"), width=120, height=28,
                                   command=lambda: pyperclip.copy(hex_str)).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="🎨 Añadir al prompt", width=140, height=28, fg_color="#1a7a3c",
+                    ctk.CTkButton(btn_row, text=tr("🎨 Añadir al prompt"), width=140, height=28, fg_color="#1a7a3c",
                                   command=lambda: (self.app._aplicar_atajo_tags(f"color palette: {hex_str}"),
                                                     vent.destroy())).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="💾 Guardar paleta", width=130, height=28, fg_color="#4a1a6a",
+                    ctk.CTkButton(btn_row, text=tr("💾 Guardar paleta"), width=130, height=28, fg_color="#4a1a6a",
                                   command=_guardar_paleta).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text="📚 Biblioteca", width=110, height=28, fg_color="#1a4a5a",
+                    ctk.CTkButton(btn_row, text=tr("📚 Biblioteca"), width=110, height=28, fg_color="#1a4a5a",
                                   command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
 
                     self.app.dialogs.set_estado("🎨 Paleta extraída", "#2ecc71")
@@ -1930,7 +1931,7 @@ class ToolsCreativeService:
         win.geometry("560x600")
         win.transient(parent_window or self.app)
 
-        ctk.CTkLabel(win, text="📚 Biblioteca de paletas",
+        ctk.CTkLabel(win, text=tr("📚 Biblioteca de paletas"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
 
         # Cabecera con contador
@@ -1993,7 +1994,7 @@ class ToolsCreativeService:
                     except Exception as e:
                         logger.warning(f"Borrar paleta: {e}")
 
-                ctk.CTkButton(hdr, text="🎨 Aplicar", width=80, height=24,
+                ctk.CTkButton(hdr, text=tr("🎨 Aplicar"), width=80, height=24,
                               fg_color="#1a7a3c",
                               command=_aplicar).pack(side="right", padx=2)
                 ctk.CTkButton(hdr, text="📋", width=32, height=24,
@@ -2027,6 +2028,6 @@ class ToolsCreativeService:
 
         _refrescar()
 
-        ctk.CTkButton(win, text="Cerrar", width=100, height=30,
+        ctk.CTkButton(win, text=tr("Cerrar"), width=100, height=30,
                       fg_color="#444", hover_color="#555",
                       command=win.destroy).pack(pady=8)
