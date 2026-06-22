@@ -77,8 +77,8 @@ class UiEventsService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         if hasattr(self.app, '_seg_modo'):
-            mapa_inv = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
-            try: self.app._seg_modo.set(mapa_inv.get(modo, "Imagen"))
+            mapa_inv = {"imagen": tr("Imagen"), "video": tr("Vídeo"), "audio": tr("Audio")}
+            try: self.app._seg_modo.set(mapa_inv.get(modo, tr("Imagen")))
             except: pass
 
         _TABS_CON_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"]

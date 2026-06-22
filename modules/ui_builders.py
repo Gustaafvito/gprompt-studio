@@ -286,69 +286,69 @@ class UIBuildersService:
         # Items dentro de cada menú también ordenados alfabéticamente (ignorando el emoji inicial).
         # NOTA: ADN Visual y Análisis Inverso NO se duplican aquí: ya están como botones grandes en la barra del medio.
         grupos_menus = [
-            ("📊 Análisis", "#8e4ab0", [
-                ("🚀  Auto-mejora", self.app.analysis.cmd_automejora_periodica),
-                ("💰  Coste de sesión", self.app.analysis.cmd_coste_sesion),
-                ("📝  Crítica historial", self.app.analysis.cmd_critica_historial),
-                ("📈  Estadísticas", self.app.analysis.abrir_estadisticas),
-                ("🎯  Optimizador en bucle", self.app.analysis.cmd_optimizar_loop),
+            (tr("📊 Análisis"), "#8e4ab0", [
+                (tr("🚀  Auto-mejora"), self.app.analysis.cmd_automejora_periodica),
+                (tr("💰  Coste de sesión"), self.app.analysis.cmd_coste_sesion),
+                (tr("📝  Crítica historial"), self.app.analysis.cmd_critica_historial),
+                (tr("📈  Estadísticas"), self.app.analysis.abrir_estadisticas),
+                (tr("🎯  Optimizador en bucle"), self.app.analysis.cmd_optimizar_loop),
             ]),
-            ("📚 Aprender", "#2e8a9e", [
-                ("ℹ️  Acerca de G-Prompt", self.app.dialogs.cmd_acerca_de),
-                ("⌨️  Atajos teclado", self.app.atajos.cmd_mostrar_atajos),
-                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
-                ("📖  Modo educativo", self.app.analysis.cmd_modo_educativo),
-                ("📚  Tutorial completo", self.app.atajos.abrir_tutorial),
+            (tr("📚 Aprender"), "#2e8a9e", [
+                (tr("ℹ️  Acerca de G-Prompt"), self.app.dialogs.cmd_acerca_de),
+                (tr("⌨️  Atajos teclado"), self.app.atajos.cmd_mostrar_atajos),
+                (tr("📖  Guía de estilos"), lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
+                (tr("📖  Modo educativo"), self.app.analysis.cmd_modo_educativo),
+                (tr("📚  Tutorial completo"), self.app.atajos.abrir_tutorial),
             ]),
-            ("💾 Backup", "#a04545", [
-                ("💼  Backup completo", self.app.backup.cmd_backup_completo),
-                ("📊  Exportar CSV", self.app.backup.cmd_exportar_csv),
-                ("📂  Restaurar backup", self.app.backup.cmd_restore_completo),
+            (tr("💾 Backup"), "#a04545", [
+                (tr("💼  Backup completo"), self.app.backup.cmd_backup_completo),
+                (tr("📊  Exportar CSV"), self.app.backup.cmd_exportar_csv),
+                (tr("📂  Restaurar backup"), self.app.backup.cmd_restore_completo),
             ]),
-            ("📁 Datos", "#3d7a9c", [
-                ("🌟  Estrellas", lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
-                ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self.app.json.cmd_exportar),
-                ("⭐  Favoritos", lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
-                ("📋  Historial", lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
-                ("📥  Importar prompt JSON pro", self.app.json.cmd_importar),
-                ("🔗  LoRAs", lambda: abrir_loras(self.app)),
-                ("🧑  Personajes", lambda: abrir_personajes(self.app)),
+            (tr("📁 Datos"), "#3d7a9c", [
+                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
+                (tr("📤  Exportar como JSON pro (Veo/Sora/Kling)"), self.app.json.cmd_exportar),
+                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
+                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
+                (tr("📥  Importar prompt JSON pro"), self.app.json.cmd_importar),
+                (tr("🔗  LoRAs"), lambda: abrir_loras(self.app)),
+                (tr("🧑  Personajes"), lambda: abrir_personajes(self.app)),
             ]),
-            ("🛠 Herramientas", "#c97a2e", [
-                ("🎯  Adaptar al modelo activo", self.app.workflow.cmd_adaptar_modelo),
-                ("🔒  Anclaje rasgos (consistencia)", self.app.creative.cmd_anclaje_visual),
-                ("🧑‍🎨  Avatar dataset (LoRA)", lambda: abrir_avatar_window(self.app)),
-                ("🎭  Detectar estilo (3 imágenes)", self.app.cliente.cmd_companero_moodboard),
-                ("📤  Export CLI", self.app.backup.cmd_export_cli),
-                ("💼  Modo Cliente", self.app.cliente.cmd_modo_cliente),
-                ("🧰  Negative builder", self.app.creative.cmd_negative_builder),
-                ("🎨  Paleta colores", self.app.creative.cmd_color_palette),
+            (tr("🛠 Herramientas"), "#c97a2e", [
+                (tr("🎯  Adaptar al modelo activo"), self.app.workflow.cmd_adaptar_modelo),
+                (tr("🔒  Anclaje rasgos (consistencia)"), self.app.creative.cmd_anclaje_visual),
+                (tr("🧑‍🎨  Avatar dataset (LoRA)"), lambda: abrir_avatar_window(self.app)),
+                (tr("🎭  Detectar estilo (3 imágenes)"), self.app.cliente.cmd_companero_moodboard),
+                (tr("📤  Export CLI"), self.app.backup.cmd_export_cli),
+                (tr("💼  Modo Cliente"), self.app.cliente.cmd_modo_cliente),
+                (tr("🧰  Negative builder"), self.app.creative.cmd_negative_builder),
+                (tr("🎨  Paleta colores"), self.app.creative.cmd_color_palette),
             ]),
-            ("📝 Plantillas", "#2ea866", [
-                ("⚡  Auto-expansión (en idea)", self.app.data.cmd_gestionar_snippets),
-                ("🧬  Biblioteca ADN", self.app.adn.cmd_ver_biblioteca),
-                ("📐  Fórmulas", self.app.data.abrir_formulas),
-                ("📋  Plantillas", self.app._cmd_plantillas_populares),
-                ("💎  Seeds favoritos", self.app.analysis.abrir_seeds_favoritos),
-                ("🏷  Tags reutilizables (al prompt)", self.app.data.abrir_snippets),
+            (tr("📝 Plantillas"), "#2ea866", [
+                (tr("⚡  Auto-expansión (en idea)"), self.app.data.cmd_gestionar_snippets),
+                (tr("🧬  Biblioteca ADN"), self.app.adn.cmd_ver_biblioteca),
+                (tr("📐  Fórmulas"), self.app.data.abrir_formulas),
+                (tr("📋  Plantillas"), self.app._cmd_plantillas_populares),
+                (tr("💎  Seeds favoritos"), self.app.analysis.abrir_seeds_favoritos),
+                (tr("🏷  Tags reutilizables (al prompt)"), self.app.data.abrir_snippets),
             ]),
-            ("🎨 UI", "#7a7a8a", [
-                ("⚙️  Ajustes", self.app.dialogs.cmd_preferencias),
-                ("📚  Biblioteca", self.app.data.abrir_biblioteca),
-                ("🌗  Cambiar tema", self.app.dialogs.cmd_toggle_tema),
-                ("🏠  Dashboard", self.app.dashboard.cmd_abrir),
-                ("🌐  Idioma (EN/ES)", self.app.dialogs.cmd_toggle_idioma),
-                ("🎯  Modo Focus", self.app.creative.cmd_modo_focus),
+            (tr("🎨 UI"), "#7a7a8a", [
+                (tr("⚙️  Ajustes"), self.app.dialogs.cmd_preferencias),
+                (tr("📚  Biblioteca"), self.app.data.abrir_biblioteca),
+                (tr("🌗  Cambiar tema"), self.app.dialogs.cmd_toggle_tema),
+                (tr("🏠  Dashboard"), self.app.dashboard.cmd_abrir),
+                (tr("🌐  Idioma (EN/ES)"), self.app.dialogs.cmd_toggle_idioma),
+                (tr("🎯  Modo Focus"), self.app.creative.cmd_modo_focus),
             ]),
-            ("⚙️ Workflow", "#c9b32e", [
-                ("🆚  A/B Testing", self.app.ab.cmd_ab_testing),
-                ("🔎  Búsqueda global", self.app.backup.cmd_busqueda_global),
-                ("⏰  Cron prompts", self.app.workflow.cmd_cron_prompts),
-                ("🎙 Grabar sesión", self.app.sesion.cmd_grabar_toggle),
-                ("👥  Grupo personajes", self.app.creative.cmd_grupo_personajes),
-                ("🔄  Macros", self.app.workflow.abrir_macros),
-                ("📁  Proyectos", self.app.workflow.cmd_proyectos),
-                ("📑  Versiones prompt", self.app.workflow.cmd_versiones_prompt),
+            (tr("⚙️ Workflow"), "#c9b32e", [
+                (tr("🆚  A/B Testing"), self.app.ab.cmd_ab_testing),
+                (tr("🔎  Búsqueda global"), self.app.backup.cmd_busqueda_global),
+                (tr("⏰  Cron prompts"), self.app.workflow.cmd_cron_prompts),
+                (tr("🎙 Grabar sesión"), self.app.sesion.cmd_grabar_toggle),
+                (tr("👥  Grupo personajes"), self.app.creative.cmd_grupo_personajes),
+                (tr("🔄  Macros"), self.app.workflow.abrir_macros),
+                (tr("📁  Proyectos"), self.app.workflow.cmd_proyectos),
+                (tr("📑  Versiones prompt"), self.app.workflow.cmd_versiones_prompt),
             ]),
         ]
 
@@ -548,10 +548,10 @@ class UIBuildersService:
         inner = ctk.CTkFrame(frame, fg_color="transparent")
         inner.pack(fill="x", padx=8, pady=6)
 
-        seg = ctk.CTkSegmentedButton(inner, values=["Imagen", "Vídeo", "Audio"],
+        seg = ctk.CTkSegmentedButton(inner, values=[tr("Imagen"), tr("Vídeo"), tr("Audio")],
                                       command=self._on_segmento_modo, height=28,
                                       font=ctk.CTkFont(size=11))
-        seg.set("Imagen")
+        seg.set(tr("Imagen"))
         seg.pack(side="left", padx=(0, 12))
         self.app._seg_modo = seg
 
@@ -667,7 +667,7 @@ class UIBuildersService:
             self.app.switch_ref.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
 
     def _on_segmento_modo(self, valor):
-        mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}
+        mapa = {tr("Imagen"): "imagen", tr("Vídeo"): "video", tr("Audio"): "audio"}
         self.app.modo_var.set(mapa.get(valor, "imagen"))
         self.app.events.on_modo_cambio()
 

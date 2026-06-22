@@ -287,8 +287,8 @@ def abrir_tutorial(app):
 
     def _set_modo(valor: str) -> str:
         """Cambia el modo activo (imagen / video / audio)."""
-        mapa_label = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
-        label = mapa_label.get(valor.lower(), "Imagen")
+        mapa_label = {"imagen": tr("Imagen"), "video": tr("Vídeo"), "audio": tr("Audio")}
+        label = mapa_label.get(valor.lower(), tr("Imagen"))
         if not hasattr(app, "_seg_modo"):
             raise AttributeError("app._seg_modo no existe")
         try:
