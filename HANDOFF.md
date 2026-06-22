@@ -27,7 +27,9 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **724 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Idioma UI | **Bilingüe ES/EN — Fase A** (infra `modules/i18n.py` + toggle "UI→Idioma", reinicia para aplicar). Faltan Fases B (envolver ~760 textos) y C (tutorial/ayuda) |
+| Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
 | Arquitectura | Composición completa: **1 mixin** (`CoreMixin`) en el MRO, resto son servicios accedidos por `self.<componente>` |
@@ -59,6 +61,29 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 26 — Limpieza, build limpio, bilingüe ES/EN (Fase A)
+
+1. **Limpieza de carpeta** (`b8e97f7`): borrado cruft local (~730 MB:
+   dist/build/__pycache__/.pytest_cache/.ruff_cache, gitignored). Docs de
+   desarrollo (AGREGAR_MODELO/BUILD/ESTRUCTURA) movidos a `docs/`; README,
+   HANDOFF y GUIA_ESTILOS se quedan en raíz (el `.spec` empaqueta los 2 últimos).
+
+2. **Build limpio/reproducible** (`83f0ff5`): `build_release.py` exporta solo lo
+   trackeado en git (HEAD) a `../GPromptStudio-build-clean/`, buildea ahí
+   (onedir+installer+onefile) y copia los 3 al distribuible. Doc en docs/BUILD.md.
+
+3. **Bilingüe ES/EN — Fase A** (`637e9a8`): infraestructura i18n.
+   - `modules/i18n.py`: `tr("texto es")` → EN si idioma=="en" y está en
+     TRADUCCIONES, si no fallback al español. `set_idioma`/`get_idioma`.
+   - `app.py`: carga pref `idioma` y fija el idioma ANTES del build de la UI.
+   - Toggle en menú **UI → 🌐 Idioma (EN/ES)** (`dialogs._cmd_toggle_idioma`),
+     guarda pref y avisa "reinicia para aplicar" (cambio NO en caliente).
+   - 10 etiquetas de ejemplo envueltas con `tr()` (barras imagen/vídeo).
+   - **PENDIENTE Fase B**: envolver los ~760 textos restantes con `tr(...)` +
+     rellenar TRADUCCIONES. **Fase C**: tutorial.json/glosario.json/ayuda en EN.
 
 ---
 
