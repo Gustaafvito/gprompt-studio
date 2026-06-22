@@ -23,10 +23,15 @@ gprompt-studio/
 ├── pyproject.toml         # Config del proyecto (PEP 621) + Ruff
 ├── .pre-commit-config.yaml # Hooks: ruff, whitespace, EOF, line-endings, etc.
 ├── .gitignore
-├── README.md              # Doc para usuario
-├── ESTRUCTURA.md          # ← este archivo
-├── GUIA_ESTILOS.md        # Referencia visual de ~250 estilos
-├── BUILD.md               # Cómo generar el .exe / instalador
+├── README.md              # Doc para usuario (raíz)
+├── HANDOFF.md             # Doc viva del proyecto (raíz)
+├── GUIA_ESTILOS.md        # Referencia visual de ~250 estilos (raíz, va en el .exe)
+│
+├── docs/                  # Documentación de desarrollo
+│   ├── ESTRUCTURA.md      # ← este archivo
+│   ├── BUILD.md           # Cómo generar el .exe / instalador
+│   ├── AGREGAR_MODELO.md  # Guía para añadir/auditar modelos
+│   └── handoff-historico.md # Histórico de sesiones 6-19
 │
 ├── modules/               # Mixins + componentes + servicios auxiliares
 │   ├── __init__.py        # Re-export público + install_components

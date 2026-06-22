@@ -17,9 +17,9 @@ motores (DeepSeek, Gemini, OpenRouter, Claude…). Incluye import/export JSON
 para Veo/Sora/Kling, optimizador de prompts en bucle, coste de sesión,
 módulo Avatar para datasets LoRA, empaquetado `.exe` + installer, y CI.
 
-Estructura del código: ver [`ESTRUCTURA.md`](ESTRUCTURA.md).
-Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
-[`AGREGAR_MODELO.md`](AGREGAR_MODELO.md).
+Estructura del código: ver [`docs/ESTRUCTURA.md`](docs/ESTRUCTURA.md).
+Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
+[`docs/AGREGAR_MODELO.md`](docs/AGREGAR_MODELO.md).
 
 ---
 
