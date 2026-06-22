@@ -414,6 +414,17 @@ class UIBuildersService:
                 try:
                     abs_x = btn_real.winfo_rootx()
                     abs_y = btn_real.winfo_rooty() + btn_real.winfo_height() + 4
+                    # El menú es más ancho que el botón (~240px). Si abierto a la
+                    # izquierda del botón se saldría por la derecha de la ventana
+                    # (caso del botón "Workflow", el más a la derecha), anclarlo
+                    # para que su borde derecho quede dentro, creciendo a la
+                    # izquierda. Se calcula ANTES del geometry inicial porque mover
+                    # un Toplevel overrideredirect ya mapeado no surte efecto.
+                    menu_w = 240
+                    win_left = self.app.winfo_rootx()
+                    win_right = win_left + self.app.winfo_width()
+                    if abs_x + menu_w > win_right - 12:
+                        abs_x = max(win_left + 12, win_right - menu_w - 12)
                 except Exception:
                     abs_x, abs_y = 200, 100
                 new_popup.geometry(f"+{abs_x}+{abs_y}")
