@@ -714,7 +714,7 @@ def abrir_batch_variables(app):
             app.txt_salida.delete("1.0", "end")
             app.txt_salida.insert("1.0", contenido)
             ventana.destroy()
-            app.dialogs.set_estado("⚡ Variaciones volcadas al resultado", "#22c55e")
+            app.dialogs.set_estado(tr("⚡ Variaciones volcadas al resultado"), "#22c55e")
 
     frame_btns = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_btns.pack(fill="x", padx=15, pady=(0, 12))
@@ -1388,7 +1388,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         def cargar(c=contenido):
             app.actualizar_salida(c)
             ventana.destroy()
-            app.set_estado("📋 Prompt cargado.", "#3498db")
+            app.set_estado(tr("📋 Prompt cargado."), "#3498db")
 
         def copiar(c=contenido):
             try:

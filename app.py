@@ -875,7 +875,7 @@ class ArquitectoApp(
         self._regen_init()
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.dialogs.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Escribe una idea primero"), "#e67e22")
             return
         # Guardar resultado actual en pila ANTES de regenerar
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -891,7 +891,7 @@ class ArquitectoApp(
         """Navega a la versión anterior de la regeneración."""
         self._regen_init()
         if not self._regen_stack:
-            self.dialogs.set_estado("⚠️ No hay versiones anteriores", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay versiones anteriores"), "#e67e22")
             return
         # Si estamos en el último, primero guardamos el actual
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -900,7 +900,7 @@ class ArquitectoApp(
             self._regen_push(actual)
             self._regen_idx -= 1
         if self._regen_idx <= 0:
-            self.dialogs.set_estado("⚠️ Ya estás en la versión más antigua", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Ya estás en la versión más antigua"), "#e67e22")
             return
         self._regen_idx -= 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
@@ -910,7 +910,7 @@ class ArquitectoApp(
         """Navega a la versión siguiente de la regeneración."""
         self._regen_init()
         if not self._regen_stack or self._regen_idx >= len(self._regen_stack) - 1:
-            self.dialogs.set_estado("⚠️ Ya estás en la versión más reciente", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Ya estás en la versión más reciente"), "#e67e22")
             return
         self._regen_idx += 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
@@ -921,16 +921,16 @@ class ArquitectoApp(
         self._regen_init()
         actual_txt = self.txt_salida.get("1.0", "end").strip()
         if not actual_txt:
-            self.dialogs.set_estado("⚠️ No hay prompt actual para comparar", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay prompt actual para comparar"), "#e67e22")
             return
         # Buscar la versión anterior
         if not self._regen_stack:
-            self.dialogs.set_estado("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial.", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial."), "#e67e22")
             return
         # Si el actual es el último, comparamos con el penúltimo
         if self._regen_idx == len(self._regen_stack) - 1:
             if len(self._regen_stack) < 2:
-                self.dialogs.set_estado("⚠️ Necesitas al menos 2 versiones para comparar", "#e67e22")
+                self.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 versiones para comparar"), "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx - 1]
             etiqueta_actual = f"Versión {self._regen_idx + 1} (actual)"
@@ -938,7 +938,7 @@ class ArquitectoApp(
         else:
             # Estamos navegando atrás, comparar con la siguiente
             if self._regen_idx + 1 >= len(self._regen_stack):
-                self.dialogs.set_estado("⚠️ No hay versión siguiente para comparar", "#e67e22")
+                self.dialogs.set_estado(tr("⚠️ No hay versión siguiente para comparar"), "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx]
             actual_txt = self._regen_stack[self._regen_idx + 1]
@@ -1212,7 +1212,7 @@ class ArquitectoApp(
 
         plantillas = self._cargar_plantillas_desde_json()
         if not plantillas:
-            self.dialogs.set_estado("⚠️ No se pudieron cargar las plantillas", "#e74c3c")
+            self.dialogs.set_estado(tr("⚠️ No se pudieron cargar las plantillas"), "#e74c3c")
             return
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
@@ -1593,7 +1593,7 @@ class ArquitectoApp(
                       fg_color="#1a4a5a",
                       command=lambda: (_persistir_valores(),
                                        pyperclip.copy(preview_txt.get("1.0", "end").strip()),
-                                       self.dialogs.set_estado("📋 Copiado", "#2ecc71"))
+                                       self.dialogs.set_estado(tr("📋 Copiado"), "#2ecc71"))
                       ).pack(side="left", padx=4)
         if ultimos:
             ctk.CTkButton(btn_row, text=tr("🧹 Olvidar valores"), width=130, height=32,
@@ -2527,7 +2527,7 @@ class ArquitectoApp(
         if total_modelos > 0:
             self.dialogs.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
         else:
-            self.dialogs.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
+            self.dialogs.set_estado(tr("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)"), "#2ecc71")
         ventana.destroy()
 
     def cmd_previsualizar(self):
@@ -2544,10 +2544,10 @@ class ArquitectoApp(
         prompt_actual = self.txt_salida.get("1.0", "end").strip()
 
         if not prompt_actual:
-            return self.dialogs.set_estado("⚠️ Genera un prompt primero para poder previsualizarlo.", "#e67e22")
+            return self.dialogs.set_estado(tr("⚠️ Genera un prompt primero para poder previsualizarlo."), "#e67e22")
 
         if self.modo_var.get() == "audio":
-            return self.dialogs.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
+            return self.dialogs.set_estado(tr("⚠️ La previsualización solo está disponible para Imágenes y Vídeos."), "#e67e22")
         try: self.sesion._sesion_log("🎨 Previsualizó (boceto rápido)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -2576,13 +2576,13 @@ class ArquitectoApp(
             if _time_ttl.time() - ts <= _PREVIEW_CACHE_TTL:
                 img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
                 self.preview.mostrar_window(image_pil, img_ctk, url_imagen, desde_cache=True)
-                self.dialogs.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
+                self.dialogs.set_estado(tr("📥 Preview desde caché (sin llamada a API)"), "#2ecc71")
                 return
             else:
                 # Entrada expirada: eliminar y regenerar
                 del self._preview_cache[cache_key]
 
-        self.dialogs.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
+        self.dialogs.set_estado(tr("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos."), "#9b59b6")
         self.dialogs.toggle_botones(False)
 
         # Usa el helper unificado (semáforo + retry con backoff).
@@ -2619,7 +2619,7 @@ class ArquitectoApp(
                 self._preview_cache[cache_key] = (image_pil, url_imagen, time.time())
                 self.preview.mostrar_window(image_pil, img_ctk, url_imagen,
                                             desde_cache=False)
-                self.dialogs.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
+                self.dialogs.set_estado(tr("✅ Previsualización generada con éxito."), "#2ecc71")
             except Exception as e:
                 self.dialogs.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
             finally:

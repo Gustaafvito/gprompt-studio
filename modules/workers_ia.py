@@ -25,6 +25,7 @@ Dependencias self (provistas por ArquitectoApp):
 import logging
 import re
 
+from modules.i18n import tr
 from workers import limpiar_marcadores, parsear_ideas
 
 logger = logging.getLogger("gprompt")
@@ -209,13 +210,13 @@ class WorkersIaService:
             elif es_variaciones: self.app.after(0, lambda: self.app._mostrar_variaciones(self.app._parsear_variaciones(texto, n_esperado=n_variaciones)))
         except Exception as e:
             self.app.after(0, lambda e=e: self.app.dialogs.actualizar_salida(f"❌ Error {self.app.llm_var.get()}: {e}"))
-            self.app.after(0, lambda: self.app.dialogs.set_estado("Error de conexión.", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr("Error de conexión."), "#e74c3c"))
             self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
             self.app.after(0, self.app.dialogs._detener_progreso)
 
     def _worker_vision(self):
         try:
-            self.app.after(0, lambda: self.app.dialogs.set_estado("👁 Analizando imagen...", "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr("👁 Analizando imagen..."), "#f39c12"))
             def on_status(msg): self.app.after(0, lambda: self.app.dialogs.set_estado(msg, "#f39c12"))
             desc, motor = self.app.vision.describir(self.app.imagen_cargada, self.app.modo_var.get(), on_status)
 
@@ -229,15 +230,15 @@ class WorkersIaService:
                 self.app.txt_idea.focus_set()
             self.app.after(0, _mostrar_resultado)
         except Exception as e:
-            self.app.after(0, lambda: self.app.dialogs.set_estado("❌ Error visión.", "#e74c3c"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr("❌ Error visión."), "#e74c3c"))
             self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
     def _worker_prompt_traduccion(self, idea_original):
         idea = idea_original
         if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_original):
-            self.app.after(0, lambda: self.app.dialogs.set_estado("🌐 Traduciendo al inglés...", "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traduciendo al inglés..."), "#f39c12"))
             idea = self.app.deepseek.traducir(idea_original)
-            self.app.after(0, lambda: self.app.dialogs.set_estado("🌐 Traducido...", "#3498db"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traducido..."), "#3498db"))
         self._worker_ia(self.app._construir_peticion(idea, "B"))
     # ──────────────────────────────────────────────────────────────
     def _worker_prompt_quick(self, idea):
@@ -316,7 +317,7 @@ class WorkersIaService:
 
             def _aplicar():
                 self.app.dialogs.actualizar_salida(texto)
-                self.app.dialogs.set_estado("⚡ Quick listo", "#2ecc71")
+                self.app.dialogs.set_estado(tr("⚡ Quick listo"), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
                 try: self.app.dialogs._sonar_completado()
                 except Exception as e:
@@ -425,5 +426,5 @@ class WorkersIaService:
                 self.app.dialogs.toggle_botones(True)
             self.app.after(0, _mostrar_final)
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.dialogs.set_estado("❌ Error en Img→Prompt", "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr("❌ Error en Img→Prompt"), "#e74c3c"))
             self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))

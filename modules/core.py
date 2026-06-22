@@ -115,7 +115,7 @@ class CoreMixin:
         if dest == "Anthum (concurso)":
             self.brief_var.set(True)
             self.events._on_brief_cambio()
-            self.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
+            self.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), "#f39c12")
 
         self.reiniciar_memoria()
 
@@ -156,7 +156,7 @@ class CoreMixin:
             self._focus_exit_btn.place(relx=0.5, rely=0.01, anchor="n")
 
             self._modo_focus_activo = True
-            self.set_estado("🎯 Modo Focus ACTIVO — pulsa ✕ para salir", "#7c3aed")
+            self.set_estado(tr("🎯 Modo Focus ACTIVO — pulsa ✕ para salir"), "#7c3aed")
         else:
             # DESACTIVAR: quitar botón flotante
             if self._focus_exit_btn:
@@ -211,7 +211,7 @@ class CoreMixin:
                 self._apply_theme_colors()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-            self.set_estado("🎯 Modo Focus desactivado")
+            self.set_estado(tr("🎯 Modo Focus desactivado"))
 
     # ON LLM CAMBIO
 
@@ -301,21 +301,21 @@ class CoreMixin:
                     pyperclip.copy(r)
                     label = "Prompt" if not tiene_neg else "Prompt Positivo"
                     self.set_estado(f"✅ {label} copiado.", "#2ecc71")
-                else: self.set_estado("⚠️ No hay prompt generado.", "#e67e22")
+                else: self.set_estado(tr("⚠️ No hay prompt generado."), "#e67e22")
             elif tipo == "negativo":
                 if not tiene_neg:
-                    self.set_estado("ℹ️ Este modelo no usa negative prompt.", "#3498db")
+                    self.set_estado(tr("ℹ️ Este modelo no usa negative prompt."), "#3498db")
                     return
                 r = self.extraer_negative()
                 if r:
                     pyperclip.copy(r)
-                    self.set_estado("✅ Prompt Negativo copiado.", "#2ecc71")
-                else: self.set_estado("⚠️ No hay NEGATIVE PROMPT.", "#e67e22")
+                    self.set_estado(tr("✅ Prompt Negativo copiado."), "#2ecc71")
+                else: self.set_estado(tr("⚠️ No hay NEGATIVE PROMPT."), "#e67e22")
             elif tipo == "todo":
                 t = self.txt_salida.get("1.0", "end").strip()
                 if t:
                     pyperclip.copy(t)
-                    self.set_estado("✅ Todo copiado.", "#2ecc71")
+                    self.set_estado(tr("✅ Todo copiado."), "#2ecc71")
         except Exception as e:
             self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
 
@@ -553,7 +553,7 @@ class CoreMixin:
 
             def _mas_como_esta(t=idea_texto):
                 """Pide 3 ideas SIMILARES a esta."""
-                self.set_estado("✨ Generando 3 ideas similares...", "#f39c12")
+                self.set_estado(tr("✨ Generando 3 ideas similares..."), "#f39c12")
                 self.toggle_botones(False)
                 modo = self.modo_var.get()
                 tipo = "canción" if modo == "audio" else "vídeo" if modo == "video" else "imagen"
@@ -834,7 +834,7 @@ class CoreMixin:
 
             if idea: peticion += f"\n\nTema añadido por el usuario: {idea}."
 
-            self.set_estado("⏳ Generando ideas...", "#f39c12")
+            self.set_estado(tr("⏳ Generando ideas..."), "#f39c12")
             self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")
             self.toggle_botones(False)
             self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
@@ -846,7 +846,7 @@ class CoreMixin:
         self._ocultar_ideas()
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.set_estado("⚠️ Escribe o selecciona una idea primero.", "#e67e22")
+            self.set_estado(tr("⚠️ Escribe o selecciona una idea primero."), "#e67e22")
             return
         # Detectar NSFW automáticamente
         self.analysis.detectar_nsfw_auto(idea)
@@ -858,7 +858,7 @@ class CoreMixin:
             self.sesion._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.set_estado("⏳ Compilando prompt...", "#f39c12")
+        self.set_estado(tr("⏳ Compilando prompt..."), "#f39c12")
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_prompt_traduccion, idea).add_done_callback(log_future_exc)
 
@@ -882,7 +882,7 @@ class CoreMixin:
         self._ocultar_ideas()
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.set_estado("⚠️ Escribe o selecciona una idea primero.", "#e67e22")
+            self.set_estado(tr("⚠️ Escribe o selecciona una idea primero."), "#e67e22")
             return
         try:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else
@@ -891,7 +891,7 @@ class CoreMixin:
             self.sesion._sesion_log(f"⚡ Quick: idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.set_estado("⚡ Quick generate...", "#d97706")
+        self.set_estado(tr("⚡ Quick generate..."), "#d97706")
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_prompt_quick, idea).add_done_callback(log_future_exc)
 
@@ -981,7 +981,7 @@ class CoreMixin:
         idea, pos = self.txt_idea.get("1.0", "end").strip(), self.extraer_positive()
 
         if not (pos and len(pos) > 10) and not idea:
-            return self.set_estado("⚠️ Necesitas una idea o prompt previo.", "#e67e22")
+            return self.set_estado(tr("⚠️ Necesitas una idea o prompt previo."), "#e67e22")
 
         # Slider N (antes hardcoded a 3)
         n = self._pedir_n_modal(
@@ -1012,8 +1012,8 @@ class CoreMixin:
         self._executor.submit(self.workers.worker_ia, peticion, False, True, n).add_done_callback(log_future_exc)
 
     def cmd_vision(self):
-        if self.modo_var.get() == "audio": return self.set_estado("ℹ️ El análisis de imagen no aplica en modo audio.", "#3498db")
-        if not self.imagen_cargada: return self.set_estado("⚠️ Carga una imagen primero.", "#e67e22")
+        if self.modo_var.get() == "audio": return self.set_estado(tr("ℹ️ El análisis de imagen no aplica en modo audio."), "#3498db")
+        if not self.imagen_cargada: return self.set_estado(tr("⚠️ Carga una imagen primero."), "#e67e22")
         self._ocultar_ideas()
         self.sesion._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
@@ -1032,13 +1032,13 @@ class CoreMixin:
         """Convierte un prompt de imagen a formato de vídeo."""
         texto = self.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.set_estado("⚠️ Genera un prompt de imagen primero.", "#e67e22")
+            return self.set_estado(tr("⚠️ Genera un prompt de imagen primero."), "#e67e22")
         try: self.sesion._sesion_log("🔄 Convirtió prompt imagen → vídeo")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
         pos = self.extraer_positive() or texto
-        self.set_estado("🔄 Convirtiendo prompt de imagen a vídeo...", "#f39c12")
+        self.set_estado(tr("🔄 Convirtiendo prompt de imagen a vídeo..."), "#f39c12")
         self.toggle_botones(False)
 
         def _worker():
@@ -1128,7 +1128,7 @@ class CoreMixin:
         self.footer._limpiar_negatives()
         self.actualizar_salida("")
         self._ocultar_ideas()
-        self.set_estado("🔄 Sistema reseteado.", "#3498db")
+        self.set_estado(tr("🔄 Sistema reseteado."), "#3498db")
         try: self.sesion._sesion_log("🗑 Reset completo del sistema")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -1138,7 +1138,7 @@ class CoreMixin:
     def cmd_copiloto(self):
         texto_actual = self.txt_salida.get("1.0", "end").strip()
         if not texto_actual or len(texto_actual) < 20:
-            return self.set_estado("⚠️ Genera un prompt primero para poder usar el Copiloto.", "#e67e22")
+            return self.set_estado(tr("⚠️ Genera un prompt primero para poder usar el Copiloto."), "#e67e22")
         try: self.sesion._sesion_log("💬 Abrió Copiloto de prompt")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -1175,7 +1175,7 @@ class CoreMixin:
 
             txt_input.configure(state="disabled")
             btn_send.configure(state="disabled")
-            self.set_estado("💬 Copiloto aplicando cambios...", "#3498db")
+            self.set_estado(tr("💬 Copiloto aplicando cambios..."), "#3498db")
 
             def _worker():
                 try:
@@ -1225,7 +1225,7 @@ class CoreMixin:
                         txt_input.configure(state="normal")
                         btn_send.configure(state="normal")
                         txt_input.focus_set()
-                        self.set_estado("✅ Copiloto terminó la edición.", "#2ecc71")
+                        self.set_estado(tr("✅ Copiloto terminó la edición."), "#2ecc71")
 
                     self.after(0, _update_ui)
                 except Exception as e:
@@ -1234,7 +1234,7 @@ class CoreMixin:
                         _add_msg("Sistema", f"❌ Error: {err}", "#e74c3c")
                         txt_input.configure(state="normal")
                         btn_send.configure(state="normal")
-                        self.set_estado("❌ Error en el Copiloto.", "#e74c3c")
+                        self.set_estado(tr("❌ Error en el Copiloto."), "#e74c3c")
                     self.after(0, _err)
 
             self._executor.submit(_worker).add_done_callback(log_future_exc)

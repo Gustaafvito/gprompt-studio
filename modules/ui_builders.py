@@ -631,7 +631,7 @@ class UIBuildersService:
                 # siendo la imagen literal (no la guía visual).
                 try:
                     self.app.dialogs.set_estado(
-                        "🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí.",
+                        tr("🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí."),
                         "#7c3aed",
                     )
                 except Exception as _e:
@@ -969,7 +969,7 @@ class UIBuildersService:
         if dest == "Anthum (concurso)":
             self.app.brief_var.set(True)
             self.app.events.on_brief_cambio()
-            self.app.dialogs.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
+            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), "#f39c12")
 
         self.app.reiniciar_memoria()
 
@@ -1276,7 +1276,7 @@ class UIBuildersService:
         for n, v in self.app.estilo_checks.items():
             v.set(False)
         self._actualizar_contador_estilos()
-        self.app.dialogs.set_estado("🗑 Estilos limpiados")
+        self.app.dialogs.set_estado(tr("🗑 Estilos limpiados"))
 
     def _actualizar_contador_estilos(self):
         """Actualiza el contador y label verde de estilos seleccionados."""

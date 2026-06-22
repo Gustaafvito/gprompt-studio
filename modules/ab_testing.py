@@ -78,7 +78,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.dialogs.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero"), "#e67e22")
             return
         try:
             self.app._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
@@ -190,7 +190,7 @@ class AbTestingService:
         fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
         neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "No generes NEGATIVE."
 
-        self.app.dialogs.set_estado("🧪 Generando 4 variantes con IA...", "#3498db")
+        self.app.dialogs.set_estado(tr("🧪 Generando 4 variantes con IA..."), "#3498db")
         self.app.dialogs.toggle_botones(False)
 
         def _generar():
@@ -263,7 +263,7 @@ class AbTestingService:
 
             def _usar(p=prompt):
                 self.app.dialogs.actualizar_salida(p)
-                self.app.dialogs.set_estado("🧪 Variante aplicada al editor", "#2ecc71")
+                self.app.dialogs.set_estado(tr("🧪 Variante aplicada al editor"), "#2ecc71")
                 # No cerramos la ventana para poder ver las otras opciones
 
             btn = ctk.CTkButton(cell, text=tr("✅ Usar este"), height=28, fg_color="#1a8a3c", hover_color="#127a30",
@@ -271,7 +271,7 @@ class AbTestingService:
             btn.pack(fill="x", padx=10, pady=(0, 8))
 
         ctk.CTkButton(v, text=tr("Cerrar"), width=110, command=v.destroy, fg_color=c["fg_dark"]).pack(pady=(5, 12))
-        self.app.dialogs.set_estado("🧪 Elige la variante que más te guste", "#3498db")
+        self.app.dialogs.set_estado(tr("🧪 Elige la variante que más te guste"), "#3498db")
         self.app.dialogs.toggle_botones(True)
 
     def _cmd_comparar_modelos(self):
@@ -280,7 +280,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea primero para comparar modelos.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero para comparar modelos."), "#e67e22")
         try:
             self.app._sesion_log("🆚 Comparar: abrió comparador de modelos")
         except Exception as e:

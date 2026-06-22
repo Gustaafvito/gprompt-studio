@@ -290,7 +290,7 @@ class DashboardService:
                             self.app.txt_idea.insert("1.0", c)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
-                    self.app.dialogs.set_estado("✅ Cargado desde búsqueda", accent_green)
+                    self.app.dialogs.set_estado(tr("✅ Cargado desde búsqueda"), accent_green)
                     v.destroy()
                 ctk.CTkButton(row, text=tr("Cargar"), width=60, height=22,
                               fg_color=accent_blue, hover_color="#1d4ed8",
@@ -575,9 +575,9 @@ class DashboardService:
             def _restaurar():
                 try:
                     self.app._restaurar_borrador()
-                    self.app.dialogs.set_estado("📝 Borrador restaurado", accent_green)
+                    self.app.dialogs.set_estado(tr("📝 Borrador restaurado"), accent_green)
                 except Exception:
-                    self.app.dialogs.set_estado("⚠️ No se pudo restaurar el borrador", accent_red)
+                    self.app.dialogs.set_estado(tr("⚠️ No se pudo restaurar el borrador"), accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=tr("📝 Restaurar borrador no guardado"),
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
@@ -590,7 +590,7 @@ class DashboardService:
             preview_corto = ultimo.get("contenido", "")[:60].replace("\n", " ")
             def _cargar_ultimo():
                 self.app.dialogs.actualizar_salida(ultimo.get("contenido", ""))
-                self.app.dialogs.set_estado("📋 Último prompt cargado", accent_green)
+                self.app.dialogs.set_estado(tr("📋 Último prompt cargado"), accent_green)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=f"📋 Cargar último: {preview_corto}…",
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
@@ -612,7 +612,7 @@ class DashboardService:
                     self.app._cargar_plantilla(nombre_pl)
                     self.app.dialogs.set_estado(f"📐 Plantilla aplicada: {nombre_pl}", accent_green)
                 except Exception:
-                    self.app.dialogs.set_estado("⚠️ Error aplicando plantilla", accent_red)
+                    self.app.dialogs.set_estado(tr("⚠️ Error aplicando plantilla"), accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=f"📐 Aplicar plantilla: {nombre_pl}",
                           height=28, fg_color=accent_purple, hover_color="#6d28d9",
@@ -654,7 +654,7 @@ class DashboardService:
 
                 def _cargar_estrella(c=contenido_e):
                     self.app.dialogs.actualizar_salida(c)
-                    self.app.dialogs.set_estado("🌟 Prompt estrella cargado", accent_green)
+                    self.app.dialogs.set_estado(tr("🌟 Prompt estrella cargado"), accent_green)
                     v.destroy()
                 ctk.CTkButton(hdr_e, text=tr("Cargar"), width=60, height=20,
                               fg_color=accent_blue, hover_color="#1d4ed8",
@@ -705,7 +705,7 @@ class DashboardService:
                 try:
                     self.app._cmd_api_keys()
                 except Exception:
-                    self.app.dialogs.set_estado("Configura tu key en 🔑 (header)", accent_amber)
+                    self.app.dialogs.set_estado(tr("Configura tu key en 🔑 (header)"), accent_amber)
             ctk.CTkButton(estado_row, text=tr("🔑 Configurar"), width=100, height=22,
                           fg_color=accent_purple, hover_color="#6d28d9",
                           font=ctk.CTkFont(size=9), command=_abrir_keys).pack(side="right")
@@ -1378,7 +1378,7 @@ class DashboardService:
                 v.destroy()
                 try:
                     self.app.store.limpiar_historial()
-                    self.app.dialogs.set_estado("🧹 Historial limpiado", accent_green)
+                    self.app.dialogs.set_estado(tr("🧹 Historial limpiado"), accent_green)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             ctk.CTkButton(mant_frame, text=f"🧹 Limpiar historial ({len(historial)} prompts)",
@@ -1396,7 +1396,7 @@ class DashboardService:
                 base = CARPETA_APP
                 marker = ARCHIVOS["autobackup_marker"]
                 self.app._crear_backup_automatico(base, marker, _t.time())
-                self.app.dialogs.set_estado("💾 Backup hecho", accent_green)
+                self.app.dialogs.set_estado(tr("💾 Backup hecho"), accent_green)
             except Exception as ex:
                 self.app.dialogs.set_estado(f"⚠️ Error backup: {ex}", accent_red)
         ctk.CTkButton(mant_frame, text=tr("💾 Hacer backup ahora"),

@@ -61,7 +61,7 @@ class MultiPromptService:
         """
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe un concepto base.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe un concepto base."), "#e67e22")
 
         n = self.app._pedir_n_modal(
             "🎭 Mood — número de prompts",
@@ -107,7 +107,7 @@ class MultiPromptService:
                 resp = limpiar_marcadores(resp)
                 bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
                 if len(bloques) < 2:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ Solo se generó 1 bloque, intenta de nuevo", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 bloque, intenta de nuevo"), "#e67e22"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
@@ -282,10 +282,10 @@ class MultiPromptService:
         (LLM elige).
         """
         if self.app.modo_var.get() != "imagen":
-            return self.app.dialogs.set_estado("⚠️ Story Sequence solo está disponible en modo IMAGEN.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Story Sequence solo está disponible en modo IMAGEN."), "#e67e22")
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe la escena base.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena base."), "#e67e22")
 
         cfg = self._pedir_story_config(default_n=3)
         if cfg is None:
@@ -366,10 +366,10 @@ class MultiPromptService:
         de la microhistoria según el N elegido.
         """
         if self.app.modo_var.get() != "video":
-            return self.app.dialogs.set_estado("⚠️ Storyboard solo está disponible en modo VÍDEO.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Storyboard solo está disponible en modo VÍDEO."), "#e67e22")
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), "#e67e22")
 
         n = self.app._pedir_n_modal(
             "📽 Board — número de frames",
@@ -451,7 +451,7 @@ class MultiPromptService:
         txt_salida y cierra el comparador.
         """
         if not frames:
-            return self.app.dialogs.set_estado("⚠️ No hay frames para encadenar.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay frames para encadenar."), "#e67e22")
 
         try: self.app._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
         except Exception as e:
@@ -533,12 +533,12 @@ class MultiPromptService:
         """
         if self.app.modo_var.get() != "imagen":
             return self.app.dialogs.set_estado(
-                "⚠️ Storyboard de imagen solo está disponible en modo IMAGEN.",
+                tr("⚠️ Storyboard de imagen solo está disponible en modo IMAGEN."),
                 "#e67e22",
             )
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe la escena/historia base.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), "#e67e22")
 
         # Detectar formato del modelo actual (natural vs tag-based)
         modelo = self.app.footer.modelo_imagen_valido()
@@ -664,7 +664,7 @@ class MultiPromptService:
         panel explícita, etc.).
         """
         if not paneles:
-            return self.app.dialogs.set_estado("⚠️ No hay paneles para fusionar.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay paneles para fusionar."), "#e67e22")
 
         try: self.app._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
         except Exception as e:
@@ -740,7 +740,7 @@ class MultiPromptService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero como base.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero como base."), "#e67e22")
 
         try: self.app._sesion_log("🌀 Walk árbol abierto")
         except Exception as e:

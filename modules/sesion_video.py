@@ -224,7 +224,7 @@ class SesionVideoService:
             self.app._sesion_grabando = False
             video_path = None
             if self.app._sesion_video_running or self.app._sesion_video_writer:
-                self.app.dialogs.set_estado("⏹ Cerrando vídeo...")
+                self.app.dialogs.set_estado(tr("⏹ Cerrando vídeo..."))
                 video_path = self._sesion_video_detener()
             self._cmd_sesion_exportar(video_path=video_path)
 
@@ -241,19 +241,19 @@ class SesionVideoService:
         self._sesion_log("🔴 GRABACIÓN INICIADA")
 
         if tipo_video == "nada":
-            self.app.dialogs.set_estado("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar", "#e74c3c")
+            self.app.dialogs.set_estado(tr("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar"), "#e74c3c")
         elif tipo_video == "app":
             if self._sesion_video_iniciar(solo_app=True):
                 self._sesion_log("🎥 Grabación de vídeo (solo app, 5 FPS)")
-                self.app.dialogs.set_estado("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar", "#e74c3c")
+                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar"), "#e74c3c")
             else:
-                self.app.dialogs.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), "#e67e22")
         elif tipo_video == "pantalla":
             if self._sesion_video_iniciar(solo_app=False):
                 self._sesion_log("🎥 Grabación de vídeo (pantalla completa, 5 FPS)")
-                self.app.dialogs.set_estado("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar", "#e74c3c")
+                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar"), "#e74c3c")
             else:
-                self.app.dialogs.set_estado("🔴 Grabando solo texto. Click 🎬 para parar", "#e67e22")
+                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), "#e67e22")
 
     def _cmd_sesion_exportar(self, video_path=None):
         """Abre ventana con el log de la sesión y opciones de exportación.
@@ -262,7 +262,7 @@ class SesionVideoService:
         c = _get_tc(is_lt)
         self._sesion_init()
         if not self.app._sesion_eventos:
-            self.app.dialogs.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), "#e67e22")
             return
 
         v = GPromptWindow(self.app)
@@ -383,7 +383,7 @@ class SesionVideoService:
                 self.app._sesion_eventos = []
                 self.app._sesion_inicio = None
                 v.destroy()
-                self.app.dialogs.set_estado("🗑 Registro de sesión limpiado")
+                self.app.dialogs.set_estado(tr("🗑 Registro de sesión limpiado"))
 
         ctk.CTkButton(btn_row, text=tr("📄 Exportar .md"), width=130, command=_exp_md,
                       fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
@@ -402,7 +402,7 @@ class SesionVideoService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         if not self.app._sesion_eventos:
-            self.app.dialogs.set_estado("⚠️ No hay eventos grabados", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), "#e67e22")
             return
 
         # Agrupar eventos en pasos lógicos según los tipos
@@ -464,7 +464,7 @@ class SesionVideoService:
         def _copiar():
             try:
                 pyperclip.copy(guion)
-                self.app.dialogs.set_estado("📋 Guion copiado al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Guion copiado al portapapeles"), "#2ecc71")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 

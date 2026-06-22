@@ -49,7 +49,7 @@ class DialogsService:
                 ubicacion_api_key,
             )
         except ImportError:
-            self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
+            self.set_estado(tr("⚠️ api_clients.py no disponible"), "#e74c3c")
             return
 
         v = GPromptWindow(self.app)
@@ -344,7 +344,7 @@ class DialogsService:
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             else:
-                self.set_estado("Sin cambios")
+                self.set_estado(tr("Sin cambios"))
             v.destroy()
 
         ctk.CTkButton(btn_row, text=tr("💾 Guardar todas"), width=140,
@@ -646,12 +646,12 @@ class DialogsService:
                 pos = self.app.extraer_positive()
                 if pos:
                     pyperclip.copy(pos)
-                    self.set_estado("🟢 POSITIVE copiado (doble-click)", "#2ecc71")
+                    self.set_estado(tr("🟢 POSITIVE copiado (doble-click)"), "#2ecc71")
             elif "NEGATIVE PROMPT:" in linea or "NEGATIVE:" in linea:
                 neg = self.app.extraer_negative()
                 if neg:
                     pyperclip.copy(neg)
-                    self.set_estado(" NEGATIVE copiado (doble-click)", "#e74c3c")
+                    self.set_estado(tr(" NEGATIVE copiado (doble-click)"), "#e74c3c")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def toggle_botones(self, estado=True):

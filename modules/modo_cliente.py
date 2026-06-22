@@ -200,7 +200,7 @@ class ModoClienteService:
         def _generar_propuestas():
             brief_dict = {k: v.get().strip() for k, v in campos.items()}
             if not any(brief_dict.values()):
-                self.app.dialogs.set_estado("⚠️ Rellena al menos un campo del brief.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena al menos un campo del brief."), "#e67e22")
                 return
 
             # Persistir último brief
@@ -230,7 +230,7 @@ class ModoClienteService:
 
     def _generar_propuestas_cliente(self, brief):
         """Genera 5 propuestas basadas en un brief."""
-        self.app.dialogs.set_estado("💼 Generando 5 propuestas profesionales...", "#f39c12")
+        self.app.dialogs.set_estado(tr("💼 Generando 5 propuestas profesionales..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         specs = self.app.get_current_model_specs()
@@ -637,7 +637,7 @@ class ModoClienteService:
                 )
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
-                return self.app.dialogs.set_estado("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más).", "#e67e22")
+                return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más)."), "#e67e22")
 
             self.app.dialogs.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
             self.app.dialogs.toggle_botones(False)
@@ -697,7 +697,7 @@ class ModoClienteService:
                                 template = m.group(1).strip()
                                 self.app.dialogs.actualizar_salida(template)
                                 vent2.destroy()
-                                self.app.dialogs.set_estado("🎭 Template aplicado", "#2ecc71")
+                                self.app.dialogs.set_estado(tr("🎭 Template aplicado"), "#2ecc71")
 
                         def _guardar_estilo():
                             import re as _re
@@ -741,7 +741,7 @@ class ModoClienteService:
                                       command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
 
                         self.app.dialogs.toggle_botones(True)
-                        self.app.dialogs.set_estado("🎭 Estilo común detectado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🎭 Estilo común detectado"), "#2ecc71")
                     self.app.after(0, _mostrar)
                 except Exception as e:
                     self.app.after(0, lambda: lbl_prog.pack_forget())
@@ -821,7 +821,7 @@ class ModoClienteService:
                 def _aplicar(e=est):
                     tpl = e.get("template", "").strip()
                     if not tpl:
-                        self.app.dialogs.set_estado("⚠️ Este estilo no tiene template aplicable",
+                        self.app.dialogs.set_estado(tr("⚠️ Este estilo no tiene template aplicable"),
                                         "#e67e22")
                         return
                     self.app.dialogs.actualizar_salida(tpl)

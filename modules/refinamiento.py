@@ -37,7 +37,7 @@ class RefinamientoService:
         """Menú con 5 opciones de refinamiento específico."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         # Master del menú debe ser un widget Tk, NO el Service.
@@ -117,7 +117,7 @@ class RefinamientoService:
         """
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero para iterar.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para iterar."), "#e67e22")
 
         n = self.app._pedir_n_modal(
             "🔂 Iterar — número de variantes",
@@ -206,7 +206,7 @@ class RefinamientoService:
                               if v.strip() and len(v.strip()) > 30]
 
                 if len(variantes) < 2:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ Solo se generó 1 variante, intenta de nuevo", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 variante, intenta de nuevo"), "#e67e22"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
@@ -225,7 +225,7 @@ class RefinamientoService:
     def cmd_refinar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or not (("PROMPT:" in limpiar_marcadores(texto)) or ("ESTILO:" in limpiar_marcadores(texto))):
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero para refinarlo.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para refinarlo."), "#e67e22")
 
         self.app._ocultar_ideas()
         idea, pers, lora, modo = self.app.txt_idea.get("1.0", "end").strip(), self.app.footer.personaje_activo(), self.app.footer.lora_activo(), self.app.modo_var.get()
@@ -262,7 +262,7 @@ class RefinamientoService:
         limite_chars = specs.get("max_chars") or specs.get("max_chars_letra") or 2000 if specs else 2000
         peticion += f"\n\n⛔ REGLA ESTRICTA DE LONGITUD: El POSITIVE PROMPT final no debe superar los {limite_chars} caracteres. Si el prompt original ya está cerca del límite, COMPACTA en vez de expandir: usa tags más densos, elimina redundancias, prioriza calidad sobre cantidad."
 
-        self.app.dialogs.set_estado("🔁 Refinando con meticulosidad máxima...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🔁 Refinando con meticulosidad máxima..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
         self.app._executor.submit(
             self.app.workers.worker_ia, peticion,
@@ -287,7 +287,7 @@ class RefinamientoService:
 
         if texto_previo.strip() == texto_nuevo.strip():
             self.app.dialogs.actualizar_salida(texto_nuevo)
-            self.app.dialogs.set_estado("ℹ️ El refinamiento no produjo cambios.", "#3498db")
+            self.app.dialogs.set_estado(tr("ℹ️ El refinamiento no produjo cambios."), "#3498db")
             return
 
         def _on_apply():
@@ -306,13 +306,13 @@ class RefinamientoService:
             except Exception as e:
                 logger.debug(f"[silent] versionado pre-refinamiento: {e}")
             self.app.dialogs.actualizar_salida(texto_nuevo)
-            self.app.dialogs.set_estado("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer.", "#2ecc71")
+            self.app.dialogs.set_estado(tr("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer."), "#2ecc71")
             try: self.app._sesion_log("🔁 Aplicó refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _on_cancel():
-            self.app.dialogs.set_estado("❌ Refinamiento descartado — prompt original intacto.", "#e67e22")
+            self.app.dialogs.set_estado(tr("❌ Refinamiento descartado — prompt original intacto."), "#e67e22")
             try: self.app._sesion_log("🔁 Canceló refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -327,7 +327,7 @@ class RefinamientoService:
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                         self.app.dialogs.actualizar_salida(_t)
-                        self.app.dialogs.set_estado("↩️ Refinamiento previo deshecho — restaurada versión anterior.", "#f39c12")
+                        self.app.dialogs.set_estado(tr("↩️ Refinamiento previo deshecho — restaurada versión anterior."), "#f39c12")
                         try: self.app._sesion_log("↩️ Deshizo refinamiento previo")
                         except Exception as e:
                             logger.debug(f"[silent] {e}")

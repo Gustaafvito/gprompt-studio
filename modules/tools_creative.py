@@ -44,7 +44,7 @@ class ToolsCreativeService:
         try: self.app._sesion_log("🎲 Sorpréndeme: pidió idea aleatoria")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.app.dialogs.set_estado("🎲 Pensando algo creativo...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🎲 Pensando algo creativo..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         # Contexto del modelo activo para generar ideas acordes a sus fortalezas
@@ -88,7 +88,7 @@ class ToolsCreativeService:
                 def _aplicar():
                     self.app.txt_idea.delete("1.0", "end")
                     self.app.txt_idea.insert("1.0", resp)
-                    self.app.dialogs.set_estado("🎲 Idea sorpresa generada — pulsa ✨ Generar para crear el prompt", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🎲 Idea sorpresa generada — pulsa ✨ Generar para crear el prompt"), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -119,7 +119,7 @@ class ToolsCreativeService:
         """
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base primero."), "#e67e22")
 
         # Cargar última configuración
         prefs = self.app.store.cargar_preferencias()
@@ -280,13 +280,13 @@ class ToolsCreativeService:
         """Variante para el botón en la pestaña Negativos: inserta el resultado
         en txt_negative (campo manual) en vez de actualizar el output principal."""
         if not self.app._debe_mostrar_negatives():
-            return self.app.dialogs.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ El modelo actual no usa NEGATIVE PROMPT."), "#e67e22")
 
         modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
             self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
         pos = self.app.extraer_positive() or self.app.txt_idea.get("1.0", "end").strip() or "imagen general"
 
-        self.app.dialogs.set_estado("🛡 Generando negative sugerido...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🛡 Generando negative sugerido..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         peticion = (
@@ -320,7 +320,7 @@ class ToolsCreativeService:
                     self.app.txt_negative.delete("1.0", "end")
                     self.app.txt_negative.insert("1.0", negative)
                     self.app.footer._rebuild_negative_text()
-                    self.app.dialogs.set_estado("🛡 Negative sugerido aplicado", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🛡 Negative sugerido aplicado"), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -332,13 +332,13 @@ class ToolsCreativeService:
     def _cmd_negative_optimo(self):
         """Genera el NEGATIVE ÓPTIMO según el modelo y tipo de prompt actual."""
         if not self.app._debe_mostrar_negatives():
-            return self.app.dialogs.set_estado("⚠️ El modelo actual no usa NEGATIVE PROMPT.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ El modelo actual no usa NEGATIVE PROMPT."), "#e67e22")
 
         modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
             self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "")
         pos = self.app.extraer_positive() or self.app.txt_idea.get("1.0", "end").strip() or "imagen general"
 
-        self.app.dialogs.set_estado("🛡 Generando NEGATIVE óptimo para este modelo...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🛡 Generando NEGATIVE óptimo para este modelo..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         peticion = (
@@ -369,11 +369,11 @@ class ToolsCreativeService:
                     if pos_actual:
                         nuevo = f"POSITIVE PROMPT: {pos_actual}\nNEGATIVE PROMPT: {negative}"
                         self.app.dialogs.actualizar_salida(nuevo)
-                        self.app.dialogs.set_estado("🛡 NEGATIVE óptimo aplicado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🛡 NEGATIVE óptimo aplicado"), "#2ecc71")
                     else:
                         # Solo poner negative si no hay positive
                         pyperclip.copy(negative)
-                        self.app.dialogs.set_estado("🛡 NEGATIVE óptimo copiado al portapapeles", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🛡 NEGATIVE óptimo copiado al portapapeles"), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -394,12 +394,12 @@ class ToolsCreativeService:
         """
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 10:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea más detallada.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea más detallada."), "#e67e22")
         try: self.app._sesion_log("🤖 Sugerir modelo: analizó idea")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado("🤖 Analizando idea para top 3 modelos...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🤖 Analizando idea para top 3 modelos..."), "#f39c12")
 
         modo = self.app.modo_var.get()
         if modo == "imagen":
@@ -460,7 +460,7 @@ class ToolsCreativeService:
 
                 if not sugerencias:
                     self.app.after(0, lambda: self.app.dialogs.set_estado(
-                        "⚠️ No se pudieron parsear las sugerencias del LLM",
+                        tr("⚠️ No se pudieron parsear las sugerencias del LLM"),
                         "#e67e22"))
                     return
 
@@ -639,7 +639,7 @@ class ToolsCreativeService:
                     # (mismo POSITIVE → LLM no diferenció entre modelos)
                     if len(set(resultados.values())) == 1 and len(resultados) > 1:
                         self.app.dialogs.set_estado(
-                            "⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica.",
+                            tr("⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica."),
                             "#e67e22")
                     self.app._abrir_comparador(variantes, labels=labels)
                     self.app.dialogs.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
@@ -659,13 +659,13 @@ class ToolsCreativeService:
     def _cmd_solo_negative(self):
         """Genera solo el NEGATIVE PROMPT optimizado."""
         if not self.app._debe_mostrar_negatives():
-            return self.app.dialogs.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Este modelo no usa NEGATIVE."), "#e67e22")
 
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base primero."), "#e67e22")
 
-        self.app.dialogs.set_estado("🛡 Generando NEGATIVE optimizado...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🛡 Generando NEGATIVE optimizado..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         modelo = self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else (
@@ -692,7 +692,7 @@ class ToolsCreativeService:
 
                 def _aplicar():
                     pyperclip.copy(negative)
-                    self.app.dialogs.set_estado("🛡 NEGATIVE copiado al portapapeles", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🛡 NEGATIVE copiado al portapapeles"), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -790,7 +790,7 @@ class ToolsCreativeService:
                     personajes_def.append({"nombre": f"Personaje #{i+1}", "rasgos": "", "posicion": desc_p})
 
             if len(personajes_def) < 2:
-                self.app.dialogs.set_estado("⚠️ Define al menos 2 personajes para hacer un grupo.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Define al menos 2 personajes para hacer un grupo."), "#e67e22")
                 return
 
             # Si el placeholder sigue visible, la relación se considera vacía
@@ -819,17 +819,17 @@ class ToolsCreativeService:
     def _cmd_analisis_inverso(self):
         """Compara una imagen con el prompt actual: ¿el prompt describe esa imagen?"""
         if not self.app.imagen_cargada:
-            self.app.dialogs.set_estado("⚠️ Carga una imagen primero (panel imagen ref).", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Carga una imagen primero (panel imagen ref)."), "#e67e22")
             return
         prompt_actual = self.app.txt_salida.get("1.0", "end").strip()
         if not prompt_actual or len(prompt_actual) < 20:
-            self.app.dialogs.set_estado("⚠️ Necesitas un prompt en el resultado para comparar.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Necesitas un prompt en el resultado para comparar."), "#e67e22")
             return
         try: self.app._sesion_log("🔍 Análisis inverso: comparó imagen con prompt actual")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado("🔍 Análisis inverso: comparando imagen y prompt...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🔍 Análisis inverso: comparando imagen y prompt..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         def _worker():
@@ -886,15 +886,15 @@ class ToolsCreativeService:
 
                     def _copiar_analisis_completo():
                         pyperclip.copy(resp)
-                        self.app.dialogs.set_estado("📋 Análisis completo copiado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("📋 Análisis completo copiado"), "#2ecc71")
 
                     def _copiar_solo_corregido():
                         corregido = _extraer_corregido()
                         if corregido:
                             pyperclip.copy(corregido)
-                            self.app.dialogs.set_estado("📋 PROMPT CORREGIDO copiado al portapapeles", "#2ecc71")
+                            self.app.dialogs.set_estado(tr("📋 PROMPT CORREGIDO copiado al portapapeles"), "#2ecc71")
                         else:
-                            self.app.dialogs.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
+                            self.app.dialogs.set_estado(tr("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable"), "#e67e22")
 
                     def _aplicar_corregido():
                         # Pasa por el diff modal en lugar de sobreescribir
@@ -902,14 +902,14 @@ class ToolsCreativeService:
                         # ver los cambios.
                         corregido = _extraer_corregido()
                         if not corregido:
-                            self.app.dialogs.set_estado("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable", "#e67e22")
+                            self.app.dialogs.set_estado(tr("⚠️ El análisis no incluye 'PROMPT CORREGIDO' parseable"), "#e67e22")
                             return
                         texto_previo = self.app.txt_salida.get("1.0", "end").strip()
                         if not texto_previo:
                             # No hay nada que comparar — aplicar directo
                             self.app.dialogs.actualizar_salida(corregido)
                             vent.destroy()
-                            self.app.dialogs.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
+                            self.app.dialogs.set_estado(tr("✅ Prompt corregido aplicado"), "#2ecc71")
                             return
                         # Pasamos por refinar.mostrar_diff_refinamiento → Aplicar/Cancelar
                         if hasattr(self.app, '_mostrar_diff_refinamiento'):
@@ -919,7 +919,7 @@ class ToolsCreativeService:
                             # Fallback si el método no existe
                             self.app.dialogs.actualizar_salida(corregido)
                             vent.destroy()
-                            self.app.dialogs.set_estado("✅ Prompt corregido aplicado", "#2ecc71")
+                            self.app.dialogs.set_estado(tr("✅ Prompt corregido aplicado"), "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text=tr("📋 Copiar análisis"), width=140, height=28,
                                   fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -944,7 +944,7 @@ class ToolsCreativeService:
         """Analiza la idea y marca automáticamente los estilos más apropiados."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero."), "#e67e22")
         try: self.app._sesion_log("🎨 Sugerir estilos: pidió sugerencia automática")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -953,9 +953,9 @@ class ToolsCreativeService:
         # ESTILOS_AUDIO). Antes audio estaba bloqueado por descuido.
         estilos_dispo = list(self.app.estilo_checks.keys())
         if not estilos_dispo:
-            return self.app.dialogs.set_estado("⚠️ No hay estilos disponibles.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay estilos disponibles."), "#e67e22")
 
-        self.app.dialogs.set_estado("🎨 Analizando idea para sugerir estilos...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🎨 Analizando idea para sugerir estilos..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         peticion = (
@@ -1000,7 +1000,7 @@ class ToolsCreativeService:
                                 break
 
                 if not validos:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ No se pudieron extraer estilos. Intenta de nuevo.", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ No se pudieron extraer estilos. Intenta de nuevo."), "#e67e22"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
@@ -1024,13 +1024,13 @@ class ToolsCreativeService:
         from config import TAG_PICKER_CATEGORIES
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado("⚠️ Escribe una idea primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero."), "#e67e22")
 
         todos_tags_en = [val_en for tags in TAG_PICKER_CATEGORIES.values() for _, val_en, _ in tags]
         if not todos_tags_en:
-            return self.app.dialogs.set_estado("⚠️ No hay tags disponibles.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay tags disponibles."), "#e67e22")
 
-        self.app.dialogs.set_estado("🏷️ Analizando idea para sugerir tags...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🏷️ Analizando idea para sugerir tags..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         peticion = (
@@ -1069,7 +1069,7 @@ class ToolsCreativeService:
                                 break
 
                 if not validos:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado("⚠️ No se encontraron tags válidos. Intenta de nuevo.", "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ No se encontraron tags válidos. Intenta de nuevo."), "#e67e22"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
@@ -1094,10 +1094,10 @@ class ToolsCreativeService:
         mostrar rasgos activos, barra de estado.
         """
         if not self.app.imagen_cargada:
-            self.app.dialogs.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Carga una imagen de referencia primero."), "#e67e22")
             return
 
-        self.app.dialogs.set_estado("🧬 Extrayendo ADN visual (rasgos exactos)...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🧬 Extrayendo ADN visual (rasgos exactos)..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -1191,14 +1191,14 @@ class ToolsCreativeService:
                         if hasattr(self.app, "_actualizar_indicador_adn"):
                             self.app._actualizar_indicador_adn()
                         vent2.destroy()
-                        self.app.dialogs.set_estado("🧬 ADN visual guardado y activo en próximas generaciones", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🧬 ADN visual guardado y activo en próximas generaciones"), "#2ecc71")
 
                     def _desactivar():
                         self.app._anclaje_visual = None
                         if hasattr(self.app, "_actualizar_indicador_adn"):
                             self.app._actualizar_indicador_adn()
                         vent2.destroy()
-                        self.app.dialogs.set_estado("🧬 ADN visual desactivado")
+                        self.app.dialogs.set_estado(tr("🧬 ADN visual desactivado"))
 
                     def _guardar_biblioteca():
                         # Persiste el ADN-texto en preferencias bajo
@@ -1243,7 +1243,7 @@ class ToolsCreativeService:
                                   command=lambda: pyperclip.copy(adn)).pack(side="left", padx=4)
 
                     self.app.dialogs.toggle_botones(True)
-                    self.app.dialogs.set_estado("🧬 ADN visual extraído — guarda para activarlo", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🧬 ADN visual extraído — guarda para activarlo"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda: prog_bar.pack_forget())
@@ -1260,11 +1260,11 @@ class ToolsCreativeService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         if not getattr(self.app, '_anclaje_visual', None):
-            self.app.dialogs.set_estado("⚠️ Primero extrae el ADN visual con 🧬 ADN.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Primero extrae el ADN visual con 🧬 ADN."), "#e67e22")
             return
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            self.app.dialogs.set_estado("⚠️ Escribe una idea base (qué quieres variar).", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base (qué quieres variar)."), "#e67e22")
             return
 
         # Ventana selección
@@ -1371,7 +1371,7 @@ class ToolsCreativeService:
         """Compara dos prompts e indica qué difiere y qué coincide."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Necesitas un prompt en el resultado.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Necesitas un prompt en el resultado."), "#e67e22")
 
         # Pedir el segundo prompt
         from tkinter import simpledialog
@@ -1379,9 +1379,9 @@ class ToolsCreativeService:
                                         "Pega aquí el otro prompt a comparar (el actual es el del resultado):",
                                         parent=self.app)
         if not otro or len(otro) < 20:
-            return self.app.dialogs.set_estado("⚠️ Pega un prompt válido para comparar.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Pega un prompt válido para comparar."), "#e67e22")
 
-        self.app.dialogs.set_estado("🔍 Analizando consistencia entre prompts...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🔍 Analizando consistencia entre prompts..."), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         peticion = (
@@ -1418,7 +1418,7 @@ class ToolsCreativeService:
                     ctk.CTkButton(vent, text=tr("📋 Copiar"), width=100, height=28,
                                   command=lambda: pyperclip.copy(resp)).pack(pady=10)
                     self.app.dialogs.toggle_botones(True)
-                    self.app.dialogs.set_estado("🔍 Consistencia analizada", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🔍 Consistencia analizada"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
@@ -1432,7 +1432,7 @@ class ToolsCreativeService:
         v1.1: búsqueda/filtrar, guardar preset, mostrar activos, tabs por categoría.
         """
         if not self.app._debe_mostrar_negatives():
-            return self.app.dialogs.set_estado("⚠️ Este modelo no usa NEGATIVE.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Este modelo no usa NEGATIVE."), "#e67e22")
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -1581,7 +1581,7 @@ class ToolsCreativeService:
         def _guardar_preset():
             activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
             if not activos:
-                return self.app.dialogs.set_estado("⚠️ Marca elementos antes de guardar preset.", "#e67e22")
+                return self.app.dialogs.set_estado(tr("⚠️ Marca elementos antes de guardar preset."), "#e67e22")
             # Pedir nombre al usuario
             from tkinter import simpledialog
             presets = _cargar_presets()
@@ -1610,7 +1610,7 @@ class ToolsCreativeService:
         def _mostrar_presets():
             presets = _cargar_presets()
             if not presets:
-                self.app.dialogs.set_estado("⚠️ No hay presets guardados todavía.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No hay presets guardados todavía."), "#e67e22")
                 return
             win = GPromptWindow(vent)
             win.title(tr("💾 Presets de NEGATIVE"))
@@ -1698,7 +1698,7 @@ class ToolsCreativeService:
         def _aplicar():
             tags_sel = _tags_seleccionados()
             if not tags_sel:
-                return self.app.dialogs.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+                return self.app.dialogs.set_estado(tr("⚠️ Marca al menos un elemento."), "#e67e22")
             negativo = ", ".join(tags_sel)
             pos = self.app.extraer_positive()
             if pos:
@@ -1712,7 +1712,7 @@ class ToolsCreativeService:
         def _copiar():
             tags_sel = _tags_seleccionados()
             if not tags_sel:
-                return self.app.dialogs.set_estado("⚠️ Marca al menos un elemento.", "#e67e22")
+                return self.app.dialogs.set_estado(tr("⚠️ Marca al menos un elemento."), "#e67e22")
             pyperclip.copy(", ".join(tags_sel))
             self.app.dialogs.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
             vent.destroy()
@@ -1730,9 +1730,9 @@ class ToolsCreativeService:
         guarda paleta, muestra valores RGB/HSL.
         """
         if not self.app.imagen_cargada:
-            return self.app.dialogs.set_estado("⚠️ Carga una imagen de referencia primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Carga una imagen de referencia primero."), "#e67e22")
 
-        self.app.dialogs.set_estado("🎨 Extrayendo paleta de colores...", "#f39c12")
+        self.app.dialogs.set_estado(tr("🎨 Extrayendo paleta de colores..."), "#f39c12")
 
         def _worker():
             try:
@@ -1912,7 +1912,7 @@ class ToolsCreativeService:
                     ctk.CTkButton(btn_row, text=tr("📚 Biblioteca"), width=110, height=28, fg_color="#1a4a5a",
                                   command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
 
-                    self.app.dialogs.set_estado("🎨 Paleta extraída", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🎨 Paleta extraída"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))

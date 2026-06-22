@@ -458,12 +458,12 @@ class UiEventsService:
         if partes:
             self.app.dialogs.set_estado(f"🎵 Filtros audio: {' · '.join(partes)}", "#9b59b6")
         else:
-            self.app.dialogs.set_estado("🎵 Sin filtros de audio adicionales")
+            self.app.dialogs.set_estado(tr("🎵 Sin filtros de audio adicionales"))
         self.app.reiniciar_memoria()
 
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():
-            self.app.dialogs.set_estado("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios", "#f39c12")
+            self.app.dialogs.set_estado(tr("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios"), "#f39c12")
         else:
-            self.app.dialogs.set_estado("Modo Brief desactivado — prompts artísticos libres")
+            self.app.dialogs.set_estado(tr("Modo Brief desactivado — prompts artísticos libres"))
         self.app.reiniciar_memoria()

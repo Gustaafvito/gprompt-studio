@@ -240,7 +240,7 @@ class AdnVisualService:
             # ADN se extrae de imagen: requiere imagen cargada.
             if not getattr(self.app, "imagen_cargada", None):
                 self.app.dialogs.set_estado(
-                    "⚠️ Carga una imagen en la pantalla principal y vuelve.",
+                    tr("⚠️ Carga una imagen en la pantalla principal y vuelve."),
                     "#e67e22",
                 )
                 return
@@ -260,9 +260,9 @@ class AdnVisualService:
     def _cmd_adn_visual(self):
         """Extrae ADN visual JSON estructurado de la imagen cargada."""
         if not hasattr(self.app, 'imagen_cargada') or not self.app.imagen_cargada:
-            return self.app.dialogs.set_estado("⚠️ Carga una imagen primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Carga una imagen primero."), "#e67e22")
 
-        self.app.dialogs.set_estado("🧬 Extrayendo ADN visual...", "#9b59b6")
+        self.app.dialogs.set_estado(tr("🧬 Extrayendo ADN visual..."), "#9b59b6")
         self.app.dialogs.toggle_botones(False)
 
         def _worker():
@@ -369,7 +369,7 @@ class AdnVisualService:
                     def _copiar_json():
                         json_str = json.dumps(adn, indent=2, ensure_ascii=False)
                         pyperclip.copy(json_str)
-                        self.app.dialogs.set_estado("🧬 JSON copiado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🧬 JSON copiado"), "#2ecc71")
 
                     def _aplicar_partes_a_idea(partes, mensaje_ok):
                         """Helper compartido: junta partes y las añade al
@@ -486,7 +486,7 @@ class AdnVisualService:
                             msg_ok = "🧬 ADN en idea - pulsa Generar"
 
                         if not _aplicar_partes_a_idea(partes, msg_ok):
-                            self.app.dialogs.set_estado("⚠️ ADN vacío, no hay datos para convertir", "#e67e22")
+                            self.app.dialogs.set_estado(tr("⚠️ ADN vacío, no hay datos para convertir"), "#e67e22")
 
                     def _guardar_adn():
                         from tkinter import simpledialog

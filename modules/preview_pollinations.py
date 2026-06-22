@@ -517,7 +517,7 @@ class PreviewPollinationsService:
         ctk.CTkButton(btn_row, text=tr("🔗 Copiar URL"), width=120, height=30,
                       fg_color="#3498db", hover_color="#2876b8",
                       command=lambda: (pyperclip.copy(url_imagen),
-                                       self.app.dialogs.set_estado("📋 URL copiada", "#2ecc71"))
+                                       self.app.dialogs.set_estado(tr("📋 URL copiada"), "#2ecc71"))
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("🌐 Abrir en navegador"), width=160, height=30,
                       fg_color="#7c3aed", hover_color="#5d2ab5",

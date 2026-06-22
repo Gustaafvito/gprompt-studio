@@ -191,7 +191,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("sel.first", "sel.last")
                     pyperclip.copy(sel)
                     self.app.txt_idea.delete("sel.first", "sel.last")
-                    self.app.dialogs.set_estado("✂️ Cortado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado(tr("✂️ Cortado al portapapeles"), "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -204,7 +204,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("1.0", "end").strip()
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.dialogs.set_estado("📋 Copiado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado(tr("📋 Copiado al portapapeles"), "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -367,7 +367,7 @@ class UiFooterService:
         if sel:
             self.app.dialogs.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
         else:
-            self.app.dialogs.set_estado("🎨 Estilos: General (ninguno seleccionado)")
+            self.app.dialogs.set_estado(tr("🎨 Estilos: General (ninguno seleccionado)"))
 
     def _on_personaje_selected(self, nombre: str):
         # Refrescar panel fuentes activas siempre (incluso al deseleccionar)

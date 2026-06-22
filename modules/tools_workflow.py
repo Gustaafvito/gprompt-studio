@@ -245,7 +245,7 @@ class ToolsWorkflowService:
         from tkinter import simpledialog
         setup = self._capturar_setup_actual()
         if not setup:
-            self.app.dialogs.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), "#e67e22")
             return
         nombre = simpledialog.askstring("💾 Guardar setup",
                                           "Nombre para este setup:\n(modelo, plataforma, ratio, estilos, negatives…)",
@@ -278,7 +278,7 @@ class ToolsWorkflowService:
         prefs = self.app.store.cargar_preferencias()
         setups = prefs.get("setups", {}) or {}
         if not setups:
-            self.app.dialogs.set_estado("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual."), "#e67e22")
             return
         v = GPromptWindow(self.app)
         v.title(tr("📋 Cargar setup"))
@@ -351,7 +351,7 @@ class ToolsWorkflowService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            self.app.dialogs.set_estado("⚠️ Escribe una idea base primero.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base primero."), "#e67e22")
             return
 
         vent = GPromptWindow(self.app)
@@ -441,7 +441,7 @@ class ToolsWorkflowService:
                 if cantidad < 1 or cantidad > 50: raise ValueError("cantidad fuera de rango")
                 if intervalo < 0.1 or intervalo > 120: raise ValueError("intervalo fuera de rango")
             except Exception:
-                self.app.dialogs.set_estado("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)"), "#e67e22")
                 return
 
             cron_state["activo"] = True
@@ -553,7 +553,7 @@ class ToolsWorkflowService:
             if cron_state["generados"]:
                 self.app._abrir_comparador(cron_state["generados"])
             else:
-                self.app.dialogs.set_estado("⚠️ Aún no hay variantes generadas", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Aún no hay variantes generadas"), "#e67e22")
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
         btn_row.pack(pady=10)
@@ -587,7 +587,7 @@ class ToolsWorkflowService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         if not hasattr(self.app, '_versiones_prompt') or not self.app._versiones_prompt:
-            return self.app.dialogs.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones."), "#e67e22")
 
         vent = GPromptWindow(self.app)
         vent.title(tr("📜 Historial de versiones del prompt"))
@@ -843,7 +843,7 @@ class ToolsWorkflowService:
         def crear_o_guardar():
             nombre = ent_nombre_m.get().strip()
             if not nombre or not pasos_state["lista"]:
-                self.app.dialogs.set_estado("⚠️ Rellena nombre y añade al menos un paso.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y añade al menos un paso."), "#e67e22")
                 return
             actual = prefs.get("macros", [])
             nueva = {"nombre": nombre, "pasos": list(pasos_state["lista"])}
@@ -871,7 +871,7 @@ class ToolsWorkflowService:
             nuevas = [m for m in MACROS_EJEMPLO if m["nombre"] not in existentes]
             if not nuevas:
                 self.app.dialogs.set_estado(
-                    "ℹ️ Los ejemplos ya están cargados.", "#e67e22")
+                    tr("ℹ️ Los ejemplos ya están cargados."), "#e67e22")
                 return
             actual.extend(nuevas)
             prefs["macros"] = actual
@@ -921,7 +921,7 @@ class ToolsWorkflowService:
             macros = [macros]
         macros = [m for m in (macros or []) if isinstance(m, dict)]
         if not macros:
-            return self.app.dialogs.set_estado("⚠️ No hay macros para exportar.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay macros para exportar."), "#e67e22")
         base = macros[0].get("nombre", "macro") if len(macros) == 1 else "macros_gprompt"
         base = re.sub(r"[^\w\-]+", "_", base).strip("_") or "macros"
         ruta = filedialog.asksaveasfilename(
@@ -956,7 +956,7 @@ class ToolsWorkflowService:
         macros_imp = parsear_macros_importadas(data)
         if not macros_imp:
             self.app.dialogs.set_estado(
-                "⚠️ El archivo no contiene macros válidas.", "#e67e22")
+                tr("⚠️ El archivo no contiene macros válidas."), "#e67e22")
             return 0
         prefs = self.app.store.cargar_preferencias() or {}
         actual = prefs.get("macros", [])
@@ -1047,7 +1047,7 @@ class ToolsWorkflowService:
         """Scoring automático sin abrir ventana - aplica el mejor prompt directamente."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero para scoring.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para scoring."), "#e67e22")
 
         # Guardar versión antes de modificar (por seguridad)
         try:
@@ -1075,7 +1075,7 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
-                self.app.after(0, lambda: self.app.dialogs.set_estado("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)"), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
 
@@ -1094,7 +1094,7 @@ class ToolsWorkflowService:
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.app.dialogs.set_estado(
-                "⚠️ Genera un prompt primero para adaptarlo.", "#e67e22")
+                tr("⚠️ Genera un prompt primero para adaptarlo."), "#e67e22")
 
         # Specs del modelo activo (mismo bloque que ve el generador), capado.
         modelo_info = ""
@@ -1104,7 +1104,7 @@ class ToolsWorkflowService:
             logger.debug(f"[silent] {_e}")
         if not modelo_info.strip():
             return self.app.dialogs.set_estado(
-                "ℹ️ El modelo activo no expone specs; nada que adaptar.", "#e67e22")
+                tr("ℹ️ El modelo activo no expone specs; nada que adaptar."), "#e67e22")
 
         def _worker():
             try:
@@ -1116,7 +1116,7 @@ class ToolsWorkflowService:
                 texto = asegurar_etiquetas_prompt(actual, limpiar_marcadores(resp))
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(
-                    "🎯 Prompt adaptado al modelo activo", "#2ecc71"))
+                    tr("🎯 Prompt adaptado al modelo activo"), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     f"⚠️ Error adaptando: {e}", "#e74c3c"))
@@ -1137,7 +1137,7 @@ class ToolsWorkflowService:
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.app.dialogs.set_estado(
-                "⚠️ Genera un prompt primero para optimizar.", "#e67e22")
+                tr("⚠️ Genera un prompt primero para optimizar."), "#e67e22")
 
         modelo_info = ""
         try:
@@ -1190,7 +1190,7 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip()
                 self.app.after(0, lambda: self.app.txt_idea.insert("1.0", resp + "\n\n"))
-                self.app.after(0, lambda: self.app.dialogs.set_estado("💡 Idea generada (macro)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("💡 Idea generada (macro)"), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
@@ -1200,7 +1200,7 @@ class ToolsWorkflowService:
         """Genera 1 variación directamente sin popup - para macros."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
 
         peticion = (
             f"Crea una variación de este prompt manteniendo la esencia pero cambiando estilo/enfoque:\n\n"
@@ -1213,7 +1213,7 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
-                self.app.after(0, lambda: self.app.dialogs.set_estado("🔄 Variación generada (macro)", "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🔄 Variación generada (macro)"), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
 
@@ -1307,7 +1307,7 @@ class ToolsWorkflowService:
                 self.app.store.guardar_preferencias(p2)
                 lbl_activo.configure(text=tr("📌 Proyecto activo: (ninguno)"), text_color=c["muted_text"])
                 refrescar()
-                self.app.dialogs.set_estado("📌 Sin proyecto activo")
+                self.app.dialogs.set_estado(tr("📌 Sin proyecto activo"))
 
             ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color="#1a4a5a",
                           font=ctk.CTkFont(size=10), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
@@ -1356,7 +1356,7 @@ class ToolsWorkflowService:
                     """Guarda el setup actual en este proyecto."""
                     setup = self._capturar_setup_actual()
                     if not setup:
-                        self.app.dialogs.set_estado("⚠️ No se pudo capturar la configuración", "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), "#e67e22")
                         return
                     p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
@@ -1427,7 +1427,7 @@ class ToolsWorkflowService:
         """Añade tags al final del POSITIVE del resultado actual."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
         pos = self.app.extraer_positive() or texto
         neg = self.app.extraer_negative()
 

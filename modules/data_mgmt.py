@@ -128,7 +128,7 @@ class DataMgmtService:
                 if borrador.get("modo"):
                     self.app.modo_var.set(borrador["modo"])
                     self.app.events._on_modo_cambio()
-                self.app.dialogs.set_estado("📝 Borrador restaurado", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📝 Borrador restaurado"), "#2ecc71")
             else:
                 # Limpiar borrador descartado
                 prefs["borrador"] = None
@@ -251,7 +251,7 @@ class DataMgmtService:
         self.app.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
         self.app.lbl_img_nombre.configure(text=tr("Sin imagen"), text_color="#666666")
         self.app.btn_cargar_img.configure(text=tr("📂 Cargar"), fg_color=["#3B8ED0", "#1F6AA5"])
-        self.app.dialogs.set_estado("Imagen eliminada.")
+        self.app.dialogs.set_estado(tr("Imagen eliminada."))
 
     def _agregar_img_historial(self, pil_img, nombre):
         """Añade una imagen al historial visual de recientes."""
@@ -365,13 +365,13 @@ class DataMgmtService:
             t = ent_trigger.get().strip().lower().lstrip(";")
             e = ent_expansion.get().strip()
             if not t or not e:
-                self.app.dialogs.set_estado("⚠️ Trigger y expansión son obligatorios", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Trigger y expansión son obligatorios"), "#e67e22")
                 return
             # FIX: antes la validación rechazaba "mi-trigger" (con guion).
             # Acepto letras, dígitos, guion bajo y guion medio.
             import re as _re
             if not _re.fullmatch(r'[a-z0-9_\-]+', t):
-                self.app.dialogs.set_estado("⚠️ Trigger solo puede tener letras, números, _ o -",
+                self.app.dialogs.set_estado(tr("⚠️ Trigger solo puede tener letras, números, _ o -"),
                                 "#e67e22")
                 return
             prefs = self.app.store.cargar_preferencias()
@@ -459,7 +459,7 @@ class DataMgmtService:
         try:
             texto = self.app.txt_salida.get("1.0", "end").strip()
             if not texto:
-                self.app.dialogs.set_estado("⚠️ No hay prompt para duplicar", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No hay prompt para duplicar"), "#e67e22")
                 return "break"
             idea = self.app.txt_idea.get("1.0", "end").strip()
             modelo = ""
@@ -482,7 +482,7 @@ class DataMgmtService:
             }
             self.app.store.historial.insert(0, entry)
             self.app.store._guardar("historial")
-            self.app.dialogs.set_estado("📋 Duplicado al historial · Ctrl+D", "#2ecc71")
+            self.app.dialogs.set_estado(tr("📋 Duplicado al historial · Ctrl+D"), "#2ecc71")
             try: self.app.sesion._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -526,7 +526,7 @@ class DataMgmtService:
         """Aplica la última configuración usada en el último prompt generado."""
         cfg = getattr(self.app, "_ultima_config", None)
         if not cfg:
-            self.app.dialogs.set_estado("⚠️ Aún no hay última configuración guardada. Genera un prompt primero.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Aún no hay última configuración guardada. Genera un prompt primero."), "#e67e22")
             return
 
         try:
@@ -560,14 +560,14 @@ class DataMgmtService:
                 for n, v in self.app.estilo_checks.items():
                     v.set(n in cfg["estilos"])
 
-            self.app.dialogs.set_estado("🔁 Última configuración aplicada", "#2ecc71")
+            self.app.dialogs.set_estado(tr("🔁 Última configuración aplicada"), "#2ecc71")
         except Exception as e:
             self.app.dialogs.set_estado(f"⚠️ No se pudo aplicar todo: {e}", "#e67e22")
 
     def _guardar_favorito(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado("⚠️ No hay prompt para guardar.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar."), "#e67e22")
             return
         self.app.store.agregar_favorito({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -582,12 +582,12 @@ class DataMgmtService:
             "brief":      self.app.brief_var.get(),
             "contenido":  texto,
         })
-        self.app.dialogs.set_estado("⭐ Guardado en favoritos.", "#f1c40f")
+        self.app.dialogs.set_estado(tr("⭐ Guardado en favoritos."), "#f1c40f")
 
     def _guardar_estrella(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado("⚠️ No hay prompt para guardar como estrella.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar como estrella."), "#e67e22")
             return
         nota = simpledialog.askstring("🌟 Prompt Estrella", "Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):", parent=self.app)
         if not nota: nota = ""
@@ -613,7 +613,7 @@ class DataMgmtService:
     def _exportar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado("⚠️ No hay contenido para exportar.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay contenido para exportar."), "#e67e22")
             return
         ruta = filedialog.asksaveasfilename(
             defaultextension=".txt", filetypes=[("Texto", "*.txt")],
@@ -825,7 +825,7 @@ class DataMgmtService:
             nombre = ent_nombre.get().strip()
             tags = ent_tags.get().strip()
             if not nombre or not tags:
-                self.app.dialogs.set_estado("⚠️ Rellena nombre y tags.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y tags."), "#e67e22")
                 return
             prefs_c = self.app.store.cargar_preferencias()
             actual = prefs_c.get("snippets", [])
@@ -882,7 +882,7 @@ class DataMgmtService:
             from tkinter import simpledialog
             pos = self.app.extraer_positive()
             if not pos:
-                self.app.dialogs.set_estado("⚠️ No hay POSITIVE para guardar como fórmula.", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No hay POSITIVE para guardar como fórmula."), "#e67e22")
                 return
             nombre = simpledialog.askstring("📐 Nueva fórmula", "Nombre para esta fórmula:", parent=vent)
             if not nombre: return
@@ -1308,7 +1308,7 @@ class DataMgmtService:
                         logging.getLogger("gprompt").warning(
                             f"No se pudo guardar favorito: {err}"
                         )
-                        self.app.dialogs.set_estado("⚠️ Error al guardar favorito", "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ Error al guardar favorito"), "#e67e22")
 
                 ctk.CTkButton(
                     btn_row, text=tr("✅ Usar"), width=68, height=22,
@@ -1540,7 +1540,7 @@ class DataMgmtService:
             if es_prompt_completo:
                 # Cargar en txt_salida
                 self.app.dialogs.actualizar_salida(texto_clip)
-                self.app.dialogs.set_estado("📥 Prompt pegado en Resultado (detectado por marcadores)", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📥 Prompt pegado en Resultado (detectado por marcadores)"), "#2ecc71")
                 try: self.app.sesion._sesion_log("📥 Pegó prompt completo desde portapapeles")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
@@ -1555,7 +1555,7 @@ class DataMgmtService:
         import random
         items = (self.app.store.historial or []) + (self.app.store.favoritos or []) + (self.app.store.estrellas or [])
         if not items:
-            self.app.dialogs.set_estado("⚠️ Aún no hay prompts en historial.", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Aún no hay prompts en historial."), "#e67e22")
             return "break"
         item = random.choice(items)
         if isinstance(item, dict):
@@ -1568,7 +1568,7 @@ class DataMgmtService:
         idea = m.group(1).strip() if m else txt[:300]
         self.app.txt_idea.delete("1.0", "end")
         self.app.txt_idea.insert("1.0", idea[:300])
-        self.app.dialogs.set_estado("🎲 Idea cargada desde historial", "#3498db")
+        self.app.dialogs.set_estado(tr("🎲 Idea cargada desde historial"), "#3498db")
         return "break"
 
     def _pegar_imagen_clipboard(self, event=None):
@@ -1578,7 +1578,7 @@ class DataMgmtService:
             img = ImageGrab.grabclipboard()
             if img and hasattr(img, 'size'):
                 self._cargar_imagen_desde_pil(img.convert("RGB"), "clipboard_paste")
-                self.app.dialogs.set_estado("📋 Imagen pegada desde el portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Imagen pegada desde el portapapeles"), "#2ecc71")
                 return "break"
         except Exception as _e:
             logger.debug(f"[silent] {_e}")

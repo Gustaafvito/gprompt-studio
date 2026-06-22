@@ -501,7 +501,7 @@ class JsonPromptService:
             extras_dict = {k: data.get(k) for k in extras}
             try:
                 pyperclip.copy(json.dumps(extras_dict, indent=2, ensure_ascii=False))
-                self.app.dialogs.set_estado("📋 Metadatos extras copiados al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Metadatos extras copiados al portapapeles"), "#2ecc71")
             except Exception as e:
                 self.app.dialogs.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
 
@@ -528,7 +528,7 @@ class JsonPromptService:
         prompt_actual = self.app.txt_salida.get("1.0", "end").strip()
         if not prompt_actual or len(prompt_actual) < 20:
             self.app.dialogs.set_estado(
-                "⚠️ Genera primero un prompt para exportarlo como JSON profesional.",
+                tr("⚠️ Genera primero un prompt para exportarlo como JSON profesional."),
                 "#e67e22",
             )
             return
@@ -543,7 +543,7 @@ class JsonPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado("📤 Enriqueciendo prompt a JSON profesional vía LLM...",
+        self.app.dialogs.set_estado(tr("📤 Enriqueciendo prompt a JSON profesional vía LLM..."),
                          "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
@@ -621,7 +621,7 @@ class JsonPromptService:
                     self.app.dialogs.toggle_botones(True)
                     self._mostrar_modal_export(json_pretty, parsed is not None)
                     self.app.dialogs.set_estado(
-                        "📤 JSON profesional listo"
+                        tr("📤 JSON profesional listo")
                         + ("" if parsed is not None else " ⚠️ (puede tener errores de sintaxis)"),
                         "#2ecc71" if parsed is not None else "#e67e22",
                     )

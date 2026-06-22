@@ -102,7 +102,7 @@ class AtajosAyudaService:
         elif hasattr(self.app, "cmd_exportar"):
             self.app.cmd_exportar()
         else:
-            self.app.dialogs.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Función de exportar no disponible"), "#e67e22")
         return "break"
 
     def _atajo_guardar_estrella(self) -> str:
@@ -111,7 +111,7 @@ class AtajosAyudaService:
             if hasattr(self.app, "_guardar_estrella"):
                 self.app._guardar_estrella()
             else:
-                self.app.dialogs.set_estado("⚠️ Función no disponible", "#e74c3c")
+                self.app.dialogs.set_estado(tr("⚠️ Función no disponible"), "#e74c3c")
         except Exception as e:
             self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
@@ -136,16 +136,16 @@ class AtajosAyudaService:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.dialogs.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe algo en la idea primero"), "#e67e22")
             return "break"
         try:
             texto_traducido = self.app.deepseek.traducir(idea)
             if texto_traducido and texto_traducido != idea:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", texto_traducido)
-                self.app.dialogs.set_estado("🌐 Idea traducida al inglés", "#3498db")
+                self.app.dialogs.set_estado(tr("🌐 Idea traducida al inglés"), "#3498db")
             else:
-                self.app.dialogs.set_estado("⚠️ No se pudo traducir", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No se pudo traducir"), "#e67e22")
         except Exception as e:
             self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
         return "break"
@@ -169,7 +169,7 @@ class AtajosAyudaService:
             hallazgos = getattr(self.app, "_claridad_hallazgos", [])
             if not hallazgos:
                 self.app.dialogs.set_estado(
-                    "💡 No hay palabras polisémicas detectadas en tu idea.",
+                    tr("💡 No hay palabras polisémicas detectadas en tu idea."),
                     "#2ecc71",
                 )
                 return "break"

@@ -237,7 +237,7 @@ class BackupExportService:
         stars = self.app.store.estrellas or []
         if not (hist or favs or stars):
             return self.app.dialogs.set_estado(
-                "⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos).",
+                tr("⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos)."),
                 "#e67e22",
             )
 
@@ -378,7 +378,7 @@ class BackupExportService:
         import re
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
 
         ratio = self.app.ratio_var.get() or "1:1"
         pos = self.app.extraer_positive() or actual
