@@ -379,6 +379,9 @@ class DialogsComponent(_Component):
     def cmd_toggle_tema(self) -> None:
         return self._service._cmd_toggle_tema()
 
+    def cmd_toggle_idioma(self) -> None:
+        return self._service._cmd_toggle_idioma()
+
     def cmd_acerca_de(self) -> None:
         return self._service._cmd_acerca_de()
 

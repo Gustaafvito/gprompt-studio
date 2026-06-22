@@ -454,6 +454,35 @@ class DialogsService:
         self.app.after(100, self.app._apply_theme_colors)
         self.set_estado(f"🌗 Tema: {nuevo}", "#2ecc71")
 
+    def _cmd_toggle_idioma(self) -> None:
+        """Cambia el idioma de la UI (Español ↔ English). Se aplica al REINICIAR
+        (el cambio en caliente de cientos de widgets es frágil; al reiniciar la
+        UI se reconstruye y tr() ya devuelve el idioma nuevo)."""
+        try:
+            actual = (self.app.idioma_var.get() or "es").lower()
+        except Exception:
+            actual = "es"
+        nuevo = "en" if actual.startswith("es") else "es"
+        try:
+            # El trace de idioma_var persiste el valor en preferences.json.
+            self.app.idioma_var.set(nuevo)
+        except Exception as _e:
+            logger.debug(f"[silent toggle idioma] {_e}")
+        nombre = "English" if nuevo == "en" else "Español"
+        self.set_estado(f"🌐 Idioma: {nombre} — reinicia para aplicar", "#2ecc71")
+        try:
+            import tkinter.messagebox as mb
+            mb.showinfo(
+                "Idioma / Language",
+                f"Idioma cambiado a {nombre}.\n"
+                f"Reinicia G-Prompt Studio para aplicar los cambios.\n\n"
+                f"Language set to {nombre}.\n"
+                f"Restart G-Prompt Studio to apply the changes.",
+                parent=self.app,
+            )
+        except Exception as _e:
+            logger.debug(f"[silent idioma msgbox] {_e}")
+
     def _build_author(self) -> None:
         """Barra de autor en el footer con enlaces sociales clickables.
 

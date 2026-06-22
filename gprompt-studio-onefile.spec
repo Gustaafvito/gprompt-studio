@@ -65,6 +65,7 @@ hiddenimports = [
     'modules.dashboard',
     'modules.ui_footer',
     'modules.tooltip',
+    'modules.i18n',
     'modules.avatar_config',
     'modules.avatar_prompts',
     'modules.avatar_generator',

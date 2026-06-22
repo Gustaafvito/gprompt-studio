@@ -109,6 +109,7 @@ from config import (
     get_theme_colors,
 )
 from modules.avatar_ui import abrir_avatar_window
+from modules.i18n import tr
 from modules.style_guide import abrir_guia_estilos
 from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 
@@ -336,6 +337,7 @@ class UIBuildersService:
                 ("📚  Biblioteca", self.app.data.abrir_biblioteca),
                 ("🌗  Cambiar tema", self.app.dialogs.cmd_toggle_tema),
                 ("🏠  Dashboard", self.app.dashboard.cmd_abrir),
+                ("🌐  Idioma (EN/ES)", self.app.dialogs.cmd_toggle_idioma),
                 ("🎯  Modo Focus", self.app.creative.cmd_modo_focus),
             ]),
             ("⚙️ Workflow", "#c9b32e", [
@@ -677,7 +679,7 @@ class UIBuildersService:
         self.app.frame_video = ctk.CTkFrame(self.app, height=42, fg_color=c["panel_bg"])
         self.app.frame_video.pack_propagate(False)
 
-        ctk.CTkLabel(self.app.frame_video, text="Modelo:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Modelo:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=15)
@@ -688,13 +690,13 @@ class UIBuildersService:
         attach_searchable_dropdown(self.app.combo_modelo_video,
                                    command=self.app.events.on_motor_cambio)
 
-        ctk.CTkLabel(self.app.frame_video, text="Duración:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Duración:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
         ctk.CTkEntry(self.app.frame_video, textvariable=self.app.duracion_var, width=70).pack(side="left", padx=5)
         # Selector de shots: Auto (regla por duración) o manual 1-6.
-        ctk.CTkLabel(self.app.frame_video, text="Shots:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Shots:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(10, 5))
@@ -715,7 +717,7 @@ class UIBuildersService:
         # Combo "Estilo" (look visual): complementa los géneros narrativos del
         # footer (ESTILOS_VIDEO). La selección se inyecta como hint en el system
         # prompt vía prompts_inyeccion._inyectar_estilo_video.
-        ctk.CTkLabel(self.app.frame_video, text="Estilo:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Estilo:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(10, 5))
@@ -733,7 +735,7 @@ class UIBuildersService:
         except Exception as _e:
             logger.debug(f"[silent] tooltip estilo video: {_e}")
 
-        ctk.CTkLabel(self.app.frame_video, text="Ratio:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Ratio:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(10, 5))
@@ -742,7 +744,7 @@ class UIBuildersService:
         self.app.combo_ratio_v.pack(side="left", padx=5)
 
         # Destino al lado del ratio
-        ctk.CTkLabel(self.app.frame_video, text="Destino:",
+        ctk.CTkLabel(self.app.frame_video, text=tr("Destino:"),
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
@@ -843,7 +845,7 @@ class UIBuildersService:
         # Modelo
         f1 = ctk.CTkFrame(inner, fg_color="transparent")
         f1.pack(side="left", padx=(0, 8))
-        ctk.CTkLabel(f1, text="Modelo", font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f1, text=tr("Modelo"), font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_modelo_imagen = ctk.CTkComboBox(f1, values=MODELOS_IMAGEN_FLAT, width=220, height=28,
                                                     font=ctk.CTkFont(size=11), command=self.app.events.on_modelo_imagen_cambio)
@@ -862,7 +864,7 @@ class UIBuildersService:
         # Hint de categoría al LLM que se inyecta en la plantilla específica.
         self.app.frame_familia_estilo = ctk.CTkFrame(inner, fg_color="transparent")
         # No se hace pack() inicial — _on_modelo_imagen_cambio decide.
-        ctk.CTkLabel(self.app.frame_familia_estilo, text="Estilo",
+        ctk.CTkLabel(self.app.frame_familia_estilo, text=tr("Estilo"),
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_familia_estilo = ctk.CTkComboBox(
@@ -881,7 +883,7 @@ class UIBuildersService:
         # Ratio
         f2 = ctk.CTkFrame(inner, fg_color="transparent")
         f2.pack(side="left", padx=8)
-        ctk.CTkLabel(f2, text="Ratio", font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f2, text=tr("Ratio"), font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         f2_inner = ctk.CTkFrame(f2, fg_color="transparent")
         f2_inner.pack()
@@ -912,7 +914,7 @@ class UIBuildersService:
         # Destino — al final de la fila
         f0 = ctk.CTkFrame(inner, fg_color="transparent")
         f0.pack(side="left", padx=(8, 0))
-        ctk.CTkLabel(f0, text="Destino", font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f0, text=tr("Destino"), font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_destino_img = ctk.CTkComboBox(f0, values=DESTINOS, variable=self.app.destino_var, width=140, height=28,
                                                    font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
