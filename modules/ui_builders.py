@@ -421,10 +421,11 @@ class UIBuildersService:
                     # izquierda. Se calcula ANTES del geometry inicial porque mover
                     # un Toplevel overrideredirect ya mapeado no surte efecto.
                     menu_w = 240
+                    margen = 40   # hueco respecto al borde derecho de la ventana
                     win_left = self.app.winfo_rootx()
                     win_right = win_left + self.app.winfo_width()
-                    if abs_x + menu_w > win_right - 12:
-                        abs_x = max(win_left + 12, win_right - menu_w - 12)
+                    if abs_x + menu_w > win_right - margen:
+                        abs_x = max(win_left + 12, win_right - menu_w - margen)
                 except Exception:
                     abs_x, abs_y = 200, 100
                 new_popup.geometry(f"+{abs_x}+{abs_y}")
