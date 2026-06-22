@@ -53,7 +53,7 @@ class DialogsService:
             return
 
         v = GPromptWindow(self.app)
-        v.title("🔑 Configurar API Keys")
+        v.title(tr("🔑 Configurar API Keys"))
         v.geometry("780x720")
 
         ctk.CTkLabel(v, text=tr("🔑 Configura tus motores de IA"),
@@ -395,7 +395,7 @@ class DialogsService:
         c = get_theme_colors(is_lt)
 
         v = GPromptWindow(self.app)
-        v.title("ℹ️ Acerca de G-Prompt Studio")
+        v.title(tr("ℹ️ Acerca de G-Prompt Studio"))
         v.geometry("520x520")
         v.transient(self.app)
 

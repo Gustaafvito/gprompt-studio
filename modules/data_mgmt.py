@@ -338,7 +338,7 @@ class DataMgmtService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         v = GPromptWindow(self.app)
-        v.title("⚡ Auto-expansión en la idea")
+        v.title(tr("⚡ Auto-expansión en la idea"))
         v.geometry("680x620")
         v.transient(self.app)
 
@@ -354,11 +354,11 @@ class DataMgmtService:
         form.pack(fill="x", padx=12, pady=4)
         ctk.CTkLabel(form, text=tr("Trigger (sin ;):"),
                      font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4), pady=8)
-        ent_trigger = ctk.CTkEntry(form, width=110, placeholder_text="ej: cine")
+        ent_trigger = ctk.CTkEntry(form, width=110, placeholder_text=tr("ej: cine"))
         ent_trigger.pack(side="left", padx=4)
         ctk.CTkLabel(form, text=tr("Expansión:"),
                      font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4))
-        ent_expansion = ctk.CTkEntry(form, width=320, placeholder_text="ej: cinematic lighting, film grain")
+        ent_expansion = ctk.CTkEntry(form, width=320, placeholder_text=tr("ej: cinematic lighting, film grain"))
         ent_expansion.pack(side="left", padx=4)
 
         def _add():
@@ -672,7 +672,7 @@ class DataMgmtService:
         prefs = self.app.store.cargar_preferencias()
 
         vent = GPromptWindow(self.app)
-        vent.title("🏷️ Tags reutilizables (al prompt)")
+        vent.title(tr("🏷️ Tags reutilizables (al prompt)"))
         vent.geometry("680x600")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🏷️ Tags reutilizables (al prompt)"),
@@ -693,7 +693,7 @@ class DataMgmtService:
         search_row.pack(fill="x", padx=10, pady=(0, 4))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Buscar por nombre o tags…",
+                                    placeholder_text=tr("Buscar por nombre o tags…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         busqueda_pending = {"after_id": None}
@@ -714,11 +714,11 @@ class DataMgmtService:
                      font=ctk.CTkFont(size=11, weight="bold")
                      ).pack(anchor="w", padx=10, pady=(8, 2))
         ent_nombre = ctk.CTkEntry(form,
-                                  placeholder_text="Nombre (ej: 'Mi look cinematográfico')",
+                                  placeholder_text=tr("Nombre (ej: 'Mi look cinematográfico')"),
                                   width=560)
         ent_nombre.pack(padx=10, pady=2)
         ent_tags = ctk.CTkEntry(form,
-                                placeholder_text="Tags/frase (ej: cinematic lighting, volumetric, 8K)",
+                                placeholder_text=tr("Tags/frase (ej: cinematic lighting, volumetric, 8K)"),
                                 width=560)
         ent_tags.pack(padx=10, pady=(2, 5))
 
@@ -861,7 +861,7 @@ class DataMgmtService:
         formulas = prefs.get("formulas", [])
 
         vent = GPromptWindow(self.app)
-        vent.title("📐 Fórmulas guardadas")
+        vent.title(tr("📐 Fórmulas guardadas"))
         vent.geometry("680x550")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("📐 Fórmulas guardadas"),
@@ -907,7 +907,7 @@ class DataMgmtService:
         search_row.pack(fill="x", padx=10, pady=(0, 4))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Buscar por nombre o contenido…",
+                                    placeholder_text=tr("Buscar por nombre o contenido…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         busqueda_pending = {"after_id": None}
@@ -1037,7 +1037,7 @@ class DataMgmtService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = GPromptWindow(self.app)
-        vent.title("📚 Biblioteca de Prompts de Ejemplo")
+        vent.title(tr("📚 Biblioteca de Prompts de Ejemplo"))
         vent.geometry("820x680")
         vent.transient(self.app)
 
@@ -1067,7 +1067,7 @@ class DataMgmtService:
         ).pack(side="left", padx=(0, 4))
         entry_busqueda = ctk.CTkEntry(
             fila_busqueda, textvariable=busqueda_var,
-            placeholder_text="Buscar por título, modelo, tags o estilos…",
+            placeholder_text=tr("Buscar por título, modelo, tags o estilos…"),
             height=26, font=ctk.CTkFont(size=11)
         )
         entry_busqueda.pack(side="left", fill="x", expand=True)

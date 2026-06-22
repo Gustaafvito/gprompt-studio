@@ -211,7 +211,7 @@ class AtajosAyudaService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("⌨️ Atajos de teclado")
+        vent.title(tr("⌨️ Atajos de teclado"))
         vent.geometry("620x640")
         vent.transient(self.app)
 
@@ -226,7 +226,7 @@ class AtajosAyudaService:
         search_row.pack(fill="x", padx=15, pady=(0, 6))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Filtrar por tecla o acción…",
+                                    placeholder_text=tr("Filtrar por tecla o acción…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         contador_var = ctk.StringVar(value="")

@@ -389,7 +389,7 @@ class ArquitectoApp(
             c = {"muted_text": "#888", "panel_text": "#e5e7eb", "panel_bg": "#0a0e14"}
 
         win = GPromptWindow(self)
-        win.title("👋 Bienvenida")
+        win.title(tr("👋 Bienvenida"))
         win.geometry("440x230")
         win.transient(self)
         try: win.grab_set()
@@ -406,7 +406,7 @@ class ArquitectoApp(
                      text_color=c.get("muted_text")).pack(pady=(0, 12))
 
         entry = ctk.CTkEntry(win, width=300, height=34,
-                              placeholder_text="Tu nombre o apodo",
+                              placeholder_text=tr("Tu nombre o apodo"),
                               font=ctk.CTkFont(size=12))
         entry.pack(pady=4)
         entry.focus_set()
@@ -749,7 +749,7 @@ class ArquitectoApp(
             return
         from modules.gprompt_window import GPromptWindow
         win = GPromptWindow(self)
-        win.title("🧬 ADN visual activo")
+        win.title(tr("🧬 ADN visual activo"))
         win.geometry("520x400")
         win.transient(self)
 
@@ -1238,7 +1238,7 @@ class ArquitectoApp(
         _recargar_estado()
 
         vent = GPromptWindow(self)
-        vent.title("📑 Plantillas de prompt")
+        vent.title(tr("📑 Plantillas de prompt"))
         vent.geometry("860x700")
         vent.transient(self)
 
@@ -1284,7 +1284,7 @@ class ArquitectoApp(
         search_row.pack(fill="x", padx=12, pady=(0, 6))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(
-            search_row, placeholder_text="Buscar por nombre, contenido o variable…",
+            search_row, placeholder_text=tr("Buscar por nombre, contenido o variable…"),
             height=30,
         )
         entry_buscar.pack(side="left", fill="x", expand=True)
@@ -1626,7 +1626,7 @@ class ArquitectoApp(
         storyboard como prompt de vídeo.
         """
         vent = GPromptWindow(self)
-        vent.title("👁 Comparar Variaciones")
+        vent.title(tr("👁 Comparar Variaciones"))
         n = len(variaciones)
 
         # Extraer labels desde `### nombre ###\n` si no se pasaron explícitas
@@ -2110,7 +2110,7 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
 
         wizard = GPromptWindow(self)
-        wizard.title("🧠 G-Prompt Studio — Configuración Inicial")
+        wizard.title(tr("🧠 G-Prompt Studio — Configuración Inicial"))
         wizard.geometry("620x720")
         wizard.transient(self)
         wizard.grab_set()
@@ -2140,7 +2140,7 @@ class ArquitectoApp(
 
         ctk.CTkLabel(frame, text=tr("👤 ¿Cómo quieres que te llamemos?"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
-        entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
+        entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text=tr("Tu nombre o apodo (ej: Gustaafvito)"))
         entry_nombre.pack(padx=10)
         ctk.CTkLabel(frame, text=tr("Aparecerá en el saludo del dashboard. Puedes dejarlo vacío."),
                      font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
@@ -2353,7 +2353,7 @@ class ArquitectoApp(
 
     def cmd_preferencias(self):
         ventana = GPromptWindow(self)
-        ventana.title("⚙️ Ajustes del Sistema")
+        ventana.title(tr("⚙️ Ajustes del Sistema"))
         ventana.geometry("500x400")
         ventana.transient(self)
         ventana.grab_set()
@@ -2371,7 +2371,7 @@ class ArquitectoApp(
         ctk.CTkLabel(tab_gen, text=tr("👤 Tu nombre (saludo del Dashboard):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.entry_nombre_pref = ctk.CTkEntry(tab_gen, width=250,
-                                                placeholder_text="Tu nombre o apodo")
+                                                placeholder_text=tr("Tu nombre o apodo"))
         try:
             _prefs_existentes = self.store.cargar_preferencias() or {}
             _nombre_actual = _prefs_existentes.get("nombre", "")
@@ -2438,7 +2438,7 @@ class ArquitectoApp(
         frame_ruta = ctk.CTkFrame(tab_gen, fg_color="transparent")
         frame_ruta.pack(anchor="w", padx=20, fill="x")
 
-        self.entry_comfyui_path = ctk.CTkEntry(frame_ruta, width=300, placeholder_text="C:\\ComfyUI o vacío si no usas")
+        self.entry_comfyui_path = ctk.CTkEntry(frame_ruta, width=300, placeholder_text=tr("C:\\ComfyUI o vacío si no usas"))
         prefs_exist = self.store.cargar_preferencias() or {}
         ruta_actual = prefs_exist.get("comfyui_path", "") or ""
         if ruta_actual:

@@ -193,7 +193,7 @@ class SesionVideoService:
                 if self._sesion_video_disponible():
                     # Ventana de selección
                     sel = GPromptWindow(self.app)
-                    sel.title("🎬 Tipo de grabación")
+                    sel.title(tr("🎬 Tipo de grabación"))
                     sel.geometry("350x180")
                     sel.transient(self.app)
                     sel.grab_set()
@@ -266,7 +266,7 @@ class SesionVideoService:
             return
 
         v = GPromptWindow(self.app)
-        v.title("🎬 Sesión grabada")
+        v.title(tr("🎬 Sesión grabada"))
         v.geometry("780x640")
         v.transient(self.app)
 
@@ -409,7 +409,7 @@ class SesionVideoService:
         pasos = self._sesion_agrupar_pasos(self.app._sesion_eventos)
 
         v = GPromptWindow(self.app)
-        v.title("📚 Modo Tutorial — Guion para YouTube")
+        v.title(tr("📚 Modo Tutorial — Guion para YouTube"))
         v.geometry("900x700")
         v.transient(self.app)
 

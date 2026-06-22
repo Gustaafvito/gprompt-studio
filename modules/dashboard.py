@@ -124,7 +124,7 @@ class DashboardService:
         bar_bg          = _pal["bar_bg"]
 
         v = GPromptWindow(self.app)
-        v.title("🏠 Dashboard")
+        v.title(tr("🏠 Dashboard"))
         v.geometry("960x780")
         v.transient(self.app)
         v.configure(fg_color=bg)
@@ -174,7 +174,7 @@ class DashboardService:
         ctk.CTkLabel(search_inner, text="🔍", font=ctk.CTkFont(size=18),
                      fg_color="transparent", text_color=accent_blue).pack(side="left", padx=(0, 8))
         search_entry = ctk.CTkEntry(search_inner, height=34,
-                                     placeholder_text="Buscar en historial, favoritos, plantillas, personajes…",
+                                     placeholder_text=tr("Buscar en historial, favoritos, plantillas, personajes…"),
                                      font=ctk.CTkFont(size=12), border_width=1,
                                      border_color=card_border)
         search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
@@ -835,7 +835,7 @@ class DashboardService:
         def _abrir_todos_los_logros():
             """Ventana con todos los logros: desbloqueados arriba, bloqueados abajo."""
             win = GPromptWindow(v)
-            win.title("🏆 Todos los logros")
+            win.title(tr("🏆 Todos los logros"))
             win.geometry("520x620")
             win.transient(v)
             try:

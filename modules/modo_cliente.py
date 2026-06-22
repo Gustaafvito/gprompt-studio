@@ -53,7 +53,7 @@ class ModoClienteService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = GPromptWindow(self.app)
-        vent.title("💼 Modo Cliente")
+        vent.title(tr("💼 Modo Cliente"))
         vent.geometry("640x720")
         vent.transient(self.app)
 
@@ -354,7 +354,7 @@ class ModoClienteService:
                 })
 
         vent = GPromptWindow(self.app)
-        vent.title("💼 Propuestas profesionales")
+        vent.title(tr("💼 Propuestas profesionales"))
         vent.geometry("900x720")
         vent.transient(self.app)
 
@@ -472,7 +472,7 @@ class ModoClienteService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("🎭 Moodboard — Estilo común")
+        vent.title(tr("🎭 Moodboard — Estilo común"))
         vent.geometry("720x680")
         vent.transient(self.app)
 
@@ -676,7 +676,7 @@ class ModoClienteService:
                         lbl_prog.pack_forget()
                         progress_bar.pack_forget()
                         vent2 = GPromptWindow(self.app)
-                        vent2.title("🎭 Estilo común detectado")
+                        vent2.title(tr("🎭 Estilo común detectado"))
                         vent2.geometry("720x650")
                         vent2.transient(self.app)
                         ctk.CTkLabel(vent2, text=f"🎭 Estilo detectado en {len(descripciones)} imágenes",
@@ -773,7 +773,7 @@ class ModoClienteService:
         c = get_theme_colors(is_lt)
 
         win = GPromptWindow(parent_window or self.app)
-        win.title("📚 Mis estilos de moodboard")
+        win.title(tr("📚 Mis estilos de moodboard"))
         win.geometry("640x560")
         win.transient(parent_window or self.app)
 

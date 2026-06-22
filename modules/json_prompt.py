@@ -196,7 +196,7 @@ class JsonPromptService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("📥 Importar prompt JSON profesional")
+        vent.title(tr("📥 Importar prompt JSON profesional"))
         vent.geometry("780x640")
         vent.transient(self.app)
 
@@ -410,7 +410,7 @@ class JsonPromptService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("📥 Importación completada")
+        vent.title(tr("📥 Importación completada"))
         vent.geometry("760x640")
         vent.transient(self.app)
 
@@ -641,7 +641,7 @@ class JsonPromptService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("📤 JSON profesional exportado")
+        vent.title(tr("📤 JSON profesional exportado"))
         vent.geometry("840x680")
         vent.transient(self.app)
 

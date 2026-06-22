@@ -281,7 +281,7 @@ class ToolsWorkflowService:
             self.app.dialogs.set_estado("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual.", "#e67e22")
             return
         v = GPromptWindow(self.app)
-        v.title("📋 Cargar setup")
+        v.title(tr("📋 Cargar setup"))
         v.geometry("560x520")
         v.transient(self.app)
         ctk.CTkLabel(v, text=tr("📋 Setups guardados"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 8))
@@ -355,7 +355,7 @@ class ToolsWorkflowService:
             return
 
         vent = GPromptWindow(self.app)
-        vent.title("⏲ Cron de variantes")
+        vent.title(tr("⏲ Cron de variantes"))
         vent.geometry("520x620")
         vent.transient(self.app)
 
@@ -402,7 +402,7 @@ class ToolsWorkflowService:
         ctk.CTkLabel(vent, text=tr("Instrucción personalizada (opcional):"),
                      font=ctk.CTkFont(size=10, weight="bold"), text_color=c["muted_text"]).pack(anchor="w", padx=20, pady=(8, 2))
         ent_personalizado = ctk.CTkEntry(vent,
-                                          placeholder_text='ej: "cambia el animal en cada variante" o "varía el color del coche"',
+                                          placeholder_text=tr('ej: "cambia el animal en cada variante" o "varía el color del coche"'),
                                           width=460, height=28)
         ent_personalizado.pack(anchor="w", padx=20)
         ctk.CTkLabel(vent, text=tr("Si rellenas esto, se usa SIEMPRE (independientemente del selector de arriba)."),
@@ -590,7 +590,7 @@ class ToolsWorkflowService:
             return self.app.dialogs.set_estado("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones.", "#e67e22")
 
         vent = GPromptWindow(self.app)
-        vent.title("📜 Historial de versiones del prompt")
+        vent.title(tr("📜 Historial de versiones del prompt"))
         vent.geometry("700x500")
         vent.transient(self.app)
 
@@ -653,7 +653,7 @@ class ToolsWorkflowService:
         macros = prefs.get("macros", [])
 
         vent = GPromptWindow(self.app)
-        vent.title("⚡ Macros — Secuencias automatizadas")
+        vent.title(tr("⚡ Macros — Secuencias automatizadas"))
         vent.geometry("700x600")
         vent.transient(self.app)
 
@@ -679,7 +679,7 @@ class ToolsWorkflowService:
         lbl_form_titulo.pack(anchor="w", padx=10, pady=(8, 2))
 
         ent_nombre_m = ctk.CTkEntry(form,
-                                     placeholder_text="Nombre (ej: 'Pulir prompt cinematográfico')",
+                                     placeholder_text=tr("Nombre (ej: 'Pulir prompt cinematográfico')"),
                                      width=580)
         ent_nombre_m.pack(padx=10, pady=2)
 
@@ -1240,7 +1240,7 @@ class ToolsWorkflowService:
             self.app.store.guardar_preferencias(prefs)
 
         vent = GPromptWindow(self.app)
-        vent.title("🏷 Proyectos")
+        vent.title(tr("🏷 Proyectos"))
         vent.geometry("680x600")
         vent.transient(self.app)
 
@@ -1259,7 +1259,7 @@ class ToolsWorkflowService:
         # Form crear proyecto
         f_crear = ctk.CTkFrame(vent, fg_color=c["fg_dark"])
         f_crear.pack(fill="x", padx=10, pady=5)
-        ent_proy = ctk.CTkEntry(f_crear, placeholder_text="Nombre del proyecto (ej: 'Campaña café orgánico')", width=420)
+        ent_proy = ctk.CTkEntry(f_crear, placeholder_text=tr("Nombre del proyecto (ej: 'Campaña café orgánico')"), width=420)
         ent_proy.pack(side="left", padx=10, pady=8)
 
         def _crear_proy():

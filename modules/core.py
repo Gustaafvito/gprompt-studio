@@ -634,7 +634,7 @@ class CoreMixin:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self)
-        vent.title("🔀 Variaciones — elige cuál usar")
+        vent.title(tr("🔀 Variaciones — elige cuál usar"))
         vent.geometry("900x720")
         vent.transient(self)
 
@@ -1144,7 +1144,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
 
         vent_copiloto = GPromptWindow(self)
-        vent_copiloto.title("💬 Copiloto de Prompt")
+        vent_copiloto.title(tr("💬 Copiloto de Prompt"))
         vent_copiloto.geometry("450x600")
         vent_copiloto.transient(self)
 
@@ -1154,7 +1154,7 @@ class CoreMixin:
         input_frame = ctk.CTkFrame(vent_copiloto, fg_color="transparent")
         input_frame.pack(fill="x", padx=10, pady=(0, 10))
 
-        txt_input = ctk.CTkEntry(input_frame, placeholder_text="Ej: Haz que sea de noche...")
+        txt_input = ctk.CTkEntry(input_frame, placeholder_text=tr("Ej: Haz que sea de noche..."))
         txt_input.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         def _add_msg(rol, texto, color):

@@ -43,7 +43,7 @@ class AdnVisualService:
         adns = prefs.get("adns_guardados", [])
 
         vent = GPromptWindow(self.app)
-        vent.title("📚 Biblioteca de ADNs")
+        vent.title(tr("📚 Biblioteca de ADNs"))
         vent.geometry("720x540")
         vent.transient(self.app)
 
@@ -64,7 +64,7 @@ class AdnVisualService:
         search_row.pack(fill="x", padx=10, pady=(0, 4))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Buscar por nombre, sujeto, estética…",
+                                    placeholder_text=tr("Buscar por nombre, sujeto, estética…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         busqueda_pending = {"after_id": None}
@@ -277,7 +277,7 @@ class AdnVisualService:
                     c = get_theme_colors(is_lt)
 
                     vent = GPromptWindow(self.app)
-                    vent.title("🧬 ADN Visual - Análisis estructurado")
+                    vent.title(tr("🧬 ADN Visual - Análisis estructurado"))
                     vent.geometry("700x650")
                     vent.transient(self.app)
 

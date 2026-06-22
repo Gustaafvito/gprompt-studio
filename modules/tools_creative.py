@@ -128,7 +128,7 @@ class ToolsCreativeService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         cfg = GPromptWindow(self.app)
-        cfg.title("⚡ Pulse — Configuración")
+        cfg.title(tr("⚡ Pulse — Configuración"))
         cfg.geometry("440x520")
         cfg.transient(self.app)
         cfg.grab_set()
@@ -478,7 +478,7 @@ class ToolsCreativeService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("🤖 Top 3 modelos sugeridos")
+        vent.title(tr("🤖 Top 3 modelos sugeridos"))
         vent.geometry("680x520")
         vent.transient(self.app)
 
@@ -706,7 +706,7 @@ class ToolsCreativeService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = GPromptWindow(self.app)
-        vent.title("👥 Grupo de personajes")
+        vent.title(tr("👥 Grupo de personajes"))
         vent.geometry("600x500")
         vent.transient(self.app)
 
@@ -730,7 +730,7 @@ class ToolsCreativeService:
             cb.set(personajes_lista[0])
             cb.pack(side="left", padx=(0, 5))
 
-            ent_desc = ctk.CTkEntry(row, placeholder_text="Posición/acción (ej: 'a la izquierda, mirando al frente')", width=350, height=26)
+            ent_desc = ctk.CTkEntry(row, placeholder_text=tr("Posición/acción (ej: 'a la izquierda, mirando al frente')"), width=350, height=26)
             ent_desc.pack(side="left")
 
             personajes_data.append({"combo": cb, "desc": ent_desc})
@@ -863,7 +863,7 @@ class ToolsCreativeService:
                     is_lt = ctk.get_appearance_mode().lower() == "light"
                     c = get_theme_colors(is_lt)
                     vent = GPromptWindow(self.app)
-                    vent.title("🔍 Análisis inverso")
+                    vent.title(tr("🔍 Análisis inverso"))
                     vent.geometry("700x600")
                     vent.transient(self.app)
                     ctk.CTkLabel(vent, text=tr("🔍 Análisis inverso: imagen vs prompt"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
@@ -1104,7 +1104,7 @@ class ToolsCreativeService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("🧬 ADN visual — Extracción")
+        vent.title(tr("🧬 ADN visual — Extracción"))
         vent.geometry("720x580")
         vent.transient(self.app)
 
@@ -1170,7 +1170,7 @@ class ToolsCreativeService:
                     prev_frame.pack_forget()
 
                     vent2 = GPromptWindow(self.app)
-                    vent2.title("🧬 ADN visual extraído")
+                    vent2.title(tr("🧬 ADN visual extraído"))
                     vent2.geometry("700x500")
                     vent2.transient(self.app)
                     ctk.CTkLabel(vent2, text=tr("🧬 ADN visual — Rasgos inmutables"),
@@ -1269,7 +1269,7 @@ class ToolsCreativeService:
 
         # Ventana selección
         sel = GPromptWindow(self.app)
-        sel.title("🧬 Variar con ADN")
+        sel.title(tr("🧬 Variar con ADN"))
         sel.geometry("520x520")
         sel.transient(self.app)
         ctk.CTkLabel(sel, text=tr("🧬 Variar con ADN visual"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
@@ -1300,7 +1300,7 @@ class ToolsCreativeService:
         cb = ctk.CTkComboBox(sel, values=opciones, variable=var_op, width=340, height=28)
         cb.pack()
 
-        ent_extra = ctk.CTkEntry(sel, placeholder_text="Detalle adicional (opcional)", width=350, height=28)
+        ent_extra = ctk.CTkEntry(sel, placeholder_text=tr("Detalle adicional (opcional)"), width=350, height=28)
         ent_extra.pack(pady=(15, 5))
 
         def _ejecutar():
@@ -1407,7 +1407,7 @@ class ToolsCreativeService:
 
                 def _mostrar():
                     vent = GPromptWindow(self.app)
-                    vent.title("🔍 Análisis de consistencia")
+                    vent.title(tr("🔍 Análisis de consistencia"))
                     vent.geometry("700x550")
                     vent.transient(self.app)
                     ctk.CTkLabel(vent, text=tr("🔍 Consistencia entre prompts"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
@@ -1437,7 +1437,7 @@ class ToolsCreativeService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         vent = GPromptWindow(self.app)
-        vent.title("🧰 Constructor de NEGATIVE")
+        vent.title(tr("🧰 Constructor de NEGATIVE"))
         vent.geometry("700x720")
         vent.transient(self.app)
 
@@ -1448,7 +1448,7 @@ class ToolsCreativeService:
         # Búsqueda
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
         search_row.pack(fill="x", padx=15, pady=(0, 4))
-        search_entry = ctk.CTkEntry(search_row, placeholder_text="🔍 Busca un elemento...",
+        search_entry = ctk.CTkEntry(search_row, placeholder_text=tr("🔍 Busca un elemento..."),
                                       height=28, font=ctk.CTkFont(size=11))
         search_entry.pack(fill="x")
 
@@ -1613,7 +1613,7 @@ class ToolsCreativeService:
                 self.app.dialogs.set_estado("⚠️ No hay presets guardados todavía.", "#e67e22")
                 return
             win = GPromptWindow(vent)
-            win.title("💾 Presets de NEGATIVE")
+            win.title(tr("💾 Presets de NEGATIVE"))
             win.geometry("440x400")
             win.transient(vent)
             ctk.CTkLabel(win, text=tr("💾 Presets guardados"),
@@ -1790,7 +1790,7 @@ class ToolsCreativeService:
 
                 def _mostrar():
                     vent = GPromptWindow(self.app)
-                    vent.title("🎨 Paleta de colores extraída")
+                    vent.title(tr("🎨 Paleta de colores extraída"))
                     vent.geometry("580x600")
                     vent.transient(self.app)
                     ctk.CTkLabel(vent, text=tr("🎨 Paleta extraída de la imagen"),
@@ -1927,7 +1927,7 @@ class ToolsCreativeService:
         text_muted = "#4b5563" if is_lt else "#9ca3af"
 
         win = GPromptWindow(parent_window or self.app)
-        win.title("📚 Biblioteca de paletas")
+        win.title(tr("📚 Biblioteca de paletas"))
         win.geometry("560x600")
         win.transient(parent_window or self.app)
 

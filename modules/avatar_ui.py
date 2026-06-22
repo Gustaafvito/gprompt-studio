@@ -215,7 +215,7 @@ class AvatarFrame(ctk.CTkFrame):
         fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
         fila_auto.grid_columnconfigure(0, weight=1)
         self.entry_tema = ctk.CTkEntry(
-            fila_auto, placeholder_text="ej: guerrera élfica, volcán japonés, reloj steampunk…")
+            fila_auto, placeholder_text=tr("ej: guerrera élfica, volcán japonés, reloj steampunk…"))
         self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
         self.boton_auto = ctk.CTkButton(
             fila_auto, text=tr("🎲 Generar ficha"), width=130,
@@ -638,7 +638,7 @@ def abrir_avatar_window(app) -> None:
         adaptador = None
 
     vent = GPromptWindow(app)
-    vent.title("🧑‍🎨 Avatar dataset (LoRA)")
+    vent.title(tr("🧑‍🎨 Avatar dataset (LoRA)"))
     vent.geometry("920x720")
     vent.transient(app)
 
@@ -675,7 +675,7 @@ if __name__ == "__main__":
 
     ctk.set_appearance_mode("dark")
     app = ctk.CTk()
-    app.title("Avatar Dataset — prueba standalone")
+    app.title(tr("Avatar Dataset — prueba standalone"))
     app.geometry("900x680")
     frame = AvatarFrame(app, llm_call=_llm_fake)
     frame.pack(fill="both", expand=True)

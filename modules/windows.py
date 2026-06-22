@@ -48,7 +48,7 @@ def abrir_personajes(app):
     colapsado por defecto; se despliega con el botón "+ Nuevo"."""
     cc = _card_colors()
     ventana = GPromptWindow(app)
-    ventana.title("🧑 Gestor de Personajes")
+    ventana.title(tr("🧑 Gestor de Personajes"))
     ventana.geometry("780x620")
     ventana.grab_set()
 
@@ -76,7 +76,7 @@ def abrir_personajes(app):
     frame_busqueda = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
     ctk.CTkLabel(frame_busqueda, text="🔍").pack(side="left", padx=(0, 6))
-    entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text="Buscar por nombre o descripción…",
+    entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text=tr("Buscar por nombre o descripción…"),
                                 height=30)
     entry_buscar.pack(side="left", fill="x", expand=True)
     busqueda_pending = [None]
@@ -98,13 +98,13 @@ def abrir_personajes(app):
 
     ctk.CTkLabel(frame_nuevo, text=tr("Nombre:"), font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=10, pady=8)
-    entry_nombre = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text="ej: Luna, Detective…")
+    entry_nombre = ctk.CTkEntry(frame_nuevo, width=160, placeholder_text=tr("ej: Luna, Detective…"))
     entry_nombre.pack(side="left", padx=5)
 
     ctk.CTkLabel(frame_nuevo, text=tr("Descripción:"), font=ctk.CTkFont(weight="bold"),
                  text_color=cc["label_main"]).pack(side="left", padx=(12, 5))
     entry_desc = ctk.CTkEntry(frame_nuevo, width=260,
-                              placeholder_text="ej: young woman, silver hair, blue eyes…")
+                              placeholder_text=tr("ej: young woman, silver hair, blue eyes…"))
     entry_desc.pack(side="left", padx=5)
 
     form_visible = [False]
@@ -260,7 +260,7 @@ def abrir_loras(app):
     """Gestor de LoRAs con buscador, filtro por familia y edición inline."""
     cc = _card_colors()
     ventana = GPromptWindow(app)
-    ventana.title("🔗 Gestor de LoRAs")
+    ventana.title(tr("🔗 Gestor de LoRAs"))
     ventana.geometry("840x640")
     ventana.grab_set()
 
@@ -292,7 +292,7 @@ def abrir_loras(app):
     frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
     ctk.CTkLabel(frame_busqueda, text="🔍").pack(side="left", padx=(0, 6))
     entry_buscar = ctk.CTkEntry(frame_busqueda,
-                                placeholder_text="Buscar por nombre, trigger o nota…",
+                                placeholder_text=tr("Buscar por nombre, trigger o nota…"),
                                 height=30)
     entry_buscar.pack(side="left", fill="x", expand=True)
     busqueda_pending = [None]
@@ -320,12 +320,12 @@ def abrir_loras(app):
 
     ctk.CTkLabel(frame_nuevo, text=tr("Nombre:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=10, pady=8)
-    entry_nombre = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="ej: Detail Enhancer")
+    entry_nombre = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text=tr("ej: Detail Enhancer"))
     entry_nombre.pack(side="left", padx=5)
 
     ctk.CTkLabel(frame_nuevo, text=tr("Trigger:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
-    entry_trigger = ctk.CTkEntry(frame_nuevo, width=140, placeholder_text="ej: add_detail")
+    entry_trigger = ctk.CTkEntry(frame_nuevo, width=140, placeholder_text=tr("ej: add_detail"))
     entry_trigger.pack(side="left", padx=5)
 
     ctk.CTkLabel(frame_nuevo, text=tr("Familia:"),
@@ -337,7 +337,7 @@ def abrir_loras(app):
 
     ctk.CTkLabel(frame_nuevo, text=tr("Nota:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
-    entry_nota = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text="opcional")
+    entry_nota = ctk.CTkEntry(frame_nuevo, width=130, placeholder_text=tr("opcional"))
     entry_nota.pack(side="left", padx=5)
 
     # ── Sub-fila: Rasgos visuales (opcional) ──
@@ -586,7 +586,7 @@ def abrir_batch_variables(app):
     vars_detectadas = list(dict.fromkeys(re.findall(r'\{(\w+)\}', plantilla)))
 
     ventana = GPromptWindow(app)
-    ventana.title("⚡ Batch de Variables")
+    ventana.title(tr("⚡ Batch de Variables"))
     ventana.geometry("600x620")
     ventana.grab_set()
 
@@ -627,7 +627,7 @@ def abrir_batch_variables(app):
             ctk.CTkLabel(row, text=f"{{{vname}}}",
                          font=ctk.CTkFont(size=11, weight="bold"),
                          text_color="#3b82f6", width=100).pack(side="left", padx=(0, 8))
-            ent = ctk.CTkEntry(row, placeholder_text="val1, val2, val3", font=ctk.CTkFont(size=11))
+            ent = ctk.CTkEntry(row, placeholder_text=tr("val1, val2, val3"), font=ctk.CTkFont(size=11))
             ent.pack(side="left", fill="x", expand=True)
             entries_vars[vname] = ent
         if not detectadas:
@@ -738,7 +738,7 @@ def abrir_batch_variables(app):
 def abrir_batch(app):
     cc = _card_colors()
     ventana = GPromptWindow(app)
-    ventana.title("📦 Generación Batch")
+    ventana.title(tr("📦 Generación Batch"))
     ventana.geometry("850x750")
     ventana.grab_set()
 
@@ -1149,7 +1149,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
     frame_busqueda = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
     ctk.CTkLabel(frame_busqueda, text="🔍", font=ctk.CTkFont(size=14)).pack(side="left", padx=(0, 6))
-    entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text="Buscar por texto, estilo, fecha...",
+    entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text=tr("Buscar por texto, estilo, fecha..."),
                                  width=400, height=32)
     entry_buscar.pack(side="left", fill="x", expand=True, padx=(0, 8))
 

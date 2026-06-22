@@ -284,7 +284,7 @@ class PreviewPollinationsService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("👁 Grid Pollinations")
+        vent.title(tr("👁 Grid Pollinations"))
         n = len(variaciones)
         screen_w = self.app.winfo_screenwidth()
         screen_h = self.app.winfo_screenheight()
@@ -487,7 +487,7 @@ class PreviewPollinationsService:
         """Ventana de preview con imagen + URL + botones Guardar/Copiar/Abrir."""
         import webbrowser
         vent_previa = GPromptWindow(self.app)
-        vent_previa.title("🖼 Preview" + (" (caché)" if desde_cache else ""))
+        vent_previa.title(tr("🖼 Preview") + (tr(" (caché)") if desde_cache else ""))
         vent_previa.geometry("560x680")
         vent_previa.transient(self.app)
 

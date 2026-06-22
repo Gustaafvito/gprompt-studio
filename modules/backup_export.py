@@ -244,7 +244,7 @@ class BackupExportService:
         # ── Selector ──
         from modules.gprompt_window import GPromptWindow
         sel = GPromptWindow(self.app)
-        sel.title("📊 Exportar a CSV")
+        sel.title(tr("📊 Exportar a CSV"))
         sel.geometry("420x300")
         sel.transient(self.app)
 
@@ -482,7 +482,7 @@ class BackupExportService:
         # ── Ventana con filtro por modo + cards ───────────────────────
 
         vent = GPromptWindow(self.app)
-        vent.title("📤 Export CLI — múltiples formatos")
+        vent.title(tr("📤 Export CLI — múltiples formatos"))
         vent.geometry("820x680")
         vent.transient(self.app)
 
@@ -631,7 +631,7 @@ class BackupExportService:
         colección concreta.
         """
         vent = GPromptWindow(self.app)
-        vent.title("🔎 Búsqueda global")
+        vent.title(tr("🔎 Búsqueda global"))
         vent.geometry("780x680")
         vent.transient(self.app)
 
@@ -641,7 +641,7 @@ class BackupExportService:
         f_search = ctk.CTkFrame(vent, fg_color="transparent")
         f_search.pack(fill="x", padx=15, pady=(0, 4))
         ent = ctk.CTkEntry(f_search,
-                            placeholder_text="Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')...",
+                            placeholder_text=tr("Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')..."),
                             width=600, height=32, font=ctk.CTkFont(size=12))
         ent.pack(side="left", fill="x", expand=True)
         ent.focus_set()

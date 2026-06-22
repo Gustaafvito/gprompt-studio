@@ -218,7 +218,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     ).pack(side="left")
     contador_var = ctk.StringVar(value=f"{len(guia)} estilos")
     ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
-    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text="🔍 Buscar por nombre, grupo, descripción…")
+    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text=tr("🔍 Buscar por nombre, grupo, descripción…"))
     ent_buscar.pack(side="right")
 
     # Fila 2: filtro por modo (segmented button)

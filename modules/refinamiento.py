@@ -134,7 +134,7 @@ class RefinamientoService:
             logger.debug(f"[silent] {e}")
 
         sel = GPromptWindow(self.app)
-        sel.title("🔂 Iteración")
+        sel.title(tr("🔂 Iteración"))
         sel.geometry("400x320")
         sel.transient(self.app)
 

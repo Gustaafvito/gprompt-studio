@@ -1221,7 +1221,7 @@ class UIBuildersService:
         self.app._frame_estilos_header.pack(fill="x", padx=5, pady=(0, 2))
         header_estilos = self.app._frame_estilos_header  # alias para legibilidad
 
-        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text="🔍 Buscar estilo...", width=180, height=24, font=ctk.CTkFont(size=11))
+        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text=tr("🔍 Buscar estilo..."), width=180, height=24, font=ctk.CTkFont(size=11))
         self.app.entry_busqueda.pack(side="left")
         self.app.entry_busqueda.bind("<KeyRelease>", self.app.footer._filtrar_estilos)
 
@@ -1620,7 +1620,7 @@ class UIBuildersService:
             from config import get_theme_colors
             c = get_theme_colors(is_light)
             vent = GPromptWindow(self.app)
-            vent.title("💡 Sugerencias de claridad")
+            vent.title(tr("💡 Sugerencias de claridad"))
             vent.geometry("520x420")
             vent.transient(self.app)
             ctk.CTkLabel(

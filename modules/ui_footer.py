@@ -670,7 +670,7 @@ class UiFooterService:
         c = get_theme_colors(is_light)
 
         vent = GPromptWindow(self.app)
-        vent.title("🔗 Multi-LoRA — selecciona varios")
+        vent.title(tr("🔗 Multi-LoRA — selecciona varios"))
         vent.geometry("520x560")
         vent.transient(self.app)
 

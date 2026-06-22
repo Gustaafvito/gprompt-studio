@@ -283,7 +283,7 @@ class ToolsAnalysisService:
 
         # ── Selector N + comprobar caché ──
         vent_sel = GPromptWindow(self.app)
-        vent_sel.title("📝 Crítica historial — ¿Cuántos prompts analizar?")
+        vent_sel.title(tr("📝 Crítica historial — ¿Cuántos prompts analizar?"))
         vent_sel.geometry("440x290")
         vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text=tr("📝 Crítica de historial"),
@@ -414,7 +414,7 @@ class ToolsAnalysisService:
     def _critica_mostrar(self, resp: str, n: int, cacheado: bool = False) -> None:
         """Ventana de resultados de la crítica."""
         vent = GPromptWindow(self.app)
-        vent.title("🔍 Análisis de tus patrones" + (" (caché)" if cacheado else ""))
+        vent.title(tr("🔍 Análisis de tus patrones") + (tr(" (caché)") if cacheado else ""))
         vent.geometry("750x650")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🔍 Análisis de tus patrones creativos"),
@@ -478,7 +478,7 @@ class ToolsAnalysisService:
 
         # ── Selector "últimos N" ──
         vent_sel = GPromptWindow(self.app)
-        vent_sel.title("🚀 Auto-mejora — ¿Cuántos prompts analizar?")
+        vent_sel.title(tr("🚀 Auto-mejora — ¿Cuántos prompts analizar?"))
         vent_sel.geometry("440x300")
         vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text=tr("🚀 Auto-mejora"),
@@ -590,7 +590,7 @@ class ToolsAnalysisService:
         success = "#16a34a" if is_lt else "#22c55e"
 
         vent = GPromptWindow(self.app)
-        vent.title("🚀 Auto-mejora de prompts")
+        vent.title(tr("🚀 Auto-mejora de prompts"))
         vent.geometry("900x720")
         vent.transient(self.app)
 
@@ -715,7 +715,7 @@ class ToolsAnalysisService:
         seeds = prefs.get("seeds_favoritos", [])
 
         vent = GPromptWindow(self.app)
-        vent.title("📈 Estadísticas detalladas")
+        vent.title(tr("📈 Estadísticas detalladas"))
         vent.geometry("780x720")
         vent.transient(self.app)
 
@@ -1008,7 +1008,7 @@ class ToolsAnalysisService:
                              "card_border": "#d1d5db" if is_lt else "#1f2937"}
 
                     vent = GPromptWindow(self.app)
-                    vent.title("📝 Scoring de prompt")
+                    vent.title(tr("📝 Scoring de prompt"))
                     vent.geometry("720x640")
                     vent.transient(self.app)
                     vent.configure(fg_color=c.get("panel_bg"))
@@ -1205,7 +1205,7 @@ class ToolsAnalysisService:
 
         # ── Modal de configuración ──
         cfg = GPromptWindow(self.app)
-        cfg.title("🎯 Optimizador en bucle")
+        cfg.title(tr("🎯 Optimizador en bucle"))
         cfg.geometry("460x360")
         cfg.transient(self.app)
         cfg.grab_set()
@@ -1285,7 +1285,7 @@ class ToolsAnalysisService:
                  "fg_dark_hover": "#d1d5db" if is_lt else "#3a3a3a"}
 
         vent = GPromptWindow(self.app)
-        vent.title("🎯 Optimizando…")
+        vent.title(tr("🎯 Optimizando…"))
         vent.geometry("680x560")
         vent.transient(self.app)
 
@@ -1410,7 +1410,7 @@ class ToolsAnalysisService:
                         resumen = (f"⏱ Máximo de iteraciones — mejor versión: "
                                    f"{int(mejor['score'])}/100 (iteración {mejor['iteracion']})")
                     estado_lbl.configure(text=resumen, text_color=c["panel_text"])
-                    vent.title("🎯 Optimizador — resultado")
+                    vent.title(tr("🎯 Optimizador — resultado"))
 
                     hubo_cambio = mejor["texto"].strip() != texto_inicial.strip()
 
@@ -1486,7 +1486,7 @@ class ToolsAnalysisService:
                  "fg_dark_hover": "#d1d5db" if is_lt else "#3a3a3a"}
 
         vent = GPromptWindow(self.app)
-        vent.title("💰 Coste de sesión")
+        vent.title(tr("💰 Coste de sesión"))
         vent.geometry("620x440")
         vent.transient(self.app)
 
@@ -1645,7 +1645,7 @@ class ToolsAnalysisService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("💎 Seeds favoritos")
+        vent.title(tr("💎 Seeds favoritos"))
         vent.geometry("580x500")
         vent.transient(self.app)
 
@@ -1660,7 +1660,7 @@ class ToolsAnalysisService:
         search_row.pack(fill="x", padx=15, pady=(0, 4))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Buscar por nombre, modelo o plataforma…",
+                                    placeholder_text=tr("Buscar por nombre, modelo o plataforma…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         busqueda_pending = {"after_id": None}
@@ -1854,7 +1854,7 @@ class ToolsAnalysisService:
         atajos = prefs.get("atajos_tags", [])
 
         vent = GPromptWindow(self.app)
-        vent.title("🏷️ Atajos de tags")
+        vent.title(tr("🏷️ Atajos de tags"))
         vent.geometry("600x450")
         vent.transient(self.app)
 
@@ -1891,7 +1891,7 @@ class ToolsAnalysisService:
 
         def crear():
             vent_add = GPromptWindow(vent)
-            vent_add.title("➕ Nuevo atajo")
+            vent_add.title(tr("➕ Nuevo atajo"))
             vent_add.geometry("400x250")
             vent_add.transient(vent)
             ctk.CTkLabel(vent_add, text=tr("Nombre:")).pack(anchor="w", padx=15, pady=(10, 2))
@@ -2018,7 +2018,7 @@ class ToolsAnalysisService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("🔧 Workflow ComfyUI - G-Prompt Studio")
+        vent.title(tr("🔧 Workflow ComfyUI - G-Prompt Studio"))
         vent.geometry("750x550")
         vent.transient(self.app)
 
@@ -2095,7 +2095,7 @@ class ToolsAnalysisService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("🇪🇸 Traducción al español")
+        vent.title(tr("🇪🇸 Traducción al español"))
         vent.geometry("580x400")
         vent.transient(self.app)
 
@@ -2178,7 +2178,7 @@ class ToolsAnalysisService:
     def _cmd_modal_compatibilidad(self) -> None:
         """Abre modal de compatibilidad de modelos."""
         vent = GPromptWindow(self.app)
-        vent.title("🔍 Compatibilidad de modelos")
+        vent.title(tr("🔍 Compatibilidad de modelos"))
         vent.geometry("600x400")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🔍 Compatibilidad de modelos"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))

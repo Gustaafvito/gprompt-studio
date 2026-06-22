@@ -161,7 +161,7 @@ class MultiPromptService:
         c = get_theme_colors(is_lt)
 
         v = GPromptWindow(self.app)
-        v.title("🎞 Story — configuración")
+        v.title(tr("🎞 Story — configuración"))
         v.geometry("520x540")
         v.transient(self.app)
 
@@ -770,7 +770,7 @@ class MultiPromptService:
 
         # ─── Ventana ─────────────────────────────────────────────
         vent = GPromptWindow(self.app)
-        vent.title("🌀 Walk árbol — Explora derivaciones")
+        vent.title(tr("🌀 Walk árbol — Explora derivaciones"))
         vent.geometry("1240x740")
         vent.transient(self.app)
 
@@ -1031,7 +1031,7 @@ class MultiPromptService:
             texto_copia = f"# Evolución Walk: {cadena}\n\n{detalle}"
 
             v = GPromptWindow(vent)
-            v.title("📂 Ruta del nodo — preview")
+            v.title(tr("📂 Ruta del nodo — preview"))
             v.geometry("720x520")
             v.transient(vent)
 

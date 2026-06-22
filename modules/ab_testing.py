@@ -87,7 +87,7 @@ class AbTestingService:
 
         # Ventana de configuración
         cfg = GPromptWindow(self.app)
-        cfg.title("🧪 A/B Testing 2x2")
+        cfg.title(tr("🧪 A/B Testing 2x2"))
         cfg.geometry("520x520")
         cfg.transient(self.app)
         cfg.grab_set()
@@ -309,7 +309,7 @@ class AbTestingService:
                         break
 
         sel_vent = GPromptWindow(self.app)
-        sel_vent.title("🆚 Elige modelos para comparar")
+        sel_vent.title(tr("🆚 Elige modelos para comparar"))
         sel_vent.geometry("520x500")
         sel_vent.transient(self.app)
 
