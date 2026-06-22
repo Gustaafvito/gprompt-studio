@@ -135,14 +135,15 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                         colapsada = v in state["collapsed"]
                         fam_colapsada = colapsada
                         flecha = "▸" if colapsada else "▾"
-                        # Cabecera clicable: pliega/despliega los modelos de la familia.
-                        ctk.CTkButton(
-                            lista, text=f"{flecha} {v.strip('─ ')}", anchor="w",
-                            height=24, fg_color="transparent",
-                            text_color=("gray25", "gray75"),
+                        # Cabecera = CTkLabel (mismo aspecto que el original, color
+                        # del tema) pero clicable para plegar/desplegar la familia.
+                        hdr = ctk.CTkLabel(
+                            lista, text=f"{flecha} {v}", anchor="w",
                             font=ctk.CTkFont(size=10, weight="bold"),
-                            command=lambda fam=v: _toggle_fam(fam),
-                        ).pack(fill="x", padx=2, pady=(6, 0))
+                            cursor="hand2",
+                        )
+                        hdr.pack(fill="x", padx=4, pady=(6, 0))
+                        hdr.bind("<Button-1>", lambda e, fam=v: _toggle_fam(fam))
                         continue
                     if filtro and filtro not in v.lower():
                         continue
