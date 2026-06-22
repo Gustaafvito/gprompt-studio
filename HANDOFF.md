@@ -73,6 +73,9 @@ Empaquetado: ver [`BUILD.md`](BUILD.md). Añadir modelos: ver
 
 2. **UX desplegable** (`feat(ui)` `9514ddf`): familias **alfabéticas** (imagen y
    vídeo) + cabeceras **colapsables** ▾/▸ en `searchable_dropdown` (estado por sesión).
+   Retoques tras feedback: cabeceras con el **color original del tema** (`d64e6b9`,
+   eran CTkLabel, no botón gris) y **menú "Workflow" reposicionado** para no cortarse
+   contra el borde derecho (`2aa9b46`+`a1ddd33`: clamp ANTES del geometry, margen 40px).
 
 3. **Combo "Estilo" por familia** (`feat(estilo)` `e4848af`): TODAS las familias de
    imagen y vídeo tienen su propia paleta. `config.ESTILOS_POR_FAMILIA` (imagen, las 4
