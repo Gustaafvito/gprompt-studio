@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 24**.
+Actualizado al cierre de la **sesión 27**.
 
 ---
 
@@ -28,7 +28,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Métrica | Valor |
 |---|---|
 | Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
-| Idioma UI | **Bilingüe ES/EN — Fase A** (infra `modules/i18n.py` + toggle "UI→Idioma", reinicia para aplicar). Faltan Fases B (envolver ~760 textos) y C (tutorial/ayuda) |
+| Idioma UI | **Bilingüe ES/EN — Fase B (núcleo) completa** en rama `feat/i18n-fase-b`: 661 textos envueltos con `tr()` y traducidos (labels/botones/tooltips, menús, barra de modo, placeholders, títulos de ventana). Reinicia para aplicar. Falta: textos dinámicos (f-strings/`set_estado`/errores) + Fase C (tutorial/glosario/ayuda) |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
@@ -61,6 +61,34 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 27 — Bilingüe Fase B (núcleo): 661 textos traducidos
+
+Rama **`feat/i18n-fase-b`** (4 commits, sin mergear a `main` aún). Enfoque
+semi-automático acordado: script que envuelve **solo literales puros** (ignora
+f-strings/variables/numéricos por construcción) + validador que cruza claves
+canónicas extraídas del código con el diccionario (0 faltantes garantizado).
+
+1. **Wrapping `text="..."`** (`6ed7358`): 632 literales envueltos con `tr()` en
+   27 archivos (496 únicas). Maneja concatenación implícita `text="a" "b"` como
+   grupo. Import de `tr` añadido a nivel de módulo donde faltaba.
+2. **504 traducciones EN** (`92f2d1d`): `TRADUCCIONES` rellenado una a una
+   (emojis, placeholders `{var}`, `\n` y espacios preservados).
+3. **Menús + barra de modo** (`676cda0`): 8 cabeceras del header + ~48 items
+   (tuplas `(label, cmd)`) y la barra Imagen/Vídeo/Audio (`CTkSegmentedButton`).
+   Los 3 mapas display↔lógico (`_on_segmento_modo`, `ui_events` mapa_inv,
+   `tutorial` mapa_label) pasan por `tr()` — consistentes porque el idioma se
+   fija antes de construir la UI. +58 traducciones.
+4. **Placeholders + títulos** (`ec42232`): 37 `placeholder_text=` + ~80 títulos
+   `.title("...")`. 2 títulos con concatenación (`Preview`/`Análisis patrones` +
+   sufijo caché) a mano. +99 traducciones. **Total 661, 0 faltantes.**
+
+En modo ES el comportamiento es **idéntico** (`tr()` devuelve el español si no
+hay traducción). Tests **729 verdes**, ruff limpio en los 4 commits.
+**PENDIENTE Fase B residual**: textos dinámicos (f-strings, `set_estado`,
+mensajes de error en runtime). **Fase C**: tutorial.json/glosario.json/ayuda EN.
 
 ---
 
