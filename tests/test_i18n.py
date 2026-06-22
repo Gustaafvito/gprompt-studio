@@ -17,7 +17,8 @@ def test_en_traduce_lo_conocido():
     try:
         assert i18n.tr("Modelo") == "Model"
         assert i18n.tr("Estilo") == "Style"
-        assert i18n.tr("Generar") == "Generate"
+        assert i18n.tr("Cerrar") == "Close"
+        assert i18n.tr("▶ Generar") == "▶ Generate"
     finally:
         _reset()
 
