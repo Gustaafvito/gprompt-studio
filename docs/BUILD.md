@@ -17,6 +17,22 @@ python build.py --onefile
 python build.py --installer
 ```
 
+### Build DEFINITIVO (limpio y reproducible)
+
+Para el build oficial desde un árbol **limpio** (sin caches ni `dist/`/`build/`
+viejos, sin datos de usuario), usa `build_release.py`:
+
+```powershell
+python build_release.py            # tests + export limpio de HEAD + build + copia al distribuible
+python build_release.py --skip-tests
+python build_release.py --export-only   # solo el export limpio (sin buildear)
+```
+
+Exporta **solo lo trackeado en git** (HEAD) a `../GPromptStudio-build-clean/`,
+ejecuta ahí `build.py --clean --installer` y `--onefile`, copia los 3 artefactos
+a `GPromptStudio-Distribuible/` del escritorio y borra la carpeta temporal.
+⚠️ Usa **HEAD**: commitea tus cambios antes (el script avisa si el árbol está sucio).
+
 ---
 
 ## Requisitos
