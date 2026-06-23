@@ -28,7 +28,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Métrica | Valor |
 |---|---|
 | Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
-| Idioma UI | **Bilingüe ES/EN — UI completa** en rama `feat/i18n-fase-b` (~1260 traducciones). Estático+dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `configure`, f-strings→`tr().format()` posicional) + **config-driven** (pestañas, picker de Tags, presets/paquetes de negativos, ratio `Libre`, menú click-derecho de Refinar) + **ideas del LLM en idioma de UI**. Fase C: tutorial+glosario `data/*.en.json`. Reinicia para aplicar. **PENDIENTE**: combo Estilo (valores `_PAL_*` acoplados a inyección, requiere mapeo display↔clave) + descripciones `best_for` de modelos (~176, requiere campo `best_for_en`). **Sin mergear a `main`** |
+| Idioma UI | **Bilingüe ES/EN — COMPLETO** en rama `feat/i18n-fase-b` (~1280 traducciones). Estático+dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `configure`, f-strings→`tr().format()` posicional) + **config-driven** (pestañas, picker de Tags, presets/paquetes de negativos, ratio `Libre`, menú Refinar, **combo Estilo** vía mapeo display↔clave) + **ideas del LLM en idioma de UI** + **descripciones de modelo** (`best_for_en`: 105 imagen + 72 vídeo = 177/177, helper `config.best_for_display`). Fase C: tutorial+glosario `data/*.en.json`. Reinicia para aplicar (toggle UI→Idioma con auto-reinicio). **Sin mergear a `main`** |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
