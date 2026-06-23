@@ -31,6 +31,13 @@ _IDIOMA = "es"
 
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
+    # Categorías del picker de Tags.
+    '💡 Iluminación': '💡 Lighting',
+    '📷 Cámara': '📷 Camera',
+    '🎭 Mood': '🎭 Mood',
+    '🖼 Composición': '🖼 Composition',
+    '✨ Calidad': '✨ Quality',
+    '🎨 Arte/Estilo': '🎨 Art/Style',
     # Botones/cabeceras/tooltips de estructuras + tabs + dialogos (sesion EN).
     '   {0} chars': '   {0} chars',
     '  #{0}  {1}  ·  {2} chars  ·  {3}': '  #{0}  {1}  ·  {2} chars  ·  {3}',

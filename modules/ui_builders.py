@@ -109,7 +109,7 @@ from config import (
     get_theme_colors,
 )
 from modules.avatar_ui import abrir_avatar_window
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 from modules.style_guide import abrir_guia_estilos
 from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 
@@ -1325,7 +1325,7 @@ class UIBuildersService:
                      "text_color": c["panel_text"]}
 
         for cat_name, tags in TAG_PICKER_CATEGORIES.items():
-            ctk.CTkLabel(scroll, text=cat_name,
+            ctk.CTkLabel(scroll, text=tr(cat_name),
                          font=ctk.CTkFont(size=9, weight="bold"),
                          fg_color="transparent",
                          text_color=c["muted_text"], anchor="w").pack(
@@ -1347,10 +1347,12 @@ class UIBuildersService:
                     except Exception:
                         pass
 
-                btn = ctk.CTkButton(row_f, text=label_es, width=120, command=_insert_tag,
+                _label_tag = val_en.title() if get_idioma() == "en" else label_es
+                btn = ctk.CTkButton(row_f, text=_label_tag, width=120, command=_insert_tag,
                                     **btn_tag_s)
                 btn.pack(side="left", padx=2)
-                CTkToolTip(btn, message=f"{val_en}\n{descripcion}", delay=0.4)
+                _tip_tag = val_en if get_idioma() == "en" else f"{val_en}\n{descripcion}"
+                CTkToolTip(btn, message=_tip_tag, delay=0.4)
 
     def _build_negative(self, parent):
         is_light = _get_real_is_light()
