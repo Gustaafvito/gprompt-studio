@@ -32,6 +32,11 @@ _IDIOMA = "es"
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
     'Libre': 'Free',
+    # Labels de proveedores LLM (combo Brain) con texto español.
+    '💎 Claude (calidad top)': '💎 Claude (top quality)',
+    '🏆 Groq (gratis, rápido)': '🏆 Groq (free, fast)',
+    '🏆 Ollama local (sin internet)': '🏆 Ollama local (no internet)',
+    '🥈 OpenRouter (100+ modelos)': '🥈 OpenRouter (100+ models)',
     # Combo Estilo (imagen+vídeo): el combo muestra EN, la var guarda la clave ES.
     'Acción': 'Action',
     'Acuarela': 'Watercolor',
@@ -1547,6 +1552,34 @@ def set_idioma(lang: str) -> None:
 def get_idioma() -> str:
     """Devuelve el idioma activo ('es' o 'en')."""
     return _IDIOMA
+
+
+def detectar_idioma_so() -> str:
+    """Idioma por defecto en el PRIMER arranque (sin preferencia guardada):
+    'en' si el SO está en inglés, 'es' en cualquier otro caso."""
+    try:
+        import locale
+        loc = ""
+        try:
+            loc = (locale.getlocale()[0] or "") or (locale.getdefaultlocale()[0] or "")
+        except Exception:
+            loc = ""
+        if not loc:
+            import ctypes
+            lang_id = ctypes.windll.kernel32.GetUserDefaultUILanguage()
+            # 0x09 = inglés (LANG_ENGLISH)
+            if (lang_id & 0xFF) == 0x09:
+                return "en"
+        if str(loc).lower().startswith(("en", "english")):
+            return "en"
+    except Exception:
+        pass
+    return "es"
+
+
+def idioma_inicial(pref) -> str:
+    """idioma guardado si existe; si no, detecta el del SO (primer arranque)."""
+    return pref if pref in ("es", "en") else detectar_idioma_so()
 
 
 def tr(texto_es: str) -> str:

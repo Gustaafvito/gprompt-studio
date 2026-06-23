@@ -213,9 +213,12 @@ class ArquitectoApp(
         # devuelva el idioma correcto durante el build. El cambio se aplica al
         # reiniciar (ver modules/i18n.py y dialogs.cmd_toggle_idioma).
         try:
-            from modules.i18n import set_idioma
-            set_idioma(_prefs.get("idioma") or "es")
+            from modules.i18n import idioma_inicial, set_idioma
+            # 1er arranque (sin pref): detecta el idioma del SO; si ya hay pref, la usa.
+            self._idioma_inicial = idioma_inicial(_prefs.get("idioma"))
+            set_idioma(self._idioma_inicial)
         except Exception as _e:
+            self._idioma_inicial = _prefs.get("idioma") or "es"
             logger.debug(f"[silent] set_idioma: {_e}")
 
         self.llm_var               = ctk.StringVar(value="DeepSeek V4")
@@ -234,7 +237,7 @@ class ArquitectoApp(
         )
         self.familia_estilo_var    = ctk.StringVar(value=_estilo_inicial)
         self.estilo_video_var      = ctk.StringVar(value=_prefs.get("estilo_video") or "Auto")
-        self.idioma_var            = ctk.StringVar(value=_prefs.get("idioma") or "es")
+        self.idioma_var            = ctk.StringVar(value=getattr(self, "_idioma_inicial", _prefs.get("idioma") or "es"))
         try:
             _multi_loras = _prefs.get("loras_multi", [])
             if not isinstance(_multi_loras, list):

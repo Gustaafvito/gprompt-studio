@@ -168,7 +168,7 @@ class UIBuildersService:
                 except Exception:
                     ok = False
                 icon = "✅" if ok else "🔒"
-                return f"{icon} {label}"
+                return f"{icon} {tr(label)}"
 
             lista_llms = [_label_con_estado(pid, info["label"]) for pid, info in LLM_PROVIDERS.items()]
             # Mapeo label-con-icono → provider_id para poder identificar
