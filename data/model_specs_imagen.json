@@ -62,7 +62,8 @@
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin control avanzado (no sampler, no CFG, no steps, no negative). Solo semilla fija. Máx 4 imágenes. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
     "no_weights": true,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt's official V2.0 model. Simplified: no sampler/CFG/steps. Just prompt + generate. Suggestion magic. Ideal for beginners and fast results."
   },
   "SeaArt Realism": {
     "nota": 3.6,
@@ -122,7 +123,8 @@
     "prompt_ejemplo": "Create: a cinematic portrait of a woman in dramatic lighting. Modify: lighting shift, mood change to darker tone",
     "coste_energia": "Gratis (evento) — VIP",
     "limitaciones": "Modelo nuevo (1.4K usos, may 2026). Solo evento gratuito por ahora.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Luma multimodal model. Create vs Modify modes. Up to 9 references with assigned roles (style, character, composition, color, lighting). Seeds for reproducibility."
   },
   "Z Image Turbo": {
     "nota": 4.3,
@@ -155,7 +157,8 @@
     "cfg": 1.0,
     "coste_energia": "28 (Calidad) — gratis VIP",
     "limitaciones": "En ComfyUI: modelo Turbo puro que NO soporta negative ni pesos numéricos. En SeaArt: adaptado por la plataforma. No tiene panel de reparación de rostros/personajes en la UI.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Z Image: 6B params, professional-grade photorealism at sub-second speed (~8 NFEs). Bilingual EN/ZH with accurate text rendering. Prompt enhancer with reasoning (goes beyond surface descriptions)."
   },
   "Z-Image-Base": {
     "nota": 4.8,
@@ -355,7 +358,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "fp8 quantization. DOC OFICIAL: lenguaje natural (no tags con comas); pesos y BREAK no funcionan; no ideal NSFW; anatomía de cuello/pómulos irregular.",
     "no_weights": true,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Stable Diffusion 3.5 Large (fp8). 229.7K uses. SD 3.5L base model. High quality, versatile across styles."
   },
   "SD 3.5 Medium": {
     "nota": 3.8,
@@ -387,7 +391,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Menor capacidad que Large para detalles finos. DOC OFICIAL: lenguaje natural (no tags con comas); pesos y BREAK no funcionan; no ideal NSFW; anatomía de cuello/pómulos irregular.",
     "no_weights": true,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Stable Diffusion 3.5 Medium (fp8). Smaller version of SD 3.5. More resource-efficient while keeping good quality."
   },
   "SD 3.5 Large Turbo": {
     "nota": 3.7,
@@ -444,7 +449,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Optimizado para cinematografía. Menos versátil que Infinity para estilos variados.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Film. 8.8M uses. Professional cinematography, advanced lighting, artistic composition. Supports Text-to-Image and Image-to-Image."
   },
   "SeaArt Film V2.0": {
     "nota": 4.4,
@@ -472,7 +478,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Nuevo modelo (sep 2025). Menos documentación de settings óptimos.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Film V2.0. 247K uses. Improved cinematography, precise light/shadow/composition control. Better visual consistency."
   },
   "SeaArt Film Edit": {
     "nota": 4.3,
@@ -499,7 +506,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Editor, no generador puro. Requiere imagen de referencia.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Film Edit. 1.5M uses. Reference-based image editing. Precise changes: hairstyle, clothing, pose, angle. Preserves the subject's identity."
   },
   "SeaArt Film Edit 2.0": {
     "nota": 4.0,
@@ -526,7 +534,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Editor especializado. Multi-referencia puede reducir consistencia si son muy diferentes.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Film Edit 2.0. 898.8K uses. Advanced editing with multi-reference. Better identity preservation, professional text layout, realistic textures."
   },
   "SeaArt Film Edit 3.0": {
     "nota": 4.4,
@@ -581,7 +590,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Especializado en furry. No fotorrealismo general.",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Furry XL V1.0. 546.4K uses. SeaArt's first open-source model. Specialized in furry/anthro. Millions of furry images in training."
   },
   "SeaArt Story": {
     "nota": 4.6,
@@ -610,7 +620,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Optimizado para narrativa, menos para static portraits aislados.",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Story. 444.8K uses. Visual storytelling/narrative. Captures emotional moments, cinematic storytelling. Ideal for storyboards, visual concepts."
   },
   "SeaArt Story 2.0": {
     "nota": 4.7,
@@ -639,7 +650,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Mejor para escenas narrativas que para static portraits aislados.",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Story 2.0. 71.5K uses. Improved cinematic photorealism, character consistency across frames, text+image hybrid editing."
   },
   "SeaArt Fusion": {
     "nota": 5.0,
@@ -667,7 +679,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Mejor para contenido conceptual/educativo que para arte puro.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Fusion. 65.8K uses. Multimodal conceptual reasoning, educational, scientific, historical content. Combines real knowledge with artistic expression."
   },
   "SeaArt Genesis": {
     "nota": 3.5,
@@ -695,7 +708,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SFW solo. Enfoque en moda. Menos versátil para otros estilos. Nota baja (3.5).",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Genesis. 57.9K uses. Fashion, haute-couture design, aesthetics, custom art. Hyper-realistic details, stunning textures. Unique style-personalization feature."
   },
   "SeaArt Story Edit": {
     "nota": 5.0,
@@ -723,7 +737,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Editor especializado. Más edición que generación pura.",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Story Edit. 9.1K uses. Mask-free precision local editing. Story rewriting: change expression, pose, elements. Subject identity consistency. Supports multi-reference."
   },
   "SeaArt Ultra Edit": {
     "nota": 4.6,
@@ -752,7 +767,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Multi-referencia puede reducir consistencia si son muy diferentes.",
     "max_chars_negative": 2000,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Ultra Edit. 53.5K uses. Next-gen all-in-one: Text-to-Image + Image-to-Image + Multi-Reference. Preserves identity, precise responses to detailed edits, style control. Cinema, portraits, advertising."
   },
   "T-Ponynai3 V6": {
     "nota": 4.7,
@@ -1029,7 +1045,8 @@
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
     "limitaciones": "SD 1.5, resolución base 512x768.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SD photorealism classic. 1.2M uses, rating 5.0. Excellent for portraits, photography and realistic fantasy. Face/character repair."
   },
   "Realities Edge XL Turbo V7": {
     "nota": 4.7,
@@ -1098,7 +1115,8 @@
     "coste_energia": "Gratis VIP",
     "limitaciones": "SD 1.5 base. Resolución nativa 1024x1024. Muchas versiones disponibles (Final es la recomendada).",
     "negative_recomendado": "CyberRealistic_Negative_New",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Alternative high-quality photorealism. 8.7M uses. Final version. Excellent for portraits, urban scenes, fashion. Built-in 4x-UltraSharp upscaler."
   },
   "Prodigies": {
     "nota": 4.9,
@@ -1165,7 +1183,8 @@
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
     "limitaciones": "CFG alto (9.0). Upscaler 8x-NMKD. Muchas versiones disponibles (v8 es la actual).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Legendary versatile classic. 5.9M uses, 99.3K favorites. Realism + fantasy + digital art. V8. High CFG (9.0) for maximum prompt following."
   },
   "Deliberate": {
     "nota": 5.0,
@@ -1328,7 +1347,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Base SDXL 1.0. Versión v7.0 disponible.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Juggernaut XL (Ragnarok). 1.7M uses. Versatile SDXL photorealism: characters, portraits, fantasy. One of the best realistic SDXL checkpoints."
   },
   "majicMIX fantasy": {
     "nota": 4.9,
@@ -1571,7 +1591,8 @@
     "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin sampler/CFG/negative. Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos y lighting complejo a veces inconsistente. Sin cropping preciso de aspect ratio (prioriza la edición generativa).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Gemini 3 Pro engine (upgrade of the original 2.5 Flash). Superior text rendering (especially Asian languages, infographics, charts). Character consistency across edits. Multi-turn editing without degradation. Multi-image fusion (combine several images into one scene). Style transfer. Native 2K + 4K upscale. 1-5 second generation."
   },
   "Nano Banana": {
     "nota": 3.6,
@@ -1646,7 +1667,8 @@
     "prompt_ejemplo": "A portrait of a woman, studio lighting, golden hour, professional photography, keep the face identity, change outfit to formal suit",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin sampler/CFG/negative. No soporta cropping preciso de aspect ratio. Para editing, describe el cambio (no toda la imagen).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Gemini 3.1 Flash Image engine. Pro-level fidelity with Flash-speed iteration. Strong world knowledge + advanced editing (inpainting, outpainting, style transfer). Upscale up to 4K. Excellent price-performance. Accepts very long prompts (~5200 chars measured)."
   },
   "Pipi-iL-CG6.5": {
     "nota": 4.7,
@@ -1976,7 +1998,8 @@
     "prompt_formula": "Lenguaje natural en frases completas (no keywords). ORDEN: scene/setting → subject → action → style/medium → lighting → mood → camera/lens → composition. Parámetros al final, todos opcionales:\n  --ar X:Y → ratio (1:1 hasta 4:1 panorámico)\n  --v 8.1 → fuerza versión (default si está en settings)\n  --hd → activa salida HD 2K\n  --raw → elimina estilo MJ por defecto (más fotográfico)\n  --stylize 0-1000 (default 100) → fuerza del estilo MJ\n  --chaos 0-100 (default 0) → variedad entre los 4 results\n  --weird 0-3000 → composiciones extrañas/únicas\n  --q .25/.5/1/2 → tiempo de render (más = más detalle)\n  --sref [url/code] → referencia de estilo\n  --oref [url] → personaje consistente (V7/V8)\n  --p [code] → personalization profile\n  --no [items] → exclusión (equivalente a negative)\n  --seed N → reproducibilidad",
     "prompt_ejemplo": "Cinematic portrait of an elderly fisherman mending nets on a wooden boat at golden hour, weathered hands and face full of stories, soft warm light from the setting sun, deep blue ocean in the background, shot on 35mm film with shallow depth of field --ar 16:9 --stylize 250 --raw --no boat name, watermark, text",
     "limitaciones": "Plan gratuito: NO existe (Midjourney retiró el free trial; Basic desde $10/mes). Sin negative tradicional (usar --no). Sin pesos numéricos estilo SD. Solo Discord o midjourney.com. Text rendering mejor que V7 pero no perfecto. Aspect ratios >2:1 marcados experimentales. --sv 6 con Style References cuesta 4× más GPU. --hd y --q 4 cuestan 4× más GPU cada uno; combinados, 16× más.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Latest Midjourney model (released Apr 30 2026, current default). 4-5× faster than V7 on standard jobs. First model with native 2K HD (no upscale). Better prompt reading, small-detail retention, --raw for more adherence. Ideal for top-quality concept art, professional editorial photography, corporate branding."
   },
   "Midjourney v8": {
     "nota": 4.9,
@@ -2101,7 +2124,8 @@
     "prompt_formula": "Lenguaje natural + CLI (misma sintaxis que MJ). ORDEN: character/subject → outfit/style → pose/action → scene → details (hair color, eye color, expression) → mood. Parámetros: --niji 7, --ar X:Y, --stylize 0-1000, --sref [url/code], --cref [url] (Niji 6/V6-era control; en Niji 7 algunas implementaciones todavía lo usan), --p [code] (Personalization), --no [items], --seed N. Más literal que Niji 6: prompts vagos dan resultados diferentes a Niji 6/5.",
     "prompt_ejemplo": "Beautiful anime girl with long silver hair tied in a ponytail, large expressive violet eyes, wearing a traditional Japanese school uniform, cherry blossom petals falling around her, soft afternoon light, detailed background of a Japanese garden --niji 7 --ar 3:4 --stylize 500 --no background clutter, watermark",
     "limitaciones": "Solo anime/ilustración (NO usar para fotorrealismo). Interpretación más literal: prompts vagos rinden distinto que Niji 6. --cref en Niji 7 es Niji 6/V6-era (no V7-path completo). Sin --oref nativo. Sin --raw. Plan gratuito no existe (igual que Midjourney general).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Released Jan 9 2026. Anime/manga-specialized model, the current Niji line. Key improvements: crystal-clear eyes, reflections, fine background detail, better coherence in complex poses and multi-arm setups, MORE LITERAL prompt interpretation (respects specific colors and exact hairstyles), better Japanese text rendering, better --sref performance."
   },
   "Niji 6": {
     "nota": 4.7,
@@ -2124,7 +2148,8 @@
     "prompt_formula": "Lenguaje natural anime-focused. ORDEN: character → outfit → scene → style → mood. Parámetros: --niji 6, --ar X:Y, --stylize 0-1000, --cref [url] (Character Reference, funciona bien), --sref [url/code], --no [items], --q .25/.5/1, --seed N. Acepta multi-prompts con :: para weight.",
     "prompt_ejemplo": "Anime warrior princess with flowing white dress and silver armor, holding a katana, standing on a cliff overlooking a stormy ocean, dramatic clouds, epic cinematic lighting, manga illustration style --niji 6 --ar 16:9 --stylize 300",
     "limitaciones": "Niji 7 superior en coherencia, ojos, multi-poses y --sref. Sin Personalization completa (Niji 7 sí). Más estilizado que Niji 7 (puede ser pro o contra según uso). Sin --oref.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Released June 2024. Niji default until January 2026. Improved Japanese text rendering (kana, basic kanji, simple Chinese). Better anime eye structure vs Niji 5. Fewer artifacts. Still a good choice for character design with visible Japanese text (signage, manga panels, anime posters). Slightly more stylized/expressive than Niji 5."
   },
   "Niji 5": {
     "nota": 4.5,
@@ -3066,7 +3091,8 @@
     "prompt_ejemplo": "A minimal luxury poster for a perfume brand: centered glass bottle on a marble pedestal, soft golden side light, clean empty space around the product, elegant serif headline at the top reading \"ESSENCE\", warm beige palette, editorial photography look, balanced composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
     "limitaciones": "max_chars=2000 MEDIDO empíricamente (corte exacto en 2000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujetos de referencia: máx 6 imágenes. Soporta etiqueta negativa (toggle en Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "LAYOUT-FIRST model: plans the image (composition, object placement, text position, visual hierarchy) BEFORE rendering. Excels at: (1) NATIVE 4K (up to 4K×4K) with rich detail and textures; (2) reliable TEXT PLACEMENT — posters, signs, labels, packaging, thumbnails, social graphics; (3) SURGICAL EDITING — change objects, text."
   },
   "MAI-Image-2.5": {
     "nota": 4.9,
@@ -3100,7 +3126,8 @@
     "prompt_ejemplo": "A premium perfume bottle on a reflective black surface, soft spotlight from above, elegant gold serif text reading \"NOIR\", luxury magazine advertisement style, high-end product photography, clean composition.",
     "coste_energia": "Variable — cantidad 5-8 con coste extra",
     "limitaciones": "max_chars=5000 MEDIDO empíricamente (corte exacto en 5000 con prompt marcado, sesión 19). Cantidad: 1-4 (gratis) / 5-8 (premium). Creación privada: premium. Sujeto de referencia: máx 1 imagen (JPG/PNG hasta 10MB, mín 300px). Soporta etiqueta negativa (toggle). Para máxima velocidad/volumen usa MAI-Image-2.5-Flash y refina aquí.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Microsoft AI model aimed at production-USABLE images. Excels at: (1) SCENE COHERENCE — well-placed objects, natural light, meaningful shadows, believable scale, supporting background; (2) strong TEXT RENDERING — posters, packaging, signs, labels, thumbnails with text that's part of the design; (3) SURGICAL img2img EDITING."
   },
   "MAI-Image-2.5-Flash": {
     "nota": 4.9,
@@ -3134,7 +3161,8 @@
     "prompt_ejemplo": "A colorful summer drink poster with bold readable text saying \"MANGO FIZZ\", tropical fruits, bright sunlight, playful commercial design, clean layout, square format.",
     "coste_energia": "Bajo — pensado para volumen",
     "limitaciones": "max_chars=5000 asumido igual que MAI-Image-2.5 (mismo motor; no medido por separado). Menos fidelidad/pulido que MAI-Image-2.5 (úsalo para explorar, no para el arte final). Cantidad: 1-4 (gratis) / 5-8 (premium). Sujeto de referencia: máx 1 imagen. Soporta etiqueta negativa (toggle).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "FAST variant of MAI-Image-2.5 (Microsoft AI): speed, volume and iteration. Your 'rapid concept studio': test ideas, generate many variations, explore styles/palettes/layouts and produce large batches quickly. Same scene and design understanding as the standard 2.5 with less final polish."
   },
   "Midjourney Mimic Neo": {
     "nota": 4.6,
@@ -3165,7 +3193,8 @@
     "cfg": 3.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Basado en Flux.1 D: SIN negative prompt real (usa 'Avoid: ...' inline en el positivo), CFG bajo (~3.0). Parámetros recomendados por el autor: Euler, 25 pasos, CFG 3.0. Pesado, tarda algo más.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Midjourney Mimic Neo (by Shopon skp). Merge on Flux.1 D that mimics the Midjourney aesthetic: cinematic anime/illustration with strong prompt adherence. No LoRAs needed."
   },
   "CyberRealistic Flux": {
     "nota": 4.7,
@@ -3613,7 +3642,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "PVC figures on Flux.1 D (XEZ). Collectible-figure look: sharp lines and soft diffuse reflection."
   },
   "Disney Pixar Flux": {
     "nota": 5.0,
@@ -3773,7 +3803,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Modelo muy entrenado, multiestilo. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Very versatile premium checkpoint on Flux.1 D (Nepotism XII): photorealism, anime and stylized art with strong prompt adherence and few artifacts."
   },
   "Splashed Flux": {
     "nota": null,
@@ -3839,7 +3870,8 @@
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
     "limitaciones": "CFG muy bajo (3.0), 10 steps por defecto. Prompts cortos y directos dan mejor resultado. Soporta negative (límite ~2000).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Realistic Vision V6.0 B1 (V5.1 Hyper, VAE) — the gold standard of SD 1.5 photorealism. 4.2M uses. Hyper-realistic portraits; low steps (10) and fast."
   },
   "DreamShaper XL": {
     "nota": 4.9,
@@ -3873,7 +3905,8 @@
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
     "limitaciones": "Turbo DPO: CFG ~7, 25 steps. Base SDXL.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "DreamShaper XL (v2.1 Turbo DPO, Lykon). 2.4M uses. Versatile SDXL: realism, fantasy and art. Turbo: few steps."
   },
   "Inkpunk Diffusion": {
     "nota": 4.2,
@@ -4107,7 +4140,8 @@
     "best_for": "Última versión de Ideogram disponible en SeaArt. Líder en text-in-image: renderizado de tipografías, logos, carteles, branding y diseño gráfico con texto visible. Excelente comprensión de prompts en lenguaje natural.",
     "prompt_formula": "Lenguaje natural descriptivo. Texto que aparecerá en la imagen entre comillas dobles. Estructura: [Resumen de imagen]. [Sujeto principal], [Pose/acción], [Entorno], [Iluminación], [Estilo], [Detalles técnicos].",
     "prompt_ejemplo": "A vintage 1970s rock concert poster with bold typography saying \"MIDNIGHT TOUR\" in golden letters, psychedelic background with swirling colors, retro design, warm tones, professional typography, concert photography style",
-    "limitaciones": "Sin negative prompt. Máx ~150-160 palabras para mejores resultados. Scripts no latinos (árabe, chino) pueden renderizar mal."
+    "limitaciones": "Sin negative prompt. Máx ~150-160 palabras para mejores resultados. Scripts no latinos (árabe, chino) pueden renderizar mal.",
+    "best_for_en": "Latest Ideogram version available on SeaArt. Leader in text-in-image: typography rendering, logos, posters, branding and graphic design with visible text. Excellent natural-language prompt understanding."
   },
   "Wan 2.7 Image": {
     "nota": 3.5,
@@ -4137,7 +4171,8 @@
     "best_for": "Modelo Wan 2.7 de SeaArt para generación de imágenes en lenguaje natural. Buena comprensión de prompt, portrait, diseño general y escenas complejas. Soporte para prompts largos (hasta 5000 chars).",
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada de la escena. NEGATIVE PROMPT: elementos a evitar (max 2000 chars).",
     "prompt_ejemplo": "A serene Japanese garden at dawn, stone lanterns casting warm light on a koi pond, cherry blossoms floating on the water, soft morning mist, cinematic composition, highly detailed",
-    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
+    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars.",
+    "best_for_en": "SeaArt's Wan 2.7 model for natural-language image generation. Good prompt understanding, portrait, general design and complex scenes. Supports long prompts (up to 5000 chars)."
   },
   "Wan 2.7 Image Pro": {
     "nota": 4.3,
@@ -4168,7 +4203,8 @@
     "best_for": "Versión Pro de Wan 2.7: mayor detalle y claridad profesional. Especializada en retratos, renderizado de texto en imagen, composición multi-elemento, diseño gráfico, marketing y product shots.",
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada con énfasis en calidad y detalle. NEGATIVE PROMPT: elementos a evitar (max 2000 chars).",
     "prompt_ejemplo": "Professional product shot of a luxury perfume bottle on a marble surface, dramatic studio lighting, bokeh background, ultra-sharp focus, 8K resolution, commercial photography style",
-    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars."
+    "limitaciones": "Prompt positivo hasta 5000 chars. Negative hasta 2000 chars.",
+    "best_for_en": "Pro version of Wan 2.7: higher detail and professional clarity. Specialized in portraits, in-image text rendering, multi-element composition, graphic design, marketing and product shots."
   },
   "Luma Uni-1 Image": {
     "nota": 4.5,
@@ -4197,7 +4233,8 @@
     "best_for": "Versión original de Luma Uni en SeaArt. Generación de imágenes en lenguaje natural, buena comprensión de prompt, escenas detalladas y retratos. Versión previa a Luma Uni-1.1 Image.",
     "prompt_formula": "Lenguaje natural descriptivo. Describe la escena con detalle: sujeto, entorno, iluminación, estilo y atmósfera.",
     "prompt_ejemplo": "A lone lighthouse on a rocky cliff at sunset, dramatic storm clouds approaching, waves crashing against the rocks, cinematic lighting, highly detailed, photorealistic",
-    "limitaciones": "Sin negative prompt. Max 2000 chars."
+    "limitaciones": "Sin negative prompt. Max 2000 chars.",
+    "best_for_en": "Original Luma Uni version on SeaArt. Natural-language image generation, good prompt understanding, detailed scenes and portraits. Predecessor of Luma Uni-1.1 Image."
   },
   "Grok Imagine Image": {
     "nota": 3.2,
@@ -4225,7 +4262,8 @@
     "best_for": "Modelo de generación de imágenes de xAI (Grok) disponible en SeaArt. Tag-based estilo SD/SDXL. Retratos, personajes con rasgos detallados, fotografía estilizada, skin texture, iluminación cinematográfica. Límite reducido de 1000 chars: prompts densos y precisos.",
     "prompt_formula": "Tags SD separados por comas. Orden: encuadre, sujeto, rasgos físicos, ropa, iluminación, estilo fotográfico, cámara/óptica, calidad. Sin negative prompt. Máx 1000 chars.",
     "prompt_ejemplo": "close-up portrait, 1girl, european features, vivid red hair, piercing amber eyes, sharp jawline, dark gothic wardrobe, leather collar with studs, soft natural lighting, shallow depth of field, professional photography, 85mm portrait lens, f/1.4, 8K ultra-detailed, hyperrealistic",
-    "limitaciones": "Sin negative prompt. Límite de 1000 caracteres. Disponible en SeaArt como Grok Imagine Image (xAI)."
+    "limitaciones": "Sin negative prompt. Límite de 1000 caracteres. Disponible en SeaArt como Grok Imagine Image (xAI).",
+    "best_for_en": "xAI (Grok) image generation model available on SeaArt. Tag-based SD/SDXL style. Portraits, characters with detailed features, stylized photography, skin texture, cinematic lighting. Reduced 1000-char limit: dense, precise prompts."
   },
   "Qwen Image 2.0 Pro": {
     "nota": 5.0,
@@ -4255,7 +4293,8 @@
     "best_for": "Modelo de imagen de Alibaba Qwen disponible en SeaArt. Versión Pro con alta calidad. Lenguaje natural, buena comprensión de composición, retratos, escenas detalladas y diseño. Nota máxima 5.0.",
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción completa de la imagen (máx 1500 chars). NEGATIVE PROMPT: elementos a evitar (máx 2000 chars).",
     "prompt_ejemplo": "A serene mountain lake at golden hour, crystal clear water reflecting snow-capped peaks, lone pine tree on rocky shore, dramatic cloud formations, cinematic lighting, photorealistic, 8K",
-    "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars."
+    "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars.",
+    "best_for_en": "Alibaba Qwen image model available on SeaArt. Pro version with high quality. Natural language, good composition understanding, portraits, detailed scenes and design. Top rating 5.0."
   },
   "Seedream 5.0 Lite": {
     "nota": 3.7,
@@ -4284,7 +4323,8 @@
     "best_for": "Modelo de ByteDance disponible en SeaArt. Versión ligera de Seedream 5.0, generación de imágenes en lenguaje natural. Buena comprensión de escenas, personajes y composición general.",
     "prompt_formula": "Lenguaje natural descriptivo. Sin negative prompt. Describe la escena, el sujeto, la iluminación y el estilo en prosa fluida. Máx 2000 chars.",
     "prompt_ejemplo": "A young woman walking through a neon-lit Tokyo street at night, rain-soaked pavement reflecting colorful lights, casual street fashion, cinematic atmosphere, photorealistic",
-    "limitaciones": "Sin negative prompt. Max 2000 chars."
+    "limitaciones": "Sin negative prompt. Max 2000 chars.",
+    "best_for_en": "ByteDance model available on SeaArt. Lightweight version of Seedream 5.0, natural-language image generation. Good understanding of scenes, characters and overall composition."
   },
   "Kling 3.0 Image": {
     "vigente": true,
@@ -4312,7 +4352,8 @@
     "best_for": "Modelo de imagen de Kling (Kuaishou) disponible en SeaArt. Generación en lenguaje natural, alta calidad de composición, retratos, escenas cinematográficas y product shots.",
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción detallada de la imagen. NEGATIVE PROMPT: elementos a evitar. Máx 2000 chars cada uno.",
     "prompt_ejemplo": "A dramatic aerial view of a futuristic city at night, glowing skyscrapers reflected in a river, light trails from vehicles, cinematic composition, ultra-detailed, photorealistic",
-    "limitaciones": "Max 2000 chars. Disponible como imagen en SeaArt (Kling 3.0 Image)."
+    "limitaciones": "Max 2000 chars. Disponible como imagen en SeaArt (Kling 3.0 Image).",
+    "best_for_en": "Kling (Kuaishou) image model available on SeaArt. Natural-language generation, high composition quality, portraits, cinematic scenes and product shots."
   },
   "Kling 3.0 Omni Image Editing": {
     "vigente": true,
@@ -4340,7 +4381,8 @@
     "best_for": "Modelo de edición de imagen de Kling (Kuaishou) en SeaArt. Edición omni: modificación y transformación de imágenes existentes con instrucciones en lenguaje natural. Retoque, cambio de estilo, composición y edición creativa.",
     "prompt_formula": "Lenguaje natural descriptivo. PROMPT: descripción de la edición o imagen resultado. NEGATIVE PROMPT: elementos a evitar. Máx 2000 chars.",
     "prompt_ejemplo": "Transform the background to a snowy mountain landscape, keep the subject unchanged, add soft winter lighting and falling snowflakes, photorealistic, cinematic quality",
-    "limitaciones": "Modelo orientado a edición img2img. Max 2000 chars."
+    "limitaciones": "Modelo orientado a edición img2img. Max 2000 chars.",
+    "best_for_en": "Kling (Kuaishou) image-editing model on SeaArt. Omni editing: modify and transform existing images with natural-language instructions. Retouching, style change, composition and creative editing."
   },
   "Higgsfield Image": {
     "nota": 5.0,
@@ -4361,7 +4403,8 @@
       "16:9"
     ],
     "max_chars": 2000,
-    "best_for": "imágenes cinematográficas y fotorrealistas de alta fidelidad con iluminación dramática"
+    "best_for": "imágenes cinematográficas y fotorrealistas de alta fidelidad con iluminación dramática",
+    "best_for_en": "cinematic, high-fidelity photorealistic images with dramatic lighting"
   },
   "GLM-Image": {
     "vigente": true,
@@ -4377,7 +4420,8 @@
       "16:9"
     ],
     "max_chars": 2000,
-    "best_for": "imágenes con texto legible y limpio, comunicación visual, infografías"
+    "best_for": "imágenes con texto legible y limpio, comunicación visual, infografías",
+    "best_for_en": "images with clean, legible text, visual communication, infographics"
   },
   "Wan 2.6 Text to Image": {
     "vigente": true,
@@ -4398,7 +4442,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "generación de imágenes fotorrealistas y artísticas de alta calidad"
+    "best_for": "generación de imágenes fotorrealistas y artísticas de alta calidad",
+    "best_for_en": "high-quality photorealistic and artistic image generation"
   },
   "Seedream 4.0": {
     "nota": 4.8,
@@ -4421,7 +4466,8 @@
       "21:9"
     ],
     "max_chars": 2000,
-    "best_for": "síntesis texto-imagen, edición avanzada y composición multi-imagen con alta calidad visual"
+    "best_for": "síntesis texto-imagen, edición avanzada y composición multi-imagen con alta calidad visual",
+    "best_for_en": "text-to-image synthesis, advanced editing and multi-image composition with high visual quality"
   },
   "Kling O1 Image Model": {
     "vigente": true,
@@ -4444,7 +4490,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "generación de imágenes fotorrealistas con razonamiento avanzado y alta precisión visual"
+    "best_for": "generación de imágenes fotorrealistas con razonamiento avanzado y alta precisión visual",
+    "best_for_en": "photorealistic image generation with advanced reasoning and high visual precision"
   },
   "Sora2 Image": {
     "nota": 4.6,
@@ -4488,7 +4535,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "generación de imágenes con precisión y control profesional"
+    "best_for": "generación de imágenes con precisión y control profesional",
+    "best_for_en": "image generation with professional precision and control"
   },
   "Wan 2.2": {
     "nota": 4.2,
@@ -4503,7 +4551,8 @@
       "16:9"
     ],
     "max_chars": 5500,
-    "best_for": "generación de imágenes de alta calidad con prompts detallados y extendidos"
+    "best_for": "generación de imágenes de alta calidad con prompts detallados y extendidos",
+    "best_for_en": "high-quality image generation with detailed, extended prompts"
   },
   "Qwen-Image": {
     "nota": 4.6,
