@@ -1396,7 +1396,7 @@ class UIBuildersService:
             self.app.footer._rebuild_negative_text()
 
         for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
-            ctk.CTkButton(frame_paquetes, text=paq_nombre, height=22, width=100,
+            ctk.CTkButton(frame_paquetes, text=tr(paq_nombre), height=22, width=100,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           text_color="#ffffff", font=ctk.CTkFont(size=9),
                           command=lambda p=paq_presets: _aplicar_paquete(p)).pack(
@@ -1420,10 +1420,10 @@ class UIBuildersService:
                 def _toggle(n=nombre_p, fg_off=fg):
                     self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
                     activo = self.app.preset_vars[n].get()
-                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
+                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {tr(n)}" if activo else tr(n))
                     self.app.footer._rebuild_negative_text()
 
-                btn = ctk.CTkButton(row_f, text=nombre_p, height=22, width=90,
+                btn = ctk.CTkButton(row_f, text=tr(nombre_p), height=22, width=90,
                                     fg_color=fg, hover_color=hv, text_color="#ffffff",
                                     font=ctk.CTkFont(size=10), command=_toggle)
                 btn.pack(side="left", padx=2)

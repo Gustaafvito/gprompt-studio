@@ -31,6 +31,21 @@ _IDIOMA = "es"
 
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
+    # Negativos: presets (claves internas ES, solo se traduce la etiqueta) + paquetes.
+    'Anatomía': 'Anatomy',
+    'Anime/2D': 'Anime/2D',
+    'Baja Calidad': 'Low Quality',
+    'Censura': 'Censorship',
+    'Deformación': 'Deformation',
+    'Fondos': 'Backgrounds',
+    'Fotografía': 'Photography',
+    'Pose': 'Pose',
+    'Realismo': 'Realism',
+    'Texto/Marcas': 'Text/Marks',
+    '📸 Foto Pro': '📸 Photo Pro',
+    '🎨 Ilustración': '🎨 Illustration',
+    '🖼 Anime Pro': '🖼 Anime Pro',
+    '🧹 Limpieza': '🧹 Cleanup',
     # Menú click-derecho de Refinar (opciones específicas).
     '🎬 Más cinematográfico': '🎬 More cinematic',
     '👤 Más detalle facial': '👤 More facial detail',
