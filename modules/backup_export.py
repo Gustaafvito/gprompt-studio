@@ -72,9 +72,9 @@ class BackupExportService:
                 f"  - Paletas:    {len(backup['paletas'])}"
             )
             messagebox.showinfo("Backup completo", mensaje, parent=self.app)
-            self.app.dialogs.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error en backup: {0}').format(e), "#e74c3c")
             messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self.app)
 
     def _construir_backup(self) -> dict:
@@ -222,9 +222,9 @@ class BackupExportService:
                 f"Si te has equivocado, puedes restaurar ese archivo.",
                 parent=self.app,
             )
-            self.app.dialogs.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
+            self.app.dialogs.set_estado(tr('✅ Backup restaurado ({0} entradas)').format(tot_backup), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error al restaurar: {0}').format(e), "#e74c3c")
             messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
@@ -351,14 +351,14 @@ class BackupExportService:
                             it.get("contenido", ""),
                         )])
                         n += 1
-            self.app.dialogs.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), "#2ecc71")
             messagebox.showinfo(
                 "Exportación completada",
                 f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
                 parent=self.app,
             )
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error al exportar: {0}').format(e), "#e74c3c")
             messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self.app)
 
     def _cmd_export_cli(self) -> None:
@@ -546,7 +546,7 @@ class BackupExportService:
         def _make_copy(c, n, color):
             def _copiar():
                 pyperclip.copy(c)
-                self.app.dialogs.set_estado(f"📋 {n} copiado", "#2ecc71")
+                self.app.dialogs.set_estado(tr('📋 {0} copiado').format(n), "#2ecc71")
                 if hasattr(self.app, "show_toast"):
                     try:
                         self.app.show_toast(f"📋 Copiado: {n}", color, 1800)

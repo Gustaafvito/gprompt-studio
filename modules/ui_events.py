@@ -259,7 +259,7 @@ class UiEventsService:
             nota_txt = specs.get('nota') or 's/n'
             self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {specs.get('best_for', '')}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.dialogs.set_estado(f"🎬 {motor_name}", "#3498db")
+            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), "#3498db")
 
             try:
                 tip_rico = (
@@ -303,7 +303,7 @@ class UiEventsService:
         else:
             self.app.combo_ratio_v.configure(values=RATIOS_VIDEO)
             self.app.lbl_img_model_info.pack_forget()
-            self.app.dialogs.set_estado(f"🎬 {motor_name}")
+            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name))
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
@@ -440,7 +440,7 @@ class UiEventsService:
             dur_a = specs.get('duracion_max_min') or '?'
             self.app.lbl_img_model_info.configure(text=f"⭐ {nota_a} | ⏱ {dur_a} min — {specs.get('best_for', '')}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.dialogs.set_estado(f"🎵 {motor_name}", "#9b59b6")
+            self.app.dialogs.set_estado(tr('🎵 {0}').format(motor_name), "#9b59b6")
         else:
             self.app.lbl_img_model_info.pack_forget()
         self.app.reiniciar_memoria()

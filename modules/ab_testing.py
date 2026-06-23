@@ -376,7 +376,7 @@ class AbTestingService:
             seleccionados = [combos[i].get() for i in range(n)]
             # Validar que sean diferentes
             if len(set(seleccionados)) < n:
-                self.app.dialogs.set_estado(f"⚠️ Elige {n} modelos diferentes.", "#e67e22")
+                self.app.dialogs.set_estado(tr('⚠️ Elige {0} modelos diferentes.').format(n), "#e67e22")
                 return
             sel_vent.destroy()
             self._abrir_ventana_comparacion(idea, modo, seleccionados)
@@ -588,7 +588,7 @@ class AbTestingService:
                                         logger.debug(f"[silent highlight] {_e}")
 
                                 self.app.dialogs.set_estado(
-                                    f"🏆 '{m2}' aplicado — la ventana sigue abierta para probar otros",
+                                    tr("🏆 '{0}' aplicado — la ventana sigue abierta para probar otros").format(m2),
                                     "#2ecc71")
 
                             cards[m]["btn_usar"].configure(
@@ -601,7 +601,7 @@ class AbTestingService:
                                 state="normal",
                                 command=lambda r=r, m=m: (
                                     pyperclip.copy(r),
-                                    self.app.dialogs.set_estado(f"📋 Copiado prompt de {m}", "#2ecc71")))
+                                    self.app.dialogs.set_estado(tr('📋 Copiado prompt de {0}').format(m), "#2ecc71")))
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
                     self.app.after(0, _mostrar)

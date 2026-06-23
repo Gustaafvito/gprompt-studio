@@ -620,7 +620,7 @@ class UiFooterService:
             elif tipo == "adn":
                 self.app._ultimo_anclaje_visual = None
             try:
-                self.app.dialogs.set_estado(f"🧹 Fuente '{tipo}' limpiada", "#9b59b6")
+                self.app.dialogs.set_estado(tr("🧹 Fuente '{0}' limpiada").format(tipo), "#9b59b6")
             except Exception:
                 pass
         finally:

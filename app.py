@@ -1083,7 +1083,7 @@ class ArquitectoApp(
             def _usar(texto, etiqueta):
                 self.dialogs.actualizar_salida(texto)
                 v.destroy()
-                self.dialogs.set_estado(f"⏪ Aplicada: {etiqueta}", "#2ecc71")
+                self.dialogs.set_estado(tr('⏪ Aplicada: {0}').format(etiqueta), "#2ecc71")
             ctk.CTkButton(btn_row, text=f"⏪ Usar {label_a}", width=200, height=32,
                           fg_color="#8a5a1a", hover_color="#6a4515",
                           font=ctk.CTkFont(size=11),
@@ -1264,7 +1264,7 @@ class ArquitectoApp(
             _recargar_estado()
             _refrescar_restaurar_btn()
             _refrescar()
-            self.dialogs.set_estado(f"↩ {n} plantillas predefinidas restauradas", "#2ecc71")
+            self.dialogs.set_estado(tr('↩ {0} plantillas predefinidas restauradas').format(n), "#2ecc71")
 
         def _refrescar_restaurar_btn():
             for w in restaurar_slot.winfo_children():
@@ -1411,7 +1411,7 @@ class ArquitectoApp(
                             txt += f"\nNEGATIVE PROMPT: {n}"
                         self.dialogs.actualizar_salida(txt)
                         vent.destroy()
-                        self.dialogs.set_estado(f"📑 Plantilla '{name}' aplicada", "#2ecc71")
+                        self.dialogs.set_estado(tr("📑 Plantilla '{0}' aplicada").format(name), "#2ecc71")
 
                 def _borrar(name=nombre):
                     from tkinter import messagebox as _mb
@@ -1428,7 +1428,7 @@ class ArquitectoApp(
                     _recargar_estado()
                     _refrescar_restaurar_btn()
                     _refrescar()
-                    self.dialogs.set_estado(f"🗑 '{name}' borrada", "#e67e22")
+                    self.dialogs.set_estado(tr("🗑 '{0}' borrada").format(name), "#e67e22")
 
                 ctk.CTkButton(btns_frame, text=tr("🗑 Borrar"), width=90, height=24,
                               fg_color="#8b2c2c", hover_color="#6e2020",
@@ -1511,7 +1511,7 @@ class ArquitectoApp(
                 for ent in entries.values():
                     ent.delete(0, "end")
                 _actualizar_preview()
-                self.dialogs.set_estado(f"🧹 Memoria de '{nombre}' borrada", "#888")
+                self.dialogs.set_estado(tr("🧹 Memoria de '{0}' borrada").format(nombre), "#888")
             except Exception as e:
                 logger.warning(f"_limpiar_memoria wizard: {e}")
 
@@ -1583,7 +1583,7 @@ class ArquitectoApp(
             self.dialogs.actualizar_salida(txt_final)
             wiz.destroy()
             ventana_padre.destroy()
-            self.dialogs.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
+            self.dialogs.set_estado(tr("📑 Plantilla '{0}' aplicada con variables").format(nombre), "#2ecc71")
 
         ctk.CTkButton(btn_row, text=tr("✅ Aplicar al prompt"), width=170, height=32,
                       fg_color="#1a7a3c", hover_color="#15642f",
@@ -1747,16 +1747,16 @@ class ArquitectoApp(
 
             def _copiar_completo(v=var, n=i+1):
                 pyperclip.copy(v)
-                self.dialogs.set_estado(f"✅ Variación #{n} copiada", "#2ecc71")
+                self.dialogs.set_estado(tr('✅ Variación #{0} copiada').format(n), "#2ecc71")
 
             def _copiar_pos(p=pos_text, n=i+1):
                 pyperclip.copy(p)
-                self.dialogs.set_estado(f"✅ POSITIVE #{n} copiado", "#2ecc71")
+                self.dialogs.set_estado(tr('✅ POSITIVE #{0} copiado').format(n), "#2ecc71")
 
             def _copiar_neg(ng=neg_text, n=i+1):
                 if ng:
                     pyperclip.copy(ng)
-                    self.dialogs.set_estado(f"✅ NEGATIVE #{n} copiado", "#2ecc71")
+                    self.dialogs.set_estado(tr('✅ NEGATIVE #{0} copiado').format(n), "#2ecc71")
 
             # Registrar esta card en el set compartido
             cols_aplicadas_refs["all"].append((col, hdr, colores_header[i % len(colores_header)]))
@@ -1813,12 +1813,11 @@ class ArquitectoApp(
                 # Mensaje según si cambió el modelo o no
                 if modelo_aplicado:
                     self.dialogs.set_estado(
-                        f"🏆 Modelo '{modelo_aplicado}' + prompt cargados — "
-                        f"la ventana sigue abierta",
+                        tr("🏆 Modelo '{0}' + prompt cargados — la ventana sigue abierta").format(modelo_aplicado),
                         "#2ecc71")
                 else:
                     self.dialogs.set_estado(
-                        f"✅ '{label}' cargada — la ventana sigue abierta",
+                        tr("✅ '{0}' cargada — la ventana sigue abierta").format(label),
                         "#2ecc71")
 
             def _traducir(p=pos_text, lbl=lbl_trad):
@@ -2039,11 +2038,11 @@ class ArquitectoApp(
 
         def _copiar_a():
             pyperclip.copy(texto_a)
-            self.dialogs.set_estado(f"✅ '{label_a}' copiada", "#2ecc71")
+            self.dialogs.set_estado(tr("✅ '{0}' copiada").format(label_a), "#2ecc71")
 
         def _copiar_b():
             pyperclip.copy(texto_b)
-            self.dialogs.set_estado(f"✅ '{label_b}' copiada", "#2ecc71")
+            self.dialogs.set_estado(tr("✅ '{0}' copiada").format(label_b), "#2ecc71")
 
         ctk.CTkButton(pie, text=f"📋 Copiar {label_a}", width=200, height=30,
                       fg_color="#1a4a7a", hover_color="#0f2e4d",
@@ -2525,7 +2524,7 @@ class ArquitectoApp(
         self.data._guardar_preferencias()
 
         if total_modelos > 0:
-            self.dialogs.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
+            self.dialogs.set_estado(tr('⚙️ Preferencias guardadas. ComfyUI: {0} modelos detectados. (API Keys → 🔑)').format(total_modelos), "#2ecc71")
         else:
             self.dialogs.set_estado(tr("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)"), "#2ecc71")
         ventana.destroy()
@@ -2621,12 +2620,12 @@ class ArquitectoApp(
                                             desde_cache=False)
                 self.dialogs.set_estado(tr("✅ Previsualización generada con éxito."), "#2ecc71")
             except Exception as e:
-                self.dialogs.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
+                self.dialogs.set_estado(tr('❌ Error mostrando preview: {0}').format(e), "#e74c3c")
             finally:
                 self.dialogs.toggle_botones(True)
 
         def _on_err(msg):
-            self.dialogs.set_estado(f"❌ Error al generar imagen: {msg}", "#e74c3c")
+            self.dialogs.set_estado(tr('❌ Error al generar imagen: {0}').format(msg), "#e74c3c")
             self.dialogs.toggle_botones(True)
 
         # `texto_limpio` ya viene normalizado: lo pasamos a self.preview.generar

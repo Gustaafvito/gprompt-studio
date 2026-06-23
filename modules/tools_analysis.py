@@ -407,7 +407,7 @@ class ToolsAnalysisService:
                     logger.debug(f"Cache crítica no se pudo guardar: {e}")
                 self.app.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
             except Exception as e:
-                self.app.after(0, lambda: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -575,7 +575,7 @@ class ToolsAnalysisService:
                     logger.debug(f"[silent] cache automejora: {e}")
                 self.app.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -668,7 +668,7 @@ class ToolsAnalysisService:
                                 self.app.txt_salida.insert("1.0", texto)
                                 self.app.dialogs.set_estado(tr("✨ Versión mejorada aplicada en el área de salida"), "#2ecc71")
                         except Exception as e:
-                            self.app.dialogs.set_estado(f"❌ No se pudo aplicar: {e}", "#e74c3c")
+                            self.app.dialogs.set_estado(tr('❌ No se pudo aplicar: {0}').format(e), "#e74c3c")
 
                     def _copiar(texto=mejorado):
                         pyperclip.copy(texto)
@@ -1136,7 +1136,7 @@ class ToolsAnalysisService:
                                     self.app.dialogs.set_estado(tr("✨ Prompt mejorado aplicado"), "#2ecc71")
                                 self.app.after(0, _aplicar)
                             except Exception as e:
-                                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                         self.app._executor.submit(_worker_mejorar).add_done_callback(log_future_exc)
 
                     ctk.CTkButton(btn_frame, text=tr("✨ Mejorar prompt"), width=140, height=30,
@@ -1145,7 +1145,7 @@ class ToolsAnalysisService:
                     self.app.dialogs.set_estado(tr("📝 Scoring listo"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1421,7 +1421,7 @@ class ToolsAnalysisService:
                                 "Original",
                                 f"Optimizada ({int(mejor['score'])}/100)")
                         except Exception as e:
-                            self.app.dialogs.set_estado(f"❌ Error abriendo diff: {e}", "#e74c3c")
+                            self.app.dialogs.set_estado(tr('❌ Error abriendo diff: {0}').format(e), "#e74c3c")
                     if hubo_cambio:
                         btn_diff.configure(state="normal", command=_ver_diff)
 
@@ -1635,7 +1635,7 @@ class ToolsAnalysisService:
         seeds.append(seed)
         prefs["seeds_favoritos"] = seeds
         self.app.store.guardar_preferencias(prefs)
-        self.app.dialogs.set_estado(f"💎 Seed '{nombre}' guardado", "#2ecc71")
+        self.app.dialogs.set_estado(tr("💎 Seed '{0}' guardado").format(nombre), "#2ecc71")
 
     def _abrir_seeds_favoritos(self) -> None:
         """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
@@ -1751,7 +1751,7 @@ class ToolsAnalysisService:
                         prefs_b["seeds_favoritos"] = seeds_act
                         self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.app.dialogs.set_estado(f"💎 Seed '{nombre}' eliminado", "#e67e22")
+                    self.app.dialogs.set_estado(tr("💎 Seed '{0}' eliminado").format(nombre), "#e67e22")
 
                 ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=90, height=26,
                               fg_color="#1a7a3c", font=ctk.CTkFont(size=10),
@@ -1825,7 +1825,7 @@ class ToolsAnalysisService:
 
         if aplicado:
             nombre = seed.get('nombre', '?')
-            self.app.dialogs.set_estado(f"💎 Seed '{nombre}' aplicado", "#2ecc71")
+            self.app.dialogs.set_estado(tr("💎 Seed '{0}' aplicado").format(nombre), "#2ecc71")
             if mensajes:
                 self.app.dialogs.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
         else:
@@ -2084,7 +2084,7 @@ class ToolsAnalysisService:
                 self.app.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traducción lista"), "#2ecc71"))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 

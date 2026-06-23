@@ -315,7 +315,7 @@ class ModoClienteService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -407,13 +407,13 @@ class ModoClienteService:
             def _usar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 self.app.dialogs.actualizar_salida(completo)
-                self.app.dialogs.set_estado(f"✅ Propuesta '{nom}' aplicada al prompt", "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Propuesta '{0}' aplicada al prompt").format(nom), "#2ecc71")
                 vent.destroy()
 
             def _copiar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 pyperclip.copy(completo)
-                self.app.dialogs.set_estado(f"📋 Propuesta '{nom}' copiada al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Propuesta '{0}' copiada al portapapeles").format(nom), "#2ecc71")
 
             def _guardar_prop(nom=titulo, p=positivo, neg=negativo):
                 """Guarda como FAVORITO con marca de origen. Antes intentaba
@@ -438,9 +438,9 @@ class ModoClienteService:
                         "nombre":     nom,
                         "contenido":  completo,
                     })
-                    self.app.dialogs.set_estado(f"💾 Propuesta '{nom}' guardada en Favoritos", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("💾 Propuesta '{0}' guardada en Favoritos").format(nom), "#2ecc71")
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"❌ No se pudo guardar: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('❌ No se pudo guardar: {0}').format(e), "#e74c3c")
 
             ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
@@ -639,7 +639,7 @@ class ModoClienteService:
             if total_imgs < 2:
                 return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más)."), "#e67e22")
 
-            self.app.dialogs.set_estado(f"🎭 Analizando {total_imgs} imágenes...", "#f39c12")
+            self.app.dialogs.set_estado(tr('🎭 Analizando {0} imágenes...').format(total_imgs), "#f39c12")
             self.app.dialogs.toggle_botones(False)
             lbl_prog.pack(anchor="w")
             progress_bar.pack(fill="x", pady=(2, 0))
@@ -731,7 +731,7 @@ class ModoClienteService:
                             })
                             prefs_g["estilos_moodboard"] = estilos_g
                             self.app.store.guardar_preferencias(prefs_g)
-                            self.app.dialogs.set_estado(f"💾 Estilo '{nombre}' guardado en biblioteca", "#2ecc71")
+                            self.app.dialogs.set_estado(tr("💾 Estilo '{0}' guardado en biblioteca").format(nombre), "#2ecc71")
 
                         ctk.CTkButton(btn_row2, text=tr("✅ Aplicar template"), width=140, height=28,
                                       fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
@@ -746,7 +746,7 @@ class ModoClienteService:
                 except Exception as e:
                     self.app.after(0, lambda: lbl_prog.pack_forget())
                     self.app.after(0, lambda: progress_bar.pack_forget())
-                    self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                    self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
             self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)

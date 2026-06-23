@@ -154,7 +154,7 @@ def abrir_personajes(app):
         entry_nombre.delete(0, "end")
         entry_desc.delete(0, "end")
         refrescar()
-        app.set_estado(f"🧑 Personaje '{nombre}' guardado.", "#2ecc71")
+        app.set_estado(tr("🧑 Personaje '{0}' guardado.").format(nombre), "#2ecc71")
 
     btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
                                 fg_color="#1a7a3c", hover_color="#145e2d",
@@ -212,7 +212,7 @@ def abrir_personajes(app):
             def usar(n=p["nombre"]):
                 app.combo_personaje.set(n)
                 ventana.destroy()
-                app.set_estado(f"🧑 Personaje activo: {n}", "#2ecc71")
+                app.set_estado(tr('🧑 Personaje activo: {0}').format(n), "#2ecc71")
 
             def editar(i=idx, p_=p):
                 # Cargar en form y mostrar form si está oculto
@@ -459,7 +459,7 @@ def abrir_loras(app):
         combo_familia_form.set("—")
         txt_rasgos.delete("1.0", "end")
         refrescar()
-        app.set_estado(f"🔗 LoRA '{nombre}' guardado.", "#9b59b6")
+        app.set_estado(tr("🔗 LoRA '{0}' guardado.").format(nombre), "#9b59b6")
 
     btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
                                 fg_color="#5b2c8e", hover_color="#3d1a6a",
@@ -527,7 +527,7 @@ def abrir_loras(app):
             def usar(n=l["nombre"]):
                 app.combo_lora.set(n)
                 ventana.destroy()
-                app.set_estado(f"🔗 LoRA activo: {n}", "#9b59b6")
+                app.set_estado(tr('🔗 LoRA activo: {0}').format(n), "#9b59b6")
 
             def editar(i=idx, l_=l):
                 if not form_visible[0]:
@@ -1137,7 +1137,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             setattr(app.store, coleccion, [])
             app.store._guardar(coleccion)
         refrescar()
-        app.set_estado(f"🗑 {titulo} limpiado.")
+        app.set_estado(tr('🗑 {0} limpiado.').format(titulo))
 
     ctk.CTkButton(frame_vtitulo, text=tr("🗑 Limpiar todo"), width=130, height=28,
                   fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=limpiar_todo).pack(side="right", padx=4)
@@ -1396,7 +1396,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                 pyperclip.copy(c)
                 app.set_estado(f"📋 {len(c)} caracteres copiados", "#2ecc71")
             except Exception as _e:
-                app.set_estado(f"❌ No se pudo copiar: {_e}", "#e74c3c")
+                app.set_estado(tr('❌ No se pudo copiar: {0}').format(_e), "#e74c3c")
 
         ctk.CTkButton(btn_row, text=tr("Cargar"), width=80, height=26,
                       fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],

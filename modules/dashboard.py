@@ -610,7 +610,7 @@ class DashboardService:
                 try:
                     self.app.combo_plantilla.set(nombre_pl)
                     self.app._cargar_plantilla(nombre_pl)
-                    self.app.dialogs.set_estado(f"📐 Plantilla aplicada: {nombre_pl}", accent_green)
+                    self.app.dialogs.set_estado(tr('📐 Plantilla aplicada: {0}').format(nombre_pl), accent_green)
                 except Exception:
                     self.app.dialogs.set_estado(tr("⚠️ Error aplicando plantilla"), accent_red)
                 v.destroy()
@@ -1201,7 +1201,7 @@ class DashboardService:
             _aplicar_config_completa(reto_modo, reto_modelo, reto_ratio,
                                        reto_estilo, reto_idea,
                                        reto_emo, reto_voz, reto_idioma)
-            self.app.dialogs.set_estado(f"🎯 Reto activado: {emoji_modo_r} {reto_modelo}", accent_blue)
+            self.app.dialogs.set_estado(tr('🎯 Reto activado: {0} {1}').format(emoji_modo_r, reto_modelo), accent_blue)
             v.destroy()
 
         ctk.CTkButton(reto_frame, text=tr("🎯 Aceptar reto"),
@@ -1243,7 +1243,7 @@ class DashboardService:
             _aplicar_config_completa(est_modo, est_modelo, est_ratio,
                                        nombre_est, est_idea,
                                        est_emo, est_voz, est_idioma)
-            self.app.dialogs.set_estado(f"{emoji_est} Estilo «{nombre_est}» activado", accent_pink)
+            self.app.dialogs.set_estado(tr('{0} Estilo «{1}» activado').format(emoji_est, nombre_est), accent_pink)
             v.destroy()
 
         ctk.CTkButton(estilo_frame, text=f"{emoji_est} Probar este estilo",
@@ -1267,7 +1267,7 @@ class DashboardService:
                 self.app.dialogs.set_estado(f"🎲 Mood aplicado: {' + '.join(muestra)}", accent_pink)
                 v.destroy()
             except Exception as ex:
-                self.app.dialogs.set_estado(f"⚠️ Error en mood: {ex}", accent_red)
+                self.app.dialogs.set_estado(tr('⚠️ Error en mood: {0}').format(ex), accent_red)
 
         ctk.CTkButton(col_der, text=tr("🎲 Inspírame con Mood Aleatorio"),
                       height=36, fg_color=accent_pink, hover_color="#be185d",
@@ -1398,7 +1398,7 @@ class DashboardService:
                 self.app._crear_backup_automatico(base, marker, _t.time())
                 self.app.dialogs.set_estado(tr("💾 Backup hecho"), accent_green)
             except Exception as ex:
-                self.app.dialogs.set_estado(f"⚠️ Error backup: {ex}", accent_red)
+                self.app.dialogs.set_estado(tr('⚠️ Error backup: {0}').format(ex), accent_red)
         ctk.CTkButton(mant_frame, text=tr("💾 Hacer backup ahora"),
                       height=28, fg_color=accent_blue, hover_color="#1d4ed8",
                       font=ctk.CTkFont(size=9, weight="bold"),

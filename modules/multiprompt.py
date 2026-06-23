@@ -77,7 +77,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"🎨 Generando moodboard de {n} prompts...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🎨 Generando moodboard de {0} prompts...').format(n), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
@@ -118,7 +118,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -299,7 +299,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"🎬 Generando secuencia cinematográfica ({n} shots)...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🎬 Generando secuencia cinematográfica ({0} shots)...').format(n), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         if auto:
@@ -354,7 +354,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -385,7 +385,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"📽 Generando storyboard de {n} shots...", "#f39c12")
+        self.app.dialogs.set_estado(tr('📽 Generando storyboard de {0} shots...').format(n), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
@@ -437,7 +437,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -514,7 +514,7 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("encadenar board→vídeo")
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error encadenando: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error encadenando: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -563,7 +563,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"🖼 Generando storyboard de {n} paneles ({formato_etiqueta})...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🖼 Generando storyboard de {0} paneles ({1})...').format(n, formato_etiqueta), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         if is_natural:
@@ -651,7 +651,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -721,7 +721,7 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("fusionar storyboard imagen")
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error fusionando: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error fusionando: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)

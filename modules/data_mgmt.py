@@ -162,7 +162,7 @@ class DataMgmtService:
         }
         self.app.store.guardar_plantilla(plantilla)
         self.actualizar_combo_plantillas()
-        self.app.dialogs.set_estado(f"📐 Plantilla '{nombre}' guardada.", "#9b59b6")
+        self.app.dialogs.set_estado(tr("📐 Plantilla '{0}' guardada.").format(nombre), "#9b59b6")
 
     def _cmd_borrar_plantilla(self) -> None:
         nombre = self.app.combo_plantilla.get()
@@ -171,7 +171,7 @@ class DataMgmtService:
             self.app.store.borrar_plantilla(nombre)
             self.app.combo_plantilla.set("— Sin plantilla —")
             self.actualizar_combo_plantillas()
-            self.app.dialogs.set_estado(f"🗑 Plantilla '{nombre}' eliminada.")
+            self.app.dialogs.set_estado(tr("🗑 Plantilla '{0}' eliminada.").format(nombre))
 
     def _cargar_plantilla(self, nombre):
         if not nombre or nombre == "— Sin plantilla —": return
@@ -218,7 +218,7 @@ class DataMgmtService:
         self.app.plataforma_var.set(plat)
         self.app.events._on_plataforma_cambio()
         self.app.reiniciar_memoria()
-        self.app.dialogs.set_estado(f"📐 Plantilla '{nombre}' cargada.", "#9b59b6")
+        self.app.dialogs.set_estado(tr("📐 Plantilla '{0}' cargada.").format(nombre), "#9b59b6")
 
     def _cargar_imagen(self) -> None:
         ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp *.bmp")])
@@ -239,7 +239,7 @@ class DataMgmtService:
         self.app.lbl_img_preview._ctk_image = ctk_thumb
         self.app.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
         self.app.btn_cargar_img.configure(text=tr("✅ OK"), fg_color="#1a7a3c")
-        self.app.dialogs.set_estado(f"✅ Imagen: {nombre}", "#2ecc71")
+        self.app.dialogs.set_estado(tr('✅ Imagen: {0}').format(nombre), "#2ecc71")
         self.app.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
 
         # Guardar en historial de imágenes
@@ -327,7 +327,7 @@ class DataMgmtService:
             fin = self.app.txt_idea.index(f"1.0+{match.end(2)}c")  # final de palabra (no incluye espacio)
             self.app.txt_idea.delete(inicio, fin)
             self.app.txt_idea.insert(inicio, expansion)
-            self.app.dialogs.set_estado(f"✨ Snippet expandido: ;{palabra}", "#2ecc71")
+            self.app.dialogs.set_estado(tr('✨ Snippet expandido: ;{0}').format(palabra), "#2ecc71")
             try: self.app.sesion._sesion_log(f"✨ Expandió snippet: ;{palabra}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -430,7 +430,7 @@ class DataMgmtService:
             # Botón Copiar — disponible en TODOS los snippets (custom y predefinidos)
             def _copiar(e=expansion, t=trigger):
                 pyperclip.copy(e)
-                self.app.dialogs.set_estado(f"📋 Snippet ;{t} copiado al portapapeles", "#2ecc71")
+                self.app.dialogs.set_estado(tr('📋 Snippet ;{0} copiado al portapapeles').format(t), "#2ecc71")
             ctk.CTkButton(row, text="📋", width=30, height=24, fg_color=c["fg_frame"],
                           hover_color=c["fg_dark_hover"], command=_copiar).pack(side="right", padx=2, pady=4)
 
@@ -487,7 +487,7 @@ class DataMgmtService:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error al duplicar: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error al duplicar: {0}').format(e), "#e74c3c")
         return "break"
 
     def guardar_en_historial(self, texto):
@@ -562,7 +562,7 @@ class DataMgmtService:
 
             self.app.dialogs.set_estado(tr("🔁 Última configuración aplicada"), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ No se pudo aplicar todo: {e}", "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ No se pudo aplicar todo: {0}').format(e), "#e67e22")
 
     def _guardar_favorito(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
@@ -896,7 +896,7 @@ class DataMgmtService:
             prefs["formulas"] = actual
             self.app.store.guardar_preferencias(prefs)
             refrescar()
-            self.app.dialogs.set_estado(f"📐 Fórmula '{nombre}' guardada", "#2ecc71")
+            self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' guardada").format(nombre), "#2ecc71")
 
         ctk.CTkButton(vent, text=tr("💾 Guardar POSITIVE actual como fórmula"), width=300, height=28,
                       fg_color="#1a7a3c", hover_color="#145e2d",

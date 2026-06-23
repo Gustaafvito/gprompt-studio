@@ -503,7 +503,7 @@ class JsonPromptService:
                 pyperclip.copy(json.dumps(extras_dict, indent=2, ensure_ascii=False))
                 self.app.dialogs.set_estado(tr("📋 Metadatos extras copiados al portapapeles"), "#2ecc71")
             except Exception as e:
-                self.app.dialogs.set_estado(f"❌ No se pudo copiar: {e}", "#e74c3c")
+                self.app.dialogs.set_estado(tr('❌ No se pudo copiar: {0}').format(e), "#e74c3c")
 
         if extras:
             ctk.CTkButton(btn_row, text=tr("📋 Copiar metadatos extras"), width=210, height=32,
@@ -629,7 +629,7 @@ class JsonPromptService:
                 self.app.after(0, _mostrar)
             except Exception as e:
                 logger.exception("exportar json")
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error exportando: {e}",
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e),
                                                        "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 

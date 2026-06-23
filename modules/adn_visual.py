@@ -175,7 +175,7 @@ class AdnVisualService:
                                 self.app.txt_idea.delete("1.0", "end")
                                 self.app.txt_idea.insert("1.0", txt_libre)
                             ver.destroy()
-                            self.app.dialogs.set_estado(f"🧬 '{nombre_l}' cargado en idea (texto libre)",
+                            self.app.dialogs.set_estado(tr("🧬 '{0}' cargado en idea (texto libre)").format(nombre_l),
                                             "#2ecc71")
                             return
                         # ADN estructurado: construir prompt aprovechando campos
@@ -222,7 +222,7 @@ class AdnVisualService:
                         prefs_b["adns_guardados"] = lst
                         self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.app.dialogs.set_estado(f"🧬 '{nombre_l}' eliminado", "#e67e22")
+                    self.app.dialogs.set_estado(tr("🧬 '{0}' eliminado").format(nombre_l), "#e67e22")
 
                 ctk.CTkButton(btn_frame, text=tr("👁 Ver"), width=70, height=25,
                               command=_cargar).pack(side="left", padx=2)
@@ -268,7 +268,7 @@ class AdnVisualService:
         def _worker():
             try:
                 def on_status(msg):
-                    self.app.after(0, lambda: self.app.dialogs.set_estado(f"🧬 {msg}", "#9b59b6"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr('🧬 {0}').format(msg), "#9b59b6"))
 
                 adn, motor = self.app.vision.analizar_adn(self.app.imagen_cargada, on_status)
 
@@ -523,7 +523,7 @@ class AdnVisualService:
                         })
                         prefs["adns_guardados"] = adns
                         self.app.store.guardar_preferencias(prefs)
-                        self.app.dialogs.set_estado(f"🧬 ADN '{nombre}' guardado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🧬 ADN '{0}' guardado").format(nombre), "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text=tr("📋 Copiar JSON"), width=110, height=30,
                                   command=_copiar_json).pack(side="left", padx=4)
@@ -647,7 +647,7 @@ class AdnVisualService:
                             color_ok = "#2ecc71"
 
                         if not _aplicar_partes_a_idea(partes, msg):
-                            self.app.dialogs.set_estado(f"❌ Conversión {plataforma} falló completamente",
+                            self.app.dialogs.set_estado(tr('❌ Conversión {0} falló completamente').format(plataforma),
                                             "#e74c3c")
                         elif fallos:
                             # Sobrescribir color si hubo fallos parciales
@@ -662,12 +662,12 @@ class AdnVisualService:
                                   command=vent.destroy).pack(pady=(5, 12))
 
                     self.app.dialogs.toggle_botones(True)
-                    self.app.dialogs.set_estado(f"🧬 ADN extraído ({motor})", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🧬 ADN extraído ({0})').format(motor), "#2ecc71")
 
                 self.app.after(0, _mostrar)
 
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error ADN: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error ADN: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)

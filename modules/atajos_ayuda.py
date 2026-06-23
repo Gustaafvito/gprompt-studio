@@ -113,7 +113,7 @@ class AtajosAyudaService:
             else:
                 self.app.dialogs.set_estado(tr("⚠️ Función no disponible"), "#e74c3c")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cmd_buscar_global(self) -> str:
@@ -121,7 +121,7 @@ class AtajosAyudaService:
         try:
             self._abrir_busqueda_global()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _atajo_buscar_global(self) -> str:
@@ -129,7 +129,7 @@ class AtajosAyudaService:
         try:
             self._cmd_buscar_global()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error búsqueda: {0}').format(e), "#e74c3c")
         return "break"
 
     def _atajo_traducir_idea(self) -> str:
@@ -147,7 +147,7 @@ class AtajosAyudaService:
             else:
                 self.app.dialogs.set_estado(tr("⚠️ No se pudo traducir"), "#e67e22")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _toggle_fullscreen(self) -> str:
@@ -176,7 +176,7 @@ class AtajosAyudaService:
             # Delegamos al método del UIBuildersService que ya construye el modal
             self.app.ui._mostrar_sugerencias_claridad()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error claridad: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error claridad: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cerrar_popup_activo(self) -> str:
@@ -198,7 +198,7 @@ class AtajosAyudaService:
         try:
             abrir_loras(self.app)
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error al abrir LoRAs: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cmd_mostrar_atajos(self) -> str:
@@ -295,7 +295,7 @@ class AtajosAyudaService:
         def _copiar_tecla(tecla):
             try:
                 pyperclip.copy(tecla)
-                self.app.dialogs.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 '{0}' copiado").format(tecla), "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

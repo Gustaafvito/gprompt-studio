@@ -225,7 +225,7 @@ class UIBuildersService:
                 pid = self.app.clients.provider_activo_id
                 if modelo and self.app.clients.set_model(pid, modelo):
                     self.app.dialogs.set_estado(
-                        f"🧠 Modelo de {pid}: {modelo}", "#2ecc71")
+                        tr('🧠 Modelo de {0}: {1}').format(pid, modelo), "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] modelo llm: {_e}")
 
@@ -926,9 +926,9 @@ class UIBuildersService:
         if ratio in ratios_dispo:
             self.app.ratio_var.set(ratio)
             self.app.combo_ratio.set(ratio)
-            self.app.dialogs.set_estado(f"📐 Ratio {ratio} aplicado", "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Ratio {0} aplicado').format(ratio), "#3498db")
         else:
-            self.app.dialogs.set_estado(f"⚠️ Ratio {ratio} no disponible para este modelo", "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ Ratio {0} no disponible para este modelo').format(ratio), "#e67e22")
 
     def _build_destino_panel(self):
         """Panel Destino — ahora oculto, los combos están integrados en cada panel de modo."""
@@ -963,7 +963,7 @@ class UIBuildersService:
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.dialogs.set_estado(f"📐 Destino {dest} → Ratio auto: {ratio}", "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), "#3498db")
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
@@ -1717,7 +1717,7 @@ class UIBuildersService:
                         logger.debug(f"[silent] {e}")
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.app.switch_traduccion_var.get() else "desactivado"
-                self.app.dialogs.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
+                self.app.dialogs.set_estado(tr('🌐 Auto-trad {0}').format(estado), "#3498db")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _build_acciones(self):

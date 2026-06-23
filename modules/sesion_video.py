@@ -101,7 +101,7 @@ class SesionVideoService:
         except Exception as e:
             self.app._sesion_video_writer = None
             self.app._sesion_video_running = False
-            self.app.dialogs.set_estado(f"⚠️ Error iniciando vídeo: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error iniciando vídeo: {0}').format(e), "#e74c3c")
             return False
 
     def _sesion_video_worker(self) -> None:
@@ -163,7 +163,7 @@ class SesionVideoService:
                     else:
                         next_t = time.time()
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Vídeo se detuvo: {e}", "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Vídeo se detuvo: {0}').format(e), "#e74c3c"))
 
     def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""
@@ -306,7 +306,7 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", folder])
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"⚠️ No se pudo abrir: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ No se pudo abrir: {0}').format(e), "#e74c3c")
 
             def _abrir_video():
                 try:
@@ -319,7 +319,7 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", video_path])
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
             ctk.CTkButton(video_banner, text=tr("📁 Abrir carpeta"), width=120, height=24,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -361,9 +361,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_md)
-                    self.app.dialogs.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), "#2ecc71")
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
         def _exp_txt():
             ruta = filedialog.asksaveasfilename(
@@ -374,9 +374,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_txt)
-                    self.app.dialogs.set_estado(f"📄 Exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), "#2ecc71")
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
         def _limpiar():
             if messagebox.askyesno("Limpiar registro", "¿Borrar todos los eventos grabados?", parent=v):
@@ -457,9 +457,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(guion)
-                    self.app.dialogs.set_estado(f"📄 Tutorial exportado: {ruta}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Tutorial exportado: {0}').format(ruta), "#2ecc71")
                 except Exception as e:
-                    self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
         def _copiar():
             try:

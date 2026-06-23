@@ -105,7 +105,7 @@ class RefinamientoService:
                     self._mostrar_diff_refinamiento(texto_previo, resp)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -167,7 +167,7 @@ class RefinamientoService:
     def _iterar_elemento(self, elemento: str, n: int = 5) -> None:
         """Genera N variantes cambiando un elemento específico."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
-        self.app.dialogs.set_estado(f"🔂 Generando {n} variantes ({elemento})...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🔂 Generando {0} variantes ({1})...').format(n, elemento), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         # ¿El prompt original tiene NEGATIVE PROMPT? Le pedimos al LLM
@@ -217,7 +217,7 @@ class RefinamientoService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)

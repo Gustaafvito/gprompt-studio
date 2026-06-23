@@ -162,7 +162,7 @@ class WorkersIaService:
                 texto_original_len = len(texto)
                 texto = self.app._recortar_si_excede(texto, max_c, max_chars_negative=max_c_neg)
                 if len(texto) < texto_original_len:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado(f"✂️ Prompt recortado a {max_c} chars (máximo del modelo)", "#f39c12"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr('✂️ Prompt recortado a {0} chars (máximo del modelo)').format(max_c), "#f39c12"))
 
             # ELIMINAR NEGATIVE si el modelo no lo soporta (Nano Banana, Gemini, Turbo en ComfyUI)
             es_comfyui_turbo = False
@@ -174,7 +174,7 @@ class WorkersIaService:
                     texto = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?(?=\n\s*(?:POSITIVE|─|$)|\Z)', '', texto, flags=re.DOTALL | re.IGNORECASE)
                     texto = texto.strip()
                     razon = "ComfyUI + Turbo" if es_comfyui_turbo else "este modelo"
-                    self.app.after(0, lambda r=razon: self.app.dialogs.set_estado(f"⚠️ NEGATIVE eliminado ({r} no lo soporta)", "#f39c12"))
+                    self.app.after(0, lambda r=razon: self.app.dialogs.set_estado(tr('⚠️ NEGATIVE eliminado ({0} no lo soporta)').format(r), "#f39c12"))
 
             # ELIMINAR PESOS NUMÉRICOS solo en ComfyUI con modelos Turbo
             if es_comfyui_turbo and not es_ideas:
@@ -225,7 +225,7 @@ class WorkersIaService:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\n{idea_previa}" if idea_previa else desc)
                 self.app.dialogs.actualizar_salida(f"👁 [{motor}] analizó la imagen...\nRevisa y pulsa Generar Prompt.")
-                self.app.dialogs.set_estado(f"👁 [{motor}] — Edita la descripción y pulsa Generar Prompt", "#2ecc71")
+                self.app.dialogs.set_estado(tr('👁 [{0}] — Edita la descripción y pulsa Generar Prompt').format(motor), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
                 self.app.txt_idea.focus_set()
             self.app.after(0, _mostrar_resultado)
@@ -324,7 +324,7 @@ class WorkersIaService:
                     logger.debug(f"[silent] {e}")
             self.app.after(0, _aplicar)
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error Quick: {e}", "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error Quick: {0}').format(e), "#e74c3c"))
             self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
     # ──────────────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ class WorkersIaService:
             es_referencia = bool(self.app.switch_ref_visual_var.get())
             modo_etiqueta = "🖼 REFERENCIA" if es_referencia else "👁 FIEL"
 
-            self.app.after(0, lambda: self.app.dialogs.set_estado(f"{modo_etiqueta} Analizando imagen...", "#f39c12"))
+            self.app.after(0, lambda: self.app.dialogs.set_estado(tr('{0} Analizando imagen...').format(modo_etiqueta), "#f39c12"))
             def on_status(msg): self.app.after(0, lambda: self.app.dialogs.set_estado(msg, "#f39c12"))
             desc, motor = self.app.vision.describir(self.app.imagen_cargada, self.app.modo_var.get(), on_status)
             self.app._ultimo_anclaje_visual = desc
@@ -348,11 +348,11 @@ class WorkersIaService:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\nAdiciones del usuario: {idea_manual}" if idea_manual else desc)
                 if es_referencia:
-                    self.app.dialogs.set_estado(f"🖼 [{motor}] → generando prompt con guía visual (estilo/paleta/personajes)...", "#7c3aed")
+                    self.app.dialogs.set_estado(tr('🖼 [{0}] → generando prompt con guía visual (estilo/paleta/personajes)...').format(motor), "#7c3aed")
                 elif tiene_prompt:
-                    self.app.dialogs.set_estado(f"👁 [{motor}] → mejorando prompt existente con análisis visual...", "#f39c12")
+                    self.app.dialogs.set_estado(tr('👁 [{0}] → mejorando prompt existente con análisis visual...').format(motor), "#f39c12")
                 else:
-                    self.app.dialogs.set_estado(f"👁 [{motor}] → generando prompt con contexto visual anclado...", "#f39c12")
+                    self.app.dialogs.set_estado(tr('👁 [{0}] → generando prompt con contexto visual anclado...').format(motor), "#f39c12")
             self.app.after(0, _poner_desc)
 
             idea_final = desc if not idea_manual else f"{desc}\n\nAdiciones: {idea_manual}"

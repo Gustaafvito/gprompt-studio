@@ -92,7 +92,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -261,7 +261,7 @@ class ToolsCreativeService:
                             variantes.append(f"### {label} ###\n{resultados[label]}")
                     self.app._abrir_comparador(variantes)
                     n = len(temperaturas)
-                    self.app.dialogs.set_estado(f"⚡ Pulse: {n} versiones listas — compara y elige", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('⚡ Pulse: {0} versiones listas — compara y elige').format(n), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                     self.app._notificar_sistema(f"⚡ Pulse completado",
@@ -270,7 +270,7 @@ class ToolsCreativeService:
             except Exception as e:
                 logger.error(f"[Pulse] _worker_all falló: {e}")
                 def _err(e=e):
-                    self.app.dialogs.set_estado(f"❌ Error en Pulse: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('❌ Error en Pulse: {0}').format(e), "#e74c3c")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _err)
 
@@ -324,7 +324,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -377,7 +377,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -468,7 +468,7 @@ class ToolsCreativeService:
                     self._mostrar_sugerencias_modelo(idea, sugerencias, modo)
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -504,7 +504,7 @@ class ToolsCreativeService:
             elif modo == "audio" and hasattr(self.app, 'combo_modelo_audio'):
                 self.app.combo_modelo_audio.set(nombre)
             vent.destroy()
-            self.app.dialogs.set_estado(f"✅ Modelo '{nombre}' aplicado", "#2ecc71")
+            self.app.dialogs.set_estado(tr("✅ Modelo '{0}' aplicado").format(nombre), "#2ecc71")
 
         for idx, (nombre_mod, razon) in enumerate(sugerencias):
             medalla, bg_medalla, fg_medalla = rank_data[idx] if idx < 3 else ("#", c["fg_dark"], c["hdr_text"])
@@ -650,7 +650,7 @@ class ToolsCreativeService:
             except Exception as e:
                 logger.error(f"[MultiModelo] _worker_all falló: {e}")
                 def _err(e=e):
-                    self.app.dialogs.set_estado(f"❌ Error en MultiModelo: {e}", "#e74c3c")
+                    self.app.dialogs.set_estado(tr('❌ Error en MultiModelo: {0}').format(e), "#e74c3c")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _err)
 
@@ -696,7 +696,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -932,10 +932,10 @@ class ToolsCreativeService:
                                   command=_aplicar_corregido).pack(side="left", padx=4)
 
                     self.app.dialogs.toggle_botones(True)
-                    self.app.dialogs.set_estado(f"🔍 Análisis inverso completado (visión: {motor})", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🔍 Análisis inverso completado (visión: {0})').format(motor), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1014,7 +1014,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1082,7 +1082,7 @@ class ToolsCreativeService:
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1227,7 +1227,7 @@ class ToolsCreativeService:
                         })
                         prefs_b["adns_guardados"] = adns_b
                         self.app.store.guardar_preferencias(prefs_b)
-                        self.app.dialogs.set_estado(f"💾 ADN '{nombre}' guardado en biblioteca", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("💾 ADN '{0}' guardado en biblioteca").format(nombre), "#2ecc71")
 
                     ctk.CTkButton(btn_frame, text=tr("✅ Guardar y activar"), width=150, height=30, fg_color="#1a7a3c",
                                   command=_guardar_editado).pack(side="left", padx=4)
@@ -1247,7 +1247,7 @@ class ToolsCreativeService:
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda: prog_bar.pack_forget())
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         ctk.CTkButton(vent, text=tr("🧬 Iniciar extracción"), width=200, height=34, fg_color="#7c3aed",
@@ -1317,7 +1317,7 @@ class ToolsCreativeService:
 
     def _generar_variantes_con_anclaje(self, idea, elemento, extra, cantidad):
         """Worker para generar N variantes manteniendo ADN."""
-        self.app.dialogs.set_estado(f"🧬 Generando {cantidad} variantes con ADN anclado...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🧬 Generando {0} variantes con ADN anclado...').format(cantidad), "#f39c12")
         self.app.dialogs.toggle_botones(False)
         adn = self.app._anclaje_visual
         modo = self.app.modo_var.get()
@@ -1357,7 +1357,7 @@ class ToolsCreativeService:
         def _worker_all():
             for i in range(1, cantidad + 1):
                 _generar_una(i)
-                self.app.after(0, lambda i=i: self.app.dialogs.set_estado(f"🧬 Variante {i}/{cantidad} lista", "#3498db"))
+                self.app.after(0, lambda i=i: self.app.dialogs.set_estado(tr('🧬 Variante {0}/{1} lista').format(i, cantidad), "#3498db"))
             def _mostrar():
                 self.app._abrir_comparador(resultados)
                 self.app.dialogs.set_estado(f"🧬 {len(resultados)} variantes con ADN listas", "#2ecc71")
@@ -1421,7 +1421,7 @@ class ToolsCreativeService:
                     self.app.dialogs.set_estado(tr("🔍 Consistencia analizada"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1812,7 +1812,7 @@ class ToolsCreativeService:
 
                         def _copy_color(h=hex_c):
                             pyperclip.copy(h)
-                            self.app.dialogs.set_estado(f"📋 {h} copiado", "#2ecc71")
+                            self.app.dialogs.set_estado(tr('📋 {0} copiado').format(h), "#2ecc71")
 
                         def _on_enter(e, f, orig):
                             f.configure(border_color="#ffffff", border_width=2)
@@ -1875,7 +1875,7 @@ class ToolsCreativeService:
                         ctk.CTkLabel(f2, text=lab, font=ctk.CTkFont(size=8),
                                      text_color="white" if sum(int(col[i*2+1:i*2+3], 16) for i in range(3))/3 < 128 else "black",
                                      fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
-                        f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.app.dialogs.set_estado(f"📋 {h} copiado", "#2ecc71")))
+                        f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.app.dialogs.set_estado(tr('📋 {0} copiado').format(h), "#2ecc71")))
 
                     btn_row = ctk.CTkFrame(vent, fg_color="transparent")
                     btn_row.pack(pady=10)
@@ -1915,7 +1915,7 @@ class ToolsCreativeService:
                     self.app.dialogs.set_estado(tr("🎨 Paleta extraída"), "#2ecc71")
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -2023,7 +2023,7 @@ class ToolsCreativeService:
                     # Click para copiar el color individual
                     def _cp_color(h=hex_c):
                         pyperclip.copy(h)
-                        self.app.dialogs.set_estado(f"📋 {h} copiado", "#2ecc71")
+                        self.app.dialogs.set_estado(tr('📋 {0} copiado').format(h), "#2ecc71")
                     f.bind("<Button-1>", lambda _e, h=hex_c: _cp_color(h))
 
         _refrescar()

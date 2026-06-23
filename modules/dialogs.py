@@ -180,7 +180,7 @@ class DialogsService:
                         _refrescar_card(p)
                         self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
                     except Exception as ex:
-                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
@@ -298,7 +298,7 @@ class DialogsService:
                         _refrescar_card(p)
                         self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
                     except Exception as ex:
-                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
@@ -330,7 +330,7 @@ class DialogsService:
                         guardar_api_key(pid, nueva_key)
                     cambios += 1
             if cambios:
-                self.set_estado(f"🔑 {cambios} API keys actualizadas", "#2ecc71")
+                self.set_estado(tr('🔑 {0} API keys actualizadas').format(cambios), "#2ecc71")
                 # Refrescar el desplegable del cerebro para que los iconos ✅/🔒
                 # reflejen las keys recién guardadas
                 try:
@@ -453,7 +453,7 @@ class DialogsService:
         prefs["tema"] = nuevo.lower()
         self.app.store.guardar_preferencias(prefs)
         self.app.after(100, self.app._apply_theme_colors)
-        self.set_estado(f"🌗 Tema: {nuevo}", "#2ecc71")
+        self.set_estado(tr('🌗 Tema: {0}').format(nuevo), "#2ecc71")
 
     def _cmd_toggle_idioma(self) -> None:
         """Cambia el idioma de la UI (Español ↔ English). Se aplica al REINICIAR
@@ -470,7 +470,7 @@ class DialogsService:
         except Exception as _e:
             logger.debug(f"[silent toggle idioma] {_e}")
         nombre = "English" if nuevo == "en" else "Español"
-        self.set_estado(f"🌐 Idioma: {nombre} — reinicia para aplicar", "#2ecc71")
+        self.set_estado(tr('🌐 Idioma: {0} — reinicia para aplicar').format(nombre), "#2ecc71")
         try:
             import tkinter.messagebox as mb
             mb.showinfo(
@@ -549,7 +549,7 @@ class DialogsService:
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             except Exception as e:
-                self.set_estado(f"⚠ No se pudo abrir el enlace: {e}", "#e74c3c")
+                self.set_estado(tr('⚠ No se pudo abrir el enlace: {0}').format(e), "#e74c3c")
 
         # Pack en orden inverso para que aparezcan IG/TikTok/YT/GitHub de
         # izquierda a derecha (pack side="right" apila al revés)

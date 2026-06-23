@@ -109,7 +109,7 @@ class CoreMixin:
                 self.combo_ratio.set(ratio)
             if hasattr(self, 'combo_ratio_v'):
                 self.combo_ratio_v.set(ratio)
-            self.set_estado(f"📐 Destino {dest} → Ratio auto: {ratio}", "#3498db")
+            self.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), "#3498db")
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
@@ -300,7 +300,7 @@ class CoreMixin:
                 if r:
                     pyperclip.copy(r)
                     label = "Prompt" if not tiene_neg else "Prompt Positivo"
-                    self.set_estado(f"✅ {label} copiado.", "#2ecc71")
+                    self.set_estado(tr('✅ {0} copiado.').format(label), "#2ecc71")
                 else: self.set_estado(tr("⚠️ No hay prompt generado."), "#e67e22")
             elif tipo == "negativo":
                 if not tiene_neg:
@@ -317,7 +317,7 @@ class CoreMixin:
                     pyperclip.copy(t)
                     self.set_estado(tr("✅ Todo copiado."), "#2ecc71")
         except Exception as e:
-            self.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
     # LÓGICA CORE
 
@@ -545,11 +545,11 @@ class CoreMixin:
                 self.txt_idea.delete("1.0", "end")
                 self.txt_idea.insert("1.0", t)
                 self._ocultar_ideas()
-                self.set_estado(f"💡 Idea #{n} aplicada — pulsa ✨ Generar", "#3498db")
+                self.set_estado(tr('💡 Idea #{0} aplicada — pulsa ✨ Generar').format(n), "#3498db")
 
             def _copiar(t=idea_texto, n=i+1):
                 pyperclip.copy(t)
-                self.set_estado(f"📋 Idea #{n} copiada", "#2ecc71")
+                self.set_estado(tr('📋 Idea #{0} copiada').format(n), "#2ecc71")
 
             def _mas_como_esta(t=idea_texto):
                 """Pide 3 ideas SIMILARES a esta."""
@@ -710,28 +710,28 @@ class CoreMixin:
                     except Exception as _e:
                         logger.debug(f"[silent highlight] {_e}")
                 self.set_estado(
-                    f"✅ Variación #{n} aplicada — la ventana sigue abierta para probar otras",
+                    tr('✅ Variación #{0} aplicada — la ventana sigue abierta para probar otras').format(n),
                     "#2ecc71")
 
             def _copiar_todo(v=var, n=i+1):
                 pyperclip.copy(v)
-                self.set_estado(f"📋 Variación #{n} copiada completa", "#2ecc71")
+                self.set_estado(tr('📋 Variación #{0} copiada completa').format(n), "#2ecc71")
 
             def _copiar_pos(v=var, n=i+1):
                 p = self._extraer_pos_de_bloque(v)
                 if p:
                     pyperclip.copy(p)
-                    self.set_estado(f"📋 POSITIVE #{n} copiado", "#2ecc71")
+                    self.set_estado(tr('📋 POSITIVE #{0} copiado').format(n), "#2ecc71")
                 else:
-                    self.set_estado(f"⚠️ No se encontró POSITIVE en #{n}", "#e74c3c")
+                    self.set_estado(tr('⚠️ No se encontró POSITIVE en #{0}').format(n), "#e74c3c")
 
             def _copiar_neg(v=var, n=i+1):
                 n_text = self._extraer_neg_de_bloque(v)
                 if n_text:
                     pyperclip.copy(n_text)
-                    self.set_estado(f"📋 NEGATIVE #{n} copiado", "#2ecc71")
+                    self.set_estado(tr('📋 NEGATIVE #{0} copiado').format(n), "#2ecc71")
                 else:
-                    self.set_estado(f"⚠️ No se encontró NEGATIVE en #{n}", "#e74c3c")
+                    self.set_estado(tr('⚠️ No se encontró NEGATIVE en #{0}').format(n), "#e74c3c")
 
             ctk.CTkButton(btn_row, text=tr("✅ Aplicar al resultado"),
                           width=170, height=28,
@@ -840,7 +840,7 @@ class CoreMixin:
             self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
         except Exception as e:
             logger.exception("cmd_ideas falló")
-            self.set_estado(f"❌ Error al preparar ideas: {e}", "#e74c3c")
+            self.set_estado(tr('❌ Error al preparar ideas: {0}').format(e), "#e74c3c")
 
     def cmd_prompt(self):
         self._ocultar_ideas()
@@ -1006,7 +1006,7 @@ class CoreMixin:
         else:
             peticion = self._construir_peticion(idea, "C") + f" Genera {n} variaciones." + formato_extra
 
-        self.set_estado(f"🔀 Generando {n} variaciones...", "#f39c12")
+        self.set_estado(tr('🔀 Generando {0} variaciones...').format(n), "#f39c12")
         self.sesion._sesion_log(f"🔀 Generó {n} variaciones · base: \"{(pos or idea)[:50]}…\"")
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_ia, peticion, False, True, n).add_done_callback(log_future_exc)
@@ -1073,12 +1073,12 @@ class CoreMixin:
                     self.events._on_modo_cambio()
                     self.actualizar_salida(resultado)
                     self.data.guardar_en_historial(resultado)
-                    self.set_estado(f"🔄 Prompt convertido a vídeo ({motor_vid})", "#2ecc71")
+                    self.set_estado(tr('🔄 Prompt convertido a vídeo ({0})').format(motor_vid), "#2ecc71")
                     self.toggle_botones(True)
                     self._sonar_completado()
                 self.after(0, _mostrar)
             except Exception as e:
-                self.after(0, lambda e=e: self.set_estado(f"❌ Error: {e}", "#e74c3c"))
+                self.after(0, lambda e=e: self.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
                 self.after(0, lambda: self.toggle_botones(True))
 
         self._executor.submit(_worker).add_done_callback(log_future_exc)
