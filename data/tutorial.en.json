@@ -1,0 +1,256 @@
+{
+  "pasos": [
+    {
+      "id": 1,
+      "titulo": "🎯 1. IDEA — The starting point",
+      "descripcion": "Type your idea in the top field. It can be simple ('a cat') or detailed ('a golden Persian cat sleeping on a blue velvet sofa in warm sunset light').\n\n💡 The more specific, the better the result. Include: subject, action, setting, style.",
+      "accion": "focus:txt_idea"
+    },
+    {
+      "id": 2,
+      "titulo": "📱 2. MODE — Image, Video or Audio",
+      "descripcion": "Switch with Alt+1 (Image), Alt+2 (Video), Alt+3 (Audio) or the top selector.\n\n• Image: photos, illustrations, art\n• Video: clips, animations, motion graphics\n• Audio: songs, music, effects\n\nEach mode has specific models and different settings.",
+      "accion": "focus:_seg_modo"
+    },
+    {
+      "id": 3,
+      "titulo": "🤖 3. MODEL — The generation engine",
+      "descripcion": "Pick the model from the dropdown. The most popular ones:\n\n• FLUX — excellent for anything, fast\n• Midjourney — artistic style, vibrant colors\n• Kling / Seedance — for realistic video\n• Suno — for music and audio\n• Stable Diffusion — full control, technical\n\nEach model has a different 'personality'. Experiment.",
+      "accion": "focus_modelo"
+    },
+    {
+      "id": 4,
+      "titulo": "🌐 4. PLATFORM — Where you'll upload",
+      "descripcion": "Choose the target platform: SeaArt, Tensor.Art, ComfyUI, Kling, Suno, etc.\n\nThis adapts the prompt format: some use weighted tags, others natural language. The platform also affects which models are available.",
+      "accion": "focus:combo_plataforma"
+    },
+    {
+      "id": 5,
+      "titulo": "🎨 5. STYLES — The visual aesthetic",
+      "descripcion": "Check 1-3 styles you want to apply. Options:\n\n• Realistic Photography • Cinema • Anime/Manga\n• Digital Art • Concept Art • Illustration\n• Vintage • Cyberpunk • Fantasy • Horror\n\n💡 Combining more than 3 can produce unexpected results. Less is more.",
+      "accion": "tab:🎨 Estilos"
+    },
+    {
+      "id": 6,
+      "titulo": "⚙️ 6. RATIO — Image proportions",
+      "descripcion": "Choose the format based on the destination:\n\n• 1:1 — Square (Instagram posts)\n• 16:9 — Horizontal (YouTube, web)\n• 9:16 — Vertical (Stories, Reels, TikTok)\n• 4:3 — Classic (photography)\n• 21:9 — Ultra wide (cinematic)\n\nThe ratio affects composition and focus. A 9:16 forces a close-up; 16:9 allows more context.",
+      "accion": "focus:combo_ratio"
+    },
+    {
+      "id": 7,
+      "titulo": "👤 7. CHARACTER — Recurring characters",
+      "descripcion": "If you generate the same character often, save it here.\n\nDefine: name, physical description, distinctive traits, usual clothing.\n\nWhen you activate a character, its description is added to the prompt automatically. Ideal for series, comics, stories.",
+      "accion": "abrir_personajes"
+    },
+    {
+      "id": 8,
+      "titulo": "🔗 8. LoRA — Additional models",
+      "descripcion": "LoRAs are small models that add specific styles or subjects.\n\nActivate them from the LoRA panel. Some popular ones:\n• Artistic styles (anime, watercolor)\n• Effects (glow, glitch)\n• Specific subjects (characters, objects)\n\n💡 Each LoRA consumes part of the prompt 'budget'.",
+      "accion": "abrir_loras"
+    },
+    {
+      "id": 9,
+      "titulo": "🛡️ 9. NEGATIVE — What you do NOT want",
+      "descripcion": "The negative prompt states what should NOT appear in the image.\n\nTypical negatives: low quality, blurry, distorted, ugly, deformed, watermark, text.\n\nUse '🛡 Generate optimal negative' for an automatic one based on your model.",
+      "accion": "_cmd_negative_builder"
+    },
+    {
+      "id": 10,
+      "titulo": "✨ 10. GENERATE — Create the prompt",
+      "descripcion": "Press Ctrl+Enter or the '✨ Generate' button.\n\nThe LLM takes your idea + configuration and creates an optimized prompt.\n\nOptions:\n• Ctrl+Enter = Full generate (8-15s)\n• Alt+Enter = Quick Generate (3-6s, less elaborate)",
+      "accion": "cmd_prompt_quick"
+    },
+    {
+      "id": 11,
+      "titulo": "🔁 11. REFINE — Improve the result",
+      "descripcion": "If you don't like the result, use Refine:\n\n• Standard refine — general improvement\n• Refine more cinematic — epic framing, dramatic camera\n• Refine more facial detail — eyes, skin, textures\n• Refine better lighting — lights, shadows, atmosphere\n• Refine simplify — removes redundancies\n\n💡 Try Refine first before regenerating from scratch.",
+      "accion": "cmd_refinar"
+    },
+    {
+      "id": 12,
+      "titulo": "📊 12. SCORING — Analysis and automatic improvement",
+      "descripcion": "Scoring analyzes your prompt and proposes automatic improvements.\n\nUse '📊 Auto scoring' in macros to apply directly, or normal scoring to see the comparison.\n\nScoring detects: technical quality, balance, coherence, detail.",
+      "accion": "_cmd_scoring"
+    },
+    {
+      "id": 13,
+      "titulo": "⭐ 13. SAVE — Favorites and Stars",
+      "descripcion": "Save what you like to reuse it:\n\n• Ctrl+S = Favorite (quick access)\n• Ctrl+Shift+S = Star (premium highlight)\n\nFavorites appear in the side panel. Stars are your best work.",
+      "accion": "_guardar_favorito"
+    },
+    {
+      "id": 14,
+      "titulo": "📑 14. TEMPLATES — Proven structures",
+      "descripcion": "Templates with professional structures. Access: Templates menu.\n\nCategories: Portraits, Landscapes, Cinema, Fashion, Anime, Product, Architecture, Gaming, Art, Photo.\n\n💡 Replace the variables {subject}, {place}, {time_of_day}, etc. with your data.",
+      "accion": "_cmd_plantillas_populares"
+    },
+    {
+      "id": 15,
+      "titulo": "🧪 15. MACROS — Automation",
+      "descripcion": "Create sequences that run automatically:\n\n1. Save your favorite actions as a macro\n2. Add steps: Generate → Refine → Scoring → Save\n3. Run everything in one click\n\nUse the predefined macros or create your own. Ideal for repetitive workflows.",
+      "accion": "_abrir_macros"
+    },
+    {
+      "id": 16,
+      "titulo": "💎 16. SEEDS — Quick configurations",
+      "descripcion": "Save configurations: model + platform + ratio + styles.\n\nUse when you have a combination that works well and want to recall it quickly.\n\nDifference from templates: Seeds save only config, templates save the full setup.",
+      "accion": "_abrir_seeds_favoritos"
+    },
+    {
+      "id": 17,
+      "titulo": "🎬 17. A/B TESTING — Compare variants",
+      "descripcion": "Generate 4 versions with different variations:\n\n• Change only style → compare aesthetics\n• Change only lighting → compare mood\n• Change ratio → compare composition\n• Combine changes → find the optimum\n\nSelect 1-2 dimensions to vary. The 4 options are shown in a grid to compare.",
+      "accion": "_cmd_ab_testing"
+    },
+    {
+      "id": 18,
+      "titulo": "🎥 18. RECORD SESSION — Tutorials and memories",
+      "descripcion": "Activate from the 🎬 button in the bar.\n\nRecords: prompts, clicks, errors, complete flows.\n\nThen you can:\n• Export as a step-by-step tutorial\n• Review what you did wrong\n• Create documentation of your process\n\nRecording options: app only, full screen, or text only.",
+      "accion": "_cmd_sesion_grabar_toggle"
+    },
+    {
+      "id": 19,
+      "titulo": "📈 19. VERSIONS — Change history",
+      "descripcion": "Each time you generate/refine, a version is saved (up to 30).\n\nAccess from '📜 Prompt versions' in the menu.\n\nUseful for:\n• Comparing previous versions\n• Recovering one that was better\n• Seeing the evolution of your prompt",
+      "accion": "_cmd_versiones_prompt"
+    },
+    {
+      "id": 20,
+      "titulo": "🔍 20. SEARCH — Find what you need",
+      "descripcion": "Ctrl+F opens global search in:\n\n• History — all generated prompts\n• Favorites — your quick saves\n• Stars — your best work\n\nSearch by keywords in the content.",
+      "accion": "_cmd_busqueda_global"
+    },
+    {
+      "id": 21,
+      "titulo": "⌨️ 21. KEYBOARD SHORTCUTS — Work faster",
+      "descripcion": "The most useful ones:\n\n• Ctrl+Enter — Generate prompt\n• Ctrl+S — Save favorite\n• Ctrl+Shift+S — Save star\n• Ctrl+I — Creative ideas\n• Ctrl+F — Global search\n• Ctrl+T — This tutorial\n• Ctrl+L — Open LoRAs\n• Ctrl+P — Character group\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Preview\n• F11 — Full screen\n• Alt+1/2/3 — Switch mode",
+      "accion": "_cmd_mostrar_atajos"
+    },
+    {
+      "id": 22,
+      "titulo": "📤 22. EXPORT — Share your work",
+      "descripcion": "From the Export menu, you can:\n\n• Copy to clipboard\n• Save as .txt / .json\n• Export for CLI (ComfyUI, A1111)\n• Export the full project\n\nThe format depends on the destination: tags, natural, JSON.",
+      "accion": "_cmd_export_cli"
+    },
+    {
+      "id": 23,
+      "titulo": "🎛️ 23. EXTRA SETTINGS — Advanced configuration",
+      "descripcion": "In the extra settings panel:\n\n• Weight (1-30) — LoRA intensity\n• Seed — Reproducibility\n• Repeats — Repeat elements\n• CFG Scale — Fidelity to the prompt\n• Steps — Quality vs speed\n\n💡 These significantly affect the result. Experiment carefully.",
+      "accion": null
+    },
+    {
+      "id": 24,
+      "titulo": "📊 24. STATISTICS — Your app usage",
+      "descripcion": "Access from '📈 Statistics' in Analytics.\n\nShows:\n• Prompts generated\n• Most used models\n• Favorite styles\n• Usage time\n\nUseful to understand your workflow and optimize it.",
+      "accion": "_abrir_estadisticas"
+    },
+    {
+      "id": 25,
+      "titulo": "🧬 25. VISUAL DNA — Image analysis",
+      "descripcion": "Load an image and extract its 'DNA': subject, lighting, style, camera, composition.\n\nThen you can:\n• Convert to a structured prompt\n• Keep some elements (e.g. style) and change others\n• Save the DNA to reuse\n\nPowerful for analysis and controlled variations.",
+      "accion": "_cmd_adn_visual"
+    },
+    {
+      "id": 26,
+      "titulo": "💡 26. FINAL TIPS",
+      "descripcion": "1. Be specific in the idea — 'cat' vs 'golden Persian cat sleeping'\n2. Limit styles to 2-3 — more creates chaos\n3. Use negatives — avoid what you don't want\n4. Try variations — A/B testing is your friend\n5. Save the good ones — favorites and stars\n6. Iteration > Regenerate — refine before starting over\n7. Experiment — the best prompts come from testing\n\n🎓 With practice you'll master all the tools. Good luck!",
+      "accion": null
+    },
+    {
+      "id": 27,
+      "titulo": "⚡ 27. QUICK & VARIATIONS — Generate faster",
+      "descripcion": "Quick (⚡ or Alt+Enter) generates a prompt in ONE pass, without the analysis phases — ideal when you already know what you want.\n\n🔄 Variations (Ctrl+Shift+Enter) creates 3 different versions of the same idea so you can pick the best.",
+      "accion": null
+    },
+    {
+      "id": 28,
+      "titulo": "🔁 28. ITERATE · PULSE · SUGGEST — Explore variants",
+      "descripcion": "Iterate generates N versions changing a SINGLE element (camera, light, style…) to compare while keeping everything else equal.\n\nPulse adds intensity/energy to a prompt. Suggest proposes concrete improvements you apply with one click.",
+      "accion": null
+    },
+    {
+      "id": 29,
+      "titulo": "🤝 29. COPILOT — Your prompt assistant",
+      "descripcion": "The Copilot opens a dialog about your prompt: ask it for changes in natural language ('darker', 'add fog') and it rewrites it respecting the model's format.\n\n💡 Perfect for fine adjustments without regenerating from scratch.",
+      "accion": null
+    },
+    {
+      "id": 30,
+      "titulo": "🎯 30. LOOP OPTIMIZER — Improve until the target",
+      "descripcion": "Different from one-off Scoring: the Optimizer (📊 Analytics menu) repeats generate→score→improve until it reaches the score you set (or runs out of N iterations), and ALWAYS keeps the best version seen.\n\n💡 Shortcut: Ctrl+Shift+O. It scores and improves taking the active model into account.",
+      "accion": null
+    },
+    {
+      "id": 31,
+      "titulo": "🎯 31. ADAPT TO ACTIVE MODEL — One click to the right format",
+      "descripcion": "Rewrites the current prompt to the EXACT format of the selected model: natural vs tags, use (or not) of weights, character limit and negatives.\n\nAvailable in the 🛠 Tools menu and as a Macro step. 💡 It doesn't change your idea, only its form.",
+      "accion": null
+    },
+    {
+      "id": 32,
+      "titulo": "🎭 32. NARRATIVE: MOOD · STORY · BOARD · WALK",
+      "descripcion": "Four narrative generators:\n• Mood — explores tone and atmosphere.\n• Story — a sequence with beginning, middle and end.\n• Board — a board of related scenes.\n• Walk — a spatial tour through an environment.",
+      "accion": null
+    },
+    {
+      "id": 33,
+      "titulo": "🖼 33. STORYBOARD — Cinematic panels",
+      "descripcion": "Generate N panels (3-12) with shot type (CLOSE-UP, WIDE, POV…) and a description per panel, keeping visual coherence between them.\n\n💡 IMAGE mode only. Shortcut Ctrl+Shift+B. The '📋 Merge' button combines them into a single multi-panel prompt.",
+      "accion": null
+    },
+    {
+      "id": 34,
+      "titulo": "🎬 34. →VIDEO — From image to video",
+      "descripcion": "Converts the current image prompt into a VIDEO prompt ready for Veo/Sora/Kling/Seedance, adding camera movement, duration and shots.\n\n💡 The 'Shots' selector calibrates the number of shots based on the chosen duration.",
+      "accion": null
+    },
+    {
+      "id": 35,
+      "titulo": "🔎 35. IMG→PROMPT & 🖼 REF — Reverse engineering",
+      "descripcion": "Img→Prompt uploads an image and extracts a prompt that describes it.\n\nWith the 🖼 Ref switch on, instead of copying the literal image it extracts only its visual GUIDANCE (palette, light, style) to create a NEW scene with that aesthetic.",
+      "accion": null
+    },
+    {
+      "id": 36,
+      "titulo": "🆚 36. COMPARATOR & POLLINATIONS GRID",
+      "descripcion": "After generating variations, the Comparator shows them side by side with buttons to use or copy each one.\n\n👁 Pollinations Grid (Ctrl+G inside the window) generates a real preview of ALL of them at once so you can choose with the image in front of you.",
+      "accion": null
+    },
+    {
+      "id": 37,
+      "titulo": "🎨 37. PREVIEW — Quick sketch",
+      "descripcion": "The 🖼 Preview button (Ctrl+Shift+P) generates a sketch of the prompt via Pollinations to give you an idea BEFORE taking it to your final platform.\n\n💡 It's cached: the same prompt is not generated again.",
+      "accion": null
+    },
+    {
+      "id": 38,
+      "titulo": "🧑‍🎨 38. AVATAR DATASET (LoRA) — Consistent character",
+      "descripcion": "Generates a complete dataset to train a character LoRA: up to 24 angles with the SAME identity, kohya-style captions and official SeaArt tips.\n\nIt can start from a text sheet, an automatic sheet (🎲) or a reference photo (📷, img2img edit mode).",
+      "accion": null
+    },
+    {
+      "id": 39,
+      "titulo": "💼 39. CLIENT MODE & DETECT STYLE",
+      "descripcion": "Client Mode turns a professional brief into 5 different prompt proposals.\n\nDetect style (3 images) analyzes a moodboard and extracts its common aesthetic to apply to your next prompts.",
+      "accion": null
+    },
+    {
+      "id": 40,
+      "titulo": "💰 40. COST & MODEL SELECTOR",
+      "descripcion": "💰 Session cost (📊 Analytics, Ctrl+Shift+M) shows spending per provider and per model, the total and the history.\n\n🧠 Next to the brain you can choose the exact model (Opus 4.8, Sonnet 4.6, DeepSeek…); each has its own price and is remembered between sessions.",
+      "accion": null
+    },
+    {
+      "id": 41,
+      "titulo": "🏠 41. DASHBOARD & PROJECTS",
+      "descripcion": "🏠 Dashboard (Ctrl+Shift+D) is your control panel: statistics, activity from recent days, achievements and the challenge of the day.\n\n📁 Projects groups prompts and their setup by job, so you don't mix up different campaigns.",
+      "accion": null
+    },
+    {
+      "id": 42,
+      "titulo": "🛠 42. EXTRAS THAT MAKE THE DIFFERENCE",
+      "descripcion": "More tools worth knowing:\n• 🧰 Negative builder (Ctrl+Shift+N) · 📐 Formulas · 🏷 Snippets / Quick expansion\n• 🎯 Focus mode (Ctrl+H) · ⚡ Brief mode · 💡 Clarity suggestions (Ctrl+Shift+C)\n• ⏰ Cron prompts · 👥 Character group (Ctrl+P)",
+      "accion": null
+    }
+  ]
+}

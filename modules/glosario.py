@@ -12,7 +12,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +20,27 @@ _JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "glosario.json"
 _cache: dict | None = None
 
 
+def _ruta_idioma() -> Path:
+    """data/glosario.en.json si idioma=='en' y existe; si no, el ES."""
+    if get_idioma() == "en":
+        en = _JSON_PATH.with_name("glosario.en.json")
+        if en.exists():
+            return en
+    return _JSON_PATH
+
+
 def cargar_glosario() -> dict:
-    """Lee data/glosario.json (con caché). Devuelve {'categorias': [...], 'entradas': [...]}."""
+    """Lee data/glosario(.en).json (con caché). Devuelve {'categorias': [...], 'entradas': [...]}."""
     global _cache
     if _cache is not None:
         return _cache
-    if not _JSON_PATH.exists():
-        logger.warning(f"glosario.json no encontrado en {_JSON_PATH}")
+    ruta = _ruta_idioma()
+    if not ruta.exists():
+        logger.warning(f"glosario.json no encontrado en {ruta}")
         _cache = {"categorias": [], "entradas": []}
         return _cache
     try:
-        with open(_JSON_PATH, "r", encoding="utf-8") as f:
+        with open(ruta, "r", encoding="utf-8") as f:
             _cache = json.load(f)
     except Exception as e:
         logger.warning(f"glosario.json no se pudo leer: {e}")
