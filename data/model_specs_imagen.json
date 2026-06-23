@@ -31,7 +31,8 @@
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin prompt negativo visible en UI. Modelo cerrado de SeaArt. DOC OFICIAL: codificación T5 — pesos (tag:1.3), corchetes y BREAK NO funcionan; sin paréntesis en el prompt; texto dentro de la imagen entre comillas \"...\"; ignora el negative.",
     "no_weights": true,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt's official all-in-one model. 144.5M uses. Versatile for any style. Built-in suggestion magic. Control with sampler/steps/CFG."
   },
   "SeaArt Infinity V2.0": {
     "nota": 4.7,
@@ -92,7 +93,8 @@
     "coste_energia": "Gratis VIP",
     "limitaciones": "Sin prompt negativo visible en UI. Modelo basado en Flux.1 D. DOC OFICIAL: base FLUX — ignora el negative (alternativa: negaciones en el positivo, p.ej. 'una carretera sin coches'); pesos, corchetes y BREAK no funcionan; texto entre comillas; términos artísticos pueden romper el realismo.",
     "no_weights": true,
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt photorealism. 3.9M uses. Flux.1 D model. Ideal for portraits and realistic scenes."
   },
   "Luma Uni-1.1 Image": {
     "nota": 5.0,
@@ -186,7 +188,8 @@
     "negative_recomendado": "blurry, low-res, extra fingers, bad anatomy, deformed hands, distorted text, text, watermark, signature, bad proportions, cropped, out of frame, digital noise",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Modelo base (no Turbo). Mejor fidelidad con 28-50 pasos y CFG 3-5. NEGATIVE dinámico por categoría: Fotorrealismo / Fantasía Mística / Ciencia Ficción.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Foundation checkpoint (6B params, S3-DiT architecture). HYBRID: weighted quality-tag preamble + natural-language narrative blocks. Bilingual EN/ZH. Photoreal portraits, cinematic scenes, posters. Fine-tuning friendly (Apache 2.0)."
   },
   "FLUX.1 [dev]": {
     "nota": 4.4,
@@ -1589,7 +1592,8 @@
     "prompt_ejemplo": "Replace the background with a snowy mountain, keep the person's face and pose",
     "coste_energia": "Gratis por tiempo limitado",
     "limitaciones": "Sin sampler/CFG/negative. Text rendering débil (especialmente fuentes complejas — usar Pro Image para texto). Anatomía compleja (manos, dedos) ocasionalmente distorsionada. Reflejos/lighting complejos a veces inconsistentes. Sin cropping preciso de aspect ratio. Máx 3 imágenes de referencia (vs 14 en Pro/2).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Gemini 2.5 Flash engine (original version, free for a limited time). Natural-language editing with character consistency, multi-turn editing, multi-image fusion. Style transfer (photorealistic, cartoon, watercolor, oil, abstract). 1-5 second generation. Great for fast iteration on social media and prototyping."
   },
   "Nano Banana 2": {
     "nota": 4.0,
@@ -2168,7 +2172,8 @@
       "REAFIRMÁ INVARIANTES en cada edición: especificá qué NO debe cambiar en cada turno",
       "CONSISTENCIA entre generaciones: ideal para series, campañas y storyboards",
       "4× MÁS RÁPIDO que GPT Image 1: aprovechalo para iteración rápida"
-    ]
+    ],
+    "best_for_en": "GPT Image 1.5 on SeaArt. OpenAI model aimed at professional workflows with PRECISE CREATIVE CONTROL. Excels at: (1) 4× FASTER than GPT Image 1 — fast iteration without losing flow; (2) STRICT INSTRUCTION FOLLOWING — follows complex prompts to the letter, no reinterpretations; (3) PRECISE EDITING + CONSISTENCY — change clothing, lighting, expressions while keeping faces, logos, branding and fine details coherent; (4) DENSE, SMALL TEXT — infographics, posters, labels and layouts with legible, sharp text; (5) HIGH FIDELITY — sharper, more realistic and stylistically aligned images. Supports up to 7 SUBJECT reference images (img2img composite). Ideal for asset refinement, branding, e-commerce, story sequences, consistent avatars, typography-heavy infographics."
   },
   "GPT Image 2": {
     "nota": 4.5,
@@ -2218,7 +2223,8 @@
       "RESTRICCIONES siempre al final: 'sin marca de agua, sin logos reales, sin texto extra'",
       "PROMPTS CORTOS (<30 palabras): para conceptos simples donde el modelo rellena creativamente",
       "PROMPTS LARGOS ESTRUCTURADOS: para composición exacta, tipografía precisa, iluminación nombrada"
-    ]
+    ],
+    "best_for_en": "GPT Image 2 on SeaArt. Built for creators who need detailed prompts, clean in-image text and sharp first-try results. Excels at: (1) IN-IMAGE TEXT rendering (posters, labels, signage, menus, UI) with correct legibility and placement; (2) natural REALISM in skin, materials, lighting, reflections, shadows, depth — without an 'over-processed' feel; (3) UI/PRODUCT/MOCKUPS (app screens, dashboards, browser windows, packaging, product shots); (4) PROMPT UNDERSTANDING with multiple simultaneous requirements; (5) CONSISTENCY across generations (series, campaigns, brand visuals, storyboards). Supports up to 10 SUBJECT reference images (img2img composite). Ideal for marketing creatives, UI/app concepts, product storytelling, photorealism, editorial/design assets, creative worldbuilding."
   },
   "Ideogram v3": {
     "nota": 4.8,
@@ -2552,7 +2558,8 @@
     "prompt_ejemplo": "A photorealistic portrait of a woman with silver hair, soft natural lighting from a window on the left, shallow depth of field, 85mm lens",
     "sampler_recomendado": "Euler",
     "pasos": 20,
-    "cfg": 1.0
+    "cfg": 1.0,
+    "best_for_en": "FLUX.2 Klein 4B (SeaArt official). Natural-language text-to-image, no negative prompt. Compact and fast."
   },
   "Flux.1 Kontext Max": {
     "nota": 4.7,
@@ -2814,7 +2821,8 @@
       "21:9"
     ],
     "max_chars": 2000,
-    "best_for": "generación y edición de imágenes de alta fidelidad con capacidades multimodales avanzadas"
+    "best_for": "generación y edición de imágenes de alta fidelidad con capacidades multimodales avanzadas",
+    "best_for_en": "high-fidelity image generation and editing with advanced multimodal capabilities"
   },
   "Seedream 4 4K": {
     "nota": 4.5,
@@ -4414,7 +4422,8 @@
       "16:9"
     ],
     "max_chars": 2000,
-    "best_for": "imágenes fotorrealistas y cinematográficas de alta fidelidad"
+    "best_for": "imágenes fotorrealistas y cinematográficas de alta fidelidad",
+    "best_for_en": "photorealistic, cinematic high-fidelity images"
   },
   "Wan2.5 Image": {
     "nota": 4.0,
@@ -4467,7 +4476,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "generación de imágenes realistas con control preciso mediante prompt negativo"
+    "best_for": "generación de imágenes realistas con control preciso mediante prompt negativo",
+    "best_for_en": "realistic image generation with precise control via negative prompt"
   },
   "Illustrious XL V3.6": {
     "nota": 4.1,

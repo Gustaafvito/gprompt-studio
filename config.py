@@ -623,6 +623,19 @@ def es_modelo_imagen_vigente(nombre):
     spec = _get_dataset("MODEL_SPECS_IMAGEN").get(nombre)
     return bool(spec and spec.get("vigente"))
 
+def best_for_display(spec):
+    """Descripción `best_for` en el idioma de la UI: `best_for_en` si idioma=='en'
+    y existe; si no, cae al `best_for` español. No rompe nada (fallback seguro)."""
+    if not spec:
+        return ""
+    try:
+        from modules.i18n import get_idioma
+        if get_idioma() == "en" and spec.get("best_for_en"):
+            return spec["best_for_en"]
+    except Exception:
+        pass
+    return spec.get("best_for", "")
+
 def _filtrar_grupos_vigentes(grupos):
     """Quita de cada grupo los modelos no vigentes y descarta grupos vacíos."""
     out = []
