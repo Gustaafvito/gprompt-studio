@@ -27,6 +27,15 @@ _IDIOMA = "es"
 
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
+    # messagebox de tools_workflow (recuperados tras quitar el BOM).
+    'Sobrescribir': 'Overwrite',
+    "Ya existe un setup llamado '{0}'. ¿Sobrescribirlo?": "A setup named '{0}' already exists. Overwrite it?",
+    'Borrar setup': 'Delete setup',
+    "¿Borrar el setup '{0}'?": "Delete setup '{0}'?",
+    'Borrar macro': 'Delete macro',
+    "¿Borrar la macro '{0}'?": "Delete macro '{0}'?",
+    'Borrar proyecto': 'Delete project',
+    "¿Borrar el proyecto '{0}'?\nLa acción no se puede deshacer.": "Delete project '{0}'?\nThis action cannot be undone.",
     # Dinámicos tools_workflow (BOM) + show_toast (Fase B residual).
     '⏪ Versión restaurada': '⏪ Version restored',
     '⏲ Cron iniciado: {0} variantes cada {1}min': '⏲ Cron started: {0} variants every {1}min',

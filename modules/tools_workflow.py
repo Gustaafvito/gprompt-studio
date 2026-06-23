@@ -258,8 +258,8 @@ class ToolsWorkflowService:
         # Confirmación si ya existe
         if nombre in setups:
             from tkinter import messagebox
-            if not messagebox.askyesno("Sobrescribir",
-                                         f"Ya existe un setup llamado '{nombre}'. ¿Sobrescribirlo?",
+            if not messagebox.askyesno(tr("Sobrescribir"),
+                                         tr("Ya existe un setup llamado '{0}'. ¿Sobrescribirlo?").format(nombre),
                                          parent=self.app):
                 return
         setup["_fecha_guardado"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -328,7 +328,7 @@ class ToolsWorkflowService:
 
                 def _borrar(n=nombre):
                     from tkinter import messagebox
-                    if messagebox.askyesno("Borrar setup", f"¿Borrar el setup '{n}'?", parent=v):
+                    if messagebox.askyesno(tr("Borrar setup"), tr("¿Borrar el setup '{0}'?").format(n), parent=v):
                         prefs2 = self.app.store.cargar_preferencias()
                         setups2 = prefs2.get("setups", {}) or {}
                         setups2.pop(n, None)
@@ -814,8 +814,8 @@ class ToolsWorkflowService:
 
                 def _borrar(idx=i, nombre=m.get("nombre", "?")):
                     if not messagebox.askyesno(
-                        "Borrar macro",
-                        f"¿Borrar la macro '{nombre}'?",
+                        tr("Borrar macro"),
+                        tr("¿Borrar la macro '{0}'?").format(nombre),
                         parent=vent,
                     ):
                         return
@@ -1393,7 +1393,7 @@ class ToolsWorkflowService:
                         refrescar()
 
                 def _borrar(n=nombre_p):
-                    if not messagebox.askyesno("Borrar proyecto", f"¿Borrar el proyecto '{n}'?\nLa acción no se puede deshacer.", parent=vent): return
+                    if not messagebox.askyesno(tr("Borrar proyecto"), tr("¿Borrar el proyecto '{0}'?\nLa acción no se puede deshacer.").format(n), parent=vent): return
                     p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
                     proys2.pop(n, None)
