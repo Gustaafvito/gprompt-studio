@@ -16,7 +16,7 @@ from config import (
     get_model_specs,
     get_theme_colors,
 )
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class ToolsCreativeService:
             f"Debe ser una escena con: sujeto específico + acción/situación + atmósfera + un toque de originalidad. "
             f"Estilo: ni demasiado cliché ni demasiado abstracta. Algo que dé ganas de generarla. "
             f"Evita conceptos sobreusados (cyberpunk genérico, dragones simples, etc).{contexto_modelo} "
-            f"Responde con UNA SOLA frase en español, máximo 30 palabras, sin explicaciones."
+            f"Responde con UNA SOLA frase en {'inglés' if get_idioma() == 'en' else 'español'}, máximo 30 palabras, sin explicaciones."
         )
 
         def _worker():

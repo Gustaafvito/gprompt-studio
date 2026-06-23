@@ -31,6 +31,14 @@ _IDIOMA = "es"
 
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
+    # Menú click-derecho de Refinar (opciones específicas).
+    '🎬 Más cinematográfico': '🎬 More cinematic',
+    '👤 Más detalle facial': '👤 More facial detail',
+    '💡 Mejor iluminación': '💡 Better lighting',
+    '⚡ Más impacto visual': '⚡ More visual impact',
+    '✂️ Simplificar': '✂️ Simplify',
+    '🌈 Cambiar paleta': '🌈 Change palette',
+    '🔍 Más detalle técnico': '🔍 More technical detail',
     # Categorías del picker de Tags.
     '💡 Iluminación': '💡 Lighting',
     '📷 Cámara': '📷 Camera',

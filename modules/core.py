@@ -25,7 +25,7 @@ import logging
 
 import pyperclip
 
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger("gprompt")
 from typing import TYPE_CHECKING
@@ -566,6 +566,8 @@ class CoreMixin:
                     f"- Estilos activos: {self.footer.estilos_texto()}\n\n"
                     f"FORMATO: '1. Idea', '2. Idea', '3. Idea' (una por línea, sin explicaciones)."
                 )
+                if get_idioma() == "en":
+                    peticion += "\n- IMPORTANT: write the 3 ideas in ENGLISH."
                 self.sesion._sesion_log(f"✨ Más como esta: \"{t[:40]}\"")
                 self._executor.submit(self.workers.worker_ia, peticion, True).add_done_callback(log_future_exc)
 
@@ -833,6 +835,10 @@ class CoreMixin:
             peticion += self._contexto_loras_personaje("las 3 ideas")
 
             if idea: peticion += f"\n\nTema añadido por el usuario: {idea}."
+
+            # Las ideas son contenido para el usuario → en el idioma de la UI.
+            if get_idioma() == "en":
+                peticion += " IMPORTANT: write the 3 ideas in ENGLISH."
 
             self.set_estado(tr("⏳ Generando ideas..."), "#f39c12")
             self.sesion._sesion_log(f"💡 Pidió ideas · tema: \"{(idea or 'sin tema')[:40]}\"")

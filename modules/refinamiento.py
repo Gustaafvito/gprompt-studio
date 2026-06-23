@@ -61,7 +61,7 @@ class RefinamientoService:
             ("🔍 Más detalle técnico",   "con detalles técnicos: sampler, lente, distancia focal, tipo de cámara, resolución específica"),
         ]
         for label, instruccion in opciones:
-            menu.add_command(label=label, command=lambda i=instruccion: self._refinar_con_instruccion(i))
+            menu.add_command(label=tr(label), command=lambda i=instruccion: self._refinar_con_instruccion(i))
 
         try:
             x = event.x_root if event else self.app.winfo_pointerx()
