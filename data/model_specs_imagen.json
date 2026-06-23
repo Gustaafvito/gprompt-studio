@@ -780,7 +780,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Requiere anime/source_anime para estilo. No fotorrealismo. DOC OFICIAL: score_9, score_8_up...score_4_up + source_anime; NO usar 'masterpiece/best quality'. Negative oficial: '(score_4, score_3, score_2, score_1), ugly, bad anatomy, bad hands'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "T-Ponynai3 V6. 1.1M uses. Anime fusion (PonyV6 + NAI3). Vibrant anime style. Excellent at scenes, hands/feet, light/shadow. No VAE needed (included). Uses score tags and source_anime."
   },
   "NoobAI-XL (NAI-XL)": {
     "nota": 4.5,
@@ -810,7 +811,8 @@
     "cfg": "3.5-5.5",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Solo V-prediction. No Karras samplers. No CLIP skip. DOC OFICIAL: sin guiones bajos en tags; paréntesis escapados \\(...\\); artistas SOLO por nombre; personajes como 'nombre (serie), serie'. Negative oficial: 'nsfw, low quality, worst quality, normal quality, text, signature, jpeg artifacts, bad anatomy, old'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "NoobAI-XL (NAI-XL). 796.5K uses. V-prediction model. Excellent for anime and furry. 13M Danbooru+e621 images. Recognizes characters, artists, series."
   },
   "WAI-Illustrious-SDXL": {
     "nota": 4.7,
@@ -841,7 +843,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Base Illustrious-XL. Orientado a anime/ilustración, no fotorrealismo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "WAI-Illustrious-SDXL. High-quality anime/illustration model on the Illustrious-XL base. Excellent detail in characters, clothing and backgrounds. Illustrious LoRA compatible."
   },
   "WAI-Pluralistic-Noob": {
     "nota": 4.6,
@@ -867,7 +870,8 @@
     "cfg": "4-5",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Basado en SDXL. No soporta weights como Flux.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "WAI-Pluralistic-Noob. 1.7M uses. Stable artistic style based on Noob. Collaboration with NOOB artists for composition angles and colors."
   },
   "Counterfeit V3.0": {
     "nota": 4.4,
@@ -895,7 +899,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Prioriza composición sobre anatomía. Problemas con manos. DOC OFICIAL: el embedding EasyNegativeV2 es ESENCIAL en el negative (v3; no mezclar con EasyNegative v1).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Counterfeit V3.0. High-quality anime model focused on female characters. Creative composition, stylized anime style. Uses Danbooru tags."
   },
   "Temporal Paradox Mix": {
     "nota": 4.5,
@@ -922,7 +927,8 @@
     "clip_skip": "1-2",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 base. Menos versátil que SDXL para estilos modernos. DOC OFICIAL: embeddings negativos recomendados: verybadimagenegative_v1.3, ng_deepnegative_v1_75t, bad-hands-5, bad_prompt_version2, EasyNegative. Manos excepcionales (uñas definidas); versátil (personajes, paisajes, mechas, animales).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Temporal Paradox Mix. 37.7K uses. Fusion of 10+ models. Versatile: M/F characters, landscapes, mechs, animals. Excellent hands and nails. Works with long and short prompts."
   },
   "Illustrious Realism by Klaabu": {
     "nota": 4.9,
@@ -1350,7 +1356,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Estilo fuertemente estilizado. Rostros lejanos requieren inpaint. Base SD 1.5.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "majicMIX fantasy (麦橘幻想). 680.3K uses. 2D/2.5D style mixing digital art and semi-realism. v3.0. Merge of Noosphere + dalcefoPainting."
   },
   "Disney Pixar Cartoon type B": {
     "nota": 4.1,
@@ -1378,7 +1385,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Requiere VAE o los colores salen pálidos/grisáceos. Base SD 1.5.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Disney Pixar Cartoon type B. 2.2M uses. Pixar/Disney/Dreamworks style. Merge of Type A + a LoRA trained on Midjourney images. Better for male and older subjects than type A."
   },
   "REED_XXX_illustrious_SDXL": {
     "nota": 4.4,
@@ -1412,7 +1420,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "REED_XXX_illustrious_SDXL. 1.9M uses. Supports 2D and 3D. Excellent portraits, character sheets, dynamic poses. Clean lighting, minimal tweaking needed."
   },
   "Lily-Illustrious XL": {
     "nota": 4.9,
@@ -1439,7 +1448,8 @@
     "cfg": "5-8",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "v3.0. No vender imágenes sin editar.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Lily-Illustrious XL. 1.8M uses. Soft anime style with pastel colors. Artist/character detection. LoRA compatible."
   },
   "Pixel Illustrious": {
     "nota": 4.0,
@@ -1465,7 +1475,8 @@
     "cfg": "5-7",
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "A veces no dispara pixel. Ver trigger words.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pixel Illustrious v3.0. 23.8K uses. Retro pixel-art anime/cyber-fantasy. 16-32bit video-game style. Glowing eyes, expressive characters."
   },
   "SDXL FaeTastic": {
     "nota": 4.9,
@@ -1493,7 +1504,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Base SDXL 1.0. No monetizar en third-party sites sin permiso.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SDXL FaeTastic v24. 294.2K uses. Vibrant 1.5 FaeTastic-style colors. SDXL optimized with detail and eye LoRAs."
   },
   "Pie - Models 🥧": {
     "nota": 5.0,
@@ -1520,7 +1532,8 @@
     "cfg": 5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "12 variantes: Apple, Blueberry, Cherry, Derby, Elderberry, Fudge, Grape, Honey, Impossible, Jam, Key Lime, Mango, Lemon.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pie Models 🥧. 2.0M uses. Illustrious collection: Apple Pie (anime), Blueberry (semi-real), Cherry (hybrid), Mango (vibrant 2.5D), etc."
   },
   "Nano Banana Pro Image": {
     "nota": 3.6,
@@ -1668,7 +1681,8 @@
     "resolucion_recomendada": "720x1280",
     "coste_energia": "Gratis VIP",
     "limitaciones": "Máx 4 imágenes. Nicho CG/sci-fi, menos versátil para otros estilos.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Cinematic CG/3D render style. Ideal for mech suits, sci-fi, armored characters, epic scenes with dramatic lighting."
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
     "nota": 4.7,
@@ -3887,7 +3901,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 dreambooth. Requiere trigger 'nvinkpunk'. Estilo muy específico, no apto para fotorrealismo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Inkpunk Diffusion (Envvi). 23.6K favorites. SD 1.5 dreambooth inspired by Gorillaz, FLCL and Yoji Shinkawa. A very distinctive punk-ink aesthetic for characters and scenes."
   },
   "Arcane Diffusion": {
     "nota": 4.1,
@@ -3915,7 +3930,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 fine-tuned en solo 95 imágenes. Requiere trigger 'arcane style'. Estilo ligado a la estética de la serie.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Arcane Diffusion (Nitrosocke). 1.9K likes. SD 1.5 fine-tuned on 95 images from the Arcane series (Netflix). Cinematic animated illustration with a dark palette and expressive textures."
   },
   "Cyberpunk Anime Diffusion": {
     "nota": 4.1,
@@ -3943,7 +3959,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 dreambooth. Trigger obligatorio: 'dgs'. Resolución recomendada 704×704px. Mejor con escenas nocturnas y futuristas.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Cyberpunk Anime Diffusion V1. 3.6K likes. Waifu Diffusion V1.3 + SD 1.5 dreambooth. Cyberpunk anime characters with a futuristic neon aesthetic. Trigger: 'dgs illustration style'."
   },
   "Robo-Diffusion": {
     "nota": 4.0,
@@ -3971,7 +3988,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 dreambooth. Requiere trigger 'nousr robot'. Orientado a mechas/robots, no ideal para personas.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Robo-Diffusion (nousr). 970 likes. SD 1.5 dreambooth specialized in robots and mechs. Generates robots with great detail in metallic parts and a sci-fi aesthetic. Trigger 'nousr robot'."
   },
   "anima_pencil-XL": {
     "nota": 4.7,
@@ -4000,7 +4018,8 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SDXL 1.0 base (Fair AI Public License 1.0-SD). Orientado a ilustración/boceto anime, no fotorrealismo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "anima_pencil-XL (blue_pen5805). 52K likes. Merge of blue_pencil-XL + ANIMAGINE XL 3.0/3.1 at 25 steps. Easy, simple and high quality. Anime illustration with pencil texture and expressive lines."
   },
   "Hollie Mengert Illustration": {
     "nota": 4.0,
@@ -4028,7 +4047,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5. Trigger: 'holliemengert artstyle'. Mejor con escenas de cuento, animales y personajes fantásticos. La artista no está afiliada al modelo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Hollie Mengert Illustration Diffusion (ogkalu). 722 likes. SD 1.5 fine-tuned on illustrator Hollie Mengert's 2D style. Pastel palette, rounded shapes, storybook aesthetic."
   },
   "Fred Herzog Photography Style": {
     "nota": 3.9,
@@ -4056,7 +4076,8 @@
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SD 1.5 entrenado en solo 30 imágenes. Trigger: 'in the style of fred herzog'. Mejor con escenas callejeras y arquitectura urbana retro.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fred Herzog Photography Style (TheLastBen). 157 likes. SD 1.5 trained on 30 Fred Herzog images. 1950s-60s Kodachrome street photography, Vancouver. Vivid colors, natural light, casual composition."
   },
   "Ideogram 4": {
     "nota": 3.7,
@@ -4521,7 +4542,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL"
+    "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL",
+    "best_for_en": "high-quality anime illustration and characters in the Illustrious SDXL style"
   },
   "Illustrious-xl-v3.5-vpred": {
     "nota": 4.3,
@@ -4543,7 +4565,8 @@
     ],
     "max_chars": 2000,
     "max_chars_negative": 2000,
-    "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL"
+    "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL",
+    "best_for_en": "high-quality anime illustration and characters in the Illustrious SDXL style"
   },
   "MiaoMiao Harem V2.0": {
     "nota": 4.8,
@@ -4571,6 +4594,7 @@
     "clip_skip": 2,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "MiaoMiao Harem V2.0. 1.7M uses. Anime/harem style with a 2026 concept. CKXL05 architecture. Excellent hands/feet, LoRA compatible, simple prompts."
   }
 }
