@@ -1623,7 +1623,7 @@
       "3:4",
       "1:1"
     ],
-    "max_chars": 2000,
+    "max_chars": 1500,
     "modos_gen": [
       "720p",
       "1080p",
@@ -1631,7 +1631,7 @@
       "4K"
     ],
     "best_for": "Motor Wan 2.7 (vía SeaArt). Multimodal con referencias @ (estilo Seedance) + librería de personajes. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 4K. Gratis por tiempo limitado.",
-    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos. Prompt máx 2000 chars.",
+    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos. Prompt máx 1500 chars.",
     "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs a dynamic action, cinematic camera, dramatic lighting.",
     "limitaciones": "Sin nota en la página. duración: solo confirmado 10s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo. Gratis por tiempo limitado (puede cambiar).",
     "vigente": true
