@@ -126,7 +126,7 @@ def abrir_glosario(app):
         except Exception as e:
             logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
             try:
-                app.show_toast(f"❌ '{metodo_nombre}' no disponible: {e}", "#e74c3c")
+                app.show_toast(tr("❌ '{0}' no disponible: {1}").format((metodo_nombre), (e)), "#e74c3c")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

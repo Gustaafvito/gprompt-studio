@@ -834,7 +834,7 @@ class ArquitectoApp(
             marker.write_text(str(ahora), encoding="utf-8")
             # Toast informativo
             self.after(2000, lambda: self.show_toast(
-                f"💼 Backup auto creado: {nombre}", "#0891b2", 3500
+                tr('💼 Backup auto creado: {0}').format(nombre), "#0891b2", 3500
             ))
             # Limpiar backups viejos (>10)
             backups = sorted(backups_dir.glob("auto-*.zip"))

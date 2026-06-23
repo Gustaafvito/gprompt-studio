@@ -545,7 +545,7 @@ class DialogsService:
                 webbrowser.open(url)
                 if hasattr(self.app, "show_toast"):
                     try:
-                        self.app.show_toast(f"🌐 Abriendo {url[:40]}...", "#3b82f6", 1500)
+                        self.app.show_toast(tr('🌐 Abriendo {0}...').format(url[:40]), "#3b82f6", 1500)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             except Exception as e:

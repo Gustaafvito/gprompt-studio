@@ -539,7 +539,7 @@ class BackupExportService:
                 self.app.dialogs.set_estado(tr('📋 {0} copiado').format(n), "#2ecc71")
                 if hasattr(self.app, "show_toast"):
                     try:
-                        self.app.show_toast(f"📋 Copiado: {n}", color, 1800)
+                        self.app.show_toast(tr('📋 Copiado: {0}').format(n), color, 1800)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             return _copiar

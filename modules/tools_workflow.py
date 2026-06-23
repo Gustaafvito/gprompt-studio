@@ -1,4 +1,4 @@
-﻿"""Workflow Tools Mixin - Setup management, Macros, A/B Testing, Cron, Projects, Session Recording, etc."""
+"""Workflow Tools Mixin - Setup management, Macros, A/B Testing, Cron, Projects, Session Recording, etc."""
 import datetime
 import logging
 import re
@@ -238,7 +238,7 @@ class ToolsWorkflowService:
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error aplicando setup: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error aplicando setup: {0}').format(e), "#e74c3c")
 
     def _cmd_guardar_setup(self):
         """Abre diálogo para nombrar y guardar el setup actual."""
@@ -266,7 +266,7 @@ class ToolsWorkflowService:
         setups[nombre] = setup
         prefs["setups"] = setups
         self.app.store.guardar_preferencias(prefs)
-        self.app.dialogs.set_estado(f"💾 Setup '{nombre}' guardado", "#2ecc71")
+        self.app.dialogs.set_estado(tr("💾 Setup '{0}' guardado").format(nombre), "#2ecc71")
         try: self.app._sesion_log(f"💾 Guardó setup: {nombre}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -323,7 +323,7 @@ class ToolsWorkflowService:
 
                 def _aplicar(s=setup, n=nombre):
                     self._aplicar_setup(s)
-                    self.app.dialogs.set_estado(f"📋 Setup '{n}' aplicado", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("📋 Setup '{0}' aplicado").format(n), "#2ecc71")
                     v.destroy()
 
                 def _borrar(n=nombre):
@@ -511,7 +511,7 @@ class ToolsWorkflowService:
                             progreso = f"✅ Cron completado: {cantidad} variantes generadas"
                         _safe_configure(lbl_progreso, text=progreso,
                                         text_color="#2ecc71" if num >= cantidad else "#3498db")
-                        self.app.dialogs.set_estado(f"⏲ Variante {num}/{cantidad} lista", "#3498db")
+                        self.app.dialogs.set_estado(tr('⏲ Variante {0}/{1} lista').format((num), (cantidad)), "#3498db")
                     self.app.after(0, _aplicar)
                 except Exception as e:
                     self.app.after(0, lambda e=e: _safe_configure(lbl_progreso,
@@ -537,7 +537,7 @@ class ToolsWorkflowService:
                     cron_state["after_id"] = None
 
             _siguiente()
-            self.app.dialogs.set_estado(f"⏲ Cron iniciado: {cantidad} variantes cada {intervalo}min", "#2ecc71")
+            self.app.dialogs.set_estado(tr('⏲ Cron iniciado: {0} variantes cada {1}min').format((cantidad), (intervalo)), "#2ecc71")
 
         def _detener():
             cron_state["activo"] = False
@@ -638,7 +638,7 @@ class ToolsWorkflowService:
             def _restaurar(t=ver["texto"]):
                 self.app.dialogs.actualizar_salida(t)
                 vent.destroy()
-                self.app.dialogs.set_estado(f"⏪ Versión restaurada", "#2ecc71")
+                self.app.dialogs.set_estado(tr('⏪ Versión restaurada'), "#2ecc71")
             ctk.CTkButton(btn_row, text=tr("⏪ Restaurar esta"), width=130, height=22, fg_color="#1a7a3c",
                           font=ctk.CTkFont(size=10), command=_restaurar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
@@ -802,7 +802,7 @@ class ToolsWorkflowService:
                     pasos_state["lista"] = list(macro.get("pasos", []))
                     _refrescar_pasos()
                     lbl_form_titulo.configure(
-                        text=f"✏️ Editando: {macro.get('nombre', '?')}")
+                        text=tr('✏️ Editando: {0}').format(macro.get('nombre', '?')))
                     btn_crear.configure(text=tr("💾 Guardar cambios"),
                                          fg_color="#1a5a8a")
                     btn_cancelar.pack(side="left", padx=2)
@@ -852,11 +852,11 @@ class ToolsWorkflowService:
                 idx = edit_state["idx"]
                 if 0 <= idx < len(actual):
                     actual[idx] = nueva
-                self.app.dialogs.set_estado(f"💾 Macro '{nombre}' actualizada", "#2ecc71")
+                self.app.dialogs.set_estado(tr("💾 Macro '{0}' actualizada").format(nombre), "#2ecc71")
             else:
                 # Modo crear: añadir nueva al final
                 actual.append(nueva)
-                self.app.dialogs.set_estado(f"✅ Macro '{nombre}' creada", "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Macro '{0}' creada").format(nombre), "#2ecc71")
             prefs["macros"] = actual
             self.app.store.guardar_preferencias(prefs)
             _cancelar_edicion()
@@ -877,7 +877,7 @@ class ToolsWorkflowService:
             prefs["macros"] = actual
             self.app.store.guardar_preferencias(prefs)
             self.app.dialogs.set_estado(
-                f"📥 {len(nuevas)} macro(s) de ejemplo cargada(s)", "#2ecc71")
+                tr('📥 {0} macro(s) de ejemplo cargada(s)').format(len(nuevas)), "#2ecc71")
             refrescar()
 
         botones = ctk.CTkFrame(form, fg_color="transparent")
@@ -934,9 +934,9 @@ class ToolsWorkflowService:
             with open(ruta, "w", encoding="utf-8") as f:
                 _json.dump(macros, f, ensure_ascii=False, indent=2)
             self.app.dialogs.set_estado(
-                f"📤 {len(macros)} macro(s) exportada(s)", "#2ecc71")
+                tr('📤 {0} macro(s) exportada(s)').format(len(macros)), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error exportando: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e), "#e74c3c")
 
     def _importar_macros_de_archivo(self) -> int:
         """Importa macros desde un .json y las fusiona (omite duplicados por
@@ -951,7 +951,7 @@ class ToolsWorkflowService:
             with open(ruta, encoding="utf-8") as f:
                 data = _json.load(f)
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ JSON inválido: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ JSON inválido: {0}').format(e), "#e74c3c")
             return -1
         macros_imp = parsear_macros_importadas(data)
         if not macros_imp:
@@ -976,16 +976,16 @@ class ToolsWorkflowService:
         pasos = macro.get("pasos", [])
         if not pasos: return
 
-        self.app.dialogs.set_estado(f"⚡ Ejecutando macro '{macro.get('nombre', '?')}' ({len(pasos)} pasos)...", "#f39c12")
+        self.app.dialogs.set_estado(tr("⚡ Ejecutando macro '{0}' ({1} pasos)...").format((macro.get('nombre', '?')), (len(pasos))), "#f39c12")
 
         def _ejecutar_paso(idx):
             if idx >= len(pasos):
-                self.app.dialogs.set_estado(f"✅ Macro '{macro.get('nombre', '?')}' completada", "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Macro '{0}' completada").format(macro.get('nombre', '?')), "#2ecc71")
                 self.app.dialogs._sonar_completado()
                 return
             label = pasos[idx]
             accion_id = acciones_disponibles.get(label, "")
-            self.app.dialogs.set_estado(f"⚡ Paso {idx+1}/{len(pasos)}: {label}", "#3498db")
+            self.app.dialogs.set_estado(tr('⚡ Paso {0}/{1}: {2}').format((idx+1), (len(pasos)), (label)), "#3498db")
             try:
                 if accion_id == "generar":
                     self.app.cmd_prompt()
@@ -1038,7 +1038,7 @@ class ToolsWorkflowService:
                     self.app.after(18000, lambda: _ejecutar_paso(idx + 1))
                     return
             except Exception as e:
-                self.app.dialogs.set_estado(f"⚠️ Paso falló: {e}", "#e74c3c")
+                self.app.dialogs.set_estado(tr('⚠️ Paso falló: {0}').format(e), "#e74c3c")
             self.app.after(6000, lambda: _ejecutar_paso(idx + 1))
 
         _ejecutar_paso(0)
@@ -1077,7 +1077,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(tr("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)"), "#2ecc71"))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error en scoring: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error en scoring: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1119,7 +1119,7 @@ class ToolsWorkflowService:
                     tr("🎯 Prompt adaptado al modelo activo"), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
-                    f"⚠️ Error adaptando: {e}", "#e74c3c"))
+                    tr('⚠️ Error adaptando: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1168,10 +1168,10 @@ class ToolsWorkflowService:
                         score_txt = f" (partía de {int(v / mx * 100)}/100)"
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(
-                    f"⚡ Optimizado en 1 pasada{score_txt}", "#2ecc71"))
+                    tr('⚡ Optimizado en 1 pasada{0}').format(score_txt), "#2ecc71"))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
-                    f"⚠️ Error optimizando: {e}", "#e74c3c"))
+                    tr('⚠️ Error optimizando: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1192,7 +1192,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda: self.app.txt_idea.insert("1.0", resp + "\n\n"))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(tr("💡 Idea generada (macro)"), "#2ecc71"))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1215,7 +1215,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🔄 Variación generada (macro)"), "#2ecc71"))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1348,9 +1348,9 @@ class ToolsWorkflowService:
                     p2 = self.app.store.cargar_preferencias()
                     p2["proyecto_activo"] = n
                     self.app.store.guardar_preferencias(p2)
-                    lbl_activo.configure(text=f"📌 Proyecto activo: {n}", text_color="#2ecc71")
+                    lbl_activo.configure(text=tr('📌 Proyecto activo: {0}').format(n), text_color="#2ecc71")
                     refrescar()
-                    self.app.dialogs.set_estado(f"🏷 Proyecto '{n}' activado", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🏷 Proyecto '{0}' activado").format(n), "#2ecc71")
 
                 def _guardar_setup_proy(n=nombre_p):
                     """Guarda el setup actual en este proyecto."""
@@ -1366,7 +1366,7 @@ class ToolsWorkflowService:
                     proys2[n]["_setup_fecha"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                     p2["proyectos"] = proys2
                     self.app.store.guardar_preferencias(p2)
-                    self.app.dialogs.set_estado(f"💾 Setup guardado en '{n}'", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("💾 Setup guardado en '{0}'").format(n), "#2ecc71")
                     refrescar()
 
                 def _aplicar_setup_proy(n=nombre_p):
@@ -1376,10 +1376,10 @@ class ToolsWorkflowService:
                     proy = proys2.get(n) or {}
                     setup = proy.get("setup") if isinstance(proy, dict) else None
                     if not setup:
-                        self.app.dialogs.set_estado(f"⚠️ El proyecto '{n}' no tiene setup guardado", "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ El proyecto '{0}' no tiene setup guardado").format(n), "#e67e22")
                         return
                     self._aplicar_setup(setup)
-                    self.app.dialogs.set_estado(f"🔄 Setup de '{n}' aplicado", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🔄 Setup de '{0}' aplicado").format(n), "#2ecc71")
                     vent.destroy()
 
                 def _borrar_setup_proy(n=nombre_p):
@@ -1439,4 +1439,4 @@ class ToolsWorkflowService:
         if neg:
             nuevo += f"\nNEGATIVE PROMPT: {neg}"
         self.app.dialogs.actualizar_salida(nuevo)
-        self.app.dialogs.set_estado(f"✨ Tags añadidos: {tags_a_anadir[:50]}...", "#2ecc71")
+        self.app.dialogs.set_estado(tr('✨ Tags añadidos: {0}...').format(tags_a_anadir[:50]), "#2ecc71")
