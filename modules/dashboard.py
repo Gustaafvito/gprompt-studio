@@ -255,12 +255,12 @@ class DashboardService:
             # Mostrar resultados
             results_box.pack(fill="x", padx=12, pady=(0, 10))
             if not resultados:
-                ctk.CTkLabel(results_box, text=f"Sin resultados para «{q}»",
+                ctk.CTkLabel(results_box, text=tr('Sin resultados para «{0}»').format(q),
                              font=ctk.CTkFont(size=11),
                              fg_color="transparent", text_color=text_muted).pack(pady=8)
                 return
 
-            ctk.CTkLabel(results_box, text=f"📌 {len(resultados)} resultado(s)",
+            ctk.CTkLabel(results_box, text=tr('📌 {0} resultado(s)').format(len(resultados)),
                          font=ctk.CTkFont(size=10, weight="bold"),
                          fg_color="transparent", text_color=text_secondary).pack(anchor="w", pady=(2, 4))
 
@@ -299,7 +299,7 @@ class DashboardService:
 
             if len(resultados) > 12:
                 ctk.CTkLabel(results_box,
-                             text=f"… y {len(resultados) - 12} más. Refina la búsqueda.",
+                             text=tr('… y {0} más. Refina la búsqueda.').format(len(resultados) - 12),
                              font=ctk.CTkFont(size=9, slant="italic"),
                              fg_color="transparent", text_color=text_muted).pack(pady=(2, 4))
 
@@ -422,7 +422,7 @@ class DashboardService:
                          fg_color="transparent", text_color=text_secondary).pack(pady=(1, 2))
 
         total_semana = sum(conteo_dias)
-        ctk.CTkLabel(chart_frame, text=f"Total semana: {total_semana} prompts",
+        ctk.CTkLabel(chart_frame, text=tr('Total semana: {0} prompts').format(total_semana),
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=text_secondary).pack(anchor="w", padx=14, pady=(0, 6))
 
@@ -592,7 +592,7 @@ class DashboardService:
                 self.app.dialogs.actualizar_salida(ultimo.get("contenido", ""))
                 self.app.dialogs.set_estado(tr("📋 Último prompt cargado"), accent_green)
                 v.destroy()
-            ctk.CTkButton(cont_inner, text=f"📋 Cargar último: {preview_corto}…",
+            ctk.CTkButton(cont_inner, text=tr('📋 Cargar último: {0}…').format(preview_corto),
                           height=32, fg_color=accent_blue, hover_color="#1d4ed8",
                           font=ctk.CTkFont(size=10),
                           text_color="#ffffff", anchor="w",
@@ -614,7 +614,7 @@ class DashboardService:
                 except Exception:
                     self.app.dialogs.set_estado(tr("⚠️ Error aplicando plantilla"), accent_red)
                 v.destroy()
-            ctk.CTkButton(cont_inner, text=f"📐 Aplicar plantilla: {nombre_pl}",
+            ctk.CTkButton(cont_inner, text=tr('📐 Aplicar plantilla: {0}').format(nombre_pl),
                           height=28, fg_color=accent_purple, hover_color="#6d28d9",
                           font=ctk.CTkFont(size=10, weight="bold"),
                           text_color="#ffffff",
@@ -828,7 +828,7 @@ class DashboardService:
         # Header con título y botón "Ver todos"
         logros_hdr = ctk.CTkFrame(logros_frame, fg_color="transparent")
         logros_hdr.pack(fill="x", padx=12, pady=(10, 4))
-        ctk.CTkLabel(logros_hdr, text=f"🏆 Logros ({n_desbloq}/{n_total})",
+        ctk.CTkLabel(logros_hdr, text=tr('🏆 Logros ({0}/{1})').format((n_desbloq), (n_total)),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(side="left")
 
@@ -844,7 +844,7 @@ class DashboardService:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
-            ctk.CTkLabel(win, text=f"🏆 Logros — {n_desbloq} de {n_total} desbloqueados",
+            ctk.CTkLabel(win, text=tr('🏆 Logros — {0} de {1} desbloqueados').format((n_desbloq), (n_total)),
                          font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 4))
 
             # Barra de progreso
@@ -857,7 +857,7 @@ class DashboardService:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
-            ctk.CTkLabel(win, text=f"{int(pct_total * 100)}% completado",
+            ctk.CTkLabel(win, text=tr('{0}% completado').format(int(pct_total * 100)),
                          font=ctk.CTkFont(size=10),
                          text_color=text_secondary).pack(pady=(0, 8))
 
@@ -1217,7 +1217,7 @@ class DashboardService:
         estilo_frame = ctk.CTkFrame(col_der, fg_color=card_bg, corner_radius=10,
                                      border_color=accent_pink, border_width=2)
         estilo_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(estilo_frame, text=f"{emoji_est} Estilo del día",
+        ctk.CTkLabel(estilo_frame, text=tr('{0} Estilo del día').format(emoji_est),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_pink).pack(anchor="w", padx=12, pady=(10, 2))
         ctk.CTkLabel(estilo_frame, text=nombre_est,
@@ -1246,7 +1246,7 @@ class DashboardService:
             self.app.dialogs.set_estado(tr('{0} Estilo «{1}» activado').format(emoji_est, nombre_est), accent_pink)
             v.destroy()
 
-        ctk.CTkButton(estilo_frame, text=f"{emoji_est} Probar este estilo",
+        ctk.CTkButton(estilo_frame, text=tr('{0} Probar este estilo').format(emoji_est),
                       height=28, fg_color=accent_pink, hover_color="#be185d",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       text_color="#ffffff",
@@ -1368,7 +1368,7 @@ class DashboardService:
         except Exception:
             tamano_str = "—"
 
-        ctk.CTkLabel(mant_frame, text=f"📦 Tus datos: {tamano_str}",
+        ctk.CTkLabel(mant_frame, text=tr('📦 Tus datos: {0}').format(tamano_str),
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=text_secondary).pack(anchor="w", padx=12, pady=2)
 
@@ -1381,7 +1381,7 @@ class DashboardService:
                     self.app.dialogs.set_estado(tr("🧹 Historial limpiado"), accent_green)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
-            ctk.CTkButton(mant_frame, text=f"🧹 Limpiar historial ({len(historial)} prompts)",
+            ctk.CTkButton(mant_frame, text=tr('🧹 Limpiar historial ({0} prompts)').format(len(historial)),
                           height=28, fg_color=accent_amber, hover_color="#b45309",
                           font=ctk.CTkFont(size=9, weight="bold"),
                           text_color="#ffffff",

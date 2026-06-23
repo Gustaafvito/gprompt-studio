@@ -470,7 +470,7 @@ class ArquitectoApp(
 
             # Versión
             from config import PUBLIC_VERSION
-            ctk.CTkLabel(frame, text=f"v{PUBLIC_VERSION}",
+            ctk.CTkLabel(frame, text=tr('v{0}').format(PUBLIC_VERSION),
                          font=ctk.CTkFont(size=11),
                          text_color="#3b82f6").pack()
 
@@ -1044,7 +1044,7 @@ class ArquitectoApp(
         n_del = sum(i2 - i1 for op, i1, i2, j1, j2 in sm.get_opcodes() if op in ("delete", "replace"))
         ratio = sm.ratio() * 100
         ctk.CTkLabel(stats,
-                     text=f"  📊 {ratio:.0f}% similar  ·  🟢 +{n_add} palabras  ·  🔴 −{n_del} palabras  ·  ⚪ {n_eq} sin cambios",
+                     text=tr('  📊 {0:.0f}% similar  ·  🟢 +{1} palabras  ·  🔴 −{2} palabras  ·  ⚪ {3} sin cambios').format((ratio), (n_add), (n_del), (n_eq)),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=6)
 
         # Botones: modo confirmación (on_apply) vs modo solo-lectura
@@ -1084,11 +1084,11 @@ class ArquitectoApp(
                 self.dialogs.actualizar_salida(texto)
                 v.destroy()
                 self.dialogs.set_estado(tr('⏪ Aplicada: {0}').format(etiqueta), "#2ecc71")
-            ctk.CTkButton(btn_row, text=f"⏪ Usar {label_a}", width=200, height=32,
+            ctk.CTkButton(btn_row, text=tr('⏪ Usar {0}').format(label_a), width=200, height=32,
                           fg_color="#8a5a1a", hover_color="#6a4515",
                           font=ctk.CTkFont(size=11),
                           command=lambda: _usar(texto_a, label_a)).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text=f"✅ Usar {label_b}", width=200, height=32,
+            ctk.CTkButton(btn_row, text=tr('✅ Usar {0}').format(label_b), width=200, height=32,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=11),
                           command=lambda: _usar(texto_b, label_b)).pack(side="left", padx=5)
@@ -1271,7 +1271,7 @@ class ArquitectoApp(
                 w.destroy()
             if estado["total_borradas"] > 0:
                 ctk.CTkButton(restaurar_slot,
-                              text=f"↩ Restaurar {estado['total_borradas']} borradas",
+                              text=tr('↩ Restaurar {0} borradas').format(estado['total_borradas']),
                               width=180, height=24,
                               fg_color="#8b6914", hover_color="#6e5310",
                               font=ctk.CTkFont(size=10),
@@ -1357,8 +1357,8 @@ class ArquitectoApp(
                 # Sin estado["visibles"] = todas borradas (caso especial)
                 if not estado["visibles"]:
                     ctk.CTkLabel(scroll,
-                                 text="📭 No hay plantillas visibles.\n\n"
-                                      "Has borrado todas las plantillas predefinidas.",
+                                 text=tr("📭 No hay plantillas visibles.\n\n"
+                                      "Has borrado todas las plantillas predefinidas."),
                                  font=ctk.CTkFont(size=12),
                                  text_color=c["muted_text"],
                                  justify="center").pack(pady=30)
@@ -1386,12 +1386,12 @@ class ArquitectoApp(
                 vars_neg = re.findall(r'\{(\w+)\}', neg)
                 todas_vars = sorted(set(vars_pos + vars_neg))
                 if todas_vars:
-                    ctk.CTkLabel(card, text=f"  Variables: {', '.join(todas_vars)}",
+                    ctk.CTkLabel(card, text=tr('  Variables: {0}').format(', '.join(todas_vars)),
                                  font=ctk.CTkFont(size=10, slant="italic"),
                                  text_color=c["muted_text"]
                                  ).pack(anchor="w", padx=10)
                 preview = pos[:120]
-                ctk.CTkLabel(card, text=f"  POS: {preview}…",
+                ctk.CTkLabel(card, text=tr('  POS: {0}…').format(preview),
                              font=ctk.CTkFont(size=10),
                              text_color=c["muted_text"],
                              wraplength=760, justify="left", anchor="w"
@@ -1469,7 +1469,7 @@ class ArquitectoApp(
         wiz.geometry("680x640")
         wiz.transient(ventana_padre)
 
-        ctk.CTkLabel(wiz, text=f"📝 Rellenar variables de '{nombre}'",
+        ctk.CTkLabel(wiz, text=tr("📝 Rellenar variables de '{0}'").format(nombre),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
         subtitulo = (f"Esta plantilla tiene {len(variables)} variable(s). "
                      f"Rellénalas y verás la previsualización abajo.")
@@ -1491,7 +1491,7 @@ class ArquitectoApp(
                          font=ctk.CTkFont(size=11, weight="bold"),
                          width=140, anchor="w").pack(side="left", padx=(0, 6))
             ent = ctk.CTkEntry(row,
-                               placeholder_text=f"valor para {v}…",
+                               placeholder_text=tr('valor para {0}…').format(v),
                                height=28)
             ent.pack(side="left", fill="x", expand=True)
             # Pre-rellenar con el último valor guardado para esta variable
@@ -1658,7 +1658,7 @@ class ArquitectoApp(
         vent.geometry(f"{ancho}x{alto}")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text=f"👁 Comparador ({n})  —  Scroll horizontal para ver todas",
+        ctk.CTkLabel(vent, text=tr('👁 Comparador ({0})  —  Scroll horizontal para ver todas').format(n),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(8, 3))
 
         # Scroll horizontal para columnas
@@ -1975,7 +1975,7 @@ class ArquitectoApp(
         vent.transient(self)
 
         ctk.CTkLabel(vent,
-                     text=f"🆚 Comparación lado a lado  ·  🟢 añadido en derecha  ·  🔴 quitado en derecha",
+                     text=tr('🆚 Comparación lado a lado  ·  🟢 añadido en derecha  ·  🔴 quitado en derecha'),
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
@@ -2043,11 +2043,11 @@ class ArquitectoApp(
             pyperclip.copy(texto_b)
             self.dialogs.set_estado(tr("✅ '{0}' copiada").format(label_b), "#2ecc71")
 
-        ctk.CTkButton(pie, text=f"📋 Copiar {label_a}", width=200, height=30,
+        ctk.CTkButton(pie, text=tr('📋 Copiar {0}').format(label_a), width=200, height=30,
                       fg_color="#1a4a7a", hover_color="#0f2e4d",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_a).pack(side="left", padx=4)
-        ctk.CTkButton(pie, text=f"📋 Copiar {label_b}", width=200, height=30,
+        ctk.CTkButton(pie, text=tr('📋 Copiar {0}').format(label_b), width=200, height=30,
                       fg_color="#1a7a3c", hover_color="#0f4a22",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_b).pack(side="left", padx=4)
@@ -2122,8 +2122,8 @@ class ArquitectoApp(
         ).pack(pady=(18, 4))
         ctk.CTkLabel(
             wizard,
-            text="Necesitas SOLO 1 API key para empezar.\n"
-                 "Las marcadas 🏆 son completamente GRATIS.",
+            text=tr("Necesitas SOLO 1 API key para empezar.\n"
+                 "Las marcadas 🏆 son completamente GRATIS."),
             font=ctk.CTkFont(size=11),
             text_color=c["muted_text"],
             justify="center",
@@ -2445,7 +2445,7 @@ class ArquitectoApp(
 
         def _seleccionar_carpeta():
             from tkinter import filedialog
-            carpeta = filedialog.askdirectory(title="Selecciona carpeta de ComfyUI")
+            carpeta = filedialog.askdirectory(title=tr("Selecciona carpeta de ComfyUI"))
             if carpeta:
                 self.entry_comfyui_path.delete(0, "end")
                 self.entry_comfyui_path.insert(0, carpeta)

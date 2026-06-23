@@ -289,7 +289,7 @@ class ToolsAnalysisService:
         ctk.CTkLabel(vent_sel, text=tr("📝 Crítica de historial"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
-                     text=f"Tienes {len(items)} prompts en historial.\n¿Cuántos analizar?",
+                     text=tr('Tienes {0} prompts en historial.\n¿Cuántos analizar?').format(len(items)),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(30, len(items)))
@@ -298,7 +298,7 @@ class ToolsAnalysisService:
                                number_of_steps=max(1, n_max - 5),
                                variable=n_var)
         slider.pack(fill="x", padx=30, pady=(0, 4))
-        lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
+        lbl_n = ctk.CTkLabel(vent_sel, text=tr('Últimos {0} prompts').format(n_var.get()),
                              font=ctk.CTkFont(size=12, weight="bold"))
         lbl_n.pack(pady=(0, 8))
         slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
@@ -484,7 +484,7 @@ class ToolsAnalysisService:
         ctk.CTkLabel(vent_sel, text=tr("🚀 Auto-mejora"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
-                     text=f"Tienes {len(items)} prompts en el historial.\n¿Cuántos quieres analizar?",
+                     text=tr('Tienes {0} prompts en el historial.\n¿Cuántos quieres analizar?').format(len(items)),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(10, len(items)))
@@ -493,7 +493,7 @@ class ToolsAnalysisService:
                                number_of_steps=max(1, n_max - 1),
                                variable=n_var)
         slider.pack(fill="x", padx=30, pady=(0, 4))
-        lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
+        lbl_n = ctk.CTkLabel(vent_sel, text=tr('Últimos {0} prompts').format(n_var.get()),
                              font=ctk.CTkFont(size=12, weight="bold"))
         lbl_n.pack(pady=(0, 14))
         slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
@@ -596,7 +596,7 @@ class ToolsAnalysisService:
 
         ctk.CTkLabel(vent, text=tr("🚀 Sugerencias de mejora"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text=f"Análisis de {len(originales)} prompts",
+        ctk.CTkLabel(vent, text=tr('Análisis de {0} prompts').format(len(originales)),
                      font=ctk.CTkFont(size=10), text_color=text_muted).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent,
@@ -625,7 +625,7 @@ class ToolsAnalysisService:
                 card = ctk.CTkFrame(scroll, fg_color=bg_card, corner_radius=8)
                 card.pack(fill="x", pady=4, padx=2)
 
-                ctk.CTkLabel(card, text=f"Prompt #{n}",
+                ctk.CTkLabel(card, text=tr('Prompt #{0}').format(n),
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color=accent, anchor="w").pack(anchor="w", padx=12, pady=(8, 2))
 
@@ -779,7 +779,7 @@ class ToolsAnalysisService:
                                        progress_color=color)
             barra.pack(side="left", padx=(5, 5), pady=5)
             barra.set(pct / 100)
-            ctk.CTkLabel(bar_frame, text=f"{count}x ({pct}%)",
+            ctk.CTkLabel(bar_frame, text=tr('{0}x ({1}%)').format((count), (pct)),
                          font=ctk.CTkFont(size=9), text_color=c_muted).pack(side="right", padx=(0, 8))
 
         def _render():
@@ -889,7 +889,7 @@ class ToolsAnalysisService:
                                     border_color="#30363d", border_width=1)
                 info.pack(fill="x", pady=5, padx=2)
                 ctk.CTkLabel(info,
-                             text=f"📊 Media: ~{media}  ·  Mín: {min(largos)}  ·  Máx: {max(largos)}",
+                             text=tr('📊 Media: ~{0}  ·  Mín: {1}  ·  Máx: {2}').format((media), (min(largos)), (max(largos))),
                              font=ctk.CTkFont(size=11),
                              text_color=c_accent).pack(padx=10, pady=10)
 
@@ -1213,8 +1213,8 @@ class ToolsAnalysisService:
         ctk.CTkLabel(cfg, text=tr("🎯 Optimizador en bucle"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(16, 4))
         ctk.CTkLabel(cfg,
-                     text="Puntúa el prompt, lo mejora atacando sus puntos débiles,\n"
-                          "y repite hasta alcanzar el objetivo. Conserva la mejor versión.",
+                     text=tr("Puntúa el prompt, lo mejora atacando sus puntos débiles,\n"
+                          "y repite hasta alcanzar el objetivo. Conserva la mejor versión."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"],
                      justify="center").pack(pady=(0, 14))
 
@@ -1289,7 +1289,7 @@ class ToolsAnalysisService:
         vent.geometry("680x560")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=f"🎯 Optimizando hacia {objetivo}/100 (máx {max_iter} iteraciones)",
+        ctk.CTkLabel(vent, text=tr('🎯 Optimizando hacia {0}/100 (máx {1} iteraciones)').format((objetivo), (max_iter)),
                      font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(12, 6))
 
         progreso_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent", height=160)
@@ -1582,7 +1582,7 @@ class ToolsAnalysisService:
                                      font=ctk.CTkFont(size=11),
                                      text_color=c["muted_text"]).pack(side="left", padx=2, pady=2)
                 ctk.CTkLabel(cuerpo,
-                             text=f"Total del periodo mostrado: {total_periodo:.4f} $",
+                             text=tr('Total del periodo mostrado: {0:.4f} $').format(total_periodo),
                              font=ctk.CTkFont(size=11, weight="bold"),
                              text_color=c["panel_text"]).pack(anchor="w", pady=(4, 2))
 
@@ -2029,7 +2029,7 @@ class ToolsAnalysisService:
         hdr.pack(fill="x", pady=(0, 8))
         ctk.CTkLabel(hdr, text=tr("🔧 Workflow ComfyUI"), font=ctk.CTkFont(size=14, weight="bold"),
                      text_color=c["hdr_text"]).pack(side="left")
-        ctk.CTkLabel(hdr, text=f"Modelo: {modelo}", font=ctk.CTkFont(size=11),
+        ctk.CTkLabel(hdr, text=tr('Modelo: {0}').format(modelo), font=ctk.CTkFont(size=11),
                      text_color=c.get("muted_text", "#888")).pack(side="right")
 
         info = ctk.CTkLabel(marco, text=tr("📋 Copia este JSON y pégalo en ComfyUI (Edit → Paste) o guarda como .json"),
@@ -2053,7 +2053,7 @@ class ToolsAnalysisService:
         def _guardar():
             from tkinter import filedialog
             ruta = filedialog.asksaveasfilename(
-                title="Guardar workflow ComfyUI",
+                title=tr("Guardar workflow ComfyUI"),
                 defaultextension=".json",
                 filetypes=[("JSON", "*.json"), ("Todos", "*.*")],
                 initialfile=f"gprompt_workflow_{modelo.replace(' ', '_')}.json"

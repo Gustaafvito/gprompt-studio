@@ -283,7 +283,7 @@ class AdnVisualService:
 
                     ctk.CTkLabel(vent, text=tr("🧬 ADN Visual de tu imagen"),
                                  font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
-                    ctk.CTkLabel(vent, text=f"Analizado con: {motor}",
+                    ctk.CTkLabel(vent, text=tr('Analizado con: {0}').format(motor),
                                  font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
                     # Categorías bloqueables

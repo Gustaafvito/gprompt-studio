@@ -250,13 +250,13 @@ class BackupExportService:
         chk_stars_var = ctk.BooleanVar(value=False)
 
         ctk.CTkCheckBox(sel, variable=chk_hist_var,
-                        text=f"📋 Historial ({len(hist)} entradas)"
+                        text=tr('📋 Historial ({0} entradas)').format(len(hist))
                         ).pack(anchor="w", padx=40, pady=2)
         ctk.CTkCheckBox(sel, variable=chk_favs_var,
-                        text=f"⭐ Favoritos ({len(favs)} entradas)"
+                        text=tr('⭐ Favoritos ({0} entradas)').format(len(favs))
                         ).pack(anchor="w", padx=40, pady=2)
         ctk.CTkCheckBox(sel, variable=chk_stars_var,
-                        text=f"🌟 Estrellas ({len(stars)} entradas)"
+                        text=tr('🌟 Estrellas ({0} entradas)').format(len(stars))
                         ).pack(anchor="w", padx=40, pady=2)
 
         def _lanzar():
@@ -573,7 +573,7 @@ class BackupExportService:
                 ctk.CTkLabel(hdr, text=nombre,
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color=text_main).pack(side="left")
-                ctk.CTkLabel(hdr, text=f"{len(contenido)} chars",
+                ctk.CTkLabel(hdr, text=tr('{0} chars').format(len(contenido)),
                              font=ctk.CTkFont(size=10),
                              text_color="#888").pack(side="left", padx=10)
                 ctk.CTkButton(hdr, text=tr("📋 Copiar"), width=100, height=26,
@@ -777,7 +777,7 @@ class BackupExportService:
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
-            ctk.CTkLabel(scroll, text=f"📊 {len(resultados)} resultado{'s' if len(resultados) != 1 else ''} encontrado{'s' if len(resultados) != 1 else ''}",
+            ctk.CTkLabel(scroll, text=tr('📊 {0} resultado{1} encontrado{2}').format((len(resultados)), ('s' if len(resultados) != 1 else ''), ('s' if len(resultados) != 1 else '')),
                          font=ctk.CTkFont(size=11, weight="bold"), text_color="#2ecc71").pack(anchor="w", pady=(0, 8))
 
             for tipo, nombre, contenido, accion in resultados[:50]:

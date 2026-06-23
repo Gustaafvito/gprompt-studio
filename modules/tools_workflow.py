@@ -315,7 +315,7 @@ class ToolsWorkflowService:
                 ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=10),
                              text_color="#888", anchor="w").pack(fill="x", padx=10)
                 if fecha:
-                    ctk.CTkLabel(card, text=f"  guardado: {fecha}", font=ctk.CTkFont(size=9),
+                    ctk.CTkLabel(card, text=tr('  guardado: {0}').format(fecha), font=ctk.CTkFont(size=9),
                                  text_color="#555", anchor="w").pack(fill="x", padx=10)
                 # Botones
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -363,7 +363,7 @@ class ToolsWorkflowService:
         ctk.CTkLabel(vent, text=tr("Genera N VARIANTES distintas espaciadas en el tiempo.\nCada una añade variación (encuadre, iluminación, paleta...) automáticamente."),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"], justify="center").pack(pady=(0, 12))
 
-        ctk.CTkLabel(vent, text=f"Idea base:\n{idea[:120]}{'...' if len(idea) > 120 else ''}",
+        ctk.CTkLabel(vent, text=tr('Idea base:\n{0}{1}').format((idea[:120]), ('...' if len(idea) > 120 else '')),
                      font=ctk.CTkFont(size=10), text_color=c["hdr_text"], wraplength=460,
                      fg_color=c["fg_dark"], corner_radius=6).pack(fill="x", padx=15, pady=(0, 12))
 
@@ -515,7 +515,7 @@ class ToolsWorkflowService:
                     self.app.after(0, _aplicar)
                 except Exception as e:
                     self.app.after(0, lambda e=e: _safe_configure(lbl_progreso,
-                                                          text=f"❌ Error variante {num}: {e}",
+                                                          text=tr('❌ Error variante {0}: {1}').format((num), (e)),
                                                           text_color="#e74c3c"))
 
             def _siguiente():
@@ -524,7 +524,7 @@ class ToolsWorkflowService:
                 cron_state["actuales"] += 1
                 num = cron_state["actuales"]
                 _safe_configure(lbl_progreso,
-                                text=f"⏲ Generando variante {num}/{cantidad}...",
+                                text=tr('⏲ Generando variante {0}/{1}...').format((num), (cantidad)),
                                 text_color="#f39c12")
 
                 self.app._executor.submit(_generar_variante, num).add_done_callback(log_future_exc)
@@ -546,7 +546,7 @@ class ToolsWorkflowService:
                 except Exception as _e: logger.debug(f"[silent] {_e}")
                 cron_state["after_id"] = None
             _safe_configure(lbl_progreso,
-                            text=f"⏹ Cron detenido en variante {cron_state['actuales']}/{ent_cantidad.get()}",
+                            text=tr('⏹ Cron detenido en variante {0}/{1}').format((cron_state['actuales']), (ent_cantidad.get())),
                             text_color="#e67e22")
 
         def _ver_todas():
@@ -594,7 +594,7 @@ class ToolsWorkflowService:
         vent.geometry("700x500")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=f"📜 {len(self.app._versiones_prompt)} versiones en esta sesión",
+        ctk.CTkLabel(vent, text=tr('📜 {0} versiones en esta sesión').format(len(self.app._versiones_prompt)),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Click en una versión para restaurarla"),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
@@ -624,7 +624,7 @@ class ToolsWorkflowService:
             hdr.pack(fill="x", padx=4, pady=(3, 0))
             hdr.pack_propagate(False)
             ctk.CTkLabel(hdr,
-                         text=f"  📜 Versión #{num}  ·  {ver.get('fecha', '')}{origen_txt}",
+                         text=tr('  📜 Versión #{0}  ·  {1}{2}').format((num), (ver.get('fecha', '')), (origen_txt)),
                          font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(side="left", padx=4)
 
             preview = ver["texto"][:200]
@@ -1251,7 +1251,7 @@ class ToolsWorkflowService:
 
         # Indicador del proyecto activo
         activo = prefs.get("proyecto_activo", "")
-        lbl_activo = ctk.CTkLabel(vent, text=f"📌 Proyecto activo: {activo or '(ninguno)'}",
+        lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or '(ninguno)'),
                                     font=ctk.CTkFont(size=12, weight="bold"),
                                     text_color="#2ecc71" if activo else c["muted_text"])
         lbl_activo.pack(pady=5)

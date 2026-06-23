@@ -296,7 +296,7 @@ class PreviewPollinationsService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent,
-                     text=f"👁 Grid Pollinations ({n} previews)  ·  click en una imagen para verla en grande",
+                     text=tr('👁 Grid Pollinations ({0} previews)  ·  click en una imagen para verla en grande').format(n),
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
@@ -502,7 +502,7 @@ class PreviewPollinationsService:
         # URL Pollinations (truncada para no romper layout)
         url_corta = url_imagen if len(url_imagen) <= 80 else url_imagen[:77] + "..."
         ctk.CTkLabel(vent_previa,
-                     text=f"🔗 URL: {url_corta}",
+                     text=tr('🔗 URL: {0}').format(url_corta),
                      font=ctk.CTkFont(family="Consolas", size=9),
                      text_color="#888",
                      wraplength=520, justify="left"
@@ -525,7 +525,7 @@ class PreviewPollinationsService:
                       ).pack(side="left", padx=4)
 
     def guardar_boceto(self, image_pil):
-        ruta = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg"), ("PNG files", "*.png")], title="Guardar boceto")
+        ruta = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg"), ("PNG files", "*.png")], title=tr("Guardar boceto"))
         if ruta:
             try:
                 if image_pil.mode in ("RGBA", "P"): image_pil = image_pil.convert("RGB")

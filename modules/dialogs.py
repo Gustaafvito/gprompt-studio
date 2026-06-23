@@ -213,9 +213,9 @@ class DialogsService:
         ctk.CTkLabel(
             scroll,
             text=(
-                "Usados para previews en el comparador 👁 y botón "
+                tr("Usados para previews en el comparador 👁 y botón "
                 "🖼 Preview. SON OPCIONALES — sin key, la app funciona "
-                "en modo anónimo (más lento, con rate limit)."
+                "en modo anónimo (más lento, con rate limit).")
             ),
             font=ctk.CTkFont(size=10, slant="italic"),
             text_color="#aaaaaa",
@@ -402,7 +402,7 @@ class DialogsService:
         # Cabecera
         ctk.CTkLabel(v, text=APP_TITLE, font=ctk.CTkFont(size=20, weight="bold"),
                      text_color=c["hdr_text"]).pack(pady=(20, 4))
-        ctk.CTkLabel(v, text=f"Versión {PUBLIC_VERSION}",
+        ctk.CTkLabel(v, text=tr('Versión {0}').format(PUBLIC_VERSION),
                      font=ctk.CTkFont(size=11, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 16))
 
@@ -420,7 +420,7 @@ class DialogsService:
 
         # Autor — AUTHOR es un dict; mostrar solo el nombre (no el dict entero)
         _autor = AUTHOR.get("nombre", "") if isinstance(AUTHOR, dict) else AUTHOR
-        ctk.CTkLabel(v, text=f"Creado por {_autor}",
+        ctk.CTkLabel(v, text=tr('Creado por {0}').format(_autor),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      text_color=c["panel_text"]).pack(pady=(8, 6))
 
@@ -545,7 +545,7 @@ class DialogsService:
         # Texto autor (izquierda)
         ctk.CTkLabel(
             author_frame,
-            text=f"G-Prompt Studio v{PUBLIC_VERSION} — Creado con ❤️ por {AUTHOR['nombre']}",
+            text=tr('G-Prompt Studio v{0} — Creado con ❤️ por {1}').format((PUBLIC_VERSION), (AUTHOR['nombre'])),
             font=ctk.CTkFont(size=10),
             text_color="#6b7280" if is_light else "#9ca3af"
         ).pack(side="left", padx=(2, 0))

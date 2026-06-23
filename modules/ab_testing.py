@@ -139,7 +139,7 @@ class AbTestingService:
                                   font=ctk.CTkFont(size=11))
             cb.pack(side="left", padx=10, pady=6)
             dim_checks[nombre] = cb
-            ctk.CTkLabel(row, text=f"  ej: {valores[0]}",
+            ctk.CTkLabel(row, text=tr('  ej: {0}').format(valores[0]),
                          font=ctk.CTkFont(size=9, slant="italic"),
                          text_color="#666").pack(side="left", padx=4)
 
@@ -239,9 +239,9 @@ class AbTestingService:
         v.geometry("1100x720")
         v.transient(self.app)
 
-        ctk.CTkLabel(v, text=f"🧪 4 variantes de: {idea_base[:60]}{'…' if len(idea_base) > 60 else ''}",
+        ctk.CTkLabel(v, text=tr('🧪 4 variantes de: {0}{1}').format((idea_base[:60]), ('…' if len(idea_base) > 60 else '')),
                      font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(v, text=f"Variando: {' + '.join(dimensiones)}",
+        ctk.CTkLabel(v, text=tr('Variando: {0}').format(' + '.join(dimensiones)),
                      font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 10))
 
         grid = ctk.CTkFrame(v, fg_color="transparent")
@@ -253,7 +253,7 @@ class AbTestingService:
         for idx, ((etiqueta, prompt), (r, col)) in enumerate(zip(prompts_generados, positions)):
             cell = ctk.CTkFrame(grid, fg_color=c["fg_dark"], corner_radius=8)
             cell.grid(row=r, column=col, padx=5, pady=5, sticky="nsew")
-            ctk.CTkLabel(cell, text=f"📌 Variante {idx + 1}", font=ctk.CTkFont(size=11, weight="bold"),
+            ctk.CTkLabel(cell, text=tr('📌 Variante {0}').format(idx + 1), font=ctk.CTkFont(size=11, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(8, 0))
             ctk.CTkLabel(cell, text=etiqueta, font=ctk.CTkFont(size=9, slant="italic"),
                          text_color="#888", wraplength=440, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
@@ -315,7 +315,7 @@ class AbTestingService:
 
         ctk.CTkLabel(sel_vent, text=tr("🆚 Comparador de modelos"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
-        ctk.CTkLabel(sel_vent, text=f"Idea: {idea[:60]}{'...' if len(idea) > 60 else ''}",
+        ctk.CTkLabel(sel_vent, text=tr('Idea: {0}{1}').format((idea[:60]), ('...' if len(idea) > 60 else '')),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"],
                      wraplength=470).pack(pady=(0, 5))
 
@@ -401,15 +401,15 @@ class AbTestingService:
         vent.geometry(f"820x{alto}")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=f"🆚 Comparativa de {n_modelos} modelos",
+        ctk.CTkLabel(vent, text=tr('🆚 Comparativa de {0} modelos').format(n_modelos),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
-        ctk.CTkLabel(vent, text=f"Idea: {idea[:80]}{'...' if len(idea) > 80 else ''}",
+        ctk.CTkLabel(vent, text=tr('Idea: {0}{1}').format((idea[:80]), ('...' if len(idea) > 80 else '')),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"], wraplength=780).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=(0, 5))
 
-        lbl_status = ctk.CTkLabel(vent, text=f"🔄 Generando para {n_modelos} modelos...",
+        lbl_status = ctk.CTkLabel(vent, text=tr('🔄 Generando para {0} modelos...').format(n_modelos),
                                    font=ctk.CTkFont(size=11), text_color="#f39c12")
         lbl_status.pack(pady=(0, 4))
 
@@ -436,7 +436,7 @@ class AbTestingService:
             specs = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
             chars_max = specs.get("max_chars", "?")
             has_neg = "✅ Neg" if specs.get("has_negative", False) else "❌ Sin neg"
-            ctk.CTkLabel(hdr, text=f"  #{i+1}  {m}  ·  {chars_max} chars  ·  {has_neg}",
+            ctk.CTkLabel(hdr, text=tr('  #{0}  {1}  ·  {2} chars  ·  {3}').format((i+1), (m), (chars_max), (has_neg)),
                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
 
             txt = ctk.CTkTextbox(card, font=ctk.CTkFont(family="Consolas", size=10), height=130, wrap="word")

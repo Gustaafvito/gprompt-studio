@@ -116,7 +116,7 @@ def abrir_tutorial(app):
     progreso_global = ctk.CTkProgressBar(idx_frame, height=8, progress_color=success)
     progreso_global.pack(fill="x", padx=10, pady=(0, 4))
     progreso_global.set(len(completados) / total if total else 0)
-    lbl_progreso = ctk.CTkLabel(idx_frame, text=f"{len(completados)}/{total} completados",
+    lbl_progreso = ctk.CTkLabel(idx_frame, text=tr('{0}/{1} completados').format((len(completados)), (total)),
                                 font=ctk.CTkFont(size=10), text_color=text_muted)
     lbl_progreso.pack(anchor="w", padx=10, pady=(0, 8))
 
@@ -314,7 +314,7 @@ def abrir_tutorial(app):
             raise AttributeError("app.tabview no existe")
         # Probar nombre exacto, luego sin emojis/espacios
         try:
-            app.tabview.set(nombre_tab)
+            app.tabview.set(tr(nombre_tab))
             return f"📑 Tab cambiada: {nombre_tab}"
         except Exception as e:
             logger.debug(f"tabview.set exacto falló: {e}")

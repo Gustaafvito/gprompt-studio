@@ -340,7 +340,7 @@ class AtajosAyudaService:
 
             if mostrados == 0:
                 ctk.CTkLabel(scroll,
-                             text=f"Sin atajos que coincidan con '{termino}'",
+                             text=tr("Sin atajos que coincidan con '{0}'").format(termino),
                              text_color=c["muted_text"]).pack(pady=30)
             sufijo = f" (filtrando '{termino}')" if termino else ""
             contador_var.set(f"{mostrados} de {total} atajos{sufijo}")

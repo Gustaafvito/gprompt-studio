@@ -340,7 +340,7 @@ class AvatarFrame(ctk.CTkFrame):
         import os
 
         ruta = filedialog.askopenfilename(
-            title="Imagen de referencia del personaje",
+            title=tr("Imagen de referencia del personaje"),
             filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp"),
                        ("Todos", "*.*")])
         if not ruta:
@@ -444,7 +444,7 @@ class AvatarFrame(ctk.CTkFrame):
             return
 
         carpeta = filedialog.askdirectory(
-            title="Carpeta donde exportar el dataset",
+            title=tr("Carpeta donde exportar el dataset"),
             initialdir=self.carpeta_salida)
         if not carpeta:
             return

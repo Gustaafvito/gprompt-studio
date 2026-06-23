@@ -81,8 +81,8 @@ class UiEventsService:
             try: self.app._seg_modo.set(mapa_inv.get(modo, tr("Imagen")))
             except: pass
 
-        _TABS_CON_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"]
-        _TABS_SIN_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"]
+        _TABS_CON_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos"), tr("🏷️ Tags")]
+        _TABS_SIN_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")]
 
         if modo == "video":
             self.app.combo_plataforma.configure(values=PLATAFORMAS_VIDEO_LISTA)

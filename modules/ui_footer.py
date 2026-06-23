@@ -103,18 +103,18 @@ class UiFooterService:
         for titulo, color_tit, botones in grupos_inf:
             grp_frame = ctk.CTkFrame(frame, fg_color="transparent")
             grp_frame.pack(side="left", padx=(0, 6))
-            ctk.CTkLabel(grp_frame, text=titulo,
+            ctk.CTkLabel(grp_frame, text=tr(titulo),
                           font=ctk.CTkFont(size=8, weight="bold"),
                           text_color=color_tit, anchor="w").pack(
                           anchor="w", padx=4, pady=(0, 1))
             btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
             btn_row.pack(side="top", anchor="w")
             for text, w, fg, cmd, tip in botones:
-                btn = ctk.CTkButton(btn_row, text=text, width=w, fg_color=fg,
+                btn = ctk.CTkButton(btn_row, text=tr(text), width=w, fg_color=fg,
                                      hover_color=self.app.dialogs._darker(fg),
                                      command=cmd, **pill)
                 btn.pack(side="left", padx=2)
-                CTkToolTip(btn, delay=0.3, message=tip, **tip_kwargs)
+                CTkToolTip(btn, delay=0.3, message=tr(tip), **tip_kwargs)
 
     def _mostrar_menu_contextual(self, event):
         """Menú contextual con click derecho en el resultado."""
@@ -123,9 +123,9 @@ class UiFooterService:
                        activebackground="#2a4a6a", activeforeground="white",
                        font=("Segoe UI", 10), borderwidth=1)
 
-        menu.add_command(label="🟢 Copiar POSITIVE", command=lambda: self.app._copiar("positivo"))
-        menu.add_command(label="🔴 Copiar NEGATIVE", command=lambda: self.app._copiar("negativo"))
-        menu.add_command(label="📋 Copiar todo", command=lambda: self.app._copiar("todo"))
+        menu.add_command(label=tr("🟢 Copiar POSITIVE"), command=lambda: self.app._copiar("positivo"))
+        menu.add_command(label=tr("🔴 Copiar NEGATIVE"), command=lambda: self.app._copiar("negativo"))
+        menu.add_command(label=tr("📋 Copiar todo"), command=lambda: self.app._copiar("todo"))
         menu.add_separator()
 
         # Submenú: pegar último prompt del historial
@@ -140,7 +140,7 @@ class UiFooterService:
                 if txt:
                     label = f"#{i+1} {txt[:50]}{'...' if len(txt) > 50 else ''}"
                     submenu_hist.add_command(label=label, command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
-            menu.add_cascade(label="📋 Pegar de historial reciente", menu=submenu_hist)
+            menu.add_cascade(label=tr("📋 Pegar de historial reciente"), menu=submenu_hist)
 
         # Submenú: pegar de favoritos
         if self.app.store.favoritos:
@@ -156,16 +156,16 @@ class UiFooterService:
                 if txt:
                     label = f"⭐ {nombre or txt[:50]}"
                     submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
-            menu.add_cascade(label="⭐ Pegar de favoritos", menu=submenu_fav)
+            menu.add_cascade(label=tr("⭐ Pegar de favoritos"), menu=submenu_fav)
 
         menu.add_separator()
-        menu.add_command(label="📊 Analizar calidad", command=self.app.analysis.cmd_scoring)
-        menu.add_command(label="✨ Atajos de tags", command=self.app.analysis.abrir_atajos_tags)
-        menu.add_command(label="🇪🇸 Traducir al español", command=self.app.analysis.traducir_salida)
-        menu.add_command(label="🧬 Variar con ADN visual", command=self.app._cmd_variar_con_anclaje)
-        menu.add_command(label="🔍 Comparar consistencia", command=self.app._cmd_comparar_consistencia)
+        menu.add_command(label=tr("📊 Analizar calidad"), command=self.app.analysis.cmd_scoring)
+        menu.add_command(label=tr("✨ Atajos de tags"), command=self.app.analysis.abrir_atajos_tags)
+        menu.add_command(label=tr("🇪🇸 Traducir al español"), command=self.app.analysis.traducir_salida)
+        menu.add_command(label=tr("🧬 Variar con ADN visual"), command=self.app._cmd_variar_con_anclaje)
+        menu.add_command(label=tr("🔍 Comparar consistencia"), command=self.app._cmd_comparar_consistencia)
         menu.add_separator()
-        menu.add_command(label="🗑 Limpiar resultado", command=lambda: self.app.txt_salida.delete("1.0", "end"))
+        menu.add_command(label=tr("🗑 Limpiar resultado"), command=lambda: self.app.txt_salida.delete("1.0", "end"))
 
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -235,11 +235,11 @@ class UiFooterService:
                          command=_cortar, state="normal" if tiene_seleccion else "disabled")
         menu.add_command(label="📋 Copiar" + ("" if tiene_seleccion else "  (todo)"),
                          command=_copiar_sel)
-        menu.add_command(label="📥 Pegar", command=_pegar)
+        menu.add_command(label=tr("📥 Pegar"), command=_pegar)
         menu.add_separator()
-        menu.add_command(label="🔘 Seleccionar todo", command=_seleccionar_todo)
+        menu.add_command(label=tr("🔘 Seleccionar todo"), command=_seleccionar_todo)
         menu.add_separator()
-        menu.add_command(label="🗑 Limpiar idea", command=_limpiar)
+        menu.add_command(label=tr("🗑 Limpiar idea"), command=_limpiar)
 
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -677,9 +677,9 @@ class UiFooterService:
         ctk.CTkLabel(vent, text=tr("🔗 Multi-LoRA"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(vent,
-                     text=("Marca los LoRAs adicionales a usar junto con el "
+                     text=(tr("Marca los LoRAs adicionales a usar junto con el "
                            "primario.\nEl combo principal sigue siendo el LoRA "
-                           "primario; estos se añaden encima."),
+                           "primario; estos se añaden encima.")),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"], justify="center").pack(pady=(0, 8))
 
@@ -692,7 +692,7 @@ class UiFooterService:
         if nombre_primario and nombre_primario != "— Sin LoRA —":
             ctk.CTkLabel(
                 vent,
-                text=f"🔹 Primario (combo): {nombre_primario}",
+                text=tr('🔹 Primario (combo): {0}').format(nombre_primario),
                 font=ctk.CTkFont(size=10, weight="bold"),
                 text_color="#2ecc71",
             ).pack(pady=(0, 6))

@@ -355,9 +355,9 @@ def abrir_loras(app):
     ctk.CTkLabel(
         rasgos_row,
         text=(
-            "Si es un LoRA de PERSONAJE, describe sus rasgos físicos clave "
+            tr("Si es un LoRA de PERSONAJE, describe sus rasgos físicos clave "
             "(pelo, ojos, undercut, etc). La app los inyectará automáticamente "
-            "en el prompt — no necesitas crear un Personaje aparte."
+            "en el prompt — no necesitas crear un Personaje aparte.")
         ),
         font=ctk.CTkFont(size=9), text_color="#888",
         wraplength=780, justify="left",
@@ -505,7 +505,7 @@ def abrir_loras(app):
             familia = l.get("familia", "")
             badge_familia = f"  [{familia}]" if familia else ""
             ctk.CTkLabel(hdr,
-                         text=f"  🔗 {l['nombre']}{badge_familia}   →   trigger: \"{l['trigger']}\"",
+                         text=tr('  🔗 {0}{1}   →   trigger: "{2}"').format((l['nombre']), (badge_familia), (l['trigger'])),
                          font=ctk.CTkFont(size=13, weight="bold"),
                          text_color=cc_loc["card_hdr_text"]).pack(side="left", padx=8)
             nota = l.get("descripcion", "")
@@ -1235,7 +1235,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
                 refrescar()
             ctk.CTkButton(
                 frame_lista,
-                text=f"▼ Mostrar {min(PAGE_SIZE, restantes)} más  ({restantes} restantes)",
+                text=tr('▼ Mostrar {0} más  ({1} restantes)').format((min(PAGE_SIZE, restantes)), (restantes)),
                 command=_mas, height=32,
                 fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],
             ).pack(fill="x", padx=4, pady=(10, 6))

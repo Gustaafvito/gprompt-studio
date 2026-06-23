@@ -172,7 +172,7 @@ class MultiPromptService:
 
         # Slider N
         n_var = tk.IntVar(value=n_inicial)
-        lbl_n = ctk.CTkLabel(v, text=f"N = {n_inicial} shots",
+        lbl_n = ctk.CTkLabel(v, text=tr('N = {0} shots').format(n_inicial),
                               font=ctk.CTkFont(size=12, weight="bold"))
         lbl_n.pack(pady=(2, 2))
         def _on_slide(val):
@@ -1035,10 +1035,10 @@ class MultiPromptService:
             v.geometry("720x520")
             v.transient(vent)
 
-            ctk.CTkLabel(v, text=f"📂 Ruta: {cadena}",
+            ctk.CTkLabel(v, text=tr('📂 Ruta: {0}').format(cadena),
                          font=ctk.CTkFont(size=13, weight="bold"),
                          wraplength=680, justify="left").pack(padx=14, pady=(12, 4), anchor="w")
-            ctk.CTkLabel(v, text=f"{len(ruta)} nodos · profundidad {ruta[-1]['depth']}",
+            ctk.CTkLabel(v, text=tr('{0} nodos · profundidad {1}').format((len(ruta)), (ruta[-1]['depth'])),
                          font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(padx=14, anchor="w")
 
             txt_ruta = ctk.CTkTextbox(v, wrap="word",

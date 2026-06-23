@@ -204,8 +204,8 @@ class JsonPromptService:
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(
             vent,
-            text="Pega un JSON tipo Veo / Sora / Kling. Se extraerá el prompt principal,\n"
-                 "negative, ratio/duración y se mostrarán los metadatos extra (camera/lighting/vfx).",
+            text=tr("Pega un JSON tipo Veo / Sora / Kling. Se extraerá el prompt principal,\n"
+                 "negative, ratio/duración y se mostrarán los metadatos extra (camera/lighting/vfx)."),
             font=ctk.CTkFont(size=10), text_color=c["muted_text"], justify="center",
         ).pack(pady=(0, 8))
 
@@ -239,7 +239,7 @@ class JsonPromptService:
 
         def _cargar_desde_archivo():
             ruta = filedialog.askopenfilename(
-                title="Seleccionar archivo JSON",
+                title=tr("Seleccionar archivo JSON"),
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
                 parent=vent,
             )
@@ -423,7 +423,7 @@ class JsonPromptService:
             estr_txt = ", ".join(estrategias) if estrategias else "autolimpieza"
             ctk.CTkLabel(
                 vent,
-                text=f"🧹 JSON reparado automáticamente — {estr_txt}",
+                text=tr('🧹 JSON reparado automáticamente — {0}').format(estr_txt),
                 font=ctk.CTkFont(size=10),
                 text_color="#fbbf24",
                 wraplength=720, justify="center",
@@ -451,14 +451,14 @@ class JsonPromptService:
         if extras:
             ctk.CTkLabel(
                 vent,
-                text=f"🧩 Metadatos avanzados detectados ({len(extras)}):",
+                text=tr('🧩 Metadatos avanzados detectados ({0}):').format(len(extras)),
                 font=ctk.CTkFont(size=11, weight="bold"),
             ).pack(anchor="w", padx=15, pady=(8, 4))
             ctk.CTkLabel(
                 vent,
-                text="No se aplican automáticamente — algunos motores (Veo/Sora/Kling) "
+                text=tr("No se aplican automáticamente — algunos motores (Veo/Sora/Kling) "
                      "los usan vía API JSON. Puedes verlos a continuación e incorporarlos "
-                     "manualmente al prompt si tu motor no soporta JSON estructurado.",
+                     "manualmente al prompt si tu motor no soporta JSON estructurado."),
                 font=ctk.CTkFont(size=9),
                 text_color=c["muted_text"],
                 wraplength=720, justify="left",
@@ -687,7 +687,7 @@ class JsonPromptService:
         def _guardar_archivo():
             contenido = txt.get("1.0", "end").strip()
             ruta = filedialog.asksaveasfilename(
-                title="Guardar JSON profesional",
+                title=tr("Guardar JSON profesional"),
                 defaultextension=".json",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
                 parent=vent,

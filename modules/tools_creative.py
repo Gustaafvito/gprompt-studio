@@ -167,7 +167,7 @@ class ToolsCreativeService:
         for i in range(3):
             row = ctk.CTkFrame(custom_frame, fg_color="transparent")
             row.pack(fill="x", padx=10, pady=2)
-            lbl_val = ctk.CTkLabel(row, text=f"T{i+1}: {temps_init[i]:.2f}",
+            lbl_val = ctk.CTkLabel(row, text=tr('T{0}: {1:.2f}').format((i+1), (temps_init[i])),
                                     width=70, font=ctk.CTkFont(family="Consolas", size=10))
             lbl_val.pack(side="left", padx=(0, 6))
             sl = ctk.CTkSlider(row, from_=0.1, to=1.5, number_of_steps=28)
@@ -484,7 +484,7 @@ class ToolsCreativeService:
 
         ctk.CTkLabel(vent, text=tr("🤖 Top 3 modelos para tu idea"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(vent, text=f"Idea: {idea[:80]}{'…' if len(idea) > 80 else ''}",
+        ctk.CTkLabel(vent, text=tr('Idea: {0}{1}').format((idea[:80]), ('…' if len(idea) > 80 else '')),
                      font=ctk.CTkFont(size=10, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 10))
 
@@ -526,7 +526,7 @@ class ToolsCreativeService:
 
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=10, pady=(0, 8))
-            ctk.CTkButton(btn_row, text=f"✅ Usar este modelo",
+            ctk.CTkButton(btn_row, text=tr('✅ Usar este modelo'),
                           width=180, height=28,
                           fg_color="#1a8a3c", hover_color="#127a30",
                           font=ctk.CTkFont(size=11, weight="bold"),
@@ -541,7 +541,7 @@ class ToolsCreativeService:
 
         accion_row = ctk.CTkFrame(vent, fg_color="transparent")
         accion_row.pack(side="bottom", pady=(8, 12))
-        ctk.CTkButton(accion_row, text=f"🚀 Probar los {len(sugerencias)} en paralelo",
+        ctk.CTkButton(accion_row, text=tr('🚀 Probar los {0} en paralelo').format(len(sugerencias)),
                       width=240, height=34,
                       fg_color="#7c3aed", hover_color="#5d2ab5",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -722,7 +722,7 @@ class ToolsCreativeService:
             f = ctk.CTkFrame(vent, fg_color=c["fg_frame"], corner_radius=6)
             f.pack(fill="x", padx=15, pady=4)
 
-            ctk.CTkLabel(f, text=f"Personaje #{i+1}:", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
+            ctk.CTkLabel(f, text=tr('Personaje #{0}:').format(i+1), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
 
             row = ctk.CTkFrame(f, fg_color="transparent")
             row.pack(fill="x", padx=10, pady=2)
@@ -867,7 +867,7 @@ class ToolsCreativeService:
                     vent.geometry("700x600")
                     vent.transient(self.app)
                     ctk.CTkLabel(vent, text=tr("🔍 Análisis inverso: imagen vs prompt"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    ctk.CTkLabel(vent, text=f"Visión: {motor}", font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                    ctk.CTkLabel(vent, text=tr('Visión: {0}').format(motor), font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
                     txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
@@ -1176,7 +1176,7 @@ class ToolsCreativeService:
                     ctk.CTkLabel(vent2, text=tr("🧬 ADN visual — Rasgos inmutables"),
                                  font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
                     estado_activo = "🟢 ACTIVO" if self.app._anclaje_visual else "⚪ Inactivo"
-                    ctk.CTkLabel(vent2, text=f"Vision: {motor}  ·  Estado: {estado_activo}",
+                    ctk.CTkLabel(vent2, text=tr('Vision: {0}  ·  Estado: {1}').format((motor), (estado_activo)),
                                   font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
 
                     txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word", height=320)
@@ -1634,7 +1634,7 @@ class ToolsCreativeService:
                     hdr = ctk.CTkFrame(row, fg_color="transparent")
                     hdr.pack(fill="x", padx=10, pady=(5, 0))
                     ctk.CTkLabel(hdr,
-                                 text=f"📁 {preset['nombre']} ({len(preset['items'])} items)",
+                                 text=tr('📁 {0} ({1} items)').format((preset['nombre']), (len(preset['items']))),
                                  font=ctk.CTkFont(size=11, weight="bold")
                                  ).pack(side="left")
 
@@ -1850,12 +1850,12 @@ class ToolsCreativeService:
                             return lambda: pyperclip.copy(h)
                         ctk.CTkButton(row, text=hex_c, width=90, height=20, fg_color="#1a4a5a",
                                       font=ctk.CTkFont(size=9), command=_cp(hex_c)).pack(side="left", padx=1)
-                        ctk.CTkLabel(row, text=f"RGB({r},{g},{b})", font=ctk.CTkFont(size=9),
+                        ctk.CTkLabel(row, text=tr('RGB({0},{1},{2})').format((r), (g), (b)), font=ctk.CTkFont(size=9),
                                      text_color="#888888").pack(side="left", padx=(4, 0))
                         ctk.CTkLabel(row, text=rgb_to_hsl(r, g, b), font=ctk.CTkFont(size=8),
                                      text_color="#666666").pack(side="left", padx=(4, 0))
                         comp = complementary(r, g, b)
-                        ctk.CTkLabel(row, text=f"Comp: {comp}", font=ctk.CTkFont(size=8),
+                        ctk.CTkLabel(row, text=tr('Comp: {0}').format(comp), font=ctk.CTkFont(size=8),
                                      text_color="#f59e0b").pack(side="left", padx=(4, 0))
 
                     # Complementarios del primer color
@@ -1949,8 +1949,8 @@ class ToolsCreativeService:
             paletas = self.app.store.paletas or []
             cont_var.set(f"{len(paletas)} paletas guardadas")
             if not paletas:
-                ctk.CTkLabel(scroll, text="No hay paletas guardadas todavía.\n"
-                             "Extrae una imagen y pulsa '💾 Guardar paleta'.",
+                ctk.CTkLabel(scroll, text=tr("No hay paletas guardadas todavía.\n"
+                             "Extrae una imagen y pulsa '💾 Guardar paleta'."),
                              text_color=text_muted, justify="center"
                              ).pack(pady=30)
                 return

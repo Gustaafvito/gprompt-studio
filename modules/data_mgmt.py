@@ -399,7 +399,7 @@ class DataMgmtService:
 
             # Sección custom
             if custom:
-                ctk.CTkLabel(scroll, text=f"📝 Tus snippets ({len(custom)})",
+                ctk.CTkLabel(scroll, text=tr('📝 Tus snippets ({0})').format(len(custom)),
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color="#2ecc71").pack(anchor="w", pady=(4, 4))
                 for trigger in sorted(custom_keys):
@@ -408,7 +408,7 @@ class DataMgmtService:
                     _row_snippet(trigger, expansion, custom=True, override=es_override)
 
             # Sección defaults (los que NO han sido sobrescritos)
-            ctk.CTkLabel(scroll, text=f"📦 Predefinidos ({len(self.app.SNIPPETS_DEFAULT) - len(custom_keys & set(self.app.SNIPPETS_DEFAULT.keys()))})",
+            ctk.CTkLabel(scroll, text=tr('📦 Predefinidos ({0})').format(len(self.app.SNIPPETS_DEFAULT) - len(custom_keys & set(self.app.SNIPPETS_DEFAULT.keys()))),
                          font=ctk.CTkFont(size=12, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", pady=(12, 4))
             for trigger in sorted(self.app.SNIPPETS_DEFAULT.keys()):
@@ -678,13 +678,13 @@ class DataMgmtService:
         ctk.CTkLabel(vent, text=tr("🏷️ Tags reutilizables (al prompt)"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
-                     text="Frases cortas (tags, fórmulas de calidad, look…) que añades "
-                          "al final del POSITIVE con un click.",
+                     text=tr("Frases cortas (tags, fórmulas de calidad, look…) que añades "
+                          "al final del POSITIVE con un click."),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 2))
         ctk.CTkLabel(vent,
-                     text="💡 Diferencia con Fórmulas: aquí son fragmentos cortos para "
-                          "complementar; las Fórmulas guardan un POSITIVE completo.",
+                     text=tr("💡 Diferencia con Fórmulas: aquí son fragmentos cortos para "
+                          "complementar; las Fórmulas guardan un POSITIVE completo."),
                      font=ctk.CTkFont(size=9, slant="italic"),
                      text_color="#888").pack(pady=(0, 6))
 
@@ -867,13 +867,13 @@ class DataMgmtService:
         ctk.CTkLabel(vent, text=tr("📐 Fórmulas guardadas"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
-                     text="Prompts COMPLETOS (positive + negative) guardados como receta "
-                          "reutilizable. Carga uno y aplícalo entero al área de salida.",
+                     text=tr("Prompts COMPLETOS (positive + negative) guardados como receta "
+                          "reutilizable. Carga uno y aplícalo entero al área de salida."),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 2))
         ctk.CTkLabel(vent,
-                     text="💡 Diferencia con Snippets: aquí guardas el prompt entero; "
-                          "los Snippets son frases cortas para sumar a un prompt existente.",
+                     text=tr("💡 Diferencia con Snippets: aquí guardas el prompt entero; "
+                          "los Snippets son frases cortas para sumar a un prompt existente."),
                      font=ctk.CTkFont(size=9, slant="italic"),
                      text_color="#888").pack(pady=(0, 4))
 
@@ -962,7 +962,7 @@ class DataMgmtService:
                              ).pack(anchor="w", padx=8, pady=(4, 0))
                 preview = f.get("positive", "")[:200]
                 ctk.CTkLabel(card,
-                             text=f"  POS: {preview}{'…' if len(f.get('positive','')) > 200 else ''}",
+                             text=tr('  POS: {0}{1}').format((preview), ('…' if len(f.get('positive','')) > 200 else '')),
                              font=ctk.CTkFont(size=10),
                              text_color=c["muted_text"],
                              wraplength=560, justify="left", anchor="w"

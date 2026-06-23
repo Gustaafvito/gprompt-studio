@@ -211,7 +211,7 @@ class UIBuildersService:
         self.app._btn_key.pack(side="left", padx=(4, 0))
         # Tooltip si CTkToolTip está instalado
         try:
-            CTkToolTip(self.app._btn_key, message="Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)")
+            CTkToolTip(self.app._btn_key, message=tr("Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)"))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
@@ -257,7 +257,7 @@ class UIBuildersService:
         _refrescar_combo_modelo_llm()
         try:
             CTkToolTip(self.app.combo_modelo_llm,
-                       message="Modelo del cerebro activo.\nElige de la lista o escribe un ID y pulsa Enter.")
+                       message=tr("Modelo del cerebro activo.\nElige de la lista o escribe un ID y pulsa Enter."))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
@@ -273,7 +273,7 @@ class UIBuildersService:
         # No empaquetar todavía: solo se muestra si hay ADN activo
         try:
             CTkToolTip(self.app._btn_adn,
-                       message="ADN visual activo en próximas generaciones.\nClick para ver / desactivar.")
+                       message=tr("ADN visual activo en próximas generaciones.\nClick para ver / desactivar."))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Botones gestión (derecha) — MENÚS DESPLEGABLES por grupo
@@ -597,7 +597,7 @@ class UIBuildersService:
                                           text_color=nsfw_text_off,
                                           **sw_style)
         self.app.switch_nsfw.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_nsfw, message="Activa contenido adulto en los prompts.", delay=0.5)
+        CTkToolTip(self.app.switch_nsfw, message=tr("Activa contenido adulto en los prompts."), delay=0.5)
 
         def _toggle_trad_visual():
             if self.app.switch_traduccion_var.get():
@@ -613,7 +613,7 @@ class UIBuildersService:
                                           text_color=c["fg_dark_text"],
                                           **sw_style)
         self.app.switch_trad.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_trad, message="Traduce tu idea al inglés antes de procesarla.", delay=0.5)
+        CTkToolTip(self.app.switch_trad, message=tr("Traduce tu idea al inglés antes de procesarla."), delay=0.5)
         self.app._sw_trad = self.app.switch_trad
         self.app._sw_trad_callback = _toggle_trad_visual
 
@@ -648,11 +648,11 @@ class UIBuildersService:
                                          **sw_style)
         self.app.switch_ref.pack(side="right", padx=6)
         CTkToolTip(self.app.switch_ref,
-                    message=("Img→Prompt: trata la imagen como REFERENCIA VISUAL "
+                    message=(tr("Img→Prompt: trata la imagen como REFERENCIA VISUAL "
                              "(storyboard, moodboard, style guide).\n"
                              "OFF (defecto): el prompt reproduce fielmente la imagen.\n"
                              "ON: extrae solo paleta/iluminación/personajes/estilo "
-                             "y genera prompt original con esa guía visual."),
+                             "y genera prompt original con esa guía visual.")),
                     delay=0.5)
 
         # Aplicar estilo inicial coherente con el estado del var (importante
@@ -708,9 +708,9 @@ class UIBuildersService:
         self.app.combo_shots.pack(side="left", padx=5)
         try:
             CTkToolTip(self.app.combo_shots,
-                        message=("Número de shots/planos en el prompt de vídeo.\n"
+                        message=(tr("Número de shots/planos en el prompt de vídeo.\n"
                                  "Auto: deduce según duración (4s=1, 5s=2, 10s=3, 15s=4).\n"
-                                 "Manual (1-6): fuerza ese número exacto."),
+                                 "Manual (1-6): fuerza ese número exacto.")),
                         delay=0.5)
         except Exception as _e:
             logger.debug(f"[silent] tooltip shots: {_e}")
@@ -730,8 +730,8 @@ class UIBuildersService:
         self.app.combo_estilo_video.pack(side="left", padx=5)
         try:
             CTkToolTip(self.app.combo_estilo_video, delay=0.4,
-                       message="Look visual del vídeo (estética de render). "
-                               "Complementa los géneros del footer. Auto = no fuerza nada.")
+                       message=tr("Look visual del vídeo (estética de render). "
+                               "Complementa los géneros del footer. Auto = no fuerza nada."))
         except Exception as _e:
             logger.debug(f"[silent] tooltip estilo video: {_e}")
 
@@ -856,7 +856,7 @@ class UIBuildersService:
         attach_searchable_dropdown(
             self.app.combo_modelo_imagen,
             command=self.app.events.on_modelo_imagen_cambio)
-        self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message="Pasa el cursor para info del modelo")
+        self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message=tr("Pasa el cursor para info del modelo"))
 
         # Combo "Estilo" — visible solo cuando el modelo es de una familia
         # con estilos definidos en config.ESTILOS_POR_FAMILIA. Los valores
@@ -877,7 +877,7 @@ class UIBuildersService:
         self.app.combo_familia_estilo.pack()
         self.app._tooltip_familia_estilo = CTkToolTip(
             self.app.combo_familia_estilo, delay=0.4,
-            message="Hint de estilo para la familia del modelo activo.",
+            message=tr("Hint de estilo para la familia del modelo activo."),
         )
 
         # Ratio
@@ -1010,25 +1010,25 @@ class UIBuildersService:
         # container (que ya tiene la altura limitada).
         self.app.tabview.pack(fill="both", expand=True)
 
-        self.app.tabview.add("⚙️ Ajustes Extra")
-        self.app.tabview.add("🎨 Estilos")
-        self.app.tabview.add("🚫 Negativos")
-        self.app.tabview.add("🏷️ Tags")
+        self.app.tabview.add(tr("⚙️ Ajustes Extra"))
+        self.app.tabview.add(tr("🎨 Estilos"))
+        self.app.tabview.add(tr("🚫 Negativos"))
+        self.app.tabview.add(tr("🏷️ Tags"))
 
         # Forzar el color del contenido de cada tab
-        for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"):
+        for tab_name in (tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos"), tr("🏷️ Tags")):
             try:
                 self.app.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         # Tab 1: Ajustes Extra
-        self._build_ajustes_extra(self.app.tabview.tab("⚙️ Ajustes Extra"))
+        self._build_ajustes_extra(self.app.tabview.tab(tr("⚙️ Ajustes Extra")))
 
         # Tab 2: Estilos
-        self._build_estilos(self.app.tabview.tab("🎨 Estilos"))
+        self._build_estilos(self.app.tabview.tab(tr("🎨 Estilos")))
 
         # Tab 3: Negativos (Permanece para no destruir widgets)
-        tab_neg = self.app.tabview.tab("🚫 Negativos")
+        tab_neg = self.app.tabview.tab(tr("🚫 Negativos"))
         self.app.frame_neg_outer = ctk.CTkFrame(tab_neg, fg_color=tab_bg)
         self._build_negative(self.app.frame_neg_outer)
 
@@ -1042,9 +1042,9 @@ class UIBuildersService:
         self._tags_tab_built = False
 
         def _on_tab_change():
-            if self.app.tabview.get() == "🏷️ Tags" and not self._tags_tab_built:
+            if self.app.tabview.get() == tr("🏷️ Tags") and not self._tags_tab_built:
                 self._tags_tab_built = True
-                self._build_tags_tab(self.app.tabview.tab("🏷️ Tags"))
+                self._build_tags_tab(self.app.tabview.tab(tr("🏷️ Tags")))
 
         self.app.tabview.configure(command=_on_tab_change)
 
@@ -1159,7 +1159,7 @@ class UIBuildersService:
             button_color="#374151" if is_light else "#e5e7eb",
             button_hover_color="#1f2937" if is_light else "#f3f4f6")
         self.app.switch_brief.pack(side="right", padx=15)
-        CTkToolTip(self.app.switch_brief, message="Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos.", delay=0.5)
+        CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
         self.app._sw_brief_callback = _toggle_brief_visual
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
@@ -1231,7 +1231,7 @@ class UIBuildersService:
                                        font=ctk.CTkFont(size=10),
                                        command=self.app._cmd_sugerir_estilos)
         btn_sugerir.pack(side="left", padx=(8, 0))
-        CTkToolTip(btn_sugerir, delay=0.4, message="LLM analiza tu idea y marca 3-6 estilos apropiados automáticamente")
+        CTkToolTip(btn_sugerir, delay=0.4, message=tr("LLM analiza tu idea y marca 3-6 estilos apropiados automáticamente"))
 
         # Contador y botón limpiar
         self.app.lbl_estilos_count = ctk.CTkLabel(header_estilos, text="",
@@ -1247,7 +1247,7 @@ class UIBuildersService:
                                           font=ctk.CTkFont(size=11),
                                           command=self._limpiar_estilos)
         btn_limpiar_est.pack(side="right", padx=(0, 5))
-        CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
+        CTkToolTip(btn_limpiar_est, delay=0.3, message=tr("Limpiar todos los estilos seleccionados"))
 
         # CTkTabview reserva la altura del tab MÁS grande. height=160
         # → ~5 filas × 3 columnas = 15 estilos visibles. Suficiente
@@ -1314,7 +1314,7 @@ class UIBuildersService:
             command=self.app.creative.cmd_sugerir_tags,
         )
         btn_sug_tags.pack(side="right", padx=2)
-        CTkToolTip(btn_sug_tags, message="LLM analiza tu idea y añade 3-5 tags técnicos apropiados", delay=0.4)
+        CTkToolTip(btn_sug_tags, message=tr("LLM analiza tu idea y añade 3-5 tags técnicos apropiados"), delay=0.4)
 
         scroll = ctk.CTkScrollableFrame(parent, fg_color=tab_bg, scrollbar_button_color=c["combo_border"])
         scroll.pack(fill="both", expand=True, padx=2, pady=(2, 0))
@@ -1374,7 +1374,7 @@ class UIBuildersService:
                       text_color="#ffffff",
                       command=self.app.creative.cmd_sugerir_negative_tab)
         btn_sug_neg.pack(side="right", padx=2)
-        CTkToolTip(btn_sug_neg, message="LLM genera el negative óptimo e inserta en el campo", delay=0.4)
+        CTkToolTip(btn_sug_neg, message=tr("LLM genera el negative óptimo e inserta en el campo"), delay=0.4)
 
         # Paquetes predefinidos (activan múltiples presets a la vez)
         frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)
@@ -1495,7 +1495,7 @@ class UIBuildersService:
                                     text_color=c["muted_text"],
                                     command=lambda: self.app.txt_idea.delete("1.0", "end"))
         btn_clear.pack(side="right")
-        CTkToolTip(btn_clear, delay=0.3, message="Limpiar campo idea")
+        CTkToolTip(btn_clear, delay=0.3, message=tr("Limpiar campo idea"))
 
         self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=13),
                                         border_width=2, border_color=c["combo_border"] if "combo_border" in c else "#9ca3af", corner_radius=8)
@@ -1505,9 +1505,9 @@ class UIBuildersService:
             CTkToolTip(
                 self.app.txt_idea, delay=0.6,
                 message=(
-                    "💡 Tip: escribe ';trigger' + Espacio para expandir automáticamente.\n"
+                    tr("💡 Tip: escribe ';trigger' + Espacio para expandir automáticamente.\n"
                     "Ej: ';cine ' → 'cinematic lighting, film grain'.\n"
-                    "Configura tus triggers en menú Plantillas → Expansión rápida."
+                    "Configura tus triggers en menú Plantillas → Expansión rápida.")
                 ),
             )
         except Exception as _e:
@@ -1631,9 +1631,9 @@ class UIBuildersService:
             ctk.CTkLabel(
                 vent,
                 text=(
-                    "El LLM puede interpretarlas de varias formas. "
+                    tr("El LLM puede interpretarlas de varias formas. "
                     "Reformula tu idea con la versión específica para "
-                    "evitar resultados inesperados."
+                    "evitar resultados inesperados.")
                 ),
                 font=ctk.CTkFont(size=10),
                 text_color=c["muted_text"],
@@ -1833,7 +1833,7 @@ class UIBuildersService:
                 grp_frame = ctk.CTkFrame(parent, fg_color="transparent")
                 grp_frame.pack(side="left", padx=0)
                 # Label del título — pequeño, en color del grupo
-                ctk.CTkLabel(grp_frame, text=titulo,
+                ctk.CTkLabel(grp_frame, text=tr(titulo),
                               font=ctk.CTkFont(size=8, weight="bold"),
                               text_color=color_tit, anchor="w").pack(
                               anchor="w", padx=4, pady=(0, 1))
@@ -1841,10 +1841,10 @@ class UIBuildersService:
                 btn_row.pack(side="top", anchor="w")
                 for text, w, fg, cmd, tooltip in grupo:
                     kw = {"fg_color": fg, "hover_color": self.app.dialogs._darker(fg)} if fg else {}
-                    btn = ctk.CTkButton(btn_row, text=text, width=w,
+                    btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
-                    CTkToolTip(btn, delay=0.5, message=tooltip)
+                    CTkToolTip(btn, delay=0.5, message=tr(tooltip))
                     self.app.action_btns.append(btn)
                     if text == "🔁 Refinar":
                         btn.bind("<Button-3>", self.app.refinar.menu_refinar_especifico)
@@ -1878,27 +1878,27 @@ class UIBuildersService:
                                    fg_color="#7f1d1d", hover_color="#5a1414",
                                    font=ctk.CTkFont(size=11), command=self.app.cmd_reset)
         btn_reset.pack(side="right", padx=2)
-        CTkToolTip(btn_reset, delay=0.5, message="Limpia todo y borra la memoria.")
+        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
         btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
                                        fg_color="#1e3a5f", hover_color="#162d49",
                                        font=ctk.CTkFont(size=10), command=self.app._repetir_ultima_config)
         btn_repeat.pack(side="right", padx=2)
-        CTkToolTip(btn_repeat, delay=0.5, message="Repetir configuración del último prompt generado")
+        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
         btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
                                         fg_color="#1e5f3a", hover_color="#16492d",
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_cargar_setup)
         btn_load_setup.pack(side="right", padx=2)
-        CTkToolTip(btn_load_setup, delay=0.5, message="Cargar una configuración guardada (modelo, ratio, estilos…)")
+        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
 
         btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
                                         fg_color="#1e5f3a", hover_color="#16492d",
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_guardar_setup)
         btn_save_setup.pack(side="right", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
-                   message="Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt")
+                   message=tr("Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt"))
 
         self.app.frame_ideas = ctk.CTkFrame(self.app, fg_color="transparent")
 
@@ -1911,7 +1911,7 @@ class UIBuildersService:
 
         self.app.lbl_estado = ctk.CTkLabel(
             self.app.frame_estado,
-            text=f"Listo · Ctrl+Enter: Prompt · Ctrl+1/2: Copiar",
+            text=tr('Listo · Ctrl+Enter: Prompt · Ctrl+1/2: Copiar'),
             font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"])
         self.app.lbl_estado.pack(side="left", fill="x", expand=True)
 

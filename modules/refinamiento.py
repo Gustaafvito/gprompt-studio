@@ -142,7 +142,7 @@ class RefinamientoService:
         ctk.CTkLabel(sel, text=tr("🔂 Modo Iteración"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel,
-                     text=f"Genera {n} variantes cambiando SOLO un elemento:",
+                     text=tr('Genera {0} variantes cambiando SOLO un elemento:').format(n),
                      font=ctk.CTkFont(size=11),
                      text_color="#6b7280" if is_lt else "#888888"
                      ).pack(pady=(0, 12))

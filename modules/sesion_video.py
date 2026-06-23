@@ -278,7 +278,7 @@ class SesionVideoService:
             mins = int(delta.total_seconds() // 60)
             secs = int(delta.total_seconds() % 60)
             dur = f"  ·  duración: {mins}m {secs}s"
-        ctk.CTkLabel(v, text=f"{len(self.app._sesion_eventos)} eventos{dur}",
+        ctk.CTkLabel(v, text=tr('{0} eventos{1}').format((len(self.app._sesion_eventos)), (dur)),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
 
         # ── Banner con info del vídeo si se grabó ──
@@ -415,7 +415,7 @@ class SesionVideoService:
 
         ctk.CTkLabel(v, text=tr("📚 Guion de tutorial"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
-        ctk.CTkLabel(v, text=f"{len(pasos)} pasos · {len(self.app._sesion_eventos)} acciones",
+        ctk.CTkLabel(v, text=tr('{0} pasos · {1} acciones').format((len(pasos)), (len(self.app._sesion_eventos))),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 10))
 
         # Construir el guion

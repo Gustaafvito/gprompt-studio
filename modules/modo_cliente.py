@@ -130,7 +130,7 @@ class ModoClienteService:
 
             from PIL import Image
             ruta = filedialog.askopenfilename(
-                title="Selecciona imagen de referencia (logo, moodboard...)",
+                title=tr("Selecciona imagen de referencia (logo, moodboard...)"),
                 filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
             )
             if not ruta: return
@@ -358,9 +358,9 @@ class ModoClienteService:
         vent.geometry("900x720")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=f"💼 {len(propuestas_norm)} Propuestas para tu brief",
+        ctk.CTkLabel(vent, text=tr('💼 {0} Propuestas para tu brief').format(len(propuestas_norm)),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
-        ctk.CTkLabel(vent, text=f"Brief: {brief[:120]}{'...' if len(brief) > 120 else ''}",
+        ctk.CTkLabel(vent, text=tr('Brief: {0}{1}').format((brief[:120]), ('...' if len(brief) > 120 else '')),
                      font=ctk.CTkFont(size=9), text_color=c["muted_text"], wraplength=840
                      ).pack(pady=(0, 8))
 
@@ -397,7 +397,7 @@ class ModoClienteService:
 
             if negativo:
                 neg_preview = negativo[:100].replace("\n", " ")
-                ctk.CTkLabel(desc_row, text=f"🔴 NEG: {neg_preview}…",
+                ctk.CTkLabel(desc_row, text=tr('🔴 NEG: {0}…').format(neg_preview),
                              font=ctk.CTkFont(size=9), text_color="#ef4444",
                              anchor="w").pack(anchor="w", pady=(2, 0))
 
@@ -451,7 +451,7 @@ class ModoClienteService:
             ctk.CTkButton(btn_row, text=tr("💾 Guardar"), width=100, height=30, fg_color="#4a1a6a",
                           font=ctk.CTkFont(size=10), command=_guardar_prop
                           ).pack(side="left", padx=2)
-            ctk.CTkLabel(btn_row, text=f"   {len(positivo)} chars",
+            ctk.CTkLabel(btn_row, text=tr('   {0} chars').format(len(positivo)),
                          font=ctk.CTkFont(size=9), text_color="#666666").pack(side="left", padx=(4, 0))
 
         ctk.CTkButton(vent, text=tr("Cerrar"), width=140, height=30, fg_color="#475569",
@@ -547,12 +547,12 @@ class ModoClienteService:
                     logger.debug(f"[silent] {_e}")
             if n > 8:
                 ctk.CTkLabel(thumbs_area,
-                             text=f"+{n - 8} más",
+                             text=tr('+{0} más').format(n - 8),
                              font=ctk.CTkFont(size=10),
                              text_color=c["muted_text"]).pack(side="left", padx=4)
         def _anadir_mas():
             nuevas = filedialog.askopenfilenames(
-                title="Selecciona más imágenes",
+                title=tr("Selecciona más imágenes"),
                 filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
             )
             if not nuevas:
@@ -679,7 +679,7 @@ class ModoClienteService:
                         vent2.title(tr("🎭 Estilo común detectado"))
                         vent2.geometry("720x650")
                         vent2.transient(self.app)
-                        ctk.CTkLabel(vent2, text=f"🎭 Estilo detectado en {len(descripciones)} imágenes",
+                        ctk.CTkLabel(vent2, text=tr('🎭 Estilo detectado en {0} imágenes').format(len(descripciones)),
                                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
 
                         txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word")
@@ -796,8 +796,8 @@ class ModoClienteService:
             if not estilos:
                 ctk.CTkLabel(
                     scroll,
-                    text="No has guardado ningún estilo todavía.\n"
-                         "Analiza un moodboard y pulsa '💾 Guardar estilo'.",
+                    text=tr("No has guardado ningún estilo todavía.\n"
+                         "Analiza un moodboard y pulsa '💾 Guardar estilo'."),
                     text_color=c["muted_text"], justify="center",
                 ).pack(pady=30)
                 return

@@ -638,11 +638,11 @@ class CoreMixin:
         vent.geometry("900x720")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text=f"🔀 {len(variaciones)} variaciones generadas",
+        ctk.CTkLabel(vent, text=tr('🔀 {0} variaciones generadas').format(len(variaciones)),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 3))
         n_total = len(variaciones)
         ctk.CTkLabel(vent,
-                     text=f"Compara las {n_total} versiones · Pulsa ✅ Aplicar al resultado en la que más te guste",
+                     text=tr('Compara las {0} versiones · Pulsa ✅ Aplicar al resultado en la que más te guste').format(n_total),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 8))
 
@@ -669,7 +669,7 @@ class CoreMixin:
 
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(8, 2))
-            ctk.CTkLabel(hdr, text=f"  Variación #{i+1}",
+            ctk.CTkLabel(hdr, text=tr('  Variación #{0}').format(i+1),
                          font=ctk.CTkFont(size=12, weight="bold"),
                          text_color=accent).pack(side="left")
 
@@ -929,7 +929,7 @@ class CoreMixin:
                      ).pack(pady=(0, 10))
 
         n_var = ctk.IntVar(value=default)
-        lbl_n = ctk.CTkLabel(sel, text=f"N = {default}",
+        lbl_n = ctk.CTkLabel(sel, text=tr('N = {0}').format(default),
                               font=ctk.CTkFont(size=22, weight="bold"),
                               text_color="#2ecc71")
         lbl_n.pack(pady=(0, 6))
@@ -944,7 +944,7 @@ class CoreMixin:
                                 command=_on_slide, width=320)
         slider.set(default)
         slider.pack(pady=(0, 4))
-        ctk.CTkLabel(sel, text=f"Rango: {n_min}–{n_max}",
+        ctk.CTkLabel(sel, text=tr('Rango: {0}–{1}').format((n_min), (n_max)),
                      font=ctk.CTkFont(size=9),
                      text_color="#666").pack(pady=(0, 8))
 

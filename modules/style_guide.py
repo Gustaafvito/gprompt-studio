@@ -353,7 +353,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
                 render(ent_buscar.get(), reset_paginacion=False)
             ctk.CTkButton(
                 scroll,
-                text=f"▼ Mostrar {min(PAGE_SIZE, restantes)} más  ({restantes} restantes)",
+                text=tr('▼ Mostrar {0} más  ({1} restantes)').format((min(PAGE_SIZE, restantes)), (restantes)),
                 command=_mostrar_mas,
                 height=34,
                 fg_color=accent,
