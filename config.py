@@ -375,6 +375,7 @@ GRUPOS_IMAGEN = [
         "SeaArt Ultra Edit",
     ])),
     ("── SeaArt Oficiales ──", sorted([
+        "FLUX.2 [Klein]",
         "Luma Uni-1 Image",
         "Luma Uni-1.1 Image",
         "SeaArt Infinity",

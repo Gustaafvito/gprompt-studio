@@ -2528,6 +2528,32 @@
     ],
     "limitaciones": "Calidad menor que Pro/Max pero muy rápido."
   },
+  "FLUX.2 [Klein]": {
+    "nota": null,
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "best_for": "FLUX.2 Klein 4B (oficial de SeaArt). Text-to-image en lenguaje natural, sin negative prompt. Compacto y rápido.",
+    "prompt_formula": "Lenguaje natural en prosa: describe sujeto, escena, iluminación, cámara y estilo.",
+    "prompt_ejemplo": "A photorealistic portrait of a woman with silver hair, soft natural lighting from a window on the left, shallow depth of field, 85mm lens",
+    "sampler_recomendado": "Euler",
+    "pasos": 20,
+    "cfg": 1.0
+  },
   "Flux.1 Kontext Max": {
     "nota": 4.7,
     "has_negative": false,
