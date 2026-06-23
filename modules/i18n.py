@@ -11,12 +11,16 @@ app (lo más fiable: al reconstruir la UI, `tr` ya devuelve el idioma nuevo).
 La preferencia se guarda en `preferences.json` (clave `idioma`).
 
 FASE A (infraestructura): este módulo + el toggle + la persistencia.
-FASE B (este diccionario): 661 textos de la UI envueltos con `tr(...)` y
+FASE B (este diccionario): ~1234 textos de la UI envueltos con `tr(...)` y
 traducidos — `text="..."` (labels/botones/tooltips), cabeceras de menú e items
-del header, barra de modo (Imagen/Vídeo/Audio), `placeholder_text=` y títulos
-de ventana `.title(...)`. PENDIENTE: textos dinámicos (f-strings, `set_estado`,
-mensajes de error en runtime) y el contenido de apoyo (tutorial/glosario/ayuda)
-en la Fase C.
+del header, barra de modo (Imagen/Vídeo/Audio), `placeholder_text=`, títulos de
+ventana `.title(...)`, y los textos DINÁMICOS: `set_estado`, `messagebox`,
+`show_toast` y `.configure(text=...)`. Las f-strings se convirtieron a
+`tr("...{0}...").format(...)` (placeholders posicionales, format-spec/conversion
+preservados). Quedan SOLO f-strings sin texto traducible (icono + valor, p.ej.
+`f"❌ {error}"`), que no necesitan traducción.
+FASE C: tutorial y glosario bilingües vía `data/<x>.en.json` (loaders eligen
+el archivo por idioma; ver `tutorial.py` / `glosario.py`).
 
 Uso:
     from modules.i18n import tr, set_idioma, get_idioma

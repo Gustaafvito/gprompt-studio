@@ -28,7 +28,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Métrica | Valor |
 |---|---|
 | Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
-| Idioma UI | **Bilingüe ES/EN — Fase B (núcleo) completa** en rama `feat/i18n-fase-b`: 661 textos envueltos con `tr()` y traducidos (labels/botones/tooltips, menús, barra de modo, placeholders, títulos de ventana). Reinicia para aplicar. Falta: textos dinámicos (f-strings/`set_estado`/errores) + Fase C (tutorial/glosario/ayuda) |
+| Idioma UI | **Bilingüe ES/EN — COMPLETO** en rama `feat/i18n-fase-b` (~1236 traducciones). Fase B: todo el texto de UI estático + dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `show_toast`, `configure`); f-strings → `tr().format()` posicional. Fase C: tutorial+glosario vía `data/*.en.json`. Reinicia para aplicar. Único residual: f-strings sin texto traducible (icono+valor). **Sin mergear a `main`** |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
@@ -61,6 +61,34 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 27 (cont.) — Bilingüe COMPLETO: Fase B residual + Fase C
+
+Continuación en `feat/i18n-fase-b` hasta cerrar el bilingüe entero (~1236 entradas).
+
+5. **set_estado** (`1a0de9a` literales + `3ee66ea`/`e0f5147` f-strings): los ~470
+   mensajes de la barra de estado. Literales con `tr()`; f-strings convertidas con
+   un **motor AST** a `tr("...{0}...").format(expr)` (placeholders **posicionales**
+   para evitar colisiones `self`/`cls`; format-spec `:.2f` y conversion `!r`
+   preservados; offsets en **bytes UTF-8**). set_estado 100% bilingüe.
+6. **messagebox** (`e0f5147`): títulos y mensajes de los diálogos (incl. multilínea
+   de backup/trigger LoRA).
+7. **Dinámicos `configure(text=)`/`title()`/`show_toast`** (`41b13fb`, `a339844`):
+   labels y títulos dinámicos. **Bug encontrado**: `tools_workflow.py` tenía un
+   **BOM** que rompía `ast.parse` → el conversor saltaba el archivo (22 set_estado
+   sin tocar). BOM eliminado + sus messagebox (`4931994`).
+8. **Fase C** (`216a87c`): `tutorial.py`/`glosario.py` eligen `data/<x>.en.json`
+   si idioma=='en' (fallback a ES). Creados `tutorial.en.json` (42 pasos) y
+   `glosario.en.json` (56 entradas) traducidos; `data/` ya se empaqueta en ambos `.spec`.
+
+**Único residual** (correcto dejarlo): f-strings sin texto traducible — solo icono
++ valor dinámico (`f"❌ {error}"`, `f"🎭 {nombre}"`). No hay nada que traducir.
+
+Patrón de trabajo: scripts de wrapping (solo literales puros) + validador que cruza
+las claves `tr()` extraídas del código con el diccionario → **0 faltantes** antes de
+cada inyección. Tests **729 verdes** y ruff limpio en los ~12 commits.
 
 ---
 
