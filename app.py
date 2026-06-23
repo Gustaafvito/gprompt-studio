@@ -171,7 +171,7 @@ class ArquitectoApp(
                 return False
             self.clients = APIClients()
             if self.clients.error:
-                messagebox.showerror("Error de configuración", self.clients.error)
+                messagebox.showerror(tr("Error de configuración"), self.clients.error)
                 self.destroy()
                 return False
         self._splash_estado("Cargando datos...")
@@ -904,7 +904,7 @@ class ArquitectoApp(
             return
         self._regen_idx -= 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.dialogs.set_estado(f"← Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.set_estado(tr('← Versión {0}/{1}').format((self._regen_idx + 1), (len(self._regen_stack))), "#3498db")
 
     def _cmd_regenerar_adelante(self):
         """Navega a la versión siguiente de la regeneración."""
@@ -914,7 +914,7 @@ class ArquitectoApp(
             return
         self._regen_idx += 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.dialogs.set_estado(f"→ Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.set_estado(tr('→ Versión {0}/{1}').format((self._regen_idx + 1), (len(self._regen_stack))), "#3498db")
 
     def _cmd_diff_versiones(self):
         """Muestra ventana con diff coloreado entre versión actual y anterior de la pila de regeneración."""
@@ -1936,8 +1936,7 @@ class ArquitectoApp(
                 _abrir_lado_a_lado()
             else:
                 self.set_estado(
-                    f"⚠️ Selecciona EXACTAMENTE 2 cards para comparar "
-                    f"(hay {len(seleccionadas)} marcadas)",
+                    tr('⚠️ Selecciona EXACTAMENTE 2 cards para comparar (hay {0} marcadas)').format(len(seleccionadas)),
                     "#e67e22",
                 )
         vent.bind("<Alt-c>", _atajo_comparar)

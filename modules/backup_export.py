@@ -71,11 +71,11 @@ class BackupExportService:
                 f"  - Plantillas: {len(backup['plantillas'])}\n"
                 f"  - Paletas:    {len(backup['paletas'])}"
             )
-            messagebox.showinfo("Backup completo", mensaje, parent=self.app)
+            messagebox.showinfo(tr("Backup completo"), mensaje, parent=self.app)
             self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), "#2ecc71")
         except Exception as e:
             self.app.dialogs.set_estado(tr('❌ Error en backup: {0}').format(e), "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self.app)
+            messagebox.showerror(tr("Error"), tr('No se pudo guardar el backup:\n{0}').format(e), parent=self.app)
 
     def _construir_backup(self) -> dict:
         """Construye el diccionario con todos los datos del usuario."""
@@ -113,9 +113,9 @@ class BackupExportService:
                 backup = json.load(f)
 
             if not isinstance(backup, dict) or "version" not in backup:
-                messagebox.showerror("Backup inválido",
-                                     "El archivo no parece un backup de G-Prompt Studio "
-                                     "(falta el campo 'version').",
+                messagebox.showerror(tr("Backup inválido"),
+                                     tr("El archivo no parece un backup de G-Prompt Studio "
+                                     "(falta el campo 'version')."),
                                      parent=self.app)
                 return
 
@@ -145,15 +145,8 @@ class BackupExportService:
                 fecha_backup = fecha_backup_raw or "desconocida"
 
             if not messagebox.askyesno(
-                "Confirmar restauración",
-                f"Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\n"
-                f"Datos actuales: {tot_actual} entradas\n"
-                f"Backup a restaurar: {tot_backup} entradas\n"
-                f"Fecha del backup: {fecha_backup}\n\n"
-                f"G-Prompt guardará automáticamente un backup de seguridad "
-                f"de tus datos ACTUALES antes de sobrescribir, así puedes volver "
-                f"atrás si te equivocas.\n\n"
-                f"¿Continuar?",
+                tr("Confirmar restauración"),
+                tr('Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\nDatos actuales: {0} entradas\nBackup a restaurar: {1} entradas\nFecha del backup: {2}\n\nG-Prompt guardará automáticamente un backup de seguridad de tus datos ACTUALES antes de sobrescribir, así puedes volver atrás si te equivocas.\n\n¿Continuar?').format(tot_actual, tot_backup, fecha_backup),
                 parent=self.app,
             ):
                 return
@@ -170,9 +163,8 @@ class BackupExportService:
                 # Si no se puede guardar el backup pre-restore, ABORTAR
                 # (mejor no restaurar que perder datos)
                 messagebox.showerror(
-                    "Error",
-                    f"No se pudo crear el backup de seguridad pre-restore:\n{e}\n\n"
-                    f"Restauración CANCELADA para no arriesgar tus datos actuales.",
+                    tr("Error"),
+                    tr('No se pudo crear el backup de seguridad pre-restore:\n{0}\n\nRestauración CANCELADA para no arriesgar tus datos actuales.').format(e),
                     parent=self.app,
                 )
                 return
@@ -216,16 +208,14 @@ class BackupExportService:
                 self.app.actualizar_combo_plantillas()
 
             messagebox.showinfo(
-                "Restauración completada",
-                f"Backup restaurado ({tot_backup} entradas).\n\n"
-                f"Tus datos anteriores se guardaron en:\n{pre_path}\n\n"
-                f"Si te has equivocado, puedes restaurar ese archivo.",
+                tr("Restauración completada"),
+                tr('Backup restaurado ({0} entradas).\n\nTus datos anteriores se guardaron en:\n{1}\n\nSi te has equivocado, puedes restaurar ese archivo.').format(tot_backup, pre_path),
                 parent=self.app,
             )
             self.app.dialogs.set_estado(tr('✅ Backup restaurado ({0} entradas)').format(tot_backup), "#2ecc71")
         except Exception as e:
             self.app.dialogs.set_estado(tr('❌ Error al restaurar: {0}').format(e), "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self.app)
+            messagebox.showerror(tr("Error"), tr('No se pudo restaurar el backup:\n{0}').format(e), parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
         """Selector previo de qué exportar: historial / favoritos / estrellas /
@@ -275,8 +265,8 @@ class BackupExportService:
             if chk_favs_var.get(): seleccion.append(("favoritos", favs))
             if chk_stars_var.get(): seleccion.append(("estrellas", stars))
             if not seleccion:
-                messagebox.showwarning("Sin selección",
-                                       "Marca al menos una colección.",
+                messagebox.showwarning(tr("Sin selección"),
+                                       tr("Marca al menos una colección."),
                                        parent=sel)
                 return
             sel.destroy()
@@ -353,13 +343,13 @@ class BackupExportService:
                         n += 1
             self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), "#2ecc71")
             messagebox.showinfo(
-                "Exportación completada",
+                tr("Exportación completada"),
                 f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
                 parent=self.app,
             )
         except Exception as e:
             self.app.dialogs.set_estado(tr('❌ Error al exportar: {0}').format(e), "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self.app)
+            messagebox.showerror(tr("Error"), tr('No se pudo exportar:\n{0}').format(e), parent=self.app)
 
     def _cmd_export_cli(self) -> None:
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.
@@ -614,7 +604,7 @@ class BackupExportService:
                          if modo_sel is None or m in (modo_sel, "todos")]
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
-            self.app.dialogs.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
+            self.app.dialogs.set_estado(tr('📋 {0} formatos copiados al portapapeles').format(len(filtrados)),
                             "#2ecc71")
 
         ctk.CTkButton(vent, text=tr("📋 Copiar todos los del filtro actual"),
@@ -807,7 +797,7 @@ class BackupExportService:
 
                 btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color="#1a7a3c",
                                       font=ctk.CTkFont(size=10),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
+                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.

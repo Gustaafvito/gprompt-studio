@@ -217,7 +217,7 @@ class ToolsCreativeService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"⚡ Pulse: generando {len(temperaturas)} versiones (T={temperaturas[0][0]:.1f} → T={temperaturas[-1][0]:.1f})...",
+        self.app.dialogs.set_estado(tr('⚡ Pulse: generando {0} versiones (T={1:.1f} → T={2:.1f})...').format((len(temperaturas)), (temperaturas[0][0]), (temperaturas[-1][0])),
                         "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
@@ -552,7 +552,7 @@ class ToolsCreativeService:
 
     def _probar_modelos_y_comparar(self, idea, modelos, modo):
         """Genera el prompt con cada modelo en paralelo y abre el comparador."""
-        self.app.dialogs.set_estado(f"🚀 Generando con {len(modelos)} modelos en paralelo...",
+        self.app.dialogs.set_estado(tr('🚀 Generando con {0} modelos en paralelo...').format(len(modelos)),
                         "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
@@ -642,7 +642,7 @@ class ToolsCreativeService:
                             tr("⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica."),
                             "#e67e22")
                     self.app._abrir_comparador(variantes, labels=labels)
-                    self.app.dialogs.set_estado(f"🚀 {len(modelos)} versiones listas — elige tu favorita",
+                    self.app.dialogs.set_estado(tr('🚀 {0} versiones listas — elige tu favorita').format(len(modelos)),
                                     "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -809,7 +809,7 @@ class ToolsCreativeService:
             self.app.txt_idea.delete("1.0", "end")
             self.app.txt_idea.insert("1.0", idea_compuesta)
             vent.destroy()
-            self.app.dialogs.set_estado(f"👥 {len(personajes_def)} personajes preparados — pulsa ✨ Generar", "#2ecc71")
+            self.app.dialogs.set_estado(tr('👥 {0} personajes preparados — pulsa ✨ Generar').format(len(personajes_def)), "#2ecc71")
 
         ctk.CTkButton(vent, text=tr("✅ Aplicar a la idea"), width=200, height=32,
                       fg_color="#1a7a3c", hover_color="#145e2d",
@@ -1010,7 +1010,7 @@ class ToolsCreativeService:
                     for est in validos:
                         if est in self.app.estilo_checks:
                             self.app.estilo_checks[est].set(True)
-                    self.app.dialogs.set_estado(f"🎨 Estilos aplicados: {', '.join(validos)}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🎨 Estilos aplicados: {0}').format(', '.join(validos)), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -1078,7 +1078,7 @@ class ToolsCreativeService:
                     sep = ", " if current else ""
                     self.app.txt_idea.insert("end", sep + ", ".join(validos))
                     self.app.txt_idea.see("end")
-                    self.app.dialogs.set_estado(f"🏷️ Tags añadidos: {', '.join(validos)}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🏷️ Tags añadidos: {0}').format(', '.join(validos)), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                 self.app.after(0, _aplicar)
             except Exception as e:
@@ -1360,7 +1360,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda i=i: self.app.dialogs.set_estado(tr('🧬 Variante {0}/{1} lista').format(i, cantidad), "#3498db"))
             def _mostrar():
                 self.app._abrir_comparador(resultados)
-                self.app.dialogs.set_estado(f"🧬 {len(resultados)} variantes con ADN listas", "#2ecc71")
+                self.app.dialogs.set_estado(tr('🧬 {0} variantes con ADN listas').format(len(resultados)), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
                 self.app.dialogs._sonar_completado()
             self.app.after(0, _mostrar)
@@ -1604,7 +1604,7 @@ class ToolsCreativeService:
                 presets = [p for p in presets if p.get("nombre") != nombre]
             presets.append({"nombre": nombre, "items": activos})
             _persistir_presets(presets)
-            self.app.dialogs.set_estado(f"💾 Preset '{nombre}' guardado ({len(activos)} items)", "#2ecc71")
+            self.app.dialogs.set_estado(tr("💾 Preset '{0}' guardado ({1} items)").format((nombre), (len(activos))), "#2ecc71")
             _actualizar_lbl()
 
         def _mostrar_presets():
@@ -1703,10 +1703,10 @@ class ToolsCreativeService:
             pos = self.app.extraer_positive()
             if pos:
                 self.app.dialogs.actualizar_salida(f"POSITIVE PROMPT: {pos}\nNEGATIVE PROMPT: {negativo}")
-                self.app.dialogs.set_estado(f"🧰 NEGATIVE construido ({len(tags_sel)} items)", "#2ecc71")
+                self.app.dialogs.set_estado(tr('🧰 NEGATIVE construido ({0} items)').format(len(tags_sel)), "#2ecc71")
             else:
                 pyperclip.copy(negativo)
-                self.app.dialogs.set_estado(f"🧰 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
+                self.app.dialogs.set_estado(tr('🧰 NEGATIVE copiado ({0} items)').format(len(tags_sel)), "#2ecc71")
             vent.destroy()
 
         def _copiar():
@@ -1714,7 +1714,7 @@ class ToolsCreativeService:
             if not tags_sel:
                 return self.app.dialogs.set_estado(tr("⚠️ Marca al menos un elemento."), "#e67e22")
             pyperclip.copy(", ".join(tags_sel))
-            self.app.dialogs.set_estado(f"📋 NEGATIVE copiado ({len(tags_sel)} items)", "#2ecc71")
+            self.app.dialogs.set_estado(tr('📋 NEGATIVE copiado ({0} items)').format(len(tags_sel)), "#2ecc71")
             vent.destroy()
 
         ctk.CTkButton(btn_row, text=tr("✅ Aplicar al prompt"), width=170, height=30, fg_color="#1a7a3c",
@@ -1900,7 +1900,7 @@ class ToolsCreativeService:
                         }
                         self.app.store.paletas.append(paleta)
                         self.app.store._guardar("paletas")  # FIX: era store.guardar() inexistente
-                        self.app.dialogs.set_estado(f"💾 Paleta '{paleta['nombre']}' guardada", "#2ecc71")
+                        self.app.dialogs.set_estado(tr("💾 Paleta '{0}' guardada").format(paleta['nombre']), "#2ecc71")
 
                     ctk.CTkButton(btn_row, text=tr("📋 Copiar HEX"), width=120, height=28,
                                   command=lambda: pyperclip.copy(hex_str)).pack(side="left", padx=4)
@@ -1973,12 +1973,12 @@ class ToolsCreativeService:
                 def _aplicar(pal=p):
                     hex_str = ", ".join(pal.get("hex", []))
                     self.app._aplicar_atajo_tags(f"color palette: {hex_str}")
-                    self.app.dialogs.set_estado(f"🎨 Paleta '{pal.get('nombre','')}' añadida al prompt",
+                    self.app.dialogs.set_estado(tr("🎨 Paleta '{0}' añadida al prompt").format(pal.get('nombre','')),
                                     "#2ecc71")
 
                 def _copiar(pal=p):
                     pyperclip.copy(", ".join(pal.get("hex", [])))
-                    self.app.dialogs.set_estado(f"📋 Hex de '{pal.get('nombre','')}' copiados",
+                    self.app.dialogs.set_estado(tr("📋 Hex de '{0}' copiados").format(pal.get('nombre','')),
                                     "#2ecc71")
 
                 def _borrar(i=idx, nombre=p.get("nombre", "?")):

@@ -113,7 +113,7 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n])
-                    self.app.dialogs.set_estado(f"🎨 Moodboard listo ({len(bloques)} prompts)", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🎨 Moodboard listo ({0} prompts)').format(len(bloques)), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
@@ -349,7 +349,7 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n], labels=labels_comp)
-                    self.app.dialogs.set_estado(f"🎬 Secuencia de {len(bloques)} shots lista", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🎬 Secuencia de {0} shots lista').format(len(bloques)), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
@@ -430,7 +430,7 @@ class MultiPromptService:
                         ],
                     )
                     self.app.dialogs.set_estado(
-                        f"📽 Storyboard de {len(bloques)} frames listo · 🎬 encadénalo a vídeo desde el comparador",
+                        tr('📽 Storyboard de {0} frames listo · 🎬 encadénalo a vídeo desde el comparador').format(len(bloques)),
                         "#2ecc71",
                     )
                     self.app.dialogs.toggle_botones(True)
@@ -457,7 +457,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"🎬 Encadenando {len(frames)} frames como prompt de vídeo...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🎬 Encadenando {0} frames como prompt de vídeo...').format(len(frames)), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         # Construir bloque con cada frame numerado
@@ -501,7 +501,7 @@ class MultiPromptService:
                     self.app.dialogs.actualizar_salida(resp)
                     self.app.guardar_en_historial(resp)
                     self.app.dialogs.set_estado(
-                        f"🎬 Vídeo encadenado de {len(frames)} keyframes aplicado al editor",
+                        tr('🎬 Vídeo encadenado de {0} keyframes aplicado al editor').format(len(frames)),
                         "#2ecc71",
                     )
                     self.app.dialogs.toggle_botones(True)
@@ -644,7 +644,7 @@ class MultiPromptService:
                         ],
                     )
                     self.app.dialogs.set_estado(
-                        f"🖼 Storyboard de {len(bloques)} paneles listo · 📋 fusiona en 1 prompt desde el comparador",
+                        tr('🖼 Storyboard de {0} paneles listo · 📋 fusiona en 1 prompt desde el comparador').format(len(bloques)),
                         "#2ecc71",
                     )
                     self.app.dialogs.toggle_botones(True)
@@ -670,7 +670,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(f"📋 Fusionando {len(paneles)} paneles en 1 prompt...", "#f39c12")
+        self.app.dialogs.set_estado(tr('📋 Fusionando {0} paneles en 1 prompt...').format(len(paneles)), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         paneles_str = "\n\n".join(
@@ -708,7 +708,7 @@ class MultiPromptService:
                     self.app.dialogs.actualizar_salida(resp)
                     self.app.guardar_en_historial(resp)
                     self.app.dialogs.set_estado(
-                        f"📋 Storyboard fusionado en 1 prompt ({len(paneles)} paneles) aplicado al editor",
+                        tr('📋 Storyboard fusionado en 1 prompt ({0} paneles) aplicado al editor').format(len(paneles)),
                         "#2ecc71",
                     )
                     self.app.dialogs.toggle_botones(True)
@@ -1012,7 +1012,7 @@ class MultiPromptService:
             self.app.dialogs.actualizar_salida(n["texto"])
             ruta = _ruta_de(sel["id"])
             ruta_str = " → ".join(x["label"] for x in ruta)
-            self.app.dialogs.set_estado(f"📋 Walk: aplicado nodo {n['label']} (ruta: {ruta_str})", "#2ecc71")
+            self.app.dialogs.set_estado(tr('📋 Walk: aplicado nodo {0} (ruta: {1})').format((n['label']), (ruta_str)), "#2ecc71")
             try: self.app._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -1133,7 +1133,7 @@ class MultiPromptService:
             _contar(nid)
             msg = (f"¿Borrar el nodo {n['label']}"
                    + (f" y sus {cnt_descendientes} descendientes?" if cnt_descendientes else "?"))
-            if not messagebox.askyesno("Confirmar borrado", msg, parent=vent):
+            if not messagebox.askyesno(tr("Confirmar borrado"), msg, parent=vent):
                 return
             # Marcar para borrar todos los descendientes + este
             a_borrar = {nid}

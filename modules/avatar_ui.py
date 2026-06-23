@@ -427,20 +427,20 @@ class AvatarFrame(ctk.CTkFrame):
         if self.boton_imagen:
             self.boton_imagen.configure(state="normal")
         self.label_estado.configure(text=tr("❌ Error generando la ficha."))
-        messagebox.showerror("Error", mensaje)
+        messagebox.showerror(tr("Error"), mensaje)
 
     def _on_generar(self):
         trigger = self.entry_trigger.get().strip()
         if not trigger:
             messagebox.showwarning(
-                "Falta trigger word",
-                "Introduce un trigger word (ej: ohwx_ana). Es la palabra que "
-                "aprenderá el LoRA para invocar al personaje.")
+                tr("Falta trigger word"),
+                tr("Introduce un trigger word (ej: ohwx_ana). Es la palabra que "
+                "aprenderá el LoRA para invocar al personaje."))
             return
 
         seleccionados = [k for k, v in self._angulo_vars.items() if v.get()]
         if not seleccionados:
-            messagebox.showwarning("Sin ángulos", "Selecciona al menos un ángulo.")
+            messagebox.showwarning(tr("Sin ángulos"), tr("Selecciona al menos un ángulo."))
             return
 
         carpeta = filedialog.askdirectory(
@@ -567,12 +567,12 @@ class AvatarFrame(ctk.CTkFrame):
                 "pega esos prompts — la identidad la ancla tu imagen.")
         if avisos:
             mensaje += "\n\n" + "\n\n".join(avisos)
-        messagebox.showinfo("Dataset generado", mensaje)
+        messagebox.showinfo(tr("Dataset generado"), mensaje)
 
     def _fin_error(self, mensaje):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(text=tr("❌ Error en la generación."))
-        messagebox.showerror("Error", mensaje)
+        messagebox.showerror(tr("Error"), mensaje)
 
 
 # ---------------------------------------------------------------------------

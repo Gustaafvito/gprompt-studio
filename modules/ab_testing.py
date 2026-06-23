@@ -146,10 +146,10 @@ class AbTestingService:
         def _generar():
             sel = [n for n, v in dim_vars.items() if v.get()]
             if not sel:
-                messagebox.showwarning("Sin selección", "Marca al menos 1 dimensión a variar.", parent=cfg)
+                messagebox.showwarning(tr("Sin selección"), tr("Marca al menos 1 dimensión a variar."), parent=cfg)
                 return
             if len(sel) > 2:
-                messagebox.showwarning("Demasiadas", "Marca como mucho 2 dimensiones (4 combinaciones).", parent=cfg)
+                messagebox.showwarning(tr("Demasiadas"), tr("Marca como mucho 2 dimensiones (4 combinaciones)."), parent=cfg)
                 return
             cfg.destroy()
             self._ab_lanzar(idea, sel)

@@ -422,7 +422,7 @@ class WorkersIaService:
                     modo_txt = "Prompt mejorado con análisis visual"
                 else:
                     modo_txt = "Prompt anclado generado"
-                self.app.dialogs.set_estado(f"✅ Visión: [{motor}] · LLM: {self.app.llm_var.get()} · {modo_txt}", "#2ecc71")
+                self.app.dialogs.set_estado(tr('✅ Visión: [{0}] · LLM: {1} · {2}').format((motor), (self.app.llm_var.get()), (modo_txt)), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
             self.app.after(0, _mostrar_final)
         except Exception as e:

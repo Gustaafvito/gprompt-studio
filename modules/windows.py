@@ -129,7 +129,7 @@ def abrir_personajes(app):
         nombre = entry_nombre.get().strip()
         desc = entry_desc.get().strip()
         if not nombre or not desc:
-            messagebox.showwarning("Faltan datos", "Rellena nombre y descripción.",
+            messagebox.showwarning(tr("Faltan datos"), tr("Rellena nombre y descripción."),
                                    parent=ventana)
             return
         if editando_idx[0] is not None:
@@ -141,13 +141,13 @@ def abrir_personajes(app):
                 editando_idx[0] = None
                 btn_guardar.configure(text=tr("💾 Guardar"))
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo editar: {e}", parent=ventana)
+                messagebox.showerror(tr("Error"), tr('No se pudo editar: {0}').format(e), parent=ventana)
                 return
         else:
             existia = app.store.guardar_personaje(nombre, desc)
             if existia:
-                if not messagebox.askyesno("Ya existe",
-                                           f"¿Sobreescribir '{nombre}'?",
+                if not messagebox.askyesno(tr("Ya existe"),
+                                           tr("¿Sobreescribir '{0}'?").format(nombre),
                                            parent=ventana):
                     return
         app.actualizar_combo_personajes()
@@ -229,10 +229,10 @@ def abrir_personajes(app):
             def copiar(p_=p):
                 import pyperclip
                 pyperclip.copy(p_["descripcion"])
-                app.set_estado(f"📋 Descripción de '{p_['nombre']}' copiada", "#3498db")
+                app.set_estado(tr("📋 Descripción de '{0}' copiada").format(p_['nombre']), "#3498db")
 
             def borrar(i=idx, n=p["nombre"]):
-                if messagebox.askyesno("Confirmar", f"¿Borrar '{n}'?", parent=ventana):
+                if messagebox.askyesno(tr("Confirmar"), tr("¿Borrar '{0}'?").format(n), parent=ventana):
                     app.store.borrar_personaje(i)
                     app.actualizar_combo_personajes()
                     refrescar()
@@ -395,7 +395,7 @@ def abrir_loras(app):
         if familia in ("—", ""):
             familia = ""
         if not nombre or not trigger:
-            messagebox.showwarning("Faltan datos", "Rellena nombre y trigger word.",
+            messagebox.showwarning(tr("Faltan datos"), tr("Rellena nombre y trigger word."),
                                    parent=ventana)
             return
         # Validación: detectar triggers que parecen DESCRIPCIONES de
@@ -415,15 +415,8 @@ def abrir_loras(app):
         )
         if _sospechoso:
             _confirma = messagebox.askyesno(
-                "¿Trigger correcto?",
-                f"El trigger '{trigger}' parece una descripción de "
-                f"personaje, no una palabra de activación.\n\n"
-                f"Los triggers de LoRAs son palabras únicas (ej. 'nira', "
-                f"'lmnlhrr') o, como mucho, varias separadas por comas "
-                f"(ej. 'Nyra, Amber Eyes, Undercut').\n\n"
-                f"Si quieres guardar la descripción del personaje, ponla "
-                f"en 🧑 Personajes; aquí solo el/los trigger(s).\n\n"
-                f"¿Guardar igualmente '{trigger}'?",
+                tr("¿Trigger correcto?"),
+                tr("El trigger '{0}' parece una descripción de personaje, no una palabra de activación.\n\nLos triggers de LoRAs son palabras únicas (ej. 'nira', 'lmnlhrr') o, como mucho, varias separadas por comas (ej. 'Nyra, Amber Eyes, Undercut').\n\nSi quieres guardar la descripción del personaje, ponla en 🧑 Personajes; aquí solo el/los trigger(s).\n\n¿Guardar igualmente '{1}'?").format(trigger, trigger),
                 parent=ventana,
             )
             if not _confirma:
@@ -442,14 +435,14 @@ def abrir_loras(app):
                 editando_idx[0] = None
                 btn_guardar.configure(text=tr("💾 Guardar"))
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo editar: {e}",
+                messagebox.showerror(tr("Error"), tr('No se pudo editar: {0}').format(e),
                                      parent=ventana)
                 return
         else:
             existia = app.store.guardar_lora(nombre, trigger, nota, familia, rasgos)
             if existia:
-                if not messagebox.askyesno("Ya existe",
-                                           f"¿Sobreescribir '{nombre}'?",
+                if not messagebox.askyesno(tr("Ya existe"),
+                                           tr("¿Sobreescribir '{0}'?").format(nombre),
                                            parent=ventana):
                     return
         app.actualizar_combo_loras()
@@ -546,11 +539,11 @@ def abrir_loras(app):
             def copiar(l_=l):
                 import pyperclip
                 pyperclip.copy(l_["trigger"])
-                app.set_estado(f"📋 Trigger '{l_['trigger']}' copiado", "#3498db")
+                app.set_estado(tr("📋 Trigger '{0}' copiado").format(l_['trigger']), "#3498db")
 
             def borrar(i=idx, n=l["nombre"]):
-                if messagebox.askyesno("Confirmar",
-                                       f"¿Borrar LoRA '{n}'?",
+                if messagebox.askyesno(tr("Confirmar"),
+                                       tr("¿Borrar LoRA '{0}'?").format(n),
                                        parent=ventana):
                     app.store.borrar_lora(i)
                     app.actualizar_combo_loras()
@@ -1102,7 +1095,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
     """Abre ventana de historial o favoritos con búsqueda."""
     datos = getattr(app.store, coleccion)
     if not datos:
-        messagebox.showinfo(titulo, "No hay entradas guardadas aún.")
+        messagebox.showinfo(titulo, tr("No hay entradas guardadas aún."))
         return
 
     cc = _card_colors()
@@ -1118,9 +1111,8 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
 
     def limpiar_todo():
         total = len(getattr(app.store, coleccion))
-        if not messagebox.askyesno("Confirmar",
-                                   f"¿Borrar TODAS las {total} entradas?\n"
-                                   f"Esta acción no se puede deshacer.",
+        if not messagebox.askyesno(tr("Confirmar"),
+                                   tr('¿Borrar TODAS las {0} entradas?\nEsta acción no se puede deshacer.').format(total),
                                    parent=ventana):
             return
         # FIX: antes el `else` llamaba a limpiar_favoritos() incluso para
@@ -1394,7 +1386,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             try:
                 import pyperclip
                 pyperclip.copy(c)
-                app.set_estado(f"📋 {len(c)} caracteres copiados", "#2ecc71")
+                app.set_estado(tr('📋 {0} caracteres copiados').format(len(c)), "#2ecc71")
             except Exception as _e:
                 app.set_estado(tr('❌ No se pudo copiar: {0}').format(_e), "#e74c3c")
 
@@ -1408,7 +1400,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             tipo = {"historial": "entrada del historial",
                     "favoritos": "favorito",
                     "estrellas": "estrella"}.get(coleccion, "entrada")
-            if messagebox.askyesno("Confirmar", f"¿Borrar este {tipo}?", parent=ventana):
+            if messagebox.askyesno(tr("Confirmar"), tr('¿Borrar este {0}?').format(tipo), parent=ventana):
                 app.store.borrar_entrada(coleccion, i)
                 refrescar()
 

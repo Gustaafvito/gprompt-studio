@@ -1264,7 +1264,7 @@ class DashboardService:
                 # Aplicar al UI
                 for nombre_est, var_est in self.app.estilo_checks.items():
                     var_est.set(nombre_est in muestra)
-                self.app.dialogs.set_estado(f"🎲 Mood aplicado: {' + '.join(muestra)}", accent_pink)
+                self.app.dialogs.set_estado(tr('🎲 Mood aplicado: {0}').format(' + '.join(muestra)), accent_pink)
                 v.destroy()
             except Exception as ex:
                 self.app.dialogs.set_estado(tr('⚠️ Error en mood: {0}').format(ex), accent_red)

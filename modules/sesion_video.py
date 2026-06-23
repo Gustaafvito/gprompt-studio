@@ -379,7 +379,7 @@ class SesionVideoService:
                     self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
 
         def _limpiar():
-            if messagebox.askyesno("Limpiar registro", "¿Borrar todos los eventos grabados?", parent=v):
+            if messagebox.askyesno(tr("Limpiar registro"), tr("¿Borrar todos los eventos grabados?"), parent=v):
                 self.app._sesion_eventos = []
                 self.app._sesion_inicio = None
                 v.destroy()

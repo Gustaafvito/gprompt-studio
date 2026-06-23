@@ -244,13 +244,13 @@ class CoreMixin:
             if not provider or not provider.disponible():
                 # Sin key — abrir wizard automáticamente
                 info = LLM_PROVIDERS.get(pid, {})
-                self.set_estado(f"⚠️ {info.get('name', pid)} no tiene API key — abre 🔑 para configurar", "#e67e22")
+                self.set_estado(tr('⚠️ {0} no tiene API key — abre 🔑 para configurar').format(info.get('name', pid)), "#e67e22")
                 self._cmd_configurar_api_keys(provider_focus=pid)
                 return
             # Cambiar el provider activo
             self.clients.cambiar_provider(pid)
             info = LLM_PROVIDERS.get(pid, {})
-            self.set_estado(f"🧠 Cerebro: {info.get('name', pid)}", "#2ecc71")
+            self.set_estado(tr('🧠 Cerebro: {0}').format(info.get('name', pid)), "#2ecc71")
             try: self.sesion._sesion_log(f"🧠 Cambió cerebro → {pid}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -1101,7 +1101,7 @@ class CoreMixin:
         salida = self.txt_salida.get("1.0", "end").strip()
         if idea or salida:
             from tkinter import messagebox
-            if not messagebox.askyesno("Confirmar reset",
+            if not messagebox.askyesno(tr("Confirmar reset"),
                                      "¿Seguro? Perderás:\n"
                                      f"{'  • Idea actual' if idea else ''}\n"
                                      f"{'  • Prompt generado' if salida else ''}\n"

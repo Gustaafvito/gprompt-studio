@@ -115,7 +115,7 @@ class DataMgmtService:
             from tkinter import messagebox
             fecha = borrador.get("fecha", "")
             preview = (idea or salida)[:100]
-            if messagebox.askyesno("📝 Borrador encontrado",
+            if messagebox.askyesno(tr("📝 Borrador encontrado"),
                                       f"Hay un borrador no guardado de la sesión anterior ({fecha}):\n\n"
                                       f"\"{preview}{'...' if len(preview) >= 100 else ''}\"\n\n"
                                       f"¿Quieres restaurarlo?",
@@ -167,7 +167,7 @@ class DataMgmtService:
     def _cmd_borrar_plantilla(self) -> None:
         nombre = self.app.combo_plantilla.get()
         if not nombre or nombre == "— Sin plantilla —": return
-        if messagebox.askyesno("Confirmar", f"¿Borrar la plantilla '{nombre}'?"):
+        if messagebox.askyesno(tr("Confirmar"), tr("¿Borrar la plantilla '{0}'?").format(nombre)):
             self.app.store.borrar_plantilla(nombre)
             self.app.combo_plantilla.set("— Sin plantilla —")
             self.actualizar_combo_plantillas()
@@ -439,7 +439,7 @@ class DataMgmtService:
                     ent_trigger.delete(0, "end"); ent_trigger.insert(0, t)
                     ent_expansion.delete(0, "end"); ent_expansion.insert(0, e)
                 def _borrar(t=trigger):
-                    if not messagebox.askyesno("Borrar", f"¿Borrar snippet ;{t}?", parent=v): return
+                    if not messagebox.askyesno(tr("Borrar"), tr('¿Borrar snippet ;{0}?').format(t), parent=v): return
                     prefs = self.app.store.cargar_preferencias()
                     cust = prefs.get("snippets_expand", {}) or {}
                     cust.pop(t, None)
@@ -608,7 +608,7 @@ class DataMgmtService:
             "estilos":    self.app.footer.estilos_texto(),
             "contenido":  texto,
         })
-        self.app.dialogs.set_estado(f"🌟 Prompt estrella guardado{': ' + nota if nota else ''}.", "#f39c12")
+        self.app.dialogs.set_estado(tr('🌟 Prompt estrella guardado{0}.').format(': ' + nota if nota else ''), "#f39c12")
 
     def _exportar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
@@ -663,7 +663,7 @@ class DataMgmtService:
 
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(header + texto)
-            self.app.dialogs.set_estado(f"💾 Exportado: {Path(ruta).name}", "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 Exportado: {0}').format(Path(ruta).name), "#2ecc71")
 
     def _abrir_snippets(self) -> None:
         """Gestor de snippets con buscador + edit inline."""
@@ -976,7 +976,7 @@ class DataMgmtService:
                         txt += f"\nNEGATIVE PROMPT: {form.get('negative')}"
                     self.app.dialogs.actualizar_salida(txt)
                     vent.destroy()
-                    self.app.dialogs.set_estado(f"📐 Fórmula '{form.get('nombre')}' cargada", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' cargada").format(form.get('nombre')), "#2ecc71")
 
                 def _renombrar(idx_l=i, form_l=f):
                     from tkinter import simpledialog
@@ -997,8 +997,8 @@ class DataMgmtService:
                     refrescar()
 
                 def _borrar(idx_l=i, n=f.get("nombre", "sin nombre")):
-                    if not messagebox.askyesno("Borrar fórmula",
-                                               f"¿Borrar la fórmula '{n}'?",
+                    if not messagebox.askyesno(tr("Borrar fórmula"),
+                                               tr("¿Borrar la fórmula '{0}'?").format(n),
                                                parent=vent):
                         return
                     prefs_b = self.app.store.cargar_preferencias()
@@ -1277,11 +1277,11 @@ class DataMgmtService:
                 def _usar(e=ej):
                     self.app.dialogs.actualizar_salida(e["prompt"])
                     vent.destroy()
-                    self.app.dialogs.set_estado(f"📚 Ejemplo cargado: {e['titulo']}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📚 Ejemplo cargado: {0}').format(e['titulo']), "#2ecc71")
 
                 def _copiar(e=ej):
                     pyperclip.copy(e["prompt"])
-                    self.app.dialogs.set_estado(f"📋 Ejemplo copiado: {e['titulo']}", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📋 Ejemplo copiado: {0}').format(e['titulo']), "#2ecc71")
 
                 def _favorito(e=ej):
                     """Guarda el ejemplo en favoritos del usuario."""
@@ -1301,7 +1301,7 @@ class DataMgmtService:
                             "origen":     f"Biblioteca: {e.get('titulo', '')}",
                         })
                         self.app.dialogs.set_estado(
-                            f"⭐ Guardado en favoritos: {e['titulo']}", "#f1c40f"
+                            tr('⭐ Guardado en favoritos: {0}').format(e['titulo']), "#f1c40f"
                         )
                     except Exception as err:
                         import logging

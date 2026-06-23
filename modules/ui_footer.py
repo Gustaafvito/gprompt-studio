@@ -365,7 +365,7 @@ class UiFooterService:
         self.app.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
-            self.app.dialogs.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
+            self.app.dialogs.set_estado(tr('🎨 Estilos: {0}').format(' + '.join(sel)), "#2ecc71")
         else:
             self.app.dialogs.set_estado(tr("🎨 Estilos: General (ninguno seleccionado)"))
 
@@ -755,7 +755,7 @@ class UiFooterService:
                 logger.debug(f"[silent] {_e}")
             try:
                 self.app.dialogs.set_estado(
-                    f"🔗 Multi-LoRA: {len(nuevos)} extra(s) activo(s)",
+                    tr('🔗 Multi-LoRA: {0} extra(s) activo(s)').format(len(nuevos)),
                     "#7c3aed",
                 )
             except Exception:

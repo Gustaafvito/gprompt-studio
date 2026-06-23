@@ -75,7 +75,7 @@ class RefinamientoService:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto: return
 
-        self.app.dialogs.set_estado(f"🔁 Refinando: {instruccion_extra[:40]}...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🔁 Refinando: {0}...').format(instruccion_extra[:40]), "#f39c12")
         self.app.dialogs.toggle_botones(False)
 
         es_tag_based = not self.app.is_natural_mode()
@@ -99,7 +99,7 @@ class RefinamientoService:
                 resp = limpiar_marcadores(resp)
                 def _aplicar():
                     self.app.guardar_en_historial(resp)
-                    self.app.dialogs.set_estado(f"🔍 Refinamiento listo ({instruccion_extra[:30]}...) — revisa el diff.", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🔍 Refinamiento listo ({0}...) — revisa el diff.').format(instruccion_extra[:30]), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                     self._mostrar_diff_refinamiento(texto_previo, resp)
@@ -212,7 +212,7 @@ class RefinamientoService:
 
                 def _mostrar():
                     self.app._abrir_comparador(variantes[:n])
-                    self.app.dialogs.set_estado(f"🔂 {len(variantes)} variantes de '{elemento}' listas", "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🔂 {0} variantes de '{1}' listas").format((len(variantes)), (elemento)), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)

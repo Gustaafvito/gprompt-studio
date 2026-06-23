@@ -199,7 +199,7 @@ class AdnVisualService:
                             self.app.txt_idea.delete("1.0", "end")
                             self.app.txt_idea.insert("1.0", prompt)
                         ver.destroy()
-                        self.app.dialogs.set_estado(f"🧬 '{nombre_l}' cargado en idea ({len(partes)} campos)",
+                        self.app.dialogs.set_estado(tr("🧬 '{0}' cargado en idea ({1} campos)").format((nombre_l), (len(partes))),
                                         "#2ecc71")
 
                     btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
@@ -211,8 +211,8 @@ class AdnVisualService:
 
                 def _borrar(idx_l=idx, nombre_l=nombre):
                     from tkinter import messagebox
-                    if not messagebox.askyesno("Eliminar",
-                                               f"¿Borrar '{nombre_l}'?",
+                    if not messagebox.askyesno(tr("Eliminar"),
+                                               tr("¿Borrar '{0}'?").format(nombre_l),
                                                parent=vent):
                         return
                     prefs_b = self.app.store.cargar_preferencias()

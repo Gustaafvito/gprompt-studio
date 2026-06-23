@@ -167,7 +167,7 @@ class DialogsService:
                 def _borrar():
                     from tkinter import messagebox
                     if not messagebox.askyesno(
-                        "Borrar API key",
+                        tr("Borrar API key"),
                         f"¿Borrar la API key de {info_l['label']}?\n\n"
                         "Se eliminará de keyring del SO y de keys.json cifrado.\n"
                         "Esta acción no se puede deshacer.",
@@ -178,7 +178,7 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
                     except Exception as ex:
                         self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar
@@ -285,7 +285,7 @@ class DialogsService:
                 def _borrar():
                     from tkinter import messagebox
                     if not messagebox.askyesno(
-                        "Borrar API key",
+                        tr("Borrar API key"),
                         f"¿Borrar la API key de {info_l['label']}?\n\n"
                         "Se eliminará de keyring del SO y de keys.json cifrado.\n"
                         "La app volverá al modo anónimo (más lento).",
@@ -296,7 +296,7 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
                     except Exception as ex:
                         self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar

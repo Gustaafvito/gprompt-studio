@@ -532,4 +532,4 @@ class PreviewPollinationsService:
                 image_pil.save(ruta)
                 self.app.dialogs.set_estado(tr('✅ Boceto guardado en: {0}').format(ruta), "#2ecc71")
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo guardar la imagen:\n{e}")
+                messagebox.showerror(tr("Error"), tr('No se pudo guardar la imagen:\n{0}').format(e))

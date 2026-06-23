@@ -209,8 +209,8 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
 
         natural = self.app.is_natural_mode()
-        if natural: self.app.dialogs.set_estado(f"🌐 {self.app.plataforma_var.get()} — prompts descriptivos", "#3498db")
-        else: self.app.dialogs.set_estado(f"🎯 {self.app.plataforma_var.get()} — tags + pesos + negatives", "#3498db")
+        if natural: self.app.dialogs.set_estado(tr('🌐 {0} — prompts descriptivos').format(self.app.plataforma_var.get()), "#3498db")
+        else: self.app.dialogs.set_estado(tr('🎯 {0} — tags + pesos + negatives').format(self.app.plataforma_var.get()), "#3498db")
         self.app.reiniciar_memoria()
 
     def _actualizar_motores_video(self) -> None:
@@ -456,7 +456,7 @@ class UiEventsService:
         if id_a and id_a != "— Idioma —": partes.append(f"🌐 {id_a}")
 
         if partes:
-            self.app.dialogs.set_estado(f"🎵 Filtros audio: {' · '.join(partes)}", "#9b59b6")
+            self.app.dialogs.set_estado(tr('🎵 Filtros audio: {0}').format(' · '.join(partes)), "#9b59b6")
         else:
             self.app.dialogs.set_estado(tr("🎵 Sin filtros de audio adicionales"))
         self.app.reiniciar_memoria()

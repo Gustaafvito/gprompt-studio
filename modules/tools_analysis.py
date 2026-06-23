@@ -331,7 +331,7 @@ class ToolsAnalysisService:
                       command=vent_sel.destroy).pack(pady=2)
 
     def _critica_ejecutar(self, ultimos: list) -> None:
-        self.app.dialogs.set_estado(f"🔍 Analizando {len(ultimos)} ideas y patrones...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🔍 Analizando {0} ideas y patrones...').format(len(ultimos)), "#f39c12")
 
         modelos_usados = Counter()
         plataformas_usadas = Counter()
@@ -440,7 +440,7 @@ class ToolsAnalysisService:
                 sel = txt.get("sel.first", "sel.last")
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.dialogs.set_estado(f"📋 {len(sel)} caracteres copiados", "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📋 {0} caracteres copiados').format(len(sel)), "#2ecc71")
             except Exception:
                 self.app.dialogs.set_estado(tr("⚠️ Selecciona texto primero arrastrando con el ratón"), "#e67e22")
 
@@ -529,7 +529,7 @@ class ToolsAnalysisService:
 
     def _auto_mejora_ejecutar(self, ultimos: list) -> None:
         """Lanza la auto-mejora con un set concreto de prompts."""
-        self.app.dialogs.set_estado(f"🚀 Auto-mejora: analizando {len(ultimos)} prompts...", "#f39c12")
+        self.app.dialogs.set_estado(tr('🚀 Auto-mejora: analizando {0} prompts...').format(len(ultimos)), "#f39c12")
 
         prompts = []
         for i, it in enumerate(ultimos, 1):
@@ -954,7 +954,7 @@ class ToolsAnalysisService:
                         est_s,
                         len(str(cont).split()) if cont else 0,
                     ])
-            self.app.dialogs.set_estado(f"📊 CSV exportado: {path.split('/')[-1]}", "#2ecc71")
+            self.app.dialogs.set_estado(tr('📊 CSV exportado: {0}').format(path.split('/')[-1]), "#2ecc71")
 
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(fill="x", padx=10, pady=8)
@@ -1442,7 +1442,7 @@ class ToolsAnalysisService:
                         self.app.dialogs.actualizar_salida(mejor["texto"])
                         vent.destroy()
                         self.app.dialogs.set_estado(
-                            f"🎯 Prompt optimizado aplicado ({int(mejor['score'])}/100)", "#2ecc71")
+                            tr('🎯 Prompt optimizado aplicado ({0}/100)').format(int(mejor['score'])), "#2ecc71")
                     btn_aplicar.configure(state="normal", command=_aplicar)
 
                 self.app.after(0, _finalizar)
@@ -1740,8 +1740,8 @@ class ToolsAnalysisService:
                     vent.destroy()  # OK: tras aplicar tiene sentido cerrar
 
                 def _borrar(idx=i, nombre=seed.get('nombre', '?')):
-                    if not messagebox.askyesno("Borrar Seed",
-                                               f"¿Borrar el seed '{nombre}'?",
+                    if not messagebox.askyesno(tr("Borrar Seed"),
+                                               tr("¿Borrar el seed '{0}'?").format(nombre),
                                                parent=vent):
                         return
                     prefs_b = self.app.store.cargar_preferencias()
@@ -1827,7 +1827,7 @@ class ToolsAnalysisService:
             nombre = seed.get('nombre', '?')
             self.app.dialogs.set_estado(tr("💎 Seed '{0}' aplicado").format(nombre), "#2ecc71")
             if mensajes:
-                self.app.dialogs.set_estado(f"⚠️ {', '.join(mensajes)}", "#e67e22")
+                self.app.dialogs.set_estado(tr('⚠️ {0}').format(', '.join(mensajes)), "#e67e22")
         else:
             self.app.dialogs.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
 
@@ -2061,7 +2061,7 @@ class ToolsAnalysisService:
             if ruta:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(json_str)
-                self.app.dialogs.set_estado(f"💾 Guardado: {ruta.split('/')[-1]}", "#2ecc71")
+                self.app.dialogs.set_estado(tr('💾 Guardado: {0}').format(ruta.split('/')[-1]), "#2ecc71")
 
         ctk.CTkButton(frame_btn, text=tr("📋 Copiar JSON"), width=120, fg_color="#15803d",
                       hover_color="#166534", command=_copiar).pack(side="left", padx=(0, 6))

@@ -308,7 +308,7 @@ class ModoClienteService:
                 def _mostrar():
                     self._abrir_comparador_propuestas(propuestas[:5], brief)
                     self.app.dialogs.set_estado(
-                        f"💼 {len(propuestas)} propuestas profesionales generadas",
+                        tr('💼 {0} propuestas profesionales generadas').format(len(propuestas)),
                         "#2ecc71",
                     )
                     self.app.dialogs.toggle_botones(True)
@@ -825,7 +825,7 @@ class ModoClienteService:
                                         "#e67e22")
                         return
                     self.app.dialogs.actualizar_salida(tpl)
-                    self.app.dialogs.set_estado(f"🎭 Estilo '{e.get('nombre','')}' aplicado",
+                    self.app.dialogs.set_estado(tr("🎭 Estilo '{0}' aplicado").format(e.get('nombre','')),
                                     "#2ecc71")
 
                 def _ver(e=est):
