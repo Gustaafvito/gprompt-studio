@@ -887,7 +887,7 @@ class UIBuildersService:
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         f2_inner = ctk.CTkFrame(f2, fg_color="transparent")
         f2_inner.pack()
-        self.app.combo_ratio = ctk.CTkComboBox(f2_inner, values=RATIOS_IMAGEN, variable=self.app.ratio_var, width=80, height=28,
+        self.app.combo_ratio = ctk.CTkComboBox(f2_inner, values=[tr(r) for r in RATIOS_IMAGEN], variable=self.app.ratio_var, width=80, height=28,
                                             font=ctk.CTkFont(size=11), command=lambda v: self.app.ratio_var.set(v))
         self.app.combo_ratio.set("1:1")
         self.app.combo_ratio.pack(side="left")

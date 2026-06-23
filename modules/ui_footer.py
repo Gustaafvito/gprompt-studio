@@ -480,7 +480,7 @@ class UiFooterService:
         return " + ".join(sel) if sel else "General"
 
     def ratio_actual(self):
-        return self.app.ratio_var.get() if self.app.ratio_var.get() != "Libre" else ""
+        return self.app.ratio_var.get() if self.app.ratio_var.get() != tr("Libre") else ""
 
     def personaje_activo(self):
         nombre = self.app.combo_personaje.get()

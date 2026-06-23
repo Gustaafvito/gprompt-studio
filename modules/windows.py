@@ -1352,7 +1352,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         pers_e  = f"  🧑{entrada['personaje'][:12]}" if entrada.get("personaje") else ""
         lora_e  = f"  🔗{entrada['lora'][:15]}" if entrada.get("lora") else ""
         plat_e  = f"  [{entrada['plataforma'][:15]}]" if entrada.get("plataforma") else ""
-        ratio_t = f"  [{ratio_e}]" if ratio_e and ratio_e != "Libre" else ""
+        ratio_t = f"  [{ratio_e}]" if ratio_e and ratio_e != tr("Libre") else ""
         ctk.CTkLabel(hdr,
                      text=f"  {fecha}  |  {modo_e.upper()}{nsfw_e}{ratio_t}{plat_e}{pers_e}{lora_e}  |  {estilos}",
                      font=ctk.CTkFont(size=11),

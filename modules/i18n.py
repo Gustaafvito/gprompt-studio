@@ -31,6 +31,7 @@ _IDIOMA = "es"
 
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
+    'Libre': 'Free',
     # Negativos: presets (claves internas ES, solo se traduce la etiqueta) + paquetes.
     'Anatomía': 'Anatomy',
     'Anime/2D': 'Anime/2D',
