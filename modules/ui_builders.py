@@ -721,11 +721,13 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(10, 5))
+        self.app._estilo_vid_disp2key = {tr(v): v for v in ESTILOS_VISUAL_VIDEO}
         self.app.combo_estilo_video = ctk.CTkComboBox(
-            self.app.frame_video, values=ESTILOS_VISUAL_VIDEO,
-            variable=self.app.estilo_video_var, width=140,
+            self.app.frame_video, values=[tr(v) for v in ESTILOS_VISUAL_VIDEO],
+            width=140,
             font=ctk.CTkFont(size=11),
-            command=lambda v: self.app.estilo_video_var.set(v))
+            command=lambda disp: self.app.estilo_video_var.set(
+                self.app._estilo_vid_disp2key.get(disp, disp)))
         self.app.combo_estilo_video.set("Auto")
         self.app.combo_estilo_video.pack(side="left", padx=5)
         try:
@@ -867,13 +869,19 @@ class UIBuildersService:
         ctk.CTkLabel(self.app.frame_familia_estilo, text=tr("Estilo"),
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
+        # i18n: el combo MUESTRA el estilo traducido pero la var guarda SIEMPRE
+        # la clave ES (la inyección busca el hint por esa clave). Mapeo
+        # display→clave reconstruido en cada repoblación (_on_modelo_imagen_cambio).
+        self.app._estilo_img_disp2key = {}
         self.app.combo_familia_estilo = ctk.CTkComboBox(
             self.app.frame_familia_estilo,
             values=["Auto"],   # placeholder — _on_modelo_imagen_cambio lo repuebla
-            variable=self.app.familia_estilo_var,
             width=140, height=28,
             font=ctk.CTkFont(size=11),
+            command=lambda disp: self.app.familia_estilo_var.set(
+                self.app._estilo_img_disp2key.get(disp, disp)),
         )
+        self.app.combo_familia_estilo.set("Auto")
         self.app.combo_familia_estilo.pack()
         self.app._tooltip_familia_estilo = CTkToolTip(
             self.app.combo_familia_estilo, delay=0.4,

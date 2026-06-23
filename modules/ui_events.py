@@ -252,9 +252,11 @@ class UiEventsService:
                 estilos_v = (ESTILOS_POR_FAMILIA_VIDEO.get(detectar_familia_video(motor_name))
                              or ESTILOS_VISUAL_VIDEO)
                 if hasattr(self.app, "combo_estilo_video"):
-                    self.app.combo_estilo_video.configure(values=estilos_v)
+                    self.app._estilo_vid_disp2key = {tr(v): v for v in estilos_v}
+                    self.app.combo_estilo_video.configure(values=[tr(v) for v in estilos_v])
                     if self.app.estilo_video_var.get() not in estilos_v:
                         self.app.estilo_video_var.set("Auto")
+                    self.app.combo_estilo_video.set(tr(self.app.estilo_video_var.get()))
             except Exception as _e:
                 logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
@@ -330,9 +332,11 @@ class UiEventsService:
             estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
             if hasattr(self.app, "frame_familia_estilo"):
                 if estilos:
-                    # Repoblar el combo con los estilos de la familia
+                    # Repoblar el combo: muestra estilos traducidos, var guarda la
+                    # clave ES (mapeo display→clave para la inyección de hint).
                     try:
-                        self.app.combo_familia_estilo.configure(values=estilos)
+                        self.app._estilo_img_disp2key = {tr(v): v for v in estilos}
+                        self.app.combo_familia_estilo.configure(values=[tr(v) for v in estilos])
                     except Exception as _e:
                         logger.debug(f"[silent estilo values] {_e}")
                     # Si el valor actual no encaja en la nueva familia,
@@ -340,6 +344,7 @@ class UiEventsService:
                     try:
                         if self.app.familia_estilo_var.get() not in estilos:
                             self.app.familia_estilo_var.set("Auto")
+                        self.app.combo_familia_estilo.set(tr(self.app.familia_estilo_var.get()))
                     except Exception as _e:
                         logger.debug(f"[silent estilo reset] {_e}")
                     # Mostrar el combo si no está visible

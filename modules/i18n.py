@@ -32,6 +32,27 @@ _IDIOMA = "es"
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
     'Libre': 'Free',
+    # Combo Estilo (imagen+vídeo): el combo muestra EN, la var guarda la clave ES.
+    'Acción': 'Action',
+    'Acuarela': 'Watercolor',
+    'Acuarela / Artístico': 'Watercolor / Artistic',
+    'Blanco y Negro': 'Black & White',
+    'Cinematográfico': 'Cinematic',
+    'Cyberpunk / Neón': 'Cyberpunk / Neon',
+    'Cámara lenta': 'Slow motion',
+    'Cómic': 'Comic',
+    'Cómic / Cartoon': 'Comic / Cartoon',
+    'Documental': 'Documentary',
+    'Dramático': 'Dramatic',
+    'Fantasía': 'Fantasy',
+    'Fotorrealista': 'Photorealistic',
+    'Ilustración': 'Illustration',
+    'Pintura': 'Painting',
+    'Póster': 'Poster',
+    'Realista': 'Realistic',
+    'Retrato': 'Portrait',
+    'Surrealista': 'Surreal',
+    'Tipografía': 'Typography',
     # Negativos: presets (claves internas ES, solo se traduce la etiqueta) + paquetes.
     'Anatomía': 'Anatomy',
     'Anime/2D': 'Anime/2D',
