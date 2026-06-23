@@ -222,7 +222,8 @@
     "cfg": 3.5,
     "coste_energia": "Aprox. 7 por imagen",
     "limitaciones": "Modelo muy pesado, tarda más que otros. Estrictamente SFW",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Excellent prompt adherence and flawless text rendering. Generates a wide variety of content without needing LoRAs."
   },
   "FLUX.1-dev-fp8": {
     "nota": 4.1,
@@ -255,7 +256,8 @@
     "cfg": 1,
     "coste_energia": "Aprox. 7 por imagen",
     "limitaciones": "Podría perder ligerísimos detalles comparado con el original. Es el dev oficial en fp8 (cuantización): promptea idéntico a FLUX.1 [dev], solo cambia precisión/VRAM.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Optimized (quantized) version of FLUX.1 [dev]. Faster and lighter on resources."
   },
   "FLUX.1D UltraReal": {
     "nota": 5.0,
@@ -286,7 +288,8 @@
     "cfg": 3.5,
     "coste_energia": "Aprox. 7 por imagen",
     "limitaciones": "Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Ultra-realism on Flux.1 D: skin with pores, microdetail and subtle wrinkles, cinematic lighting."
   },
   "MASTER FLUX (LoRA merged with flux1-dev fp16)": {
     "nota": 4.3,
@@ -319,7 +322,8 @@
     "cfg": 3.5,
     "coste_energia": "Aprox. 12 por imagen",
     "limitaciones": "Merge LoRA (ratio 0.8). Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Realism merge on Flux.1 D (flux1-dev base + MASTER FLUX LoRA, ratio 0.8). Realistic portrait/person; adult content."
   },
   "SD 3.5 Large": {
     "nota": 3.9,
@@ -3178,7 +3182,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Versiones no-AIO requieren clip + VAE aparte. CFG bajo (2-3.5) da mejores resultados. Base Flux.1 D: sin negative real. Puede generar contenido sensible.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Versatile photographic realism on Flux.1 D. Very popular in the community. Good skin texture and clarity. No LoRAs needed."
   },
   "Realistic Amateurs Flux": {
     "nota": 5.0,
@@ -3209,7 +3214,8 @@
     "cfg": 3.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "La página no documenta parámetros; se usan los por defecto de Flux (Euler, 25, CFG 3.0). Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Casual/everyday-style realistic portraits (selfies, ordinary people) on Flux.1 D. Very realistic for day-to-day photos."
   },
   "Real Vision - FLUX": {
     "nota": null,
@@ -3240,7 +3246,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Algún fallo ocasional en el render de manos. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Powerful realism on Flux.1 D (by Shopon skp). Very realistic results, comparable to SD3.5. No trigger needed."
   },
   "True Real Vision - Flux": {
     "nota": 4.8,
@@ -3271,7 +3278,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Pasos bajos pueden fallar en cuerpo entero (usa 25-40). Sube el guidance si no sigue el prompt. Scheduler ddim_uniform, VAE incluido. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "All-in-One realism on Flux.1 D: merges several LoRAs into the checkpoint. VAE included (AIO). Beats base Flux dev on realism."
   },
   "lyh_anime_Flux": {
     "nota": 4.8,
@@ -3302,7 +3310,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Las manos pueden salir irregulares (modelo de autor principiante). Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Anime on Flux.1 D (by lyh, Sept 2024). Illustrated anime style. Tested at 1024×1536."
   },
   "Goddess Project (FLUX)": {
     "nota": 5.0,
@@ -3333,7 +3342,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Checkpoint SOLO para Forge (BF16 UNET + NF4 en TE). NO cargar VAE/TE/CLIP aparte salvo GGUF. Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Realistic female portrait on Flux.1 D (Forge checkpoint, NF4). Selfie/glamour-style realism."
   },
   "XE: Cosplay Flux": {
     "nota": 5.0,
@@ -3364,7 +3374,8 @@
     "cfg": 3.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin parámetros oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Photo-realistic cosplay on Flux.1 D (XEZ). Cosplay characters with makeup, magical elements and effects."
   },
   "AnimePro FLUX": {
     "nota": 5.0,
@@ -3395,7 +3406,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Fine-tune de Flux.1 Schnell. SeaArt lo presetea a Euler a / 30 pasos; el autor menciona que rinde con pocos pasos. Sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "High-quality anime on Flux.1 SCHNELL (fine-tune by advokat). DEV/PRO quality with VERY few steps. Apache 2.0."
   },
   "XE: Anime Hentai (FLUX)": {
     "nota": 4.4,
@@ -3426,7 +3438,8 @@
     "cfg": 3.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Versión temprana/experimental. Contenido orientado a adultos. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "NSFW/hentai anime on Flux.1 D (XEZ). Trial version trained on a small dataset; anime style. Adult content."
   },
   "VNS - Horror World Flux": {
     "nota": 5.0,
@@ -3457,7 +3470,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "CFG recomendado 3.5. Sin sampler/pasos oficiales → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Photo-realistic horror on Flux.1 D (VNStorms). Horror characters and scenes, dark video-game style."
   },
   "Moxie Fusion Flux": {
     "nota": 5.0,
@@ -3488,7 +3502,8 @@
     "cfg": 3.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Triggers opcionales embebidos (biopunk, vikingpunk, mechanical_arms...). Variante 4 pasos disponible. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Cyberpunk/punk fusion on Flux.1 D (v1.7). Varied punk styles, works well without a trigger. A 'detailer' helps."
   },
   "Nai3-Flux": {
     "nota": null,
@@ -3520,7 +3535,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Mejor en retratos con fondo simple, no escenas complejas. Añade descriptores de calidad. Base Flux.1 Dev: sin negative real.",
     "vigente": true,
-    "trigger_words": "nai3_style_for_flux"
+    "trigger_words": "nai3_style_for_flux",
+    "best_for_en": "NovelAI3-style anime on Flux.1 Dev. Best for aesthetic portraits with simple backgrounds. Trigger + quality descriptors recommended."
   },
   "Alpha_Fantasy_Flux": {
     "nota": 5.0,
@@ -3551,7 +3567,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "SeaArt presetea Euler/25/3.5; el autor sugiere DPM++ 3M SDE Exponential con pasos altos y CFG 3-7, y 1024px + upscale 8x. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Surreal fantasy/landscape on Flux.1 D (Alpha). Dreamlike, abstract imagery and fantasy scenes."
   },
   "XE: Figure Flux": {
     "nota": null,
@@ -3613,7 +3630,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "V1 Beta. Tiene trigger word (no mostrada en la página). Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Disney/Pixar 3D style on Flux.1 D (aienthusiast). 3D cartoon characters with an animated-film finish."
   },
   "FLUX.1 Krea dev": {
     "nota": 5.0,
@@ -3644,7 +3662,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin parámetros oficiales en la página → defaults Flux. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "FLUX.1 Krea [dev] — high-end photographic-realism variant on Flux.1 D (12B). Professional quality and good prompt understanding. Very popular."
   },
   "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]": {
     "nota": 5.0,
@@ -3675,7 +3694,8 @@
     "cfg": 1.0,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Sin VAE/CLIP incluidos (usa fuentes aparte). CFG 1, 20+ pasos. Contenido sin restricciones. Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Flux.1 dev with no content restrictions on Flux.1 D. Realism, no LoRA needed. Trained on 1500 images."
   },
   "FLUX.1-Kontext-dev": {
     "nota": null,
@@ -3707,7 +3727,8 @@
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Modelo de EDICIÓN (img2img con imagen de sujeto), NO txt2img puro. Base Flux.1 Kontext: sin negative real.",
     "vigente": true,
-    "max_imagenes_referencia": 1
+    "max_imagenes_referencia": 1,
+    "best_for_en": "EDITING model on Flux.1 Kontext (12B): edits images by text instruction while keeping identity/style across successive edits. For changing pose/camera/background from a reference image."
   },
   "Nepotism": {
     "nota": 5.0,
@@ -3769,7 +3790,8 @@
     "cfg": 3.5,
     "coste_energia": "Variable — gratis VIP",
     "limitaciones": "Optimizado para pocos pasos (~10). Base Flux.1 D: sin negative real.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Clean, fast realism on Flux.1 D: good prompt understanding, fast render (~28s at 768x1024 with 10 steps)."
   },
   "Realistic Vision V6.0 B1": {
     "nota": 4.9,
