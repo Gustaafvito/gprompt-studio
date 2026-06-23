@@ -471,18 +471,58 @@ class DialogsService:
             logger.debug(f"[silent toggle idioma] {_e}")
         nombre = "English" if nuevo == "en" else "Español"
         self.set_estado(tr('🌐 Idioma: {0} — reinicia para aplicar').format(nombre), "#2ecc71")
+        # Persistir la preferencia ANTES de un posible reinicio (el trace de
+        # idioma_var ya la guarda; forzamos con MERGE para no perder el resto).
+        try:
+            prefs = self.app.store.cargar_preferencias() or {}
+            prefs["idioma"] = nuevo
+            self.app.store.guardar_preferencias(prefs)
+        except Exception as _e:
+            logger.debug(f"[silent idioma persist] {_e}")
         try:
             import tkinter.messagebox as mb
-            mb.showinfo(
+            reiniciar = mb.askyesno(
                 "Idioma / Language",
                 f"Idioma cambiado a {nombre}.\n"
-                f"Reinicia G-Prompt Studio para aplicar los cambios.\n\n"
+                f"¿Reiniciar G-Prompt Studio ahora para aplicarlo?\n\n"
                 f"Language set to {nombre}.\n"
-                f"Restart G-Prompt Studio to apply the changes.",
+                f"Restart G-Prompt Studio now to apply it?",
                 parent=self.app,
             )
+            if reiniciar:
+                self._reiniciar_app()
         except Exception as _e:
             logger.debug(f"[silent idioma msgbox] {_e}")
+
+    def _reiniciar_app(self) -> None:
+        """Relanza el proceso para aplicar el idioma (reconstruye la UI)."""
+        import os
+        import sys
+        try:
+            self.app.update_idletasks()
+        except Exception as _e:
+            logger.debug(f"[silent restart idle] {_e}")
+        try:
+            self.app.destroy()
+        except Exception as _e:
+            logger.debug(f"[silent restart destroy] {_e}")
+        try:
+            if getattr(sys, "frozen", False):
+                # Empaquetado (PyInstaller): argv[0] ya es el .exe.
+                os.execv(sys.executable, sys.argv)
+            else:
+                os.execv(sys.executable, [sys.executable, *sys.argv])
+        except Exception as e:
+            logger.warning(f"No se pudo reiniciar automáticamente: {e}")
+            try:
+                import tkinter.messagebox as mb
+                mb.showinfo(
+                    "Reinicio manual / Manual restart",
+                    "Cierra y vuelve a abrir G-Prompt Studio para aplicar el idioma.\n\n"
+                    "Close and reopen G-Prompt Studio to apply the language.",
+                )
+            except Exception as _e2:
+                logger.debug(f"[silent restart fallback msg] {_e2}")
 
     def _build_author(self) -> None:
         """Barra de autor en el footer con enlaces sociales clickables.
