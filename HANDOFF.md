@@ -28,7 +28,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Métrica | Valor |
 |---|---|
 | Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
-| Idioma UI | **Bilingüe ES/EN — COMPLETO** en rama `feat/i18n-fase-b` (~1236 traducciones). Fase B: todo el texto de UI estático + dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `show_toast`, `configure`); f-strings → `tr().format()` posicional. Fase C: tutorial+glosario vía `data/*.en.json`. Reinicia para aplicar. Único residual: f-strings sin texto traducible (icono+valor). **Sin mergear a `main`** |
+| Idioma UI | **Bilingüe ES/EN — UI completa** en rama `feat/i18n-fase-b` (~1260 traducciones). Estático+dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `configure`, f-strings→`tr().format()` posicional) + **config-driven** (pestañas, picker de Tags, presets/paquetes de negativos, ratio `Libre`, menú click-derecho de Refinar) + **ideas del LLM en idioma de UI**. Fase C: tutorial+glosario `data/*.en.json`. Reinicia para aplicar. **PENDIENTE**: combo Estilo (valores `_PAL_*` acoplados a inyección, requiere mapeo display↔clave) + descripciones `best_for` de modelos (~176, requiere campo `best_for_en`). **Sin mergear a `main`** |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
