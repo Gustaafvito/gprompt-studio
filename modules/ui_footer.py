@@ -416,13 +416,13 @@ class UiFooterService:
             coste = (tokens / 1000) * precio_base
 
             if precio_base == 0:
-                self.app.lbl_coste.configure(text=f"🆓 gratis")
+                self.app.lbl_coste.configure(text=tr('🆓 gratis'))
             elif coste < 0.001:
-                self.app.lbl_coste.configure(text=f"$0.00{coste:.0f}")
+                self.app.lbl_coste.configure(text=tr('$0.00{0:.0f}').format(coste))
             elif coste < 0.01:
-                self.app.lbl_coste.configure(text=f"${coste:.3f}")
+                self.app.lbl_coste.configure(text=tr('${0:.3f}').format(coste))
             else:
-                self.app.lbl_coste.configure(text=f"${coste:.2f}")
+                self.app.lbl_coste.configure(text=tr('${0:.2f}').format(coste))
 
         except Exception:
             self.app.lbl_coste.configure(text="")
@@ -936,7 +936,7 @@ class UiFooterService:
             texto = texto[:NEGATIVE_MAX].rsplit(",", 1)[0].rstrip(", ")
             if hasattr(self.app, 'lbl_negative_warning'):
                 self.app.lbl_negative_warning.configure(
-                    text=f"⚠️ Negative recortado a {NEGATIVE_MAX} chars (límite SeaArt)",
+                    text=tr('⚠️ Negative recortado a {0} chars (límite SeaArt)').format(NEGATIVE_MAX),
                     text_color="#e74c3c")
                 self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
         else:

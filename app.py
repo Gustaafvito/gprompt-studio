@@ -1465,7 +1465,7 @@ class ArquitectoApp(
             ultimos = {}
 
         wiz = GPromptWindow(ventana_padre)
-        wiz.title(f"📝 Rellenar variables — {nombre}")
+        wiz.title(tr('📝 Rellenar variables — {0}').format(nombre))
         wiz.geometry("680x640")
         wiz.transient(ventana_padre)
 
@@ -1966,7 +1966,7 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self)
-        vent.title(f"🆚 {label_a}  vs  {label_b}")
+        vent.title(tr('🆚 {0}  vs  {1}').format((label_a), (label_b)))
         screen_w = self.winfo_screenwidth()
         screen_h = self.winfo_screenheight()
         ancho = min(1400, screen_w - 100)
@@ -2240,7 +2240,7 @@ class ArquitectoApp(
             primer_valor = keys[primer_pid]
             _, _, primer_nombre = entries[primer_pid]
 
-            lbl_estado.configure(text=f"⏳ Probando conexión a {primer_nombre}...", text_color="#3498db")
+            lbl_estado.configure(text=tr('⏳ Probando conexión a {0}...').format(primer_nombre), text_color="#3498db")
             wizard.update_idletasks()
 
             def _worker():
@@ -2288,12 +2288,12 @@ class ArquitectoApp(
                                                     max_tokens=5)
 
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"✅ Conexión OK con {primer_nombre} — la key funciona.",
+                        text=tr('✅ Conexión OK con {0} — la key funciona.').format(primer_nombre),
                         text_color="#2ecc71"))
                 except Exception as e:
                     err = str(e)[:100]
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"❌ Falló {primer_nombre}: {err}",
+                        text=tr('❌ Falló {0}: {1}').format((primer_nombre), (err)),
                         text_color="#e74c3c"))
 
             threading.Thread(target=_worker, daemon=True).start()
@@ -2316,7 +2316,7 @@ class ArquitectoApp(
                     if guardar_api_key(pid, valor):
                         guardadas.append(nombre)
                 except Exception as e:
-                    lbl_estado.configure(text=f"❌ Error guardando {nombre}: {e}", text_color="#e74c3c")
+                    lbl_estado.configure(text=tr('❌ Error guardando {0}: {1}').format((nombre), (e)), text_color="#e74c3c")
                     return
 
             if not guardadas:

@@ -937,7 +937,7 @@ class CoreMixin:
         def _on_slide(v):
             n = int(round(float(v)))
             n_var.set(n)
-            lbl_n.configure(text=f"N = {n}")
+            lbl_n.configure(text=tr('N = {0}').format(n))
 
         slider = ctk.CTkSlider(sel, from_=n_min, to=n_max,
                                 number_of_steps=n_max - n_min,

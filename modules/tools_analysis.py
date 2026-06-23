@@ -301,7 +301,7 @@ class ToolsAnalysisService:
         lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
                              font=ctk.CTkFont(size=12, weight="bold"))
         lbl_n.pack(pady=(0, 8))
-        slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
+        slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
 
         # Aviso si hay caché
         prefs_cache = self.app.store.cargar_preferencias() or {}
@@ -313,7 +313,7 @@ class ToolsAnalysisService:
                                       text_color="#2ecc71")
         lbl_cache_info.pack(pady=(0, 8))
         if cache_hash == actual_hash and cache_critica.get("resp"):
-            lbl_cache_info.configure(text=f"💾 Hay un análisis cacheado de {cache_n} prompts (mismo historial)")
+            lbl_cache_info.configure(text=tr('💾 Hay un análisis cacheado de {0} prompts (mismo historial)').format(cache_n))
 
         def _lanzar():
             n = int(n_var.get())
@@ -496,7 +496,7 @@ class ToolsAnalysisService:
         lbl_n = ctk.CTkLabel(vent_sel, text=f"Últimos {n_var.get()} prompts",
                              font=ctk.CTkFont(size=12, weight="bold"))
         lbl_n.pack(pady=(0, 14))
-        slider.configure(command=lambda v: lbl_n.configure(text=f"Últimos {int(v)} prompts"))
+        slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
 
         # ── Caché (mismo patrón que Crítica historial): si el historial no ha
         # cambiado y se pide el mismo N, reusa el análisis previo sin gastar tokens.
@@ -508,7 +508,7 @@ class ToolsAnalysisService:
         lbl_cache_info.pack(pady=(0, 6))
         if cache_am.get("hash") == actual_hash and cache_am.get("resp"):
             lbl_cache_info.configure(
-                text=f"💾 Hay un análisis cacheado de {cache_am.get('n', 0)} prompts")
+                text=tr('💾 Hay un análisis cacheado de {0} prompts').format(cache_am.get('n', 0)))
 
         def _lanzar():
             n = int(n_var.get())
@@ -1225,7 +1225,7 @@ class ToolsAnalysisService:
         sl_obj = ctk.CTkSlider(cfg, from_=60, to=95, number_of_steps=7,
                                variable=objetivo_var,
                                command=lambda v: lbl_obj.configure(
-                                   text=f"Score objetivo: {int(v)}/100"))
+                                   text=tr('Score objetivo: {0}/100').format(int(v))))
         sl_obj.pack(fill="x", padx=40, pady=(2, 12))
 
         iter_var = ctk.IntVar(value=3)
@@ -1235,7 +1235,7 @@ class ToolsAnalysisService:
         sl_iter = ctk.CTkSlider(cfg, from_=1, to=5, number_of_steps=4,
                                 variable=iter_var,
                                 command=lambda v: lbl_iter.configure(
-                                    text=f"Iteraciones máx: {int(v)}"))
+                                    text=tr('Iteraciones máx: {0}').format(int(v))))
         sl_iter.pack(fill="x", padx=40, pady=(2, 8))
 
         lbl_coste = ctk.CTkLabel(cfg, text="",
@@ -1246,10 +1246,10 @@ class ToolsAnalysisService:
         def _actualizar_coste(*_a):
             n = int(iter_var.get())
             lbl_coste.configure(
-                text=f"Máximo {1 + 2 * n} llamadas al LLM (1 scoring inicial + 2 por iteración)")
+                text=tr('Máximo {0} llamadas al LLM (1 scoring inicial + 2 por iteración)').format(1 + 2 * n))
         _actualizar_coste()
         sl_iter.configure(command=lambda v: (lbl_iter.configure(
-            text=f"Iteraciones máx: {int(v)}"), _actualizar_coste()))
+            text=tr('Iteraciones máx: {0}').format(int(v))), _actualizar_coste()))
 
         btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
         btn_row.pack(side="bottom", pady=(0, 16))
@@ -1356,7 +1356,7 @@ class ToolsAnalysisService:
             self.app.after(0, lambda: _fila_progreso(iteracion, score, texto))
             if iteracion < max_iter:
                 self.app.after(0, lambda: estado_lbl.configure(
-                    text=f"⏳ Iteración {iteracion + 1}: mejorando y re-puntuando…"))
+                    text=tr('⏳ Iteración {0}: mejorando y re-puntuando…').format(iteracion + 1)))
 
         # Specs del modelo activo: el bucle puntúa y mejora PARA el
         # modelo destino (formato, max_chars, fortalezas). Sesión 19.
@@ -1448,7 +1448,7 @@ class ToolsAnalysisService:
                 self.app.after(0, _finalizar)
             except Exception as e:
                 self.app.after(0, lambda e=e: estado_lbl.configure(
-                    text=f"❌ Error: {e}", text_color="#e74c3c"))
+                    text=tr('❌ Error: {0}').format(e), text_color="#e74c3c"))
                 self.app.after(0, lambda: btn_detener.configure(state="disabled"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1544,7 +1544,7 @@ class ToolsAnalysisService:
                         ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
                                      font=ctk.CTkFont(size=11),
                                      text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
-                lbl_total.configure(text=f"Total estimado: {usage_tracker.total_usd():.4f} $")
+                lbl_total.configure(text=tr('Total estimado: {0:.4f} $').format(usage_tracker.total_usd()))
 
             # ── Histórico persistente (últimos 14 días) ──
             try:
@@ -1829,7 +1829,7 @@ class ToolsAnalysisService:
             if mensajes:
                 self.app.dialogs.set_estado(tr('⚠️ {0}').format(', '.join(mensajes)), "#e67e22")
         else:
-            self.app.dialogs.set_estado(f"⚠️ Seed no pudo aplicarse", "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ Seed no pudo aplicarse'), "#e67e22")
 
     def _autocompletar_tags(self, event=None) -> None:
         """Auto-completar tags mientras escribe."""

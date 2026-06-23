@@ -557,7 +557,7 @@ class BackupExportService:
 
             filtrados = [f for f in formatos
                          if modo_sel is None or f[3] in (modo_sel, "todos")]
-            lbl_count.configure(text=f"{len(filtrados)} formatos disponibles")
+            lbl_count.configure(text=tr('{0} formatos disponibles').format(len(filtrados)))
 
             if not filtrados:
                 ctk.CTkLabel(scroll, text=tr("(sin formatos para este modo)"),

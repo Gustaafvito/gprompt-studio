@@ -173,7 +173,7 @@ class ToolsCreativeService:
             sl = ctk.CTkSlider(row, from_=0.1, to=1.5, number_of_steps=28)
             sl.set(temps_init[i])
             sl.configure(command=lambda v, l=lbl_val, idx=i:
-                          l.configure(text=f"T{idx+1}: {float(v):.2f}"))
+                          l.configure(text=tr('T{0}: {1:.2f}').format((idx+1), (float(v)))))
             sl.pack(side="left", fill="x", expand=True)
             custom_sliders.append(sl)
 
@@ -1517,7 +1517,7 @@ class ToolsCreativeService:
             activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
             extra = f"… (+{len(activos) - 5})" if len(activos) > 5 else ""
             lbl_activos.configure(
-                text=f"✅ {n} activos: {', '.join(activos[:5])}{extra}"
+                text=tr('✅ {0} activos: {1}{2}').format((n), (', '.join(activos[:5])), (extra))
             )
 
         def _crear_checkbox(tab_frame, nombre, tags):

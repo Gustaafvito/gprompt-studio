@@ -404,7 +404,7 @@ class UiEventsService:
 
             badges_str = "  ·  ".join(badges)
             self.app.lbl_img_model_info.configure(
-                text=f"⭐ {specs.get('nota') or 's/n'}  ·  📝 {specs['max_chars']} chars  ·  {badges_str}  —  {specs['best_for']}",
+                text=tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (specs['best_for'])),
                 text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
 
@@ -438,7 +438,7 @@ class UiEventsService:
         if specs:
             nota_a = specs.get('nota') or 's/n'
             dur_a = specs.get('duracion_max_min') or '?'
-            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_a} | ⏱ {dur_a} min — {specs.get('best_for', '')}", text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text=tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (specs.get('best_for', ''))), text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎵 {0}').format(motor_name), "#9b59b6")
         else:

@@ -62,7 +62,7 @@ def abrir_glosario(app):
     accent = "#2563eb" if is_lt else "#60a5fa"
 
     win = GPromptWindow(app)
-    win.title(f"📚 Glosario — {len(entradas)} términos")
+    win.title(tr('📚 Glosario — {0} términos').format(len(entradas)))
     win.geometry("880x680")
 
     # ── Cabecera ──

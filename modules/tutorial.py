@@ -86,7 +86,7 @@ def abrir_tutorial(app):
     success = "#16a34a" if is_lt else "#22c55e"
 
     win = GPromptWindow(app)
-    win.title(f"📚 Tutorial — {len(completados)}/{total} pasos")
+    win.title(tr('📚 Tutorial — {0}/{1} pasos').format((len(completados)), (total)))
     win.geometry("980x600")
 
     # ── Layout: índice lateral + contenido ──
@@ -179,13 +179,12 @@ def abrir_tutorial(app):
 
         # Progreso global
         progreso_global.set(len(completados) / total if total else 0)
-        lbl_progreso.configure(text=f"{len(completados)}/{total} completados")
-        win.title(f"📚 Tutorial — {len(completados)}/{total} pasos")
+        lbl_progreso.configure(text=tr('{0}/{1} completados').format((len(completados)), (total)))
+        win.title(tr('📚 Tutorial — {0}/{1} pasos').format((len(completados)), (total)))
 
     def mostrar_paso():
         paso = pasos[idx]
-        lbl_paso.configure(text=f"Paso {paso['id']}/{total}  ·  "
-                                f"{int((idx + 1) / total * 100)}%")
+        lbl_paso.configure(text=tr('Paso {0}/{1}  ·  {2}%').format((paso['id']), (total), (int((idx + 1) / total * 100))))
         bar_paso.set((idx + 1) / total)
         lbl_titulo.configure(text=paso["titulo"])
         txt_desc.configure(state="normal")

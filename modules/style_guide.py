@@ -200,7 +200,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     accent = "#2563eb" if is_lt else "#60a5fa"
 
     win = GPromptWindow(app)
-    win.title(f"📖 Guía de estilos ({len(guia)} estilos)")
+    win.title(tr('📖 Guía de estilos ({0} estilos)').format(len(guia)))
     win.geometry("900x680")
 
     # ── Cabecera ─────────────────────────────────────────────

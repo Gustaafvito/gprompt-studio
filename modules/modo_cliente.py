@@ -137,18 +137,18 @@ class ModoClienteService:
             try:
                 img = Image.open(ruta)
                 cliente_state["imagen"] = img
-                lbl_estado_img.configure(text=f"⏳ Analizando imagen...", text_color="#f39c12")
+                lbl_estado_img.configure(text=tr('⏳ Analizando imagen...'), text_color="#f39c12")
 
                 def _analizar():
                     try:
                         desc, motor = self.app.vision.describir(img, "imagen", lambda m: None)
                         cliente_state["descripcion"] = desc
-                        lbl_estado_img.configure(text=f"✅ Imagen analizada (vision: {motor})", text_color="#2ecc71")
+                        lbl_estado_img.configure(text=tr('✅ Imagen analizada (vision: {0})').format(motor), text_color="#2ecc71")
                     except Exception as e:
-                        lbl_estado_img.configure(text=f"❌ Error al analizar: {e}", text_color="#e74c3c")
+                        lbl_estado_img.configure(text=tr('❌ Error al analizar: {0}').format(e), text_color="#e74c3c")
                 self.app._executor.submit(_analizar).add_done_callback(log_future_exc)
             except Exception as e:
-                lbl_estado_img.configure(text=f"❌ Error: {e}", text_color="#e74c3c")
+                lbl_estado_img.configure(text=tr('❌ Error: {0}').format(e), text_color="#e74c3c")
 
         def _quitar_imagen():
             cliente_state["imagen"] = None
@@ -512,7 +512,7 @@ class ModoClienteService:
                 w.destroy()
             n = len(archivos_state['rutas'])
             sufijo = " (máx 5 procesadas)" if n > 5 else ""
-            lbl_count.configure(text=f"{n} imágenes seleccionadas{sufijo}")
+            lbl_count.configure(text=tr('{0} imágenes seleccionadas{1}').format((n), (sufijo)))
             for i, ruta in enumerate(archivos_state["rutas"][:8]):
                 try:
                     from PIL import Image as _PIL
@@ -643,7 +643,7 @@ class ModoClienteService:
             self.app.dialogs.toggle_botones(False)
             lbl_prog.pack(anchor="w")
             progress_bar.pack(fill="x", pady=(2, 0))
-            lbl_prog.configure(text=f"Analizando imagen 1/{total_imgs}...")
+            lbl_prog.configure(text=tr('Analizando imagen 1/{0}...').format(total_imgs))
             progress_bar.set(0)
 
             def _trabajar():
@@ -652,7 +652,7 @@ class ModoClienteService:
                     for i, img in enumerate(todas_imagenes):
                         progreso_state["n"] = i + 1
                         self.app.after(0, lambda n=i+1, t=total_imgs:
-                                   (lbl_prog.configure(text=f"Analizando imagen {n}/{t}..."),
+                                   (lbl_prog.configure(text=tr('Analizando imagen {0}/{1}...').format((n), (t))),
                                     progress_bar.set(n / t)))
                         desc, _ = self.app.vision.describir(img, "imagen", lambda m: None)
                         descripciones.append(desc)

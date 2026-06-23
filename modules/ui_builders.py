@@ -1291,7 +1291,7 @@ class UIBuildersService:
                 self.app.lbl_estilos_sel.configure(text="")
         else:
             color_count = "#1d4ed8" if is_light else "#5a8aaa"
-            self.app.lbl_estilos_count.configure(text=f"({n} seleccionado{'s' if n != 1 else ''})",
+            self.app.lbl_estilos_count.configure(text=tr('({0} seleccionado{1})').format((n), ('s' if n != 1 else '')),
                                               text_color=color_count)
             if hasattr(self.app, 'lbl_estilos_sel'):
                 self.app.lbl_estilos_sel.configure(text=f"✦ {' + '.join(sel)}")
@@ -1572,7 +1572,7 @@ class UIBuildersService:
                 # Estimación tokens ≈ chars / 4 (regla típica para inglés)
                 tokens_est = max(1, chars // 4)
                 self.app.lbl_idea_counter.configure(
-                    text=f"· {chars} chars · ~{tokens_est} tokens · max idea {max_c}",
+                    text=tr('· {0} chars · ~{1} tokens · max idea {2}').format((chars), (tokens_est), (max_c)),
                     text_color=color
                 )
         except Exception as _e:
@@ -1604,7 +1604,7 @@ class UIBuildersService:
             palabras = ", ".join(f"'{h['word']}'" for h in hallazgos[:2])
             sufijo = f" y {n-2} más" if n > 2 else ""
             self.app.lbl_claridad_aviso.configure(
-                text=f"💡 Claridad: {palabras}{sufijo} — click para ver"
+                text=tr('💡 Claridad: {0}{1} — click para ver').format((palabras), (sufijo))
             )
         except Exception as _e:
             logger.debug(f"[silent] claridad: {_e}")

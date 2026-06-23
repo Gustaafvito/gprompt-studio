@@ -692,7 +692,7 @@ def abrir_batch_variables(app):
         txt_resultado.insert("1.0", "\n\n---\n\n".join(
             f"[{i+1}] {v}" for i, v in enumerate(variaciones)
         ))
-        lbl_count.configure(text=f"{len(variaciones)} variación(es) generadas")
+        lbl_count.configure(text=tr('{0} variación(es) generadas').format(len(variaciones)))
 
     def _copiar_todo():
         contenido = txt_resultado.get("1.0", "end").strip()
@@ -903,7 +903,7 @@ def abrir_batch(app):
                 import pyperclip
                 pyperclip.copy(p)
                 lbl_batch_estado.configure(
-                    text=f"✅ Prompt #{n} completo copiado", text_color="#2ecc71")
+                    text=tr('✅ Prompt #{0} completo copiado').format(n), text_color="#2ecc71")
             ctk.CTkButton(row1, text=f"#{i+1}", width=40, height=24,
                           fg_color=color, hover_color="#d1d5db" if is_lt else "#333333",
                           font=ctk.CTkFont(size=11, weight="bold"),
@@ -923,10 +923,10 @@ def abrir_batch(app):
                 if p:
                     pyperclip.copy(p)
                     lbl_batch_estado.configure(
-                        text=f"✅ POSITIVE #{n} copiado", text_color="#2ecc71")
+                        text=tr('✅ POSITIVE #{0} copiado').format(n), text_color="#2ecc71")
                 else:
                     lbl_batch_estado.configure(
-                        text=f"⚠️ Prompt #{n} sin POSITIVE detectado", text_color="#e67e22")
+                        text=tr('⚠️ Prompt #{0} sin POSITIVE detectado').format(n), text_color="#e67e22")
             ctk.CTkButton(row2, text=f"#{i+1}", width=40, height=24,
                           fg_color="#15803d" if is_lt else "#1a5a2a",
                           hover_color="#166534" if is_lt else "#0f3a1a",
@@ -947,10 +947,10 @@ def abrir_batch(app):
                 if n_text:
                     pyperclip.copy(n_text)
                     lbl_batch_estado.configure(
-                        text=f"✅ NEGATIVE #{n} copiado", text_color="#2ecc71")
+                        text=tr('✅ NEGATIVE #{0} copiado').format(n), text_color="#2ecc71")
                 else:
                     lbl_batch_estado.configure(
-                        text=f"ℹ️ Prompt #{n} sin NEGATIVE (modo natural)", text_color="#3498db")
+                        text=tr('ℹ️ Prompt #{0} sin NEGATIVE (modo natural)').format(n), text_color="#3498db")
             ctk.CTkButton(row3, text=f"#{i+1}", width=40, height=24,
                           fg_color="#dc2626" if is_lt else "#5a1a1a",
                           hover_color="#b91c1c" if is_lt else "#3a0f0f",
@@ -999,7 +999,7 @@ def abrir_batch(app):
         if _batch_cancelado.is_set() or not _ventana_existe():
             return
         _set_batch(texto)
-        lbl_batch_estado.configure(text=f"✅ Batch completado — ~{contar_tokens_aprox(texto)} tokens", text_color="#2ecc71")
+        lbl_batch_estado.configure(text=tr('✅ Batch completado — ~{0} tokens').format(contar_tokens_aprox(texto)), text_color="#2ecc71")
         btn_gen.configure(state="normal")
         btn_exp.configure(state="normal")
         prompts = _parsear_batch(texto)
@@ -1071,7 +1071,7 @@ def abrir_batch(app):
         if ruta:
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(texto)
-            lbl_batch_estado.configure(text=f"💾 Exportado: {Path(ruta).name}", text_color="#2ecc71")
+            lbl_batch_estado.configure(text=tr('💾 Exportado: {0}').format(Path(ruta).name), text_color="#2ecc71")
 
     import pyperclip
     is_lt = _is_light()
@@ -1211,7 +1211,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         if modo_sel != "Todos": suf_filtro.append(f"modo={modo_sel}")
         filtro_txt = " · " + " · ".join(suf_filtro) if suf_filtro else ""
         lbl_contador.configure(
-            text=f"{visibles} de {total_filtrado} mostrados ({total} total){filtro_txt}"
+            text=tr('{0} de {1} mostrados ({2} total){3}').format((visibles), (total_filtrado), (total), (filtro_txt))
         )
 
         if total_filtrado == 0:

@@ -237,7 +237,7 @@ class DataMgmtService:
         ctk_thumb = ctk.CTkImage(light_image=thumb, dark_image=thumb, size=(34, 34))
         self.app.lbl_img_preview.configure(image=ctk_thumb, text="")
         self.app.lbl_img_preview._ctk_image = ctk_thumb
-        self.app.lbl_img_nombre.configure(text=f"{nombre[:20]}  ({gem.width}×{gem.height})", text_color="#2ecc71")
+        self.app.lbl_img_nombre.configure(text=tr('{0}  ({1}×{2})').format((nombre[:20]), (gem.width), (gem.height)), text_color="#2ecc71")
         self.app.btn_cargar_img.configure(text=tr("✅ OK"), fg_color="#1a7a3c")
         self.app.dialogs.set_estado(tr('✅ Imagen: {0}').format(nombre), "#2ecc71")
         self.app.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
@@ -1196,7 +1196,7 @@ class DataMgmtService:
             ejemplos = _filtrar()
             total_biblioteca = len(BIBLIOTECA_EJEMPLOS)
             lbl_contador.configure(
-                text=f"Mostrando {len(ejemplos)} de {total_biblioteca} ejemplos"
+                text=tr('Mostrando {0} de {1} ejemplos').format((len(ejemplos)), (total_biblioteca))
             )
 
             if not ejemplos:

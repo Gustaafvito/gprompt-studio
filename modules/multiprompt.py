@@ -177,7 +177,7 @@ class MultiPromptService:
         lbl_n.pack(pady=(2, 2))
         def _on_slide(val):
             n_var.set(int(float(val)))
-            lbl_n.configure(text=f"N = {int(float(val))} shots")
+            lbl_n.configure(text=tr('N = {0} shots').format(int(float(val))))
         slider = ctk.CTkSlider(v, from_=2, to=6, number_of_steps=4,
                                 command=_on_slide, width=380)
         slider.set(n_inicial)
@@ -235,7 +235,7 @@ class MultiPromptService:
             marcados_keys = [k for k, vb in chk_vars.items() if vb.get()]
             if len(marcados) != n:
                 lbl_hint.configure(
-                    text=f"⚠️ Marca exactamente {n} tipos (ahora {len(marcados)}) o activa el modo automático.",
+                    text=tr('⚠️ Marca exactamente {0} tipos (ahora {1}) o activa el modo automático.').format((n), (len(marcados))),
                     text_color="#e67e22",
                 )
                 return
@@ -903,10 +903,10 @@ class MultiPromptService:
 
         def _refresh_panel():
             n = nodos[sel["id"]]
-            lbl_titulo.configure(text=f"🌿 Nodo: {n['label']}  (profundidad {n['depth']})")
+            lbl_titulo.configure(text=tr('🌿 Nodo: {0}  (profundidad {1})').format((n['label']), (n['depth'])))
             ruta = _ruta_de(sel["id"])
             ruta_str = " → ".join(x["label"] for x in ruta)
-            lbl_ruta.configure(text=f"Ruta: {ruta_str}")
+            lbl_ruta.configure(text=tr('Ruta: {0}').format(ruta_str))
             txt_preview.configure(state="normal")
             txt_preview.delete("1.0", "end")
             txt_preview.insert("1.0", n["texto"])
@@ -990,7 +990,7 @@ class MultiPromptService:
                         sel["id"] = ids_nuevos[0]
                         _redibujar()
                         _refresh_panel()
-                        lbl_status.configure(text=f"✅ 3 derivaciones añadidas como hijos de {padre['label']}",
+                        lbl_status.configure(text=tr('✅ 3 derivaciones añadidas como hijos de {0}').format(padre['label']),
                                               text_color="#2ecc71")
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
@@ -999,7 +999,7 @@ class MultiPromptService:
                     logger.exception("walk ramificar")
                     err = e
                     def _err():
-                        lbl_status.configure(text=f"❌ Error: {err}", text_color="#e74c3c")
+                        lbl_status.configure(text=tr('❌ Error: {0}').format(err), text_color="#e74c3c")
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
                     self.app.after(0, _err)
@@ -1017,7 +1017,7 @@ class MultiPromptService:
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             lbl_status.configure(
-                text=f"📋 Aplicado al editor: {n['label']} · ventana sigue abierta para seguir explorando",
+                text=tr('📋 Aplicado al editor: {0} · ventana sigue abierta para seguir explorando').format(n['label']),
                 text_color="#2ecc71",
             )
 
@@ -1056,10 +1056,10 @@ class MultiPromptService:
                     pyperclip.copy(texto_copia)
                     estado_lbl.configure(text=tr("✅ Copiado al portapapeles"),
                                           text_color="#2ecc71")
-                    lbl_status.configure(text=f"📂 Ruta copiada ({len(ruta)} nodos)",
+                    lbl_status.configure(text=tr('📂 Ruta copiada ({0} nodos)').format(len(ruta)),
                                           text_color="#2ecc71")
                 except Exception as e:
-                    estado_lbl.configure(text=f"❌ No se pudo copiar: {e}",
+                    estado_lbl.configure(text=tr('❌ No se pudo copiar: {0}').format(e),
                                           text_color="#e74c3c")
 
             def _guardar_en_versiones():
@@ -1087,18 +1087,18 @@ class MultiPromptService:
                         if len(self.app._versiones_prompt) > 30:
                             self.app._versiones_prompt = self.app._versiones_prompt[-30:]
                     estado_lbl.configure(
-                        text=f"✅ {nuevos} nodo(s) guardados en Versiones prompt — accesibles desde 📑 Versiones",
+                        text=tr('✅ {0} nodo(s) guardados en Versiones prompt — accesibles desde 📑 Versiones').format(nuevos),
                         text_color="#2ecc71",
                     )
                     lbl_status.configure(
-                        text=f"💾 Ruta guardada ({nuevos} nodos) en 📑 Versiones prompt",
+                        text=tr('💾 Ruta guardada ({0} nodos) en 📑 Versiones prompt').format(nuevos),
                         text_color="#2ecc71",
                     )
                     try: self.app._sesion_log(f"🌀 Walk: guardó ruta {cadena_corta} en Versiones ({nuevos} nodos)")
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 except Exception as e:
-                    estado_lbl.configure(text=f"❌ Error guardando: {e}",
+                    estado_lbl.configure(text=tr('❌ Error guardando: {0}').format(e),
                                           text_color="#e74c3c")
 
             btn_bar = ctk.CTkFrame(v, fg_color="transparent")
@@ -1168,7 +1168,7 @@ class MultiPromptService:
             sel["id"] = id_map.get(padre_id, 0)
             _redibujar()
             _refresh_panel()
-            lbl_status.configure(text=f"🗑 Subárbol borrado ({len(a_borrar)} nodos)",
+            lbl_status.configure(text=tr('🗑 Subárbol borrado ({0} nodos)').format(len(a_borrar)),
                                   text_color="#2ecc71")
 
         btn_ramificar = ctk.CTkButton(btn_row1, text=tr("🌿 Ramificar (3 hijos)"),

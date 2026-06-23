@@ -116,7 +116,7 @@ class AbTestingService:
         def _actualizar_checkboxes():
             total = sum(1 for v in dim_vars.values() if v.get())
             lbl_contador.configure(
-                text=f"Seleccionadas: {total} (máx 2)",
+                text=tr('Seleccionadas: {0} (máx 2)').format(total),
                 text_color="#2ecc71" if 1 <= total <= 2 else "#e67e22",
             )
             # Deshabilitar visualmente los no seleccionados si ya hay 2
@@ -235,7 +235,7 @@ class AbTestingService:
     def _mostrar_ab_grid(self, idea_base, dimensiones, prompts_generados, is_lt, c):
         """Muestra la grid de resultados."""
         v = GPromptWindow(self.app)
-        v.title(f"🧪 A/B Testing — {' + '.join(dimensiones)}")
+        v.title(tr('🧪 A/B Testing — {0}').format(' + '.join(dimensiones)))
         v.geometry("1100x720")
         v.transient(self.app)
 
@@ -352,7 +352,7 @@ class AbTestingService:
         def _actualizar_n(v):
             n = int(round(float(v)))
             n_var.set(n)
-            n_lbl.configure(text=f"{n} modelos")
+            n_lbl.configure(text=tr('{0} modelos').format(n))
             for i, row in enumerate(combo_rows):
                 if i < n:
                     row.pack(fill="x", pady=3)
@@ -395,7 +395,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         n_modelos = len(modelos_compare)
         vent = GPromptWindow(self.app)
-        vent.title(f"🆚 Comparativa de modelos ({n_modelos})")
+        vent.title(tr('🆚 Comparativa de modelos ({0})').format(n_modelos))
         # Tamaño dinámico: más alto si hay más modelos (cards apiladas)
         alto = min(620 + max(0, n_modelos - 3) * 120, 950)
         vent.geometry(f"820x{alto}")
@@ -545,7 +545,7 @@ class AbTestingService:
                             cards[m]["txt"].delete("1.0", "end")
                             cards[m]["txt"].insert("1.0", r)
                             cards[m]["txt"].configure(state="disabled")
-                            cards[m]["lbl_chars"].configure(text=f"{len(r)} / {mc} chars")
+                            cards[m]["lbl_chars"].configure(text=tr('{0} / {1} chars').format((len(r)), (mc)))
 
                             def _aplicar_y_cambiar_modelo(r2=r, m2=m):
                                 # Aplica el prompt al resultado Y cambia el

@@ -231,10 +231,10 @@ class JsonPromptService:
                 if contenido:
                     txt_json.delete("1.0", "end")
                     txt_json.insert("1.0", contenido)
-                    lbl_status.configure(text=f"📋 Pegado ({len(contenido)} chars)",
+                    lbl_status.configure(text=tr('📋 Pegado ({0} chars)').format(len(contenido)),
                                           text_color="#2ecc71")
             except Exception as e:
-                lbl_status.configure(text=f"❌ No se pudo pegar: {e}",
+                lbl_status.configure(text=tr('❌ No se pudo pegar: {0}').format(e),
                                       text_color="#e74c3c")
 
         def _cargar_desde_archivo():
@@ -250,10 +250,10 @@ class JsonPromptService:
                     contenido = f.read()
                 txt_json.delete("1.0", "end")
                 txt_json.insert("1.0", contenido)
-                lbl_status.configure(text=f"📂 Cargado: {ruta}",
+                lbl_status.configure(text=tr('📂 Cargado: {0}').format(ruta),
                                       text_color="#2ecc71")
             except Exception as e:
-                lbl_status.configure(text=f"❌ Error abriendo archivo: {e}",
+                lbl_status.configure(text=tr('❌ Error abriendo archivo: {0}').format(e),
                                       text_color="#e74c3c")
 
         def _importar():
@@ -267,7 +267,7 @@ class JsonPromptService:
             if data is None:
                 # info contiene el último mensaje de error
                 lbl_status.configure(
-                    text=f"❌ JSON inválido tras intentar todas las reparaciones: {info}",
+                    text=tr('❌ JSON inválido tras intentar todas las reparaciones: {0}').format(info),
                     text_color="#e74c3c",
                 )
                 return
@@ -681,7 +681,7 @@ class JsonPromptService:
                 lbl_status.configure(text=tr("✅ JSON copiado al portapapeles"),
                                       text_color="#2ecc71")
             except Exception as e:
-                lbl_status.configure(text=f"❌ No se pudo copiar: {e}",
+                lbl_status.configure(text=tr('❌ No se pudo copiar: {0}').format(e),
                                       text_color="#e74c3c")
 
         def _guardar_archivo():
@@ -697,10 +697,10 @@ class JsonPromptService:
             try:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(contenido)
-                lbl_status.configure(text=f"💾 Guardado: {ruta}",
+                lbl_status.configure(text=tr('💾 Guardado: {0}').format(ruta),
                                       text_color="#2ecc71")
             except Exception as e:
-                lbl_status.configure(text=f"❌ Error guardando: {e}",
+                lbl_status.configure(text=tr('❌ Error guardando: {0}').format(e),
                                       text_color="#e74c3c")
 
         def _validar():
@@ -710,7 +710,7 @@ class JsonPromptService:
                 lbl_status.configure(text=tr("✅ JSON válido (parsea correctamente)"),
                                       text_color="#2ecc71")
             except json.JSONDecodeError as e:
-                lbl_status.configure(text=f"❌ Error de sintaxis: {e}",
+                lbl_status.configure(text=tr('❌ Error de sintaxis: {0}').format(e),
                                       text_color="#e74c3c")
 
         ctk.CTkButton(btn_row, text=tr("📋 Copiar JSON"), width=140, height=32,

@@ -181,7 +181,7 @@ class WorkersIaService:
                 if re.search(r'\([^)]+:[0-9.]+\)', texto):
                     # (word:1.2) → word   |   (word word:0.8) → word word
                     texto = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', texto)
-                    self.app.after(0, lambda: self.app.dialogs.set_estado(f"⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)", "#f39c12"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr('⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)'), "#f39c12"))
 
             self.app.guardar_en_historial(texto)
             # No sobrescribir el resultado con el texto crudo de las

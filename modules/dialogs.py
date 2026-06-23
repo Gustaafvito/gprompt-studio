@@ -775,14 +775,14 @@ class DialogsService:
             aviso = " ⚠️ EXCEDE" if excede else ""
             if c_neg:
                 self.app.lbl_tokens.configure(
-                    text=f"📝 Positive: {c_pos}/{max_c}{aviso}  |  Negative: {c_neg}  |  Total: {c_tot}",
+                    text=tr('📝 Positive: {0}/{1}{2}  |  Negative: {3}  |  Total: {4}').format((c_pos), (max_c), (aviso), (c_neg), (c_tot)),
                     text_color=color)
             else:
                 self.app.lbl_tokens.configure(
-                    text=f"📝 Prompt: {c_pos}/{max_c}{aviso}  |  Total: {c_tot}",
+                    text=tr('📝 Prompt: {0}/{1}{2}  |  Total: {3}').format((c_pos), (max_c), (aviso), (c_tot)),
                     text_color=color)
         elif texto:
-            self.app.lbl_tokens.configure(text=f"📝 Total: {c_tot} chars", text_color="#555555")
+            self.app.lbl_tokens.configure(text=tr('📝 Total: {0} chars').format(c_tot), text_color="#555555")
         else:
             self.app.lbl_tokens.configure(text="", text_color="#555555")
 

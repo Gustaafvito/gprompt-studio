@@ -308,7 +308,7 @@ class AvatarFrame(ctk.CTkFrame):
         tema = self.entry_tema.get().strip()
         tipo = self._tipo_lora
         self.boton_auto.configure(state="disabled")
-        self.label_estado.configure(text=f"🎲 Inventando {tipo.lower()} con la IA…")
+        self.label_estado.configure(text=tr('🎲 Inventando {0} con la IA…').format(tipo.lower()))
 
         def _worker():
             try:
@@ -349,7 +349,7 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_imagen.configure(state="disabled")
         # Feedback INMEDIATO de que la imagen está cargada y en análisis
         self.label_imagen_ref.configure(
-            text=f"  📷 {nombre} — ⏳ analizando con IA de visión…", image=None)
+            text=tr('  📷 {0} — ⏳ analizando con IA de visión…').format(nombre), image=None)
         self.label_estado.configure(text=tr("📷 Analizando la imagen de referencia…"))
 
         def _worker():
@@ -376,18 +376,18 @@ class AvatarFrame(ctk.CTkFrame):
                                                dark_image=thumb,
                                                size=(thumb.width, thumb.height))
                         self.label_imagen_ref.configure(
-                            image=ctk_img, text=f"  📷 {nombre} ✓ ficha extraída")
+                            image=ctk_img, text=tr('  📷 {0} ✓ ficha extraída').format(nombre))
                         self.label_imagen_ref._image_ref = ctk_img
                     except Exception:
                         self.label_imagen_ref.configure(
-                            text=f"  📷 {nombre} ✓ ficha extraída")
+                            text=tr('  📷 {0} ✓ ficha extraída').format(nombre))
                     self._aplicar_ficha(
                         ficha, origen="📷 Ficha extraída de la imagen")
                 self.after(0, _ok)
             except Exception as e:
                 def _err(e=e):
                     self.label_imagen_ref.configure(
-                        text=f"  ❌ {nombre} — no se pudo analizar", image=None)
+                        text=tr('  ❌ {0} — no se pudo analizar').format(nombre), image=None)
                     self._fin_ficha_error(str(e))
                 self.after(0, _err)
 
@@ -420,7 +420,7 @@ class AvatarFrame(ctk.CTkFrame):
         if self.boton_imagen:
             self.boton_imagen.configure(state="normal")
         self.label_estado.configure(
-            text=f"{origen} — revísala/edítala y pulsa ⚡ Generar dataset.")
+            text=tr('{0} — revísala/edítala y pulsa ⚡ Generar dataset.').format(origen))
 
     def _fin_ficha_error(self, mensaje: str):
         self.boton_auto.configure(state="normal")
@@ -556,7 +556,7 @@ class AvatarFrame(ctk.CTkFrame):
     def _fin_ok(self, resultado, ruta, avisos=None):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
-            text=f"✅ {resultado['total_prompts']} prompts exportados.")
+            text=tr('✅ {0} prompts exportados.').format(resultado['total_prompts']))
         mensaje = (
             f"Descripción canónica:\n\n{resultado['descripcion_canonica']}\n\n"
             f"Exportado en:\n{ruta}")
