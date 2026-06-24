@@ -1068,7 +1068,7 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
-        self.app.combo_personaje = ctk.CTkComboBox(self.app.frame_pers_lora, values=["— Sin personaje —"], width=160,
+        self.app.combo_personaje = ctk.CTkComboBox(self.app.frame_pers_lora, values=[tr("— Sin personaje —")], width=160,
                                                 fg_color=c["combo_bg"], border_color=c["combo_border"],
                                                 text_color=c["hdr_text"],
                                                 command=self.app.footer._on_personaje_selected)
@@ -1078,7 +1078,7 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(15, 5))
-        self.app.combo_lora = ctk.CTkComboBox(self.app.frame_pers_lora, values=["— Sin LoRA —"], width=160,
+        self.app.combo_lora = ctk.CTkComboBox(self.app.frame_pers_lora, values=[tr("— Sin LoRA —")], width=160,
                                             fg_color=c["combo_bg"], border_color=c["combo_border"],
                                             text_color=c["hdr_text"],
                                             command=lambda v: (
@@ -1130,7 +1130,7 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
-        self.app.combo_plantilla = ctk.CTkComboBox(self.app.frame_plantilla_brief, values=["— Sin plantilla —"], width=180,
+        self.app.combo_plantilla = ctk.CTkComboBox(self.app.frame_plantilla_brief, values=[tr("— Sin plantilla —")], width=180,
                                                 fg_color=c["combo_bg"], border_color=c["combo_border"],
                                                 text_color=c["hdr_text"], command=self.app._cargar_plantilla)
         self.app.combo_plantilla.pack(side="left", padx=5)

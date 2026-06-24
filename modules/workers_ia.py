@@ -72,7 +72,7 @@ class WorkersIaService:
                            if hasattr(self.app, "combo_lora") else "")
         except Exception:
             return texto
-        if not lora_nombre or lora_nombre == "— Sin LoRA —":
+        if not lora_nombre or lora_nombre == tr("— Sin LoRA —"):
             return texto
         try:
             trigger = self.app.store.trigger_lora(lora_nombre)
@@ -260,12 +260,12 @@ class WorkersIaService:
             extras = ""
             try:
                 pers_nombre = self.app.combo_personaje.get() if hasattr(self.app, 'combo_personaje') else ""
-                if pers_nombre and pers_nombre != "— Sin personaje —":
+                if pers_nombre and pers_nombre != tr("— Sin personaje —"):
                     desc = self.app.store.descripcion_personaje(pers_nombre)
                     if desc:
                         extras += f"\nPERSONAJE: {desc}"
                 lora_nombre = self.app.combo_lora.get() if hasattr(self.app, 'combo_lora') else ""
-                if lora_nombre and lora_nombre != "— Sin LoRA —":
+                if lora_nombre and lora_nombre != tr("— Sin LoRA —"):
                     trigger = self.app.store.trigger_lora(lora_nombre)
                     if trigger:
                         extras += f"\nLORA TRIGGER (incluir literal): {trigger}"

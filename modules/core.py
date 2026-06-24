@@ -788,7 +788,7 @@ class CoreMixin:
         nombres_loras: list = []
         try:
             _primario = self.combo_lora.get() if hasattr(self, "combo_lora") else ""
-            if _primario and _primario != "— Sin LoRA —":
+            if _primario and _primario != tr("— Sin LoRA —"):
                 nombres_loras.append(_primario)
         except Exception:
             pass
@@ -1122,10 +1122,10 @@ class CoreMixin:
         self._ultimo_anclaje_visual = None
         self._anclaje_visual = None  # Limpiar ADN visual
         self.txt_idea.delete("1.0", "end")
-        self.combo_lora.set("— Sin LoRA —")
+        self.combo_lora.set(tr("— Sin LoRA —"))
         # Limpiar personaje
         if hasattr(self, 'combo_personaje'):
-            self.combo_personaje.set("— Sin personaje —")
+            self.combo_personaje.set(tr("— Sin personaje —"))
         # Limpiar estilos marcados
         for n, v in self.estilo_checks.items():
             v.set(False)

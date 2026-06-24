@@ -32,6 +32,14 @@ _IDIOMA = "es"
 # ES → EN. Lo que NO esté aquí cae al español (fallback). Orden alfabético.
 TRADUCCIONES = {
     'Libre': 'Free',
+    # Centinelas "ninguno" de los combos (display EN; la var guarda esta misma
+    # cadena traducida y TODAS las comparaciones usan tr(), así que son consistentes).
+    '— Sin personaje —': '— No character —',
+    '— Sin LoRA —': '— No LoRA —',
+    '— Sin plantilla —': '— No template —',
+    "💡 LoRA compatible disponible: '{0}' — selecciónalo en el combo 🔗 LoRA": "💡 Compatible LoRA available: '{0}' — select it in the 🔗 LoRA combo",
+    '💡 {0} LoRAs compatibles disponibles: {1}': '💡 {0} compatible LoRAs available: {1}',
+    '💡 {0} LoRAs compatibles ({1} +{2} más)': '💡 {0} compatible LoRAs ({1} +{2} more)',
     # Labels de proveedores LLM (combo Brain) con texto español.
     '💎 Claude (calidad top)': '💎 Claude (top quality)',
     '🏆 Groq (gratis, rápido)': '🏆 Groq (free, fast)',

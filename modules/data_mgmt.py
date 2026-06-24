@@ -166,15 +166,15 @@ class DataMgmtService:
 
     def _cmd_borrar_plantilla(self) -> None:
         nombre = self.app.combo_plantilla.get()
-        if not nombre or nombre == "— Sin plantilla —": return
+        if not nombre or nombre == tr("— Sin plantilla —"): return
         if messagebox.askyesno(tr("Confirmar"), tr("¿Borrar la plantilla '{0}'?").format(nombre)):
             self.app.store.borrar_plantilla(nombre)
-            self.app.combo_plantilla.set("— Sin plantilla —")
+            self.app.combo_plantilla.set(tr("— Sin plantilla —"))
             self.actualizar_combo_plantillas()
             self.app.dialogs.set_estado(tr("🗑 Plantilla '{0}' eliminada.").format(nombre))
 
     def _cargar_plantilla(self, nombre):
-        if not nombre or nombre == "— Sin plantilla —": return
+        if not nombre or nombre == tr("— Sin plantilla —"): return
         p = self.app.store.obtener_plantilla(nombre)
         if not p: return
         try: self.app.sesion._sesion_log(f"📐 Cargó plantilla: {nombre}")
@@ -204,8 +204,8 @@ class DataMgmtService:
             if pn in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pn, ("#333", "#555"))[0]
                 self.app.preset_btns[pn].configure(fg_color="#2ecc71" if activo else fg, text=f"✓ {pn}" if activo else pn)
-        self.app.combo_personaje.set(p.get("personaje", "— Sin personaje —"))
-        self.app.combo_lora.set(p.get("lora", "— Sin LoRA —"))
+        self.app.combo_personaje.set(p.get("personaje", tr("— Sin personaje —")))
+        self.app.combo_lora.set(p.get("lora", tr("— Sin LoRA —")))
         self.app.duracion_var.set(p.get("duracion", "10s"))
         self.app.switch_traduccion_var.set(p.get("traduccion", True))
         dest = p.get("destino", "— Personal —")
@@ -641,9 +641,9 @@ class DataMgmtService:
             header += f"  Ratio:       {self.app.ratio_var.get()}\n  Estilos:     {self.app.footer.estilos_texto()}\n"
 
             p = self.app.combo_personaje.get()
-            if p and p != "— Sin personaje —": header += f"  Personaje:   {p}\n"
+            if p and p != tr("— Sin personaje —"): header += f"  Personaje:   {p}\n"
             l = self.app.combo_lora.get()
-            if l and l != "— Sin LoRA —": header += f"  LoRA:        {l}\n"
+            if l and l != tr("— Sin LoRA —"): header += f"  LoRA:        {l}\n"
 
             dest = self.app.destino_var.get()
             if dest and dest != "— Personal —": header += f"  Destino:     {dest}\n"
@@ -1343,13 +1343,13 @@ class DataMgmtService:
         nombres = self.app.store.nombres_personajes()
         self.app.combo_personaje.configure(values=nombres)
         if self.app.combo_personaje.get() not in nombres:
-            self.app.combo_personaje.set("— Sin personaje —")
+            self.app.combo_personaje.set(tr("— Sin personaje —"))
 
     def actualizar_combo_loras(self) -> None:
         nombres = self.app.store.nombres_loras()
         self.app.combo_lora.configure(values=nombres)
         if self.app.combo_lora.get() not in nombres:
-            self.app.combo_lora.set("— Sin LoRA —")
+            self.app.combo_lora.set(tr("— Sin LoRA —"))
         # Refrescar trigger visible y aviso de compatibilidad
         try: self.app.footer._actualizar_lora_trigger_visible()
         except Exception as e:
@@ -1359,7 +1359,7 @@ class DataMgmtService:
         nombres = self.app.store.nombres_plantillas()
         self.app.combo_plantilla.configure(values=nombres)
         if self.app.combo_plantilla.get() not in nombres:
-            self.app.combo_plantilla.set("— Sin plantilla —")
+            self.app.combo_plantilla.set(tr("— Sin plantilla —"))
 
     def _cargar_preferencias(self) -> None:
         prefs = self.app.store.cargar_preferencias()

@@ -375,7 +375,7 @@ class UiFooterService:
             self.actualizar_fuentes_activas()
         except Exception:
             pass
-        if not nombre or nombre == "— Sin personaje —":
+        if not nombre or nombre == tr("— Sin personaje —"):
             return
         desc = self.app.store.descripcion_personaje(nombre) if hasattr(self.app, 'store') else ""
         if desc:
@@ -454,13 +454,13 @@ class UiFooterService:
         nombres = self.app.store.nombres_personajes()
         self.app.combo_personaje.configure(values=nombres)
         if self.app.combo_personaje.get() not in nombres:
-            self.app.combo_personaje.set("— Sin personaje —")
+            self.app.combo_personaje.set(tr("— Sin personaje —"))
 
     def actualizar_combo_loras(self):
         nombres = self.app.store.nombres_loras()
         self.app.combo_lora.configure(values=nombres)
         if self.app.combo_lora.get() not in nombres:
-            self.app.combo_lora.set("— Sin LoRA —")
+            self.app.combo_lora.set(tr("— Sin LoRA —"))
         # Refrescar trigger visible y aviso de compatibilidad
         try: self._actualizar_lora_trigger_visible()
         except Exception as e:
@@ -470,7 +470,7 @@ class UiFooterService:
         nombres = self.app.store.nombres_plantillas()
         self.app.combo_plantilla.configure(values=nombres)
         if self.app.combo_plantilla.get() not in nombres:
-            self.app.combo_plantilla.set("— Sin plantilla —")
+            self.app.combo_plantilla.set(tr("— Sin plantilla —"))
 
     def estilos_seleccionados(self):
         return [n for n, v in self.app.estilo_checks.items() if v.get()]
@@ -484,13 +484,13 @@ class UiFooterService:
 
     def personaje_activo(self):
         nombre = self.app.combo_personaje.get()
-        if nombre and nombre != "— Sin personaje —":
+        if nombre and nombre != tr("— Sin personaje —"):
             return self.app.store.descripcion_personaje(nombre)
         return ""
 
     def lora_activo(self):
         nombre = self.app.combo_lora.get()
-        if nombre and nombre != "— Sin LoRA —":
+        if nombre and nombre != tr("— Sin LoRA —"):
             return self.app.store.trigger_lora(nombre)
         return ""
 
@@ -538,7 +538,7 @@ class UiFooterService:
         # 🧑 Personaje
         try:
             pers = self.app.combo_personaje.get() if hasattr(self.app, "combo_personaje") else ""
-            if pers and pers != "— Sin personaje —":
+            if pers and pers != tr("— Sin personaje —"):
                 chips.append(("🧑 " + pers, "#3b82f6", "personaje"))
         except Exception:
             pass
@@ -546,7 +546,7 @@ class UiFooterService:
         n_loras = 0
         try:
             principal = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
-            if principal and principal != "— Sin LoRA —":
+            if principal and principal != tr("— Sin LoRA —"):
                 n_loras += 1
         except Exception:
             pass
@@ -593,14 +593,14 @@ class UiFooterService:
         y refresca el panel."""
         try:
             if tipo == "personaje" and hasattr(self.app, "combo_personaje"):
-                self.app.combo_personaje.set("— Sin personaje —")
+                self.app.combo_personaje.set(tr("— Sin personaje —"))
                 try:
-                    self._on_personaje_selected("— Sin personaje —")
+                    self._on_personaje_selected(tr("— Sin personaje —"))
                 except Exception:
                     pass
             elif tipo == "loras":
                 if hasattr(self.app, "combo_lora"):
-                    self.app.combo_lora.set("— Sin LoRA —")
+                    self.app.combo_lora.set(tr("— Sin LoRA —"))
                 self.app.loras_multi = []
                 try:
                     prefs = self.app.store.cargar_preferencias() or {}
@@ -644,7 +644,7 @@ class UiFooterService:
             nombre_primario = self.app.combo_lora.get() or ""
         except Exception:
             pass
-        if nombre_primario and nombre_primario != "— Sin LoRA —":
+        if nombre_primario and nombre_primario != tr("— Sin LoRA —"):
             for l in (self.app.store.loras or []):
                 if l.get("nombre") == nombre_primario:
                     r = (l.get("rasgos_visuales") or "").strip()
@@ -689,7 +689,7 @@ class UiFooterService:
             nombre_primario = self.app.combo_lora.get() or ""
         except Exception:
             pass
-        if nombre_primario and nombre_primario != "— Sin LoRA —":
+        if nombre_primario and nombre_primario != tr("— Sin LoRA —"):
             ctk.CTkLabel(
                 vent,
                 text=tr('🔹 Primario (combo): {0}').format(nombre_primario),
@@ -780,7 +780,7 @@ class UiFooterService:
         """Muestra el trigger del LoRA seleccionado al lado del combo (Mejora LoRAs)."""
         if not hasattr(self.app, "lbl_lora_trigger"): return
         nombre = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
-        if not nombre or nombre == "— Sin LoRA —":
+        if not nombre or nombre == tr("— Sin LoRA —"):
             self.app.lbl_lora_trigger.configure(text="")
             return
         trigger = self.app.store.trigger_lora(nombre)
@@ -866,7 +866,7 @@ class UiFooterService:
         # Si ya hay un LoRA seleccionado, no molestar
         try:
             actual = self.app.combo_lora.get()
-            if actual and actual != "— Sin LoRA —":
+            if actual and actual != tr("— Sin LoRA —"):
                 return
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -885,11 +885,11 @@ class UiFooterService:
         # Mostrar mensaje amigable en el estado (en color violeta para que destaque)
         nombres = [l["nombre"] for l in compatibles[:3]]
         if len(compatibles) == 1:
-            msg = f"💡 LoRA compatible disponible: '{nombres[0]}' — selecciónalo en el combo 🔗 LoRA"
+            msg = tr("💡 LoRA compatible disponible: '{0}' — selecciónalo en el combo 🔗 LoRA").format(nombres[0])
         elif len(compatibles) <= 3:
-            msg = f"💡 {len(compatibles)} LoRAs compatibles disponibles: {', '.join(nombres)}"
+            msg = tr("💡 {0} LoRAs compatibles disponibles: {1}").format(len(compatibles), ', '.join(nombres))
         else:
-            msg = f"💡 {len(compatibles)} LoRAs compatibles ({', '.join(nombres)} +{len(compatibles) - 3} más)"
+            msg = tr("💡 {0} LoRAs compatibles ({1} +{2} más)").format(len(compatibles), ', '.join(nombres), len(compatibles) - 3)
         self.app.dialogs.set_estado(msg, "#a78bfa")
 
     def modelo_video_valido(self):
