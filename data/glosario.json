@@ -165,7 +165,7 @@
     },
     {
       "titulo": "🌟 PROMPTS ESTRELLA",
-      "descripcion": "Tus mejores prompts, guardados con nota (1-10) y modelo usado. Marcalos como favoritos para acceder rápido y comparar qué hace a un prompt excelente.",
+      "descripcion": "Tus mejores prompts, guardados con nota (1-10) y modelo usado. Márcalos como favoritos para acceder rápido y comparar qué hace a un prompt excelente.",
       "categoria": "Herramientas G-Prompt",
       "accion": null
     },
@@ -183,7 +183,7 @@
     },
     {
       "titulo": "💎 SEMILLAS / SEEDS FAVORITOS",
-      "descripcion": "Guarda seeds que te gustaron para reutilizarlas. Al aplicar una seed, se cargan automáticamente: modelo, plataforma, sampler, steps, CFG, clip skip y resol. Ideales para mantener coherencia visual en una serie.",
+      "descripcion": "Guarda seeds que te gustaron para reutilizarlas. Al aplicar una seed, se cargan automáticamente: modelo, plataforma, sampler, steps, CFG, clip skip y resolución. Ideales para mantener coherencia visual en una serie.",
       "categoria": "Herramientas G-Prompt",
       "accion": "_abrir_seeds_favoritos"
     },

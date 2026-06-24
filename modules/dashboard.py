@@ -510,7 +510,7 @@ class DashboardService:
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12, pady=(10, 4))
 
         # Última sesión: tomar la fecha del prompt más reciente
-        ultima_str = "Aún no hay actividad"
+        ultima_str = tr("Aún no hay actividad")
         if historial:
             try:
                 ultima = historial[0].get("fecha", "")
@@ -518,15 +518,18 @@ class DashboardService:
                     f_ult = _dt.datetime.strptime(ultima[:16], "%Y-%m-%d %H:%M")
                     delta = _dt.datetime.now() - f_ult
                     if delta.days > 0:
-                        ultima_str = f"Hace {delta.days} día{'s' if delta.days != 1 else ''}"
+                        key = "Hace {0} día" if delta.days == 1 else "Hace {0} días"
+                        ultima_str = tr(key).format(delta.days)
                     elif delta.seconds >= 3600:
                         h = delta.seconds // 3600
-                        ultima_str = f"Hace {h} hora{'s' if h != 1 else ''}"
+                        key = "Hace {0} hora" if h == 1 else "Hace {0} horas"
+                        ultima_str = tr(key).format(h)
                     elif delta.seconds >= 60:
                         m = delta.seconds // 60
-                        ultima_str = f"Hace {m} minuto{'s' if m != 1 else ''}"
+                        key = "Hace {0} minuto" if m == 1 else "Hace {0} minutos"
+                        ultima_str = tr(key).format(m)
                     else:
-                        ultima_str = "Hace unos segundos"
+                        ultima_str = tr("Hace unos segundos")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         # Estimación de tokens (cuenta caracteres del historial / 4)
@@ -605,7 +608,7 @@ class DashboardService:
         # Plantilla más usada (no se trackea, así que mostramos la primera/destacada)
         if plantillas:
             primera = plantillas[0]
-            nombre_pl = primera.get("nombre", "Sin nombre")
+            nombre_pl = primera.get("nombre") or tr("Sin nombre")
             def _aplicar_plantilla():
                 try:
                     self.app.combo_plantilla.set(nombre_pl)
@@ -689,7 +692,7 @@ class DashboardService:
 
         estado_color = accent_green if disponible else accent_red
         estado_emoji = "🟢" if disponible else "🔴"
-        estado_text = "Conectado" if disponible else "Sin key"
+        estado_text = tr("Conectado") if disponible else tr("Sin key")
 
         ctk.CTkLabel(llm_card, text=llm_label,
                      font=ctk.CTkFont(size=14, weight="bold"),
@@ -713,13 +716,13 @@ class DashboardService:
         # FEATURE 22 — Bloque de Avisos
         avisos = []
         if not disponible:
-            avisos.append(("⚠️", "Sin LLM configurado", accent_red))
+            avisos.append(("⚠️", tr("Sin LLM configurado"), accent_red))
         if len(historial) >= 90:
-            avisos.append(("📋", f"Historial casi lleno ({len(historial)}/100)", accent_amber))
+            avisos.append(("📋", tr("Historial casi lleno ({0}/100)").format(len(historial)), accent_amber))
         if not personajes:
-            avisos.append(("🧑", "No tienes personajes guardados", text_muted))
+            avisos.append(("🧑", tr("No tienes personajes guardados"), text_muted))
         if not plantillas:
-            avisos.append(("📐", "No tienes plantillas guardadas", text_muted))
+            avisos.append(("📐", tr("No tienes plantillas guardadas"), text_muted))
 
         # Backup
         try:
@@ -729,9 +732,9 @@ class DashboardService:
                 last_bk = _dt.datetime.fromtimestamp(marker.stat().st_mtime)
                 dias_bk = (_dt.datetime.now() - last_bk).days
                 if dias_bk >= 7:
-                    avisos.append(("💾", f"Último backup hace {dias_bk} días", accent_amber))
+                    avisos.append(("💾", tr("Último backup hace {0} días").format(dias_bk), accent_amber))
             else:
-                avisos.append(("💾", "Aún no se ha hecho backup", text_muted))
+                avisos.append(("💾", tr("Aún no se ha hecho backup"), text_muted))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         if avisos:
@@ -756,64 +759,64 @@ class DashboardService:
         # Definición completa de logros: (emoji, nombre, descripción, condición lambda → bool, valor_actual_y_objetivo)
         TODOS_LOS_LOGROS = [
             # Hitos de cantidad
-            ("🏁", "Primer prompt", "Genera tu primer prompt",
+            ("🏁", tr("Primer prompt"), tr("Genera tu primer prompt"),
              len(historial) >= 1, (len(historial), 1)),
-            ("🚀", "Aprendiz", "Genera 10 prompts",
+            ("🚀", tr("Aprendiz"), tr("Genera 10 prompts"),
              len(historial) >= 10, (len(historial), 10)),
-            ("⚡", "Productivo", "Genera 50 prompts",
+            ("⚡", tr("Productivo"), tr("Genera 50 prompts"),
              len(historial) >= 50, (len(historial), 50)),
-            ("💯", "Centenario", "Genera 100 prompts",
+            ("💯", tr("Centenario"), tr("Genera 100 prompts"),
              len(historial) >= 100, (len(historial), 100)),
 
             # Favoritos
-            ("⭐", "Selectivo", "Marca 5 favoritos",
+            ("⭐", tr("Selectivo"), tr("Marca 5 favoritos"),
              len(favoritos) >= 5, (len(favoritos), 5)),
-            ("🌟", "Coleccionista", "Marca 20 favoritos",
+            ("🌟", tr("Coleccionista"), tr("Marca 20 favoritos"),
              len(favoritos) >= 20, (len(favoritos), 20)),
 
             # Estrellas
-            ("✨", "Reconocedor", "Guarda 3 prompts estrella",
+            ("✨", tr("Reconocedor"), tr("Guarda 3 prompts estrella"),
              len(estrellas) >= 3, (len(estrellas), 3)),
-            ("🏆", "Curador", "Guarda 10 prompts estrella",
+            ("🏆", tr("Curador"), tr("Guarda 10 prompts estrella"),
              len(estrellas) >= 10, (len(estrellas), 10)),
 
             # Personajes
-            ("🧑", "Creador de personajes", "Crea 3 personajes",
+            ("🧑", tr("Creador de personajes"), tr("Crea 3 personajes"),
              len(personajes) >= 3, (len(personajes), 3)),
-            ("👥", "Casting completo", "Crea 10 personajes",
+            ("👥", tr("Casting completo"), tr("Crea 10 personajes"),
              len(personajes) >= 10, (len(personajes), 10)),
 
             # LoRAs
-            ("🔗", "Mezclador", "Guarda 3 LoRAs",
+            ("🔗", tr("Mezclador"), tr("Guarda 3 LoRAs"),
              len(loras) >= 3, (len(loras), 3)),
-            ("🧪", "Alquimista", "Guarda 10 LoRAs",
+            ("🧪", tr("Alquimista"), tr("Guarda 10 LoRAs"),
              len(loras) >= 10, (len(loras), 10)),
 
             # Plantillas
-            ("📐", "Organizado", "Guarda 3 plantillas",
+            ("📐", tr("Organizado"), tr("Guarda 3 plantillas"),
              len(plantillas) >= 3, (len(plantillas), 3)),
-            ("🗂", "Sistemático", "Guarda 10 plantillas",
+            ("🗂", tr("Sistemático"), tr("Guarda 10 plantillas"),
              len(plantillas) >= 10, (len(plantillas), 10)),
 
             # Variedad
-            ("🌐", "Explorador", "Usa 3 plataformas distintas",
+            ("🌐", tr("Explorador"), tr("Usa 3 plataformas distintas"),
              len(set(e.get("plataforma", "") for e in historial if e.get("plataforma"))) >= 3,
              (len(set(e.get("plataforma", "") for e in historial if e.get("plataforma"))), 3)),
-            ("🌍", "Cosmopolita", "Usa 5 plataformas distintas",
+            ("🌍", tr("Cosmopolita"), tr("Usa 5 plataformas distintas"),
              len(set(e.get("plataforma", "") for e in historial if e.get("plataforma"))) >= 5,
              (len(set(e.get("plataforma", "") for e in historial if e.get("plataforma"))), 5)),
-            ("🎨", "Multiestilo", "Usa los 3 modos (imagen/vídeo/audio)",
+            ("🎨", tr("Multiestilo"), tr("Usa los 3 modos (imagen/vídeo/audio)"),
              len(set(e.get("modo", "") for e in historial if e.get("modo"))) >= 3,
              (len(set(e.get("modo", "") for e in historial if e.get("modo"))), 3)),
 
             # Específicos
-            ("🎬", "Cineasta", "Genera 10 prompts de vídeo",
+            ("🎬", tr("Cineasta"), tr("Genera 10 prompts de vídeo"),
              sum(1 for e in historial if e.get("modo") == "video") >= 10,
              (sum(1 for e in historial if e.get("modo") == "video"), 10)),
-            ("🎵", "Compositor", "Genera 10 prompts de audio",
+            ("🎵", tr("Compositor"), tr("Genera 10 prompts de audio"),
              sum(1 for e in historial if e.get("modo") == "audio") >= 10,
              (sum(1 for e in historial if e.get("modo") == "audio"), 10)),
-            ("📸", "Fotógrafo", "Genera 50 prompts de imagen",
+            ("📸", tr("Fotógrafo"), tr("Genera 50 prompts de imagen"),
              sum(1 for e in historial if e.get("modo") == "imagen") >= 50,
              (sum(1 for e in historial if e.get("modo") == "imagen"), 50)),
         ]

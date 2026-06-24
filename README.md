@@ -16,9 +16,9 @@ G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque 
 
 | Modo | Modelos soportados |
 |------|--------------------|
-| 🖼 **Imagen** | 23+ modelos: Z Image Turbo, FLUX.1 [dev], NiwaStyle ColorPop, DreamShaper, Realistic Vision, SeaArt Infinity, Nano Banana Pro y más |
-| 🎬 **Vídeo** | 14+ motores: Kling 3.0, Seedance 2.0, Sora2, Veo 3.1, Wan 2.6, SeaArt Ultra Pro, Pixverse, Vidu, Luma Dream Machine, Runway Gen-3 |
-| 🎵 **Audio** | Suno (v4/v4.5/v5), SeaArt Audio (Minimax Music 2.5, MusicGo), con letras, estilo, emoción, voz e idioma |
+| 🖼 **Imagen** | 93+ modelos vigentes: FLUX.1 [dev/schnell], Z-Image, GPT Image, Nano Banana, Illustrious, Pony, Qwen, Realismo SD, Anime/Ilustración y más |
+| 🎬 **Vídeo** | 72 motores: Kling, Seedance, Wan, Hailuo, StarDream, PixVerse, Vidu, Grok, Happy Horse, Nano Banana, Sora2, Veo, SeaArt y más |
+| 🎵 **Audio** | 11 modelos: Suno (×4), Udio (×2), Minimax Music (×2), MusicGo, Mureka V9 — con letras, estilo, emoción, voz e idioma |
 
 ## 🧠 Multi-Cerebro (14 LLMs soportados)
 
@@ -163,37 +163,40 @@ gprompt-studio/
 ├── config.py            # MODEL_SPECS, plataformas, estilos
 ├── logging_utils.py     # @log_operation decorator
 ├── theme.json           # Tema customtkinter (dark/light)
-├── modules/             # 8 mixins + servicios auxiliares
+├── modules/             # 40 servicios: UI, IA, datos, Avatar, i18n…
 │   ├── core.py          # Workers, comandos, estado
 │   ├── ui_builders.py   # Construcción UI
-│   ├── tools_creative.py
-│   ├── tools_workflow.py
-│   ├── tools_analysis.py
-│   ├── data_mgmt.py
-│   ├── backup_export.py
-│   ├── dialogs.py
-│   ├── windows.py       # Ventanas auxiliares (batch, listas)
-│   ├── gprompt_window.py # Wrapper de CTkToplevel
-│   ├── event_bus.py     # Pub/sub singleton
-│   ├── preview_service.py
-│   └── comfyui_exporter.py
-└── tests/               # 6 suites pytest
+│   ├── i18n.py          # Bilingüe ES/EN (~1400 traducciones)
+│   ├── dashboard.py     # Panel de estadísticas y logros
+│   ├── avatar_*.py      # Generador de datasets LoRA (4 módulos)
+│   └── …               # (ver docs/ESTRUCTURA.md para el árbol completo)
+├── data/                # JSONs: specs de modelos, estilos, plantillas
+└── tests/               # 760 tests pytest
 ```
 
 ## 🧪 Tests
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v
+pytest tests/ -v   # → 760 passed
 ```
 
-Cubre: api_clients, config helpers, exceptions, persistence atómica, state, types, workers.
-
-## ⌨ Atajos de teclado
+## ⌨ Atajos de teclado (29 registrados — `Ctrl+?` muestra la lista completa)
 
 | Atajo | Acción |
 |-------|--------|
-| `Ctrl+Enter` | Generar prompt (desde textarea) |
+| `Ctrl+Enter` | Generar prompt |
+| `Ctrl+Shift+Enter` | Variaciones x3 |
+| `Alt+Enter` | Quick Generate |
+| `Ctrl+I` | Ideas creativas |
+| `Ctrl+S` / `Ctrl+Shift+S` | Guardar favorito / estrella |
+| `Ctrl+F` | Búsqueda global |
+| `Ctrl+Shift+R` | Refinar prompt |
+| `Ctrl+Shift+O` | Optimizador en bucle |
+| `Ctrl+Shift+D` | Abrir Dashboard |
+| `Alt+1/2/3` | Modo imagen / vídeo / audio |
+| `Ctrl+?` | Mostrar todos los atajos |
+| `F11` | Pantalla completa |
 | `Escape` | Cerrar popup activo |
 
 ## 🔒 Seguridad

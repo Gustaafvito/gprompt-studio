@@ -1018,11 +1018,9 @@ class APIClients:
         else:
             logger.warning("No se encontraron API keys para ningún proveedor.")
 
-        # Log de diagnóstico para Gemini (key enmascarada por seguridad)
         gkey = self.api_keys.get("gemini", "")
         if gkey:
-            masked = f"{gkey[:6]}...{gkey[-4:]}" if len(gkey) > 12 else "(corta)"
-            logger.info(f"Gemini key cargada: {masked} (longitud: {len(gkey)})")
+            logger.info("Gemini key cargada: [presente]")
 
         # Modelo elegido por proveedor (persistido en active_models.json).
         # Si no hay elección guardada, cada provider usa su model_default.

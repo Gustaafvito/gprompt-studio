@@ -147,7 +147,7 @@ def abrir_personajes(app):
             existia = app.store.guardar_personaje(nombre, desc)
             if existia:
                 if not messagebox.askyesno(tr("Ya existe"),
-                                           tr("¿Sobreescribir '{0}'?").format(nombre),
+                                           tr("¿Sobrescribir '{0}'?").format(nombre),
                                            parent=ventana):
                     return
         app.actualizar_combo_personajes()
@@ -442,7 +442,7 @@ def abrir_loras(app):
             existia = app.store.guardar_lora(nombre, trigger, nota, familia, rasgos)
             if existia:
                 if not messagebox.askyesno(tr("Ya existe"),
-                                           tr("¿Sobreescribir '{0}'?").format(nombre),
+                                           tr("¿Sobrescribir '{0}'?").format(nombre),
                                            parent=ventana):
                     return
         app.actualizar_combo_loras()

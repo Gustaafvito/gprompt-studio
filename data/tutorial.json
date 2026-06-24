@@ -99,7 +99,7 @@
     {
       "id": 17,
       "titulo": "🎬 17. A/B TESTING — Compara variantes",
-      "descripcion": "Genera 4 versiones con variaciones diferentes:\n\n• Cambia solo estilo → compara aesthetics\n• Cambia solo iluminación → compara mood\n• Cambia ratio → compara composición\n• Combina cambios → encuentra lo óptimo\n\nSelecciona 1-2 dimensiones a variar. Las 4 opciones se muestran en grid para comparar.",
+      "descripcion": "Genera 4 versiones con variaciones diferentes:\n\n• Cambia solo estilo → compara estéticas\n• Cambia solo iluminación → compara mood\n• Cambia ratio → compara composición\n• Combina cambios → encuentra lo óptimo\n\nSelecciona 1-2 dimensiones a variar. Las 4 opciones se muestran en grid para comparar.",
       "accion": "_cmd_ab_testing"
     },
     {
@@ -153,7 +153,7 @@
     {
       "id": 26,
       "titulo": "💡 26. CONSEJOS FINALES",
-      "descripcion": "1. Sé específico en la idea — 'gato' vs 'gato persa dorado durmiendo'\n2. Limita estilos a 2-3 — más genera caos\n3. Usa negativos — evita lo que no quieres\n4. Prueba variaciones — A/B testing es tu amigo\n5. Guarda lo bueno — favoritos y estrellas\n6. Iteración > Regenerar — refina antes de empezar de nuevo\n7. Experimenta — los mejores prompts vienen de pruebas\n\n🎓 ¡Con práctica dominarás todas las herramientas. Mucho éxito!",
+      "descripcion": "1. Sé específico en la idea — 'gato' vs 'gato persa dorado durmiendo'\n2. Limita estilos a 2-3 — más genera caos\n3. Usa negativos — evita lo que no quieres\n4. Prueba variaciones — A/B testing es tu amigo\n5. Guarda lo bueno — favoritos y estrellas\n6. Iteración > Regenerar — refina antes de empezar de nuevo\n7. Experimenta — los mejores prompts vienen de pruebas\n\n🎓 ¡Con práctica dominarás todas las herramientas. ¡Mucho éxito!",
       "accion": null
     },
     {

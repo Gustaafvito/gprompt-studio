@@ -238,55 +238,55 @@ class AtajosAyudaService:
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
         atajos = [
-            ("⚡ Generación", [
-                ("Ctrl+Enter", "Generar prompt"),
-                ("Ctrl+Shift+Enter", "Generar variaciones (x3)"),
-                ("Alt+Enter", "Generación rápida (Quick)"),
-                ("Ctrl+I", "Generar 3 ideas"),
-                ("Ctrl+Shift+B", "Storyboard (paneles de imagen)"),
+            (tr("⚡ Generación"), [
+                ("Ctrl+Enter", tr("Generar prompt")),
+                ("Ctrl+Shift+Enter", tr("Generar variaciones (x3)")),
+                ("Alt+Enter", tr("Generación rápida (Quick)")),
+                ("Ctrl+I", tr("Generar 3 ideas")),
+                ("Ctrl+Shift+B", tr("Storyboard (paneles de imagen)")),
             ]),
-            ("✏️  Edición", [
-                ("Ctrl+S", "Guardar como favorito"),
-                ("Ctrl+Shift+S", "Guardar como estrella"),
-                ("Ctrl+D", "Duplicar al historial"),
-                ("Ctrl+Shift+R", "Refinar prompt"),
-                ("Ctrl+Shift+O", "Optimizador en bucle"),
-                ("Ctrl+Shift+P", "Previsualizar (Pollinations)"),
-                ("Ctrl+Shift+T", "Traducir idea al inglés"),
-                ("Ctrl+V", "Pegar inteligente"),
+            (tr("✏️  Edición"), [
+                ("Ctrl+S", tr("Guardar como favorito")),
+                ("Ctrl+Shift+S", tr("Guardar como estrella")),
+                ("Ctrl+D", tr("Duplicar al historial")),
+                ("Ctrl+Shift+R", tr("Refinar prompt")),
+                ("Ctrl+Shift+O", tr("Optimizador en bucle")),
+                ("Ctrl+Shift+P", tr("Previsualizar (Pollinations)")),
+                ("Ctrl+Shift+T", tr("Traducir idea al inglés")),
+                ("Ctrl+V", tr("Pegar inteligente")),
             ]),
-            ("📋 Portapapeles", [
-                ("Ctrl+1", "Copiar POSITIVE"),
-                ("Ctrl+2", "Copiar NEGATIVE"),
-                ("Ctrl+Shift+A", "Analizar imagen (Vision)"),
+            (tr("📋 Portapapeles"), [
+                ("Ctrl+1", tr("Copiar POSITIVE")),
+                ("Ctrl+2", tr("Copiar NEGATIVE")),
+                ("Ctrl+Shift+A", tr("Analizar imagen (Vision)")),
             ]),
-            ("🎬 Navegación", [
-                ("Alt+1", "Modo imagen"),
-                ("Alt+2", "Modo vídeo"),
-                ("Alt+3", "Modo audio"),
-                ("Ctrl+R", "Idea aleatoria del historial"),
-                ("Ctrl+T", "Abrir tutorial"),
+            (tr("🎬 Navegación"), [
+                ("Alt+1", tr("Modo imagen")),
+                ("Alt+2", tr("Modo vídeo")),
+                ("Alt+3", tr("Modo audio")),
+                ("Ctrl+R", tr("Idea aleatoria del historial")),
+                ("Ctrl+T", tr("Abrir tutorial")),
             ]),
-            ("🛠 Herramientas", [
-                ("Ctrl+E", "Exportar rápido"),
-                ("Ctrl+F", "Búsqueda global"),
-                ("Ctrl+L", "Abrir LoRAs"),
-                ("Ctrl+P", "Grupo de personajes"),
-                ("Ctrl+Shift+N", "Constructor de negative"),
-                ("Ctrl+H", "Modo Focus"),
-                ("Ctrl+Shift+L", "Cambiar tema claro/oscuro"),
-                ("Ctrl+Shift+C", "Sugerencias de claridad (palabras polisémicas)"),
-                ("Ctrl+Shift+D", "Abrir Dashboard"),
-                ("Ctrl+Shift+M", "Coste de sesión"),
+            (tr("🛠 Herramientas"), [
+                ("Ctrl+E", tr("Exportar rápido")),
+                ("Ctrl+F", tr("Búsqueda global")),
+                ("Ctrl+L", tr("Abrir LoRAs")),
+                ("Ctrl+P", tr("Grupo de personajes")),
+                ("Ctrl+Shift+N", tr("Constructor de negative")),
+                ("Ctrl+H", tr("Modo Focus")),
+                ("Ctrl+Shift+L", tr("Cambiar tema claro/oscuro")),
+                ("Ctrl+Shift+C", tr("Sugerencias de claridad (palabras polisémicas)")),
+                ("Ctrl+Shift+D", tr("Abrir Dashboard")),
+                ("Ctrl+Shift+M", tr("Coste de sesión")),
             ]),
-            ("⚖️ Comparador (dentro de la ventana)", [
-                ("Ctrl+G", "Abrir Grid Pollinations (previews de TODAS)"),
-                ("Alt+C", "Comparar 2 cards lado-a-lado (si hay 2 marcadas)"),
+            (tr("⚖️ Comparador (dentro de la ventana)"), [
+                ("Ctrl+G", tr("Abrir Grid Pollinations (previews de TODAS)")),
+                ("Alt+C", tr("Comparar 2 cards lado-a-lado (si hay 2 marcadas)")),
             ]),
-            ("❓ Extra", [
-                ("F11", "Pantalla completa"),
-                ("Escape", "Cerrar popup / Salir de pantalla completa"),
-                ("Ctrl+?", "Mostrar atajos"),
+            (tr("❓ Extra"), [
+                ("F11", tr("Pantalla completa")),
+                ("Escape", tr("Cerrar popup / Salir de pantalla completa")),
+                ("Ctrl+?", tr("Mostrar atajos")),
             ]),
         ]
 
@@ -342,8 +342,8 @@ class AtajosAyudaService:
                 ctk.CTkLabel(scroll,
                              text=tr("Sin atajos que coincidan con '{0}'").format(termino),
                              text_color=c["muted_text"]).pack(pady=30)
-            sufijo = f" (filtrando '{termino}')" if termino else ""
-            contador_var.set(f"{mostrados} de {total} atajos{sufijo}")
+            sufijo = tr(" (filtrando '{0}')").format(termino) if termino else ""
+            contador_var.set(tr("{0} de {1} atajos").format(mostrados, total) + sufijo)
 
         pendiente = {"after_id": None}
         def _on_buscar(_e=None):

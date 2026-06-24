@@ -11,13 +11,13 @@
 ```
 gprompt-studio/
 │
-├── main.py                # Punto de entrada (parche CTkToolTip, tema, splash) — 217 líneas
-├── app.py                 # ArquitectoApp + install_components — 2.286 líneas
-├── api_clients.py         # 14 proveedores LLM (patrón Provider, openai lazy) — 754 líneas
-├── config.py              # API pública de constantes + carga desde data/*.json — 1.113 líneas
-├── persistence.py         # DataStore atómico (tmp + os.replace + fsync) — 381 líneas
+├── main.py                # Punto de entrada (parche CTkToolTip, tema, splash)
+├── app.py                 # ArquitectoApp + install_components — 2.643 líneas
+├── api_clients.py         # 14 proveedores LLM (patrón Provider, openai lazy) — 1.198 líneas
+├── config.py              # API pública de constantes + carga desde data/*.json — 1.697 líneas
+├── persistence.py         # DataStore atómico (tmp + os.replace + fsync)
 ├── prompts.py             # System prompts por modo/modelo — 751 líneas
-├── workers.py             # DeepSeekWorker + VisionChain (retry backoff) — 529 líneas
+├── workers.py             # DeepSeekWorker + VisionChain (retry backoff)
 ├── logging_utils.py       # @log_operation, silent(), silent_call()
 ├── theme.json             # Paleta dark/light de customtkinter
 ├── pyproject.toml         # Config del proyecto (PEP 621) + Ruff
@@ -33,101 +33,99 @@ gprompt-studio/
 │   ├── AGREGAR_MODELO.md  # Guía para añadir/auditar modelos
 │   └── handoff-historico.md # Histórico de sesiones 6-19
 │
-├── modules/               # Mixins + componentes + servicios auxiliares
-│   ├── __init__.py        # Re-export público + install_components
-│   ├── core.py            # Workers, comandos, estado — 2.883 líneas
-│   ├── ui_builders.py     # Construcción de UI — 2.123 líneas
-│   ├── dialogs.py         # API Keys, Dashboard, Theme — 1.985 líneas
-│   ├── tools_creative.py  # Moodboard, ADN, Negative Builder — 1.881 líneas
-│   ├── tools_workflow.py  # Macros, A/B Testing, Cron, Proyectos — 1.736 líneas
-│   ├── data_mgmt.py       # Historial, favoritos, plantillas — 1.550 líneas
-│   ├── tools_analysis.py  # Stats, Scoring, Auto-improve — 1.497 líneas
-│   ├── windows.py         # Ventanas auxiliares (Personajes, LoRAs…) — 1.192 líneas
-│   ├── multiprompt.py     # Moodboard / Story / Board / Walk — 966 líneas
-│   ├── modo_cliente.py    # Brief profesional + 5 propuestas — 872 líneas
-│   ├── backup_export.py   # Backup, restore, CSV, Export CLI — 792 líneas
-│   ├── json_prompt.py     # Import/export JSON pro (Veo/Sora/Kling) — 723 líneas
-│   ├── adn_visual.py      # ADN Visual extraído de imagen — 665 líneas
-│   ├── sesion_video.py    # Grabar / exportar / tutorial-mode — 564 líneas
-│   ├── tutorial.py        # Tutorial interactivo — 439 líneas
-│   ├── style_guide.py     # Selector de estilos por modo — 377 líneas
-│   ├── workers_ia.py      # Threads de generación / visión / traducción — 278 líneas
-│   ├── glosario.py        # Glosario de términos — 235 líneas
-│   ├── comfyui_exporter.py# Exportador ComfyUI workflow — 233 líneas
-│   ├── components.py      # Componentes que delegan a app — 99 líneas
-│   ├── event_bus.py       # Pub/sub singleton — 99 líneas
-│   ├── preview_service.py # Preview vía Pollinations — 83 líneas
+├── modules/               # 40 servicios — ver tabla abajo
+│   ├── __init__.py        # Re-export público
+│   ├── core.py            # Workers, comandos, estado — 1.250 líneas
+│   ├── ui_builders.py     # Construcción de UI — 1.996 líneas
+│   ├── tools_analysis.py  # Stats, Scoring, Auto-improve — 2.188 líneas
+│   ├── tools_creative.py  # Moodboard, ADN, Negative Builder — 2.033 líneas
+│   ├── tools_workflow.py  # Macros, A/B Testing, Cron, Proyectos — 1.442 líneas
+│   ├── data_mgmt.py       # Historial, favoritos, plantillas — 1.584 líneas
+│   ├── dashboard.py       # Panel stats, logros, avisos — 1.518 líneas
+│   ├── windows.py         # Ventanas auxiliares (Personajes, LoRAs…) — 1.411 líneas
+│   ├── dialogs.py         # Modales: keys, tema, idioma — 835 líneas
+│   ├── multiprompt.py     # Moodboard / Story / Board / Walk — 1.198 líneas
+│   ├── modo_cliente.py    # Brief profesional + 5 propuestas — 875 líneas
+│   ├── backup_export.py   # Backup, restore, CSV, búsqueda global — 820 líneas
+│   ├── prompts_inyeccion.py # Inyección de specs por modelo — 1.075 líneas
+│   ├── ui_footer.py       # Barra de estado + footer — 972 líneas
+│   ├── json_prompt.py     # Import/export JSON pro (Veo/Sora/Kling) — 729 líneas
+│   ├── adn_visual.py      # ADN Visual extraído de imagen — 673 líneas
+│   ├── sesion_video.py    # Grabar / exportar / tutorial-mode — 560 líneas
+│   ├── avatar_config.py   # Config del generador de datasets LoRA — 797 líneas
+│   ├── avatar_ui.py       # UI del Avatar — 682 líneas
+│   ├── avatar_prompts.py  # Prompts del Avatar — 614 líneas
+│   ├── avatar_generator.py# Generador de prompts del Avatar — 333 líneas
+│   ├── i18n.py            # Bilingüe ES/EN (~1.650 traducciones) — 1.704 líneas
+│   ├── tutorial.py        # Tutorial interactivo — 449 líneas
+│   ├── ab_testing.py      # A/B Testing 2x2 — variaciones comparadas
+│   ├── workers_ia.py      # Threads de generación / visión / traducción — 430 líneas
+│   ├── ui_events.py       # Event handlers de los combos superiores — 475 líneas
+│   ├── atajos_ayuda.py    # Atajos de teclado + ventana de ayuda — 373 líneas
+│   ├── refinamiento.py    # Refinamiento iterativo + diff visual — 346 líneas
+│   ├── glosario.py        # Glosario de términos — 246 líneas
+│   ├── style_guide.py     # Selector de estilos por modo — 378 líneas
+│   ├── preview_pollinations.py # Preview rápido vía Pollinations — 535 líneas
+│   ├── searchable_dropdown.py  # Dropdown con buscador + familias colapsables — 193 líneas
+│   ├── clarity_hints.py   # Sugerencias de claridad (palabras polisémicas) — 170 líneas
+│   ├── prompt_helpers.py  # Helpers reutilizables de prompt — 201 líneas
+│   ├── prompt_logic.py    # Lógica de detección (turbo, familia, ComfyUI) — 127 líneas
+│   ├── components.py      # Componentes que delegan a app — 744 líneas
+│   ├── event_bus.py       # Pub/sub singleton — 97 líneas
+│   ├── tooltip.py         # Wrapper CTkToolTip con fallback — 94 líneas
 │   └── gprompt_window.py  # Wrapper de CTkToplevel — 78 líneas
 │
-├── config/
-│   └── plantillas_default.json   # Plantillas por defecto (load-bearing)
+├── data/                  # Datos cargados por config.py + app.py
+│   ├── model_specs_imagen.json   # ~164 modelos de imagen (93 vigentes)
+│   ├── model_specs_video.json    # 72 motores de vídeo por familia
+│   ├── model_specs_audio.json    # 11 modelos de audio
+│   ├── plantillas_default.json   # Plantillas por defecto
+│   ├── biblioteca_ejemplos.json  # 27 ejemplos para nuevos usuarios
+│   ├── estilos_grupos.json       # Grupos de estilos
+│   ├── estilo_negativo_auto.json # Mapeos estilo → negativos
+│   ├── glosario.json             # Glosario en español
+│   ├── glosario.en.json          # Glosario en inglés
+│   ├── tutorial.json             # Tutorial en español (42 pasos)
+│   └── tutorial.en.json          # Tutorial en inglés
 │
-├── data/                  # Datos cargados al import desde config.py
-│   ├── model_specs_imagen.json   # 118 modelos de imagen
-│   ├── model_specs_video.json    # 15 modelos de vídeo
-│   ├── model_specs_audio.json    # 10 modelos de audio
-│   ├── biblioteca_ejemplos.json  # 10 ejemplos para nuevos usuarios
-│   ├── estilos_grupos.json       # 13 grupos / ~257 estilos
-│   ├── estilo_negativo_auto.json # 74 mapeos estilo → negativos
-│   ├── glosario.json
-│   └── tutorial.json
+├── tests/                 # 760 tests pytest — 1 suite por módulo
 │
-├── tests/                 # 4 suites pytest — 48 tests
-│   ├── __init__.py
-│   ├── conftest.py
-│   ├── test_api_clients.py
-│   ├── test_config.py
-│   ├── test_persistence.py
-│   └── test_workers.py
-│
-├── gprompt-studio.spec    # PyInstaller spec
+├── gprompt-studio.spec         # PyInstaller spec (onedir)
+├── gprompt-studio-onefile.spec # PyInstaller spec (onefile)
 ├── build.py               # Script de build (onedir / onefile / installer)
-└── installer.iss          # Inno Setup script
+├── build_release.py       # Build limpio desde HEAD git
+└── installer.iss          # Inno Setup script (instalador Windows)
 ```
 
-**Total**: ~34.500 líneas de Python.
+**Total**: ~38.000 líneas de Python.
 
 ---
 
 ## 🏗 Arquitectura
 
-### Composición vs. herencia
+### Composición completa (patrón A1)
 
-`ArquitectoApp` hereda de **14 mixins** (compatibilidad histórica) **y además**
-instala componentes vía `install_components(self)` que delegan al app vía
-`__getattr__`:
+`ArquitectoApp` hereda solo de **`CoreMixin`** (foundation mínimo) y accede
+al resto de funcionalidad a través de **servicios instanciados en `__init__`**:
 
 ```python
-class ArquitectoApp(ctk.CTk, *MIXINS):
+class ArquitectoApp(ctk.CTk, CoreMixin):
     def __init__(self):
         super().__init__()
-        install_components(self)
-        # Ambas formas funcionan:
-        self.cmd_moodboard()          # vía mixin
-        self.creative.cmd_moodboard() # vía componente delegado
+        self.ui        = UIBuildersService(self)
+        self.creative  = ToolsCreativeService(self)
+        self.analysis  = ToolsAnalysisService(self)
+        self.dashboard = DashboardService(self)
+        self.inyeccion = PromptsInyeccionService(self)
+        # … etc.
 ```
 
-#### Mixins activos (14 en orden de herencia)
+Los servicios reciben `app` como argumento y acceden a la UI vía `self.app.<attr>`.
+Las referencias `self.X` legacy siguen funcionando porque `CoreMixin` las resuelve;
+código nuevo usa siempre `self.<servicio>.metodo()`.
 
-| # | Mixin | Archivo | Responsabilidad |
-|---|---|---|---|
-| 1 | `UIBuildersMixin` | `ui_builders.py` | Header, barras, paneles principales |
-| 2 | `ToolsCreativeMixin` | `tools_creative.py` | Sorpréndeme, pulse, sugerir, anclaje |
-| 3 | `ToolsWorkflowMixin` | `tools_workflow.py` | Setups, macros, A/B testing |
-| 4 | `ToolsAnalysisMixin` | `tools_analysis.py` | Scoring, atajos tags |
-| 5 | `DataMgmtMixin` | `data_mgmt.py` | Historial, favoritos, estrellas, LoRAs |
-| 6 | `BackupExportMixin` | `backup_export.py` | Backup completo, CSV, restore |
-| 7 | `DialogsMixin` | `dialogs.py` | Modales (configurar keys, etc.) |
-| 8 | `CoreMixin` | `core.py` | Comandos principales, event handlers |
-| 9 | `AdnVisualMixin` | `adn_visual.py` | ADN Visual + biblioteca |
-| 10 | `MultiPromptMixin` | `multiprompt.py` | Mood / Story / Board / Walk |
-| 11 | `SesionVideoMixin` | `sesion_video.py` | Grabación + tutorial |
-| 12 | `WorkersIaMixin` | `workers_ia.py` | Workers de threading IA |
-| 13 | `ModoClienteMixin` | `modo_cliente.py` | Brief profesional + 5 propuestas |
-| 14 | `JsonPromptMixin` | `json_prompt.py` | Import/export JSON pro (Veo/Sora/Kling) |
-
-**Regla:** código nuevo debe usar `self.componente.X`. Las refs `self.X`
-se mantienen para no reescribir 2.640+ referencias internas.
+**Regla para código nuevo:** NO añadir métodos a `app.py`. Cada método nuevo
+va en su servicio (`modules/X.py`). Instanciar en `__init__` de `ArquitectoApp`.
 
 ### Patrón Provider (LLMs)
 
@@ -253,14 +251,11 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-**48 tests, 48 passing ✅**
+**760 tests, 760 passing ✅** — una suite por módulo.
 
-| Suite | Cobertura |
-|---|---|
-| `test_api_clients.py` | Proveedores LLM, fábrica `get_provider()`, interfaces (13 tests) |
-| `test_config.py` | Helpers (`es_separador`, `get_model_specs`, etc.) (8 tests) |
-| `test_persistence.py` | DataStore CRUD, atomic writes, preferencias (9 tests) |
-| `test_workers.py` | Token counting, parser de ideas, detección idioma (18 tests) |
+```bash
+python -m pytest tests -q   # → 760 passed
+```
 
 ---
 

@@ -1116,7 +1116,9 @@ class ArquitectoApp(
                     self.bell()
             elif sistema == "Darwin":  # macOS
                 import subprocess
-                subprocess.run(['osascript', '-e', f'display notification "{mensaje}" with title "{titulo}"'])
+                _msg = mensaje.replace("\\", "").replace('"', "'")
+                _tit = titulo.replace("\\", "").replace('"', "'")
+                subprocess.run(['osascript', '-e', f'display notification "{_msg}" with title "{_tit}"'])
             elif sistema == "Linux":
                 import subprocess
                 subprocess.run(['notify-send', titulo, mensaje])
@@ -1180,7 +1182,7 @@ class ArquitectoApp(
         return partes_limpias
 
     def _cargar_plantillas_desde_json(self) -> list:
-        """Carga plantillas desde config/plantillas_default.json.
+        """Carga plantillas desde data/plantillas_default.json.
 
         Devuelve lista de tuplas (nombre, positive, negative, categoria).
         La categoría puede ser "" si la plantilla no la define.
@@ -1189,7 +1191,7 @@ class ArquitectoApp(
         import os
         try:
             ruta_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                     "config", "plantillas_default.json")
+                                     "data", "plantillas_default.json")
             if not os.path.exists(ruta_json):
                 logger.warning(f"Plantillas JSON no encontrado: {ruta_json}")
                 return []

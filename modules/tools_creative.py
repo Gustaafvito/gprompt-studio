@@ -1598,7 +1598,7 @@ class ToolsCreativeService:
                 from tkinter import messagebox as _mb
                 if not _mb.askyesno("Ya existe",
                                     f"Ya existe un preset llamado '{nombre}'. "
-                                    f"¿Sobreescribir?",
+                                    f"¿Sobrescribir?",
                                     parent=vent):
                     return
                 presets = [p for p in presets if p.get("nombre") != nombre]

@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 28**.
+Actualizado al cierre de la **sesión 29**.
 
 ---
 
@@ -62,6 +62,54 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 29 — Auditoría de seguridad, idioma y limpieza estructural
+
+### Seguridad (6 fixes)
+1. **Inyección AppleScript macOS** (`app.py` ~L1119): sanitizado `"` y `\`
+   antes de interpolar `mensaje`/`titulo` en `-e` de osascript.
+2. **Log Gemini reducido** (`api_clients.py`): eliminados los primeros 6 +
+   últimos 4 chars de la key del log → solo `[presente]`.
+
+Vulnerabilidades detectadas pero **pendientes de decisión** (no se tocan
+en caliente):
+- 🔴 CRÍTICA: `.env` con 3 keys reales sincronizado a OneDrive → **ROTAR YA**.
+- 🔴 ALTA: clave AES fallback hardcodeada `GPromptStudio_v1_key_backup_2024`
+  en `api_clients.py` L902 → migrar fallback al keyring del SO.
+- 🔴 ALTA: padding AES con espacios (no PKCS#7) en `api_clients.py` L918 →
+  migrar a AES-GCM.
+- 🟡 MEDIA: `comfyui_path` va directo a `rglob()` sin validar (`config.py`).
+- 🟡 MEDIA: JSON del LLM no validado contra `ADN_SCHEMA` antes de usarlo.
+
+### Idioma (8 correcciones)
+- `i18n.py`: `¿Sobreescribir` → `¿Sobrescribir`; `record on video` → `record as video`
+- `windows.py` (×2): llamadas `tr("¿Sobreescribir…")` alineadas con clave corregida
+- `tools_creative.py`: `¿Sobreescribir?` → `¿Sobrescribir?`
+- `glosario.json`: `Marcalos` → `Márcalos`; `resol.` → `resolución`
+- `tutorial.json`: `compara aesthetics` → `compara estéticas`; `Mucho éxito!` → `¡Mucho éxito!`
+
+### i18n — strings sin `tr()` envueltos (98 traducciones nuevas)
+- **`atajos_ayuda.py`**: 7 categorías + 29 descripciones de acciones + contador
+  `"{N} de {M} atajos"` — la ventana de atajos (Ctrl+?) ahora es bilingüe.
+- **`dashboard.py`**: tiempo relativo (singular/plural día/hora/minuto), estado
+  LLM (`Conectado`/`Sin key`), 5 avisos, 20 logros × nombre+descripción.
+- **`i18n.py`**: +98 entradas (dashboard + atajos + estado + logros).
+
+### Limpieza estructural
+- **`config/` eliminada**: `plantillas_default.json` movido a `data/` (donde
+  están todos los demás JSON). Referencias actualizadas en `app.py` L1194 y
+  ambos `.spec`. La carpeta `config/` ya no existe.
+- **`.gitignore`**: añadidos `.ruff_cache/` y `.claudeignore`.
+- **`modules/__init__.py`**: eliminados comentarios internos de desarrollo.
+- **`README.md`**: conteos actualizados (93+ imagen, 72 vídeo, 11 audio,
+  760 tests, 29 atajos), árbol y lista de atajos corregidos.
+- **`docs/ESTRUCTURA.md`**: árbol completo con las 40 módulos actuales,
+  líneas reales, sección de arquitectura actualizada a composición de servicios,
+  tests 48 → 760.
+
+Tests: **760/760 ✅** · Ruff: limpio.
 
 ---
 

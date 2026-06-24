@@ -20,10 +20,8 @@ block_cipher = None
 # ─── Recursos a incluir ────────────────────────────────────────────
 # IMPORTANTE: misma lista que el spec onedir — mantener en sync.
 datas = [
+    # Datos JSON del proyecto (specs de modelos, estilos, plantillas, etc.)
     ('data',          'data'),
-    # Plantillas predefinidas (faltaba — _cmd_plantillas_populares
-    # leía config/plantillas_default.json y devolvía [] en el .exe).
-    ('config',        'config'),
     *collect_data_files('customtkinter'),
     *collect_data_files('PIL'),
     # Tema visual personalizado (sin esto el .exe caía al tema azul)

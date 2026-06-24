@@ -19,11 +19,8 @@ block_cipher = None
 
 # ─── Recursos a incluir ────────────────────────────────────────────
 datas = [
-    # Datos JSON del proyecto (specs de modelos, estilos, etc.)
+    # Datos JSON del proyecto (specs de modelos, estilos, plantillas, etc.)
     ('data',          'data'),
-    # Plantillas predefinidas (faltaba — _cmd_plantillas_populares
-    # leía config/plantillas_default.json y devolvía [] en el .exe).
-    ('config',        'config'),
     # CustomTkinter incluye themes y assets internos que no se detectan
     *collect_data_files('customtkinter'),
     # Pillow tiene plugins por formato
