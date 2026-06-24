@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 29**.
+Actualizado al cierre de la **sesión 30**.
 
 ---
 
@@ -62,6 +62,40 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 30 — i18n EN-mode: ~110 strings restantes envueltos con tr()
+
+### Cambios (1 commit `e41b79a`)
+
+**Archivos modificados**: `modules/i18n.py` (+110 entradas), `modules/tools_analysis.py`,
+`modules/dialogs.py`, `modules/ui_events.py`, `modules/ui_builders.py`,
+`modules/workers_ia.py`, `modules/searchable_dropdown.py`, `persistence.py`, `app.py`.
+
+**Qué se traduce ahora**:
+- **Analytics** (`tools_analysis.py`): subtítulo "Análisis de tus últimas N ideas",
+  estado auto-mejora, todas las cabeceras de sección (Colecciones, Top modelos,
+  Top plataformas, Ratios más usados, Top estilos, Longitud, Prompts por mes, Seeds),
+  etiquetas de las 9 tarjetas de colecciones, cabeceras CSV, vacío de seeds.
+- **Coste de sesión**: cabeceras de tabla (Proveedor/Llamadas/Tokens entrada/
+  Tokens salida/Coste/Coste/día) y del histórico.
+- **Scoring**: etiquetas de calidad (🏆 Excelente/✨ Bueno/🟡 Mejorable/⚠️ Necesita trabajo).
+- **Optimizador**: "Original"/"Iteración N", mensajes de finalización (detenido/
+  alcanzado/máximo), etiqueta diff "Optimizada (N/100)".
+- **Pistas contextuales de modelo**: Turbo/Natural/costoso/lento.
+- **Badges de modelo**: 🌐 Natural/⚡ Turbo/🏷 Tags/🔴 Neg ✓/🚫 Sin neg.
+- **Ratio tooltips**: Cuadrado/Vertical/Horizontal/Foto vertical/Foto horizontal.
+- **Familias de modelos** (`searchable_dropdown.py`): los separadores `── X ──`
+  se traducen al renderizar vía `tr(v)` (no en config.py, que es import-time).
+- **API keys** (`dialogs.py`): estado ✅/⚠️/⚪, placeholders, confirmación borrado.
+- **About**: descripción en español → bilingüe.
+- **Persistence** (`persistence.py`): centinelas "— Sin personaje/LoRA/plantilla —"
+  ahora retornan `tr(...)` → combo siempre muestra el texto en el idioma activo.
+- **Workers IA**: mensajes "Refinamiento listo"/"Completado"/modo visión.
+- **Plantillas** (`app.py`): "Sin resultados para X"/"Sin plantillas en Y".
+
+Tests: **760/760 ✅** · Ruff: limpio.
 
 ---
 
