@@ -115,3 +115,91 @@ class TestEscanearModelosComfyui:
         assert grupos_vid and grupos_vid[0][0] == "── ComfyUI Video ──"
         # Los FLUX.2 de diffusion_models están ahora en imagen.
         assert any("flux-2-klein" in m for m in grupos_img[0][1])
+
+
+# ──────────────────────────────────────────────────────────────────
+# detectar_familia_comfy / comfy_image_specs / fallback en getter
+# ──────────────────────────────────────────────────────────────────
+class TestDetectarFamiliaComfy:
+
+    def test_familias_de_los_modelos_reales(self):
+        casos = {
+            "flux-2-klein-9b-fp8": "flux",
+            "z_image_bf16": "z_image",
+            "z_image_turbo_bf16": "z_image",
+            "qwen_image_edit_2509_fp8_e4m3fn": "qwen",
+            "ideogram4_fp8_transformer": "ideogram",
+            "Juggernaut-XL_v9_RunDiffusionPhoto_v2": "sdxl",
+            "RealVisXL_V5.0_fp16": "sdxl",
+            "juggernautXL_ragnarokBy": "sdxl",
+            "512-inpainting-ema": "sd15",
+        }
+        for nombre, fam in casos.items():
+            assert config.detectar_familia_comfy(nombre) == fam, nombre
+
+    def test_pony_e_illustrious(self):
+        assert config.detectar_familia_comfy("ponyDiffusionV6XL") == "pony"
+        assert config.detectar_familia_comfy("Illustrious-XL-v2") == "illustrious"
+        assert config.detectar_familia_comfy("noobaiXL_vpred10") == "illustrious"
+
+    def test_desconocido_vacio(self):
+        assert config.detectar_familia_comfy("modelo_raro_inventado") == ""
+        assert config.detectar_familia_comfy("") == ""
+
+
+class TestComfyImageSpecs:
+
+    def test_flux_es_natural_sin_negative(self):
+        s = config.comfy_image_specs("flux-2-klein-base-4b-fp8")
+        assert s["is_natural"] is True
+        assert s["has_negative"] is False
+
+    def test_sdxl_es_tagbased_con_negative(self):
+        s = config.comfy_image_specs("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        assert s["is_natural"] is False
+        assert s["has_negative"] is True
+        assert "DPM++" in s["sampler_recomendado"]
+
+    def test_zimage_turbo_fuerza_sin_negative(self):
+        base = config.comfy_image_specs("z_image_bf16")
+        turbo = config.comfy_image_specs("z_image_turbo_bf16")
+        # Z-Image base es natural; ambos sin negative, pero turbo lo fuerza.
+        assert turbo["has_negative"] is False
+        assert turbo["is_natural"] is True
+        assert base["is_natural"] is True
+
+    def test_pony_lleva_trigger_words(self):
+        s = config.comfy_image_specs("ponyRealism_v22")
+        assert "score_9" in s["trigger_words"]
+
+    def test_has_negative_siempre_presente(self):
+        # _inyectar_specs_formato indexa specs["has_negative"] directamente.
+        for n in ("flux1-dev", "Juggernaut-XL_v9", "ponyV6", "512-inpainting-ema"):
+            assert "has_negative" in config.comfy_image_specs(n)
+
+    def test_max_chars_por_tipo(self):
+        assert config.comfy_image_specs("flux1-dev")["max_chars"] == 1500
+        assert config.comfy_image_specs("Juggernaut-XL_v9")["max_chars"] == 500
+
+    def test_desconocido_devuelve_none(self):
+        assert config.comfy_image_specs("modelo_raro_inventado") is None
+
+
+class TestGetImageModelSpecsFallback:
+
+    def test_modelo_comfy_usa_synthetic(self):
+        # No está en el JSON curado → cae al sintético por familia.
+        s = config.get_image_model_specs("flux-2-klein-9b-fp8")
+        assert s is not None
+        assert s["_comfy_familia"] == "flux"
+
+    def test_modelo_desconocido_no_comfy_devuelve_none(self):
+        assert config.get_image_model_specs("xyz_modelo_inexistente_123") is None
+
+    def test_curado_tiene_prioridad(self):
+        # Un modelo del JSON curado no debe quedar marcado como sintético.
+        ds = config._get_dataset("MODEL_SPECS_IMAGEN")
+        if ds:
+            nombre = next(iter(ds))
+            s = config.get_image_model_specs(nombre)
+            assert "_comfy_familia" not in s

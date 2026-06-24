@@ -432,6 +432,12 @@ _COMFY_TOKENS_VIDEO = (
     "stable-video", "hunyuanvideo", "hunyuan_video", "hunyuan-video",
     "cogvideo", "mochi", "animatediff",
 )
+# Tokens "fast" (pocos pasos, CFG~1): el modelo IGNORA NEGATIVE y pesos
+# numéricos. Fuente única; prompt_logic.es_comfyui_turbo los reutiliza.
+COMFY_TURBO_TOKENS = (
+    "turbo", "schnell", "lightning", "hyper-sd", "hypersd",
+    "hyper sd", "lcm", "dmd2", "nitro", "flash",
+)
 # Carpetas de ComfyUI que contienen checkpoints/UNets utilizables como modelo.
 _COMFY_SUBDIRS = ("checkpoints", "diffusion_models", "unet")
 _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
@@ -485,6 +491,92 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
     grupos_img = [("── ComfyUI Local ──", hallados["imagen"])] if hallados["imagen"] else None
     grupos_vid = [("── ComfyUI Video ──", hallados["video"])] if hallados["video"] else None
     return grupos_img, grupos_vid
+
+
+# ── Familias ComfyUI por nombre → specs sintéticas ────────────────
+# Permiten que la inyección de prompt sea correcta (formato natural vs tags,
+# soporte de NEGATIVE, sampler sugerido) para checkpoints locales que NO están
+# en el JSON curado. Robusto a renombrados: detecta por substring del nombre.
+# (clave, tokens) — orden de específico → genérico; gana el primero que casa.
+_COMFY_FAMILIAS = (
+    ("flux",        ("flux",)),
+    ("z_image",     ("z_image", "zimage", "z-image")),
+    ("qwen",        ("qwen",)),
+    ("ideogram",    ("ideogram",)),
+    ("pony",        ("pony",)),
+    ("illustrious", ("illustrious", "noobai", "noob")),
+    ("sd15",        ("512-", "_512", "sd15", "sd_1.5", "sd-1.5", "v1-5", "1.5-pruned")),
+    ("sdxl",        ("sdxl", "sd_xl", "sd-xl", "juggernaut", "realvis", "dreamshaper", "ragnarok", "xl")),
+)
+
+_COMFY_SPECS_FAMILIA = {
+    "flux": {
+        "is_natural": True, "has_negative": False,
+        "sampler_recomendado": "Euler / Simple (~20-28 pasos; FLUX usa guidance ~2.5-4, no CFG)",
+        "best_for": "lenguaje natural, texto legible y fotorrealismo (FLUX)",
+    },
+    "z_image": {
+        "is_natural": True, "has_negative": False,
+        "sampler_recomendado": "Euler (~20-30 pasos)",
+        "best_for": "lenguaje natural y composición coherente (Z-Image)",
+    },
+    "qwen": {
+        "is_natural": True, "has_negative": False,
+        "best_for": "edición por instrucciones / img2img (Qwen-Image-Edit)",
+    },
+    "ideogram": {
+        "is_natural": True, "has_negative": False,
+        "best_for": "tipografía y texto dentro de la imagen (Ideogram)",
+    },
+    "pony": {
+        "is_natural": False, "has_negative": True,
+        "trigger_words": "score_9, score_8_up, score_7_up",
+        "sampler_recomendado": "Euler a (~25 pasos, CFG 6-7)",
+        "best_for": "personajes y anime/furry estilo Pony",
+    },
+    "illustrious": {
+        "is_natural": False, "has_negative": True,
+        "sampler_recomendado": "Euler a (~28 pasos, CFG 5-6)",
+        "best_for": "anime/ilustración con tags Danbooru (Illustrious/NoobAI)",
+    },
+    "sd15": {
+        "is_natural": False, "has_negative": True,
+        "sampler_recomendado": "DPM++ 2M Karras (~25 pasos, CFG 7)",
+        "best_for": "SD 1.5 (512px nativo)",
+    },
+    "sdxl": {
+        "is_natural": False, "has_negative": True,
+        "sampler_recomendado": "DPM++ 2M Karras (~30 pasos, CFG 5-7)",
+        "best_for": "fotorrealismo y propósito general (SDXL)",
+    },
+}
+
+
+def detectar_familia_comfy(nombre: str) -> str:
+    """Familia ComfyUI ('flux'|'sdxl'|'pony'…) por nombre, o '' si no se reconoce."""
+    n = (nombre or "").lower()
+    for clave, tokens in _COMFY_FAMILIAS:
+        if any(t in n for t in tokens):
+            return clave
+    return ""
+
+
+def comfy_image_specs(nombre: str) -> dict | None:
+    """Specs sintéticas por familia para un checkpoint ComfyUI local.
+
+    None si no se reconoce la familia (→ comportamiento genérico de la
+    plataforma). Las variantes 'fast' (turbo/schnell/lightning/lcm…) fuerzan
+    has_negative=False.
+    """
+    fam = detectar_familia_comfy(nombre)
+    if not fam:
+        return None
+    specs = dict(_COMFY_SPECS_FAMILIA[fam])
+    if any(t in (nombre or "").lower() for t in COMFY_TURBO_TOKENS):
+        specs["has_negative"] = False
+    specs.setdefault("max_chars", 1500 if specs["is_natural"] else 500)
+    specs["_comfy_familia"] = fam
+    return specs
 
 
 def _cargar_preferencias_seguras() -> dict:
@@ -1320,7 +1412,9 @@ def get_model_specs(motor_name):
     return _get_dataset("MODEL_SPECS").get(motor_name, None)
 
 def get_image_model_specs(modelo_name):
-    return _get_dataset("MODEL_SPECS_IMAGEN").get(modelo_name, None)
+    # El JSON curado manda; si el modelo no está (típico de checkpoints
+    # ComfyUI locales), se sintetizan specs por familia detectada en el nombre.
+    return _get_dataset("MODEL_SPECS_IMAGEN").get(modelo_name) or comfy_image_specs(modelo_name)
 
 def get_audio_model_specs(modelo_name):
     return _get_dataset("MODEL_SPECS_AUDIO").get(modelo_name, None)
