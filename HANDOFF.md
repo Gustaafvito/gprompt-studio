@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 27**.
+Actualizado al cierre de la **sesión 28**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **760 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -43,6 +43,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
 | Modelos vídeo | **72 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Catálogo SeaArt vídeo CERRADO (queda solo "Kling O1" 4.0 suelto, opcional) |
 | Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
+| Plataforma ComfyUI | **Operativa** (sesión 28): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens, **specs sintéticas por familia** (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) vía `comfy_image_specs`. Pendiente: estilos por familia + wiring en caliente del dropdown |
 | Combo "Estilo" | **por familia** en imagen y vídeo (cada familia su paleta). config.ESTILOS_POR_FAMILIA(_VIDEO) + detectar_familia(_video) |
 | Desplegable modelos | Buscador + scroll + **familias colapsables** (▾/▸) + familias alfabéticas |
 | Biblioteca ejemplos | 27 entradas |
@@ -61,6 +62,40 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 28 — Plataforma ComfyUI operativa (3 fixes/feat)
+
+Rama **`feat/comfyui-platform`**. El usuario aportó su inventario real (carpetas
+`checkpoints` + `diffusion_models` con imagen/vídeo/audio mezclados + subcarpeta
+`FLUX2/`). Tres problemas reales que ese inventario destapó:
+
+1. **Detección Turbo robusta** (`87daa25`): `_MODELOS_TURBO` solo casaba 4 nombres
+   exactos de catálogo → los ficheros locales reales (`z_image_turbo_bf16`,
+   `flux1-schnell`, `dreamshaperXL_lightning`…) NUNCA activaban la regla "sin
+   pesos / sin negative". Ahora por tokens case-insensitive (`COMFY_TURBO_TOKENS`
+   centralizado en config; `prompt_logic.es_comfyui_turbo` lo reutiliza). +8 tests.
+
+2. **Auto-discovery completo** (`1df9141`): el escaneo solo miraba
+   `models/checkpoints` y trataba `diffusion_models` como vídeo → FLUX.2 Klein,
+   Z-Image, Qwen Edit, ACE-Step (que viven en `diffusion_models`) eran invisibles;
+   las subcarpetas también. Nuevo: `clasificar_modelo_comfy()` (imagen/video/audio
+   por tokens) + `_escanear_comfy_root()` (recorre checkpoints+diffusion_models+unet
+   recursivo, dedup, orden case-insensitive), compartido por el escáner de Ajustes
+   y el dropdown. El dropdown lee `comfyui_path` también de preferencias. +11 tests.
+
+3. **Specs sintéticas por familia** (`4dfde6c`): los modelos ComfyUI no están en el
+   JSON curado → `get_image_model_specs` devolvía None → la inyección no añadía nada
+   específico. Ahora `detectar_familia_comfy()` + `comfy_image_specs()` generan specs
+   por familia (is_natural, has_negative, sampler sugerido, best_for, trigger_words
+   de Pony; variantes fast fuerzan has_negative=False; max_chars por tipo). El curado
+   siempre tiene prioridad. +13 tests.
+
+Resultado verificado end-to-end: FLUX.2 Klein/Z-Image/Qwen → natural sin negative;
+Z-Image Turbo → natural + turbo; Juggernaut/RealVis/512-inpaint → tags con negative.
+Tests **729 → 760 verdes**, ruff limpio. Decisión de diseño: por patrón de nombre
+(robusto a renombrados y modelos futuros), NO catálogo exacto como SeaArt.
 
 ---
 
@@ -436,6 +471,16 @@ Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 - **Auditoría specs Realismo SD**: 6/15 vigentes, 9 ocultos sin auditar.
 
 ### 🟡 MEDIA
+- **ComfyUI — estilos por familia**: `ESTILOS_POR_FAMILIA` no cubre las familias
+  ComfyUI, así que el combo "Estilo" no se repuebla para estos modelos. Complemento
+  natural a las specs sintéticas de la sesión 28. (Detección ya existe:
+  `detectar_familia_comfy`.)
+- **ComfyUI — wiring en caliente**: cambiar `comfyui_path` en Ajustes no refresca
+  el dropdown sin reiniciar (los grupos se calculan al importar config). Mejorable.
+- **ComfyUI — audio**: ACE-Step ya se detecta como audio en el escaneo, pero no hay
+  plataforma de audio ComfyUI ni panel → de momento no se usa. Decidir si se integra.
+- **ComfyUI — plantilla `mis_modelos_comfy.json`**: la plantilla por defecto podría
+  agruparse mejor; el auto-discovery ya cubre el caso de tener `comfyui_path`.
 - **`FLUX.1-Kontext-dev` (edición)**: modelo añadido, pendiente PROBARLO para
   rotación Avatar desde referencia img2img (debería ir donde Z-Image falla).
 - **max_chars empírico** de modelos semi-auditados (Infinity, SD 3.5, Realism,
@@ -462,7 +507,7 @@ Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 719 passed / 0 failing ✅
+python -m pytest tests -q                     # → 760 passed / 0 failing ✅
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
