@@ -28,7 +28,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Métrica | Valor |
 |---|---|
 | Tests | **729 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
-| Idioma UI | **Bilingüe ES/EN — COMPLETO** en rama `feat/i18n-fase-b` (~1280 traducciones). Estático+dinámico (`text=`, menús, barra de modo, placeholders, títulos, `set_estado`, `messagebox`, `configure`, f-strings→`tr().format()` posicional) + **config-driven** (pestañas, picker de Tags, presets/paquetes de negativos, ratio `Libre`, menú Refinar, **combo Estilo** vía mapeo display↔clave) + **ideas del LLM en idioma de UI** + **descripciones de modelo** (`best_for_en`: 105 imagen + 72 vídeo = 177/177, helper `config.best_for_display`). Fase C: tutorial+glosario `data/*.en.json`. Reinicia para aplicar (toggle UI→Idioma con auto-reinicio). **Sin mergear a `main`** |
+| Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
 | Branch | `main` |
@@ -399,6 +399,33 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 ---
 
 ## 🚧 Pendiente
+
+### 🌐 i18n — mezcla de idiomas (decisión abierta, retomar aquí)
+**Síntoma (feedback del usuario):** en modo ES se ven cosas en inglés y en modo EN
+cosas en español ("se mezclan… y al revés"). **Causa raíz:** `tr()` (en
+`modules/i18n.py`) es **unidireccional ES→EN** (en modo `es` devuelve la clave tal
+cual). Por tanto, los **datos nativos en inglés** salen en inglés también en ES:
+- Valores de estilo English-native del combo Estilo (`Photoreal`, `Creative`,
+  `Fantasy`, `SciFi`, `Anime`, `Manga`…). Solo se tradujeron los ES→EN
+  (`Cinematográfico→Cinematic`, etc.).
+- Nombres de modelos / LoRAs / setups (estos últimos pasados a inglés a propósito).
+- Y al revés: remanentes ES sin envolver con `tr()` se ven en EN.
+
+**Convención a respetar:** keywords de estilo (`Cyberpunk`, `Anime`) y nombres de
+modelo (`FLUX.1 [dev]`) se usan en inglés en TODA herramienta de imagen; traducirlos
+rompería/ensuciaría los prompts. Los nombres propios de datos del usuario tampoco.
+
+**Opciones a decidir con el usuario (estaba a punto de elegir):**
+- **(a) Traducción bidireccional**: añadir mapa EN→ES (o invertir el dict) para que
+  en modo ES los términos English-native salgan en español. Mucho trabajo + riesgo
+  de tocar lógica acoplada (los estilos se inyectan; ya hay mapeo display↔clave en
+  el combo, habría que extender al sentido inverso).
+- **(b) Datos-convención fijos**: aceptar que estilos/modelos/LoRAs/setups quedan en
+  inglés en ambos modos (como ya pasa con los nombres de modelo) y solo limpiar los
+  **remanentes ES** que se ven en modo EN (lo más barato y coherente con el resto
+  de herramientas). **Recomendación: (b).**
+
+Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 
 ### 🔴 ALTA
 - **Vídeo SeaArt — quedan ~8 motores externos**: Wan 2.7, Vidu Q3 Pro/Reference,
