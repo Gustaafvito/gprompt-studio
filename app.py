@@ -228,7 +228,11 @@ class ArquitectoApp(
         self.duracion_var          = ctk.StringVar(value="10s")
         self.shots_var             = ctk.StringVar(value="Auto")
         self.ratio_var             = ctk.StringVar(value="1:1")
-        self.switch_traduccion_var = ctk.BooleanVar(value=_prefs.get("switch_traduccion", True))
+        # Auto-translate (idea → inglés): por defecto ON en español, OFF si la UI
+        # está en inglés (el usuario angloparlante ya escribe en inglés). La pref
+        # guardada manda si existe.
+        self.switch_traduccion_var = ctk.BooleanVar(
+            value=_prefs.get("switch_traduccion", getattr(self, "_idioma_inicial", "es") != "en"))
         self.destino_var           = ctk.StringVar(value="— Personal —")
         self.brief_var             = ctk.BooleanVar(value=_prefs.get("brief", False))
         self.switch_ref_visual_var = ctk.BooleanVar(value=_prefs.get("switch_ref_visual", False))
