@@ -15,7 +15,19 @@ from config import (
 )
 
 _PLAT_CON_MODELOS = frozenset(("SeaArt / Tensor.Art", "ComfyUI / A1111 / Forge"))
+
+# Nombres "de catálogo" históricos (referencia; todos quedan cubiertos por los
+# tokens de abajo).
 _MODELOS_TURBO = ("Z Image Turbo", "Realities Edge XL Turbo V7", "SDXL Turbo", "FLUX.1 Schnell")
+
+# Tokens (case-insensitive) que marcan un checkpoint "fast" de pocos pasos:
+# CFG ~1, IGNORA NEGATIVE y pesos numéricos. Se comparan contra el nombre del
+# modelo o del fichero local del auto-discovery (p.ej. "z_image_turbo_bf16",
+# "flux1-schnell", "Hyper-SDXL", "*-lcm", "dreamshaperXL_lightning").
+_TURBO_TOKENS = (
+    "turbo", "schnell", "lightning", "hyper-sd", "hypersd",
+    "hyper sd", "lcm", "dmd2", "nitro", "flash",
+)
 
 
 def is_natural_mode(modo: str, plataforma: str, modelo_imagen: str) -> bool:
@@ -35,8 +47,10 @@ def is_natural_mode(modo: str, plataforma: str, modelo_imagen: str) -> bool:
 def es_comfyui_turbo(plataforma: str, modelo: str) -> bool:
     """Detecta ComfyUI/A1111/Forge con un modelo Turbo (sin negative ni pesos)."""
     es_comfyui = any(x in plataforma for x in ("ComfyUI", "A1111", "Forge"))
-    es_turbo = any(m in modelo for m in _MODELOS_TURBO)
-    return es_comfyui and es_turbo
+    if not es_comfyui:
+        return False
+    modelo_l = (modelo or "").lower()
+    return any(tok in modelo_l for tok in _TURBO_TOKENS)
 
 
 def debe_mostrar_negatives(
