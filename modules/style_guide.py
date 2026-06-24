@@ -11,6 +11,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +200,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     accent = "#2563eb" if is_lt else "#60a5fa"
 
     win = GPromptWindow(app)
-    win.title(f"📖 Guía de estilos ({len(guia)} estilos)")
+    win.title(tr('📖 Guía de estilos ({0} estilos)').format(len(guia)))
     win.geometry("900x680")
 
     # ── Cabecera ─────────────────────────────────────────────
@@ -212,18 +213,18 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     fila1.pack(fill="x", padx=20, pady=(12, 6))
     ctk.CTkLabel(
         fila1,
-        text="📖 Guía de estilos",
+        text=tr("📖 Guía de estilos"),
         font=ctk.CTkFont(size=18, weight="bold"),
     ).pack(side="left")
     contador_var = ctk.StringVar(value=f"{len(guia)} estilos")
     ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
-    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text="🔍 Buscar por nombre, grupo, descripción…")
+    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text=tr("🔍 Buscar por nombre, grupo, descripción…"))
     ent_buscar.pack(side="right")
 
     # Fila 2: filtro por modo (segmented button)
     fila2 = ctk.CTkFrame(header, fg_color="transparent")
     fila2.pack(fill="x", padx=20, pady=(0, 12))
-    ctk.CTkLabel(fila2, text="Filtrar por modo:", text_color=text_muted).pack(side="left", padx=(0, 10))
+    ctk.CTkLabel(fila2, text=tr("Filtrar por modo:"), text_color=text_muted).pack(side="left", padx=(0, 10))
 
     # Normalizar modo_inicial
     modo_seleccionado = (modo_inicial or "todos").lower()
@@ -352,7 +353,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
                 render(ent_buscar.get(), reset_paginacion=False)
             ctk.CTkButton(
                 scroll,
-                text=f"▼ Mostrar {min(PAGE_SIZE, restantes)} más  ({restantes} restantes)",
+                text=tr('▼ Mostrar {0} más  ({1} restantes)').format((min(PAGE_SIZE, restantes)), (restantes)),
                 command=_mostrar_mas,
                 height=34,
                 fg_color=accent,

@@ -16,6 +16,8 @@ buttons del panel superior:
 """
 import logging
 
+from modules.i18n import tr
+
 try:
     from CTkToolTip import CTkToolTip
 except ImportError:
@@ -37,6 +39,7 @@ from config import (
     PLATAFORMAS_VIDEO_LISTA,
     RATIOS_IMAGEN,
     RATIOS_VIDEO,
+    best_for_display,
     es_separador,
     get_audio_model_specs,
     get_image_model_specs,
@@ -75,12 +78,12 @@ class UiEventsService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         if hasattr(self.app, '_seg_modo'):
-            mapa_inv = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
-            try: self.app._seg_modo.set(mapa_inv.get(modo, "Imagen"))
+            mapa_inv = {"imagen": tr("Imagen"), "video": tr("Vídeo"), "audio": tr("Audio")}
+            try: self.app._seg_modo.set(mapa_inv.get(modo, tr("Imagen")))
             except: pass
 
-        _TABS_CON_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"]
-        _TABS_SIN_TAGS    = ["⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"]
+        _TABS_CON_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos"), tr("🏷️ Tags")]
+        _TABS_SIN_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")]
 
         if modo == "video":
             self.app.combo_plataforma.configure(values=PLATAFORMAS_VIDEO_LISTA)
@@ -92,8 +95,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack(side="right", padx=20)
-            self.app.btn_vision.configure(text="👁 Analizar", state="normal")
-            self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
+            self.app.btn_vision.configure(text=tr("👁 Analizar"), state="normal")
+            self.app.btn_img_prompt.configure(text=tr("🎯 Img→Prompt"), state="normal")
             self.app.footer._construir_checkboxes(ESTILOS_VIDEO)
             self._actualizar_motores_video()
             self._set_tabs_visibles(_TABS_CON_TAGS)
@@ -108,8 +111,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack_forget()
-            self.app.btn_vision.configure(text="👁 (no aplica)", state="disabled")
-            self.app.btn_img_prompt.configure(text="🎯 (no aplica)", state="disabled")
+            self.app.btn_vision.configure(text=tr("👁 (no aplica)"), state="disabled")
+            self.app.btn_img_prompt.configure(text=tr("🎯 (no aplica)"), state="disabled")
             self.app.footer._construir_checkboxes(ESTILOS_AUDIO)
             self._on_motor_audio_cambio()
             self._set_tabs_visibles(_TABS_SIN_TAGS)
@@ -124,8 +127,8 @@ class UiEventsService:
             self.app.frame_destino.pack_forget()
 
             self.app.switch_nsfw.pack(side="right", padx=20)
-            self.app.btn_vision.configure(text="👁 Analizar", state="normal")
-            self.app.btn_img_prompt.configure(text="🎯 Img→Prompt", state="normal")
+            self.app.btn_vision.configure(text=tr("👁 Analizar"), state="normal")
+            self.app.btn_img_prompt.configure(text=tr("🎯 Img→Prompt"), state="normal")
             self.app.combo_ratio.set("1:1")
             self.app.ratio_var.set("1:1")
             self.app.footer._construir_checkboxes(ESTILOS_IMAGEN)
@@ -136,17 +139,17 @@ class UiEventsService:
             if hasattr(self.app, 'btn_story'):
                 if modo == "imagen":
                     self.app.btn_story.configure(state="normal", fg_color="#be185d",
-                                              text="🎞 Story")
+                                              text=tr("🎞 Story"))
                 else:
                     self.app.btn_story.configure(state="disabled", fg_color="#3a3a3a",
-                                              text="🎞 Story")
+                                              text=tr("🎞 Story"))
             if hasattr(self.app, 'btn_board'):
                 if modo == "video":
                     self.app.btn_board.configure(state="normal", fg_color="#be185d",
-                                              text="📽 Board")
+                                              text=tr("📽 Board"))
                 else:
                     self.app.btn_board.configure(state="disabled", fg_color="#3a3a3a",
-                                              text="📽 Board")
+                                              text=tr("📽 Board"))
         except Exception as _e:
             logger.debug(f"[silent on_modo_cambio btns] {_e}")
 
@@ -207,8 +210,8 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
 
         natural = self.app.is_natural_mode()
-        if natural: self.app.dialogs.set_estado(f"🌐 {self.app.plataforma_var.get()} — prompts descriptivos", "#3498db")
-        else: self.app.dialogs.set_estado(f"🎯 {self.app.plataforma_var.get()} — tags + pesos + negatives", "#3498db")
+        if natural: self.app.dialogs.set_estado(tr('🌐 {0} — prompts descriptivos').format(self.app.plataforma_var.get()), "#3498db")
+        else: self.app.dialogs.set_estado(tr('🎯 {0} — tags + pesos + negatives').format(self.app.plataforma_var.get()), "#3498db")
         self.app.reiniciar_memoria()
 
     def _actualizar_motores_video(self) -> None:
@@ -249,15 +252,17 @@ class UiEventsService:
                 estilos_v = (ESTILOS_POR_FAMILIA_VIDEO.get(detectar_familia_video(motor_name))
                              or ESTILOS_VISUAL_VIDEO)
                 if hasattr(self.app, "combo_estilo_video"):
-                    self.app.combo_estilo_video.configure(values=estilos_v)
+                    self.app._estilo_vid_disp2key = {tr(v): v for v in estilos_v}
+                    self.app.combo_estilo_video.configure(values=[tr(v) for v in estilos_v])
                     if self.app.estilo_video_var.get() not in estilos_v:
                         self.app.estilo_video_var.set("Auto")
+                    self.app.combo_estilo_video.set(tr(self.app.estilo_video_var.get()))
             except Exception as _e:
                 logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
-            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {specs.get('best_for', '')}", text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.dialogs.set_estado(f"🎬 {motor_name}", "#3498db")
+            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), "#3498db")
 
             try:
                 tip_rico = (
@@ -301,7 +306,7 @@ class UiEventsService:
         else:
             self.app.combo_ratio_v.configure(values=RATIOS_VIDEO)
             self.app.lbl_img_model_info.pack_forget()
-            self.app.dialogs.set_estado(f"🎬 {motor_name}")
+            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name))
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
@@ -327,9 +332,11 @@ class UiEventsService:
             estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
             if hasattr(self.app, "frame_familia_estilo"):
                 if estilos:
-                    # Repoblar el combo con los estilos de la familia
+                    # Repoblar el combo: muestra estilos traducidos, var guarda la
+                    # clave ES (mapeo display→clave para la inyección de hint).
                     try:
-                        self.app.combo_familia_estilo.configure(values=estilos)
+                        self.app._estilo_img_disp2key = {tr(v): v for v in estilos}
+                        self.app.combo_familia_estilo.configure(values=[tr(v) for v in estilos])
                     except Exception as _e:
                         logger.debug(f"[silent estilo values] {_e}")
                     # Si el valor actual no encaja en la nueva familia,
@@ -337,6 +344,7 @@ class UiEventsService:
                     try:
                         if self.app.familia_estilo_var.get() not in estilos:
                             self.app.familia_estilo_var.set("Auto")
+                        self.app.combo_familia_estilo.set(tr(self.app.familia_estilo_var.get()))
                     except Exception as _e:
                         logger.debug(f"[silent estilo reset] {_e}")
                     # Mostrar el combo si no está visible
@@ -402,7 +410,7 @@ class UiEventsService:
 
             badges_str = "  ·  ".join(badges)
             self.app.lbl_img_model_info.configure(
-                text=f"⭐ {specs.get('nota') or 's/n'}  ·  📝 {specs['max_chars']} chars  ·  {badges_str}  —  {specs['best_for']}",
+                text=tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (best_for_display(specs))),
                 text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
 
@@ -436,9 +444,9 @@ class UiEventsService:
         if specs:
             nota_a = specs.get('nota') or 's/n'
             dur_a = specs.get('duracion_max_min') or '?'
-            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_a} | ⏱ {dur_a} min — {specs.get('best_for', '')}", text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text=tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (best_for_display(specs))), text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.dialogs.set_estado(f"🎵 {motor_name}", "#9b59b6")
+            self.app.dialogs.set_estado(tr('🎵 {0}').format(motor_name), "#9b59b6")
         else:
             self.app.lbl_img_model_info.pack_forget()
         self.app.reiniciar_memoria()
@@ -454,14 +462,14 @@ class UiEventsService:
         if id_a and id_a != "— Idioma —": partes.append(f"🌐 {id_a}")
 
         if partes:
-            self.app.dialogs.set_estado(f"🎵 Filtros audio: {' · '.join(partes)}", "#9b59b6")
+            self.app.dialogs.set_estado(tr('🎵 Filtros audio: {0}').format(' · '.join(partes)), "#9b59b6")
         else:
-            self.app.dialogs.set_estado("🎵 Sin filtros de audio adicionales")
+            self.app.dialogs.set_estado(tr("🎵 Sin filtros de audio adicionales"))
         self.app.reiniciar_memoria()
 
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():
-            self.app.dialogs.set_estado("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios", "#f39c12")
+            self.app.dialogs.set_estado(tr("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios"), "#f39c12")
         else:
-            self.app.dialogs.set_estado("Modo Brief desactivado — prompts artísticos libres")
+            self.app.dialogs.set_estado(tr("Modo Brief desactivado — prompts artísticos libres"))
         self.app.reiniciar_memoria()

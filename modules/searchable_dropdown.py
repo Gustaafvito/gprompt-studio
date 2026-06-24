@@ -22,6 +22,8 @@ import tkinter
 
 import customtkinter as ctk
 
+from modules.i18n import tr
+
 
 def _es_separador(v):
     return isinstance(v, str) and v.strip().startswith("──")
@@ -158,7 +160,7 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                         command=lambda val=v: _elegir(val),
                     ).pack(fill="x", padx=2, pady=1)
                 if not hay and filtro:
-                    ctk.CTkLabel(lista, text="(sin coincidencias)",
+                    ctk.CTkLabel(lista, text=tr("(sin coincidencias)"),
                                  anchor="w").pack(fill="x", padx=6, pady=6)
 
             buscar_var.trace_add("write", _repintar)

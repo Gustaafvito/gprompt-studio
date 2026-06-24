@@ -14,6 +14,8 @@ import logging
 
 import customtkinter as ctk
 
+from modules.i18n import tr
+
 logger = logging.getLogger("gprompt")
 
 
@@ -233,7 +235,7 @@ def apply_theme_colors(app):
                 segmented_button_unselected_hover_color=seg_hov,
                 text_color=c["panel_text"],
             )
-            for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
+            for tab_name in (tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")):
                 try:
                     app.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
                 except Exception as _e:
@@ -261,7 +263,7 @@ def apply_theme_colors(app):
     if hasattr(app, "tabview"):
         try:
             app.tabview.configure(fg_color=tab_bg, bg_color=tab_bg)
-            for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
+            for tab_name in (tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")):
                 try:
                     t = app.tabview.tab(tab_name)
                     if t is not None:
@@ -316,7 +318,7 @@ def apply_theme_colors(app):
                 _recolor_labels(fr, lbl_color, lbl_secondary, muted_color)
             # También refrescar TODAS las pestañas del tabview directamente
             if hasattr(app, "tabview"):
-                for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos"):
+                for tab_name in (tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")):
                     try:
                         tab_frame = app.tabview.tab(tab_name)
                         _recolor_labels(tab_frame, lbl_color, lbl_secondary, muted_color)

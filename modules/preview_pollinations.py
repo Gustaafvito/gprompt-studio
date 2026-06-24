@@ -18,6 +18,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from workers import log_future_exc
 
 logger = logging.getLogger("gprompt")
@@ -283,7 +284,7 @@ class PreviewPollinationsService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("👁 Grid Pollinations")
+        vent.title(tr("👁 Grid Pollinations"))
         n = len(variaciones)
         screen_w = self.app.winfo_screenwidth()
         screen_h = self.app.winfo_screenheight()
@@ -295,7 +296,7 @@ class PreviewPollinationsService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent,
-                     text=f"👁 Grid Pollinations ({n} previews)  ·  click en una imagen para verla en grande",
+                     text=tr('👁 Grid Pollinations ({0} previews)  ·  click en una imagen para verla en grande').format(n),
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
@@ -324,7 +325,7 @@ class PreviewPollinationsService:
         modelo_pollinations_var = ctk.StringVar(value="auto")
         bar_modelo = ctk.CTkFrame(vent, fg_color="transparent")
         bar_modelo.pack(pady=(0, 4))
-        ctk.CTkLabel(bar_modelo, text="Modelo:",
+        ctk.CTkLabel(bar_modelo, text=tr("Modelo:"),
                      font=ctk.CTkFont(size=10)
                      ).pack(side="left", padx=(0, 4))
         combo_modelo_pol = ctk.CTkComboBox(
@@ -364,7 +365,7 @@ class PreviewPollinationsService:
                          wraplength=thumb_size - 10
                          ).pack(pady=(4, 2))
 
-            img_lbl = ctk.CTkLabel(cell, text="⏳ Preparando...",
+            img_lbl = ctk.CTkLabel(cell, text=tr("⏳ Preparando..."),
                                     width=thumb_size, height=thumb_size,
                                     fg_color="#0a0e14", text_color="#888",
                                     wraplength=thumb_size - 20)
@@ -375,7 +376,7 @@ class PreviewPollinationsService:
             # de modelo (con el toggle del header) sin esperar a un error.
             btn_row_cell = ctk.CTkFrame(cell, fg_color="transparent")
             btn_row_cell.pack(pady=(2, 4))  # siempre visible
-            btn_regen = ctk.CTkButton(btn_row_cell, text="♻ Regenerar",
+            btn_regen = ctk.CTkButton(btn_row_cell, text=tr("♻ Regenerar"),
                                        width=120, height=22,
                                        fg_color="#7c3aed", hover_color="#5b21b6",
                                        font=ctk.CTkFont(size=10, weight="bold"))
@@ -452,7 +453,7 @@ class PreviewPollinationsService:
 
             def _regenerar(prompt_text=var, _img=_on_img, _err=_on_err,
                             _prog=_on_progress, lbl=img_lbl, btn_frame=btn_row_cell):
-                lbl.configure(text="⏳ Preparando...", text_color="#888")
+                lbl.configure(text=tr("⏳ Preparando..."), text_color="#888")
                 try: btn_frame.pack_forget()
                 except Exception: pass
                 self.generar(
@@ -474,10 +475,10 @@ class PreviewPollinationsService:
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(pady=(0, 10))
         ctk.CTkLabel(pie,
-                     text="Cache en ~/.arquitecto_prompts/preview_cache/",
+                     text=tr("Cache en ~/.arquitecto_prompts/preview_cache/"),
                      font=ctk.CTkFont(size=9), text_color="#666"
                      ).pack(side="left", padx=8)
-        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
@@ -486,7 +487,7 @@ class PreviewPollinationsService:
         """Ventana de preview con imagen + URL + botones Guardar/Copiar/Abrir."""
         import webbrowser
         vent_previa = GPromptWindow(self.app)
-        vent_previa.title("🖼 Preview" + (" (caché)" if desde_cache else ""))
+        vent_previa.title(tr("🖼 Preview") + (tr(" (caché)") if desde_cache else ""))
         vent_previa.geometry("560x680")
         vent_previa.transient(self.app)
 
@@ -494,14 +495,14 @@ class PreviewPollinationsService:
         lbl_img.pack(pady=(15, 6))
 
         if desde_cache:
-            ctk.CTkLabel(vent_previa, text="📥 Servido desde caché — instantáneo, sin llamada a la API",
+            ctk.CTkLabel(vent_previa, text=tr("📥 Servido desde caché — instantáneo, sin llamada a la API"),
                          font=ctk.CTkFont(size=10, slant="italic"),
                          text_color="#2ecc71").pack(pady=(0, 4))
 
         # URL Pollinations (truncada para no romper layout)
         url_corta = url_imagen if len(url_imagen) <= 80 else url_imagen[:77] + "..."
         ctk.CTkLabel(vent_previa,
-                     text=f"🔗 URL: {url_corta}",
+                     text=tr('🔗 URL: {0}').format(url_corta),
                      font=ctk.CTkFont(family="Consolas", size=9),
                      text_color="#888",
                      wraplength=520, justify="left"
@@ -509,26 +510,26 @@ class PreviewPollinationsService:
 
         btn_row = ctk.CTkFrame(vent_previa, fg_color="transparent")
         btn_row.pack(pady=5)
-        ctk.CTkButton(btn_row, text="💾 Guardar boceto", width=140, height=30,
+        ctk.CTkButton(btn_row, text=tr("💾 Guardar boceto"), width=140, height=30,
                       fg_color="#2ecc71", hover_color="#27ae60",
                       command=lambda: self.guardar_boceto(image_pil)
                       ).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="🔗 Copiar URL", width=120, height=30,
+        ctk.CTkButton(btn_row, text=tr("🔗 Copiar URL"), width=120, height=30,
                       fg_color="#3498db", hover_color="#2876b8",
                       command=lambda: (pyperclip.copy(url_imagen),
-                                       self.app.dialogs.set_estado("📋 URL copiada", "#2ecc71"))
+                                       self.app.dialogs.set_estado(tr("📋 URL copiada"), "#2ecc71"))
                       ).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="🌐 Abrir en navegador", width=160, height=30,
+        ctk.CTkButton(btn_row, text=tr("🌐 Abrir en navegador"), width=160, height=30,
                       fg_color="#7c3aed", hover_color="#5d2ab5",
                       command=lambda: webbrowser.open(url_imagen)
                       ).pack(side="left", padx=4)
 
     def guardar_boceto(self, image_pil):
-        ruta = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg"), ("PNG files", "*.png")], title="Guardar boceto")
+        ruta = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("JPEG files", "*.jpg"), ("PNG files", "*.png")], title=tr("Guardar boceto"))
         if ruta:
             try:
                 if image_pil.mode in ("RGBA", "P"): image_pil = image_pil.convert("RGB")
                 image_pil.save(ruta)
-                self.app.dialogs.set_estado(f"✅ Boceto guardado en: {ruta}", "#2ecc71")
+                self.app.dialogs.set_estado(tr('✅ Boceto guardado en: {0}').format(ruta), "#2ecc71")
             except Exception as e:
-                messagebox.showerror("Error", f"No se pudo guardar la imagen:\n{e}")
+                messagebox.showerror(tr("Error"), tr('No se pudo guardar la imagen:\n{0}').format(e))

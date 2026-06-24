@@ -24,6 +24,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 from modules.tutorial import abrir_tutorial
 from modules.windows import abrir_loras
 
@@ -89,7 +90,7 @@ class AtajosAyudaService:
             self.app.modo_var.set(modo_destino)
             self.app.events.on_modo_cambio()
             etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
-            self.app.dialogs.set_estado(f"{etiqueta} (Alt+{1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3})", "#3498db")
+            self.app.dialogs.set_estado(tr('{0} (Alt+{1})').format((etiqueta), (1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3)), "#3498db")
         except Exception as e:
             logger.debug(f"[silent] {e}")
         return "break"
@@ -101,7 +102,7 @@ class AtajosAyudaService:
         elif hasattr(self.app, "cmd_exportar"):
             self.app.cmd_exportar()
         else:
-            self.app.dialogs.set_estado("⚠️ Función de exportar no disponible", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Función de exportar no disponible"), "#e67e22")
         return "break"
 
     def _atajo_guardar_estrella(self) -> str:
@@ -110,9 +111,9 @@ class AtajosAyudaService:
             if hasattr(self.app, "_guardar_estrella"):
                 self.app._guardar_estrella()
             else:
-                self.app.dialogs.set_estado("⚠️ Función no disponible", "#e74c3c")
+                self.app.dialogs.set_estado(tr("⚠️ Función no disponible"), "#e74c3c")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cmd_buscar_global(self) -> str:
@@ -120,7 +121,7 @@ class AtajosAyudaService:
         try:
             self._abrir_busqueda_global()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _atajo_buscar_global(self) -> str:
@@ -128,25 +129,25 @@ class AtajosAyudaService:
         try:
             self._cmd_buscar_global()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error búsqueda: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error búsqueda: {0}').format(e), "#e74c3c")
         return "break"
 
     def _atajo_traducir_idea(self) -> str:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.dialogs.set_estado("⚠️ Escribe algo en la idea primero", "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe algo en la idea primero"), "#e67e22")
             return "break"
         try:
             texto_traducido = self.app.deepseek.traducir(idea)
             if texto_traducido and texto_traducido != idea:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", texto_traducido)
-                self.app.dialogs.set_estado("🌐 Idea traducida al inglés", "#3498db")
+                self.app.dialogs.set_estado(tr("🌐 Idea traducida al inglés"), "#3498db")
             else:
-                self.app.dialogs.set_estado("⚠️ No se pudo traducir", "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No se pudo traducir"), "#e67e22")
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
         return "break"
 
     def _toggle_fullscreen(self) -> str:
@@ -168,14 +169,14 @@ class AtajosAyudaService:
             hallazgos = getattr(self.app, "_claridad_hallazgos", [])
             if not hallazgos:
                 self.app.dialogs.set_estado(
-                    "💡 No hay palabras polisémicas detectadas en tu idea.",
+                    tr("💡 No hay palabras polisémicas detectadas en tu idea."),
                     "#2ecc71",
                 )
                 return "break"
             # Delegamos al método del UIBuildersService que ya construye el modal
             self.app.ui._mostrar_sugerencias_claridad()
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error claridad: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error claridad: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cerrar_popup_activo(self) -> str:
@@ -197,7 +198,7 @@ class AtajosAyudaService:
         try:
             abrir_loras(self.app)
         except Exception as e:
-            self.app.dialogs.set_estado(f"⚠️ Error al abrir LoRAs: {e}", "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error al abrir LoRAs: {0}').format(e), "#e74c3c")
         return "break"
 
     def _cmd_mostrar_atajos(self) -> str:
@@ -210,14 +211,14 @@ class AtajosAyudaService:
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self.app)
-        vent.title("⌨️ Atajos de teclado")
+        vent.title(tr("⌨️ Atajos de teclado"))
         vent.geometry("620x640")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="⌨️ Atajos de teclado",
+        ctk.CTkLabel(vent, text=tr("⌨️ Atajos de teclado"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
         ctk.CTkLabel(vent,
-                     text="Click sobre un atajo para copiarlo · busca por tecla o acción",
+                     text=tr("Click sobre un atajo para copiarlo · busca por tecla o acción"),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 6))
 
@@ -225,7 +226,7 @@ class AtajosAyudaService:
         search_row.pack(fill="x", padx=15, pady=(0, 6))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(search_row,
-                                    placeholder_text="Filtrar por tecla o acción…",
+                                    placeholder_text=tr("Filtrar por tecla o acción…"),
                                     height=28)
         entry_buscar.pack(side="left", fill="x", expand=True)
         contador_var = ctk.StringVar(value="")
@@ -294,7 +295,7 @@ class AtajosAyudaService:
         def _copiar_tecla(tecla):
             try:
                 pyperclip.copy(tecla)
-                self.app.dialogs.set_estado(f"📋 '{tecla}' copiado", "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 '{0}' copiado").format(tecla), "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 
@@ -339,7 +340,7 @@ class AtajosAyudaService:
 
             if mostrados == 0:
                 ctk.CTkLabel(scroll,
-                             text=f"Sin atajos que coincidan con '{termino}'",
+                             text=tr("Sin atajos que coincidan con '{0}'").format(termino),
                              text_color=c["muted_text"]).pack(pady=30)
             sufijo = f" (filtrando '{termino}')" if termino else ""
             contador_var.set(f"{mostrados} de {total} atajos{sufijo}")
@@ -353,7 +354,7 @@ class AtajosAyudaService:
         entry_buscar.bind("<KeyRelease>", _on_buscar)
 
         _refrescar()
-        ctk.CTkButton(vent, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30,
                       command=vent.destroy).pack(pady=12)
         entry_buscar.focus_set()
         return "break"

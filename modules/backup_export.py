@@ -12,6 +12,7 @@ import pyperclip
 
 from config import VERSION
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
@@ -70,11 +71,11 @@ class BackupExportService:
                 f"  - Plantillas: {len(backup['plantillas'])}\n"
                 f"  - Paletas:    {len(backup['paletas'])}"
             )
-            messagebox.showinfo("Backup completo", mensaje, parent=self.app)
-            self.app.dialogs.set_estado(f"💾 Backup guardado ({tot} entradas)", "#2ecc71")
+            messagebox.showinfo(tr("Backup completo"), mensaje, parent=self.app)
+            self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error en backup: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo guardar el backup:\n{e}", parent=self.app)
+            self.app.dialogs.set_estado(tr('❌ Error en backup: {0}').format(e), "#e74c3c")
+            messagebox.showerror(tr("Error"), tr('No se pudo guardar el backup:\n{0}').format(e), parent=self.app)
 
     def _construir_backup(self) -> dict:
         """Construye el diccionario con todos los datos del usuario."""
@@ -112,9 +113,9 @@ class BackupExportService:
                 backup = json.load(f)
 
             if not isinstance(backup, dict) or "version" not in backup:
-                messagebox.showerror("Backup inválido",
-                                     "El archivo no parece un backup de G-Prompt Studio "
-                                     "(falta el campo 'version').",
+                messagebox.showerror(tr("Backup inválido"),
+                                     tr("El archivo no parece un backup de G-Prompt Studio "
+                                     "(falta el campo 'version')."),
                                      parent=self.app)
                 return
 
@@ -144,15 +145,8 @@ class BackupExportService:
                 fecha_backup = fecha_backup_raw or "desconocida"
 
             if not messagebox.askyesno(
-                "Confirmar restauración",
-                f"Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\n"
-                f"Datos actuales: {tot_actual} entradas\n"
-                f"Backup a restaurar: {tot_backup} entradas\n"
-                f"Fecha del backup: {fecha_backup}\n\n"
-                f"G-Prompt guardará automáticamente un backup de seguridad "
-                f"de tus datos ACTUALES antes de sobrescribir, así puedes volver "
-                f"atrás si te equivocas.\n\n"
-                f"¿Continuar?",
+                tr("Confirmar restauración"),
+                tr('Vas a SOBRESCRIBIR todos tus datos actuales con el backup.\n\nDatos actuales: {0} entradas\nBackup a restaurar: {1} entradas\nFecha del backup: {2}\n\nG-Prompt guardará automáticamente un backup de seguridad de tus datos ACTUALES antes de sobrescribir, así puedes volver atrás si te equivocas.\n\n¿Continuar?').format(tot_actual, tot_backup, fecha_backup),
                 parent=self.app,
             ):
                 return
@@ -169,9 +163,8 @@ class BackupExportService:
                 # Si no se puede guardar el backup pre-restore, ABORTAR
                 # (mejor no restaurar que perder datos)
                 messagebox.showerror(
-                    "Error",
-                    f"No se pudo crear el backup de seguridad pre-restore:\n{e}\n\n"
-                    f"Restauración CANCELADA para no arriesgar tus datos actuales.",
+                    tr("Error"),
+                    tr('No se pudo crear el backup de seguridad pre-restore:\n{0}\n\nRestauración CANCELADA para no arriesgar tus datos actuales.').format(e),
                     parent=self.app,
                 )
                 return
@@ -215,16 +208,14 @@ class BackupExportService:
                 self.app.actualizar_combo_plantillas()
 
             messagebox.showinfo(
-                "Restauración completada",
-                f"Backup restaurado ({tot_backup} entradas).\n\n"
-                f"Tus datos anteriores se guardaron en:\n{pre_path}\n\n"
-                f"Si te has equivocado, puedes restaurar ese archivo.",
+                tr("Restauración completada"),
+                tr('Backup restaurado ({0} entradas).\n\nTus datos anteriores se guardaron en:\n{1}\n\nSi te has equivocado, puedes restaurar ese archivo.').format(tot_backup, pre_path),
                 parent=self.app,
             )
-            self.app.dialogs.set_estado(f"✅ Backup restaurado ({tot_backup} entradas)", "#2ecc71")
+            self.app.dialogs.set_estado(tr('✅ Backup restaurado ({0} entradas)').format(tot_backup), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error al restaurar: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo restaurar el backup:\n{e}", parent=self.app)
+            self.app.dialogs.set_estado(tr('❌ Error al restaurar: {0}').format(e), "#e74c3c")
+            messagebox.showerror(tr("Error"), tr('No se pudo restaurar el backup:\n{0}').format(e), parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
         """Selector previo de qué exportar: historial / favoritos / estrellas /
@@ -236,20 +227,20 @@ class BackupExportService:
         stars = self.app.store.estrellas or []
         if not (hist or favs or stars):
             return self.app.dialogs.set_estado(
-                "⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos).",
+                tr("⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos)."),
                 "#e67e22",
             )
 
         # ── Selector ──
         from modules.gprompt_window import GPromptWindow
         sel = GPromptWindow(self.app)
-        sel.title("📊 Exportar a CSV")
+        sel.title(tr("📊 Exportar a CSV"))
         sel.geometry("420x300")
         sel.transient(self.app)
 
-        ctk.CTkLabel(sel, text="📊 Exportar a CSV",
+        ctk.CTkLabel(sel, text=tr("📊 Exportar a CSV"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
-        ctk.CTkLabel(sel, text="¿Qué quieres exportar?",
+        ctk.CTkLabel(sel, text=tr("¿Qué quieres exportar?"),
                      font=ctk.CTkFont(size=11),
                      text_color="#888").pack(pady=(0, 12))
 
@@ -259,13 +250,13 @@ class BackupExportService:
         chk_stars_var = ctk.BooleanVar(value=False)
 
         ctk.CTkCheckBox(sel, variable=chk_hist_var,
-                        text=f"📋 Historial ({len(hist)} entradas)"
+                        text=tr('📋 Historial ({0} entradas)').format(len(hist))
                         ).pack(anchor="w", padx=40, pady=2)
         ctk.CTkCheckBox(sel, variable=chk_favs_var,
-                        text=f"⭐ Favoritos ({len(favs)} entradas)"
+                        text=tr('⭐ Favoritos ({0} entradas)').format(len(favs))
                         ).pack(anchor="w", padx=40, pady=2)
         ctk.CTkCheckBox(sel, variable=chk_stars_var,
-                        text=f"🌟 Estrellas ({len(stars)} entradas)"
+                        text=tr('🌟 Estrellas ({0} entradas)').format(len(stars))
                         ).pack(anchor="w", padx=40, pady=2)
 
         def _lanzar():
@@ -274,16 +265,16 @@ class BackupExportService:
             if chk_favs_var.get(): seleccion.append(("favoritos", favs))
             if chk_stars_var.get(): seleccion.append(("estrellas", stars))
             if not seleccion:
-                messagebox.showwarning("Sin selección",
-                                       "Marca al menos una colección.",
+                messagebox.showwarning(tr("Sin selección"),
+                                       tr("Marca al menos una colección."),
                                        parent=sel)
                 return
             sel.destroy()
             self._exportar_csv_ejecutar(seleccion)
 
-        ctk.CTkButton(sel, text="▶ Exportar", width=160, height=34,
+        ctk.CTkButton(sel, text=tr("▶ Exportar"), width=160, height=34,
                       fg_color="#1a7a3c", command=_lanzar).pack(pady=(14, 4))
-        ctk.CTkButton(sel, text="Cancelar", width=100, height=28,
+        ctk.CTkButton(sel, text=tr("Cancelar"), width=100, height=28,
                       fg_color="#444", hover_color="#555",
                       command=sel.destroy).pack(pady=2)
 
@@ -350,15 +341,15 @@ class BackupExportService:
                             it.get("contenido", ""),
                         )])
                         n += 1
-            self.app.dialogs.set_estado(f"💾 {n} filas exportadas a CSV", "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), "#2ecc71")
             messagebox.showinfo(
-                "Exportación completada",
+                tr("Exportación completada"),
                 f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
                 parent=self.app,
             )
         except Exception as e:
-            self.app.dialogs.set_estado(f"❌ Error al exportar: {e}", "#e74c3c")
-            messagebox.showerror("Error", f"No se pudo exportar:\n{e}", parent=self.app)
+            self.app.dialogs.set_estado(tr('❌ Error al exportar: {0}').format(e), "#e74c3c")
+            messagebox.showerror(tr("Error"), tr('No se pudo exportar:\n{0}').format(e), parent=self.app)
 
     def _cmd_export_cli(self) -> None:
         """Convierte el prompt actual a múltiples formatos CLI / plataformas.
@@ -377,7 +368,7 @@ class BackupExportService:
         import re
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado("⚠️ Genera un prompt primero.", "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
 
         ratio = self.app.ratio_var.get() or "1:1"
         pos = self.app.extraer_positive() or actual
@@ -481,14 +472,14 @@ class BackupExportService:
         # ── Ventana con filtro por modo + cards ───────────────────────
 
         vent = GPromptWindow(self.app)
-        vent.title("📤 Export CLI — múltiples formatos")
+        vent.title(tr("📤 Export CLI — múltiples formatos"))
         vent.geometry("820x680")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="📤 Export en múltiples formatos",
+        ctk.CTkLabel(vent, text=tr("📤 Export en múltiples formatos"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
-                     text="Filtra por modo y pulsa 📋 en la plataforma deseada.",
+                     text=tr("Filtra por modo y pulsa 📋 en la plataforma deseada."),
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
 
         # Formatos: (nombre, contenido, color, modo)
@@ -515,7 +506,7 @@ class BackupExportService:
         # Filtro arriba
         filtro_row = ctk.CTkFrame(vent, fg_color="transparent")
         filtro_row.pack(fill="x", padx=12, pady=(0, 4))
-        ctk.CTkLabel(filtro_row, text="Modo:").pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(filtro_row, text=tr("Modo:")).pack(side="left", padx=(0, 8))
         modo_activo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
         valor_inicial = {
             "imagen": "🖼 Imagen", "video": "🎬 Vídeo", "audio": "🎵 Audio"
@@ -545,10 +536,10 @@ class BackupExportService:
         def _make_copy(c, n, color):
             def _copiar():
                 pyperclip.copy(c)
-                self.app.dialogs.set_estado(f"📋 {n} copiado", "#2ecc71")
+                self.app.dialogs.set_estado(tr('📋 {0} copiado').format(n), "#2ecc71")
                 if hasattr(self.app, "show_toast"):
                     try:
-                        self.app.show_toast(f"📋 Copiado: {n}", color, 1800)
+                        self.app.show_toast(tr('📋 Copiado: {0}').format(n), color, 1800)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             return _copiar
@@ -566,10 +557,10 @@ class BackupExportService:
 
             filtrados = [f for f in formatos
                          if modo_sel is None or f[3] in (modo_sel, "todos")]
-            lbl_count.configure(text=f"{len(filtrados)} formatos disponibles")
+            lbl_count.configure(text=tr('{0} formatos disponibles').format(len(filtrados)))
 
             if not filtrados:
-                ctk.CTkLabel(scroll, text="(sin formatos para este modo)",
+                ctk.CTkLabel(scroll, text=tr("(sin formatos para este modo)"),
                              text_color="#888").pack(pady=20)
                 return
 
@@ -582,10 +573,10 @@ class BackupExportService:
                 ctk.CTkLabel(hdr, text=nombre,
                              font=ctk.CTkFont(size=12, weight="bold"),
                              text_color=text_main).pack(side="left")
-                ctk.CTkLabel(hdr, text=f"{len(contenido)} chars",
+                ctk.CTkLabel(hdr, text=tr('{0} chars').format(len(contenido)),
                              font=ctk.CTkFont(size=10),
                              text_color="#888").pack(side="left", padx=10)
-                ctk.CTkButton(hdr, text="📋 Copiar", width=100, height=26,
+                ctk.CTkButton(hdr, text=tr("📋 Copiar"), width=100, height=26,
                               fg_color=color,
                               font=ctk.CTkFont(size=10, weight="bold"),
                               command=_make_copy(contenido, nombre, color)
@@ -613,10 +604,10 @@ class BackupExportService:
                          if modo_sel is None or m in (modo_sel, "todos")]
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
-            self.app.dialogs.set_estado(f"📋 {len(filtrados)} formatos copiados al portapapeles",
+            self.app.dialogs.set_estado(tr('📋 {0} formatos copiados al portapapeles').format(len(filtrados)),
                             "#2ecc71")
 
-        ctk.CTkButton(vent, text="📋 Copiar todos los del filtro actual",
+        ctk.CTkButton(vent, text=tr("📋 Copiar todos los del filtro actual"),
                       width=280, height=34, fg_color="#0f172a", hover_color="#1e293b",
                       text_color="#e2e8f0",
                       command=_copiar_filtrados).pack(pady=(4, 12))
@@ -630,17 +621,17 @@ class BackupExportService:
         colección concreta.
         """
         vent = GPromptWindow(self.app)
-        vent.title("🔎 Búsqueda global")
+        vent.title(tr("🔎 Búsqueda global"))
         vent.geometry("780x680")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🔎 Búsqueda en todas las colecciones",
+        ctk.CTkLabel(vent, text=tr("🔎 Búsqueda en todas las colecciones"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
 
         f_search = ctk.CTkFrame(vent, fg_color="transparent")
         f_search.pack(fill="x", padx=15, pady=(0, 4))
         ent = ctk.CTkEntry(f_search,
-                            placeholder_text="Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')...",
+                            placeholder_text=tr("Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')..."),
                             width=600, height=32, font=ctk.CTkFont(size=12))
         ent.pack(side="left", fill="x", expand=True)
         ent.focus_set()
@@ -671,7 +662,7 @@ class BackupExportService:
 
         f_filtros = ctk.CTkFrame(vent, fg_color="transparent")
         f_filtros.pack(fill="x", padx=15, pady=(2, 6))
-        ctk.CTkLabel(f_filtros, text="Filtrar:",
+        ctk.CTkLabel(f_filtros, text=tr("Filtrar:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#888").pack(side="left", padx=(0, 6))
         for key, label in filtro_labels:
@@ -687,7 +678,7 @@ class BackupExportService:
             for w in scroll.winfo_children(): w.destroy()
             termino = ent.get().strip().lower()
             if not termino or len(termino) < 2:
-                ctk.CTkLabel(scroll, text="Escribe al menos 2 caracteres para buscar.",
+                ctk.CTkLabel(scroll, text=tr("Escribe al menos 2 caracteres para buscar."),
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
@@ -786,7 +777,7 @@ class BackupExportService:
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return
 
-            ctk.CTkLabel(scroll, text=f"📊 {len(resultados)} resultado{'s' if len(resultados) != 1 else ''} encontrado{'s' if len(resultados) != 1 else ''}",
+            ctk.CTkLabel(scroll, text=tr('📊 {0} resultado{1} encontrado{2}').format((len(resultados)), ('s' if len(resultados) != 1 else ''), ('s' if len(resultados) != 1 else '')),
                          font=ctk.CTkFont(size=11, weight="bold"), text_color="#2ecc71").pack(anchor="w", pady=(0, 8))
 
             for tipo, nombre, contenido, accion in resultados[:50]:
@@ -804,9 +795,9 @@ class BackupExportService:
                 ctk.CTkLabel(card, text=contenido, font=ctk.CTkFont(size=10),
                              text_color="#888888", wraplength=680, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
 
-                btn = ctk.CTkButton(card, text="✅ Aplicar", width=90, height=22, fg_color="#1a7a3c",
+                btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color="#1a7a3c",
                                       font=ctk.CTkFont(size=10),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(f"✅ Aplicado: {nombre or tipo}", "#2ecc71")))
+                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), "#2ecc71")))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.

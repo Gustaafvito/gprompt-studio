@@ -11,6 +11,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger(__name__)
 
@@ -18,17 +19,27 @@ _JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "tutorial.json"
 _cache: dict | None = None
 
 
+def _ruta_idioma() -> Path:
+    """data/tutorial.en.json si idioma=='en' y existe; si no, el ES."""
+    if get_idioma() == "en":
+        en = _JSON_PATH.with_name("tutorial.en.json")
+        if en.exists():
+            return en
+    return _JSON_PATH
+
+
 def cargar_tutorial() -> dict:
-    """Lee data/tutorial.json (con caché)."""
+    """Lee data/tutorial(.en).json (con caché)."""
     global _cache
     if _cache is not None:
         return _cache
-    if not _JSON_PATH.exists():
-        logger.warning(f"tutorial.json no encontrado en {_JSON_PATH}")
+    ruta = _ruta_idioma()
+    if not ruta.exists():
+        logger.warning(f"tutorial.json no encontrado en {ruta}")
         _cache = {"pasos": []}
         return _cache
     try:
-        with open(_JSON_PATH, "r", encoding="utf-8") as f:
+        with open(ruta, "r", encoding="utf-8") as f:
             _cache = json.load(f)
     except Exception as e:
         logger.warning(f"tutorial.json no se pudo leer: {e}")
@@ -85,7 +96,7 @@ def abrir_tutorial(app):
     success = "#16a34a" if is_lt else "#22c55e"
 
     win = GPromptWindow(app)
-    win.title(f"📚 Tutorial — {len(completados)}/{total} pasos")
+    win.title(tr('📚 Tutorial — {0}/{1} pasos').format((len(completados)), (total)))
     win.geometry("980x600")
 
     # ── Layout: índice lateral + contenido ──
@@ -97,7 +108,7 @@ def abrir_tutorial(app):
                                        corner_radius=8, width=280)
     idx_frame.pack(side="left", fill="y", padx=(0, 10))
 
-    ctk.CTkLabel(idx_frame, text="📋 Pasos",
+    ctk.CTkLabel(idx_frame, text=tr("📋 Pasos"),
                  font=ctk.CTkFont(size=14, weight="bold"),
                  text_color=text_main).pack(anchor="w", padx=10, pady=(8, 4))
 
@@ -105,7 +116,7 @@ def abrir_tutorial(app):
     progreso_global = ctk.CTkProgressBar(idx_frame, height=8, progress_color=success)
     progreso_global.pack(fill="x", padx=10, pady=(0, 4))
     progreso_global.set(len(completados) / total if total else 0)
-    lbl_progreso = ctk.CTkLabel(idx_frame, text=f"{len(completados)}/{total} completados",
+    lbl_progreso = ctk.CTkLabel(idx_frame, text=tr('{0}/{1} completados').format((len(completados)), (total)),
                                 font=ctk.CTkFont(size=10), text_color=text_muted)
     lbl_progreso.pack(anchor="w", padx=10, pady=(0, 8))
 
@@ -142,13 +153,13 @@ def abrir_tutorial(app):
     acciones = ctk.CTkFrame(main, fg_color="transparent")
     acciones.pack(fill="x", pady=(8, 0))
 
-    btn_probar = ctk.CTkButton(acciones, text="▶ Probar ahora", width=140, height=32,
+    btn_probar = ctk.CTkButton(acciones, text=tr("▶ Probar ahora"), width=140, height=32,
                                fg_color=accent,
                                hover_color=("#1d4ed8" if is_lt else "#3b82f6"))
     btn_probar.pack(side="left")
 
     btn_completado_var = ctk.BooleanVar(value=False)
-    chk_completado = ctk.CTkCheckBox(acciones, text="✅ Marcar como completado",
+    chk_completado = ctk.CTkCheckBox(acciones, text=tr("✅ Marcar como completado"),
                                      variable=btn_completado_var,
                                      command=lambda: on_toggle_completado())
     chk_completado.pack(side="left", padx=14)
@@ -156,11 +167,11 @@ def abrir_tutorial(app):
     # Navegación
     nav = ctk.CTkFrame(acciones, fg_color="transparent")
     nav.pack(side="right")
-    btn_ant = ctk.CTkButton(nav, text="⬅ Anterior", width=100, height=32)
+    btn_ant = ctk.CTkButton(nav, text=tr("⬅ Anterior"), width=100, height=32)
     btn_ant.pack(side="left", padx=4)
-    btn_sig = ctk.CTkButton(nav, text="Siguiente ➡", width=100, height=32)
+    btn_sig = ctk.CTkButton(nav, text=tr("Siguiente ➡"), width=100, height=32)
     btn_sig.pack(side="left", padx=4)
-    btn_close = ctk.CTkButton(nav, text="Cerrar", width=80, height=32,
+    btn_close = ctk.CTkButton(nav, text=tr("Cerrar"), width=80, height=32,
                               fg_color="#444", hover_color="#555",
                               command=win.destroy)
     btn_close.pack(side="left", padx=4)
@@ -178,13 +189,12 @@ def abrir_tutorial(app):
 
         # Progreso global
         progreso_global.set(len(completados) / total if total else 0)
-        lbl_progreso.configure(text=f"{len(completados)}/{total} completados")
-        win.title(f"📚 Tutorial — {len(completados)}/{total} pasos")
+        lbl_progreso.configure(text=tr('{0}/{1} completados').format((len(completados)), (total)))
+        win.title(tr('📚 Tutorial — {0}/{1} pasos').format((len(completados)), (total)))
 
     def mostrar_paso():
         paso = pasos[idx]
-        lbl_paso.configure(text=f"Paso {paso['id']}/{total}  ·  "
-                                f"{int((idx + 1) / total * 100)}%")
+        lbl_paso.configure(text=tr('Paso {0}/{1}  ·  {2}%').format((paso['id']), (total), (int((idx + 1) / total * 100))))
         bar_paso.set((idx + 1) / total)
         lbl_titulo.configure(text=paso["titulo"])
         txt_desc.configure(state="normal")
@@ -195,7 +205,7 @@ def abrir_tutorial(app):
         # Probar
         accion = paso.get("accion")
         if accion:
-            btn_probar.configure(state="normal", text="▶ Probar ahora",
+            btn_probar.configure(state="normal", text=tr("▶ Probar ahora"),
                                  command=lambda a=accion: _probar(a))
         else:
             btn_probar.configure(state="disabled", text="—")
@@ -286,8 +296,8 @@ def abrir_tutorial(app):
 
     def _set_modo(valor: str) -> str:
         """Cambia el modo activo (imagen / video / audio)."""
-        mapa_label = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
-        label = mapa_label.get(valor.lower(), "Imagen")
+        mapa_label = {"imagen": tr("Imagen"), "video": tr("Vídeo"), "audio": tr("Audio")}
+        label = mapa_label.get(valor.lower(), tr("Imagen"))
         if not hasattr(app, "_seg_modo"):
             raise AttributeError("app._seg_modo no existe")
         try:
@@ -304,7 +314,7 @@ def abrir_tutorial(app):
             raise AttributeError("app.tabview no existe")
         # Probar nombre exacto, luego sin emojis/espacios
         try:
-            app.tabview.set(nombre_tab)
+            app.tabview.set(tr(nombre_tab))
             return f"📑 Tab cambiada: {nombre_tab}"
         except Exception as e:
             logger.debug(f"tabview.set exacto falló: {e}")

@@ -109,7 +109,7 @@ from config import (
     get_theme_colors,
 )
 from modules.avatar_ui import abrir_avatar_window
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 from modules.style_guide import abrir_guia_estilos
 from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 
@@ -151,7 +151,7 @@ class UIBuildersService:
         # Cerebro (selector multi-LLM) — lado izquierdo
         frame_llm = ctk.CTkFrame(inner, fg_color="transparent")
         frame_llm.pack(side="left", padx=20)
-        self.app._lbl_cerebro = ctk.CTkLabel(frame_llm, text="Cerebro:", font=ctk.CTkFont(size=11), fg_color="transparent", text_color=hdr_label)
+        self.app._lbl_cerebro = ctk.CTkLabel(frame_llm, text=tr("Cerebro:"), font=ctk.CTkFont(size=11), fg_color="transparent", text_color=hdr_label)
         self.app._lbl_cerebro.pack(side="left", padx=(0, 4))
         # Importar dinámicamente la lista de providers
         try:
@@ -168,7 +168,7 @@ class UIBuildersService:
                 except Exception:
                     ok = False
                 icon = "✅" if ok else "🔒"
-                return f"{icon} {label}"
+                return f"{icon} {tr(label)}"
 
             lista_llms = [_label_con_estado(pid, info["label"]) for pid, info in LLM_PROVIDERS.items()]
             # Mapeo label-con-icono → provider_id para poder identificar
@@ -211,7 +211,7 @@ class UIBuildersService:
         self.app._btn_key.pack(side="left", padx=(4, 0))
         # Tooltip si CTkToolTip está instalado
         try:
-            CTkToolTip(self.app._btn_key, message="Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)")
+            CTkToolTip(self.app._btn_key, message=tr("Click: configurar API keys\n(verde = disponible, ámbar = sin configurar)"))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
@@ -225,7 +225,7 @@ class UIBuildersService:
                 pid = self.app.clients.provider_activo_id
                 if modelo and self.app.clients.set_model(pid, modelo):
                     self.app.dialogs.set_estado(
-                        f"🧠 Modelo de {pid}: {modelo}", "#2ecc71")
+                        tr('🧠 Modelo de {0}: {1}').format(pid, modelo), "#2ecc71")
             except Exception as _e:
                 logger.debug(f"[silent] modelo llm: {_e}")
 
@@ -257,7 +257,7 @@ class UIBuildersService:
         _refrescar_combo_modelo_llm()
         try:
             CTkToolTip(self.app.combo_modelo_llm,
-                       message="Modelo del cerebro activo.\nElige de la lista o escribe un ID y pulsa Enter.")
+                       message=tr("Modelo del cerebro activo.\nElige de la lista o escribe un ID y pulsa Enter."))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
 
@@ -265,7 +265,7 @@ class UIBuildersService:
         # Se muestra solo cuando hay self.app._anclaje_visual. Es un botón
         # clicable que abre un menú con: ver / desactivar.
         self.app._btn_adn = ctk.CTkButton(
-            frame_llm, text="🧬 ADN", width=70, height=28,
+            frame_llm, text=tr("🧬 ADN"), width=70, height=28,
             fg_color="#1a7a3c", hover_color="#145e2d",
             font=ctk.CTkFont(size=11, weight="bold"),
             command=self.app._cmd_indicador_adn,
@@ -273,7 +273,7 @@ class UIBuildersService:
         # No empaquetar todavía: solo se muestra si hay ADN activo
         try:
             CTkToolTip(self.app._btn_adn,
-                       message="ADN visual activo en próximas generaciones.\nClick para ver / desactivar.")
+                       message=tr("ADN visual activo en próximas generaciones.\nClick para ver / desactivar."))
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Botones gestión (derecha) — MENÚS DESPLEGABLES por grupo
@@ -286,69 +286,69 @@ class UIBuildersService:
         # Items dentro de cada menú también ordenados alfabéticamente (ignorando el emoji inicial).
         # NOTA: ADN Visual y Análisis Inverso NO se duplican aquí: ya están como botones grandes en la barra del medio.
         grupos_menus = [
-            ("📊 Análisis", "#8e4ab0", [
-                ("🚀  Auto-mejora", self.app.analysis.cmd_automejora_periodica),
-                ("💰  Coste de sesión", self.app.analysis.cmd_coste_sesion),
-                ("📝  Crítica historial", self.app.analysis.cmd_critica_historial),
-                ("📈  Estadísticas", self.app.analysis.abrir_estadisticas),
-                ("🎯  Optimizador en bucle", self.app.analysis.cmd_optimizar_loop),
+            (tr("📊 Análisis"), "#8e4ab0", [
+                (tr("🚀  Auto-mejora"), self.app.analysis.cmd_automejora_periodica),
+                (tr("💰  Coste de sesión"), self.app.analysis.cmd_coste_sesion),
+                (tr("📝  Crítica historial"), self.app.analysis.cmd_critica_historial),
+                (tr("📈  Estadísticas"), self.app.analysis.abrir_estadisticas),
+                (tr("🎯  Optimizador en bucle"), self.app.analysis.cmd_optimizar_loop),
             ]),
-            ("📚 Aprender", "#2e8a9e", [
-                ("ℹ️  Acerca de G-Prompt", self.app.dialogs.cmd_acerca_de),
-                ("⌨️  Atajos teclado", self.app.atajos.cmd_mostrar_atajos),
-                ("📖  Guía de estilos", lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
-                ("📖  Modo educativo", self.app.analysis.cmd_modo_educativo),
-                ("📚  Tutorial completo", self.app.atajos.abrir_tutorial),
+            (tr("📚 Aprender"), "#2e8a9e", [
+                (tr("ℹ️  Acerca de G-Prompt"), self.app.dialogs.cmd_acerca_de),
+                (tr("⌨️  Atajos teclado"), self.app.atajos.cmd_mostrar_atajos),
+                (tr("📖  Guía de estilos"), lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
+                (tr("📖  Modo educativo"), self.app.analysis.cmd_modo_educativo),
+                (tr("📚  Tutorial completo"), self.app.atajos.abrir_tutorial),
             ]),
-            ("💾 Backup", "#a04545", [
-                ("💼  Backup completo", self.app.backup.cmd_backup_completo),
-                ("📊  Exportar CSV", self.app.backup.cmd_exportar_csv),
-                ("📂  Restaurar backup", self.app.backup.cmd_restore_completo),
+            (tr("💾 Backup"), "#a04545", [
+                (tr("💼  Backup completo"), self.app.backup.cmd_backup_completo),
+                (tr("📊  Exportar CSV"), self.app.backup.cmd_exportar_csv),
+                (tr("📂  Restaurar backup"), self.app.backup.cmd_restore_completo),
             ]),
-            ("📁 Datos", "#3d7a9c", [
-                ("🌟  Estrellas", lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
-                ("📤  Exportar como JSON pro (Veo/Sora/Kling)", self.app.json.cmd_exportar),
-                ("⭐  Favoritos", lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
-                ("📋  Historial", lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
-                ("📥  Importar prompt JSON pro", self.app.json.cmd_importar),
-                ("🔗  LoRAs", lambda: abrir_loras(self.app)),
-                ("🧑  Personajes", lambda: abrir_personajes(self.app)),
+            (tr("📁 Datos"), "#3d7a9c", [
+                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
+                (tr("📤  Exportar como JSON pro (Veo/Sora/Kling)"), self.app.json.cmd_exportar),
+                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
+                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
+                (tr("📥  Importar prompt JSON pro"), self.app.json.cmd_importar),
+                (tr("🔗  LoRAs"), lambda: abrir_loras(self.app)),
+                (tr("🧑  Personajes"), lambda: abrir_personajes(self.app)),
             ]),
-            ("🛠 Herramientas", "#c97a2e", [
-                ("🎯  Adaptar al modelo activo", self.app.workflow.cmd_adaptar_modelo),
-                ("🔒  Anclaje rasgos (consistencia)", self.app.creative.cmd_anclaje_visual),
-                ("🧑‍🎨  Avatar dataset (LoRA)", lambda: abrir_avatar_window(self.app)),
-                ("🎭  Detectar estilo (3 imágenes)", self.app.cliente.cmd_companero_moodboard),
-                ("📤  Export CLI", self.app.backup.cmd_export_cli),
-                ("💼  Modo Cliente", self.app.cliente.cmd_modo_cliente),
-                ("🧰  Negative builder", self.app.creative.cmd_negative_builder),
-                ("🎨  Paleta colores", self.app.creative.cmd_color_palette),
+            (tr("🛠 Herramientas"), "#c97a2e", [
+                (tr("🎯  Adaptar al modelo activo"), self.app.workflow.cmd_adaptar_modelo),
+                (tr("🔒  Anclaje rasgos (consistencia)"), self.app.creative.cmd_anclaje_visual),
+                (tr("🧑‍🎨  Avatar dataset (LoRA)"), lambda: abrir_avatar_window(self.app)),
+                (tr("🎭  Detectar estilo (3 imágenes)"), self.app.cliente.cmd_companero_moodboard),
+                (tr("📤  Export CLI"), self.app.backup.cmd_export_cli),
+                (tr("💼  Modo Cliente"), self.app.cliente.cmd_modo_cliente),
+                (tr("🧰  Negative builder"), self.app.creative.cmd_negative_builder),
+                (tr("🎨  Paleta colores"), self.app.creative.cmd_color_palette),
             ]),
-            ("📝 Plantillas", "#2ea866", [
-                ("⚡  Auto-expansión (en idea)", self.app.data.cmd_gestionar_snippets),
-                ("🧬  Biblioteca ADN", self.app.adn.cmd_ver_biblioteca),
-                ("📐  Fórmulas", self.app.data.abrir_formulas),
-                ("📋  Plantillas", self.app._cmd_plantillas_populares),
-                ("💎  Seeds favoritos", self.app.analysis.abrir_seeds_favoritos),
-                ("🏷  Tags reutilizables (al prompt)", self.app.data.abrir_snippets),
+            (tr("📝 Plantillas"), "#2ea866", [
+                (tr("⚡  Auto-expansión (en idea)"), self.app.data.cmd_gestionar_snippets),
+                (tr("🧬  Biblioteca ADN"), self.app.adn.cmd_ver_biblioteca),
+                (tr("📐  Fórmulas"), self.app.data.abrir_formulas),
+                (tr("📋  Plantillas"), self.app._cmd_plantillas_populares),
+                (tr("💎  Seeds favoritos"), self.app.analysis.abrir_seeds_favoritos),
+                (tr("🏷  Tags reutilizables (al prompt)"), self.app.data.abrir_snippets),
             ]),
-            ("🎨 UI", "#7a7a8a", [
-                ("⚙️  Ajustes", self.app.dialogs.cmd_preferencias),
-                ("📚  Biblioteca", self.app.data.abrir_biblioteca),
-                ("🌗  Cambiar tema", self.app.dialogs.cmd_toggle_tema),
-                ("🏠  Dashboard", self.app.dashboard.cmd_abrir),
-                ("🌐  Idioma (EN/ES)", self.app.dialogs.cmd_toggle_idioma),
-                ("🎯  Modo Focus", self.app.creative.cmd_modo_focus),
+            (tr("🎨 UI"), "#7a7a8a", [
+                (tr("⚙️  Ajustes"), self.app.dialogs.cmd_preferencias),
+                (tr("📚  Biblioteca"), self.app.data.abrir_biblioteca),
+                (tr("🌗  Cambiar tema"), self.app.dialogs.cmd_toggle_tema),
+                (tr("🏠  Dashboard"), self.app.dashboard.cmd_abrir),
+                (tr("🌐  Idioma (EN/ES)"), self.app.dialogs.cmd_toggle_idioma),
+                (tr("🎯  Modo Focus"), self.app.creative.cmd_modo_focus),
             ]),
-            ("⚙️ Workflow", "#c9b32e", [
-                ("🆚  A/B Testing", self.app.ab.cmd_ab_testing),
-                ("🔎  Búsqueda global", self.app.backup.cmd_busqueda_global),
-                ("⏰  Cron prompts", self.app.workflow.cmd_cron_prompts),
-                ("🎙 Grabar sesión", self.app.sesion.cmd_grabar_toggle),
-                ("👥  Grupo personajes", self.app.creative.cmd_grupo_personajes),
-                ("🔄  Macros", self.app.workflow.abrir_macros),
-                ("📁  Proyectos", self.app.workflow.cmd_proyectos),
-                ("📑  Versiones prompt", self.app.workflow.cmd_versiones_prompt),
+            (tr("⚙️ Workflow"), "#c9b32e", [
+                (tr("🆚  A/B Testing"), self.app.ab.cmd_ab_testing),
+                (tr("🔎  Búsqueda global"), self.app.backup.cmd_busqueda_global),
+                (tr("⏰  Cron prompts"), self.app.workflow.cmd_cron_prompts),
+                (tr("🎙 Grabar sesión"), self.app.sesion.cmd_grabar_toggle),
+                (tr("👥  Grupo personajes"), self.app.creative.cmd_grupo_personajes),
+                (tr("🔄  Macros"), self.app.workflow.abrir_macros),
+                (tr("📁  Proyectos"), self.app.workflow.cmd_proyectos),
+                (tr("📑  Versiones prompt"), self.app.workflow.cmd_versiones_prompt),
             ]),
         ]
 
@@ -548,14 +548,14 @@ class UIBuildersService:
         inner = ctk.CTkFrame(frame, fg_color="transparent")
         inner.pack(fill="x", padx=8, pady=6)
 
-        seg = ctk.CTkSegmentedButton(inner, values=["Imagen", "Vídeo", "Audio"],
+        seg = ctk.CTkSegmentedButton(inner, values=[tr("Imagen"), tr("Vídeo"), tr("Audio")],
                                       command=self._on_segmento_modo, height=28,
                                       font=ctk.CTkFont(size=11))
-        seg.set("Imagen")
+        seg.set(tr("Imagen"))
         seg.pack(side="left", padx=(0, 12))
         self.app._seg_modo = seg
 
-        self.app._lbl_plataforma = ctk.CTkLabel(inner, text="Plataforma:", font=ctk.CTkFont(size=11), fg_color="transparent", text_color=modo_label)
+        self.app._lbl_plataforma = ctk.CTkLabel(inner, text=tr("Plataforma:"), font=ctk.CTkFont(size=11), fg_color="transparent", text_color=modo_label)
         self.app._lbl_plataforma.pack(side="left", padx=(0, 4))
         self.app.combo_plataforma = ctk.CTkComboBox(inner, values=PLATAFORMAS_IMAGEN_LISTA, variable=self.app.plataforma_var,
                                                  width=180, height=28, font=ctk.CTkFont(size=11),
@@ -589,7 +589,7 @@ class UIBuildersService:
             else:
                 self.app.switch_nsfw.configure(text_color=nsfw_text_off, border_color=nsfw_border_off)
 
-        self.app.switch_nsfw = ctk.CTkSwitch(inner, text="🔞 NSFW", variable=self.app.switch_nsfw_var,
+        self.app.switch_nsfw = ctk.CTkSwitch(inner, text=tr("🔞 NSFW"), variable=self.app.switch_nsfw_var,
                                           command=_toggle_nsfw_visual,
                                           progress_color="#dc2626",
                                           fg_color=nsfw_fg,
@@ -597,7 +597,7 @@ class UIBuildersService:
                                           text_color=nsfw_text_off,
                                           **sw_style)
         self.app.switch_nsfw.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_nsfw, message="Activa contenido adulto en los prompts.", delay=0.5)
+        CTkToolTip(self.app.switch_nsfw, message=tr("Activa contenido adulto en los prompts."), delay=0.5)
 
         def _toggle_trad_visual():
             if self.app.switch_traduccion_var.get():
@@ -605,7 +605,7 @@ class UIBuildersService:
             else:
                 self.app.switch_trad.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
 
-        self.app.switch_trad = ctk.CTkSwitch(inner, text="🌐 Auto-trad", variable=self.app.switch_traduccion_var,
+        self.app.switch_trad = ctk.CTkSwitch(inner, text=tr("🌐 Auto-trad"), variable=self.app.switch_traduccion_var,
                                           command=_toggle_trad_visual,
                                           progress_color="#2563eb",
                                           fg_color=c["fg_dark"],
@@ -613,7 +613,7 @@ class UIBuildersService:
                                           text_color=c["fg_dark_text"],
                                           **sw_style)
         self.app.switch_trad.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_trad, message="Traduce tu idea al inglés antes de procesarla.", delay=0.5)
+        CTkToolTip(self.app.switch_trad, message=tr("Traduce tu idea al inglés antes de procesarla."), delay=0.5)
         self.app._sw_trad = self.app.switch_trad
         self.app._sw_trad_callback = _toggle_trad_visual
 
@@ -631,7 +631,7 @@ class UIBuildersService:
                 # siendo la imagen literal (no la guía visual).
                 try:
                     self.app.dialogs.set_estado(
-                        "🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí.",
+                        tr("🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí."),
                         "#7c3aed",
                     )
                 except Exception as _e:
@@ -639,7 +639,7 @@ class UIBuildersService:
             else:
                 self.app.switch_ref.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
 
-        self.app.switch_ref = ctk.CTkSwitch(inner, text="🖼 Ref", variable=self.app.switch_ref_visual_var,
+        self.app.switch_ref = ctk.CTkSwitch(inner, text=tr("🖼 Ref"), variable=self.app.switch_ref_visual_var,
                                          command=_toggle_ref_visual,
                                          progress_color="#7c3aed",
                                          fg_color=c["fg_dark"],
@@ -648,11 +648,11 @@ class UIBuildersService:
                                          **sw_style)
         self.app.switch_ref.pack(side="right", padx=6)
         CTkToolTip(self.app.switch_ref,
-                    message=("Img→Prompt: trata la imagen como REFERENCIA VISUAL "
+                    message=(tr("Img→Prompt: trata la imagen como REFERENCIA VISUAL "
                              "(storyboard, moodboard, style guide).\n"
                              "OFF (defecto): el prompt reproduce fielmente la imagen.\n"
                              "ON: extrae solo paleta/iluminación/personajes/estilo "
-                             "y genera prompt original con esa guía visual."),
+                             "y genera prompt original con esa guía visual.")),
                     delay=0.5)
 
         # Aplicar estilo inicial coherente con el estado del var (importante
@@ -667,7 +667,7 @@ class UIBuildersService:
             self.app.switch_ref.configure(text_color=c["trad_text_on"], border_color=c["trad_border_on"])
 
     def _on_segmento_modo(self, valor):
-        mapa = {"Imagen": "imagen", "Vídeo": "video", "Audio": "audio"}
+        mapa = {tr("Imagen"): "imagen", tr("Vídeo"): "video", tr("Audio"): "audio"}
         self.app.modo_var.set(mapa.get(valor, "imagen"))
         self.app.events.on_modo_cambio()
 
@@ -708,9 +708,9 @@ class UIBuildersService:
         self.app.combo_shots.pack(side="left", padx=5)
         try:
             CTkToolTip(self.app.combo_shots,
-                        message=("Número de shots/planos en el prompt de vídeo.\n"
+                        message=(tr("Número de shots/planos en el prompt de vídeo.\n"
                                  "Auto: deduce según duración (4s=1, 5s=2, 10s=3, 15s=4).\n"
-                                 "Manual (1-6): fuerza ese número exacto."),
+                                 "Manual (1-6): fuerza ese número exacto.")),
                         delay=0.5)
         except Exception as _e:
             logger.debug(f"[silent] tooltip shots: {_e}")
@@ -721,17 +721,19 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(10, 5))
+        self.app._estilo_vid_disp2key = {tr(v): v for v in ESTILOS_VISUAL_VIDEO}
         self.app.combo_estilo_video = ctk.CTkComboBox(
-            self.app.frame_video, values=ESTILOS_VISUAL_VIDEO,
-            variable=self.app.estilo_video_var, width=140,
+            self.app.frame_video, values=[tr(v) for v in ESTILOS_VISUAL_VIDEO],
+            width=140,
             font=ctk.CTkFont(size=11),
-            command=lambda v: self.app.estilo_video_var.set(v))
+            command=lambda disp: self.app.estilo_video_var.set(
+                self.app._estilo_vid_disp2key.get(disp, disp)))
         self.app.combo_estilo_video.set("Auto")
         self.app.combo_estilo_video.pack(side="left", padx=5)
         try:
             CTkToolTip(self.app.combo_estilo_video, delay=0.4,
-                       message="Look visual del vídeo (estética de render). "
-                               "Complementa los géneros del footer. Auto = no fuerza nada.")
+                       message=tr("Look visual del vídeo (estética de render). "
+                               "Complementa los géneros del footer. Auto = no fuerza nada."))
         except Exception as _e:
             logger.debug(f"[silent] tooltip estilo video: {_e}")
 
@@ -763,7 +765,7 @@ class UIBuildersService:
         row1 = ctk.CTkFrame(self.app.frame_audio, fg_color="transparent")
         row1.pack(fill="x", padx=10, pady=(5, 2))
 
-        ctk.CTkLabel(row1, text="Modelo:", font=ctk.CTkFont(weight="bold"),
+        ctk.CTkLabel(row1, text=tr("Modelo:"), font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 5))
         self.app.combo_modelo_audio = ctk.CTkComboBox(row1, values=MODELOS_AUDIO_FLAT, width=215, command=self.app.events.on_motor_audio_cambio)
@@ -774,7 +776,7 @@ class UIBuildersService:
                                    command=self.app.events.on_motor_audio_cambio)
 
         # Destino al lado del modelo
-        ctk.CTkLabel(row1, text="Destino:", font=ctk.CTkFont(weight="bold"),
+        ctk.CTkLabel(row1, text=tr("Destino:"), font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
         self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=DESTINOS, variable=self.app.destino_var, width=140,
@@ -790,7 +792,7 @@ class UIBuildersService:
             else:
                 self.app.switch_instrumental.configure(text_color=c["fg_dark_text"], border_color=c["fg_dark_border"])
 
-        self.app.switch_instrumental = ctk.CTkSwitch(row1, text="🎹 Instrumental",
+        self.app.switch_instrumental = ctk.CTkSwitch(row1, text=tr("🎹 Instrumental"),
                                                    variable=self.app.switch_instrumental_var,
                                                    command=_toggle_instr_visual,
                                                    progress_color="#7c3aed",
@@ -810,21 +812,21 @@ class UIBuildersService:
         row2.pack(fill="x", padx=10, pady=(0, 5))
 
         self.app.emocion_var = ctk.StringVar(value="— Emoción —")
-        ctk.CTkLabel(row2, text="Emoción:", font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Emoción:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 3))
         self.app.combo_emocion = ctk.CTkComboBox(row2, values=["— Emoción —"] + EMOCIONES_AUDIO, variable=self.app.emocion_var, width=130, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_emocion.pack(side="left", padx=(0, 10))
 
         self.app.voz_var = ctk.StringVar(value="— Voz —")
-        ctk.CTkLabel(row2, text="Voz:", font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Voz:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
         self.app.combo_voz = ctk.CTkComboBox(row2, values=["— Voz —"] + VOCES_AUDIO, variable=self.app.voz_var, width=155, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_voz.pack(side="left", padx=(0, 10))
 
         self.app.idioma_audio_var = ctk.StringVar(value="— Idioma —")
-        ctk.CTkLabel(row2, text="Idioma:", font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Idioma:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
         self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=["— Idioma —"] + IDIOMAS_AUDIO, variable=self.app.idioma_audio_var, width=160, command=self.app.events.on_audio_filtro_cambio)
@@ -856,7 +858,7 @@ class UIBuildersService:
         attach_searchable_dropdown(
             self.app.combo_modelo_imagen,
             command=self.app.events.on_modelo_imagen_cambio)
-        self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message="Pasa el cursor para info del modelo")
+        self.app._tooltip_modelo_actual = CTkToolTip(self.app.combo_modelo_imagen, delay=0.6, message=tr("Pasa el cursor para info del modelo"))
 
         # Combo "Estilo" — visible solo cuando el modelo es de una familia
         # con estilos definidos en config.ESTILOS_POR_FAMILIA. Los valores
@@ -867,17 +869,23 @@ class UIBuildersService:
         ctk.CTkLabel(self.app.frame_familia_estilo, text=tr("Estilo"),
                      font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
+        # i18n: el combo MUESTRA el estilo traducido pero la var guarda SIEMPRE
+        # la clave ES (la inyección busca el hint por esa clave). Mapeo
+        # display→clave reconstruido en cada repoblación (_on_modelo_imagen_cambio).
+        self.app._estilo_img_disp2key = {}
         self.app.combo_familia_estilo = ctk.CTkComboBox(
             self.app.frame_familia_estilo,
             values=["Auto"],   # placeholder — _on_modelo_imagen_cambio lo repuebla
-            variable=self.app.familia_estilo_var,
             width=140, height=28,
             font=ctk.CTkFont(size=11),
+            command=lambda disp: self.app.familia_estilo_var.set(
+                self.app._estilo_img_disp2key.get(disp, disp)),
         )
+        self.app.combo_familia_estilo.set("Auto")
         self.app.combo_familia_estilo.pack()
         self.app._tooltip_familia_estilo = CTkToolTip(
             self.app.combo_familia_estilo, delay=0.4,
-            message="Hint de estilo para la familia del modelo activo.",
+            message=tr("Hint de estilo para la familia del modelo activo."),
         )
 
         # Ratio
@@ -887,7 +895,7 @@ class UIBuildersService:
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         f2_inner = ctk.CTkFrame(f2, fg_color="transparent")
         f2_inner.pack()
-        self.app.combo_ratio = ctk.CTkComboBox(f2_inner, values=RATIOS_IMAGEN, variable=self.app.ratio_var, width=80, height=28,
+        self.app.combo_ratio = ctk.CTkComboBox(f2_inner, values=[tr(r) for r in RATIOS_IMAGEN], variable=self.app.ratio_var, width=80, height=28,
                                             font=ctk.CTkFont(size=11), command=lambda v: self.app.ratio_var.set(v))
         self.app.combo_ratio.set("1:1")
         self.app.combo_ratio.pack(side="left")
@@ -926,9 +934,9 @@ class UIBuildersService:
         if ratio in ratios_dispo:
             self.app.ratio_var.set(ratio)
             self.app.combo_ratio.set(ratio)
-            self.app.dialogs.set_estado(f"📐 Ratio {ratio} aplicado", "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Ratio {0} aplicado').format(ratio), "#3498db")
         else:
-            self.app.dialogs.set_estado(f"⚠️ Ratio {ratio} no disponible para este modelo", "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ Ratio {0} no disponible para este modelo').format(ratio), "#e67e22")
 
     def _build_destino_panel(self):
         """Panel Destino — ahora oculto, los combos están integrados en cada panel de modo."""
@@ -963,13 +971,13 @@ class UIBuildersService:
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.dialogs.set_estado(f"📐 Destino {dest} → Ratio auto: {ratio}", "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), "#3498db")
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
             self.app.brief_var.set(True)
             self.app.events.on_brief_cambio()
-            self.app.dialogs.set_estado("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad", "#f39c12")
+            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), "#f39c12")
 
         self.app.reiniciar_memoria()
 
@@ -1010,30 +1018,30 @@ class UIBuildersService:
         # container (que ya tiene la altura limitada).
         self.app.tabview.pack(fill="both", expand=True)
 
-        self.app.tabview.add("⚙️ Ajustes Extra")
-        self.app.tabview.add("🎨 Estilos")
-        self.app.tabview.add("🚫 Negativos")
-        self.app.tabview.add("🏷️ Tags")
+        self.app.tabview.add(tr("⚙️ Ajustes Extra"))
+        self.app.tabview.add(tr("🎨 Estilos"))
+        self.app.tabview.add(tr("🚫 Negativos"))
+        self.app.tabview.add(tr("🏷️ Tags"))
 
         # Forzar el color del contenido de cada tab
-        for tab_name in ("⚙️ Ajustes Extra", "🎨 Estilos", "🚫 Negativos", "🏷️ Tags"):
+        for tab_name in (tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos"), tr("🏷️ Tags")):
             try:
                 self.app.tabview.tab(tab_name).configure(fg_color=tab_bg, bg_color=tab_bg)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         # Tab 1: Ajustes Extra
-        self._build_ajustes_extra(self.app.tabview.tab("⚙️ Ajustes Extra"))
+        self._build_ajustes_extra(self.app.tabview.tab(tr("⚙️ Ajustes Extra")))
 
         # Tab 2: Estilos
-        self._build_estilos(self.app.tabview.tab("🎨 Estilos"))
+        self._build_estilos(self.app.tabview.tab(tr("🎨 Estilos")))
 
         # Tab 3: Negativos (Permanece para no destruir widgets)
-        tab_neg = self.app.tabview.tab("🚫 Negativos")
+        tab_neg = self.app.tabview.tab(tr("🚫 Negativos"))
         self.app.frame_neg_outer = ctk.CTkFrame(tab_neg, fg_color=tab_bg)
         self._build_negative(self.app.frame_neg_outer)
 
         self.app.lbl_neg_disabled = ctk.CTkLabel(
-            tab_neg, text="🚫 El modelo o plataforma actual NO utiliza Negative Prompts.",
+            tab_neg, text=tr("🚫 El modelo o plataforma actual NO utiliza Negative Prompts."),
             fg_color="transparent",
             text_color=c["muted_text"], font=ctk.CTkFont(size=12, slant="italic"))
 
@@ -1042,9 +1050,9 @@ class UIBuildersService:
         self._tags_tab_built = False
 
         def _on_tab_change():
-            if self.app.tabview.get() == "🏷️ Tags" and not self._tags_tab_built:
+            if self.app.tabview.get() == tr("🏷️ Tags") and not self._tags_tab_built:
                 self._tags_tab_built = True
-                self._build_tags_tab(self.app.tabview.tab("🏷️ Tags"))
+                self._build_tags_tab(self.app.tabview.tab(tr("🏷️ Tags")))
 
         self.app.tabview.configure(command=_on_tab_change)
 
@@ -1056,7 +1064,7 @@ class UIBuildersService:
         self.app.frame_pers_lora = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app.frame_pers_lora.pack(fill="x", pady=(2, 1))
 
-        ctk.CTkLabel(self.app.frame_pers_lora, text="🧑 Personaje:",
+        ctk.CTkLabel(self.app.frame_pers_lora, text=tr("🧑 Personaje:"),
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
@@ -1066,7 +1074,7 @@ class UIBuildersService:
                                                 command=self.app.footer._on_personaje_selected)
         self.app.combo_personaje.pack(side="left", padx=5)
 
-        ctk.CTkLabel(self.app.frame_pers_lora, text="🔗 LoRA:",
+        ctk.CTkLabel(self.app.frame_pers_lora, text=tr("🔗 LoRA:"),
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(15, 5))
@@ -1105,7 +1113,7 @@ class UIBuildersService:
         self.app.frame_fuentes_activas = ctk.CTkFrame(parent, fg_color=tab_bg)
         # No empaquetado inicial — _actualizar_fuentes_activas lo pack si hay algo.
         ctk.CTkLabel(
-            self.app.frame_fuentes_activas, text="🎯 Fuentes activas:",
+            self.app.frame_fuentes_activas, text=tr("🎯 Fuentes activas:"),
             font=ctk.CTkFont(weight="bold", size=10),
             fg_color="transparent", text_color=c["panel_text"],
         ).pack(side="left", padx=(8, 6))
@@ -1118,7 +1126,7 @@ class UIBuildersService:
         self.app.frame_plantilla_brief = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app.frame_plantilla_brief.pack(fill="x", pady=1)
 
-        ctk.CTkLabel(self.app.frame_plantilla_brief, text="📐 Plantilla:",
+        ctk.CTkLabel(self.app.frame_plantilla_brief, text=tr("📐 Plantilla:"),
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
@@ -1126,10 +1134,10 @@ class UIBuildersService:
                                                 fg_color=c["combo_bg"], border_color=c["combo_border"],
                                                 text_color=c["hdr_text"], command=self.app._cargar_plantilla)
         self.app.combo_plantilla.pack(side="left", padx=5)
-        ctk.CTkButton(self.app.frame_plantilla_brief, text="💾 Guardar actual", width=120, height=28,
+        ctk.CTkButton(self.app.frame_plantilla_brief, text=tr("💾 Guardar actual"), width=120, height=28,
                       fg_color="#5b2c8e", hover_color="#3d1a6a", text_color="#ffffff",
                       command=self.app._cmd_guardar_plantilla).pack(side="left", padx=(10, 4))
-        ctk.CTkButton(self.app.frame_plantilla_brief, text="🗑 Borrar", width=80, height=28,
+        ctk.CTkButton(self.app.frame_plantilla_brief, text=tr("🗑 Borrar"), width=80, height=28,
                       fg_color="#6a1a1a", hover_color="#4a0f0f", text_color="#ffffff",
                       command=self.app._cmd_borrar_plantilla).pack(side="left", padx=2)
 
@@ -1146,7 +1154,7 @@ class UIBuildersService:
         sw_bord_off = "#d1d5db" if is_light else "#374151"
         sw_fg_off = "#f3f4f6" if is_light else "#1f2937"
         self.app.switch_brief = ctk.CTkSwitch(
-            self.app.frame_plantilla_brief, text="⚡ Modo Brief", variable=self.app.brief_var,
+            self.app.frame_plantilla_brief, text=tr("⚡ Modo Brief"), variable=self.app.brief_var,
             command=_toggle_brief_visual,
             progress_color="#d97706",
             fg_color=sw_fg_off,
@@ -1159,18 +1167,18 @@ class UIBuildersService:
             button_color="#374151" if is_light else "#e5e7eb",
             button_hover_color="#1f2937" if is_light else "#f3f4f6")
         self.app.switch_brief.pack(side="right", padx=15)
-        CTkToolTip(self.app.switch_brief, message="Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos.", delay=0.5)
+        CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
         self.app._sw_brief_callback = _toggle_brief_visual
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
         self.app.frame_imgref_inner = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app.frame_imgref_inner.pack(fill="x", pady=(1, 2))
 
-        ctk.CTkLabel(self.app.frame_imgref_inner, text="🖼 Imagen ref:",
+        ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("🖼 Imagen ref:"),
                      font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
-        self.app.btn_cargar_img = ctk.CTkButton(self.app.frame_imgref_inner, text="📂 Cargar", width=80, height=28,
+        self.app.btn_cargar_img = ctk.CTkButton(self.app.frame_imgref_inner, text=tr("📂 Cargar"), width=80, height=28,
                                              text_color="#ffffff",
                                              command=self.app._cargar_imagen)
         self.app.btn_cargar_img.pack(side="left", padx=3)
@@ -1181,7 +1189,7 @@ class UIBuildersService:
                       command=self.app._limpiar_imagen).pack(side="left", padx=2)
         self.app.lbl_img_preview = ctk.CTkLabel(self.app.frame_imgref_inner, text="", width=34, height=34)
         self.app.lbl_img_preview.pack(side="left", padx=4)
-        self.app.lbl_img_nombre = ctk.CTkLabel(self.app.frame_imgref_inner, text="Sin imagen",
+        self.app.lbl_img_nombre = ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("Sin imagen"),
                                             font=ctk.CTkFont(size=10),
                                             fg_color="transparent",
                                             text_color=c["muted_text"])
@@ -1192,7 +1200,7 @@ class UIBuildersService:
         ctk.CTkLabel(self.app.frame_imgref_inner, text="│",
                      fg_color="transparent",
                      text_color=sep_color).pack(side="left", padx=4)
-        ctk.CTkLabel(self.app.frame_imgref_inner, text="Recientes:",
+        ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("Recientes:"),
                      font=ctk.CTkFont(size=9),
                      fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left", padx=2)
@@ -1221,17 +1229,17 @@ class UIBuildersService:
         self.app._frame_estilos_header.pack(fill="x", padx=5, pady=(0, 2))
         header_estilos = self.app._frame_estilos_header  # alias para legibilidad
 
-        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text="🔍 Buscar estilo...", width=180, height=24, font=ctk.CTkFont(size=11))
+        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text=tr("🔍 Buscar estilo..."), width=180, height=24, font=ctk.CTkFont(size=11))
         self.app.entry_busqueda.pack(side="left")
         self.app.entry_busqueda.bind("<KeyRelease>", self.app.footer._filtrar_estilos)
 
-        btn_sugerir = ctk.CTkButton(header_estilos, text="🎨 Sugerir estilos", width=130, height=24,
+        btn_sugerir = ctk.CTkButton(header_estilos, text=tr("🎨 Sugerir estilos"), width=130, height=24,
                                        fg_color="#3a1a5a", hover_color="#2a0f3a",
                                        text_color="#ffffff",
                                        font=ctk.CTkFont(size=10),
                                        command=self.app._cmd_sugerir_estilos)
         btn_sugerir.pack(side="left", padx=(8, 0))
-        CTkToolTip(btn_sugerir, delay=0.4, message="LLM analiza tu idea y marca 3-6 estilos apropiados automáticamente")
+        CTkToolTip(btn_sugerir, delay=0.4, message=tr("LLM analiza tu idea y marca 3-6 estilos apropiados automáticamente"))
 
         # Contador y botón limpiar
         self.app.lbl_estilos_count = ctk.CTkLabel(header_estilos, text="",
@@ -1247,7 +1255,7 @@ class UIBuildersService:
                                           font=ctk.CTkFont(size=11),
                                           command=self._limpiar_estilos)
         btn_limpiar_est.pack(side="right", padx=(0, 5))
-        CTkToolTip(btn_limpiar_est, delay=0.3, message="Limpiar todos los estilos seleccionados")
+        CTkToolTip(btn_limpiar_est, delay=0.3, message=tr("Limpiar todos los estilos seleccionados"))
 
         # CTkTabview reserva la altura del tab MÁS grande. height=160
         # → ~5 filas × 3 columnas = 15 estilos visibles. Suficiente
@@ -1276,7 +1284,7 @@ class UIBuildersService:
         for n, v in self.app.estilo_checks.items():
             v.set(False)
         self._actualizar_contador_estilos()
-        self.app.dialogs.set_estado("🗑 Estilos limpiados")
+        self.app.dialogs.set_estado(tr("🗑 Estilos limpiados"))
 
     def _actualizar_contador_estilos(self):
         """Actualiza el contador y label verde de estilos seleccionados."""
@@ -1286,12 +1294,12 @@ class UIBuildersService:
         sel = self.app.footer.estilos_seleccionados()
         n = len(sel)
         if n == 0:
-            self.app.lbl_estilos_count.configure(text="(ninguno)", text_color=c["muted_text"])
+            self.app.lbl_estilos_count.configure(text=tr("(ninguno)"), text_color=c["muted_text"])
             if hasattr(self.app, 'lbl_estilos_sel'):
                 self.app.lbl_estilos_sel.configure(text="")
         else:
             color_count = "#1d4ed8" if is_light else "#5a8aaa"
-            self.app.lbl_estilos_count.configure(text=f"({n} seleccionado{'s' if n != 1 else ''})",
+            self.app.lbl_estilos_count.configure(text=tr('({0} seleccionado{1})').format((n), ('s' if n != 1 else '')),
                                               text_color=color_count)
             if hasattr(self.app, 'lbl_estilos_sel'):
                 self.app.lbl_estilos_sel.configure(text=f"✦ {' + '.join(sel)}")
@@ -1304,17 +1312,17 @@ class UIBuildersService:
         # Header con hint y botón Sugerir
         hdr = ctk.CTkFrame(parent, fg_color=tab_bg)
         hdr.pack(fill="x", padx=4, pady=(2, 0))
-        ctk.CTkLabel(hdr, text="Clic para añadir al final de la idea",
+        ctk.CTkLabel(hdr, text=tr("Clic para añadir al final de la idea"),
                      font=ctk.CTkFont(size=9), fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left")
         btn_sug_tags = ctk.CTkButton(
-            hdr, text="✨ Sugerir", width=80, height=20,
+            hdr, text=tr("✨ Sugerir"), width=80, height=20,
             font=ctk.CTkFont(size=9),
             fg_color="#1a5a8a", hover_color="#154a72",
             command=self.app.creative.cmd_sugerir_tags,
         )
         btn_sug_tags.pack(side="right", padx=2)
-        CTkToolTip(btn_sug_tags, message="LLM analiza tu idea y añade 3-5 tags técnicos apropiados", delay=0.4)
+        CTkToolTip(btn_sug_tags, message=tr("LLM analiza tu idea y añade 3-5 tags técnicos apropiados"), delay=0.4)
 
         scroll = ctk.CTkScrollableFrame(parent, fg_color=tab_bg, scrollbar_button_color=c["combo_border"])
         scroll.pack(fill="both", expand=True, padx=2, pady=(2, 0))
@@ -1325,7 +1333,7 @@ class UIBuildersService:
                      "text_color": c["panel_text"]}
 
         for cat_name, tags in TAG_PICKER_CATEGORIES.items():
-            ctk.CTkLabel(scroll, text=cat_name,
+            ctk.CTkLabel(scroll, text=tr(cat_name),
                          font=ctk.CTkFont(size=9, weight="bold"),
                          fg_color="transparent",
                          text_color=c["muted_text"], anchor="w").pack(
@@ -1347,10 +1355,12 @@ class UIBuildersService:
                     except Exception:
                         pass
 
-                btn = ctk.CTkButton(row_f, text=label_es, width=120, command=_insert_tag,
+                _label_tag = val_en.title() if get_idioma() == "en" else label_es
+                btn = ctk.CTkButton(row_f, text=_label_tag, width=120, command=_insert_tag,
                                     **btn_tag_s)
                 btn.pack(side="left", padx=2)
-                CTkToolTip(btn, message=f"{val_en}\n{descripcion}", delay=0.4)
+                _tip_tag = val_en if get_idioma() == "en" else f"{val_en}\n{descripcion}"
+                CTkToolTip(btn, message=_tip_tag, delay=0.4)
 
     def _build_negative(self, parent):
         is_light = _get_real_is_light()
@@ -1360,26 +1370,26 @@ class UIBuildersService:
         self.app._frame_neg_header = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app._frame_neg_header.pack(fill="x", pady=(0, 2))
         hdr = self.app._frame_neg_header  # alias
-        ctk.CTkLabel(hdr, text="➕ Negative extra (se añade al base):",
+        ctk.CTkLabel(hdr, text=tr("➕ Negative extra (se añade al base):"),
                      font=ctk.CTkFont(weight="bold", size=12),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left")
-        ctk.CTkButton(hdr, text="🗑 Limpiar", width=80, height=24,
+        ctk.CTkButton(hdr, text=tr("🗑 Limpiar"), width=80, height=24,
                       fg_color="#dc2626" if is_light else "#444",
                       hover_color="#b91c1c" if is_light else "#222",
                       text_color="#ffffff",
                       command=self.app.footer._limpiar_negatives).pack(side="right", padx=4)
-        btn_sug_neg = ctk.CTkButton(hdr, text="🛡 Sugerir", width=80, height=24,
+        btn_sug_neg = ctk.CTkButton(hdr, text=tr("🛡 Sugerir"), width=80, height=24,
                       fg_color="#1a5a8a", hover_color="#154a72",
                       text_color="#ffffff",
                       command=self.app.creative.cmd_sugerir_negative_tab)
         btn_sug_neg.pack(side="right", padx=2)
-        CTkToolTip(btn_sug_neg, message="LLM genera el negative óptimo e inserta en el campo", delay=0.4)
+        CTkToolTip(btn_sug_neg, message=tr("LLM genera el negative óptimo e inserta en el campo"), delay=0.4)
 
         # Paquetes predefinidos (activan múltiples presets a la vez)
         frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)
         frame_paquetes.pack(fill="x", pady=(0, 3))
-        ctk.CTkLabel(frame_paquetes, text="Paquetes:",
+        ctk.CTkLabel(frame_paquetes, text=tr("Paquetes:"),
                      font=ctk.CTkFont(size=9, weight="bold"),
                      fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left", padx=(2, 4))
@@ -1394,7 +1404,7 @@ class UIBuildersService:
             self.app.footer._rebuild_negative_text()
 
         for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
-            ctk.CTkButton(frame_paquetes, text=paq_nombre, height=22, width=100,
+            ctk.CTkButton(frame_paquetes, text=tr(paq_nombre), height=22, width=100,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           text_color="#ffffff", font=ctk.CTkFont(size=9),
                           command=lambda p=paq_presets: _aplicar_paquete(p)).pack(
@@ -1418,10 +1428,10 @@ class UIBuildersService:
                 def _toggle(n=nombre_p, fg_off=fg):
                     self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
                     activo = self.app.preset_vars[n].get()
-                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
+                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {tr(n)}" if activo else tr(n))
                     self.app.footer._rebuild_negative_text()
 
-                btn = ctk.CTkButton(row_f, text=nombre_p, height=22, width=90,
+                btn = ctk.CTkButton(row_f, text=tr(nombre_p), height=22, width=90,
                                     fg_color=fg, hover_color=hv, text_color="#ffffff",
                                     font=ctk.CTkFont(size=10), command=_toggle)
                 btn.pack(side="left", padx=2)
@@ -1465,7 +1475,7 @@ class UIBuildersService:
         # Header con label + botón limpiar
         hdr = ctk.CTkFrame(self.app.frame_entrada, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
-        ctk.CTkLabel(hdr, text="Describe tu idea", font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text=tr("Describe tu idea"), font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
         # Label de autocompletar
         self.app.lbl_autocomplete = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"), fg_color="transparent", text_color="#2563eb" if is_light else "#5a8aaa")
         self.app.lbl_autocomplete.pack(side="left", padx=(10, 0))
@@ -1495,7 +1505,7 @@ class UIBuildersService:
                                     text_color=c["muted_text"],
                                     command=lambda: self.app.txt_idea.delete("1.0", "end"))
         btn_clear.pack(side="right")
-        CTkToolTip(btn_clear, delay=0.3, message="Limpiar campo idea")
+        CTkToolTip(btn_clear, delay=0.3, message=tr("Limpiar campo idea"))
 
         self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=13),
                                         border_width=2, border_color=c["combo_border"] if "combo_border" in c else "#9ca3af", corner_radius=8)
@@ -1505,9 +1515,9 @@ class UIBuildersService:
             CTkToolTip(
                 self.app.txt_idea, delay=0.6,
                 message=(
-                    "💡 Tip: escribe ';trigger' + Espacio para expandir automáticamente.\n"
+                    tr("💡 Tip: escribe ';trigger' + Espacio para expandir automáticamente.\n"
                     "Ej: ';cine ' → 'cinematic lighting, film grain'.\n"
-                    "Configura tus triggers en menú Plantillas → Expansión rápida."
+                    "Configura tus triggers en menú Plantillas → Expansión rápida.")
                 ),
             )
         except Exception as _e:
@@ -1572,7 +1582,7 @@ class UIBuildersService:
                 # Estimación tokens ≈ chars / 4 (regla típica para inglés)
                 tokens_est = max(1, chars // 4)
                 self.app.lbl_idea_counter.configure(
-                    text=f"· {chars} chars · ~{tokens_est} tokens · max idea {max_c}",
+                    text=tr('· {0} chars · ~{1} tokens · max idea {2}').format((chars), (tokens_est), (max_c)),
                     text_color=color
                 )
         except Exception as _e:
@@ -1604,7 +1614,7 @@ class UIBuildersService:
             palabras = ", ".join(f"'{h['word']}'" for h in hallazgos[:2])
             sufijo = f" y {n-2} más" if n > 2 else ""
             self.app.lbl_claridad_aviso.configure(
-                text=f"💡 Claridad: {palabras}{sufijo} — click para ver"
+                text=tr('💡 Claridad: {0}{1} — click para ver').format((palabras), (sufijo))
             )
         except Exception as _e:
             logger.debug(f"[silent] claridad: {_e}")
@@ -1620,20 +1630,20 @@ class UIBuildersService:
             from config import get_theme_colors
             c = get_theme_colors(is_light)
             vent = GPromptWindow(self.app)
-            vent.title("💡 Sugerencias de claridad")
+            vent.title(tr("💡 Sugerencias de claridad"))
             vent.geometry("520x420")
             vent.transient(self.app)
             ctk.CTkLabel(
                 vent,
-                text="💡 Palabras polisémicas detectadas en tu idea",
+                text=tr("💡 Palabras polisémicas detectadas en tu idea"),
                 font=ctk.CTkFont(size=13, weight="bold"),
             ).pack(pady=(12, 4), padx=12)
             ctk.CTkLabel(
                 vent,
                 text=(
-                    "El LLM puede interpretarlas de varias formas. "
+                    tr("El LLM puede interpretarlas de varias formas. "
                     "Reformula tu idea con la versión específica para "
-                    "evitar resultados inesperados."
+                    "evitar resultados inesperados.")
                 ),
                 font=ctk.CTkFont(size=10),
                 text_color=c["muted_text"],
@@ -1655,7 +1665,7 @@ class UIBuildersService:
                 ).pack(anchor="w", padx=10, pady=(6, 2))
                 ctk.CTkLabel(
                     card,
-                    text="Interpretaciones posibles: " + " / ".join(h["meanings"]),
+                    text=tr("Interpretaciones posibles: ") + " / ".join(h["meanings"]),
                     font=ctk.CTkFont(size=10),
                     text_color=c["muted_text"],
                     wraplength=460, justify="left",
@@ -1667,7 +1677,7 @@ class UIBuildersService:
                     wraplength=460, justify="left",
                 ).pack(anchor="w", padx=10, pady=(0, 8))
             ctk.CTkButton(
-                vent, text="Cerrar", width=120, height=30,
+                vent, text=tr("Cerrar"), width=120, height=30,
                 fg_color="#6b7280", hover_color="#4b5563",
                 command=vent.destroy,
             ).pack(pady=10)
@@ -1699,9 +1709,9 @@ class UIBuildersService:
         # Estado actual del auto-trad
         auto_trad_on = bool(getattr(self.app, "switch_traduccion_var", None) and self.app.switch_traduccion_var.get())
         if en_dominante and auto_trad_on:
-            self.app.lbl_idioma_aviso.configure(text="🇬🇧 inglés detectado · click para desactivar Auto-trad")
+            self.app.lbl_idioma_aviso.configure(text=tr("🇬🇧 inglés detectado · click para desactivar Auto-trad"))
         elif es_dominante and not auto_trad_on:
-            self.app.lbl_idioma_aviso.configure(text="🇪🇸 español detectado · click para activar Auto-trad")
+            self.app.lbl_idioma_aviso.configure(text=tr("🇪🇸 español detectado · click para activar Auto-trad"))
         else:
             self.app.lbl_idioma_aviso.configure(text="")
 
@@ -1717,7 +1727,7 @@ class UIBuildersService:
                         logger.debug(f"[silent] {e}")
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.app.switch_traduccion_var.get() else "desactivado"
-                self.app.dialogs.set_estado(f"🌐 Auto-trad {estado}", "#3498db")
+                self.app.dialogs.set_estado(tr('🌐 Auto-trad {0}').format(estado), "#3498db")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _build_acciones(self):
@@ -1833,7 +1843,7 @@ class UIBuildersService:
                 grp_frame = ctk.CTkFrame(parent, fg_color="transparent")
                 grp_frame.pack(side="left", padx=0)
                 # Label del título — pequeño, en color del grupo
-                ctk.CTkLabel(grp_frame, text=titulo,
+                ctk.CTkLabel(grp_frame, text=tr(titulo),
                               font=ctk.CTkFont(size=8, weight="bold"),
                               text_color=color_tit, anchor="w").pack(
                               anchor="w", padx=4, pady=(0, 1))
@@ -1841,10 +1851,10 @@ class UIBuildersService:
                 btn_row.pack(side="top", anchor="w")
                 for text, w, fg, cmd, tooltip in grupo:
                     kw = {"fg_color": fg, "hover_color": self.app.dialogs._darker(fg)} if fg else {}
-                    btn = ctk.CTkButton(btn_row, text=text, width=w,
+                    btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
-                    CTkToolTip(btn, delay=0.5, message=tooltip)
+                    CTkToolTip(btn, delay=0.5, message=tr(tooltip))
                     self.app.action_btns.append(btn)
                     if text == "🔁 Refinar":
                         btn.bind("<Button-3>", self.app.refinar.menu_refinar_especifico)
@@ -1874,31 +1884,31 @@ class UIBuildersService:
         row2.pack(fill="x")
         _render_grupos(row2, grupos_r2)
 
-        btn_reset = ctk.CTkButton(row2, text="🗑 Reset", width=80, height=32, corner_radius=6,
+        btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
                                    fg_color="#7f1d1d", hover_color="#5a1414",
                                    font=ctk.CTkFont(size=11), command=self.app.cmd_reset)
         btn_reset.pack(side="right", padx=2)
-        CTkToolTip(btn_reset, delay=0.5, message="Limpia todo y borra la memoria.")
+        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
-        btn_repeat = ctk.CTkButton(row2, text="🔁 Última", width=85, height=32, corner_radius=6,
+        btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
                                        fg_color="#1e3a5f", hover_color="#162d49",
                                        font=ctk.CTkFont(size=10), command=self.app._repetir_ultima_config)
         btn_repeat.pack(side="right", padx=2)
-        CTkToolTip(btn_repeat, delay=0.5, message="Repetir configuración del último prompt generado")
+        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
-        btn_load_setup = ctk.CTkButton(row2, text="📋 Cargar setup", width=110, height=32, corner_radius=6,
+        btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
                                         fg_color="#1e5f3a", hover_color="#16492d",
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_cargar_setup)
         btn_load_setup.pack(side="right", padx=2)
-        CTkToolTip(btn_load_setup, delay=0.5, message="Cargar una configuración guardada (modelo, ratio, estilos…)")
+        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
 
-        btn_save_setup = ctk.CTkButton(row2, text="💾 Setup", width=85, height=32, corner_radius=6,
+        btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
                                         fg_color="#1e5f3a", hover_color="#16492d",
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_guardar_setup)
         btn_save_setup.pack(side="right", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
-                   message="Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt")
+                   message=tr("Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt"))
 
         self.app.frame_ideas = ctk.CTkFrame(self.app, fg_color="transparent")
 
@@ -1911,7 +1921,7 @@ class UIBuildersService:
 
         self.app.lbl_estado = ctk.CTkLabel(
             self.app.frame_estado,
-            text=f"Listo · Ctrl+Enter: Prompt · Ctrl+1/2: Copiar",
+            text=tr('Listo · Ctrl+Enter: Prompt · Ctrl+1/2: Copiar'),
             font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"])
         self.app.lbl_estado.pack(side="left", fill="x", expand=True)
 
@@ -1926,8 +1936,8 @@ class UIBuildersService:
         frame.pack(pady=2, padx=16, fill="both", expand=True)
         hdr = ctk.CTkFrame(frame, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
-        ctk.CTkLabel(hdr, text="Resultado", font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
-        ctk.CTkLabel(hdr, text="editable", font=ctk.CTkFont(size=9), fg_color="transparent", text_color=c["panel_label"]).pack(side="left", padx=4)
+        ctk.CTkLabel(hdr, text=tr("Resultado"), font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text=tr("editable"), font=ctk.CTkFont(size=9), fg_color="transparent", text_color=c["panel_label"]).pack(side="left", padx=4)
 
         # ── Validador Flux/SD3.5: aviso ARRIBA del textbox con fondo destacado ──
         # (Va antes del textbox para no quedar tapado por la barra de botones inferior)

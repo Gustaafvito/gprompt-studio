@@ -12,6 +12,7 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +20,27 @@ _JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "glosario.json"
 _cache: dict | None = None
 
 
+def _ruta_idioma() -> Path:
+    """data/glosario.en.json si idioma=='en' y existe; si no, el ES."""
+    if get_idioma() == "en":
+        en = _JSON_PATH.with_name("glosario.en.json")
+        if en.exists():
+            return en
+    return _JSON_PATH
+
+
 def cargar_glosario() -> dict:
-    """Lee data/glosario.json (con caché). Devuelve {'categorias': [...], 'entradas': [...]}."""
+    """Lee data/glosario(.en).json (con caché). Devuelve {'categorias': [...], 'entradas': [...]}."""
     global _cache
     if _cache is not None:
         return _cache
-    if not _JSON_PATH.exists():
-        logger.warning(f"glosario.json no encontrado en {_JSON_PATH}")
+    ruta = _ruta_idioma()
+    if not ruta.exists():
+        logger.warning(f"glosario.json no encontrado en {ruta}")
         _cache = {"categorias": [], "entradas": []}
         return _cache
     try:
-        with open(_JSON_PATH, "r", encoding="utf-8") as f:
+        with open(ruta, "r", encoding="utf-8") as f:
             _cache = json.load(f)
     except Exception as e:
         logger.warning(f"glosario.json no se pudo leer: {e}")
@@ -61,7 +72,7 @@ def abrir_glosario(app):
     accent = "#2563eb" if is_lt else "#60a5fa"
 
     win = GPromptWindow(app)
-    win.title(f"📚 Glosario — {len(entradas)} términos")
+    win.title(tr('📚 Glosario — {0} términos').format(len(entradas)))
     win.geometry("880x680")
 
     # ── Cabecera ──
@@ -71,17 +82,17 @@ def abrir_glosario(app):
 
     fila1 = ctk.CTkFrame(header, fg_color="transparent")
     fila1.pack(fill="x", padx=20, pady=(12, 6))
-    ctk.CTkLabel(fila1, text="📚 Glosario de términos AI",
+    ctk.CTkLabel(fila1, text=tr("📚 Glosario de términos AI"),
                  font=ctk.CTkFont(size=18, weight="bold")).pack(side="left")
     contador_var = ctk.StringVar(value=f"{len(entradas)} términos")
     ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
-    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text="🔍 Buscar término…")
+    ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text=tr("🔍 Buscar término…"))
     ent_buscar.pack(side="right")
 
     # Fila 2: filtro por categoría
     fila2 = ctk.CTkFrame(header, fg_color="transparent")
     fila2.pack(fill="x", padx=20, pady=(0, 12))
-    ctk.CTkLabel(fila2, text="Categoría:", text_color=text_muted).pack(side="left", padx=(0, 10))
+    ctk.CTkLabel(fila2, text=tr("Categoría:"), text_color=text_muted).pack(side="left", padx=(0, 10))
 
     opciones_cat = ["📚 Todas"] + categorias
     filtro_var = ctk.StringVar(value="📚 Todas")
@@ -125,7 +136,7 @@ def abrir_glosario(app):
         except Exception as e:
             logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
             try:
-                app.show_toast(f"❌ '{metodo_nombre}' no disponible: {e}", "#e74c3c")
+                app.show_toast(tr("❌ '{0}' no disponible: {1}").format((metodo_nombre), (e)), "#e74c3c")
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 
@@ -145,7 +156,7 @@ def abrir_glosario(app):
         accion = entrada.get("accion")
         if accion:
             ctk.CTkButton(
-                fila_top, text="▶ Probar", width=80, height=24,
+                fila_top, text=tr("▶ Probar"), width=80, height=24,
                 fg_color=accent,
                 hover_color=("#1d4ed8" if is_lt else "#3b82f6"),
                 font=ctk.CTkFont(size=10),
@@ -189,7 +200,7 @@ def abrir_glosario(app):
             contador_var.set(f"{n} de {len(entradas)}" if f else f"{len(entradas)} términos")
 
         if n == 0:
-            ctk.CTkLabel(scroll, text="Sin resultados.", text_color=text_muted,
+            ctk.CTkLabel(scroll, text=tr("Sin resultados."), text_color=text_muted,
                          font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 

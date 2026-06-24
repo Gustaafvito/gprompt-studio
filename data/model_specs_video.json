@@ -26,7 +26,8 @@
     "prompt_formula": "Subject + action → setting → time → camera → motion → mood → audio (opcional)",
     "prompt_ejemplo": "10-15 seconds. Slow push-in on subject's face. Subtle breathing, soft blink. Golden hour rim light, shallow depth of field. Quiet city ambience.",
     "limitaciones": "Prompts muy cargados pueden fallar; simplificar cámara a un movimiento",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "FILM DIRECTOR. Negative prompts. Multi-shot ('Multiple shots' toggle), narrative sequences, brutal character coherence. Up to 4K. Audio: lip-sync, dialogue, SFX, music."
   },
   "Kling 3.0 Omni": {
     "nota": 3.4,
@@ -55,7 +56,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio",
     "prompt_ejemplo": "12s. Wide establishing shot, slow pan left. Light rain, wet reflections, neon signs. Distant traffic ambience.",
     "limitaciones": "Demasiadas referencias conflictivas causan inconsistencia",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Character/voice continuity. FOUR inputs: Image-to-Video, Text-to-Video, Video reference and Edit video. Multi-image reference, coherent sequences. Up to 4K. Advanced lip-sync, SFX, consistent voice across clips."
   },
   "Happy Horse": {
     "nota": 3.3,
@@ -79,7 +81,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen o referencia. Prompt máx 2500 chars.",
     "prompt_ejemplo": "A woman leans out of a moving car window at sunset, hair blowing in the wind, golden light, smooth tracking shot.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no expone Sonido (sin audio) ni Cantidad de Generación.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Happy Horse engine (via SeaArt). FOUR inputs: Image-to-Video, Text-to-Video, Video reference and Edit video. 720p/1080p modes, suggestion magic, negative prompt."
   },
   "Kling 3.0 Turbo": {
     "nota": null,
@@ -106,7 +109,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood. Combina con la imagen si la usas. Prompt máx 2500 chars.",
     "prompt_ejemplo": "A close-up of a woman's face as she turns toward the camera, soft natural light, gentle hair movement, smooth cinematic motion.",
     "limitaciones": "Máx 15s. Sin nota en la página. El panel no expone Sonido (sin audio, a diferencia de Kling 3.0 base).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Turbo version of Kling 3.0: fast generation. Image-to-Video and Text-to-Video. 720p/1080p modes, suggestion magic, negative prompt."
   },
   "Kling 01 Video Model": {
     "nota": 4.3,
@@ -132,7 +136,8 @@
     "prompt_formula": "Scene description + subject + action + camera movement",
     "prompt_ejemplo": "A cyberpunk city at dusk with neon lights reflecting on wet pavement, cinematic dolly shot.",
     "limitaciones": "Máx 10 segundos. Sin prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Basic, stable creator (Kling O1). Generates clips from text or image. Strength: first+last frame for a perfect transition. Native sound (SFX + BGM)."
   },
   "Grok Imagine Video": {
     "nota": 4.0,
@@ -159,7 +164,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A futuristic motorcycle races through a neon-drenched cyberpunk city, motion blur, dynamic low-angle tracking shot.",
     "limitaciones": "Máx 10s. El panel no expone Sonido (sin audio) ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Grok Imagine engine (xAI, via SeaArt). Image-to-Video and Text-to-Video with xAI's latest generation. 480p/720p modes, suggestion magic."
   },
   "Grok Imagine Video 1.5": {
     "nota": null,
@@ -181,7 +187,8 @@
     "prompt_formula": "Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A sleek hypercar accelerates down a coastal highway at golden hour, motion blur, dynamic chase camera.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. Sin nota en la página. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Grok Imagine 1.5 engine (xAI, via SeaArt). Grok's latest generation. Image-to-Video ONLY. 480p/720p modes, suggestion magic."
   },
   "Hailuo 2.3 Fast": {
     "nota": null,
@@ -203,7 +210,8 @@
     "prompt_formula": "Combina con la imagen para describir escena y movimiento. Prompt máx 2000 chars.",
     "prompt_ejemplo": "The subject turns toward the camera with a confident expression, hair gently moving, smooth cinematic motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Sin nota en la página. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fast version of Hailuo (MiniMax, via SeaArt): fast generation. Image-to-Video ONLY. 768p/1080p modes, suggestion magic, native sound (SFX + BGM)."
   },
   "Hailuo 2.0": {
     "nota": 3.8,
@@ -220,7 +228,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A boxer trains intensely in a gritty gym, sweat flying, dynamic handheld camera, dramatic side lighting.",
     "limitaciones": "Máx 10s. El panel no expone modo de generación ni cantidad de generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Hailuo 2.0 engine (MiniMax, via SeaArt). Video generation from an uploaded subject (image). Suggestion magic, native sound (SFX + BGM)."
   },
   "Kling 2.6": {
     "nota": 2.9,
@@ -247,7 +256,8 @@
     "prompt_formula": "Scene description + subject + movement + [Character, Emotion] says: 'dialogue' + audio description",
     "prompt_ejemplo": "[Ana, excited] says: 'Welcome to my channel!' Bright studio, warm key light, slight camera push-in. Upbeat pop BGM.",
     "limitaciones": "Sin prompt negativo, calidad visual inferior a Kling 3.0",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SOUND SPECIALIST. Character talking to camera with lip-sync. Dialogue, voiced vlogs, musical performances."
   },
   "PixVerse V6": {
     "nota": 4.3,
@@ -267,7 +277,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A mystical figure in flowing purple robes raises her hands as magical light swirls around, smooth cinematic camera, ethereal glow.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no expone Sonido (sin audio) ni Cantidad de Generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "PixVerse V6 engine (via SeaArt). Video generation from an uploaded subject (image). 720p/1080p modes, suggestion magic."
   },
   "Seedance 1.5 PRO": {
     "nota": 4.3,
@@ -299,7 +310,8 @@
     "prompt_formula": "Scene + subject + action + camera + lighting + audio description",
     "prompt_ejemplo": "Drone shot over crashing ocean coastline during storm. Audio: roaring waves, howling wind, distant thunder.",
     "limitaciones": "Máx 1500 chars (contador 0/1500). Coste energía variable 230-3840pts",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Built-in native audio (BGM+SFX+dubbing). Text/Image-to-Video (first/last frame). Up to 4K. Multi-ratios. Cinema realism, ads, nature."
   },
   "Seedance 2.0": {
     "nota": 4.7,
@@ -349,7 +361,8 @@
       "FLUJO RECOMENDADO: crear frames en GPT Image 2 -> subir como @Image a Seedance para video con personaje consistente",
       "FISICA COMPLEJA (agua, humo, fuego): rendimiento inferior a Sora 2 — evitar si eso es el foco principal"
     ],
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "FILM DIRECTOR. Multi-shot storytelling. Camera+rhythm+lighting language. Built-in native audio. @ references (image/video/text) + character library. Up to 4K. Prompts up to 5000 chars."
   },
   "Seedance 2.0 Fast": {
     "nota": 4.0,
@@ -386,7 +399,8 @@
       "MISMAS REGLAS de referencias @ que Seedance 2.0 (maximo 7 utiles)",
       "USAR PARA: probar composicion, movimiento de camara y apariencia de personaje antes del render final"
     ],
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Speed and VLOGs (free for a limited time). Image/Text/Video-ref with @ references + character library. 8-15s. Up to 4K. Prompts up to 5000 characters."
   },
   "Nano Banana Pro Video": {
     "nota": 3.3,
@@ -417,7 +431,8 @@
     "prompt_formula": "Subject + action + camera movement + style + lighting",
     "prompt_ejemplo": "Hyper-realistic racing car drifting around wet track corner, fixed camera, smoke billowing from tires.",
     "limitaciones": "Clips reales 6-10s (UI muestra 15s), manos ocasionalmente inconsistentes",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Gemini 3. High professional fidelity. Image-to-Video 2K/4K. Text-to-Video 6s@720p/10s@1080p. Advanced camera control."
   },
   "Nano Banana Video": {
     "nota": 4.5,
@@ -442,7 +457,8 @@
     "prompt_formula": "Subject + action + camera control + style description",
     "prompt_ejemplo": "Majestic lion in jungle, paw moves to adjust camera, jungle background sways gently, cinematic quality.",
     "limitaciones": "Máximo 10 segundos real (6-10s), sin prompt negativo",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fast standard model. Image/Text-to-Video 6-10s (first/last frame). Styles: cinema, anime, sci-fi, Disney. In-prompt camera control."
   },
   "SeaArt Dance": {
     "nota": 4.4,
@@ -455,7 +471,8 @@
     "prompt_formula": "Combina con la imagen del sujeto: describir el baile/movimiento y el estilo deseado. La duración y el ratio los hereda del clip/imagen de referencia.",
     "prompt_ejemplo": "The subject performs an energetic street dance, smooth and stable motion, dynamic camera, cinematic lighting.",
     "limitaciones": "SOLO desde imagen (no text-to-video): requiere subir el sujeto. Sin prompt negativo. El panel no expone selector de duración/ratio (se infieren de la referencia).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Dance / motion-imitation model ('Motion imitation' tab). Image-to-Video ONLY: animates an uploaded subject with stable, high-quality motion for long videos. Multiple subjects. Native sound (SFX + BGM)."
   },
   "SeaArt Depth": {
     "nota": 3.7,
@@ -477,7 +494,8 @@
     "prompt_formula": "Combina con la imagen para describir escena y movimiento; ajusta el slider de similitud para fidelidad a la referencia.",
     "prompt_ejemplo": "An eagle soars over a coastal cliff, camera following with parallax depth, waves crashing below, cinematic aerial motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Similitud 0.5 por defecto.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Image-to-Video ONLY with first and last frame and a similarity slider. Motion with a sense of depth. Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Film Video": {
     "nota": 4.5,
@@ -503,7 +521,8 @@
     "prompt_formula": "Subject + action + camera + lighting + style. Prompts descriptivos con magia de sugerencia.",
     "prompt_ejemplo": "A woman in a flowing white dress walks through golden wheat fields at sunset, cinematic slow motion, warm golden hour light, shallow DOF.",
     "limitaciones": "Máx 10s. Coste ~480-2400 energía.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt's most-used video model (10.4M uses). Cinematic, HQ, keyframes. Multiple subjects, suggestion magic. Image-to-Video and Text-to-Video."
   },
   "SeaArt Film Video Boost": {
     "nota": 3.3,
@@ -530,7 +549,8 @@
     "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen para describir escena y movimiento.",
     "prompt_ejemplo": "A woman in a beige coat walks through a desert landscape at sunset, wind blowing her hair, warm golden cinematic light, smooth tracking shot.",
     "limitaciones": "Máx 12s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Speed, aesthetics and value: all in one. Accepts an uploaded subject (image). Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Film Video Melody": {
     "nota": 3.6,
@@ -560,7 +580,8 @@
     "prompt_formula": "Subject + action + camera + style + ritmo. Combina con la imagen si usas primer/último fotograma; describe el ritmo/energía para la sincronización. Prompt máx 1500 chars.",
     "prompt_ejemplo": "A dancer moves in sync with an energetic beat, neon lights pulsing on each drop, dynamic camera cuts matching the rhythm.",
     "limitaciones": "Máx 12s. max_chars 1500. has_audio inferido del nombre/catálogo ('audio-visual harmony'); el panel no muestra toggle de Sonido.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Visuals perfectly synced to every beat: audiovisual harmony. Image-to-Video (first/last frame) and Text-to-Video. Up to 4K. Suggestion magic and negative prompt."
   },
   "SeaArt Film Video Neo": {
     "nota": 3.0,
@@ -583,7 +604,8 @@
     "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento.",
     "prompt_ejemplo": "A queen in an ornate gown stands in a gothic cathedral, candlelight flickering, slow reverent camera push-in, rich cinematic color.",
     "limitaciones": "Máx 15s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Balanced and affordable, redefined aesthetics. Image-to-Video with first and last frame. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Film Video Nova": {
     "nota": 4.1,
@@ -609,7 +631,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si usas primer/último fotograma. Prompt máx 1500 chars.",
     "prompt_ejemplo": "A woman's profile dissolves into blooming flowers and water ripples, surreal artistic transition, soft ethereal lighting.",
     "limitaciones": "Máx 10s. max_chars 1500. Sin audio (el panel no expone Sonido ni subida de audio).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Best value (128 credits, fast generation, artistic quality). VIP. Image-to-Video (first/last frame) and Text-to-Video. Suggestion magic and negative prompt."
   },
   "SeaArt Film Video Pro": {
     "nota": 3.8,
@@ -631,7 +654,8 @@
     "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento.",
     "prompt_ejemplo": "A woman in an emerald silk dress turns slowly as the fabric flows, silky camera movement, high-end cinematic lighting, shallow depth of field.",
     "limitaciones": "Máx 10s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pro version of Film Video: silky camera motion, high-end realistic aesthetics, improved performance. Image-to-Video with first and last frame. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Flow": {
     "nota": null,
@@ -645,7 +669,8 @@
     "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A figure walks forward through a moody cyberpunk alley, neon reflections, smooth flowing camera motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). El panel no expone modo de generación ni duración. Sin nota en la página. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Video generation with fluid motion (Flow family). Image-to-Video ONLY. Multiple subjects, native sound (SFX + BGM)."
   },
   "SeaArt Flow 2.0": {
     "nota": 4.0,
@@ -659,7 +684,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento.",
     "prompt_ejemplo": "A figure walks forward through a stylized abstract environment, smooth flowing motion, vibrant gradient lighting.",
     "limitaciones": "Panel mínimo: solo subir sujeto + cantidad de generación. NO expone modo de generación, duración, sonido ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fast video generation with fluid motion (Flow family). Minimal one-click panel: upload a subject (image) and generate. Multiple subjects."
   },
   "SeaArt Flash": {
     "nota": 4.0,
@@ -676,7 +702,8 @@
     "prompt_formula": "Prompt CORTO (máx 800 chars): combina con la imagen para describir la acción y el movimiento. Ratio/duración heredados de la referencia.",
     "prompt_ejemplo": "The subject turns toward camera with a confident smile, hair flowing, smooth cinematic motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). max_chars muy bajo (800). El panel no expone duración/ratio (se infieren de la referencia).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt's fast model (Top-Speed). Image-to-Video ONLY, smooth motion and fast generation. 'Motion imitation' mode. Multiple subjects. Native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Genesis Video": {
     "nota": 2.6,
@@ -694,7 +721,8 @@
     "prompt_formula": "Combina con la imagen (primer/último fotograma) para describir escena y movimiento; usa el modo Dinámico Vivaz para más energía. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A figure emerges from swirling cosmic energy, particles forming and dispersing, artistic surreal motion, vibrant color palette.",
     "limitaciones": "El panel no expone selector de duración. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Creative, artistic visual engine. Image-to-Video with first and last frame and a 'Dynamic' control (Standard / Lively) for motion intensity. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Jump": {
     "nota": 4.1,
@@ -722,7 +750,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si usas primer/último fotograma.",
     "prompt_ejemplo": "A parkour runner leaps between rooftops at sunset, dynamic tracking shot, dust and motion blur, energetic cinematic feel.",
     "limitaciones": "Máx 10s. has_negative asumido (panel recortado antes de Configuración avanzada; tier Profesional como Ultra Pro).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Visuals & Motion — Dual TOP, low price. Image-to-Video (first and last frame) and Text-to-Video. 4 modes up to Professional. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Jump Go": {
     "nota": null,
@@ -744,7 +773,8 @@
     "prompt_formula": "Combina con la imagen (primer fotograma) para describir escena, acción y movimiento. Prompt máx 2000 chars.",
     "prompt_ejemplo": "The subject leaps forward with energetic motion, dynamic camera follow, smooth cinematic feel.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 10s. Sin nota en la página del modelo (el grid del catálogo mostraba 2.5). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Jump Go variant: Image-to-Video ONLY. 768p/1080p modes, suggestion magic, native sound (SFX + BGM). Multiple subjects."
   },
   "SeaArt Jump Lite": {
     "nota": 2.5,
@@ -762,7 +792,8 @@
     "prompt_formula": "Combina con la imagen para describir acción y movimiento. Ratio heredado de la referencia.",
     "prompt_ejemplo": "The subject jumps and lands dynamically, energetic motion, simple cinematic lighting.",
     "limitaciones": "SOLO desde imagen. Nota baja (2.5). El panel no expone 'Modo de generación' (modelo Lite). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Lite version of Jump: faster and cheaper, a reference in lightweight generation. Image-to-Video ONLY. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Jump Pro": {
     "nota": 4.0,
@@ -788,7 +819,8 @@
     "prompt_formula": "Subject + action → camera → motion → style. Combina con la imagen si usas primer/último fotograma.",
     "prompt_ejemplo": "A boxer throws a rapid combination of punches in a dim gym, sweat flying, fast dynamic camera, high-contrast dramatic lighting.",
     "limitaciones": "Máx 10s. max_chars 2000. has_negative asumido (panel recortado antes de Configuración avanzada; tier Pro como Jump).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pro version of Jump: ultra-fast scene master, redefines dynamic-control standards. Image-to-Video (first/last frame) and Text-to-Video. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Lite": {
     "nota": 3.3,
@@ -814,7 +846,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma); ajusta el slider de similitud para fidelidad a la referencia.",
     "prompt_ejemplo": "A young woman gently turns her head and smiles, soft hair movement, natural light, subtle cinematic motion.",
     "limitaciones": "Máx 10s. Calidad inferior (modelo Lite). Similitud 0.5 por defecto.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Affordable Lite model. Image-to-Video with first and last frame and a similarity slider. Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Magic": {
     "nota": 3.9,
@@ -842,7 +875,8 @@
     "prompt_formula": "Subject + action + camera + style. El modelo entiende bien el lenguaje; elige Estilo en el dropdown y activa 'Modo fluido' para movimiento más suave. Prompt máx 2048 chars.",
     "prompt_ejemplo": "A fluffy orange cat sits in front of a starry Van Gogh-style night sky, gently blinking, swirling brushstroke motion in the background.",
     "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Strong prompt understanding, fast generation, ideal for efficient creation. Style selector and Fluidity mode (Standard / Fluid mode). Image-to-Video (first/last frame) and Text-to-Video."
   },
   "SeaArt Magic Pro": {
     "nota": null,
@@ -870,7 +904,8 @@
     "prompt_formula": "Subject + action + camera + style. Elige Estilo en el dropdown; combina con la imagen si usas primer/último fotograma. Prompt máx 2048 chars.",
     "prompt_ejemplo": "A knight in ornate armor raises a glowing sword as magical runes ignite around him, dramatic slow camera push-in, cinematic lighting.",
     "limitaciones": "Máx 8s. Solo 1-2 generaciones por tanda (no 4). max_chars 2048. Sin nota en la página.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pro version of Magic: strong prompt understanding, Style selector. Image-to-Video (first/last frame) and Text-to-Video. Multiple subjects, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Magic Rise": {
     "nota": 4.7,
@@ -893,7 +928,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A sorceress rises into the air as magical energy swirls around her, robes billowing, fluid dramatic motion, cinematic lighting.",
     "limitaciones": "Máx 10s. has_audio inferido del catálogo ('Advanced Audiovisual Model'); el panel no muestra toggle de Sonido.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Advanced audiovisual model: fluid motion and stable keyframes. Accepts an uploaded subject (image). Multiple subjects, suggestion magic, negative prompt."
   },
   "SeaArt Magic Star": {
     "nota": 2.7,
@@ -924,7 +960,8 @@
     "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A figure stands under a starry sky as gentle light particles drift around, slow cinematic camera rise.",
     "limitaciones": "Duración larga (4-15s). El panel no expone Sonido (sin audio) ni Cantidad de Generación. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Magic Star variant: accepts an uploaded subject (image) and generates long clips (up to 15s). 720p/1080p modes, suggestion magic."
   },
   "SeaArt Muse": {
     "nota": 3.9,
@@ -941,7 +978,8 @@
     "prompt_formula": "Prompt CORTO (máx 800 chars): describe sujeto, acción y movimiento. Combina con la imagen si la hay.",
     "prompt_ejemplo": "A woman in a flowing dress walks gracefully through a sunlit garden, natural lifelike motion, soft cinematic light.",
     "limitaciones": "max_chars bajo (800). El panel no expone duración (se infiere de la referencia).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Stable control and true-to-life motion, creative generation. Image-to-Video and Text-to-Video. 'Motion imitation' mode. Multiple subjects. Native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Opera": {
     "nota": 3.6,
@@ -970,7 +1008,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
     "prompt_ejemplo": "A woman in elegant vintage attire sits on an ornate chair holding a white lamb, soft studio lighting, refined cinematic composition.",
     "limitaciones": "Sin audio (el panel no expone Sonido ni subida de audio). Gratis por tiempo limitado (puede cambiar). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "15s studio-quality visuals: HD/4K resolution with professional CN/JP/EN text output. Free for a limited time. Image-to-Video and Text-to-Video. 4 quality modes."
   },
   "SeaArt Opera Lite": {
     "nota": 4.0,
@@ -997,7 +1036,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
     "prompt_ejemplo": "A woman in a headscarf and sunglasses sips coffee against a bright yellow wall, relaxed pose, clean fashion-editorial lighting.",
     "limitaciones": "Sin audio (el panel no expone Sonido ni subida de audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Low-cost paradigm: 5s video from 200+ credits, fast long-video generation. Lite version of Opera. Image-to-Video and Text-to-Video."
   },
   "SeaArt Plus": {
     "nota": 3.8,
@@ -1011,7 +1051,8 @@
     "prompt_formula": "Subject + action + style. Prompt descriptivo y detallado; el modelo maneja estructuras de contenido complejas.",
     "prompt_ejemplo": "A majestic whale glides through deep blue ocean waters, sunlight rays filtering from above, tiny fish scattering, serene cinematic atmosphere.",
     "limitaciones": "Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación' ni selector de duración.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Professional image quality, complex content structure, outstanding expressiveness. Accepts an uploaded subject (image). Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Sparkle": {
     "nota": 4.0,
@@ -1033,7 +1074,8 @@
     "prompt_formula": "Subject + action + camera + lighting + style. Combina con la imagen o el modelo Live2D; describe iluminación y ángulo de cámara para mayor detalle.",
     "prompt_ejemplo": "A futuristic sports car speeds through neon-lit city streets at night, rain reflections, complex dynamic lighting, low tracking camera angle.",
     "limitaciones": "El panel no expone selector de duración. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "High-detail scenes, complex lighting and camera-angle handling, ideal for realistic dynamic creation. THREE input modes: Image-to-Video, Live2D graphics and Text-to-Video. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Sono Wave": {
     "nota": 4.5,
@@ -1056,7 +1098,8 @@
     "prompt_formula": "Combina con la imagen para describir escena, acción y movimiento. Ratio heredado de la referencia. Prompt máx 5500 chars.",
     "prompt_ejemplo": "An angelic figure with feathered wings stands in a sunlit forest, soft light rays filtering through leaves, gentle wind, serene cinematic motion.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 15s. has_audio inferido del nombre 'Sono' (el panel no expone Sonido ni subida de audio).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fast output and reliable quality, ready when inspiration strikes. Image-to-Video ONLY. Multiple subjects, suggestion magic, negative prompt."
   },
   "SeaArt Pony": {
     "nota": 2.3,
@@ -1082,7 +1125,8 @@
     "prompt_formula": "Usa referencias con @ y combina elementos: '@imagen1 personaje, @imagen2 escena, @imagen3 efecto'. Compón el contenido con precisión. Prompt máx 2500 chars.",
     "prompt_ejemplo": "@image1 as the main character in @image2 scene, with the special effects of @image3, cinematic composition and camera movement.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Multimodal model with references: upload up to 9 images to combine characters, objects, scenes and special effects precisely. FOUR modes: Video reference, Image-to-Video, Text-to-Video and Edit video. Character library."
   },
   "SeaArt Sono Blink": {
     "nota": null,
@@ -1110,7 +1154,8 @@
     "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos y define sus interacciones. Prompt máx 2000 chars.",
     "prompt_ejemplo": "@image1 as the initial frame, @image2 as the final frame; the character performs the dance movements of @video1, smooth cinematic camera.",
     "limitaciones": "Sin nota en la página. duración: solo confirmado 10s (dropdown, puede tener más). El panel no muestra Sonido (sin audio pese al nombre 'Sono') ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Multimodal model with @ references: freely combine characters, props, costumes and scenes. THREE input modes: Video reference (@Image/@Video), Image-to-Video and Text-to-Video. Character library. Up to 4K."
   },
   "SeaArt Sono Cast": {
     "nota": 4.0,
@@ -1139,7 +1184,8 @@
     "prompt_formula": "Describe la historia multi-plano y la acción; combina con la imagen/vídeo de referencia. Prompt máx 1500 chars.",
     "prompt_ejemplo": "Anime girl smiling and waving, hair softly swaying, then turning toward the camera with a cheerful expression, soft cinematic light.",
     "limitaciones": "Sin audio nativo (subida manual opcional). max_chars 1500. Gratis por tiempo limitado (puede cambiar).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Multi-shot stories up to 15 seconds, limitless imagination. Free for a limited time. THREE input modes: Image-to-Video, Text-to-Video and Video reference. 4 quality modes. Optional own-audio upload."
   },
   "SeaArt Sono Epic": {
     "nota": 2.4,
@@ -1162,7 +1208,8 @@
     "prompt_formula": "Combina con la imagen para describir escena y movimiento; aprovecha la duración larga (15-20s) para un arco narrativo. Prompt máx 5500 chars.",
     "prompt_ejemplo": "An epic dragon soars over a burning fantasy battlefield, embers rising, sweeping cinematic camera, dramatic orchestral mood.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Duración larga (15-20s). El panel no expone 'Cantidad de Generación'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Long 15-20s videos with stable motion and coherence. Image-to-Video ONLY. 4 modes up to Professional. Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Sono Lite": {
     "nota": 3.8,
@@ -1188,7 +1235,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen para describir escena y acción (ej: 'chica anime sonriendo haciendo un gesto, con el pelo moviéndose suavemente').",
     "prompt_ejemplo": "Anime girl smiling and making a gentle gesture, hair softly swaying in the breeze, soft cinematic lighting.",
     "limitaciones": "Modelo Lite (calidad inferior a Ultra Pro/Film). Sin audio nativo: el audio es subida manual opcional. Máx 10s.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt lightweight model. Image-to-Video and Text-to-Video (two tabs). Optional own-audio upload to sync the clip. Suggestion magic and negative prompt."
   },
   "SeaArt SonoVision": {
     "nota": 4.3,
@@ -1217,7 +1265,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen (si la hay) para describir escena y acción; el audio subido se sincroniza con el clip.",
     "prompt_ejemplo": "A singer performing on stage under colorful spotlights, hair swaying, camera slowly pushing in, cinematic concert lighting.",
     "limitaciones": "Sin audio nativo: el audio es subida manual opcional. Máx 15s.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Wan 2.5 engine. Image-to-Video and Text-to-Video. HD video with synced sound: upload your own audio to align the clip. Up to 4K. Suggestion magic and negative prompt."
   },
   "SeaArt Stage": {
     "nota": 3.6,
@@ -1244,7 +1293,8 @@
     "prompt_formula": "Combina con la imagen para describir escena, acción y emoción. Ajusta la amplitud de movimiento para controlar la intensidad. Prompt máx 1500 chars.",
     "prompt_ejemplo": "A woman turns slowly toward the camera with a subtle, emotional expression, hair gently moving, smooth elegant camera drift.",
     "limitaciones": "SOLO desde imagen (no text-to-video). Máx 8s. Sin prompt negativo (Configuración avanzada solo tiene Semilla fija).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Precise emotional expression and supernaturally smooth camera motion. Image-to-Video ONLY. 'Motion amplitude' control (Auto / Small / Medium / Large). Multiple subjects, native sound (SFX + BGM)."
   },
   "SeaArt Turbo": {
     "nota": 3.8,
@@ -1263,7 +1313,8 @@
     "prompt_formula": "Subject + action + style. Clips cortos (3-5s); prompt descriptivo, el modelo entiende bien el lenguaje.",
     "prompt_ejemplo": "A butterfly flutters over blooming flowers in a sunny meadow, soft breeze, vivid colors, fast smooth motion.",
     "limitaciones": "Clips cortos (máx 5s). Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Turbo model: fast generation, rich style expression and better prompt understanding. Accepts an uploaded subject (image). Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Ultra": {
     "nota": 4.6,
@@ -1290,7 +1341,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Ultra Pro pero con modos 720p/1080p y modo Imitación de movimiento.",
     "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic, slow crane movement.",
     "limitaciones": "Coste alto. Similitud 0.5 por defecto. Máx 15s.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "SeaArt Ultra model. Image-to-Video and Text-to-Video (two tabs; the image mode supports first and last frame). Extra 'Motion imitation' mode. Multiple subjects, suggestion magic, negative prompt, similarity slider. 15s, high quality."
   },
   "SeaArt Ultra 2.0": {
     "nota": 3.7,
@@ -1312,7 +1364,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen; ajusta el slider de similitud para fidelidad a la referencia.",
     "prompt_ejemplo": "A dancer performs a fluid contemporary routine on a dark stage, dynamic camera tracking the motion, dramatic spotlight, smooth cinematic movement.",
     "limitaciones": "Máx 10s. El panel no expone 'Modo de generación'. Similitud 0.5 por defecto.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "High-quality motion-capture generation and camera effects (motion + camera work). Accepts an uploaded subject (image) with a similarity slider. Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Ultra 3.0": {
     "nota": 4.5,
@@ -1341,7 +1394,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood. Activa 'Múltiples tomas' para secuencias multi-plano; combina con la imagen si usas primer/último fotograma.",
     "prompt_ejemplo": "A lone warrior walks across a snowy battlefield at dawn, cape blowing in the wind, slow cinematic tracking shot, then a close-up of his determined eyes.",
     "limitaciones": "max_chars 2500. has_audio inferido del catálogo ('audiovisual'); el panel no muestra toggle de Sonido.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Versatile long-format generation (15s): intelligent, precise audiovisual performance. 'Multiple shots' toggle for multi-shot narrative. Image-to-Video (first/last frame) and Text-to-Video. Up to 4K. Negative prompt."
   },
   "SeaArt Ultra Plus": {
     "nota": 4.0,
@@ -1370,7 +1424,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si la usas.",
     "prompt_ejemplo": "A surfer rides a massive barreling wave at golden hour, spray flying, fast dynamic tracking shot, high-energy cinematic fluidity.",
     "limitaciones": "Máx 15s. max_chars 2500.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "High-speed dynamic fluidity, unlocks advanced creativity (Wan 2.5 engine). Image-to-Video and Text-to-Video. 4 modes up to Professional. Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt UltraVision": {
     "nota": 3.7,
@@ -1393,7 +1448,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Combina con la imagen si la usas. Prompt máx 2500 chars.",
     "prompt_ejemplo": "A cellist plays passionately in an empty concert hall, warm spotlight, slow orbiting camera, rich cinematic depth.",
     "limitaciones": "Máx 15s. El panel no expone 'Modo de generación'. has_audio inferido del catálogo ('Sound Meets Vision') y has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Sound meets vision: cinematic quality unlocked. Image-to-Video and Text-to-Video. Suggestion magic."
   },
   "SeaArt Vibe": {
     "nota": 2.2,
@@ -1411,7 +1467,8 @@
     "prompt_formula": "Subject + action + style. Ajusta la 'Amplitud de movimiento' para controlar cuánto se mueve la escena. Combina con la imagen si la usas. Prompt máx 1500 chars.",
     "prompt_ejemplo": "A woman leans out of a car window at night, city neon lights streaking past, hair blowing in the wind, vibrant cinematic mood.",
     "limitaciones": "Nota baja (2.2). Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone 'Modo de generación' ni selector de duración.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "HD 1080p quality, subject-consistency expert. 'Motion amplitude' control (Auto). Image-to-Video and Text-to-Video. Multiple subjects, native sound (SFX + BGM)."
   },
   "SeaArt Ultra2 Pro": {
     "nota": 2.3,
@@ -1433,7 +1490,8 @@
     "prompt_formula": "Subject + action + camera + style. Prompt descriptivo y detallado.",
     "prompt_ejemplo": "A dancer in a flowing red dress spins gracefully in an elegant ballroom, fabric swirling, smooth cinematic camera, warm chandelier lighting.",
     "limitaciones": "Máx 10s. Nota baja (2.3). El panel no expone 'Modo de generación'.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Professional-grade experience, ultra-high-quality generation. Accepts an uploaded subject (image). Multiple subjects, suggestion magic, native sound (SFX + BGM) and negative prompt."
   },
   "SeaArt Ultra 3.0 Turbo": {
     "nota": null,
@@ -1460,7 +1518,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood. Combina con la imagen si la usas. Prompt máx 2500 chars.",
     "prompt_ejemplo": "A lone warrior walks across a snowy battlefield at dawn, cape blowing, slow cinematic tracking shot, stable character detail.",
     "limitaciones": "Máx 15s. Sin nota en la página. has_audio inferido del catálogo ('synced audio'); el panel no muestra toggle de Sonido.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Turbo version of Ultra 3.0: high-quality video creation with cinematic motion, stable characters and synced audio. Image-to-Video and Text-to-Video. Negative prompt."
   },
   "SeaArt Ultra Frame Video": {
     "nota": 3.7,
@@ -1482,7 +1541,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma) para definir el arranque y el final del clip. Prompt máx 2500 chars.",
     "prompt_ejemplo": "A dancer begins mid-pose and unfolds into a sweeping spin, fabric trailing, smooth cinematic camera arc.",
     "limitaciones": "Máx 10s. El panel no expone 'Modo de generación'. has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Focused on frame control (first and last frame). Image-to-Video and Text-to-Video. Multiple subjects, suggestion magic, native sound (SFX + BGM)."
   },
   "SeaArt Ultra Pro": {
     "nota": 4.4,
@@ -1511,7 +1571,8 @@
     "prompt_formula": "Subject + action → setting → camera → motion → mood → audio. Similar a Kling 3.0 pero con slider de similitud.",
     "prompt_ejemplo": "Epic drone shot over a misty mountain valley at dawn, volumetric god rays piercing through clouds, cinematic 4K, slow crane movement.",
     "limitaciones": "SOLO desde imagen (no text-to-video): necesita subir el primer fotograma. Coste alto (~600-3000 energía). Similitud 0.5 por defecto.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Pro version of Ultra. 4.4M uses. Image-to-Video ONLY (requires first frame; supports last frame). 15s, professional quality. Multiple subjects, suggestion magic, negative prompt. Ideal for serious production."
   },
   "Vidu Q3 Pro": {
     "nota": 4.1,
@@ -1538,7 +1599,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
     "prompt_ejemplo": "A graceful dancer performs a contemporary routine in a sunlit studio, fabric flowing, smooth elegant camera movement.",
     "limitaciones": "Máx 15s. max_chars 2000. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Vidu Q3 Pro engine (via SeaArt). Image-to-Video and Text-to-Video, higher quality than the Turbo version. 720p/1080p modes, suggestion magic."
   },
   "Vidu Q3 Turbo": {
     "nota": 4.2,
@@ -1565,7 +1627,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas. Prompt máx 2000 chars.",
     "prompt_ejemplo": "A sports car drifts around a neon-lit city corner at night, smoke trailing, fast dynamic tracking shot.",
     "limitaciones": "Máx 15s. max_chars 2000. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Vidu Q3 Turbo engine (via SeaArt). Fast generation. Image-to-Video and Text-to-Video. 720p/1080p modes, suggestion magic."
   },
   "Wan 2.2": {
     "nota": 4.2,
@@ -1578,7 +1641,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen (primer/último fotograma) para describir escena y movimiento. Prompt máx 5500 chars.",
     "prompt_ejemplo": "A woman in a denim jacket leans against a neon-lit wall, hair gently moving, refined high-resolution detail, smooth cinematic motion.",
     "limitaciones": "Sin prompt negativo (Configuración avanzada solo tiene Semilla fija). El panel no expone modo de generación, duración ni cantidad de generación.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Wan 2.2 engine (via SeaArt). Refined high-resolution quality and precise style control. Image-to-Video with first and last frame and an 'Additional' section. Multiple subjects, native sound (SFX + BGM)."
   },
   "Wan 2.5": {
     "nota": 3.5,
@@ -1606,7 +1670,8 @@
     "prompt_formula": "Subject + action + camera + style. Combina con la imagen si la usas; el audio subido se sincroniza con el clip. Prompt máx 2000 chars.",
     "prompt_ejemplo": "A warrior stands atop a cliff at sunset, cape flowing in the wind, slow cinematic camera pull-back, dramatic golden light.",
     "limitaciones": "Máx 10s. Sin audio nativo: el audio es subida manual opcional. max_chars 2000.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Wan 2.5 engine (via SeaArt). Image-to-Video and Text-to-Video. 4 modes up to Professional. Optional own-audio upload. Multiple subjects, suggestion magic, negative prompt."
   },
   "Wan 2.7": {
     "nota": null,
@@ -1623,7 +1688,7 @@
       "3:4",
       "1:1"
     ],
-    "max_chars": 2000,
+    "max_chars": 1500,
     "modos_gen": [
       "720p",
       "1080p",
@@ -1631,10 +1696,11 @@
       "4K"
     ],
     "best_for": "Motor Wan 2.7 (vía SeaArt). Multimodal con referencias @ (estilo Seedance) + librería de personajes. TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 4K. Gratis por tiempo limitado.",
-    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos. Prompt máx 2000 chars.",
+    "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Combina elementos. Prompt máx 1500 chars.",
     "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs a dynamic action, cinematic camera, dramatic lighting.",
     "limitaciones": "Sin nota en la página. duración: solo confirmado 10s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo. Gratis por tiempo limitado (puede cambiar).",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Wan 2.7 engine (via SeaArt). Multimodal with @ references (Seedance style) + character library. THREE input modes: Video reference, Image-to-Video and Text-to-Video. Up to 4K. Free for a limited time."
   },
   "Wan 2.6": {
     "nota": 3.5,
@@ -1663,7 +1729,8 @@
     "prompt_formula": "Subject + action + camera movement + style + lighting. Prompts descriptivos.",
     "prompt_ejemplo": "A samurai drawing his sword in a bamboo forest, slow motion, dramatic backlight, leaves falling, cinematic atmosphere.",
     "limitaciones": "Sin audio nativo (subida manual). Coste ~1080 energía.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Wan 2.6 engine (ByteDance). Image-to-Video, Text-to-Video and Video reference (3 tabs) with negative prompt. Suggestion magic. Optional manual audio."
   },
   "StarDream 2.0": {
     "nota": 4.7,
@@ -1694,7 +1761,8 @@
     "prompt_formula": "Usa referencias con @: '@imagen1 como fotograma inicial; @imagen2 como fotograma final; imitar los movimientos de @video1'. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
     "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; the character performs an epic action sequence, dynamic cinematic camera, dramatic lighting.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Multimodal model with @ references (Seedance 2.0 style): freely combine characters, props, costumes and scenes. THREE input modes: Video reference, Image-to-Video and Text-to-Video. Character library. Up to 4K, prompts up to 5000 chars."
   },
   "StarDream 2.0 Fast": {
     "nota": 4.0,
@@ -1723,7 +1791,8 @@
     "prompt_formula": "Usa referencias con @ y prompts más cortos/concretos para iteración rápida. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
     "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; quick dynamic action shot, cinematic camera, dramatic lighting.",
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Fast version of StarDream 2.0: multimodal with @ references (Seedance style) + character library, prioritizing speed. THREE input modes: Video reference, Image-to-Video and Text-to-Video. Up to 4K, prompts up to 5000 chars."
   },
   "Sora2 Video": {
     "nota": 4.4,
@@ -1795,7 +1864,8 @@
       "voiceover"
     ],
     "limitaciones": "Coste más alto que otros. Requiere referencia de personaje para consistencia. Duración máxima ~20s.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Superior CHARACTER CONSISTENCY. Exceptional material-physics handling (waving clothes, collisions, fabrics). Reference API for consistent characters. Native audio with synced dialogue. Precise action timing."
   },
   "Veo 3.1": {
     "nota": null,
@@ -1880,7 +1950,8 @@
       "breathing"
     ],
     "limitaciones": "Solo 2 ratios básicos (9:16, 16:9). Máx ~12s. Sin negative prompt. Mejor para cinematografía que para acciones complejas.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "Advanced cinematic OPTICS AND LENS. Consistency of fluids, reflections, textures (fire, glass, mirrors, water). Photorealistic lighting. Better natural-language understanding (less rigid than earlier versions)."
   },
   "Gemini Omni": {
     "nota": 4.9,
@@ -1964,6 +2035,7 @@
       "reflection"
     ],
     "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo.",
-    "vigente": true
+    "vigente": true,
+    "best_for_en": "CREATIVE DIRECTOR WITH PHYSICAL INTELLIGENCE. WORLD model that understands cause-effect, fluid dynamics, gravity, materials. Iterative conversational editing. Advanced cinematic camera. Renders animated text. Multimodal reference (image+video+audio+text)."
   }
 }

@@ -8,6 +8,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr
 
 logger = logging.getLogger("gprompt")
 
@@ -48,18 +49,18 @@ class DialogsService:
                 ubicacion_api_key,
             )
         except ImportError:
-            self.set_estado("⚠️ api_clients.py no disponible", "#e74c3c")
+            self.set_estado(tr("⚠️ api_clients.py no disponible"), "#e74c3c")
             return
 
         v = GPromptWindow(self.app)
-        v.title("🔑 Configurar API Keys")
+        v.title(tr("🔑 Configurar API Keys"))
         v.geometry("780x720")
 
-        ctk.CTkLabel(v, text="🔑 Configura tus motores de IA",
+        ctk.CTkLabel(v, text=tr("🔑 Configura tus motores de IA"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(14, 4))
-        ctk.CTkLabel(v, text="Tu app puede usar varios proveedores. Cada uno tiene su API key.",
+        ctk.CTkLabel(v, text=tr("Tu app puede usar varios proveedores. Cada uno tiene su API key."),
                      font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
-        ctk.CTkLabel(v, text="🏆 = gratis (con límites)   💎 = de pago",
+        ctk.CTkLabel(v, text=tr("🏆 = gratis (con límites)   💎 = de pago"),
                      font=ctk.CTkFont(size=10, slant="italic"), text_color="#666").pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
@@ -85,7 +86,7 @@ class DialogsService:
             # Estado
             if refs.get("lbl_estado"):
                 refs["lbl_estado"].configure(
-                    text="✅ configurado" if current else "⚠️ sin configurar",
+                    text=tr("✅ configurado") if current else "⚠️ sin configurar",
                     text_color="#2ecc71" if current else "#e67e22",
                 )
             # Origen
@@ -156,7 +157,7 @@ class DialogsService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
-            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
+            ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn()).pack(side="left", padx=2)
@@ -166,7 +167,7 @@ class DialogsService:
                 def _borrar():
                     from tkinter import messagebox
                     if not messagebox.askyesno(
-                        "Borrar API key",
+                        tr("Borrar API key"),
                         f"¿Borrar la API key de {info_l['label']}?\n\n"
                         "Se eliminará de keyring del SO y de keys.json cifrado.\n"
                         "Esta acción no se puede deshacer.",
@@ -177,9 +178,9 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
                     except Exception as ex:
-                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
@@ -205,16 +206,16 @@ class DialogsService:
         sep = ctk.CTkFrame(scroll, fg_color="#1a2a3a", height=2)
         sep.pack(fill="x", pady=(12, 4))
         ctk.CTkLabel(
-            scroll, text="🖼 Proveedores de IMAGEN (no LLM)",
+            scroll, text=tr("🖼 Proveedores de IMAGEN (no LLM)"),
             font=ctk.CTkFont(size=12, weight="bold"),
             text_color="#7c3aed",
         ).pack(anchor="w", padx=4, pady=(4, 2))
         ctk.CTkLabel(
             scroll,
             text=(
-                "Usados para previews en el comparador 👁 y botón "
+                tr("Usados para previews en el comparador 👁 y botón "
                 "🖼 Preview. SON OPCIONALES — sin key, la app funciona "
-                "en modo anónimo (más lento, con rate limit)."
+                "en modo anónimo (más lento, con rate limit).")
             ),
             font=ctk.CTkFont(size=10, slant="italic"),
             text_color="#aaaaaa",
@@ -275,7 +276,7 @@ class DialogsService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
-            ctk.CTkButton(fila, text="🌐 Obtener key", width=100, height=28,
+            ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
                           font=ctk.CTkFont(size=10),
                           command=_crear_obtener_btn_img()).pack(side="left", padx=2)
@@ -284,7 +285,7 @@ class DialogsService:
                 def _borrar():
                     from tkinter import messagebox
                     if not messagebox.askyesno(
-                        "Borrar API key",
+                        tr("Borrar API key"),
                         f"¿Borrar la API key de {info_l['label']}?\n\n"
                         "Se eliminará de keyring del SO y de keys.json cifrado.\n"
                         "La app volverá al modo anónimo (más lento).",
@@ -295,9 +296,9 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(f"🗑 Key de {info_l['label']} borrada", "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
                     except Exception as ex:
-                        self.set_estado(f"❌ Error borrando key: {ex}", "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
@@ -329,7 +330,7 @@ class DialogsService:
                         guardar_api_key(pid, nueva_key)
                     cambios += 1
             if cambios:
-                self.set_estado(f"🔑 {cambios} API keys actualizadas", "#2ecc71")
+                self.set_estado(tr('🔑 {0} API keys actualizadas').format(cambios), "#2ecc71")
                 # Refrescar el desplegable del cerebro para que los iconos ✅/🔒
                 # reflejen las keys recién guardadas
                 try:
@@ -343,13 +344,13 @@ class DialogsService:
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             else:
-                self.set_estado("Sin cambios")
+                self.set_estado(tr("Sin cambios"))
             v.destroy()
 
-        ctk.CTkButton(btn_row, text="💾 Guardar todas", width=140,
+        ctk.CTkButton(btn_row, text=tr("💾 Guardar todas"), width=140,
                       fg_color="#1e5f3a", hover_color="#16492d",
                       command=_guardar_todas).pack(side="left", padx=2)
-        ctk.CTkButton(btn_row, text="Cerrar", width=110,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                       command=v.destroy).pack(side="right", padx=2)
 
@@ -394,14 +395,14 @@ class DialogsService:
         c = get_theme_colors(is_lt)
 
         v = GPromptWindow(self.app)
-        v.title("ℹ️ Acerca de G-Prompt Studio")
+        v.title(tr("ℹ️ Acerca de G-Prompt Studio"))
         v.geometry("520x520")
         v.transient(self.app)
 
         # Cabecera
         ctk.CTkLabel(v, text=APP_TITLE, font=ctk.CTkFont(size=20, weight="bold"),
                      text_color=c["hdr_text"]).pack(pady=(20, 4))
-        ctk.CTkLabel(v, text=f"Versión {PUBLIC_VERSION}",
+        ctk.CTkLabel(v, text=tr('Versión {0}').format(PUBLIC_VERSION),
                      font=ctk.CTkFont(size=11, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 16))
 
@@ -419,7 +420,7 @@ class DialogsService:
 
         # Autor — AUTHOR es un dict; mostrar solo el nombre (no el dict entero)
         _autor = AUTHOR.get("nombre", "") if isinstance(AUTHOR, dict) else AUTHOR
-        ctk.CTkLabel(v, text=f"Creado por {_autor}",
+        ctk.CTkLabel(v, text=tr('Creado por {0}').format(_autor),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      text_color=c["panel_text"]).pack(pady=(8, 6))
 
@@ -438,7 +439,7 @@ class DialogsService:
                           command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=5)
 
         # Botón cerrar
-        ctk.CTkButton(v, text="Cerrar", width=120, height=32,
+        ctk.CTkButton(v, text=tr("Cerrar"), width=120, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=v.destroy).pack(pady=(8, 16))
 
@@ -452,7 +453,7 @@ class DialogsService:
         prefs["tema"] = nuevo.lower()
         self.app.store.guardar_preferencias(prefs)
         self.app.after(100, self.app._apply_theme_colors)
-        self.set_estado(f"🌗 Tema: {nuevo}", "#2ecc71")
+        self.set_estado(tr('🌗 Tema: {0}').format(nuevo), "#2ecc71")
 
     def _cmd_toggle_idioma(self) -> None:
         """Cambia el idioma de la UI (Español ↔ English). Se aplica al REINICIAR
@@ -469,19 +470,59 @@ class DialogsService:
         except Exception as _e:
             logger.debug(f"[silent toggle idioma] {_e}")
         nombre = "English" if nuevo == "en" else "Español"
-        self.set_estado(f"🌐 Idioma: {nombre} — reinicia para aplicar", "#2ecc71")
+        self.set_estado(tr('🌐 Idioma: {0} — reinicia para aplicar').format(nombre), "#2ecc71")
+        # Persistir la preferencia ANTES de un posible reinicio (el trace de
+        # idioma_var ya la guarda; forzamos con MERGE para no perder el resto).
+        try:
+            prefs = self.app.store.cargar_preferencias() or {}
+            prefs["idioma"] = nuevo
+            self.app.store.guardar_preferencias(prefs)
+        except Exception as _e:
+            logger.debug(f"[silent idioma persist] {_e}")
         try:
             import tkinter.messagebox as mb
-            mb.showinfo(
+            reiniciar = mb.askyesno(
                 "Idioma / Language",
                 f"Idioma cambiado a {nombre}.\n"
-                f"Reinicia G-Prompt Studio para aplicar los cambios.\n\n"
+                f"¿Reiniciar G-Prompt Studio ahora para aplicarlo?\n\n"
                 f"Language set to {nombre}.\n"
-                f"Restart G-Prompt Studio to apply the changes.",
+                f"Restart G-Prompt Studio now to apply it?",
                 parent=self.app,
             )
+            if reiniciar:
+                self._reiniciar_app()
         except Exception as _e:
             logger.debug(f"[silent idioma msgbox] {_e}")
+
+    def _reiniciar_app(self) -> None:
+        """Relanza el proceso para aplicar el idioma (reconstruye la UI)."""
+        import os
+        import sys
+        try:
+            self.app.update_idletasks()
+        except Exception as _e:
+            logger.debug(f"[silent restart idle] {_e}")
+        try:
+            self.app.destroy()
+        except Exception as _e:
+            logger.debug(f"[silent restart destroy] {_e}")
+        try:
+            if getattr(sys, "frozen", False):
+                # Empaquetado (PyInstaller): argv[0] ya es el .exe.
+                os.execv(sys.executable, sys.argv)
+            else:
+                os.execv(sys.executable, [sys.executable, *sys.argv])
+        except Exception as e:
+            logger.warning(f"No se pudo reiniciar automáticamente: {e}")
+            try:
+                import tkinter.messagebox as mb
+                mb.showinfo(
+                    "Reinicio manual / Manual restart",
+                    "Cierra y vuelve a abrir G-Prompt Studio para aplicar el idioma.\n\n"
+                    "Close and reopen G-Prompt Studio to apply the language.",
+                )
+            except Exception as _e2:
+                logger.debug(f"[silent restart fallback msg] {_e2}")
 
     def _build_author(self) -> None:
         """Barra de autor en el footer con enlaces sociales clickables.
@@ -504,7 +545,7 @@ class DialogsService:
         # Texto autor (izquierda)
         ctk.CTkLabel(
             author_frame,
-            text=f"G-Prompt Studio v{PUBLIC_VERSION} — Creado con ❤️ por {AUTHOR['nombre']}",
+            text=tr('G-Prompt Studio v{0} — Creado con ❤️ por {1}').format((PUBLIC_VERSION), (AUTHOR['nombre'])),
             font=ctk.CTkFont(size=10),
             text_color="#6b7280" if is_light else "#9ca3af"
         ).pack(side="left", padx=(2, 0))
@@ -544,11 +585,11 @@ class DialogsService:
                 webbrowser.open(url)
                 if hasattr(self.app, "show_toast"):
                     try:
-                        self.app.show_toast(f"🌐 Abriendo {url[:40]}...", "#3b82f6", 1500)
+                        self.app.show_toast(tr('🌐 Abriendo {0}...').format(url[:40]), "#3b82f6", 1500)
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             except Exception as e:
-                self.set_estado(f"⚠ No se pudo abrir el enlace: {e}", "#e74c3c")
+                self.set_estado(tr('⚠ No se pudo abrir el enlace: {0}').format(e), "#e74c3c")
 
         # Pack en orden inverso para que aparezcan IG/TikTok/YT/GitHub de
         # izquierda a derecha (pack side="right" apila al revés)
@@ -645,12 +686,12 @@ class DialogsService:
                 pos = self.app.extraer_positive()
                 if pos:
                     pyperclip.copy(pos)
-                    self.set_estado("🟢 POSITIVE copiado (doble-click)", "#2ecc71")
+                    self.set_estado(tr("🟢 POSITIVE copiado (doble-click)"), "#2ecc71")
             elif "NEGATIVE PROMPT:" in linea or "NEGATIVE:" in linea:
                 neg = self.app.extraer_negative()
                 if neg:
                     pyperclip.copy(neg)
-                    self.set_estado(" NEGATIVE copiado (doble-click)", "#e74c3c")
+                    self.set_estado(tr(" NEGATIVE copiado (doble-click)"), "#e74c3c")
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def toggle_botones(self, estado=True):
@@ -774,14 +815,14 @@ class DialogsService:
             aviso = " ⚠️ EXCEDE" if excede else ""
             if c_neg:
                 self.app.lbl_tokens.configure(
-                    text=f"📝 Positive: {c_pos}/{max_c}{aviso}  |  Negative: {c_neg}  |  Total: {c_tot}",
+                    text=tr('📝 Positive: {0}/{1}{2}  |  Negative: {3}  |  Total: {4}').format((c_pos), (max_c), (aviso), (c_neg), (c_tot)),
                     text_color=color)
             else:
                 self.app.lbl_tokens.configure(
-                    text=f"📝 Prompt: {c_pos}/{max_c}{aviso}  |  Total: {c_tot}",
+                    text=tr('📝 Prompt: {0}/{1}{2}  |  Total: {3}').format((c_pos), (max_c), (aviso), (c_tot)),
                     text_color=color)
         elif texto:
-            self.app.lbl_tokens.configure(text=f"📝 Total: {c_tot} chars", text_color="#555555")
+            self.app.lbl_tokens.configure(text=tr('📝 Total: {0} chars').format(c_tot), text_color="#555555")
         else:
             self.app.lbl_tokens.configure(text="", text_color="#555555")
 

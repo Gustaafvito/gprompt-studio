@@ -23,6 +23,7 @@ from config import (
     es_separador,
     get_theme_colors,
 )
+from modules.i18n import tr
 from modules.style_guide import tooltip_para
 from workers import detectar_idioma_es
 
@@ -102,18 +103,18 @@ class UiFooterService:
         for titulo, color_tit, botones in grupos_inf:
             grp_frame = ctk.CTkFrame(frame, fg_color="transparent")
             grp_frame.pack(side="left", padx=(0, 6))
-            ctk.CTkLabel(grp_frame, text=titulo,
+            ctk.CTkLabel(grp_frame, text=tr(titulo),
                           font=ctk.CTkFont(size=8, weight="bold"),
                           text_color=color_tit, anchor="w").pack(
                           anchor="w", padx=4, pady=(0, 1))
             btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
             btn_row.pack(side="top", anchor="w")
             for text, w, fg, cmd, tip in botones:
-                btn = ctk.CTkButton(btn_row, text=text, width=w, fg_color=fg,
+                btn = ctk.CTkButton(btn_row, text=tr(text), width=w, fg_color=fg,
                                      hover_color=self.app.dialogs._darker(fg),
                                      command=cmd, **pill)
                 btn.pack(side="left", padx=2)
-                CTkToolTip(btn, delay=0.3, message=tip, **tip_kwargs)
+                CTkToolTip(btn, delay=0.3, message=tr(tip), **tip_kwargs)
 
     def _mostrar_menu_contextual(self, event):
         """Menú contextual con click derecho en el resultado."""
@@ -122,9 +123,9 @@ class UiFooterService:
                        activebackground="#2a4a6a", activeforeground="white",
                        font=("Segoe UI", 10), borderwidth=1)
 
-        menu.add_command(label="🟢 Copiar POSITIVE", command=lambda: self.app._copiar("positivo"))
-        menu.add_command(label="🔴 Copiar NEGATIVE", command=lambda: self.app._copiar("negativo"))
-        menu.add_command(label="📋 Copiar todo", command=lambda: self.app._copiar("todo"))
+        menu.add_command(label=tr("🟢 Copiar POSITIVE"), command=lambda: self.app._copiar("positivo"))
+        menu.add_command(label=tr("🔴 Copiar NEGATIVE"), command=lambda: self.app._copiar("negativo"))
+        menu.add_command(label=tr("📋 Copiar todo"), command=lambda: self.app._copiar("todo"))
         menu.add_separator()
 
         # Submenú: pegar último prompt del historial
@@ -139,7 +140,7 @@ class UiFooterService:
                 if txt:
                     label = f"#{i+1} {txt[:50]}{'...' if len(txt) > 50 else ''}"
                     submenu_hist.add_command(label=label, command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
-            menu.add_cascade(label="📋 Pegar de historial reciente", menu=submenu_hist)
+            menu.add_cascade(label=tr("📋 Pegar de historial reciente"), menu=submenu_hist)
 
         # Submenú: pegar de favoritos
         if self.app.store.favoritos:
@@ -155,16 +156,16 @@ class UiFooterService:
                 if txt:
                     label = f"⭐ {nombre or txt[:50]}"
                     submenu_fav.add_command(label=label[:60], command=lambda t=txt: self.app.dialogs.actualizar_salida(t))
-            menu.add_cascade(label="⭐ Pegar de favoritos", menu=submenu_fav)
+            menu.add_cascade(label=tr("⭐ Pegar de favoritos"), menu=submenu_fav)
 
         menu.add_separator()
-        menu.add_command(label="📊 Analizar calidad", command=self.app.analysis.cmd_scoring)
-        menu.add_command(label="✨ Atajos de tags", command=self.app.analysis.abrir_atajos_tags)
-        menu.add_command(label="🇪🇸 Traducir al español", command=self.app.analysis.traducir_salida)
-        menu.add_command(label="🧬 Variar con ADN visual", command=self.app._cmd_variar_con_anclaje)
-        menu.add_command(label="🔍 Comparar consistencia", command=self.app._cmd_comparar_consistencia)
+        menu.add_command(label=tr("📊 Analizar calidad"), command=self.app.analysis.cmd_scoring)
+        menu.add_command(label=tr("✨ Atajos de tags"), command=self.app.analysis.abrir_atajos_tags)
+        menu.add_command(label=tr("🇪🇸 Traducir al español"), command=self.app.analysis.traducir_salida)
+        menu.add_command(label=tr("🧬 Variar con ADN visual"), command=self.app._cmd_variar_con_anclaje)
+        menu.add_command(label=tr("🔍 Comparar consistencia"), command=self.app._cmd_comparar_consistencia)
         menu.add_separator()
-        menu.add_command(label="🗑 Limpiar resultado", command=lambda: self.app.txt_salida.delete("1.0", "end"))
+        menu.add_command(label=tr("🗑 Limpiar resultado"), command=lambda: self.app.txt_salida.delete("1.0", "end"))
 
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -190,7 +191,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("sel.first", "sel.last")
                     pyperclip.copy(sel)
                     self.app.txt_idea.delete("sel.first", "sel.last")
-                    self.app.dialogs.set_estado("✂️ Cortado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado(tr("✂️ Cortado al portapapeles"), "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -203,7 +204,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("1.0", "end").strip()
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.dialogs.set_estado("📋 Copiado al portapapeles", "#3498db")
+                    self.app.dialogs.set_estado(tr("📋 Copiado al portapapeles"), "#3498db")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -234,11 +235,11 @@ class UiFooterService:
                          command=_cortar, state="normal" if tiene_seleccion else "disabled")
         menu.add_command(label="📋 Copiar" + ("" if tiene_seleccion else "  (todo)"),
                          command=_copiar_sel)
-        menu.add_command(label="📥 Pegar", command=_pegar)
+        menu.add_command(label=tr("📥 Pegar"), command=_pegar)
         menu.add_separator()
-        menu.add_command(label="🔘 Seleccionar todo", command=_seleccionar_todo)
+        menu.add_command(label=tr("🔘 Seleccionar todo"), command=_seleccionar_todo)
         menu.add_separator()
-        menu.add_command(label="🗑 Limpiar idea", command=_limpiar)
+        menu.add_command(label=tr("🗑 Limpiar idea"), command=_limpiar)
 
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -364,9 +365,9 @@ class UiFooterService:
         self.app.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
-            self.app.dialogs.set_estado(f"🎨 Estilos: {' + '.join(sel)}", "#2ecc71")
+            self.app.dialogs.set_estado(tr('🎨 Estilos: {0}').format(' + '.join(sel)), "#2ecc71")
         else:
-            self.app.dialogs.set_estado("🎨 Estilos: General (ninguno seleccionado)")
+            self.app.dialogs.set_estado(tr("🎨 Estilos: General (ninguno seleccionado)"))
 
     def _on_personaje_selected(self, nombre: str):
         # Refrescar panel fuentes activas siempre (incluso al deseleccionar)
@@ -415,13 +416,13 @@ class UiFooterService:
             coste = (tokens / 1000) * precio_base
 
             if precio_base == 0:
-                self.app.lbl_coste.configure(text=f"🆓 gratis")
+                self.app.lbl_coste.configure(text=tr('🆓 gratis'))
             elif coste < 0.001:
-                self.app.lbl_coste.configure(text=f"$0.00{coste:.0f}")
+                self.app.lbl_coste.configure(text=tr('$0.00{0:.0f}').format(coste))
             elif coste < 0.01:
-                self.app.lbl_coste.configure(text=f"${coste:.3f}")
+                self.app.lbl_coste.configure(text=tr('${0:.3f}').format(coste))
             else:
-                self.app.lbl_coste.configure(text=f"${coste:.2f}")
+                self.app.lbl_coste.configure(text=tr('${0:.2f}').format(coste))
 
         except Exception:
             self.app.lbl_coste.configure(text="")
@@ -479,7 +480,7 @@ class UiFooterService:
         return " + ".join(sel) if sel else "General"
 
     def ratio_actual(self):
-        return self.app.ratio_var.get() if self.app.ratio_var.get() != "Libre" else ""
+        return self.app.ratio_var.get() if self.app.ratio_var.get() != tr("Libre") else ""
 
     def personaje_activo(self):
         nombre = self.app.combo_personaje.get()
@@ -619,7 +620,7 @@ class UiFooterService:
             elif tipo == "adn":
                 self.app._ultimo_anclaje_visual = None
             try:
-                self.app.dialogs.set_estado(f"🧹 Fuente '{tipo}' limpiada", "#9b59b6")
+                self.app.dialogs.set_estado(tr("🧹 Fuente '{0}' limpiada").format(tipo), "#9b59b6")
             except Exception:
                 pass
         finally:
@@ -669,16 +670,16 @@ class UiFooterService:
         c = get_theme_colors(is_light)
 
         vent = GPromptWindow(self.app)
-        vent.title("🔗 Multi-LoRA — selecciona varios")
+        vent.title(tr("🔗 Multi-LoRA — selecciona varios"))
         vent.geometry("520x560")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text="🔗 Multi-LoRA",
+        ctk.CTkLabel(vent, text=tr("🔗 Multi-LoRA"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(vent,
-                     text=("Marca los LoRAs adicionales a usar junto con el "
+                     text=(tr("Marca los LoRAs adicionales a usar junto con el "
                            "primario.\nEl combo principal sigue siendo el LoRA "
-                           "primario; estos se añaden encima."),
+                           "primario; estos se añaden encima.")),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"], justify="center").pack(pady=(0, 8))
 
@@ -691,7 +692,7 @@ class UiFooterService:
         if nombre_primario and nombre_primario != "— Sin LoRA —":
             ctk.CTkLabel(
                 vent,
-                text=f"🔹 Primario (combo): {nombre_primario}",
+                text=tr('🔹 Primario (combo): {0}').format(nombre_primario),
                 font=ctk.CTkFont(size=10, weight="bold"),
                 text_color="#2ecc71",
             ).pack(pady=(0, 6))
@@ -707,7 +708,7 @@ class UiFooterService:
         if not loras:
             ctk.CTkLabel(
                 scroll,
-                text="(No hay LoRAs guardados — añádelos desde 📁 Datos → 🔗 LoRAs)",
+                text=tr("(No hay LoRAs guardados — añádelos desde 📁 Datos → 🔗 LoRAs)"),
                 text_color=c["muted_text"],
             ).pack(pady=20)
         else:
@@ -754,7 +755,7 @@ class UiFooterService:
                 logger.debug(f"[silent] {_e}")
             try:
                 self.app.dialogs.set_estado(
-                    f"🔗 Multi-LoRA: {len(nuevos)} extra(s) activo(s)",
+                    tr('🔗 Multi-LoRA: {0} extra(s) activo(s)').format(len(nuevos)),
                     "#7c3aed",
                 )
             except Exception:
@@ -765,13 +766,13 @@ class UiFooterService:
             for v in chk_vars.values():
                 v.set(False)
 
-        ctk.CTkButton(btns, text="💾 Guardar", width=110, height=30,
+        ctk.CTkButton(btns, text=tr("💾 Guardar"), width=110, height=30,
                       fg_color="#1a7a3c",
                       command=_guardar).pack(side="left", padx=4)
-        ctk.CTkButton(btns, text="✕ Limpiar todo", width=120, height=30,
+        ctk.CTkButton(btns, text=tr("✕ Limpiar todo"), width=120, height=30,
                       fg_color="#7a1a1a",
                       command=_limpiar).pack(side="left", padx=4)
-        ctk.CTkButton(btns, text="Cancelar", width=100, height=30,
+        ctk.CTkButton(btns, text=tr("Cancelar"), width=100, height=30,
                       fg_color=c["fg_dark"],
                       command=vent.destroy).pack(side="left", padx=4)
 
@@ -935,7 +936,7 @@ class UiFooterService:
             texto = texto[:NEGATIVE_MAX].rsplit(",", 1)[0].rstrip(", ")
             if hasattr(self.app, 'lbl_negative_warning'):
                 self.app.lbl_negative_warning.configure(
-                    text=f"⚠️ Negative recortado a {NEGATIVE_MAX} chars (límite SeaArt)",
+                    text=tr('⚠️ Negative recortado a {0} chars (límite SeaArt)').format(NEGATIVE_MAX),
                     text_color="#e74c3c")
                 self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
         else:

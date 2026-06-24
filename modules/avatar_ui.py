@@ -30,6 +30,7 @@ from modules.avatar_prompts import (
     parsear_ficha_json,
     system_prompt_ficha_para_tipo,
 )
+from modules.i18n import tr
 from workers import log_future_exc
 
 
@@ -74,7 +75,7 @@ class AvatarFrame(ctk.CTkFrame):
 
         # Fila 0 — Título
         titulo = ctk.CTkLabel(
-            self, text="🧑‍🎨 Generador de Dataset LoRA",
+            self, text=tr("🧑‍🎨 Generador de Dataset LoRA"),
             font=ctk.CTkFont(size=18, weight="bold"),
         )
         titulo.grid(row=0, column=0, columnspan=2, pady=(12, 2), sticky="n")
@@ -82,7 +83,7 @@ class AvatarFrame(ctk.CTkFrame):
         # Fila 1 — Selector de tipo de LoRA
         fila_tipo = ctk.CTkFrame(self, fg_color="transparent")
         fila_tipo.grid(row=1, column=0, columnspan=2, pady=(0, 4), sticky="n")
-        ctk.CTkLabel(fila_tipo, text="Tipo de LoRA:",
+        ctk.CTkLabel(fila_tipo, text=tr("Tipo de LoRA:"),
                      font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
         self._seg_tipo = ctk.CTkSegmentedButton(
             fila_tipo,
@@ -135,7 +136,7 @@ class AvatarFrame(ctk.CTkFrame):
             fila_modelo = ctk.CTkFrame(self, fg_color="transparent")
             fila_modelo.grid(row=1, column=0, columnspan=2, pady=(32, 0), sticky="n")
             ctk.CTkLabel(
-                fila_modelo, text="🎯 Modelo destino:",
+                fila_modelo, text=tr("🎯 Modelo destino:"),
                 font=ctk.CTkFont(size=11, weight="bold"),
             ).pack(side="left", padx=(0, 6))
             inicial = (self.modelo_destino
@@ -147,7 +148,7 @@ class AvatarFrame(ctk.CTkFrame):
             self.menu_modelo.pack(side="left", padx=(0, 6))
             ctk.CTkLabel(
                 fila_modelo,
-                text="(negative y límite de chars según sus specs)",
+                text=tr("(negative y límite de chars según sus specs)"),
                 font=ctk.CTkFont(size=10), text_color="#9ca3af",
             ).pack(side="left")
         else:
@@ -172,11 +173,11 @@ class AvatarFrame(ctk.CTkFrame):
         pie.grid(row=3, column=0, columnspan=2, sticky="ew", padx=12, pady=(4, 12))
         pie.grid_columnconfigure(0, weight=1)
 
-        self.label_estado = ctk.CTkLabel(pie, text="Listo.")
+        self.label_estado = ctk.CTkLabel(pie, text=tr("Listo."))
         self.label_estado.grid(row=0, column=0, sticky="w")
 
         self.boton_generar = ctk.CTkButton(
-            pie, text="⚡ Generar dataset", command=self._on_generar)
+            pie, text=tr("⚡ Generar dataset"), command=self._on_generar)
         self.boton_generar.grid(row=0, column=1, padx=(8, 0))
 
     # ----------------------------------------------------------- tipo LoRA
@@ -208,16 +209,16 @@ class AvatarFrame(ctk.CTkFrame):
 
         # Ficha automática
         ctk.CTkLabel(form,
-                     text="🎲 Ficha automática — tema opcional (vacío = aleatorio)"
+                     text=tr("🎲 Ficha automática — tema opcional (vacío = aleatorio)")
                      ).grid(row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
         fila_auto = ctk.CTkFrame(form, fg_color="transparent")
         fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
         fila_auto.grid_columnconfigure(0, weight=1)
         self.entry_tema = ctk.CTkEntry(
-            fila_auto, placeholder_text="ej: guerrera élfica, volcán japonés, reloj steampunk…")
+            fila_auto, placeholder_text=tr("ej: guerrera élfica, volcán japonés, reloj steampunk…"))
         self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
         self.boton_auto = ctk.CTkButton(
-            fila_auto, text="🎲 Generar ficha", width=130,
+            fila_auto, text=tr("🎲 Generar ficha"), width=130,
             fg_color="#7c3aed", hover_color="#6d28d9",
             command=self._on_ficha_auto)
         self.boton_auto.grid(row=0, column=1)
@@ -225,7 +226,7 @@ class AvatarFrame(ctk.CTkFrame):
         # Imagen de referencia — solo si el tipo lo admite
         if cfg.get("tiene_imagen_ref") and self.vision_call:
             self.boton_imagen = ctk.CTkButton(
-                fila_auto, text="📷 Desde imagen", width=120,
+                fila_auto, text=tr("📷 Desde imagen"), width=120,
                 fg_color="#0e7490", hover_color="#155e75",
                 command=self._on_ficha_desde_imagen)
             self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
@@ -257,21 +258,21 @@ class AvatarFrame(ctk.CTkFrame):
             self._campos[campo["key"]] = widget
 
         # Estilo visual
-        ctk.CTkLabel(form, text="Estilo visual").grid(
+        ctk.CTkLabel(form, text=tr("Estilo visual")).grid(
             row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
         self.menu_estilo = ctk.CTkOptionMenu(form, values=list(cfg["styles"].keys()))
         self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
 
         # Fondo — solo si el tipo tiene fondos
         if cfg.get("backgrounds"):
-            ctk.CTkLabel(form, text="Fondo (si NO se varían fondos)").grid(
+            ctk.CTkLabel(form, text=tr("Fondo (si NO se varían fondos)")).grid(
                 row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
             self.menu_fondo = ctk.CTkOptionMenu(
                 form, values=list(cfg["backgrounds"].keys()))
             self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
 
             self.check_variar_fondos = ctk.CTkCheckBox(
-                form, text="Variar fondos (recomendado LoRA)")
+                form, text=tr("Variar fondos (recomendado LoRA)"))
             self.check_variar_fondos.select()
             self.check_variar_fondos.grid(
                 row=fila, column=0, sticky="w", padx=8, pady=(0, 8)); fila += 1
@@ -279,7 +280,7 @@ class AvatarFrame(ctk.CTkFrame):
             self.menu_fondo = None
             self.check_variar_fondos = None
 
-        self.check_negative = ctk.CTkCheckBox(form, text="Incluir negative prompt")
+        self.check_negative = ctk.CTkCheckBox(form, text=tr("Incluir negative prompt"))
         self.check_negative.select()
         self.check_negative.grid(row=fila, column=0, sticky="w", padx=8, pady=(4, 12))
 
@@ -307,7 +308,7 @@ class AvatarFrame(ctk.CTkFrame):
         tema = self.entry_tema.get().strip()
         tipo = self._tipo_lora
         self.boton_auto.configure(state="disabled")
-        self.label_estado.configure(text=f"🎲 Inventando {tipo.lower()} con la IA…")
+        self.label_estado.configure(text=tr('🎲 Inventando {0} con la IA…').format(tipo.lower()))
 
         def _worker():
             try:
@@ -339,7 +340,7 @@ class AvatarFrame(ctk.CTkFrame):
         import os
 
         ruta = filedialog.askopenfilename(
-            title="Imagen de referencia del personaje",
+            title=tr("Imagen de referencia del personaje"),
             filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp"),
                        ("Todos", "*.*")])
         if not ruta:
@@ -348,8 +349,8 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_imagen.configure(state="disabled")
         # Feedback INMEDIATO de que la imagen está cargada y en análisis
         self.label_imagen_ref.configure(
-            text=f"  📷 {nombre} — ⏳ analizando con IA de visión…", image=None)
-        self.label_estado.configure(text="📷 Analizando la imagen de referencia…")
+            text=tr('  📷 {0} — ⏳ analizando con IA de visión…').format(nombre), image=None)
+        self.label_estado.configure(text=tr("📷 Analizando la imagen de referencia…"))
 
         def _worker():
             try:
@@ -375,18 +376,18 @@ class AvatarFrame(ctk.CTkFrame):
                                                dark_image=thumb,
                                                size=(thumb.width, thumb.height))
                         self.label_imagen_ref.configure(
-                            image=ctk_img, text=f"  📷 {nombre} ✓ ficha extraída")
+                            image=ctk_img, text=tr('  📷 {0} ✓ ficha extraída').format(nombre))
                         self.label_imagen_ref._image_ref = ctk_img
                     except Exception:
                         self.label_imagen_ref.configure(
-                            text=f"  📷 {nombre} ✓ ficha extraída")
+                            text=tr('  📷 {0} ✓ ficha extraída').format(nombre))
                     self._aplicar_ficha(
                         ficha, origen="📷 Ficha extraída de la imagen")
                 self.after(0, _ok)
             except Exception as e:
                 def _err(e=e):
                     self.label_imagen_ref.configure(
-                        text=f"  ❌ {nombre} — no se pudo analizar", image=None)
+                        text=tr('  ❌ {0} — no se pudo analizar').format(nombre), image=None)
                     self._fin_ficha_error(str(e))
                 self.after(0, _err)
 
@@ -419,31 +420,31 @@ class AvatarFrame(ctk.CTkFrame):
         if self.boton_imagen:
             self.boton_imagen.configure(state="normal")
         self.label_estado.configure(
-            text=f"{origen} — revísala/edítala y pulsa ⚡ Generar dataset.")
+            text=tr('{0} — revísala/edítala y pulsa ⚡ Generar dataset.').format(origen))
 
     def _fin_ficha_error(self, mensaje: str):
         self.boton_auto.configure(state="normal")
         if self.boton_imagen:
             self.boton_imagen.configure(state="normal")
-        self.label_estado.configure(text="❌ Error generando la ficha.")
-        messagebox.showerror("Error", mensaje)
+        self.label_estado.configure(text=tr("❌ Error generando la ficha."))
+        messagebox.showerror(tr("Error"), mensaje)
 
     def _on_generar(self):
         trigger = self.entry_trigger.get().strip()
         if not trigger:
             messagebox.showwarning(
-                "Falta trigger word",
-                "Introduce un trigger word (ej: ohwx_ana). Es la palabra que "
-                "aprenderá el LoRA para invocar al personaje.")
+                tr("Falta trigger word"),
+                tr("Introduce un trigger word (ej: ohwx_ana). Es la palabra que "
+                "aprenderá el LoRA para invocar al personaje."))
             return
 
         seleccionados = [k for k, v in self._angulo_vars.items() if v.get()]
         if not seleccionados:
-            messagebox.showwarning("Sin ángulos", "Selecciona al menos un ángulo.")
+            messagebox.showwarning(tr("Sin ángulos"), tr("Selecciona al menos un ángulo."))
             return
 
         carpeta = filedialog.askdirectory(
-            title="Carpeta donde exportar el dataset",
+            title=tr("Carpeta donde exportar el dataset"),
             initialdir=self.carpeta_salida)
         if not carpeta:
             return
@@ -453,7 +454,7 @@ class AvatarFrame(ctk.CTkFrame):
             form_data[key] = widget.get() if hasattr(widget, "get") else ""
 
         self.boton_generar.configure(state="disabled")
-        self.label_estado.configure(text="Generando descripción canónica con el LLM…")
+        self.label_estado.configure(text=tr("Generando descripción canónica con el LLM…"))
 
         modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
         if self._executor is not None:
@@ -555,7 +556,7 @@ class AvatarFrame(ctk.CTkFrame):
     def _fin_ok(self, resultado, ruta, avisos=None):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
-            text=f"✅ {resultado['total_prompts']} prompts exportados.")
+            text=tr('✅ {0} prompts exportados.').format(resultado['total_prompts']))
         mensaje = (
             f"Descripción canónica:\n\n{resultado['descripcion_canonica']}\n\n"
             f"Exportado en:\n{ruta}")
@@ -566,12 +567,12 @@ class AvatarFrame(ctk.CTkFrame):
                 "pega esos prompts — la identidad la ancla tu imagen.")
         if avisos:
             mensaje += "\n\n" + "\n\n".join(avisos)
-        messagebox.showinfo("Dataset generado", mensaje)
+        messagebox.showinfo(tr("Dataset generado"), mensaje)
 
     def _fin_error(self, mensaje):
         self.boton_generar.configure(state="normal")
-        self.label_estado.configure(text="❌ Error en la generación.")
-        messagebox.showerror("Error", mensaje)
+        self.label_estado.configure(text=tr("❌ Error en la generación."))
+        messagebox.showerror(tr("Error"), mensaje)
 
 
 # ---------------------------------------------------------------------------
@@ -637,7 +638,7 @@ def abrir_avatar_window(app) -> None:
         adaptador = None
 
     vent = GPromptWindow(app)
-    vent.title("🧑‍🎨 Avatar dataset (LoRA)")
+    vent.title(tr("🧑‍🎨 Avatar dataset (LoRA)"))
     vent.geometry("920x720")
     vent.transient(app)
 
@@ -674,7 +675,7 @@ if __name__ == "__main__":
 
     ctk.set_appearance_mode("dark")
     app = ctk.CTk()
-    app.title("Avatar Dataset — prueba standalone")
+    app.title(tr("Avatar Dataset — prueba standalone"))
     app.geometry("900x680")
     frame = AvatarFrame(app, llm_call=_llm_fake)
     frame.pack(fill="both", expand=True)

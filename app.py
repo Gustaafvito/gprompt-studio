@@ -10,6 +10,8 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from modules.i18n import tr
+
 logger = logging.getLogger(__name__)
 
 from tkinter import messagebox
@@ -169,7 +171,7 @@ class ArquitectoApp(
                 return False
             self.clients = APIClients()
             if self.clients.error:
-                messagebox.showerror("Error de configuración", self.clients.error)
+                messagebox.showerror(tr("Error de configuración"), self.clients.error)
                 self.destroy()
                 return False
         self._splash_estado("Cargando datos...")
@@ -211,9 +213,12 @@ class ArquitectoApp(
         # devuelva el idioma correcto durante el build. El cambio se aplica al
         # reiniciar (ver modules/i18n.py y dialogs.cmd_toggle_idioma).
         try:
-            from modules.i18n import set_idioma
-            set_idioma(_prefs.get("idioma") or "es")
+            from modules.i18n import idioma_inicial, set_idioma
+            # 1er arranque (sin pref): detecta el idioma del SO; si ya hay pref, la usa.
+            self._idioma_inicial = idioma_inicial(_prefs.get("idioma"))
+            set_idioma(self._idioma_inicial)
         except Exception as _e:
+            self._idioma_inicial = _prefs.get("idioma") or "es"
             logger.debug(f"[silent] set_idioma: {_e}")
 
         self.llm_var               = ctk.StringVar(value="DeepSeek V4")
@@ -232,7 +237,7 @@ class ArquitectoApp(
         )
         self.familia_estilo_var    = ctk.StringVar(value=_estilo_inicial)
         self.estilo_video_var      = ctk.StringVar(value=_prefs.get("estilo_video") or "Auto")
-        self.idioma_var            = ctk.StringVar(value=_prefs.get("idioma") or "es")
+        self.idioma_var            = ctk.StringVar(value=getattr(self, "_idioma_inicial", _prefs.get("idioma") or "es"))
         try:
             _multi_loras = _prefs.get("loras_multi", [])
             if not isinstance(_multi_loras, list):
@@ -387,24 +392,24 @@ class ArquitectoApp(
             c = {"muted_text": "#888", "panel_text": "#e5e7eb", "panel_bg": "#0a0e14"}
 
         win = GPromptWindow(self)
-        win.title("👋 Bienvenida")
+        win.title(tr("👋 Bienvenida"))
         win.geometry("440x230")
         win.transient(self)
         try: win.grab_set()
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        ctk.CTkLabel(win, text="👋 ¡Hola!",
+        ctk.CTkLabel(win, text=tr("👋 ¡Hola!"),
                      font=ctk.CTkFont(size=22, weight="bold")).pack(pady=(20, 4))
-        ctk.CTkLabel(win, text="¿Cómo quieres que te llamemos?",
+        ctk.CTkLabel(win, text=tr("¿Cómo quieres que te llamemos?"),
                      font=ctk.CTkFont(size=12),
                      text_color=c.get("muted_text")).pack(pady=(0, 4))
-        ctk.CTkLabel(win, text="Aparecerá en el saludo del Dashboard.",
+        ctk.CTkLabel(win, text=tr("Aparecerá en el saludo del Dashboard."),
                      font=ctk.CTkFont(size=10),
                      text_color=c.get("muted_text")).pack(pady=(0, 12))
 
         entry = ctk.CTkEntry(win, width=300, height=34,
-                              placeholder_text="Tu nombre o apodo",
+                              placeholder_text=tr("Tu nombre o apodo"),
                               font=ctk.CTkFont(size=12))
         entry.pack(pady=4)
         entry.focus_set()
@@ -427,10 +432,10 @@ class ArquitectoApp(
 
         btn_frame = ctk.CTkFrame(win, fg_color="transparent")
         btn_frame.pack(pady=14)
-        ctk.CTkButton(btn_frame, text="✅ Guardar", width=130, height=32,
+        ctk.CTkButton(btn_frame, text=tr("✅ Guardar"), width=130, height=32,
                       fg_color="#2ecc71", hover_color="#27ae60",
                       command=_guardar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_frame, text="Saltar", width=80, height=32,
+        ctk.CTkButton(btn_frame, text=tr("Saltar"), width=80, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       command=_guardar).pack(side="left", padx=4)
 
@@ -462,19 +467,19 @@ class ArquitectoApp(
                          font=ctk.CTkFont(size=48)).pack(pady=(20, 0))
 
             # Título
-            ctk.CTkLabel(frame, text="G-Prompt Studio",
+            ctk.CTkLabel(frame, text=tr("G-Prompt Studio"),
                          font=ctk.CTkFont(size=20, weight="bold"),
                          text_color="#e5e7eb").pack()
 
             # Versión
             from config import PUBLIC_VERSION
-            ctk.CTkLabel(frame, text=f"v{PUBLIC_VERSION}",
+            ctk.CTkLabel(frame, text=tr('v{0}').format(PUBLIC_VERSION),
                          font=ctk.CTkFont(size=11),
                          text_color="#3b82f6").pack()
 
             # Estado
             splash._lbl_estado = ctk.CTkLabel(
-                frame, text="Iniciando...",
+                frame, text=tr("Iniciando..."),
                 font=ctk.CTkFont(size=10),
                 text_color="#9ca3af"
             )
@@ -585,7 +590,7 @@ class ArquitectoApp(
 
         Use:
             v = self.open_child_window("Mi ventana", "600x400")
-            ctk.CTkLabel(v, text="hola").pack()
+            ctk.CTkLabel(v, text=tr("hola")).pack()
         """
         v = GPromptWindow(self)
         if title:
@@ -747,11 +752,11 @@ class ArquitectoApp(
             return
         from modules.gprompt_window import GPromptWindow
         win = GPromptWindow(self)
-        win.title("🧬 ADN visual activo")
+        win.title(tr("🧬 ADN visual activo"))
         win.geometry("520x400")
         win.transient(self)
 
-        ctk.CTkLabel(win, text="🧬 ADN visual activo en próximas generaciones",
+        ctk.CTkLabel(win, text=tr("🧬 ADN visual activo en próximas generaciones"),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
 
         txt = ctk.CTkTextbox(win, font=ctk.CTkFont(size=11), wrap="word")
@@ -771,10 +776,10 @@ class ArquitectoApp(
                 logger.debug(f"[silent] {_e}")
             win.destroy()
 
-        ctk.CTkButton(btn_row, text="🚫 Desactivar ADN", width=160, height=30,
+        ctk.CTkButton(btn_row, text=tr("🚫 Desactivar ADN"), width=160, height=30,
                       fg_color="#7a1a1a", hover_color="#5a0f0f",
                       command=_desactivar).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cerrar", width=100, height=30,
+        ctk.CTkButton(btn_row, text=tr("Cerrar"), width=100, height=30,
                       fg_color="#444", hover_color="#555",
                       command=win.destroy).pack(side="left", padx=4)
     def _backup_semanal_check(self):
@@ -832,7 +837,7 @@ class ArquitectoApp(
             marker.write_text(str(ahora), encoding="utf-8")
             # Toast informativo
             self.after(2000, lambda: self.show_toast(
-                f"💼 Backup auto creado: {nombre}", "#0891b2", 3500
+                tr('💼 Backup auto creado: {0}').format(nombre), "#0891b2", 3500
             ))
             # Limpiar backups viejos (>10)
             backups = sorted(backups_dir.glob("auto-*.zip"))
@@ -873,7 +878,7 @@ class ArquitectoApp(
         self._regen_init()
         idea = self.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.dialogs.set_estado("⚠️ Escribe una idea primero", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Escribe una idea primero"), "#e67e22")
             return
         # Guardar resultado actual en pila ANTES de regenerar
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -889,7 +894,7 @@ class ArquitectoApp(
         """Navega a la versión anterior de la regeneración."""
         self._regen_init()
         if not self._regen_stack:
-            self.dialogs.set_estado("⚠️ No hay versiones anteriores", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay versiones anteriores"), "#e67e22")
             return
         # Si estamos en el último, primero guardamos el actual
         actual = self.txt_salida.get("1.0", "end").strip()
@@ -898,37 +903,37 @@ class ArquitectoApp(
             self._regen_push(actual)
             self._regen_idx -= 1
         if self._regen_idx <= 0:
-            self.dialogs.set_estado("⚠️ Ya estás en la versión más antigua", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Ya estás en la versión más antigua"), "#e67e22")
             return
         self._regen_idx -= 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.dialogs.set_estado(f"← Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.set_estado(tr('← Versión {0}/{1}').format((self._regen_idx + 1), (len(self._regen_stack))), "#3498db")
 
     def _cmd_regenerar_adelante(self):
         """Navega a la versión siguiente de la regeneración."""
         self._regen_init()
         if not self._regen_stack or self._regen_idx >= len(self._regen_stack) - 1:
-            self.dialogs.set_estado("⚠️ Ya estás en la versión más reciente", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ Ya estás en la versión más reciente"), "#e67e22")
             return
         self._regen_idx += 1
         self.dialogs.actualizar_salida(self._regen_stack[self._regen_idx])
-        self.dialogs.set_estado(f"→ Versión {self._regen_idx + 1}/{len(self._regen_stack)}", "#3498db")
+        self.dialogs.set_estado(tr('→ Versión {0}/{1}').format((self._regen_idx + 1), (len(self._regen_stack))), "#3498db")
 
     def _cmd_diff_versiones(self):
         """Muestra ventana con diff coloreado entre versión actual y anterior de la pila de regeneración."""
         self._regen_init()
         actual_txt = self.txt_salida.get("1.0", "end").strip()
         if not actual_txt:
-            self.dialogs.set_estado("⚠️ No hay prompt actual para comparar", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay prompt actual para comparar"), "#e67e22")
             return
         # Buscar la versión anterior
         if not self._regen_stack:
-            self.dialogs.set_estado("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial.", "#e67e22")
+            self.dialogs.set_estado(tr("⚠️ No hay versiones anteriores. Pulsa 🔄 Regenerar para crear historial."), "#e67e22")
             return
         # Si el actual es el último, comparamos con el penúltimo
         if self._regen_idx == len(self._regen_stack) - 1:
             if len(self._regen_stack) < 2:
-                self.dialogs.set_estado("⚠️ Necesitas al menos 2 versiones para comparar", "#e67e22")
+                self.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 versiones para comparar"), "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx - 1]
             etiqueta_actual = f"Versión {self._regen_idx + 1} (actual)"
@@ -936,7 +941,7 @@ class ArquitectoApp(
         else:
             # Estamos navegando atrás, comparar con la siguiente
             if self._regen_idx + 1 >= len(self._regen_stack):
-                self.dialogs.set_estado("⚠️ No hay versión siguiente para comparar", "#e67e22")
+                self.dialogs.set_estado(tr("⚠️ No hay versión siguiente para comparar"), "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx]
             actual_txt = self._regen_stack[self._regen_idx + 1]
@@ -1042,7 +1047,7 @@ class ArquitectoApp(
         n_del = sum(i2 - i1 for op, i1, i2, j1, j2 in sm.get_opcodes() if op in ("delete", "replace"))
         ratio = sm.ratio() * 100
         ctk.CTkLabel(stats,
-                     text=f"  📊 {ratio:.0f}% similar  ·  🟢 +{n_add} palabras  ·  🔴 −{n_del} palabras  ·  ⚪ {n_eq} sin cambios",
+                     text=tr('  📊 {0:.0f}% similar  ·  🟢 +{1} palabras  ·  🔴 −{2} palabras  ·  ⚪ {3} sin cambios').format((ratio), (n_add), (n_del), (n_eq)),
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=6)
 
         # Botones: modo confirmación (on_apply) vs modo solo-lectura
@@ -1056,7 +1061,7 @@ class ArquitectoApp(
                 try:
                     if on_cancel: on_cancel()
                 finally: v.destroy()
-            ctk.CTkButton(btn_row, text="✅ Aplicar refinamiento", width=200, height=34,
+            ctk.CTkButton(btn_row, text=tr("✅ Aplicar refinamiento"), width=200, height=34,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=12, weight="bold"),
                           command=_aplicar).pack(side="left", padx=5)
@@ -1064,11 +1069,11 @@ class ArquitectoApp(
                 def _deshacer():
                     try: on_undo()
                     finally: v.destroy()
-                ctk.CTkButton(btn_row, text="↩️ Deshacer refinamiento previo", width=230, height=34,
+                ctk.CTkButton(btn_row, text=tr("↩️ Deshacer refinamiento previo"), width=230, height=34,
                               fg_color="#8a5a1a", hover_color="#6a4515",
                               font=ctk.CTkFont(size=11),
                               command=_deshacer).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text="❌ Cancelar (mantener original)", width=220, height=34,
+            ctk.CTkButton(btn_row, text=tr("❌ Cancelar (mantener original)"), width=220, height=34,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           font=ctk.CTkFont(size=11),
                           command=_cancelar).pack(side="left", padx=5)
@@ -1081,16 +1086,16 @@ class ArquitectoApp(
             def _usar(texto, etiqueta):
                 self.dialogs.actualizar_salida(texto)
                 v.destroy()
-                self.dialogs.set_estado(f"⏪ Aplicada: {etiqueta}", "#2ecc71")
-            ctk.CTkButton(btn_row, text=f"⏪ Usar {label_a}", width=200, height=32,
+                self.dialogs.set_estado(tr('⏪ Aplicada: {0}').format(etiqueta), "#2ecc71")
+            ctk.CTkButton(btn_row, text=tr('⏪ Usar {0}').format(label_a), width=200, height=32,
                           fg_color="#8a5a1a", hover_color="#6a4515",
                           font=ctk.CTkFont(size=11),
                           command=lambda: _usar(texto_a, label_a)).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text=f"✅ Usar {label_b}", width=200, height=32,
+            ctk.CTkButton(btn_row, text=tr('✅ Usar {0}').format(label_b), width=200, height=32,
                           fg_color="#1a7a3c", hover_color="#15633a",
                           font=ctk.CTkFont(size=11),
                           command=lambda: _usar(texto_b, label_b)).pack(side="left", padx=5)
-            ctk.CTkButton(btn_row, text="Cerrar", width=110, height=32, command=v.destroy,
+            ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, height=32, command=v.destroy,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="left", padx=5)
 
     def _notificar_sistema(self, titulo, mensaje):
@@ -1210,7 +1215,7 @@ class ArquitectoApp(
 
         plantillas = self._cargar_plantillas_desde_json()
         if not plantillas:
-            self.dialogs.set_estado("⚠️ No se pudieron cargar las plantillas", "#e74c3c")
+            self.dialogs.set_estado(tr("⚠️ No se pudieron cargar las plantillas"), "#e74c3c")
             return
 
         plantillas_sorted = sorted(plantillas, key=lambda x: x[0])
@@ -1236,14 +1241,14 @@ class ArquitectoApp(
         _recargar_estado()
 
         vent = GPromptWindow(self)
-        vent.title("📑 Plantillas de prompt")
+        vent.title(tr("📑 Plantillas de prompt"))
         vent.geometry("860x700")
         vent.transient(self)
 
         # ── Cabecera ──
         hdr_frame = ctk.CTkFrame(vent, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(10, 3), padx=12)
-        ctk.CTkLabel(hdr_frame, text="📑 Plantillas probadas",
+        ctk.CTkLabel(hdr_frame, text=tr("📑 Plantillas probadas"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(side="left")
         contador_var = ctk.StringVar(value="")
         ctk.CTkLabel(hdr_frame, textvariable=contador_var,
@@ -1262,14 +1267,14 @@ class ArquitectoApp(
             _recargar_estado()
             _refrescar_restaurar_btn()
             _refrescar()
-            self.dialogs.set_estado(f"↩ {n} plantillas predefinidas restauradas", "#2ecc71")
+            self.dialogs.set_estado(tr('↩ {0} plantillas predefinidas restauradas').format(n), "#2ecc71")
 
         def _refrescar_restaurar_btn():
             for w in restaurar_slot.winfo_children():
                 w.destroy()
             if estado["total_borradas"] > 0:
                 ctk.CTkButton(restaurar_slot,
-                              text=f"↩ Restaurar {estado['total_borradas']} borradas",
+                              text=tr('↩ Restaurar {0} borradas').format(estado['total_borradas']),
                               width=180, height=24,
                               fg_color="#8b6914", hover_color="#6e5310",
                               font=ctk.CTkFont(size=10),
@@ -1282,7 +1287,7 @@ class ArquitectoApp(
         search_row.pack(fill="x", padx=12, pady=(0, 6))
         ctk.CTkLabel(search_row, text="🔍").pack(side="left", padx=(0, 6))
         entry_buscar = ctk.CTkEntry(
-            search_row, placeholder_text="Buscar por nombre, contenido o variable…",
+            search_row, placeholder_text=tr("Buscar por nombre, contenido o variable…"),
             height=30,
         )
         entry_buscar.pack(side="left", fill="x", expand=True)
@@ -1296,7 +1301,7 @@ class ArquitectoApp(
         if estado["cats"]:
             cat_row = ctk.CTkFrame(vent, fg_color="transparent")
             cat_row.pack(fill="x", padx=12, pady=(0, 4))
-            ctk.CTkLabel(cat_row, text="Categoría:",
+            ctk.CTkLabel(cat_row, text=tr("Categoría:"),
                          font=ctk.CTkFont(size=10)).pack(side="left", padx=(0, 6))
             ctk.CTkComboBox(
                 cat_row, width=180, variable=cat_var,
@@ -1305,7 +1310,7 @@ class ArquitectoApp(
             ).pack(side="left")
 
         ctk.CTkLabel(vent,
-                     text="Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final.",
+                     text=tr("Click en 'Cargar' → wizard para rellenar las {variables} → previsualizas el prompt final."),
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 4), padx=12, anchor="w")
 
@@ -1355,8 +1360,8 @@ class ArquitectoApp(
                 # Sin estado["visibles"] = todas borradas (caso especial)
                 if not estado["visibles"]:
                     ctk.CTkLabel(scroll,
-                                 text="📭 No hay plantillas visibles.\n\n"
-                                      "Has borrado todas las plantillas predefinidas.",
+                                 text=tr("📭 No hay plantillas visibles.\n\n"
+                                      "Has borrado todas las plantillas predefinidas."),
                                  font=ctk.CTkFont(size=12),
                                  text_color=c["muted_text"],
                                  justify="center").pack(pady=30)
@@ -1384,12 +1389,12 @@ class ArquitectoApp(
                 vars_neg = re.findall(r'\{(\w+)\}', neg)
                 todas_vars = sorted(set(vars_pos + vars_neg))
                 if todas_vars:
-                    ctk.CTkLabel(card, text=f"  Variables: {', '.join(todas_vars)}",
+                    ctk.CTkLabel(card, text=tr('  Variables: {0}').format(', '.join(todas_vars)),
                                  font=ctk.CTkFont(size=10, slant="italic"),
                                  text_color=c["muted_text"]
                                  ).pack(anchor="w", padx=10)
                 preview = pos[:120]
-                ctk.CTkLabel(card, text=f"  POS: {preview}…",
+                ctk.CTkLabel(card, text=tr('  POS: {0}…').format(preview),
                              font=ctk.CTkFont(size=10),
                              text_color=c["muted_text"],
                              wraplength=760, justify="left", anchor="w"
@@ -1409,7 +1414,7 @@ class ArquitectoApp(
                             txt += f"\nNEGATIVE PROMPT: {n}"
                         self.dialogs.actualizar_salida(txt)
                         vent.destroy()
-                        self.dialogs.set_estado(f"📑 Plantilla '{name}' aplicada", "#2ecc71")
+                        self.dialogs.set_estado(tr("📑 Plantilla '{0}' aplicada").format(name), "#2ecc71")
 
                 def _borrar(name=nombre):
                     from tkinter import messagebox as _mb
@@ -1426,13 +1431,13 @@ class ArquitectoApp(
                     _recargar_estado()
                     _refrescar_restaurar_btn()
                     _refrescar()
-                    self.dialogs.set_estado(f"🗑 '{name}' borrada", "#e67e22")
+                    self.dialogs.set_estado(tr("🗑 '{0}' borrada").format(name), "#e67e22")
 
-                ctk.CTkButton(btns_frame, text="🗑 Borrar", width=90, height=24,
+                ctk.CTkButton(btns_frame, text=tr("🗑 Borrar"), width=90, height=24,
                               fg_color="#8b2c2c", hover_color="#6e2020",
                               font=ctk.CTkFont(size=10),
                               command=_borrar).pack(side="left")
-                ctk.CTkButton(btns_frame, text="✅ Cargar plantilla", width=160, height=24,
+                ctk.CTkButton(btns_frame, text=tr("✅ Cargar plantilla"), width=160, height=24,
                               fg_color="#1a7a3c", hover_color="#15642f",
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="right")
@@ -1463,11 +1468,11 @@ class ArquitectoApp(
             ultimos = {}
 
         wiz = GPromptWindow(ventana_padre)
-        wiz.title(f"📝 Rellenar variables — {nombre}")
+        wiz.title(tr('📝 Rellenar variables — {0}').format(nombre))
         wiz.geometry("680x640")
         wiz.transient(ventana_padre)
 
-        ctk.CTkLabel(wiz, text=f"📝 Rellenar variables de '{nombre}'",
+        ctk.CTkLabel(wiz, text=tr("📝 Rellenar variables de '{0}'").format(nombre),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
         subtitulo = (f"Esta plantilla tiene {len(variables)} variable(s). "
                      f"Rellénalas y verás la previsualización abajo.")
@@ -1489,7 +1494,7 @@ class ArquitectoApp(
                          font=ctk.CTkFont(size=11, weight="bold"),
                          width=140, anchor="w").pack(side="left", padx=(0, 6))
             ent = ctk.CTkEntry(row,
-                               placeholder_text=f"valor para {v}…",
+                               placeholder_text=tr('valor para {0}…').format(v),
                                height=28)
             ent.pack(side="left", fill="x", expand=True)
             # Pre-rellenar con el último valor guardado para esta variable
@@ -1509,12 +1514,12 @@ class ArquitectoApp(
                 for ent in entries.values():
                     ent.delete(0, "end")
                 _actualizar_preview()
-                self.dialogs.set_estado(f"🧹 Memoria de '{nombre}' borrada", "#888")
+                self.dialogs.set_estado(tr("🧹 Memoria de '{0}' borrada").format(nombre), "#888")
             except Exception as e:
                 logger.warning(f"_limpiar_memoria wizard: {e}")
 
         # Previsualización
-        ctk.CTkLabel(wiz, text="👁 Previsualización del prompt final:",
+        ctk.CTkLabel(wiz, text=tr("👁 Previsualización del prompt final:"),
                      font=ctk.CTkFont(size=11, weight="bold")
                      ).pack(anchor="w", padx=15, pady=(8, 2))
         preview_txt = ctk.CTkTextbox(wiz,
@@ -1581,24 +1586,24 @@ class ArquitectoApp(
             self.dialogs.actualizar_salida(txt_final)
             wiz.destroy()
             ventana_padre.destroy()
-            self.dialogs.set_estado(f"📑 Plantilla '{nombre}' aplicada con variables", "#2ecc71")
+            self.dialogs.set_estado(tr("📑 Plantilla '{0}' aplicada con variables").format(nombre), "#2ecc71")
 
-        ctk.CTkButton(btn_row, text="✅ Aplicar al prompt", width=170, height=32,
+        ctk.CTkButton(btn_row, text=tr("✅ Aplicar al prompt"), width=170, height=32,
                       fg_color="#1a7a3c", hover_color="#15642f",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_aplicar_final).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="📋 Copiar", width=90, height=32,
+        ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=90, height=32,
                       fg_color="#1a4a5a",
                       command=lambda: (_persistir_valores(),
                                        pyperclip.copy(preview_txt.get("1.0", "end").strip()),
-                                       self.dialogs.set_estado("📋 Copiado", "#2ecc71"))
+                                       self.dialogs.set_estado(tr("📋 Copiado"), "#2ecc71"))
                       ).pack(side="left", padx=4)
         if ultimos:
-            ctk.CTkButton(btn_row, text="🧹 Olvidar valores", width=130, height=32,
+            ctk.CTkButton(btn_row, text=tr("🧹 Olvidar valores"), width=130, height=32,
                           fg_color="#8b6914", hover_color="#6e5310",
                           font=ctk.CTkFont(size=10),
                           command=_limpiar_memoria).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text="Cancelar", width=80, height=32,
+        ctk.CTkButton(btn_row, text=tr("Cancelar"), width=80, height=32,
                       fg_color="#444", hover_color="#555",
                       command=wiz.destroy).pack(side="left", padx=4)
 
@@ -1624,7 +1629,7 @@ class ArquitectoApp(
         storyboard como prompt de vídeo.
         """
         vent = GPromptWindow(self)
-        vent.title("👁 Comparar Variaciones")
+        vent.title(tr("👁 Comparar Variaciones"))
         n = len(variaciones)
 
         # Extraer labels desde `### nombre ###\n` si no se pasaron explícitas
@@ -1656,7 +1661,7 @@ class ArquitectoApp(
         vent.geometry(f"{ancho}x{alto}")
         vent.transient(self)
 
-        ctk.CTkLabel(vent, text=f"👁 Comparador ({n})  —  Scroll horizontal para ver todas",
+        ctk.CTkLabel(vent, text=tr('👁 Comparador ({0})  —  Scroll horizontal para ver todas').format(n),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(8, 3))
 
         # Scroll horizontal para columnas
@@ -1690,12 +1695,12 @@ class ArquitectoApp(
                     if len(seleccionadas) == 2:
                         btn.configure(
                             state="normal", fg_color="#7c3aed",
-                            text="🆚 Comparar 2 lado-a-lado",
+                            text=tr("🆚 Comparar 2 lado-a-lado"),
                         )
                     else:
                         btn.configure(
                             state="disabled", fg_color="#4b5563",
-                            text="🆚 Selecciona 2 cards para comparar",
+                            text=tr("🆚 Selecciona 2 cards para comparar"),
                         )
                 except Exception as _e:
                     logger.debug(f"[silent] compare btn: {_e}")
@@ -1728,12 +1733,12 @@ class ArquitectoApp(
             scroll = ctk.CTkScrollableFrame(col, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=5, pady=(0, 3))
 
-            ctk.CTkLabel(scroll, text="🟢 POSITIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#2ecc71").pack(anchor="w")
+            ctk.CTkLabel(scroll, text=tr("🟢 POSITIVE:"), font=ctk.CTkFont(size=10, weight="bold"), text_color="#2ecc71").pack(anchor="w")
             lbl_pos = ctk.CTkLabel(scroll, text=pos_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=10), text_color=c["muted_text"], anchor="w")
             lbl_pos.pack(fill="x", pady=(0, 6))
 
             if neg_text and tiene_neg:
-                ctk.CTkLabel(scroll, text="🔴 NEGATIVE:", font=ctk.CTkFont(size=10, weight="bold"), text_color="#e74c3c").pack(anchor="w")
+                ctk.CTkLabel(scroll, text=tr("🔴 NEGATIVE:"), font=ctk.CTkFont(size=10, weight="bold"), text_color="#e74c3c").pack(anchor="w")
                 ctk.CTkLabel(scroll, text=neg_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=10), text_color="#999999", anchor="w").pack(fill="x", pady=(0, 4))
 
             # Label para traducción (inicialmente vacío)
@@ -1745,16 +1750,16 @@ class ArquitectoApp(
 
             def _copiar_completo(v=var, n=i+1):
                 pyperclip.copy(v)
-                self.dialogs.set_estado(f"✅ Variación #{n} copiada", "#2ecc71")
+                self.dialogs.set_estado(tr('✅ Variación #{0} copiada').format(n), "#2ecc71")
 
             def _copiar_pos(p=pos_text, n=i+1):
                 pyperclip.copy(p)
-                self.dialogs.set_estado(f"✅ POSITIVE #{n} copiado", "#2ecc71")
+                self.dialogs.set_estado(tr('✅ POSITIVE #{0} copiado').format(n), "#2ecc71")
 
             def _copiar_neg(ng=neg_text, n=i+1):
                 if ng:
                     pyperclip.copy(ng)
-                    self.dialogs.set_estado(f"✅ NEGATIVE #{n} copiado", "#2ecc71")
+                    self.dialogs.set_estado(tr('✅ NEGATIVE #{0} copiado').format(n), "#2ecc71")
 
             # Registrar esta card en el set compartido
             cols_aplicadas_refs["all"].append((col, hdr, colores_header[i % len(colores_header)]))
@@ -1811,23 +1816,22 @@ class ArquitectoApp(
                 # Mensaje según si cambió el modelo o no
                 if modelo_aplicado:
                     self.dialogs.set_estado(
-                        f"🏆 Modelo '{modelo_aplicado}' + prompt cargados — "
-                        f"la ventana sigue abierta",
+                        tr("🏆 Modelo '{0}' + prompt cargados — la ventana sigue abierta").format(modelo_aplicado),
                         "#2ecc71")
                 else:
                     self.dialogs.set_estado(
-                        f"✅ '{label}' cargada — la ventana sigue abierta",
+                        tr("✅ '{0}' cargada — la ventana sigue abierta").format(label),
                         "#2ecc71")
 
             def _traducir(p=pos_text, lbl=lbl_trad):
                 lbl.pack(fill="x", pady=(6, 4))
-                lbl.configure(text="🌐 Traduciendo...")
+                lbl.configure(text=tr("🌐 Traduciendo..."))
                 def _worker():
                     try:
                         trad = self.deepseek.traducir_a_espanol(p)
                         vent.after(0, lambda: lbl.configure(text=f"🇪🇸 {trad}"))
                     except Exception:
-                        vent.after(0, lambda: lbl.configure(text="❌ Error al traducir"))
+                        vent.after(0, lambda: lbl.configure(text=tr("❌ Error al traducir")))
                 threading.Thread(target=_worker, daemon=True).start()
 
             # Placeholder donde irá la preview Pollinations (oculto hasta click)
@@ -1835,7 +1839,7 @@ class ArquitectoApp(
             preview_lbl.pack(fill="x", pady=(4, 0))
 
             def _preview_pollinations(p=pos_text, lbl=preview_lbl):
-                lbl.configure(text="⏳ Preparando...", text_color="#888")
+                lbl.configure(text=tr("⏳ Preparando..."), text_color="#888")
                 def _on_img(img):
                     try:
                         from PIL import Image as _Image
@@ -1847,7 +1851,7 @@ class ArquitectoApp(
                         lbl.image = ctk_img  # evitar GC
                     except Exception as _e:
                         logger.debug(f"[silent] preview thumb: {_e}")
-                        lbl.configure(text="❌ Error mostrando", text_color="#e74c3c")
+                        lbl.configure(text=tr("❌ Error mostrando"), text_color="#e74c3c")
 
                 def _on_err(msg):
                     lbl.configure(text=f"❌ {msg[:60]}", text_color="#e74c3c")
@@ -1864,7 +1868,7 @@ class ArquitectoApp(
                 ctk.CTkButton(btn_row, text="🔴", width=28, height=24, fg_color="#5a1a1a", hover_color="#3a0f0f", command=_copiar_neg).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="🇪🇸", width=28, height=24, fg_color="#8e44ad", hover_color="#6a2a8a", command=_traducir).pack(side="left", padx=1)
             ctk.CTkButton(btn_row, text="👁", width=28, height=24, fg_color="#0891b2", hover_color="#0e7490", command=_preview_pollinations).pack(side="left", padx=1)
-            ctk.CTkButton(btn_row, text="✅ Usar", width=56, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
+            ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=56, height=24, fg_color="#1a7a3c", hover_color="#145e2d", font=ctk.CTkFont(size=10, weight="bold"), command=_usar).pack(side="right", padx=2)
 
         # Pie de ventana: botones extras (encadenar Board→Vídeo)
         # + Comparar 2 lado-a-lado + Cerrar comparador
@@ -1899,7 +1903,7 @@ class ArquitectoApp(
         # default + fg_color #4b5563 hacían que el botón se fundiera con
         # el fondo del pie del comparador — bug detectado sesión 18).
         compare_btn_ref["btn"] = ctk.CTkButton(
-            pie, text="🆚 Selecciona 2 cards para comparar", width=240, height=32,
+            pie, text=tr("🆚 Selecciona 2 cards para comparar"), width=240, height=32,
             fg_color="#4b5563", hover_color="#7c3aed",
             text_color="#e5e7eb",
             text_color_disabled="#cbd5e1",
@@ -1913,12 +1917,12 @@ class ArquitectoApp(
         def _abrir_grid():
             self.preview.abrir_grid(variaciones, labels)
 
-        ctk.CTkButton(pie, text="👁 Grid Pollinations", width=180, height=32,
+        ctk.CTkButton(pie, text=tr("👁 Grid Pollinations"), width=180, height=32,
                       fg_color="#0891b2", hover_color="#0e7490",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_abrir_grid).pack(side="left", padx=6)
 
-        ctk.CTkButton(pie, text="Cerrar comparador", width=180, height=32,
+        ctk.CTkButton(pie, text=tr("Cerrar comparador"), width=180, height=32,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=6)
@@ -1935,15 +1939,14 @@ class ArquitectoApp(
                 _abrir_lado_a_lado()
             else:
                 self.set_estado(
-                    f"⚠️ Selecciona EXACTAMENTE 2 cards para comparar "
-                    f"(hay {len(seleccionadas)} marcadas)",
+                    tr('⚠️ Selecciona EXACTAMENTE 2 cards para comparar (hay {0} marcadas)').format(len(seleccionadas)),
                     "#e67e22",
                 )
         vent.bind("<Alt-c>", _atajo_comparar)
         # Hint visual debajo del pie sobre los atajos disponibles
         ctk.CTkLabel(
             vent,
-            text="⌨️ Atajos: Ctrl+G = Grid · Alt+C = Comparar 2 · Esc = Cerrar",
+            text=tr("⌨️ Atajos: Ctrl+G = Grid · Alt+C = Comparar 2 · Esc = Cerrar"),
             font=ctk.CTkFont(size=9, slant="italic"),
             text_color=c["muted_text"],
         ).pack(pady=(2, 6))
@@ -1966,7 +1969,7 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
 
         vent = GPromptWindow(self)
-        vent.title(f"🆚 {label_a}  vs  {label_b}")
+        vent.title(tr('🆚 {0}  vs  {1}').format((label_a), (label_b)))
         screen_w = self.winfo_screenwidth()
         screen_h = self.winfo_screenheight()
         ancho = min(1400, screen_w - 100)
@@ -1975,7 +1978,7 @@ class ArquitectoApp(
         vent.transient(self)
 
         ctk.CTkLabel(vent,
-                     text=f"🆚 Comparación lado a lado  ·  🟢 añadido en derecha  ·  🔴 quitado en derecha",
+                     text=tr('🆚 Comparación lado a lado  ·  🟢 añadido en derecha  ·  🔴 quitado en derecha'),
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).pack(pady=(8, 4))
 
@@ -2037,21 +2040,21 @@ class ArquitectoApp(
 
         def _copiar_a():
             pyperclip.copy(texto_a)
-            self.dialogs.set_estado(f"✅ '{label_a}' copiada", "#2ecc71")
+            self.dialogs.set_estado(tr("✅ '{0}' copiada").format(label_a), "#2ecc71")
 
         def _copiar_b():
             pyperclip.copy(texto_b)
-            self.dialogs.set_estado(f"✅ '{label_b}' copiada", "#2ecc71")
+            self.dialogs.set_estado(tr("✅ '{0}' copiada").format(label_b), "#2ecc71")
 
-        ctk.CTkButton(pie, text=f"📋 Copiar {label_a}", width=200, height=30,
+        ctk.CTkButton(pie, text=tr('📋 Copiar {0}').format(label_a), width=200, height=30,
                       fg_color="#1a4a7a", hover_color="#0f2e4d",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_a).pack(side="left", padx=4)
-        ctk.CTkButton(pie, text=f"📋 Copiar {label_b}", width=200, height=30,
+        ctk.CTkButton(pie, text=tr('📋 Copiar {0}').format(label_b), width=200, height=30,
                       fg_color="#1a7a3c", hover_color="#0f4a22",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=_copiar_b).pack(side="left", padx=4)
-        ctk.CTkButton(pie, text="Cerrar", width=120, height=30,
+        ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
                       font=ctk.CTkFont(size=10, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
@@ -2108,7 +2111,7 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
 
         wizard = GPromptWindow(self)
-        wizard.title("🧠 G-Prompt Studio — Configuración Inicial")
+        wizard.title(tr("🧠 G-Prompt Studio — Configuración Inicial"))
         wizard.geometry("620x720")
         wizard.transient(self)
         wizard.grab_set()
@@ -2117,13 +2120,13 @@ class ArquitectoApp(
 
         ctk.CTkLabel(
             wizard,
-            text="🧠 ¡Bienvenido a G-Prompt Studio!",
+            text=tr("🧠 ¡Bienvenido a G-Prompt Studio!"),
             font=ctk.CTkFont(size=20, weight="bold"),
         ).pack(pady=(18, 4))
         ctk.CTkLabel(
             wizard,
-            text="Necesitas SOLO 1 API key para empezar.\n"
-                 "Las marcadas 🏆 son completamente GRATIS.",
+            text=tr("Necesitas SOLO 1 API key para empezar.\n"
+                 "Las marcadas 🏆 son completamente GRATIS."),
             font=ctk.CTkFont(size=11),
             text_color=c["muted_text"],
             justify="center",
@@ -2136,11 +2139,11 @@ class ArquitectoApp(
         frame = ctk.CTkFrame(scroll)
         frame.pack(fill="x", padx=4, pady=4)
 
-        ctk.CTkLabel(frame, text="👤 ¿Cómo quieres que te llamemos?",
+        ctk.CTkLabel(frame, text=tr("👤 ¿Cómo quieres que te llamemos?"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(10, 2))
-        entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text="Tu nombre o apodo (ej: Gustaafvito)")
+        entry_nombre = ctk.CTkEntry(frame, width=520, placeholder_text=tr("Tu nombre o apodo (ej: Gustaafvito)"))
         entry_nombre.pack(padx=10)
-        ctk.CTkLabel(frame, text="Aparecerá en el saludo del dashboard. Puedes dejarlo vacío.",
+        ctk.CTkLabel(frame, text=tr("Aparecerá en el saludo del dashboard. Puedes dejarlo vacío."),
                      font=ctk.CTkFont(size=10), text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 8))
 
         # ── Definición declarativa de los 5 proveedores del wizard ──
@@ -2240,7 +2243,7 @@ class ArquitectoApp(
             primer_valor = keys[primer_pid]
             _, _, primer_nombre = entries[primer_pid]
 
-            lbl_estado.configure(text=f"⏳ Probando conexión a {primer_nombre}...", text_color="#3498db")
+            lbl_estado.configure(text=tr('⏳ Probando conexión a {0}...').format(primer_nombre), text_color="#3498db")
             wizard.update_idletasks()
 
             def _worker():
@@ -2288,12 +2291,12 @@ class ArquitectoApp(
                                                     max_tokens=5)
 
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"✅ Conexión OK con {primer_nombre} — la key funciona.",
+                        text=tr('✅ Conexión OK con {0} — la key funciona.').format(primer_nombre),
                         text_color="#2ecc71"))
                 except Exception as e:
                     err = str(e)[:100]
                     wizard.after(0, lambda: lbl_estado.configure(
-                        text=f"❌ Falló {primer_nombre}: {err}",
+                        text=tr('❌ Falló {0}: {1}').format((primer_nombre), (err)),
                         text_color="#e74c3c"))
 
             threading.Thread(target=_worker, daemon=True).start()
@@ -2316,11 +2319,11 @@ class ArquitectoApp(
                     if guardar_api_key(pid, valor):
                         guardadas.append(nombre)
                 except Exception as e:
-                    lbl_estado.configure(text=f"❌ Error guardando {nombre}: {e}", text_color="#e74c3c")
+                    lbl_estado.configure(text=tr('❌ Error guardando {0}: {1}').format((nombre), (e)), text_color="#e74c3c")
                     return
 
             if not guardadas:
-                lbl_estado.configure(text="❌ No se pudo guardar ninguna key.", text_color="#e74c3c")
+                lbl_estado.configure(text=tr("❌ No se pudo guardar ninguna key."), text_color="#e74c3c")
                 return
 
             try:
@@ -2339,11 +2342,11 @@ class ArquitectoApp(
 
         btn_frame = ctk.CTkFrame(wizard, fg_color="transparent")
         btn_frame.pack(pady=10)
-        ctk.CTkButton(btn_frame, text="🧪 Test conexión", width=140, height=36,
+        ctk.CTkButton(btn_frame, text=tr("🧪 Test conexión"), width=140, height=36,
                       fg_color="#3498db", hover_color="#2980b9", command=_test_keys).pack(side="left", padx=6)
-        ctk.CTkButton(btn_frame, text="✅ Guardar y Empezar", width=200, height=36,
+        ctk.CTkButton(btn_frame, text=tr("✅ Guardar y Empezar"), width=200, height=36,
                       fg_color="#2ecc71", hover_color="#27ae60", command=guardar).pack(side="left", padx=6)
-        ctk.CTkButton(btn_frame, text="❌ Cancelar", width=110, height=36,
+        ctk.CTkButton(btn_frame, text=tr("❌ Cancelar"), width=110, height=36,
                       fg_color="#555", hover_color="#333", command=cancelar).pack(side="left", padx=6)
 
         wizard.wait_window()
@@ -2351,7 +2354,7 @@ class ArquitectoApp(
 
     def cmd_preferencias(self):
         ventana = GPromptWindow(self)
-        ventana.title("⚙️ Ajustes del Sistema")
+        ventana.title(tr("⚙️ Ajustes del Sistema"))
         ventana.geometry("500x400")
         ventana.transient(self)
         ventana.grab_set()
@@ -2366,10 +2369,10 @@ class ArquitectoApp(
         except Exception:
             _prefs_llm_labels = ["DeepSeek V4", "Google Gemini", "OpenAI GPT-4o", "Local (Ollama)"]
 
-        ctk.CTkLabel(tab_gen, text="👤 Tu nombre (saludo del Dashboard):",
+        ctk.CTkLabel(tab_gen, text=tr("👤 Tu nombre (saludo del Dashboard):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.entry_nombre_pref = ctk.CTkEntry(tab_gen, width=250,
-                                                placeholder_text="Tu nombre o apodo")
+                                                placeholder_text=tr("Tu nombre o apodo"))
         try:
             _prefs_existentes = self.store.cargar_preferencias() or {}
             _nombre_actual = _prefs_existentes.get("nombre", "")
@@ -2379,12 +2382,12 @@ class ArquitectoApp(
             logger.debug(f"[silent] {e}")
         self.entry_nombre_pref.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="🧠 Cerebro por defecto al iniciar:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("🧠 Cerebro por defecto al iniciar:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         self.combo_default_llm = ctk.CTkComboBox(tab_gen, values=_prefs_llm_labels, width=250)
         self.combo_default_llm.set(self.llm_var.get())
         self.combo_default_llm.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="▶️ Modo por defecto al iniciar:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("▶️ Modo por defecto al iniciar:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         _modos_display = ["Audio", "Imagen", "Vídeo"]
         _modo_to_display = {"audio": "Audio", "imagen": "Imagen", "video": "Vídeo"}
         _modo_from_display = {"Audio": "audio", "Imagen": "imagen", "Vídeo": "video"}
@@ -2393,7 +2396,7 @@ class ArquitectoApp(
         self.combo_default_modo.set(_modo_to_display.get(self.modo_var.get(), "Imagen"))
         self.combo_default_modo.pack(anchor="w", padx=20)
 
-        ctk.CTkLabel(tab_gen, text="🎨 Tema de interfaz:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
+        ctk.CTkLabel(tab_gen, text=tr("🎨 Tema de interfaz:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
         _temas_display = ["Dark", "Light", "System"]
         _tema_to_display = {"dark": "Dark", "light": "Light", "system": "System"}
         _tema_from_display = {"Dark": "dark", "Light": "light", "System": "system"}
@@ -2405,7 +2408,7 @@ class ArquitectoApp(
 
         # Estilo unificado con los switches del header (colores por tema)
         self.switch_sonido_var = ctk.BooleanVar(value=self._sonido_activo if hasattr(self, '_sonido_activo') else False)
-        ctk.CTkSwitch(tab_gen, text="🔔 Sonido al completar generación",
+        ctk.CTkSwitch(tab_gen, text=tr("🔔 Sonido al completar generación"),
                       variable=self.switch_sonido_var,
                       progress_color="#3498db",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -2417,7 +2420,7 @@ class ArquitectoApp(
 
         # ── Toggle: grabar vídeo de la sesión ──
         self.switch_video_sesion_var = ctk.BooleanVar(value=self._sesion_grabar_video if hasattr(self, '_sesion_grabar_video') else False)
-        ctk.CTkSwitch(tab_gen, text="🎥 Grabar vídeo (MP4) al usar 🎬 Sesión grabada",
+        ctk.CTkSwitch(tab_gen, text=tr("🎥 Grabar vídeo (MP4) al usar 🎬 Sesión grabada"),
                       variable=self.switch_video_sesion_var,
                       progress_color="#e74c3c",
                       font=ctk.CTkFont(size=11, weight="bold"),
@@ -2427,16 +2430,16 @@ class ArquitectoApp(
                       button_hover_color="#f3f4f6",
                       border_width=1).pack(anchor="w", padx=10, pady=(5, 2))
         ctk.CTkLabel(tab_gen,
-                     text="    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]",
+                     text=tr("    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]"),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
 
-        ctk.CTkLabel(tab_gen, text="📁 Ruta de ComfyUI (opcional, para auto-discovery):",
+        ctk.CTkLabel(tab_gen, text=tr("📁 Ruta de ComfyUI (opcional, para auto-discovery):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
 
         frame_ruta = ctk.CTkFrame(tab_gen, fg_color="transparent")
         frame_ruta.pack(anchor="w", padx=20, fill="x")
 
-        self.entry_comfyui_path = ctk.CTkEntry(frame_ruta, width=300, placeholder_text="C:\\ComfyUI o vacío si no usas")
+        self.entry_comfyui_path = ctk.CTkEntry(frame_ruta, width=300, placeholder_text=tr("C:\\ComfyUI o vacío si no usas"))
         prefs_exist = self.store.cargar_preferencias() or {}
         ruta_actual = prefs_exist.get("comfyui_path", "") or ""
         if ruta_actual:
@@ -2445,7 +2448,7 @@ class ArquitectoApp(
 
         def _seleccionar_carpeta():
             from tkinter import filedialog
-            carpeta = filedialog.askdirectory(title="Selecciona carpeta de ComfyUI")
+            carpeta = filedialog.askdirectory(title=tr("Selecciona carpeta de ComfyUI"))
             if carpeta:
                 self.entry_comfyui_path.delete(0, "end")
                 self.entry_comfyui_path.insert(0, carpeta)
@@ -2453,11 +2456,11 @@ class ArquitectoApp(
         ctk.CTkButton(frame_ruta, text="📂", width=35, command=_seleccionar_carpeta).pack(side="left", padx=(5, 0))
 
         ctk.CTkLabel(tab_gen,
-                     text="    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente.",
+                     text=tr("    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente."),
                      font=ctk.CTkFont(size=9, slant="italic"), text_color="#888").pack(anchor="w", padx=10)
 
         # Botón Guardar Abajo
-        btn_guardar = ctk.CTkButton(ventana, text="💾 Guardar Preferencias", fg_color="#2ecc71", hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
+        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color="#2ecc71", hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
         btn_guardar.pack(pady=(0, 20))
 
     def _guardar_y_cerrar_preferencias(self, ventana):
@@ -2523,9 +2526,9 @@ class ArquitectoApp(
         self.data._guardar_preferencias()
 
         if total_modelos > 0:
-            self.dialogs.set_estado(f"⚙️ Preferencias guardadas. ComfyUI: {total_modelos} modelos detectados. (API Keys → 🔑)", "#2ecc71")
+            self.dialogs.set_estado(tr('⚙️ Preferencias guardadas. ComfyUI: {0} modelos detectados. (API Keys → 🔑)').format(total_modelos), "#2ecc71")
         else:
-            self.dialogs.set_estado("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)", "#2ecc71")
+            self.dialogs.set_estado(tr("⚙️ Preferencias guardadas correctamente. (API Keys → botón 🔑 del header)"), "#2ecc71")
         ventana.destroy()
 
     def cmd_previsualizar(self):
@@ -2542,10 +2545,10 @@ class ArquitectoApp(
         prompt_actual = self.txt_salida.get("1.0", "end").strip()
 
         if not prompt_actual:
-            return self.dialogs.set_estado("⚠️ Genera un prompt primero para poder previsualizarlo.", "#e67e22")
+            return self.dialogs.set_estado(tr("⚠️ Genera un prompt primero para poder previsualizarlo."), "#e67e22")
 
         if self.modo_var.get() == "audio":
-            return self.dialogs.set_estado("⚠️ La previsualización solo está disponible para Imágenes y Vídeos.", "#e67e22")
+            return self.dialogs.set_estado(tr("⚠️ La previsualización solo está disponible para Imágenes y Vídeos."), "#e67e22")
         try: self.sesion._sesion_log("🎨 Previsualizó (boceto rápido)")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -2574,13 +2577,13 @@ class ArquitectoApp(
             if _time_ttl.time() - ts <= _PREVIEW_CACHE_TTL:
                 img_ctk = ctk.CTkImage(light_image=image_pil, dark_image=image_pil, size=(512, 512))
                 self.preview.mostrar_window(image_pil, img_ctk, url_imagen, desde_cache=True)
-                self.dialogs.set_estado("📥 Preview desde caché (sin llamada a API)", "#2ecc71")
+                self.dialogs.set_estado(tr("📥 Preview desde caché (sin llamada a API)"), "#2ecc71")
                 return
             else:
                 # Entrada expirada: eliminar y regenerar
                 del self._preview_cache[cache_key]
 
-        self.dialogs.set_estado("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos.", "#9b59b6")
+        self.dialogs.set_estado(tr("🎨 Previsualizando... Esto puede tardar unos 10-15 segundos."), "#9b59b6")
         self.dialogs.toggle_botones(False)
 
         # Usa el helper unificado (semáforo + retry con backoff).
@@ -2617,14 +2620,14 @@ class ArquitectoApp(
                 self._preview_cache[cache_key] = (image_pil, url_imagen, time.time())
                 self.preview.mostrar_window(image_pil, img_ctk, url_imagen,
                                             desde_cache=False)
-                self.dialogs.set_estado("✅ Previsualización generada con éxito.", "#2ecc71")
+                self.dialogs.set_estado(tr("✅ Previsualización generada con éxito."), "#2ecc71")
             except Exception as e:
-                self.dialogs.set_estado(f"❌ Error mostrando preview: {e}", "#e74c3c")
+                self.dialogs.set_estado(tr('❌ Error mostrando preview: {0}').format(e), "#e74c3c")
             finally:
                 self.dialogs.toggle_botones(True)
 
         def _on_err(msg):
-            self.dialogs.set_estado(f"❌ Error al generar imagen: {msg}", "#e74c3c")
+            self.dialogs.set_estado(tr('❌ Error al generar imagen: {0}').format(msg), "#e74c3c")
             self.dialogs.toggle_botones(True)
 
         # `texto_limpio` ya viene normalizado: lo pasamos a self.preview.generar
