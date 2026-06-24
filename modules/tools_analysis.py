@@ -419,9 +419,9 @@ class ToolsAnalysisService:
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🔍 Análisis de tus patrones creativos"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-        sub = f"Análisis de tus últimas {n} ideas — patrones, temas y sugerencias"
+        sub = tr("Análisis de tus últimas {0} ideas — patrones, temas y sugerencias").format(n)
         if cacheado:
-            sub += "  ·  💾 caché"
+            sub += "  ·  " + tr("💾 caché")
         ctk.CTkLabel(vent, text=sub,
                      font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
         txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
@@ -701,8 +701,8 @@ class ToolsAnalysisService:
                       command=vent.destroy).pack(side="left", padx=4)
 
         self.app.dialogs.set_estado(
-            f"🚀 Auto-mejora lista ({len(resultados) if resultados else 0} cards)"
-            + (" (caché)" if cacheado else ""), "#2ecc71")
+            tr("🚀 Auto-mejora lista ({0} cards)").format(len(resultados) if resultados else 0)
+            + (f" ({tr('💾 caché')})" if cacheado else ""), "#2ecc71")
 
     def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
@@ -793,26 +793,26 @@ class ToolsAnalysisService:
             if hist:
                 fechas = [h.get("fecha", "") for h in hist if isinstance(h, dict) and h.get("fecha")]
                 rango_txt = f"{fechas[-1] if fechas else '—'} → {fechas[0] if fechas else '—'}"
-                sub = f"📅 {rango_txt} · {len(hist)} prompts ({rango})"
+                sub = tr("📅 {0} · {1} prompts ({2})").format(rango_txt, len(hist), rango)
             else:
-                sub = f"📅 Sin prompts en el rango ({rango})"
+                sub = tr("📅 Sin prompts en el rango ({0})").format(rango)
             ctk.CTkLabel(scroll, text=sub, font=ctk.CTkFont(size=10),
                          text_color=c_muted).pack(pady=(0, 8))
 
             # ── Stats generales (no dependen del rango) ──
-            _seccion(scroll, "📊 Colecciones")
+            _seccion(scroll, tr("📊 Colecciones"))
             grid = ctk.CTkFrame(scroll, fg_color="transparent")
             grid.pack(fill="x", padx=5)
             stats_gen = [
-                ("📋 Historial", len(hist_full), "#3498db"),
-                ("⭐ Favoritos", len(favs), "#f1c40f"),
-                ("🌟 Estrellas", len(stars), "#e74c3c"),
-                ("💎 Seeds", len(seeds), "#9b59b6"),
-                ("🧑 Personajes", len(self.app.store.personajes or []), "#2ecc71"),
-                ("🔗 LoRAs", len(self.app.store.loras or []), "#e67e22"),
-                ("🏷️ Snippets", len(prefs.get("snippets", [])), "#1abc9c"),
-                ("📐 Fórmulas", len(prefs.get("formulas", [])), "#e91e63"),
-                ("🧬 ADNs", len(prefs.get("adns_guardados", [])), "#00bcd4"),
+                (tr("📋 Historial"), len(hist_full), "#3498db"),
+                (tr("⭐ Favoritos"), len(favs), "#f1c40f"),
+                (tr("🌟 Estrellas"), len(stars), "#e74c3c"),
+                (tr("💎 Seeds"), len(seeds), "#9b59b6"),
+                (tr("🧑 Personajes"), len(self.app.store.personajes or []), "#2ecc71"),
+                (tr("🔗 LoRAs"), len(self.app.store.loras or []), "#e67e22"),
+                (tr("🏷️ Snippets"), len(prefs.get("snippets", [])), "#1abc9c"),
+                (tr("📐 Fórmulas"), len(prefs.get("formulas", [])), "#e91e63"),
+                (tr("🧬 ADNs"), len(prefs.get("adns_guardados", [])), "#00bcd4"),
             ]
             for i, (label, val, color) in enumerate(stats_gen):
                 col, row = i % 3, i // 3
@@ -854,21 +854,21 @@ class ToolsAnalysisService:
                     largos.append(len(str(contenido).split()))
 
             if modelos:
-                _seccion(scroll, "🏆 Top modelos usados")
+                _seccion(scroll, tr("🏆 Top modelos usados"))
                 top_m = modelos.most_common(8)
                 max_m = top_m[0][1] if top_m else 1
                 for modelo, count in top_m:
                     _barra(scroll, modelo, count, max_m, "#58a6ff")
 
             if plataformas:
-                _seccion(scroll, "🌐 Top plataformas")
+                _seccion(scroll, tr("🌐 Top plataformas"))
                 top_p = plataformas.most_common(6)
                 max_p = top_p[0][1] if top_p else 1
                 for plat, count in top_p:
                     _barra(scroll, plat, count, max_p, "#3fb950")
 
             if ratios:
-                _seccion(scroll, "📐 Ratios más usados")
+                _seccion(scroll, tr("📐 Ratios más usados"))
                 top_r = ratios.most_common(8)
                 max_r = top_r[0][1] if top_r else 1
                 for r_lbl, count in top_r:
@@ -876,14 +876,14 @@ class ToolsAnalysisService:
 
             # Top estilos (antes omitido, ahora útil para identificar tendencias)
             if estilos_count:
-                _seccion(scroll, "🎨 Top estilos marcados")
+                _seccion(scroll, tr("🎨 Top estilos marcados"))
                 top_e = estilos_count.most_common(10)
                 max_e = top_e[0][1] if top_e else 1
                 for est_lbl, count in top_e:
                     _barra(scroll, est_lbl, count, max_e, "#a78bfa")
 
             if largos:
-                _seccion(scroll, "📏 Longitud de prompts (palabras)")
+                _seccion(scroll, tr("📏 Longitud de prompts (palabras)"))
                 media = sum(largos) // len(largos)
                 info = ctk.CTkFrame(scroll, fg_color=c_card, corner_radius=8,
                                     border_color="#30363d", border_width=1)
@@ -901,7 +901,7 @@ class ToolsAnalysisService:
                     if len(fecha) >= 7:
                         meses[fecha[:7]] += 1
             if meses:
-                _seccion(scroll, "📅 Prompts por mes")
+                _seccion(scroll, tr("📅 Prompts por mes"))
                 top_mes = sorted(meses.items(), reverse=True)[:12]
                 max_mes = max(v for _, v in top_mes) if top_mes else 1
                 for mes, count in top_mes:
@@ -909,7 +909,7 @@ class ToolsAnalysisService:
 
             # ── Top seeds aplicados ──
             if seeds:
-                _seccion(scroll, "💎 Seeds más usados (en este rango)")
+                _seccion(scroll, tr("💎 Seeds más usados (en este rango)"))
                 seed_usage = Counter()
                 for it in hist:
                     if isinstance(it, dict):
@@ -936,7 +936,7 @@ class ToolsAnalysisService:
                 return
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
-                w.writerow(["Fecha", "Modelo", "Plataforma", "Ratio", "Estilos", "Longitud"])
+                w.writerow([tr("Fecha"), tr("Modelo"), tr("Plataforma"), tr("Ratio"), tr("Estilos"), tr("Longitud (palabras)")])
                 for it in (hist_full or []):
                     if not isinstance(it, dict):
                         continue
@@ -1027,10 +1027,10 @@ class ToolsAnalysisService:
 
                         # Etiqueta calidad textual
                         pct = (total_val / total_max) * 100 if total_max else 0
-                        if pct >= 85: etiqueta = "🏆 Excelente"
-                        elif pct >= 70: etiqueta = "✨ Bueno"
-                        elif pct >= 50: etiqueta = "🟡 Mejorable"
-                        else: etiqueta = "⚠️ Necesita trabajo"
+                        if pct >= 85: etiqueta = tr("🏆 Excelente")
+                        elif pct >= 70: etiqueta = tr("✨ Bueno")
+                        elif pct >= 50: etiqueta = tr("🟡 Mejorable")
+                        else: etiqueta = tr("⚠️ Necesita trabajo")
 
                         ctk.CTkLabel(total_frame, text=f"{total_val} / {total_max}",
                                      font=ctk.CTkFont(size=36, weight="bold"),
@@ -1333,7 +1333,7 @@ class ToolsAnalysisService:
                       command=vent.destroy).pack(side="left", padx=4)
 
         def _fila_progreso(iteracion: int, score: float, texto: str):
-            etiqueta = "Original" if iteracion == 0 else f"Iteración {iteracion}"
+            etiqueta = tr("Original") if iteracion == 0 else tr("Iteración {0}").format(iteracion)
             color = color_para_score(int(score), 100)
             row = ctk.CTkFrame(progreso_frame, fg_color="transparent")
             row.pack(fill="x", pady=1)
@@ -1402,13 +1402,11 @@ class ToolsAnalysisService:
                     resultado_box.delete("1.0", "end")
                     resultado_box.insert("1.0", mejor["texto"])
                     if cancelar["v"]:
-                        resumen = f"⏹ Detenido — mejor versión: {int(mejor['score'])}/100"
+                        resumen = tr("⏹ Detenido — mejor versión: {0}/100").format(int(mejor['score']))
                     elif r["alcanzado"]:
-                        resumen = (f"🎯 Objetivo alcanzado: {int(mejor['score'])}/100 "
-                                   f"en {r['iteraciones']} iteración(es)")
+                        resumen = tr("🎯 Objetivo alcanzado: {0}/100 en {1} iteración(es)").format(int(mejor['score']), r['iteraciones'])
                     else:
-                        resumen = (f"⏱ Máximo de iteraciones — mejor versión: "
-                                   f"{int(mejor['score'])}/100 (iteración {mejor['iteracion']})")
+                        resumen = tr("⏱ Máximo de iteraciones — mejor versión: {0}/100 (iteración {1})").format(int(mejor['score']), mejor['iteracion'])
                     estado_lbl.configure(text=resumen, text_color=c["panel_text"])
                     vent.title(tr("🎯 Optimizador — resultado"))
 
@@ -1418,8 +1416,8 @@ class ToolsAnalysisService:
                         try:
                             self.app._abrir_ventana_diff(
                                 texto_inicial, mejor["texto"],
-                                "Original",
-                                f"Optimizada ({int(mejor['score'])}/100)")
+                                tr("Original"),
+                                tr("Optimizada ({0}/100)").format(int(mejor['score'])))
                         except Exception as e:
                             self.app.dialogs.set_estado(tr('❌ Error abriendo diff: {0}').format(e), "#e74c3c")
                     if hubo_cambio:
@@ -1522,9 +1520,9 @@ class ToolsAnalysisService:
                 # Cabecera
                 head = ctk.CTkFrame(cuerpo, fg_color="transparent")
                 head.pack(fill="x", pady=(0, 4))
-                for texto, ancho in (("Proveedor", 160), ("Llamadas", 70),
-                                     ("Tokens entrada", 110), ("Tokens salida", 110),
-                                     ("Coste", 80)):
+                for texto, ancho in ((tr("Proveedor"), 160), (tr("Llamadas"), 70),
+                                     (tr("Tokens entrada"), 110), (tr("Tokens salida"), 110),
+                                     (tr("Coste"), 80)):
                     ctk.CTkLabel(head, text=texto, width=ancho, anchor="w",
                                  font=ctk.CTkFont(size=10, weight="bold"),
                                  text_color=c["muted_text"]).pack(side="left", padx=2)
@@ -1557,9 +1555,9 @@ class ToolsAnalysisService:
                              text_color=c["panel_text"]).pack(anchor="w", pady=(14, 4))
                 head_h = ctk.CTkFrame(cuerpo, fg_color="transparent")
                 head_h.pack(fill="x", pady=(0, 4))
-                for texto, ancho in (("Fecha", 110), ("Llamadas", 70),
-                                     ("Tokens entrada", 110), ("Tokens salida", 110),
-                                     ("Coste/día", 80)):
+                for texto, ancho in ((tr("Fecha"), 110), (tr("Llamadas"), 70),
+                                     (tr("Tokens entrada"), 110), (tr("Tokens salida"), 110),
+                                     (tr("Coste/día"), 80)):
                     ctk.CTkLabel(head_h, text=texto, width=ancho, anchor="w",
                                  font=ctk.CTkFont(size=10, weight="bold"),
                                  text_color=c["muted_text"]).pack(side="left", padx=2)
@@ -1700,8 +1698,8 @@ class ToolsAnalysisService:
                 visibles.append((i, seed))
 
             if not visibles:
-                msg = (f"Sin resultados para '{termino}'" if termino
-                       else "(sin seeds guardados — pulsa '+ Crear nuevo seed')")
+                msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                       else tr("(sin seeds guardados — pulsa '+ Crear nuevo seed')"))
                 ctk.CTkLabel(scroll, text=msg,
                              text_color=c["muted_text"]).pack(pady=30)
                 return
@@ -1718,9 +1716,9 @@ class ToolsAnalysisService:
                 plataforma = seed.get('plataforma') or ''
                 estilos_seed = seed.get('estilos', [])
                 if isinstance(estilos_seed, list):
-                    estilos_txt = ', '.join(estilos_seed[:4]) or 'Sin estilos'
+                    estilos_txt = ', '.join(estilos_seed[:4]) or tr('Sin estilos')
                 else:
-                    estilos_txt = str(estilos_seed) or 'Sin estilos'
+                    estilos_txt = str(estilos_seed) or tr('Sin estilos')
 
                 info = f"📱 {modelo}"
                 if ratio: info += f" | 📐 {ratio}"
@@ -2143,16 +2141,16 @@ class ToolsAnalysisService:
         if specs.get("modos_gen") and "Quality" in str(specs.get("modos_gen", "")):
             pass
         if not specs.get("has_negative") and not specs.get("is_natural"):
-            consejos.append("💡 Modelo Turbo — usa solo tags limpios")
+            consejos.append(tr("💡 Modelo Turbo — usa solo tags limpios"))
         elif not specs.get("has_negative") and specs.get("is_natural"):
-            consejos.append("💡 Modelo natural — describe en prosa, no uses tags")
+            consejos.append(tr("💡 Modelo natural — describe en prosa, no uses tags"))
         elif specs.get("is_natural"):
-            consejos.append("💡 Lenguaje natural fluido funciona mejor que tags")
+            consejos.append(tr("💡 Lenguaje natural fluido funciona mejor que tags"))
         if "80" in str(specs.get("coste_energia", "")) or "Mystic" in modelo_name:
-            consejos.append("⚠️ Modelo costoso (80+ créditos por imagen)")
+            consejos.append(tr("⚠️ Modelo costoso (80+ créditos por imagen)"))
         best_for = specs.get("best_for", "").lower()
         if "lento" in best_for or "1m" in best_for:
-            consejos.append("⏱ Modelo lento (~1+ min/imagen)")
+            consejos.append(tr("⏱ Modelo lento (~1+ min/imagen)"))
         if consejos:
             import random
             consejo = random.choice(consejos)

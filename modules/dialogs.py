@@ -110,7 +110,7 @@ class DialogsService:
             hdr.pack(fill="x", padx=12, pady=(8, 4))
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
-            estado_actual = "✅ configurado" if current_key_init else "⚠️ sin configurar"
+            estado_actual = tr("✅ configurado") if current_key_init else tr("⚠️ sin configurar")
             color_estado = "#2ecc71" if current_key_init else "#e67e22"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
@@ -135,7 +135,7 @@ class DialogsService:
 
             fila = ctk.CTkFrame(card, fg_color="transparent")
             fila.pack(fill="x", padx=12, pady=(0, 8))
-            placeholder = "Pega aquí tu API key…" if pid != "ollama" else "(Ollama no necesita key)"
+            placeholder = tr("Pega aquí tu API key…") if pid != "ollama" else tr("(Ollama no necesita key)")
             ent = ctk.CTkEntry(fila, width=440, placeholder_text=placeholder, show="•")
             if current_key_init:
                 ent.insert(0, current_key_init)
@@ -168,9 +168,7 @@ class DialogsService:
                     from tkinter import messagebox
                     if not messagebox.askyesno(
                         tr("Borrar API key"),
-                        f"¿Borrar la API key de {info_l['label']}?\n\n"
-                        "Se eliminará de keyring del SO y de keys.json cifrado.\n"
-                        "Esta acción no se puede deshacer.",
+                        tr("¿Borrar la API key de {0}?\n\nSe eliminará de keyring del SO y de keys.json cifrado.\nEsta acción no se puede deshacer.").format(info_l['label']),
                         parent=v,
                     ):
                         return
@@ -230,7 +228,7 @@ class DialogsService:
             hdr.pack(fill="x", padx=12, pady=(8, 4))
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
-            estado_actual = "✅ configurado" if current_key_init else "⚪ opcional (modo anónimo)"
+            estado_actual = tr("✅ configurado") if current_key_init else tr("⚪ opcional (modo anónimo)")
             color_estado = "#2ecc71" if current_key_init else "#9ca3af"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
@@ -254,7 +252,7 @@ class DialogsService:
 
             fila = ctk.CTkFrame(card, fg_color="transparent")
             fila.pack(fill="x", padx=12, pady=(0, 8))
-            placeholder = "Pega tu key (sk_...) — déjalo vacío para modo anónimo"
+            placeholder = tr("Pega tu key (sk_...) — déjalo vacío para modo anónimo")
             ent = ctk.CTkEntry(fila, width=440, placeholder_text=placeholder, show="•")
             if current_key_init:
                 ent.insert(0, current_key_init)
@@ -286,9 +284,7 @@ class DialogsService:
                     from tkinter import messagebox
                     if not messagebox.askyesno(
                         tr("Borrar API key"),
-                        f"¿Borrar la API key de {info_l['label']}?\n\n"
-                        "Se eliminará de keyring del SO y de keys.json cifrado.\n"
-                        "La app volverá al modo anónimo (más lento).",
+                        tr("¿Borrar la API key de {0}?\n\nSe eliminará de keyring del SO y de keys.json cifrado.\nLa app volverá al modo anónimo (más lento).").format(info_l['label']),
                         parent=v,
                     ):
                         return
@@ -407,7 +403,7 @@ class DialogsService:
                      text_color=c["muted_text"]).pack(pady=(0, 16))
 
         # Descripción
-        descripcion = (
+        descripcion = tr(
             "Suite profesional de ingeniería de prompts para IA generativa\n"
             "(imagen, vídeo, audio) con 14+ LLMs como motores.\n\n"
             "Incluye comparador de modelos, A/B testing, ADN visual,\n"

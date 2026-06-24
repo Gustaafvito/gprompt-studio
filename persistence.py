@@ -8,6 +8,7 @@ import os
 
 from config import ARCHIVOS
 from logging_utils import log_operation
+from modules.i18n import tr
 
 logger = logging.getLogger("gprompt")
 
@@ -202,7 +203,7 @@ class DataStore:
         return ""
 
     def nombres_personajes(self) -> list[str]:
-        return ["— Sin personaje —"] + [p["nombre"] for p in self.personajes]
+        return [tr("— Sin personaje —")] + [p["nombre"] for p in self.personajes]
 
     # ── LoRAs ─────────────────────────────────────────────────────
 
@@ -243,7 +244,7 @@ class DataStore:
         return ""
 
     def nombres_loras(self) -> list[str]:
-        return ["— Sin LoRA —"] + [l["nombre"] for l in self.loras]
+        return [tr("— Sin LoRA —")] + [l["nombre"] for l in self.loras]
 
     # ── Plantillas ────────────────────────────────────────────────
 
@@ -275,7 +276,7 @@ class DataStore:
         return None
 
     def nombres_plantillas(self) -> list[str]:
-        return ["— Sin plantilla —"] + [p["nombre"] for p in self.plantillas]
+        return [tr("— Sin plantilla —")] + [p["nombre"] for p in self.plantillas]
 
     # ── Preferencias (dict, no lista) ─────────────────────────────
 

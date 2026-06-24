@@ -396,15 +396,15 @@ class UiEventsService:
                 logger.debug(f"[silent] {_e}")
             badges = []
             if specs.get("is_natural"):
-                badges.append("🌐 Natural")
+                badges.append(tr("🌐 Natural"))
             elif specs.get("no_weights"):
-                badges.append("⚡ Turbo")
+                badges.append(tr("⚡ Turbo"))
             else:
-                badges.append("🏷 Tags")
+                badges.append(tr("🏷 Tags"))
             if specs.get("has_negative"):
-                badges.append("🔴 Neg ✓")
+                badges.append(tr("🔴 Neg ✓"))
             else:
-                badges.append("🚫 Sin neg")
+                badges.append(tr("🚫 Sin neg"))
             if specs.get("max_imagenes", 0) > 1:
                 badges.append(f"🖼×{specs['max_imagenes']}")
 

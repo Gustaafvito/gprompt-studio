@@ -903,11 +903,11 @@ class UIBuildersService:
         # Botones rápidos de ratio (visuales)
         self.app.ratio_btns = {}
         ratios_quick = [
-            ("⬜", "1:1",  "Cuadrado (Instagram post)"),
-            ("📱", "9:16", "Vertical (Stories/TikTok/Reels)"),
-            ("🖥", "16:9", "Horizontal (YouTube/Web)"),
-            ("📸", "2:3",  "Foto vertical (retrato)"),
-            ("🖼", "3:2",  "Foto horizontal (paisaje)"),
+            ("⬜", "1:1",  tr("Cuadrado (Instagram post)")),
+            ("📱", "9:16", tr("Vertical (Stories/TikTok/Reels)")),
+            ("🖥", "16:9", tr("Horizontal (YouTube/Web)")),
+            ("📸", "2:3",  tr("Foto vertical (retrato)")),
+            ("🖼", "3:2",  tr("Foto horizontal (paisaje)")),
         ]
         for icono, ratio_val, tip in ratios_quick:
             btn = ctk.CTkButton(f2_inner, text=icono, width=24, height=28,

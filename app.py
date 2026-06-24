@@ -1372,8 +1372,8 @@ class ArquitectoApp(
                                  text_color=c["muted_text"],
                                  justify="center").pack(pady=30)
                 else:
-                    msg = (f"Sin resultados para '{termino}'" if termino
-                           else f"Sin plantillas en {cat_var.get()}")
+                    msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                           else tr("Sin plantillas en {0}").format(cat_var.get()))
                     ctk.CTkLabel(scroll, text=msg,
                                  text_color=c["muted_text"]).pack(pady=30)
                 return

@@ -1655,6 +1655,116 @@ TRADUCCIONES = {
     # --- Atajos: contador ---
     '{0} de {1} atajos': '{0} of {1} shortcuts',
     " (filtrando '{0}')": " (filtering '{0}')",
+    # --- Acerca de ---
+    'Suite profesional de ingeniería de prompts para IA generativa\n(imagen, vídeo, audio) con 14+ LLMs como motores.\n\nIncluye comparador de modelos, A/B testing, ADN visual,\nimport/export JSON pro (Veo/Sora/Kling), dashboard,\natajos de teclado y mucho más.': (
+        'Professional prompt engineering suite for generative AI\n(image, video, audio) with 14+ LLMs as engines.\n\nIncludes model comparator, A/B testing, visual DNA,\npro JSON import/export (Veo/Sora/Kling), dashboard,\nkeyboard shortcuts and much more.'
+    ),
+    # --- API key status ---
+    '⚠️ sin configurar': '⚠️ not configured',
+    '⚪ opcional (modo anónimo)': '⚪ optional (anonymous mode)',
+    'Pega aquí tu API key…': 'Paste your API key here…',
+    '(Ollama no necesita key)': '(Ollama does not need a key)',
+    'Pega tu key (sk_...) — déjalo vacío para modo anónimo': 'Paste your key (sk_...) — leave empty for anonymous mode',
+    '¿Borrar la API key de {0}?\n\nSe eliminará de keyring del SO y de keys.json cifrado.\nEsta acción no se puede deshacer.': (
+        'Delete the API key for {0}?\n\nIt will be removed from the OS keyring and encrypted keys.json.\nThis action cannot be undone.'
+    ),
+    '¿Borrar la API key de {0}?\n\nSe eliminará de keyring del SO y de keys.json cifrado.\nLa app volverá al modo anónimo (más lento).': (
+        'Delete the API key for {0}?\n\nIt will be removed from the OS keyring and encrypted keys.json.\nThe app will revert to anonymous mode (slower).'
+    ),
+    # --- Análisis de patrones ---
+    'Análisis de tus últimas {0} ideas — patrones, temas y sugerencias': 'Analysis of your last {0} ideas — patterns, themes and suggestions',
+    '💾 caché': '💾 cache',
+    '🚀 Auto-mejora lista ({0} cards)': '🚀 Auto-improve ready ({0} cards)',
+    # --- Estadísticas ---
+    '📅 {0} · {1} prompts ({2})': '📅 {0} · {1} prompts ({2})',
+    '📅 Sin prompts en el rango ({0})': '📅 No prompts in range ({0})',
+    '📊 Colecciones': '📊 Collections',
+    '📋 Historial': '📋 History',
+    '⭐ Favoritos': '⭐ Favorites',
+    '🌟 Estrellas': '🌟 Stars',
+    '🧑 Personajes': '🧑 Characters',
+    '🏷️ Snippets': '🏷️ Snippets',
+    '📐 Fórmulas': '📐 Formulas',
+    '🧬 ADNs': '🧬 DNAs',
+    '🏆 Top modelos usados': '🏆 Top models used',
+    '🌐 Top plataformas': '🌐 Top platforms',
+    '📐 Ratios más usados': '📐 Most used ratios',
+    '🎨 Top estilos marcados': '🎨 Top marked styles',
+    '📏 Longitud de prompts (palabras)': '📏 Prompt length (words)',
+    '📅 Prompts por mes': '📅 Prompts per month',
+    '💎 Seeds más usados (en este rango)': '💎 Most used seeds (in this range)',
+    # --- CSV / tabla de coste de sesión ---
+    'Fecha': 'Date',
+    'Plataforma': 'Platform',
+    'Estilos': 'Styles',
+    'Longitud (palabras)': 'Length (words)',
+    'Proveedor': 'Provider',
+    'Llamadas': 'Calls',
+    'Tokens entrada': 'Input tokens',
+    'Tokens salida': 'Output tokens',
+    'Coste': 'Cost',
+    'Coste/día': 'Cost/day',
+    # --- Scoring de calidad ---
+    '🏆 Excelente': '🏆 Excellent',
+    '✨ Bueno': '✨ Good',
+    '🟡 Mejorable': '🟡 Improvable',
+    '⚠️ Necesita trabajo': '⚠️ Needs work',
+    # --- Optimizador ---
+    'Original': 'Original',
+    'Iteración {0}': 'Iteration {0}',
+    '⏹ Detenido — mejor versión: {0}/100': '⏹ Stopped — best version: {0}/100',
+    '🎯 Objetivo alcanzado: {0}/100 en {1} iteración(es)': '🎯 Goal reached: {0}/100 in {1} iteration(s)',
+    '⏱ Máximo de iteraciones — mejor versión: {0}/100 (iteración {1})': '⏱ Max iterations — best version: {0}/100 (iteration {1})',
+    'Optimizada ({0}/100)': 'Optimized ({0}/100)',
+    # --- Seeds ---
+    "Sin resultados para '{0}'": "No results for '{0}'",
+    '(sin seeds guardados — pulsa \'+ Crear nuevo seed\')': "(no seeds saved — press '+ Create new seed')",
+    'Sin estilos': 'No styles',
+    # --- Pistas contextuales de modelo ---
+    '💡 Modelo Turbo — usa solo tags limpios': '💡 Turbo model — use clean tags only',
+    '💡 Modelo natural — describe en prosa, no uses tags': '💡 Natural model — describe in prose, avoid tags',
+    '💡 Lenguaje natural fluido funciona mejor que tags': '💡 Fluent natural language works better than tags',
+    '⚠️ Modelo costoso (80+ créditos por imagen)': '⚠️ Expensive model (80+ credits per image)',
+    '⏱ Modelo lento (~1+ min/imagen)': '⏱ Slow model (~1+ min/image)',
+    # --- Badges de modelo ---
+    '🌐 Natural': '🌐 Natural',
+    '⚡ Turbo': '⚡ Turbo',
+    '🏷 Tags': '🏷 Tags',
+    '🔴 Neg ✓': '🔴 Neg ✓',
+    '🚫 Sin neg': '🚫 No neg',
+    # --- Tooltips de ratio ---
+    'Cuadrado (Instagram post)': 'Square (Instagram post)',
+    'Vertical (Stories/TikTok/Reels)': 'Vertical (Stories/TikTok/Reels)',
+    'Horizontal (YouTube/Web)': 'Horizontal (YouTube/Web)',
+    'Foto vertical (retrato)': 'Vertical photo (portrait)',
+    'Foto horizontal (paisaje)': 'Horizontal photo (landscape)',
+    # --- Workers IA: mensajes de estado ---
+    'Prompt generado con imagen como referencia visual': 'Prompt generated with image as visual reference',
+    'Prompt mejorado con análisis visual': 'Prompt improved with visual analysis',
+    'Prompt anclado generado': 'Anchored prompt generated',
+    '🔍 Refinamiento listo — revisa el diff ({0}).': '🔍 Refinement ready — review the diff ({0}).',
+    '✅ Completado ({0}).': '✅ Completed ({0}).',
+    # --- Plantillas ---
+    'Sin plantillas en {0}': 'No templates in {0}',
+    # --- Grupos / familias de modelos ---
+    '── Anime / Ilustración ──': '── Anime / Illustration ──',
+    '── Familia FLUX ──': '── FLUX Family ──',
+    '── Familia Z-Image ──': '── Z-Image Family ──',
+    '── GPT Image (OpenAI en SeaArt) ──': '── GPT Image (OpenAI at SeaArt) ──',
+    '── Sora (OpenAI en SeaArt) ──': '── Sora (OpenAI at SeaArt) ──',
+    '── Grok (xAI en SeaArt) ──': '── Grok (xAI at SeaArt) ──',
+    '── Kling Image (Kuaishou en SeaArt) ──': '── Kling Image (Kuaishou at SeaArt) ──',
+    '── Qwen (Alibaba en SeaArt) ──': '── Qwen (Alibaba at SeaArt) ──',
+    '── Ideogram (en SeaArt) ──': '── Ideogram (at SeaArt) ──',
+    '── MAI Image (Microsoft en SeaArt) ──': '── MAI Image (Microsoft at SeaArt) ──',
+    '── Midjourney / Niji (en SeaArt) ──': '── Midjourney / Niji (at SeaArt) ──',
+    '── Seedream (ByteDance en SeaArt) ──': '── Seedream (ByteDance at SeaArt) ──',
+    '── Realismo SD ──': '── SD Realism ──',
+    '── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──': '── SeaArt Family (Film/Story/Fusion/Genesis/Ultra) ──',
+    '── SeaArt Oficiales ──': '── SeaArt Official ──',
+    '── Estilos Únicos SD ──': '── SD Unique Styles ──',
+    '── Otros Motores ──': '── Other Engines ──',
+    '── Familia FLUX (UNet) ──': '── FLUX Family (UNet) ──',
 }
 
 

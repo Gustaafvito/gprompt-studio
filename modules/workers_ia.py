@@ -192,9 +192,9 @@ class WorkersIaService:
                 self.app.after(0, lambda: self.app.refinar.mostrar_diff_refinamiento(texto_previo or "", texto))
             elif not es_ideas and not es_variaciones:
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
-            estado_msg = (f"🔍 Refinamiento listo — revisa el diff ({cerebro_elegido})."
+            estado_msg = (tr("🔍 Refinamiento listo — revisa el diff ({0}).").format(cerebro_elegido)
                           if es_refinamiento
-                          else f"✅ Completado ({cerebro_elegido}).")
+                          else tr("✅ Completado ({0}).").format(cerebro_elegido))
             self.app.after(0, lambda m=estado_msg: self.app.dialogs.set_estado(m, "#2ecc71"))
             self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
             self.app.after(0, self.app.dialogs._sonar_completado)
@@ -417,11 +417,11 @@ class WorkersIaService:
             def _mostrar_final():
                 self.app.dialogs.actualizar_salida(texto)
                 if es_referencia:
-                    modo_txt = "Prompt generado con imagen como referencia visual"
+                    modo_txt = tr("Prompt generado con imagen como referencia visual")
                 elif tiene_prompt:
-                    modo_txt = "Prompt mejorado con análisis visual"
+                    modo_txt = tr("Prompt mejorado con análisis visual")
                 else:
-                    modo_txt = "Prompt anclado generado"
+                    modo_txt = tr("Prompt anclado generado")
                 self.app.dialogs.set_estado(tr('✅ Visión: [{0}] · LLM: {1} · {2}').format((motor), (self.app.llm_var.get()), (modo_txt)), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
             self.app.after(0, _mostrar_final)
