@@ -420,9 +420,57 @@ def guardar_comfyui_path(ruta: str, store) -> bool:
         return False
 
 
+# Tokens (case-insensitive) para clasificar un checkpoint por su nombre de
+# fichero. Se prueban contra el stem en minúscula. AUDIO y VÍDEO tienen
+# prioridad; si no encaja ninguno, se asume IMAGEN.
+_COMFY_TOKENS_AUDIO = (
+    "acestep", "ace_step", "ace-step", "musicgen", "stable_audio",
+    "stableaudio", "audioldm", "mmaudio",
+)
+_COMFY_TOKENS_VIDEO = (
+    "wan", "ltx", "svd", "i2v", "t2v", "video", "stable_video",
+    "stable-video", "hunyuanvideo", "hunyuan_video", "hunyuan-video",
+    "cogvideo", "mochi", "animatediff",
+)
+# Carpetas de ComfyUI que contienen checkpoints/UNets utilizables como modelo.
+_COMFY_SUBDIRS = ("checkpoints", "diffusion_models", "unet")
+_COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
+
+
+def clasificar_modelo_comfy(nombre: str) -> str:
+    """Clasifica un checkpoint ComfyUI por su nombre: 'audio' | 'video' | 'imagen'."""
+    n = (nombre or "").lower()
+    if any(t in n for t in _COMFY_TOKENS_AUDIO):
+        return "audio"
+    if any(t in n for t in _COMFY_TOKENS_VIDEO):
+        return "video"
+    return "imagen"
+
+
+def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
+    """Escanea models/{checkpoints,diffusion_models,unet} de forma recursiva.
+
+    Returns:
+        dict {'imagen': [...], 'video': [...], 'audio': [...]} con los stems
+        ordenados (case-insensitive) y sin duplicados entre carpetas.
+    """
+    hallados = {"imagen": set(), "video": set(), "audio": set()}
+    for sub in _COMFY_SUBDIRS:
+        carpeta = ruta_comfyui / "models" / sub
+        if not carpeta.exists():
+            continue
+        for f in carpeta.rglob("*"):
+            if f.is_file() and f.suffix.lower() in _COMFY_EXTS:
+                hallados[clasificar_modelo_comfy(f.stem)].add(f.stem)
+    return {k: sorted(v, key=str.lower) for k, v in hallados.items()}
+
+
 def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None) -> tuple:
     """
     Escanea la carpeta de ComfyUI para encontrar modelos instalados.
+
+    Recorre checkpoints + diffusion_models + unet (recursivo, incluye
+    subcarpetas) y clasifica cada fichero en imagen/vídeo/audio por su nombre.
 
     Returns:
         tuple: (grupos_img, grupos_vid) - listas de tuplas (grupo, [modelos])
@@ -433,46 +481,24 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
     if not ruta_comfyui or not Path(ruta_comfyui).exists():
         return None, None
 
-    grupos_img = []
-    grupos_vid = []
+    hallados = _escanear_comfy_root(Path(ruta_comfyui))
+    grupos_img = [("── ComfyUI Local ──", hallados["imagen"])] if hallados["imagen"] else None
+    grupos_vid = [("── ComfyUI Video ──", hallados["video"])] if hallados["video"] else None
+    return grupos_img, grupos_vid
 
-    checkpoints = Path(ruta_comfyui) / "models" / "checkpoints"
-    if checkpoints.exists():
-        # Modelos de imagen
-        modelos_img = []
-        # Modelos de video
-        modelos_vid = []
 
-        for f in checkpoints.glob("*.safetensors"):
-            nombre = f.stem
-            # Detectar si es modelo de video
-            es_video = any(x in nombre.lower() for x in ["wan", "ltx", "svd", "i2v", "video", "stable_video"])
-            if es_video:
-                modelos_vid.append(nombre)
-            else:
-                modelos_img.append(nombre)
-
-        modelos_img.extend([f.stem for f in checkpoints.glob("*.ckpt")])
-        modelos_img.extend([f.stem for f in checkpoints.glob("*.pth")])
-
-        modelos_img = sorted(modelos_img)
-        modelos_vid = sorted(set(modelos_vid))
-
-        if modelos_img:
-            grupos_img.append(("── ComfyUI Checkpoints ──", modelos_img))
-        if modelos_vid:
-            grupos_vid.append(("── ComfyUI Video ──", modelos_vid))
-
-    i2v = Path(ruta_comfyui) / "models" / "diffusion_models"
-    if i2v.exists():
-        modelos_video = sorted([f.stem for f in i2v.glob("*.safetensors")])
-        modelos_video.extend(sorted([f.stem for f in i2v.glob("*.ckpt")]))
-        # Filtrar solo los modelos de video conocidos
-        modelos_video = [m for m in modelos_video if any(x in m.lower() for x in ["wan", "ltx", "svd", "i2v", "video", "stable_video"])]
-        if modelos_video:
-            grupos_vid.append(("── ComfyUI Video ──", modelos_video))
-
-    return grupos_img if grupos_img else None, grupos_vid if grupos_vid else None
+def _cargar_preferencias_seguras() -> dict:
+    """Lee preferencias.json directamente (sin depender de persistence.py para
+    evitar import circular). Devuelve {} si no existe o falla."""
+    import json as _json
+    try:
+        ruta = ARCHIVOS["preferencias"]
+        if ruta.exists():
+            with open(ruta, "r", encoding="utf-8") as f:
+                return _json.load(f) or {}
+    except Exception as e:
+        logger.debug(f"[silent] {e}")
+    return {}
 
 
 def _cargar_modelos_locales():
@@ -517,27 +543,15 @@ def _cargar_modelos_locales():
     grupos_img = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("imagen", [])]
     grupos_vid = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("video", [])]
 
-    # Auto-discovery: agregar modelos de ComfyUI si se configuró ruta
-    comfy_ruta = data.get("comfyui_path") or ""
+    # Auto-discovery: agregar modelos de ComfyUI si se configuró ruta. La ruta
+    # puede venir en el propio JSON ("comfyui_path") o en las preferencias.
+    comfy_ruta = data.get("comfyui_path") or get_comfyui_path(_cargar_preferencias_seguras())
     if comfy_ruta and Path(comfy_ruta).exists():
-        checkpoint_dir = Path(comfy_ruta) / "models" / "checkpoints"
-        if checkpoint_dir.exists():
-            modelos_img_comfy = []
-            modelos_vid_comfy = []
-            for f in checkpoint_dir.glob("*.safetensors"):
-                nombre = f.stem
-                if any(x in nombre.lower() for x in ["wan", "ltx", "svd", "i2v", "video"]):
-                    modelos_vid_comfy.append(nombre)
-                else:
-                    modelos_img_comfy.append(nombre)
-
-            modelos_img_comfy = sorted(set(modelos_img_comfy))
-            modelos_vid_comfy = sorted(set(modelos_vid_comfy))
-
-            if modelos_img_comfy:
-                grupos_img.append(("── ComfyUI Local ──", modelos_img_comfy))
-            if modelos_vid_comfy:
-                grupos_vid.append(("── ComfyUI Video ──", modelos_vid_comfy))
+        hallados = _escanear_comfy_root(Path(comfy_ruta))
+        if hallados["imagen"]:
+            grupos_img.append(("── ComfyUI Local ──", hallados["imagen"]))
+        if hallados["video"]:
+            grupos_vid.append(("── ComfyUI Video ──", hallados["video"]))
 
     return grupos_img, grupos_vid
 
