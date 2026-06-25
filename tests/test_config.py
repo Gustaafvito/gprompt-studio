@@ -160,3 +160,33 @@ class TestModelosVigentes:
         # patrones de consumo que antes petaban / mostraban "None"
         assert (s.get("nota") or "s/n") == "s/n"
         assert float(s.get("nota") or 0) == 0.0
+
+
+class TestI18nSinRemanentesEspanol:
+    """Guarda: en modo EN no se cuela español en estilos ni en best_for de audio."""
+
+    def test_estilos_sin_acentos_en_ingles(self):
+        # Ningún estilo (footer) debe conservar acentos españoles tras tr() en EN.
+        import re
+
+        import config
+        from modules.i18n import set_idioma, tr
+        try:
+            set_idioma("en")
+            malos = []
+            for nom in ("ESTILOS_IMAGEN", "ESTILOS_VIDEO", "ESTILOS_AUDIO"):
+                for e in getattr(config, nom, []):
+                    if isinstance(e, str) and not e.startswith("─") and re.search(r"[áéíóúñ]", tr(e).lower()):
+                        malos.append((nom, e))
+            assert malos == [], f"estilos en español sin traducir en EN: {malos}"
+        finally:
+            set_idioma("es")
+
+    def test_audio_best_for_en_completo(self):
+        import json
+        import os
+        path = os.path.join(os.path.dirname(__file__), "..", "data", "model_specs_audio.json")
+        d = json.load(open(path, encoding="utf-8"))
+        falta = [k for k, s in d.items()
+                 if isinstance(s, dict) and s.get("best_for") and not s.get("best_for_en")]
+        assert falta == [], f"modelos de audio sin best_for_en: {falta}"

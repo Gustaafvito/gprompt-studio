@@ -309,7 +309,9 @@ class UiFooterService:
             # Ningún estilo marcado por defecto — el usuario debe elegir
             var = ctk.BooleanVar(value=False)
             local_checks[nombre] = var
-            cb = ctk.CTkCheckBox(sub_frame, text=nombre, variable=var,
+            # La clave (var) sigue siendo el nombre español (selección/inyección);
+            # solo el texto visible se traduce → en modo EN no se cuela español.
+            cb = ctk.CTkCheckBox(sub_frame, text=tr(nombre), variable=var,
                                  command=self._on_estilo_cambio,
                                  font=ctk.CTkFont(size=10),
                                  checkbox_width=16, checkbox_height=16,

@@ -20,6 +20,7 @@
       "coreano"
     ],
     "best_for": "Modelo flagship actual (Marzo 2026). Expresividad máxima, voces naturales, Studio integrado, 12 stems, Voice Cloning, Custom Models personalizados. Comercial con Pro/Premier.",
+    "best_for_en": "Current flagship model (March 2026). Maximum expressiveness, natural vocals, integrated Studio, 12 stems, Voice Cloning, custom Custom Models. Commercial with Pro/Premier.",
     "prompt_formula": "GMVP: Genre + Mood + Vocals + Production. Tags limpios (5-8 máximo). Negative: 'no elemento'. Custom Mode obligatorio.",
     "prompt_ejemplo_estilo": "indie folk, melancholic, breathy female vocals, fingerpicked acoustic guitar, warm analog sound, 94 BPM, no reverb wash, no synths",
     "prompt_ejemplo_letra": "[Verse 1]\nWalking down the old street...\n[Chorus]\nMidnight rain falling on me...",
@@ -82,6 +83,7 @@
       "coreano"
     ],
     "best_for": "Studio-grade audio (48kHz), Suno Studio DAW integrado, 12-stem separation, vocals realistas con vibrato natural. Generación 10x más rápida que v4.",
+    "best_for_en": "Studio-grade audio (48kHz), integrated Suno Studio DAW, 12-stem separation, realistic vocals with natural vibrato. 10x faster generation than v4.",
     "prompt_formula": "Genre + Mood + Vocals + Production. Negative: 'no X'. 5-8 tags óptimos.",
     "prompt_ejemplo_estilo": "neo-soul R&B, warm and groovy, smooth female vocals, talking drum, melodic guitar, 100 BPM, F minor",
     "prompt_ejemplo_letra": "[Verse]\nTalk to me softly...\n[Chorus]\nWe could be dancing all night long...",
@@ -133,6 +135,7 @@
       "coreano"
     ],
     "best_for": "Heavy genres (metal, rock, punk), Mashups creativos, géneros híbridos. Prompt Enhancement Helper. Agrega Add Vocals / Add Instrumentals / Inspire.",
+    "best_for_en": "Heavy genres (metal, rock, punk), creative mashups, hybrid genres. Prompt Enhancement Helper. Adds Add Vocals / Add Instrumentals / Inspire.",
     "prompt_formula": "Más conversacional que v5. Descripciones detalladas funcionan. 'A crushing industrial metal track with mechanical drums...'",
     "prompt_ejemplo_estilo": "midwest emo mixed with neosoul, warm vocals, dynamic drums, emotional guitar solos, introspective mood",
     "prompt_ejemplo_letra": "[Intro]\n(soft piano)...\n[Verse 1]\nI used to think I'd never fall in love...",
@@ -180,6 +183,7 @@
       "coreano"
     ],
     "best_for": "Audio limpio, Covers feature, Personas, hasta 4 min. Introdujo stem separation básico (2 stems).",
+    "best_for_en": "Clean audio, Covers feature, Personas, up to 4 min. Introduced basic stem separation (2 stems).",
     "prompt_formula": "Tags directos: género + mood + instrumentos. Estilo simple.",
     "prompt_ejemplo_estilo": "acoustic folk, fingerpicking, soft male vocals, warm and intimate, campfire atmosphere",
     "prompt_ejemplo_letra": "[Verse]\nWalking through the morning light...\n[Chorus]\nThis is where we come alive...",
@@ -222,6 +226,7 @@
       "coreano"
     ],
     "best_for": "Audio 48kHz stereo, instrumentales de calidad, jazz/clásica/electrónica. Timeline editing, inpainting (fix secciones), extiende hasta 10min sin drift musical.",
+    "best_for_en": "48kHz stereo audio, quality instrumentals, jazz/classical/electronic. Timeline editing, inpainting (fix sections), extends up to 10 min without musical drift.",
     "prompt_formula": "Tag-based: [Genre], [Mood], [Instruments], [Production]. Estilo 'sandwich': Top Bun (genre), Meat (vibe), Bottom Bun (production).",
     "prompt_ejemplo_estilo": "cinematic orchestral, epic trailer music, intense building tension, full strings brass stabs deep percussion, warm analog sound no vocals",
     "prompt_ejemplo_letra": "[Intro]\n(Orchestral build)...\n[Verse]\nDark clouds gathering above...",
@@ -276,6 +281,7 @@
       "coreano"
     ],
     "best_for": "Audio-to-audio remixing, key control, granular production control. Stem downloads (paid). Inpainting básico.",
+    "best_for_en": "Audio-to-audio remixing, key control, granular production control. Stem downloads (paid). Basic inpainting.",
     "prompt_formula": "Basic: 'A song about [tema], [genre], [mood], [instruments]'. Custom: título + estilo + letras separadas.",
     "prompt_ejemplo_estilo": "emotional pop ballad, piano soft strings intimate female vocals, slow tempo 65 BPM building to full chorus layered harmonies modern production warm vulnerable",
     "prompt_ejemplo_letra": "[Verse]\nEvery night I think about us...\n[Chorus]\nWe could be dancing in the rain...",
@@ -320,6 +326,7 @@
       "chino mandarín"
     ],
     "best_for": "Physical-grade high fidelity, paragraph-level precision control (14+ structural tags), 100+ instruments, automatic style-adaptive mixing.",
+    "best_for_en": "Physical-grade high fidelity, paragraph-level precision control (14+ structural tags), 100+ instruments, automatic style-adaptive mixing.",
     "prompt_formula": "Style: [Genre], [Mood], [Vocal description], [Tempo], [Key instruments], [Era/Style reference], [Production]. Lyrics: [Verse], [Chorus], etc.",
     "prompt_ejemplo_estilo": "indie folk melancholic intimate female vocals slightly raspy mid-register breathy on verse open on chorus fingerpicked acoustic guitar warm upright bass sparse brushed drums 94 BPM D minor no reverb wash no synths no drum machines",
     "prompt_ejemplo_letra": "[Verse]\nCaminando por la calle...\n[Chorus]\nLa lluvia cae sobre mí...",
@@ -371,6 +378,7 @@
       "español"
     ],
     "best_for": "Precisión de sección, 100+ instrumentos, producción profesional. Mejor que v2.0 en vocal y instrument separation.",
+    "best_for_en": "Section-level precision, 100+ instruments, professional production. Better than v2.0 at vocal and instrument separation.",
     "prompt_formula": "Prompt: [Genre], [Mood/Emotion], [Vocal description], [Tempo], [Key instruments], [Era/Style], [Production]. Lyrics: con tags [Verse], [Chorus].",
     "prompt_ejemplo_estilo": "blues soulful rainy night electric guitar melancholic male vocals slow tempo moody atmosphere warm analog production",
     "prompt_ejemplo_letra": "[Intro]\n(Guitar solo - slow mournful bluesy)...\n[Verse]\nEach drop of rain...\n[Chorus]\nMidnight rain falling on me...",
@@ -429,6 +437,7 @@
       "Música de videojuegos"
     ],
     "best_for": "Integrado en SeaArt. Toggle Vocal/Instrumental explícito. Generación rápida y económica.",
+    "best_for_en": "Integrated in SeaArt. Explicit Vocal/Instrumental toggle. Fast and cheap generation.",
     "prompt_formula": "Toggle Vocal/Instrumental. Letra directa sin tags. Estilo: género + mood + instrumentos.",
     "prompt_ejemplo_estilo": "electronic synthwave relaxing ambient background 80s retro vibes",
     "prompt_ejemplo_letra": "Letra directa sin tags estructurales",
@@ -464,6 +473,7 @@
       "coreano"
     ],
     "best_for": "Versión gratuita de v4.5 con mejoras. Available para usuarios free. Buena opción si no puedes pagar.",
+    "best_for_en": "Free version of v4.5 with improvements. Available for free users. Good option if you cannot pay.",
     "prompt_formula": "Igual que v4.5: más detalle funciona bien. Genre + mood + instrumentos + vocal description.",
     "prompt_ejemplo_estilo": "dream pop ethereal atmospheric floating vocals reverb-drenched guitars ambient synths 90s shoegaze influence",
     "prompt_ejemplo_letra": "[Verse]\nFloating through the neon lights...\n[Chorus]\nWe are infinite tonight...",
@@ -491,6 +501,7 @@
       "español"
     ],
     "best_for": "Generación de música de calidad estudio con control preciso (studio-grade). Producción profesional.",
+    "best_for_en": "Studio-grade music generation with precise control. Professional production.",
     "prompt_formula": "Prompt de estilo: [Género], [Mood], [Voz], [Tempo], [Instrumentos], [Producción]. Letra con tags de sección [Verse]/[Chorus].",
     "prompt_ejemplo_estilo": "cinematic orchestral epic uplifting strings brass choir wide dynamic studio production",
     "limitaciones": "PROVISIONAL: añadido desde la lista de modelos (sin panel). Faltan por medir nota, duración máx, max_chars de letra/estilo y toggles reales. Reauditar con el panel del modelo.",
