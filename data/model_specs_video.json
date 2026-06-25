@@ -84,6 +84,34 @@
     "vigente": true,
     "best_for_en": "Happy Horse engine (via SeaArt). FOUR inputs: Image-to-Video, Text-to-Video, Video reference and Edit video. 720p/1080p modes, suggestion magic, negative prompt."
   },
+  "Happy Horse 1.1": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "16:9",
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 9,
+    "best_for": "HappyHorse 1.1 (vía SeaArt): motor de vídeo mejorado, movimiento más cinematográfico y flujo de escena más natural. Especialmente bueno para escenas con cambios de luz, partículas, viento, reflejos y carga emocional. Multimodal: sube hasta 9 imágenes de referencia. Modos: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 1080p, 15s.",
+    "prompt_formula": "Describe sujeto + movimiento + dirección de cámara (\"slow push-in\", \"camera pans left\", \"character turns around\") + mood (cinematic, dreamy, dramatic, energetic). Usa referencias @ para combinar elementos. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "A close-up of a warrior standing in the rain, slow camera push-in, hair and cloak moving in the wind, dramatic lighting, emotional expression, cinematic fantasy style.",
+    "limitaciones": "Hasta 1080p (sin 4K). Duración confirmada 15s. El panel (layout multimodal @ de 9 refs, como Pony 1.1) se cortaba en Ejemplos: has_negative ASUMIDO false (sin sección de etiqueta negativa visible; el Happy Horse original sí la tenía). Sin Sonido visible (sin audio).",
+    "vigente": true,
+    "best_for_en": "HappyHorse 1.1 (via SeaArt): upgraded video engine with more cinematic motion and more natural scene flow. Especially good for scenes with lighting changes, particles, wind, reflections and emotional tone. Multimodal: upload up to 9 reference images. Modes: Video reference, Image-to-Video and Text-to-Video. Up to 1080p, 15s."
+  },
   "Kling 3.0 Turbo": {
     "nota": null,
     "has_negative": true,
@@ -401,6 +429,34 @@
     ],
     "vigente": true,
     "best_for_en": "Speed and VLOGs (free for a limited time). Image/Text/Video-ref with @ references + character library. 8-15s. Up to 4K. Prompts up to 5000 characters."
+  },
+  "Seedance 2.0 Mini": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Mini de Seedance 2.0: multimodal con referencias @ + librería de personajes, priorizando velocidad y coste (gratis por tiempo limitado para miembros). TRES modos de entrada: Referencia al vídeo, Image-to-Video y Text-to-Video. Máx 720p, 15s, prompts hasta 5000 chars.",
+    "prompt_formula": "Usa referencias con @ y prompts concretos. Jerarquía Sujeto > Acción > Cámara > Estilo. Para iteración rápida, descripciones breves por segmento. Prompt máx 5000 chars.",
+    "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; quick dynamic action shot, cinematic camera movement, dramatic lighting.",
+    "limitaciones": "Máx 720p (sin 1080p/2K/4K, a diferencia de Seedance 2.0). Duración confirmada 15s. El panel no muestra Sonido (sin audio nativo, a diferencia del padre) ni prompt negativo. max_imagenes asumido 4 (heredado; el panel no lo numera).",
+    "vigente": true,
+    "best_for_en": "Mini version of Seedance 2.0: multimodal with @ references + character library, prioritizing speed and cost (free for limited time for members). THREE input modes: Video reference, Image-to-Video and Text-to-Video. Up to 720p, 15s, prompts up to 5000 chars."
   },
   "Nano Banana Pro Video": {
     "nota": 3.3,
@@ -1128,6 +1184,34 @@
     "vigente": true,
     "best_for_en": "Multimodal model with references: upload up to 9 images to combine characters, objects, scenes and special effects precisely. FOUR modes: Video reference, Image-to-Video, Text-to-Video and Edit video. Character library."
   },
+  "SeaArt Pony 1.1": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "16:9",
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3"
+    ],
+    "max_chars": 2500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes": 9,
+    "best_for": "SeaArt Pony 1.1: modelo multimodal de vídeo. Sube hasta 9 imágenes de referencia para combinar personajes, objetos, escenas y efectos especiales con precisión. Modos: Referencia al vídeo, Image-to-Video y Text-to-Video. Hasta 1080p, 15s.",
+    "prompt_formula": "Usa referencias con @ y combina elementos: \"@imagen1 personaje, @imagen2 escena, @imagen3 efecto\". Compón el contenido con precisión. Prompt máx 2500 chars.",
+    "prompt_ejemplo": "@image1 as the main character in @image2 scene, with the special effects of @image3, cinematic composition and camera movement.",
+    "limitaciones": "Hasta 1080p (sin 4K). Duración confirmada 15s. El panel no muestra Sonido (sin audio) ni prompt negativo.",
+    "vigente": true,
+    "best_for_en": "SeaArt Pony 1.1: multimodal video model. Upload up to 9 reference images to combine characters, objects, scenes and special effects precisely. Modes: Video reference, Image-to-Video and Text-to-Video. Up to 1080p, 15s."
+  },
   "SeaArt Sono Blink": {
     "nota": null,
     "has_negative": false,
@@ -1793,6 +1877,34 @@
     "limitaciones": "duración: solo confirmado 15s (dropdown, puede tener más). El panel no muestra Sonido (sin audio) ni prompt negativo.",
     "vigente": true,
     "best_for_en": "Fast version of StarDream 2.0: multimodal with @ references (Seedance style) + character library, prioritizing speed. THREE input modes: Video reference, Image-to-Video and Text-to-Video. Up to 4K, prompts up to 5000 chars."
+  },
+  "StarDream 2.0 Mini": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "15s"
+    ],
+    "ratios": [
+      "3:4",
+      "9:16",
+      "1:1",
+      "4:3",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "480p",
+      "720p"
+    ],
+    "max_imagenes": 4,
+    "best_for": "Versión Mini de StarDream 2.0: multimodal con referencias @ (personajes/accesorios/vestuario/escenas) + librería de personajes, priorizando velocidad y coste (gratis por tiempo limitado). Máx 720p, 15s, prompts hasta 5000 chars.",
+    "prompt_formula": "Usa referencias con @ y prompts concretos para iteración rápida. Jerarquía Sujeto > Acción > Cámara > Estilo. Prompt máx 5000 chars.",
+    "prompt_ejemplo": "@image1 as the main character, @image2 as the scene; quick dynamic action shot, cinematic camera, dramatic lighting.",
+    "limitaciones": "Máx 720p (sin 2K/4K, a diferencia de StarDream 2.0). Duración confirmada 15s. El panel no muestra Sonido (sin audio) ni prompt negativo. max_imagenes asumido 4 (heredado de la familia; el panel no lo numera).",
+    "vigente": true,
+    "best_for_en": "Mini version of StarDream 2.0: multimodal with @ references (characters/props/wardrobe/scenes) + character library, prioritizing speed and cost (free for limited time). Up to 720p, 15s, prompts up to 5000 chars."
   },
   "Sora2 Video": {
     "nota": 4.4,

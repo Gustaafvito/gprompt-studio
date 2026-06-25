@@ -192,6 +192,7 @@ GRUPOS_VIDEO = [
         "SeaArt Magic Rise", "SeaArt Magic Star",
         "SeaArt Muse",
         "SeaArt Opera", "SeaArt Opera Lite", "SeaArt Plus", "SeaArt Pony",
+        "SeaArt Pony 1.1",
         "SeaArt Sono Blink",
         "SeaArt Sono Cast", "SeaArt Sono Epic", "SeaArt Sono Lite",
         "SeaArt SonoVision", "SeaArt Sono Wave", "SeaArt Sparkle", "SeaArt Stage",
@@ -205,7 +206,7 @@ GRUPOS_VIDEO = [
         "Kling 3.0 Turbo",
     ])),
     ("── Seedance ──", sorted([
-        "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast",
+        "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast", "Seedance 2.0 Mini",
     ])),
     ("── Nano Banana ──", sorted([
         "Nano Banana Video", "Nano Banana Pro Video",
@@ -214,7 +215,7 @@ GRUPOS_VIDEO = [
         "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7",
     ])),
     ("── StarDream ──", sorted([
-        "StarDream 2.0", "StarDream 2.0 Fast",
+        "StarDream 2.0", "StarDream 2.0 Fast", "StarDream 2.0 Mini",
     ])),
     ("── PixVerse ──", sorted([
         "PixVerse V6",
@@ -229,7 +230,7 @@ GRUPOS_VIDEO = [
         "Grok Imagine Video", "Grok Imagine Video 1.5",
     ])),
     ("── Happy Horse ──", sorted([
-        "Happy Horse",
+        "Happy Horse", "Happy Horse 1.1",
     ])),
     ("── Otros Motores ──", sorted([
         "Sora2 Video", "Veo 3.1", "Gemini Omni",
