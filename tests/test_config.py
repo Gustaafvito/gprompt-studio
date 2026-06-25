@@ -190,3 +190,39 @@ class TestI18nSinRemanentesEspanol:
         falta = [k for k, s in d.items()
                  if isinstance(s, dict) and s.get("best_for") and not s.get("best_for_en")]
         assert falta == [], f"modelos de audio sin best_for_en: {falta}"
+
+    def test_combos_audio_y_destinos_sin_acentos_en_ingles(self):
+        # Combos emoción/voz/idioma + destinos: ningún valor debe conservar
+        # acentos españoles tras tr() en modo EN.
+        import re
+
+        import config
+        from modules.i18n import set_idioma, tr
+        try:
+            set_idioma("en")
+            malos = []
+            fuentes = ("EMOCIONES_AUDIO", "VOCES_AUDIO", "IDIOMAS_AUDIO", "DESTINOS",
+                       "ESTILOS_GRUPOS")
+            for nom in fuentes:
+                v = getattr(config, nom, [])
+                vals = list(v.keys()) if isinstance(v, dict) else list(v)
+                for x in vals:
+                    if isinstance(x, str) and re.search(r"[áéíóúñ]", tr(x).lower()):
+                        malos.append((nom, x))
+            assert malos == [], f"valores en español sin traducir en EN: {malos}"
+        finally:
+            set_idioma("es")
+
+    def test_destino_reverse_map_round_trip(self):
+        # En EN el combo muestra el destino traducido; el reverse-map debe
+        # devolver la clave ES para el lookup de REGLAS_POR_DESTINO.
+        import config
+        from modules.i18n import set_idioma, tr
+        try:
+            set_idioma("en")
+            rev = {tr(d): d for d in config.DESTINOS}
+            assert rev["Client"] == "Cliente"
+            assert rev["Anthum (contest)"] == "Anthum (concurso)"
+            assert rev["Instagram"] == "Instagram"  # neutro
+        finally:
+            set_idioma("es")

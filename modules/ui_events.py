@@ -455,11 +455,11 @@ class UiEventsService:
         """Feedback visual cuando cambian emoción, voz o idioma en audio."""
         partes = []
         em = self.app.emocion_var.get() if hasattr(self.app, 'emocion_var') else ""
-        if em and em != "— Emoción —": partes.append(f"🎭 {em}")
+        if em and em != tr("— Emoción —"): partes.append(f"🎭 {em}")
         vz = self.app.voz_var.get() if hasattr(self.app, 'voz_var') else ""
-        if vz and vz != "— Voz —": partes.append(f"🎤 {vz}")
+        if vz and vz != tr("— Voz —"): partes.append(f"🎤 {vz}")
         id_a = self.app.idioma_audio_var.get() if hasattr(self.app, 'idioma_audio_var') else ""
-        if id_a and id_a != "— Idioma —": partes.append(f"🌐 {id_a}")
+        if id_a and id_a != tr("— Idioma —"): partes.append(f"🌐 {id_a}")
 
         if partes:
             self.app.dialogs.set_estado(tr('🎵 Filtros audio: {0}').format(' · '.join(partes)), "#9b59b6")

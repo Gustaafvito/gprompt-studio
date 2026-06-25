@@ -750,7 +750,7 @@ class UIBuildersService:
                      font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
-        self.app.combo_destino_vid = ctk.CTkComboBox(self.app.frame_video, values=DESTINOS, variable=self.app.destino_var, width=140,
+        self.app.combo_destino_vid = ctk.CTkComboBox(self.app.frame_video, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
         self.app.combo_destino_vid.pack(side="left", padx=5)
 
@@ -779,7 +779,7 @@ class UIBuildersService:
         ctk.CTkLabel(row1, text=tr("Destino:"), font=ctk.CTkFont(weight="bold"),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
-        self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=DESTINOS, variable=self.app.destino_var, width=140,
+        self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
         self.app.combo_destino_aud.pack(side="left", padx=5)
 
@@ -811,25 +811,25 @@ class UIBuildersService:
         row2 = ctk.CTkFrame(self.app.frame_audio, fg_color="transparent")
         row2.pack(fill="x", padx=10, pady=(0, 5))
 
-        self.app.emocion_var = ctk.StringVar(value="— Emoción —")
+        self.app.emocion_var = ctk.StringVar(value=tr("— Emoción —"))
         ctk.CTkLabel(row2, text=tr("Emoción:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 3))
-        self.app.combo_emocion = ctk.CTkComboBox(row2, values=["— Emoción —"] + EMOCIONES_AUDIO, variable=self.app.emocion_var, width=130, command=self.app.events.on_audio_filtro_cambio)
+        self.app.combo_emocion = ctk.CTkComboBox(row2, values=[tr("— Emoción —")] + [tr(e) for e in EMOCIONES_AUDIO], variable=self.app.emocion_var, width=130, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_emocion.pack(side="left", padx=(0, 10))
 
-        self.app.voz_var = ctk.StringVar(value="— Voz —")
+        self.app.voz_var = ctk.StringVar(value=tr("— Voz —"))
         ctk.CTkLabel(row2, text=tr("Voz:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
-        self.app.combo_voz = ctk.CTkComboBox(row2, values=["— Voz —"] + VOCES_AUDIO, variable=self.app.voz_var, width=155, command=self.app.events.on_audio_filtro_cambio)
+        self.app.combo_voz = ctk.CTkComboBox(row2, values=[tr("— Voz —")] + [tr(v) for v in VOCES_AUDIO], variable=self.app.voz_var, width=155, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_voz.pack(side="left", padx=(0, 10))
 
-        self.app.idioma_audio_var = ctk.StringVar(value="— Idioma —")
+        self.app.idioma_audio_var = ctk.StringVar(value=tr("— Idioma —"))
         ctk.CTkLabel(row2, text=tr("Idioma:"), font=ctk.CTkFont(weight="bold", size=11),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
-        self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=["— Idioma —"] + IDIOMAS_AUDIO, variable=self.app.idioma_audio_var, width=160, command=self.app.events.on_audio_filtro_cambio)
+        self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=[tr("— Idioma —")] + [tr(i) for i in IDIOMAS_AUDIO], variable=self.app.idioma_audio_var, width=160, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_idioma_audio.pack(side="left", padx=(0, 5))
 
     def _build_modelo_imagen_panel(self):
@@ -924,7 +924,7 @@ class UIBuildersService:
         f0.pack(side="left", padx=(8, 0))
         ctk.CTkLabel(f0, text=tr("Destino"), font=ctk.CTkFont(size=10),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
-        self.app.combo_destino_img = ctk.CTkComboBox(f0, values=DESTINOS, variable=self.app.destino_var, width=140, height=28,
+        self.app.combo_destino_img = ctk.CTkComboBox(f0, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140, height=28,
                                                    font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
         self.app.combo_destino_img.pack()
 

@@ -208,8 +208,8 @@ class DataMgmtService:
         self.app.combo_lora.set(p.get("lora", tr("— Sin LoRA —")))
         self.app.duracion_var.set(p.get("duracion", "10s"))
         self.app.switch_traduccion_var.set(p.get("traduccion", True))
-        dest = p.get("destino", "— Personal —")
-        if dest in DESTINOS: self.app.destino_var.set(dest)
+        dest = p.get("destino", tr("— Personal —"))
+        if dest in [tr(d) for d in DESTINOS]: self.app.destino_var.set(dest)
         self.app.brief_var.set(p.get("brief", False))
         self.app.events._on_brief_cambio()
         if hasattr(self.app, 'switch_instrumental_var'):
@@ -646,18 +646,18 @@ class DataMgmtService:
             if l and l != tr("— Sin LoRA —"): header += f"  LoRA:        {l}\n"
 
             dest = self.app.destino_var.get()
-            if dest and dest != "— Personal —": header += f"  Destino:     {dest}\n"
+            if dest and dest != tr("— Personal —"): header += f"  Destino:     {dest}\n"
             if self.app.switch_nsfw_var.get(): header += f"  NSFW:        Sí\n"
             if self.app.brief_var.get(): header += f"  Brief:       Activo\n"
 
             # Filtros audio
             if modo == "AUDIO":
                 em = self.app.emocion_var.get() if hasattr(self.app, 'emocion_var') else ""
-                if em and em != "— Emoción —": header += f"  Emoción:     {em}\n"
+                if em and em != tr("— Emoción —"): header += f"  Emoción:     {em}\n"
                 vz = self.app.voz_var.get() if hasattr(self.app, 'voz_var') else ""
-                if vz and vz != "— Voz —": header += f"  Voz:         {vz}\n"
+                if vz and vz != tr("— Voz —"): header += f"  Voz:         {vz}\n"
                 id_a = self.app.idioma_audio_var.get() if hasattr(self.app, 'idioma_audio_var') else ""
-                if id_a and id_a != "— Idioma —": header += f"  Idioma:      {id_a}\n"
+                if id_a and id_a != tr("— Idioma —"): header += f"  Idioma:      {id_a}\n"
 
             header += f"═════════════════════════════════════════════\n\n"
 
@@ -1459,17 +1459,19 @@ class DataMgmtService:
                 self.app.switch_instrumental_var.set(prefs.get("instrumental", False))
 
             if hasattr(self.app, 'emocion_var'):
-                em = prefs.get("emocion_audio", "— Emoción —")
-                self.app.emocion_var.set(em if em else "— Emoción —")
+                em = prefs.get("emocion_audio", tr("— Emoción —"))
+                self.app.emocion_var.set(em if em else tr("— Emoción —"))
             if hasattr(self.app, 'voz_var'):
-                vz = prefs.get("voz_audio", "— Voz —")
-                self.app.voz_var.set(vz if vz else "— Voz —")
+                vz = prefs.get("voz_audio", tr("— Voz —"))
+                self.app.voz_var.set(vz if vz else tr("— Voz —"))
             if hasattr(self.app, 'idioma_audio_var'):
-                id_a = prefs.get("idioma_audio", "— Idioma —")
-                self.app.idioma_audio_var.set(id_a if id_a else "— Idioma —")
+                id_a = prefs.get("idioma_audio", tr("— Idioma —"))
+                self.app.idioma_audio_var.set(id_a if id_a else tr("— Idioma —"))
 
-            dest = prefs.get("destino", "— Personal —")
-            if dest in DESTINOS: self.app.destino_var.set(dest)
+            # El combo muestra los destinos traducidos; aceptar el valor guardado
+            # si coincide con un destino (en el idioma activo).
+            dest = prefs.get("destino", tr("— Personal —"))
+            if dest in [tr(d) for d in DESTINOS]: self.app.destino_var.set(dest)
 
             self.app.brief_var.set(prefs.get("brief", False))
             self.app.events._on_brief_cambio()

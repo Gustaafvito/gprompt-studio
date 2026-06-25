@@ -24,12 +24,14 @@ Dependencias self (provistas por ArquitectoApp):
   _es_comfyui_turbo.
 """
 from config import (
+    DESTINOS,
     es_separador,
     get_audio_model_specs,
     get_image_model_specs,
     get_model_specs,
     get_prompt_template,
 )
+from modules.i18n import tr
 from prompts import REGLAS_APROVECHAR_BUDGET
 
 
@@ -956,13 +958,13 @@ class PromptsInyeccionService:
 
         # Inyectar preferencias de emoción, voz e idioma del usuario
         emocion = self.app.emocion_var.get() if hasattr(self.app, "emocion_var") else ""
-        if emocion and emocion != "— Emoción —":
+        if emocion and emocion != tr("— Emoción —"):
             extra += f"• 🎭 EMOCIÓN SOLICITADA: {emocion}. Adapta el mood, tempo y tonalidad a esta emoción.\n"
         voz = self.app.voz_var.get() if hasattr(self.app, "voz_var") else ""
-        if voz and voz != "— Voz —":
+        if voz and voz != tr("— Voz —"):
             extra += f"• 🎤 VOZ SOLICITADA: {voz}. Especifica este tipo de voz en el campo de estilo.\n"
         idioma = self.app.idioma_audio_var.get() if hasattr(self.app, "idioma_audio_var") else ""
-        if idioma and idioma != "— Idioma —":
+        if idioma and idioma != tr("— Idioma —"):
             extra += f"• 🌐 IDIOMA DE LA LETRA: {idioma}. Escribe TODA la letra en este idioma.\n"
 
         extra += REGLAS_APROVECHAR_BUDGET
@@ -985,9 +987,12 @@ class PromptsInyeccionService:
 
     def _inyectar_destino(self, system_prompt: str) -> str:
         dest = self.app.destino_var.get() if hasattr(self.app, "destino_var") else ""
-        if not dest or dest == "— Personal —":
+        if not dest or dest == tr("— Personal —"):
             return system_prompt
 
+        # El combo muestra el destino traducido; las reglas están keyed por el
+        # nombre ES → mapear de vuelta a la clave canónica (idioma activo).
+        dest = {tr(d): d for d in DESTINOS}.get(dest, dest)
         regla = self.REGLAS_POR_DESTINO.get(dest, "")
         if regla:
             return system_prompt + f"\n\n📢 {regla}\n"
@@ -1054,19 +1059,19 @@ class PromptsInyeccionService:
                 f"modifiques. NO los repitas en varias secciones.{plural_nota}"
             )
         dest = self.app.destino_var.get()
-        if dest and dest != "— Personal —":
+        if dest and dest != tr("— Personal —"):
             info += f" Destino: {dest}."
 
         # Audio: añadir emoción, voz, idioma si están seleccionados
         if modo == "audio":
             em = self.app.emocion_var.get() if hasattr(self.app, "emocion_var") else ""
-            if em and em != "— Emoción —":
+            if em and em != tr("— Emoción —"):
                 info += f" Emoción: {em}."
             vz = self.app.voz_var.get() if hasattr(self.app, "voz_var") else ""
-            if vz and vz != "— Voz —":
+            if vz and vz != tr("— Voz —"):
                 info += f" Voz: {vz}."
             id_a = self.app.idioma_audio_var.get() if hasattr(self.app, "idioma_audio_var") else ""
-            if id_a and id_a != "— Idioma —":
+            if id_a and id_a != tr("— Idioma —"):
                 info += f" Idioma letra: {id_a}."
 
         # Guardar en cache
