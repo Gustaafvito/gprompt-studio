@@ -7,6 +7,47 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
+def _ratios_en_orden_canonico(ratios, canon):
+    """Devuelve True si `ratios` sigue el orden canónico: los que están en
+    `canon` primero en ese orden, y los extras después en orden lexicográfico."""
+    idx = {r: i for i, r in enumerate(canon)}
+    esperado = sorted(ratios, key=lambda r: (idx.get(r, len(canon)), r))
+    return ratios == esperado
+
+
+class TestRatiosOrdenCanonico:
+    """Guarda: todos los `ratios` de los specs siguen RATIOS_VIDEO/RATIOS_IMAGEN."""
+
+    def test_video_specs_ratios_canonicos(self):
+        import json
+        import os
+
+        from config import RATIOS_VIDEO
+        path = os.path.join(os.path.dirname(__file__), "..", "data", "model_specs_video.json")
+        data = json.load(open(path, encoding="utf-8"))
+        malos = [k for k, s in data.items()
+                 if isinstance(s, dict) and s.get("ratios")
+                 and not _ratios_en_orden_canonico(s["ratios"], RATIOS_VIDEO)]
+        assert malos == [], f"ratios fuera de orden canónico: {malos}"
+
+    def test_imagen_specs_ratios_canonicos(self):
+        import json
+        import os
+
+        from config import RATIOS_IMAGEN
+        path = os.path.join(os.path.dirname(__file__), "..", "data", "model_specs_imagen.json")
+        data = json.load(open(path, encoding="utf-8"))
+        malos = [k for k, s in data.items()
+                 if isinstance(s, dict) and s.get("ratios")
+                 and not _ratios_en_orden_canonico(s["ratios"], RATIOS_IMAGEN)]
+        assert malos == [], f"ratios fuera de orden canónico: {malos}"
+
+    def test_comfy_video_synthetic_ratios_canonicos(self):
+        from config import _COMFY_SPECS_FAMILIA_VIDEO, RATIOS_VIDEO
+        for fam, s in _COMFY_SPECS_FAMILIA_VIDEO.items():
+            assert _ratios_en_orden_canonico(s["ratios"], RATIOS_VIDEO), fam
+
+
 class TestConfigHelpers:
     def test_es_separador_true(self):
         from config import es_separador

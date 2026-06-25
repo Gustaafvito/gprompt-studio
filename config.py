@@ -616,7 +616,7 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
         "is_natural": True, "has_negative": True, "has_audio": True,
         "audio_desc": "Audio nativo (LTX-2): ambiente, SFX, música y diálogo. Pon el diálogo entre comillas e indica idioma/acento; describe la cualidad de la voz y el entorno acústico",
         "duraciones": ["6s", "8s", "10s"],
-        "ratios": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        "ratios": ["1:1", "3:4", "4:3", "9:16", "16:9"],
         "modos_gen": ["768p", "1080p", "1440p"],
         "max_chars": 1500, "max_imagenes": 1, "nota": None,
         "best_for": "LTX-2.3 (Lightricks): vídeo+audio nativo. UN párrafo fluido en presente, estilo director: encuadre → escena+luz → acción → personaje → cámara (describe el estado final del movimiento) → audio. 4-8 frases, detallado para llenar la duración. CFG bajo (no lo subas).",
@@ -629,7 +629,7 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
     "wan": {
         "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
         "duraciones": ["3s", "4s", "5s"],
-        "ratios": ["16:9", "9:16", "1:1"],
+        "ratios": ["1:1", "9:16", "16:9"],
         "modos_gen": ["480p", "720p"],
         "max_chars": 1200, "max_imagenes": 1, "nota": None,
         "best_for": "Wan 2.2 (i2v/t2v local): prompts cortos y orientados a la acción con lenguaje de cámara profesional. Estructura: Sujeto + Acción + Cámara + Iluminación + Estilo. CFG 5-7, ~3-8s. Soporta prompt negativo.",
@@ -655,7 +655,7 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
     "hunyuan": {
         "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
         "duraciones": ["5s"],
-        "ratios": ["16:9", "9:16", "1:1"],
+        "ratios": ["1:1", "9:16", "16:9"],
         "modos_gen": ["540p", "720p"],
         "max_chars": 1200, "max_imagenes": 1, "nota": None,
         "best_for": "HunyuanVideo (Tencent): lenguaje natural cinematográfico, buena coherencia de movimiento. Describe sujeto, acción, cámara e iluminación en prosa. Soporta negative.",
