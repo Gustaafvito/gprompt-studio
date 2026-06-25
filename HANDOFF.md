@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 31**.
+Actualizado al cierre de la **sesión 32**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **776 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **780 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -62,6 +62,27 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 32 — i18n: limpieza de remanentes ES en modo EN (enfoque b)
+
+QA del usuario en modo EN destapó "mezcla" de idiomas. Decidido enfoque **(b)** y
+limpiados los remanentes ES visibles (3 commits, 776 → 780 verdes, ruff limpio):
+
+1. **Footer de estilos + best_for de audio** (`711fad1`): los checkboxes de estilo
+   usaban `text=nombre` crudo → siempre español; ahora `text=tr(nombre)` (clave de la
+   var sin cambios). +25 traducciones de estilos. Los 11 modelos de audio sin
+   `best_for_en` → añadido (la barra de info salía en español en EN).
+2. **Combos audio + destinos** (`b6f39c5`): Emoción/Voz/Idioma (28 valores +
+   centinelas) y Destination con el patrón centinela `tr()` en values + comparaciones.
+   DESTINOS es keyed (REGLAS_POR_DESTINO) → `_inyectar_destino` mapea de vuelta
+   `{tr(d): d}`. +43 traducciones. Comparaciones actualizadas en prompts_inyeccion,
+   ui_events, data_mgmt.
+3. Tests guardián anti-regresión (estilos/combos sin acentos en EN + reverse-map).
+
+Pendiente (ver "Pendiente i18n"): **D** salida del LLM (auto-mejora/patrones) y **E**
+contenido del Style guide (391 estilos → `.en.json`).
 
 ---
 
@@ -552,32 +573,31 @@ Tests **561 → 592** (avatar + config vigentes/orden/nota + estilo flux + searc
 
 ## 🚧 Pendiente
 
-### 🌐 i18n — mezcla de idiomas (decisión abierta, retomar aquí)
-**Síntoma (feedback del usuario):** en modo ES se ven cosas en inglés y en modo EN
-cosas en español ("se mezclan… y al revés"). **Causa raíz:** `tr()` (en
-`modules/i18n.py`) es **unidireccional ES→EN** (en modo `es` devuelve la clave tal
-cual). Por tanto, los **datos nativos en inglés** salen en inglés también en ES:
-- Valores de estilo English-native del combo Estilo (`Photoreal`, `Creative`,
-  `Fantasy`, `SciFi`, `Anime`, `Manga`…). Solo se tradujeron los ES→EN
-  (`Cinematográfico→Cinematic`, etc.).
-- Nombres de modelos / LoRAs / setups (estos últimos pasados a inglés a propósito).
-- Y al revés: remanentes ES sin envolver con `tr()` se ven en EN.
+### 🌐 i18n — mezcla de idiomas — ENFOQUE (b) EN MARCHA (sesión 32)
+**Decisión tomada con el usuario: (b) datos-convención fijos** — estilos-keyword
+(`Cyberpunk`, `Anime`), nombres de modelo/LoRA/setup quedan en inglés en ambos modos
+(traducirlos ensuciaría los prompts); solo se **limpian los remanentes ES** que se
+cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
 
-**Convención a respetar:** keywords de estilo (`Cyberpunk`, `Anime`) y nombres de
-modelo (`FLUX.1 [dev]`) se usan en inglés en TODA herramienta de imagen; traducirlos
-rompería/ensuciaría los prompts. Los nombres propios de datos del usuario tampoco.
+**Ya limpiado (sesión 32):**
+- Footer de estilos (`text=tr(nombre)`; +25 traducciones).
+- `best_for` de los 11 modelos de audio (`best_for_en`).
+- Combos de audio Emoción/Voz/Idioma (+ centinelas) y combo Destination (con
+  reverse-map `{tr(d): d}` para las reglas keyed). +43 traducciones.
+- Test guardián `TestI18nSinRemanentesEspanol` / combos (acentos en EN + reverse-map).
 
-**Opciones a decidir con el usuario (estaba a punto de elegir):**
-- **(a) Traducción bidireccional**: añadir mapa EN→ES (o invertir el dict) para que
-  en modo ES los términos English-native salgan en español. Mucho trabajo + riesgo
-  de tocar lógica acoplada (los estilos se inyectan; ya hay mapeo display↔clave en
-  el combo, habría que extender al sentido inverso).
-- **(b) Datos-convención fijos**: aceptar que estilos/modelos/LoRAs/setups quedan en
-  inglés en ambos modos (como ya pasa con los nombres de modelo) y solo limpiar los
-  **remanentes ES** que se ven en modo EN (lo más barato y coherente con el resto
-  de herramientas). **Recomendación: (b).**
-
-Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
+**PENDIENTE (retomar aquí, mecanismo distinto):**
+- **D — Salida del LLM** en *Auto-improve* y *Analysis of patterns* (`tools_analysis`):
+  el LLM responde en español porque el prompt de análisis no le pide el idioma de la
+  UI. Fix: inyectar "responde en inglés" cuando `get_idioma()=='en'`. Tamaño medio.
+- **E — Contenido del Style guide** (Learn, `modules/style_guide.py` + datos): los
+  **391 estilos** (nombre + descripción + cabeceras de grupo) salen de un fichero de
+  datos en español. Como tutorial/glosario (Fase C), necesita `GUIA_ESTILOS.en` +
+  loader por idioma. Las cabeceras `ESTILOS_GRUPOS` ya tienen traducción en
+  `TRADUCCIONES` (pendiente wirearlas con `tr()` al renderizar). Es el más grande.
+- **Nota cross-mode:** los valores de combo se persisten traducidos; al cambiar de
+  idioma un setup/pref viejo puede no recargar la selección (aceptable, requiere
+  reinicio igual).
 
 ### 🔴 ALTA
 - **Vídeo SeaArt — quedan ~8 motores externos**: Wan 2.7, Vidu Q3 Pro/Reference,
@@ -624,7 +644,7 @@ Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 776 passed / 0 failing ✅
+python -m pytest tests -q                     # → 780 passed / 0 failing ✅
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
