@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **773 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **776 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -91,6 +91,12 @@ Además, **imagen bilingüe**: `best_for_en` + `prompt_formula`/`prompt_ejemplo`
 8 familias sintéticas de `comfy_image_specs`, y `best_for_en` añadido a 3 entradas
 curadas locales que no lo tenían (flux-2-klein-base-4b, zImageBase_base, qwen edit).
 Patrón clave: por nombre de familia (robusto a renombrados), NO catálogo exacto.
+
+**3. Ratios en orden canónico** (`141185f`): los arrays `ratios` de los 161 modelos
+(imagen+vídeo) y de `comfy_video_specs` reordenados para seguir RATIOS_IMAGEN/
+RATIOS_VIDEO (canónicos primero, extras lexicográficos), consistentes entre modelos.
+Test guardián `TestRatiosOrdenCanonico`. Además, eliminada una entrada fantasma
+`ltx-2.3-22b-dev-fp8` que estaba mal en `model_specs_imagen.json` (LTX es vídeo).
 
 ---
 
@@ -618,7 +624,7 @@ Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 773 passed / 0 failing ✅
+python -m pytest tests -q                     # → 776 passed / 0 failing ✅
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)

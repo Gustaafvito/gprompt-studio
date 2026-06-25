@@ -1933,31 +1933,6 @@
     "cfg": 4,
     "limitaciones": "Solo edición de imagen. Necesita imagen base. No genera desde cero."
   },
-  "ltx-2.3-22b-dev-fp8": {
-    "nota": 4.7,
-    "has_negative": true,
-    "is_natural": true,
-    "ratios": [
-      "1:1",
-      "9:16",
-      "16:9",
-      "1280x720",
-      "1920x1080",
-      "2560x1440"
-    ],
-    "max_chars": 2500,
-    "modos_gen": [
-      "Estándar",
-      "Quality"
-    ],
-    "best_for": "LTX-Video 2.3 dev (22B fp8). El mejor open-source para Text-to-Video y Image-to-Video. Soporta 2K y 50fps. Audio sincronizado opcional, vídeo vertical nativo (1080×1920), text rendering mejorado, prompt adherence top.",
-    "prompt_formula": "MUY ESPECÍFICO: Mantén el prompt a 1-2 acciones máximo (más de eso confunde al modelo). Estructura: [sujeto] + [acción concreta] + [movimiento de cámara] + [iluminación] + [estilo]. Resolución debe ser divisible por 32. Frames: 8n+1 (ej: 121 frames). Específica resolución target desde el inicio (no upscalear después).",
-    "prompt_ejemplo": "A woman walks through misty forest, camera slowly zooms in, soft morning light filtering through trees, cinematic style. [resolution: 1280x720, 121 frames, 24fps]",
-    "sampler_recomendado": "LTX Sampler",
-    "pasos": 30,
-    "cfg": 4,
-    "limitaciones": "REQUIERE 32GB+ VRAM (versión bf16) o fp8 para 16-24GB. Negative recomendado: 'worst quality, inconsistent motion, blurry, jittery, distorted, watermarks'. Prompts demasiado largos empeoran resultado. Resolución debe ser múltiplo de 32."
-  },
   "svd": {
     "nota": 4.0,
     "has_negative": false,
