@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 30**.
+Actualizado al cierre de la **sesión 31**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **760 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **773 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -41,9 +41,9 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
 | Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
-| Modelos vídeo | **72 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Catálogo SeaArt vídeo CERRADO (queda solo "Kling O1" 4.0 suelto, opcional) |
+| Modelos vídeo | **76 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Sesión 31: +4 (StarDream 2.0 Mini, Seedance 2.0 Mini, SeaArt Pony 1.1, Happy Horse 1.1, por panel). Reference (Vidu Drama/Ad, Drama/Ad) descartados por convención |
 | Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
-| Plataforma ComfyUI | **Operativa** (sesión 28): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens, **specs sintéticas por familia** (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) vía `comfy_image_specs`. Pendiente: estilos por familia + wiring en caliente del dropdown |
+| Plataforma ComfyUI | **Operativa** (sesión 28+31): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens. **Specs sintéticas por familia** — imagen `comfy_image_specs` (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) **y vídeo `comfy_video_specs`** (ltx/wan/svd/hunyuan/cogvideo/mochi), ambas bilingües (`best_for_en` + `prompt_formula/ejemplo`). Pendiente: estilos por familia + wiring en caliente del dropdown |
 | Combo "Estilo" | **por familia** en imagen y vídeo (cada familia su paleta). config.ESTILOS_POR_FAMILIA(_VIDEO) + detectar_familia(_video) |
 | Desplegable modelos | Buscador + scroll + **familias colapsables** (▾/▸) + familias alfabéticas |
 | Biblioteca ejemplos | 27 entradas |
@@ -62,6 +62,35 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 31 — ComfyUI vídeo (LTX/Wan/SVD) + 4 modelos SeaArt nuevos
+
+Dos bloques, ambos mergeados a `main`. Tests **760 → 773 verdes**, ruff limpio.
+
+**1. 4 modelos de vídeo SeaArt nuevos** (`f2c8551`), auditados uno a uno con panel
+real (sin inventar defaults): **StarDream 2.0 Mini** (máx 720p, 5000 chars),
+**Seedance 2.0 Mini** (máx 720p, 5000 chars, sin audio aunque el padre sí),
+**SeaArt Pony 1.1** (9 refs, 720p/1080p, 2500 chars) y **Happy Horse 1.1** (9 refs,
+720p/1080p, 2500 chars; `has_negative` asumido false, panel cortado). Cada uno con
+`best_for`+`best_for_en`, añadidos a sus familias en `GRUPOS_VIDEO`. Catálogo vídeo
+**72 → 76**. Los 4 modelos "Reference" (Vidu Drama/Ad, Drama/Ad) descartados por
+convención (referencia/remake/edición).
+
+**2. Specs de VÍDEO ComfyUI por familia** (`acd6e8c`): el motor de vídeo trataba
+ComfyUI como tag-based (`"sd"`) e ignoraba el modelo → LTX/Wan/SVD salían mal.
+Nuevo `comfy_video_specs()` + fallback en `get_model_specs` (curado primero). Cada
+familia con su guía real (investigada en fuentes oficiales + docs ComfyUI):
+- **LTX-2.3**: párrafo cinematográfico en presente, audio nativo, `has_negative`,
+  CFG bajo, ~1500 chars. Estructura encuadre→escena→acción→cámara(estado final)→audio.
+- **Wan 2.2**: prompts cortos orientados a acción + lenguaje de cámara, negative, sin audio.
+- **SVD**: image-to-video puro (ignora el texto; motion_bucket_id). + Hunyuan/CogVideo/Mochi.
+
+Además, **imagen bilingüe**: `best_for_en` + `prompt_formula`/`prompt_ejemplo` en las
+8 familias sintéticas de `comfy_image_specs`, y `best_for_en` añadido a 3 entradas
+curadas locales que no lo tenían (flux-2-klein-base-4b, zImageBase_base, qwen edit).
+Patrón clave: por nombre de familia (robusto a renombrados), NO catálogo exacto.
 
 ---
 
@@ -589,7 +618,7 @@ Pedir al usuario 2-3 ejemplos concretos del mix antes de decidir el alcance.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 760 passed / 0 failing ✅
+python -m pytest tests -q                     # → 773 passed / 0 failing ✅
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
