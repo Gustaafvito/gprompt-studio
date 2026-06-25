@@ -203,3 +203,95 @@ class TestGetImageModelSpecsFallback:
             nombre = next(iter(ds))
             s = config.get_image_model_specs(nombre)
             assert "_comfy_familia" not in s
+
+
+class TestComfyImageSpecsBilingue:
+
+    def test_todas_las_familias_tienen_best_for_en(self):
+        for fam, spec in config._COMFY_SPECS_FAMILIA.items():
+            assert spec.get("best_for_en"), fam
+            assert spec.get("best_for"), fam
+
+
+# ──────────────────────────────────────────────────────────────────
+# comfy_video_specs (LTX / Wan / SVD / Hunyuan / CogVideo / Mochi)
+# ──────────────────────────────────────────────────────────────────
+# Claves que _inyectar_specs_video indexa directamente: deben existir SIEMPRE.
+_VIDEO_REQUIRED = (
+    "max_chars", "prompt_formula", "prompt_ejemplo", "best_for",
+    "has_audio", "audio_desc", "has_negative",
+)
+
+
+class TestDetectarFamiliaComfyVideo:
+
+    def test_familias_de_los_modelos_reales(self):
+        casos = {
+            "ltx-2.3-22b-dev-fp8": "ltx",
+            "wan2.2_i2v_high_noise_14B_fp8_scaled": "wan",
+            "wan2.2_i2v_low_noise_14B_fp8_scaled": "wan",
+            "svd": "svd",
+            "svd_xt_1_1": "svd",
+        }
+        for nombre, fam in casos.items():
+            assert config.detectar_familia_comfy_video(nombre) == fam, nombre
+
+    def test_extras(self):
+        assert config.detectar_familia_comfy_video("hunyuanvideo_720_fp8") == "hunyuan"
+        assert config.detectar_familia_comfy_video("CogVideoX-5b") == "cogvideo"
+        assert config.detectar_familia_comfy_video("mochi_preview_bf16") == "mochi"
+
+    def test_desconocido_vacio(self):
+        assert config.detectar_familia_comfy_video("juggernautXL_v9") == ""
+        assert config.detectar_familia_comfy_video("") == ""
+
+
+class TestComfyVideoSpecs:
+
+    def test_todas_las_familias_completas_y_bilingues(self):
+        for fam, spec in config._COMFY_SPECS_FAMILIA_VIDEO.items():
+            for k in _VIDEO_REQUIRED:
+                assert k in spec, f"{fam} sin {k}"
+            assert spec.get("best_for_en"), fam
+
+    def test_ltx_video_audio_negative(self):
+        s = config.comfy_video_specs("ltx-2.3-22b-dev-fp8")
+        assert s["has_audio"] is True and s["audio_desc"]
+        assert s["has_negative"] is True
+        assert s["_comfy_familia"] == "ltx"
+
+    def test_wan_sin_audio_con_negative(self):
+        s = config.comfy_video_specs("wan2.2_i2v_high_noise_14B_fp8_scaled")
+        assert s["has_audio"] is False
+        assert s["has_negative"] is True
+
+    def test_svd_sin_texto_sin_negative(self):
+        s = config.comfy_video_specs("svd")
+        assert s["has_negative"] is False and s["has_audio"] is False
+        assert "image-to-video" in s["best_for"].lower() or "image-to-video" in s["prompt_formula"].lower()
+
+    def test_audio_desc_vacio_si_no_audio(self):
+        # _inyectar_specs_video hace `if has_audio and audio_desc` — coherencia.
+        for fam, spec in config._COMFY_SPECS_FAMILIA_VIDEO.items():
+            if not spec["has_audio"]:
+                assert spec["audio_desc"] == "", fam
+
+    def test_desconocido_devuelve_none(self):
+        assert config.comfy_video_specs("modelo_raro_inventado") is None
+
+
+class TestGetModelSpecsVideoFallback:
+
+    def test_ltx_usa_synthetic(self):
+        s = config.get_model_specs("ltx-2.3-22b-dev-fp8")
+        assert s is not None and s.get("_comfy_familia") == "ltx"
+
+    def test_curado_tiene_prioridad(self):
+        ds = config._get_dataset("MODEL_SPECS")
+        if ds:
+            nombre = next(iter(ds))
+            s = config.get_model_specs(nombre)
+            assert "_comfy_familia" not in s
+
+    def test_desconocido_no_video_devuelve_none(self):
+        assert config.get_model_specs("xyz_inexistente_999") is None

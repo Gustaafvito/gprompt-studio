@@ -1836,6 +1836,7 @@
       "Estándar"
     ],
     "best_for": "Z-Image Base alternativo. Soporta negative y pesos. Calidad similar a z_image_bf16.",
+    "best_for_en": "Alternative Z-Image Base. Supports negative and weights. Quality similar to z_image_bf16.",
     "prompt_formula": "Tags con pesos SD tradicional.",
     "prompt_ejemplo": "(detailed portrait:1.2), 1girl, professional lighting, sharp focus, 8K",
     "sampler_recomendado": "Euler",
@@ -1858,6 +1859,7 @@
       "Estándar"
     ],
     "best_for": "FLUX 2 Klein base 4B (versión cuantizada fp8). Lenguaje natural descriptivo. Sin negative prompt.",
+    "best_for_en": "FLUX 2 Klein base 4B (fp8 quantized). Descriptive natural language. No negative prompt.",
     "prompt_formula": "Lenguaje natural en prosa fluida. Describe escena, sujeto, iluminación, cámara, estilo.",
     "prompt_ejemplo": "A photorealistic portrait of a woman with silver hair, soft natural lighting from a window on the left, shallow depth of field, professional photography, 85mm lens",
     "sampler_recomendado": "Euler",
@@ -1923,6 +1925,7 @@
       "Estándar"
     ],
     "best_for": "Qwen Image Edit (Septiembre 2025). Modelo de edición tipo InstructPix2Pix. Recibe imagen + instrucción de edición en lenguaje natural.",
+    "best_for_en": "Qwen Image Edit (September 2025). InstructPix2Pix-style editing model. Takes image + natural-language editing instruction.",
     "prompt_formula": "Instrucción de edición en lenguaje natural. 'change X to Y', 'add Z', 'make it more...'.",
     "prompt_ejemplo": "Change the dress color to red, add soft sunset lighting, make the background more blurred",
     "sampler_recomendado": "Euler",

@@ -513,42 +513,58 @@ _COMFY_FAMILIAS = (
 _COMFY_SPECS_FAMILIA = {
     "flux": {
         "is_natural": True, "has_negative": False,
-        "sampler_recomendado": "Euler / Simple (~20-28 pasos; FLUX usa guidance ~2.5-4, no CFG)",
-        "best_for": "lenguaje natural, texto legible y fotorrealismo (FLUX)",
+        "sampler_recomendado": "Euler / Simple (~20-28 pasos; FLUX usa guidance ~2.5-4, no CFG). El 9B va con CFG ~1-1.5",
+        "best_for": "Prosa natural fluida (50-150 palabras, hasta 400 en el 9B): sujeto → escena → iluminación → cámara. Encoder Qwen (entiende multilingüe). Sin pesos ni negative. CFG bajo.",
+        "best_for_en": "Flowing natural-language prose (50-150 words, up to 400 on the 9B): subject → scene → lighting → camera. Qwen text encoder (multilingual). No weights or negatives. Low CFG.",
+        "prompt_formula": "Frases completas en prosa, NO tags por comas. Empieza por el sujeto, sigue con el entorno, describe la iluminación exacta y cierra con los detalles de cámara/lente.",
+        "prompt_ejemplo": "A weathered fisherman mending nets on a wooden dock at golden hour, warm rim light catching the salt in his beard, calm harbor water behind, shot on 50mm with shallow depth of field.",
     },
     "z_image": {
         "is_natural": True, "has_negative": False,
-        "sampler_recomendado": "Euler (~20-30 pasos)",
-        "best_for": "lenguaje natural y composición coherente (Z-Image)",
+        "sampler_recomendado": "Euler (~20-30 pasos; la Turbo es destilada: sin negative ni samplers complejos)",
+        "best_for": "Lenguaje natural detallado y específico (no tags): define ropa, pose, fondo y luz. Términos de fotografía para retratos ('85mm, shallow DoF'). Calidad > longitud, sin instrucciones contradictorias.",
+        "best_for_en": "Detailed, specific natural language (not tags): define outfit, pose, background and lighting. Photography terms for portraits ('85mm, shallow DoF'). Quality over length, no contradictory instructions.",
+        "prompt_formula": "Descripción concreta y enfocada incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
+        "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field, natural skin texture.",
     },
     "qwen": {
         "is_natural": True, "has_negative": False,
-        "best_for": "edición por instrucciones / img2img (Qwen-Image-Edit)",
+        "best_for": "Edición por instrucciones: frase clara de objetivo + referencia a 'image 1/2/3' (hasta 3 imágenes). Conciso y específico. KSampler típico: 8 pasos, CFG 1, Euler.",
+        "best_for_en": "Instruction-based editing: clear goal sentence + reference to 'image 1/2/3' (up to 3 images). Concise and specific. Typical KSampler: 8 steps, CFG 1, Euler.",
+        "prompt_formula": "Instrucción única y clara de qué cambiar; referencia 'image 1/2/3' cuando uses varias; di qué transferir y qué mantener. Breve y preciso.",
+        "prompt_ejemplo": "Place the character from image 1 into the scene of image 2, keep the lighting of image 2, photorealistic, seamless blend.",
     },
     "ideogram": {
         "is_natural": True, "has_negative": False,
-        "best_for": "tipografía y texto dentro de la imagen (Ideogram)",
+        "best_for": "Tipografía y texto legible dentro de la imagen. Lenguaje natural; pon el texto deseado entre comillas.",
+        "best_for_en": "Typography and legible in-image text. Natural language; put the desired text in quotes.",
+        "prompt_formula": "Describe la escena en lenguaje natural e indica el texto exacto entre comillas, con estilo de tipografía y ubicación.",
+        "prompt_ejemplo": "A vintage coffee shop poster with the headline \"MORNING RITUAL\" in bold serif lettering, warm muted palette, centered composition.",
     },
     "pony": {
         "is_natural": False, "has_negative": True,
         "trigger_words": "score_9, score_8_up, score_7_up",
         "sampler_recomendado": "Euler a (~25 pasos, CFG 6-7)",
-        "best_for": "personajes y anime/furry estilo Pony",
+        "best_for": "Anime/furry estilo Pony con tags Danbooru. Trigger obligatorio score_9, score_8_up, score_7_up. CFG 6-7.",
+        "best_for_en": "Pony-style anime/furry with Danbooru tags. Required trigger score_9, score_8_up, score_7_up. CFG 6-7.",
     },
     "illustrious": {
         "is_natural": False, "has_negative": True,
         "sampler_recomendado": "Euler a (~28 pasos, CFG 5-6)",
-        "best_for": "anime/ilustración con tags Danbooru (Illustrious/NoobAI)",
+        "best_for": "Anime/ilustración con tags Danbooru (Illustrious/NoobAI). CFG 5-6.",
+        "best_for_en": "Anime/illustration with Danbooru tags (Illustrious/NoobAI). CFG 5-6.",
     },
     "sd15": {
         "is_natural": False, "has_negative": True,
         "sampler_recomendado": "DPM++ 2M Karras (~25 pasos, CFG 7)",
-        "best_for": "SD 1.5 (512px nativo)",
+        "best_for": "SD 1.5 (512px nativo), tags + negative. DPM++ 2M Karras ~25 pasos, CFG 7.",
+        "best_for_en": "SD 1.5 (512px native), tags + negative. DPM++ 2M Karras ~25 steps, CFG 7.",
     },
     "sdxl": {
         "is_natural": False, "has_negative": True,
         "sampler_recomendado": "DPM++ 2M Karras (~30 pasos, CFG 5-7)",
-        "best_for": "fotorrealismo y propósito general (SDXL)",
+        "best_for": "SDXL de propósito general / fotorrealismo, tags + negative. DPM++ 2M Karras ~30 pasos, CFG 5-7.",
+        "best_for_en": "General-purpose / photoreal SDXL, tags + negative. DPM++ 2M Karras ~30 steps, CFG 5-7.",
     },
 }
 
@@ -576,6 +592,127 @@ def comfy_image_specs(nombre: str) -> dict | None:
     if any(t in (nombre or "").lower() for t in COMFY_TURBO_TOKENS):
         specs["has_negative"] = False
     specs.setdefault("max_chars", 1500 if specs["is_natural"] else 500)
+    specs["_comfy_familia"] = fam
+    return specs
+
+
+# ── Familias de VÍDEO ComfyUI por nombre → specs sintéticas ────────
+# Espejo de comfy_image_specs para el lado vídeo. El motor de inyección de
+# vídeo (_inyectar_specs_video) indexa: max_chars, prompt_formula,
+# prompt_ejemplo, best_for, has_audio, audio_desc, has_negative — así que las
+# specs sintéticas deben incluir TODAS esas claves.
+# (clave, tokens) — específico → genérico.
+_COMFY_FAMILIAS_VIDEO = (
+    ("ltx",      ("ltx",)),
+    ("wan",      ("wan",)),
+    ("svd",      ("svd", "stable_video", "stable-video", "stablevideo")),
+    ("hunyuan",  ("hunyuanvideo", "hunyuan_video", "hunyuan-video")),
+    ("cogvideo", ("cogvideo",)),
+    ("mochi",    ("mochi",)),
+)
+
+_COMFY_SPECS_FAMILIA_VIDEO = {
+    "ltx": {
+        "is_natural": True, "has_negative": True, "has_audio": True,
+        "audio_desc": "Audio nativo (LTX-2): ambiente, SFX, música y diálogo. Pon el diálogo entre comillas e indica idioma/acento; describe la cualidad de la voz y el entorno acústico",
+        "duraciones": ["6s", "8s", "10s"],
+        "ratios": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        "modos_gen": ["768p", "1080p", "1440p"],
+        "max_chars": 1500, "max_imagenes": 1, "nota": None,
+        "best_for": "LTX-2.3 (Lightricks): vídeo+audio nativo. UN párrafo fluido en presente, estilo director: encuadre → escena+luz → acción → personaje → cámara (describe el estado final del movimiento) → audio. 4-8 frases, detallado para llenar la duración. CFG bajo (no lo subas).",
+        "best_for_en": "LTX-2.3 (Lightricks): native video+audio. ONE flowing paragraph in present tense, director style: framing → scene+light → action → character → camera (describe motion end-state) → audio. 4-8 sentences, detailed enough to fill the duration. Low CFG (don't raise it).",
+        "prompt_formula": "Párrafo único en presente: [Encuadre/plano] + [Escena, iluminación, color, textura] + [Acción central] + [Personaje: rasgos] + [Movimiento de cámara con estado final] + [Audio: ambiente/voz/música]. Físico, no emocional ('he pauses and looks aside', no 'he feels sad').",
+        "prompt_ejemplo": "Wide cinematic shot of a young woman in a red coat walking briskly through a rain-soaked Tokyo street at night, neon reflections on wet pavement, handheld camera following from behind then pushing in to a close-up as she stops and turns. Audio: ambient rain, distant traffic, soft synth music.",
+        "limitaciones": "CFG demasiado alto y aspect ratio incorrecto son los principales asesinos de calidad. Prompt corto en vídeo largo → el modelo se acelera. No uses tags ni pesos numéricos.",
+        "vigente": True,
+    },
+    "wan": {
+        "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
+        "duraciones": ["3s", "4s", "5s"],
+        "ratios": ["16:9", "9:16", "1:1"],
+        "modos_gen": ["480p", "720p"],
+        "max_chars": 1200, "max_imagenes": 1, "nota": None,
+        "best_for": "Wan 2.2 (i2v/t2v local): prompts cortos y orientados a la acción con lenguaje de cámara profesional. Estructura: Sujeto + Acción + Cámara + Iluminación + Estilo. CFG 5-7, ~3-8s. Soporta prompt negativo.",
+        "best_for_en": "Wan 2.2 (local i2v/t2v): short, action-oriented prompts with professional camera language. Structure: Subject + Action + Camera + Lighting + Style. CFG 5-7, ~3-8s. Supports negative prompt.",
+        "prompt_formula": "Sujeto + Acción + Cámara + Iluminación + Estilo/medio. Movimiento sutil y creíble ('soft wind moving grass; camera dolly left 10%', 'gentle zoom out'). Corto y concreto; en i2v deja que la imagen ancle la escena.",
+        "prompt_ejemplo": "Cinematic product hero shot, a perfume bottle on wet stone, gentle slow zoom out, soft rim light, shallow depth of field, filmic color grade.",
+        "limitaciones": "Evita acciones enormes en i2v (alucina). Más dirigible en t2v. CFG 5-7; sube steps si los frames salen blandos.",
+        "vigente": True,
+    },
+    "svd": {
+        "is_natural": True, "has_negative": False, "has_audio": False, "audio_desc": "",
+        "duraciones": ["2s", "3s", "4s"],
+        "ratios": ["16:9"],
+        "modos_gen": ["576p", "1024x576"],
+        "max_chars": 400, "max_imagenes": 1, "nota": None,
+        "best_for": "Stable Video Diffusion: image-to-video PURO. NO usa prompt de texto — el movimiento se controla con motion_bucket_id (1-1023, def. 127) y fps en ComfyUI. Sube una imagen; el texto se ignora. Clips de 2-4s.",
+        "best_for_en": "Stable Video Diffusion: PURE image-to-video. Does NOT use a text prompt — motion is controlled via motion_bucket_id (1-1023, default 127) and fps in ComfyUI. Upload an image; text is ignored. 2-4s clips.",
+        "prompt_formula": "SVD ignora el texto. Sube la imagen de origen y ajusta motion_bucket_id (~50 sutil, ~180 dinámico) y fps (~6-10). El prompt de texto NO condiciona el resultado.",
+        "prompt_ejemplo": "(SVD no usa texto — controla el movimiento con motion_bucket_id y fps en el nodo de ComfyUI).",
+        "limitaciones": "Sin condicionamiento por texto. Solo image-to-video. Clips cortos (2-4s).",
+        "vigente": True,
+    },
+    "hunyuan": {
+        "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
+        "duraciones": ["5s"],
+        "ratios": ["16:9", "9:16", "1:1"],
+        "modos_gen": ["540p", "720p"],
+        "max_chars": 1200, "max_imagenes": 1, "nota": None,
+        "best_for": "HunyuanVideo (Tencent): lenguaje natural cinematográfico, buena coherencia de movimiento. Describe sujeto, acción, cámara e iluminación en prosa. Soporta negative.",
+        "best_for_en": "HunyuanVideo (Tencent): cinematic natural language, good motion coherence. Describe subject, action, camera and lighting in prose. Supports negative.",
+        "prompt_formula": "Prosa cinematográfica: sujeto + acción + movimiento de cámara + iluminación + estilo. Presente, fluido.",
+        "prompt_ejemplo": "A lone astronaut walking across a red desert at dusk, slow tracking shot, long shadows, dust drifting in the wind, cinematic sci-fi tone.",
+        "limitaciones": "Sin audio nativo (modelo base). Clips cortos.",
+        "vigente": True,
+    },
+    "cogvideo": {
+        "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
+        "duraciones": ["6s"],
+        "ratios": ["16:9"],
+        "modos_gen": ["480p", "720p"],
+        "max_chars": 1200, "max_imagenes": 1, "nota": None,
+        "best_for": "CogVideoX (Zhipu): lenguaje natural descriptivo y detallado. Funciona mejor con prompts largos y ricos en detalle de escena y movimiento. Soporta negative.",
+        "best_for_en": "CogVideoX (Zhipu): descriptive, detailed natural language. Works best with long prompts rich in scene and motion detail. Supports negative.",
+        "prompt_formula": "Descripción larga y detallada en prosa: escena, sujeto, acción, cámara, iluminación, atmósfera.",
+        "prompt_ejemplo": "A golden retriever puppy running through a sunlit meadow of wildflowers, camera tracking alongside at low angle, petals scattering, warm afternoon light, joyful energetic mood.",
+        "limitaciones": "Sin audio nativo. Resolución/duración limitadas según variante.",
+        "vigente": True,
+    },
+    "mochi": {
+        "is_natural": True, "has_negative": False, "has_audio": False, "audio_desc": "",
+        "duraciones": ["5s"],
+        "ratios": ["16:9"],
+        "modos_gen": ["480p"],
+        "max_chars": 1000, "max_imagenes": 1, "nota": None,
+        "best_for": "Mochi 1 (Genmo): lenguaje natural, movimiento fluido y físico realista. Prosa cinematográfica concisa; no requiere negative.",
+        "best_for_en": "Mochi 1 (Genmo): natural language, fluid motion and realistic physics. Concise cinematic prose; no negative needed.",
+        "prompt_formula": "Prosa cinematográfica concisa: sujeto + acción + cámara + iluminación. Enfatiza el movimiento físico realista.",
+        "prompt_ejemplo": "A surfer carving down the face of a large wave at sunrise, dynamic side-tracking shot, spray catching golden light, fluid realistic water motion.",
+        "limitaciones": "Sin audio nativo. Generación pesada (modelo grande).",
+        "vigente": True,
+    },
+}
+
+
+def detectar_familia_comfy_video(nombre: str) -> str:
+    """Familia de vídeo ComfyUI ('ltx'|'wan'|'svd'…) por nombre, o '' si no."""
+    n = (nombre or "").lower()
+    for clave, tokens in _COMFY_FAMILIAS_VIDEO:
+        if any(t in n for t in tokens):
+            return clave
+    return ""
+
+
+def comfy_video_specs(nombre: str) -> dict | None:
+    """Specs sintéticas por familia para un modelo de VÍDEO ComfyUI local.
+
+    None si no se reconoce la familia (→ comportamiento genérico). Incluye todas
+    las claves que _inyectar_specs_video indexa.
+    """
+    fam = detectar_familia_comfy_video(nombre)
+    if not fam:
+        return None
+    specs = dict(_COMFY_SPECS_FAMILIA_VIDEO[fam])
     specs["_comfy_familia"] = fam
     return specs
 
@@ -1410,7 +1547,9 @@ def es_separador(valor):
     return valor.startswith("──")
 
 def get_model_specs(motor_name):
-    return _get_dataset("MODEL_SPECS").get(motor_name, None)
+    # El JSON curado manda; si el modelo de vídeo no está (típico de modelos
+    # ComfyUI locales: LTX, Wan, SVD…), se sintetizan specs por familia.
+    return _get_dataset("MODEL_SPECS").get(motor_name) or comfy_video_specs(motor_name)
 
 def get_image_model_specs(modelo_name):
     # El JSON curado manda; si el modelo no está (típico de checkpoints
