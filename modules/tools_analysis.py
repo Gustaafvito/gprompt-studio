@@ -8,7 +8,7 @@ import customtkinter as ctk
 import pyperclip
 
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -369,7 +369,8 @@ class ToolsAnalysisService:
         peticion = (
             f"{resumen}\n\n"
             f"Analiza los PATRONES de USO del usuario y dale consejos sobre QUÉ TIPO DE COSAS GENERA, no sobre la calidad técnica del prompt.\n\n"
-            f"FORMATO DE RESPUESTA en español:\n\n"
+            f"RESPONDE EN {'INGLÉS' if get_idioma() == 'en' else 'ESPAÑOL'}.\n"
+            f"FORMATO DE RESPUESTA (traduce las cabeceras al idioma de respuesta):\n\n"
             f"📊 PERFIL DETECTADO:\n"
             f"   - 2-3 frases describiendo qué tipo de creador es (¿retratista? ¿paisajista? ¿conceptual?)\n\n"
             f"🎯 TEMAS RECURRENTES:\n"
@@ -545,6 +546,8 @@ class ToolsAnalysisService:
             f"- bien: 1 frase de qué está bien\n"
             f"- mejorar: 1 frase específica de qué mejorar\n"
             f"- mejorado: versión mejorada COMPLETA del prompt (no resumen)\n\n"
+            f"Escribe 'bien' y 'mejorar' en {'INGLÉS' if get_idioma() == 'en' else 'ESPAÑOL'} "
+            f"(el campo 'mejorado' siempre en inglés, es el prompt).\n"
             f"Devuelve SOLO el array JSON, sin texto antes ni después, sin markdown."
         )
 
