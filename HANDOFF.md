@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 32**.
+Actualizado al cierre de la **sesión 33**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **780 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **784 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -41,7 +41,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
 | Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
 | Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
-| Modelos vídeo | **76 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Sesión 31: +4 (StarDream 2.0 Mini, Seedance 2.0 Mini, SeaArt Pony 1.1, Happy Horse 1.1, por panel). Reference (Vidu Drama/Ad, Drama/Ad) descartados por convención |
+| Modelos vídeo | **77 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Sesión 31: +4 (StarDream 2.0 Mini, Seedance 2.0 Mini, SeaArt Pony 1.1, Happy Horse 1.1, por panel). Reference (Vidu Drama/Ad, Drama/Ad) descartados por convención |
 | Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
 | Plataforma ComfyUI | **Operativa** (sesión 28+31): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens. **Specs sintéticas por familia** — imagen `comfy_image_specs` (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) **y vídeo `comfy_video_specs`** (ltx/wan/svd/hunyuan/cogvideo/mochi), ambas bilingües (`best_for_en` + `prompt_formula/ejemplo`). Pendiente: estilos por familia + wiring en caliente del dropdown |
 | Combo "Estilo" | **por familia** en imagen y vídeo (cada familia su paleta). config.ESTILOS_POR_FAMILIA(_VIDEO) + detectar_familia(_video) |
@@ -62,6 +62,26 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 33 — Plataforma Dola + i18n D (LLM) + E (Style guide bilingüe)
+
+Tres bloques, todos en `main` (780 → 784 verdes, ruff limpio):
+
+1. **Plataforma Dola** (`1a483b6`): dola.com (afiliado Dreamina/ByteDance) añadido como
+   plataforma **natural** de imagen y vídeo. Imagen: modelo "Dola" (hasta 10 refs,
+   ratios 1:1/2:3/3:4/4:3/9:16/16:9). Vídeo: motores Seedance 2.0 Fast (existente) +
+   **Seedance 1.0 Fast** (nuevo, Dreamina), 5s/10s. Specs bilingües. PLATAFORMAS_*,
+   MODELOS_POR_PLATAFORMA_*, MOTORES_VIDEO, MOTOR_DEFAULT, TOKEN_LIMITS. +3 tests.
+   (Su política de privacidad/ToS NO se embebe — es un generador de prompts.)
+2. **i18n D — salida del LLM** (`6daabb2`): Auto-improve y Analysis of patterns
+   inyectan directiva de idioma (`get_idioma()`), antes siempre devolvían español.
+3. **i18n E — Style guide bilingüe** (`ae56526`): `GUIA_ESTILOS.en.md` (391 estilos,
+   mismos nombres-clave, descripciones+ejemplos+grupos en inglés) + `cargar_guia()`
+   por idioma + título de card vía `tr()`. Empaquetado en ambos `.spec`.
+
+Catálogo vídeo **76 → 77** (Seedance 1.0 Fast). Plataformas imagen +1 (Dola), vídeo +1.
 
 ---
 
@@ -586,15 +606,19 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
   reverse-map `{tr(d): d}` para las reglas keyed). +43 traducciones.
 - Test guardián `TestI18nSinRemanentesEspanol` / combos (acentos en EN + reverse-map).
 
-**PENDIENTE (retomar aquí, mecanismo distinto):**
-- **D — Salida del LLM** en *Auto-improve* y *Analysis of patterns* (`tools_analysis`):
-  el LLM responde en español porque el prompt de análisis no le pide el idioma de la
-  UI. Fix: inyectar "responde en inglés" cuando `get_idioma()=='en'`. Tamaño medio.
-- **E — Contenido del Style guide** (Learn, `modules/style_guide.py` + datos): los
-  **391 estilos** (nombre + descripción + cabeceras de grupo) salen de un fichero de
-  datos en español. Como tutorial/glosario (Fase C), necesita `GUIA_ESTILOS.en` +
-  loader por idioma. Las cabeceras `ESTILOS_GRUPOS` ya tienen traducción en
-  `TRADUCCIONES` (pendiente wirearlas con `tr()` al renderizar). Es el más grande.
+**HECHO (sesión 33):**
+- ✅ **D — Salida del LLM** en *Auto-improve* y *Analysis of patterns* (`tools_analysis`):
+  inyectan directiva de idioma según `get_idioma()`.
+- ✅ **E — Style guide bilingüe**: `GUIA_ESTILOS.en.md` (391 estilos, mismos nombres-clave)
+  + `cargar_guia()` por idioma + título de card vía `tr()`.
+
+**PENDIENTE (residual, menor):**
+- **Scoring** y **crítica de historial** (`tools_analysis`): mismo patrón que D, sus
+  prompts (`construir_peticion_scoring` y otros) aún piden/devuelven español.
+- **Nombres de estilo Spanish-native** en el Style guide (p.ej. "Fotografía Realista",
+  "Retrato / Portrait") que NO están en `TRADUCCIONES`: el título de card sigue en
+  español aunque la descripción esté en inglés. Bajo (b) es aceptable; si se quiere,
+  añadir esos nombres a `TRADUCCIONES`.
 - **Nota cross-mode:** los valores de combo se persisten traducidos; al cambiar de
   idioma un setup/pref viejo puede no recargar la selección (aceptable, requiere
   reinicio igual).
@@ -644,7 +668,7 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 780 passed / 0 failing ✅
+python -m pytest tests -q                     # → 784 passed / 0 failing ✅ (sesión 33)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
