@@ -978,6 +978,13 @@ GRUPOS_IDEOGRAM_IMAGEN = [
 ]
 MODELOS_IDEOGRAM_IMAGEN_FLAT = _lista_plana(GRUPOS_IDEOGRAM_IMAGEN)
 
+# Dola (dola.com) — chat con IA (afiliado Dreamina/ByteDance). Generación de
+# imagen en lenguaje natural con estilos propios + hasta 10 imgs de referencia.
+GRUPOS_DOLA_IMAGEN = [
+    ("── Dola ──", ["Dola"]),
+]
+MODELOS_DOLA_IMAGEN_FLAT = _lista_plana(GRUPOS_DOLA_IMAGEN)
+
 # Mapeo plataforma -> lista de modelos (para imagen)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
     "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
@@ -986,6 +993,7 @@ MODELOS_POR_PLATAFORMA_IMAGEN = {
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
     "Ideogram / Recraft":            MODELOS_IDEOGRAM_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
+    "Dola":                          MODELOS_DOLA_IMAGEN_FLAT,
 }
 
 # Mapeo plataforma -> lista de modelos (para vídeo)
@@ -993,6 +1001,7 @@ MODELOS_POR_PLATAFORMA_VIDEO = {
     "SeaArt Video":                MODELOS_VIDEO_FLAT,
     "ComfyUI / A1111 / Forge":    MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI":                    [m for m in MODELOS_VIDEO_FLAT if "Kling" in m or m.startswith("──")],
+    "Dola":                        ["Seedance 1.0 Fast", "Seedance 2.0 Fast"],
 }
 
 # ── Ratios ────────────────────────────────────────────────────────
@@ -1392,6 +1401,7 @@ PLATAFORMAS_IMAGEN = {
     "ChatGPT / GPT Image":         "natural",
     "Ideogram / Recraft":          "natural",
     "Magnific":                    "natural",
+    "Dola":                        "natural",
 }
 
 PLATAFORMAS_VIDEO = {
@@ -1402,6 +1412,7 @@ PLATAFORMAS_VIDEO = {
     "Runway Gen":       "natural",
     "Pixverse.ai":      "natural",
     "Sora / Veo":       "natural",
+    "Dola":             "natural",
 }
 
 PLATAFORMAS_AUDIO = {
@@ -1440,6 +1451,7 @@ MOTORES_VIDEO = {
     "Runway Gen": [],
     "Pixverse.ai": [],
     "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni"],
+    "Dola": ["Seedance 1.0 Fast", "Seedance 2.0 Fast"],
 }
 
 MOTORES_AUDIO = {
@@ -1454,6 +1466,7 @@ MOTOR_DEFAULT = {
     "Suno": "Suno v5.5",
     "Udio": "Udio v4",
     "SeaArt Audio": "Minimax Music 2.6",
+    "Dola": "Seedance 2.0 Fast",
 }
 
 # ── Límites de Tokens por Plataforma ─────────────────
@@ -1475,6 +1488,7 @@ TOKEN_LIMITS = {
     "Runway Gen": 75,
     "Pixverse.ai": 75,
     "Sora / Veo": 75,
+    "Dola": 75,
     "Suno": 500,
     "SeaArt Audio": 400,
 }

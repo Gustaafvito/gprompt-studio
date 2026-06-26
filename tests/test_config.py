@@ -48,6 +48,31 @@ class TestRatiosOrdenCanonico:
             assert _ratios_en_orden_canonico(s["ratios"], RATIOS_VIDEO), fam
 
 
+class TestPlataformaDola:
+    """Dola (dola.com) integrada como plataforma natural de imagen y vídeo."""
+
+    def test_dola_en_plataformas(self):
+        import config
+        assert config.PLATAFORMAS_IMAGEN.get("Dola") == "natural"
+        assert config.PLATAFORMAS_VIDEO.get("Dola") == "natural"
+        assert "Dola" in config.PLATAFORMAS_IMAGEN_LISTA
+        assert "Dola" in config.PLATAFORMAS_VIDEO_LISTA
+
+    def test_dola_modelos_y_motores(self):
+        import config
+        assert "Dola" in config.MODELOS_POR_PLATAFORMA_IMAGEN
+        assert config.MOTORES_VIDEO["Dola"] == ["Seedance 1.0 Fast", "Seedance 2.0 Fast"]
+        assert config.MOTOR_DEFAULT["Dola"] == "Seedance 2.0 Fast"
+
+    def test_dola_specs_bilingues(self):
+        from config import get_image_model_specs, get_model_specs
+        img = get_image_model_specs("Dola")
+        assert img and img["is_natural"] is True and img["best_for_en"]
+        assert img["max_imagenes"] == 10
+        vid = get_model_specs("Seedance 1.0 Fast")
+        assert vid and vid["best_for_en"] and vid["duraciones"] == ["5s", "10s"]
+
+
 class TestConfigHelpers:
     def test_es_separador_true(self):
         from config import es_separador

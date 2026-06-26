@@ -430,6 +430,35 @@
     "vigente": true,
     "best_for_en": "Speed and VLOGs (free for a limited time). Image/Text/Video-ref with @ references + character library. 8-15s. Up to 4K. Prompts up to 5000 characters."
   },
+  "Seedance 1.0 Fast": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "21:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "Fast"
+    ],
+    "max_imagenes": 1,
+    "best_for": "Seedance 1.0 Fast (Dreamina/ByteDance, vía Dola): generación rápida de vídeo desde texto o imagen de referencia. Lenguaje natural cinematográfico: sujeto + acción + cámara + estilo. 5-10s.",
+    "best_for_en": "Seedance 1.0 Fast (Dreamina/ByteDance, via Dola): fast text- or image-to-video generation. Cinematic natural language: subject + action + camera + style. 5-10s.",
+    "prompt_formula": "Lenguaje natural: [Sujeto] + [Acción] + [Movimiento de cámara] + [Iluminación/estilo]. Conciso para iteración rápida.",
+    "prompt_ejemplo": "A red sports car drifting around a wet mountain corner at night, low tracking shot following the car, neon city lights reflecting on the asphalt, cinematic.",
+    "limitaciones": "Versión Fast de Seedance 1.0: prioriza velocidad. Duración 5s o 10s.",
+    "vigente": true
+  },
   "Seedance 2.0 Mini": {
     "nota": null,
     "has_negative": false,

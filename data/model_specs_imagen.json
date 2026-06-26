@@ -4623,5 +4623,29 @@
     "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
     "vigente": true,
     "best_for_en": "MiaoMiao Harem V2.0. 1.7M uses. Anime/harem style with a 2026 concept. CKXL05 architecture. Excellent hands/feet, LoRA compatible, simple prompts."
+  },
+  "Dola": {
+    "nota": null,
+    "has_negative": false,
+    "is_natural": true,
+    "vigente": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "Default"
+    ],
+    "max_imagenes": 10,
+    "best_for": "Dola (dola.com): generación de imagen en lenguaje natural vía chat con IA. Estilos propios (Retratos, Paisaje, Anime, 3D, Ciberpunk, Pintura al óleo, Acuarela, Píxel…) y hasta 10 imágenes de referencia. Describe la imagen con frases naturales.",
+    "best_for_en": "Dola (dola.com): natural-language image generation via AI chat. Built-in styles (Portraits, Landscape, Anime, 3D, Cyberpunk, Oil painting, Watercolor, Pixel…) and up to 10 reference images. Describe the image in natural sentences.",
+    "prompt_formula": "Lenguaje natural descriptivo: sujeto + escena + estilo + iluminación + composición. Puedes apoyarte en imágenes de referencia (hasta 10).",
+    "prompt_ejemplo": "A serene mountain lake at sunrise, mist over the water, golden light, a lone wooden cabin on the shore, photorealistic, wide landscape composition.",
+    "limitaciones": "Plataforma de lenguaje natural (sin pesos ni negative). El estilo se elige en su propio selector."
   }
 }
