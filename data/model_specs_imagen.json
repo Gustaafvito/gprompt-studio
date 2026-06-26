@@ -4340,7 +4340,7 @@
   },
   "Kling 3.0 Image": {
     "vigente": true,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "max_chars": 2000,
     "ratios": [
@@ -4369,7 +4369,7 @@
   },
   "Kling 3.0 Omni Image Editing": {
     "vigente": true,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "max_chars": 2000,
     "ratios": [
@@ -4483,7 +4483,7 @@
   },
   "Kling O1 Image Model": {
     "vigente": true,
-    "has_negative": true,
+    "has_negative": false,
     "is_natural": true,
     "ratios": [
       "1:1",

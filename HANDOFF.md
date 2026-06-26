@@ -80,8 +80,20 @@ Tres bloques, todos en `main` (780 → 784 verdes, ruff limpio):
 3. **i18n E — Style guide bilingüe** (`ae56526`): `GUIA_ESTILOS.en.md` (391 estilos,
    mismos nombres-clave, descripciones+ejemplos+grupos en inglés) + `cargar_guia()`
    por idioma + título de card vía `tr()`. Empaquetado en ambos `.spec`.
+4. **Grupo NSFW + auditoría de realismo** (`2e3f138` +): nuevo grupo
+   `── NSFW / Adultos ──` (WildCardX-REAL nuevo + PornRealistic, Woman Realistic 3.1.0,
+   REED_XXX, XE: Anime Hentai, sacados de sus familias). Reactivados con specs reales de
+   panel (ES/EN): Alchemist Mix (5.0), Illustrious Realism by Klaabu (4.5), FantasticChix-HR
+   (4.7), Prodigies (4.9), Deliberate (5.0), Real Dream SDXL (4.6). Nuevos: WildCardX-REAL
+   y Real Dream Klein (FLUX). Catálogo imagen **165 → 167**.
+5. **Fix Kling sin negativo**: TODOS los modelos Kling (3.0/3.0 Omni/3.0 Turbo/3.0 Image/
+   3.0 Omni Image/O1/2.6/01) → `has_negative:false`. Tests actualizados.
 
 Catálogo vídeo **76 → 77** (Seedance 1.0 Fast). Plataformas imagen +1 (Dola), vídeo +1.
+
+**PENDIENTE (auditar uno a uno, tag-based ocultos en SeaArt):** RealVisXL V5.0 fp16 (4.6),
+Juggernaut-XL v9 RunDiffusionPhoto v2 (4.7), JuggernautXL Ragnarok (4.5), Realities Edge XL
+Turbo V7 (4.7), Classic (4.0), Classic Fast (3.9), Z-Image (4.4) — reactivar con panel real.
 
 ---
 

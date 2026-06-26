@@ -1,7 +1,7 @@
 {
   "Kling 3.0": {
     "nota": 4.5,
-    "has_negative": true,
+    "has_negative": false,
     "has_audio": true,
     "audio_desc": "Lip-sync, diálogos, SFX, música, ambiente",
     "duraciones": [
@@ -31,7 +31,7 @@
   },
   "Kling 3.0 Omni": {
     "nota": 3.4,
-    "has_negative": true,
+    "has_negative": false,
     "has_audio": true,
     "audio_desc": "Lip-sync avanzado, SFX, voz consistente entre clips",
     "duraciones": [
@@ -114,7 +114,7 @@
   },
   "Kling 3.0 Turbo": {
     "nota": null,
-    "has_negative": true,
+    "has_negative": false,
     "has_audio": false,
     "audio_desc": "",
     "duraciones": [

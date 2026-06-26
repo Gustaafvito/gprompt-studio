@@ -178,8 +178,8 @@ class TestDebeMostrarNegatives:
 
     # ── modo video ─────────────────────────────────────────────────
     def test_video_modelo_con_negative_true(self):
-        # Kling 3.0 tiene has_negative=True en el JSON
-        result = debe_mostrar_negatives("video", "Kling AI", "", "Kling 3.0")
+        # Happy Horse tiene has_negative=True en el JSON (Kling 3.0 NO usa negativo)
+        result = debe_mostrar_negatives("video", "SeaArt Video", "", "Happy Horse")
         assert result is True
 
     def test_video_modelo_con_negative_false(self):

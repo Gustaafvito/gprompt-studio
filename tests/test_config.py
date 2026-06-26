@@ -109,7 +109,7 @@ class TestConfigHelpers:
         specs = get_model_specs("Kling 3.0")
         assert specs is not None
         assert specs["nota"] == 4.5
-        assert specs["has_negative"] is True
+        assert specs["has_negative"] is False  # Kling 3.0 no usa prompt negativo
         assert specs["has_audio"] is True
         assert specs["max_chars"] == 2500
 
