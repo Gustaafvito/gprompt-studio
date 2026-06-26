@@ -11,11 +11,12 @@ from pathlib import Path
 import customtkinter as ctk
 
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger(__name__)
 
 _MD_PATH = Path(__file__).resolve().parent.parent / "GUIA_ESTILOS.md"
+_MD_PATH_EN = Path(__file__).resolve().parent.parent / "GUIA_ESTILOS.en.md"
 _cache: dict | None = None
 _modos_cache: dict | None = None  # {nombre_estilo: frozenset({"imagen","video","audio"})}
 
@@ -30,13 +31,17 @@ def cargar_guia() -> dict[str, dict]:
     if _cache is not None:
         return _cache
 
-    if not _MD_PATH.exists():
-        logger.warning(f"GUIA_ESTILOS.md no encontrado en {_MD_PATH}")
+    # En modo EN, usar la guía traducida (mismos nombres-clave, descripciones y
+    # cabeceras en inglés); fallback al español si no existe.
+    path = _MD_PATH_EN if (get_idioma() == "en" and _MD_PATH_EN.exists()) else _MD_PATH
+
+    if not path.exists():
+        logger.warning(f"GUIA_ESTILOS.md no encontrado en {path}")
         _cache = {}
         return _cache
 
     try:
-        md = _MD_PATH.read_text(encoding="utf-8")
+        md = path.read_text(encoding="utf-8")
     except Exception as e:
         logger.warning(f"GUIA_ESTILOS.md no se pudo leer: {e}")
         _cache = {}
@@ -267,7 +272,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
         fila_top = ctk.CTkFrame(card, fg_color="transparent")
         fila_top.pack(fill="x", padx=10, pady=(6, 0))
         ctk.CTkLabel(
-            fila_top, text=nombre, font=ctk.CTkFont(size=12, weight="bold"),
+            fila_top, text=tr(nombre), font=ctk.CTkFont(size=12, weight="bold"),
             text_color=text_main, anchor="w",
         ).pack(side="left")
         if badge_text:

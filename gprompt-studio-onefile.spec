@@ -29,6 +29,7 @@ datas = [
     # Solo docs de USUARIO (los docs de desarrollo no se empaquetan)
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
+    ('GUIA_ESTILOS.en.md', '.'),
 ]
 
 # ─── Hidden imports (mismos que onedir) ──────────────────────────

@@ -33,6 +33,7 @@ datas = [
     # empaquetan: son material interno del proyecto.
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
+    ('GUIA_ESTILOS.en.md', '.'),
 ]
 
 # ─── Hidden imports (módulos que PyInstaller no detecta solo) ────

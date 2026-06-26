@@ -48,6 +48,26 @@ class TestRatiosOrdenCanonico:
             assert _ratios_en_orden_canonico(s["ratios"], RATIOS_VIDEO), fam
 
 
+class TestStyleGuideBilingue:
+    """La guía de estilos tiene versión EN con las MISMAS claves (nombres)."""
+
+    def test_en_mismas_claves_y_contenido_traducido(self):
+        import modules.style_guide as sg
+        from modules.i18n import set_idioma
+        try:
+            set_idioma("es"); sg._cache = None
+            g_es = sg.cargar_guia()
+            set_idioma("en"); sg._cache = None
+            g_en = sg.cargar_guia()
+            assert g_es and g_en
+            assert set(g_es) == set(g_en), "las claves (nombres) deben coincidir"
+            # Una descripción concreta debe estar en inglés en modo EN
+            assert g_en["Fotografía Realista"]["descripcion"] == "Professional camera photo, no filters"
+            assert g_en["Cinematográfico"]["grupo"] == "🎵 Audio Styles"
+        finally:
+            set_idioma("es"); sg._cache = None
+
+
 class TestPlataformaDola:
     """Dola (dola.com) integrada como plataforma natural de imagen y vídeo."""
 
