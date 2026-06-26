@@ -947,7 +947,7 @@
     "best_for_en": "Temporal Paradox Mix. 37.7K uses. Fusion of 10+ models. Versatile: M/F characters, landscapes, mechs, animals. Excellent hands and nails. Works with long and short prompts."
   },
   "Illustrious Realism by Klaabu": {
-    "nota": 4.9,
+    "nota": 4.5,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
@@ -963,21 +963,23 @@
       "4:5",
       "5:4"
     ],
-    "max_chars": 1200,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "Fotorrealismo cinematográfico de alta fidelidad. Fine-tuned sobre Illustrious. 1.6M usos. Personajes ricos en detalle, texturas realistas, text rendering.",
+    "best_for": "Checkpoint Illustrious realista (V1.0 + VAE). Tag-based con negative. DPM++ SDE, 25 pasos, CFG 4.0, clip skip 2.",
     "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad. Pesos (tag:1.2).",
     "prompt_ejemplo": "cinematic portrait, 1woman, freckled skin, green eyes, auburn hair, (detailed skin texture:1.3), soft golden hour light, shallow DOF, 8K, photorealistic",
-    "sampler_recomendado": "DPM++ 2M Karras",
+    "sampler_recomendado": "DPM++ SDE (25 pasos, CFG 4.0, clip skip 2, VAE incluido)",
     "pasos": 25,
     "cfg": "4-6.5",
     "clip_skip": 1,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes simultáneas. Tiene reparación avanzada (rostros/personajes)."
+    "limitaciones": "Máx 4 imágenes simultáneas. Tiene reparación avanzada (rostros/personajes).",
+    "vigente": true,
+    "best_for_en": "Realistic Illustrious checkpoint (V1.0 + VAE). Tag-based with negative. DPM++ SDE, 25 steps, CFG 4.0, clip skip 2."
   },
   "Real Dream SDXL": {
     "nota": 4.6,
@@ -996,21 +998,23 @@
       "4:5",
       "5:4"
     ],
-    "max_chars": 1200,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "Realismo SDXL versátil. 873K usos. Personajes, paisajes, celebridades. Base Pony/SDXL11. Reparación avanzada de rostros.",
+    "best_for": "Checkpoint SDXL realista (v1.1). Tag-based con negative. Euler a, 25 pasos, CFG 7.0, clip skip 2.",
     "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles, medium, resolución, estilo, fondo, iluminación, calidad.",
     "prompt_ejemplo": "full body portrait, 1woman, elegant dress, dramatic lighting, urban background at dusk, (cinematic:1.2), photorealistic, 8K, sharp focus",
-    "sampler_recomendado": "DPM++ SDE Karras",
+    "sampler_recomendado": "Euler a (25 pasos, CFG 7.0, clip skip 2)",
     "pasos": 20,
     "cfg": 6,
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "Máx 4 imágenes simultáneas. Resolución por defecto 768x1152."
+    "limitaciones": "Máx 4 imágenes simultáneas. Resolución por defecto 768x1152.",
+    "vigente": true,
+    "best_for_en": "Realistic SDXL checkpoint (v1.1). Tag-based with negative. Euler a, 25 steps, CFG 7.0, clip skip 2."
   },
   "MajicMIX Realistic v6": {
     "nota": 5.0,
@@ -1135,21 +1139,23 @@
       "4:5",
       "5:4"
     ],
-    "max_chars": 800,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "Retratos femeninos de altísima calidad. 596.8K usos. VAE incluido. Upscaler 4x-UltraSharp. Reparación de rostros/personajes avanzada.",
+    "best_for": "Checkpoint SD 1.5 realista (512 nativo). Tag-based con negative. DPM++ 2M Karras, 25 pasos, CFG 7.0, clip skip 1.",
     "prompt_formula": "Tag-based SD: vista/plano, sujeto+detalles faciales, estilo, iluminación, calidad. Especialmente bueno con tags de belleza y moda.",
     "prompt_ejemplo": "close-up portrait, 1girl, detailed eyes, soft skin, natural makeup, (golden hour:1.2), bokeh, photorealistic, masterpiece",
-    "sampler_recomendado": "DPM++ 2M Karras",
+    "sampler_recomendado": "DPM++ 2M Karras (25 pasos, CFG 7.0, clip skip 1, VAE 840000)",
     "pasos": 25,
     "cfg": 7,
     "clip_skip": 1,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "SD 1.5 base. Resolución nativa 512x768. Orientado a retratos femeninos principalmente."
+    "limitaciones": "SD 1.5 base. Resolución nativa 512x768. Orientado a retratos femeninos principalmente.",
+    "vigente": true,
+    "best_for_en": "Realistic SD 1.5 checkpoint (512 native). Tag-based with negative. DPM++ 2M Karras, 25 steps, CFG 7.0, clip skip 1."
   },
   "DreamShaper": {
     "nota": 4.9,
@@ -1188,28 +1194,37 @@
   },
   "Deliberate": {
     "nota": 5.0,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": false,
     "ratios": [
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
-      "16:9"
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
     "modos_gen": [
-      "Estándar"
+      "Estándar",
+      "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "Deliberate v4. 1.5M usos, 14.3K favoritos, 122.1K likes. All-in-One. Prompts cortos funcionan mejor. Sin negativos necesarios. Tokens mj, cozy, cinematic.",
+    "best_for": "Clásico SD 1.5 versátil y realista (512 nativo). Tag-based con negative. DPM++ 2M Karras, 20 pasos, CFG 7.0, clip skip 1.",
     "prompt_formula": "Prompts cortos y simples. Añadir mj, cozy o cinematic para boost. Sin necesidad de質量 tags.",
     "prompt_ejemplo": "beautiful woman portrait, mj, cinematic",
-    "sampler_recomendado": "Euler a / UniPC",
+    "sampler_recomendado": "DPM++ 2M Karras (20 pasos, CFG 7.0, clip skip 1, VAE 840000)",
     "pasos": "15-25",
     "cfg": "6-8",
     "coste_energia": "Gratis VIP",
-    "limitaciones": "CC BY-NC-ND 4.0 (comercial requiere permiso). v4 (abr 2026)."
+    "limitaciones": "CC BY-NC-ND 4.0 (comercial requiere permiso). v4 (abr 2026).",
+    "vigente": true,
+    "best_for_en": "Versatile, realistic SD 1.5 classic (512 native). Tag-based with negative. DPM++ 2M Karras, 20 steps, CFG 7.0, clip skip 1."
   },
   "PornRealistic": {
     "nota": 3.0,
@@ -1228,13 +1243,15 @@
     ],
     "max_imagenes": 4,
     "best_for": "PornRealistic. 53.1K usos. Merge de Epicrealism + CyberRealistic. Retratos femeninos fotorrealistas.",
+    "best_for_en": "Realistic SD checkpoint for explicit adult (NSFW) content. Tag-based with negative.",
     "prompt_formula": "Tag-based SD: sujeto + detalles + iluminación realista + calidad.",
     "prompt_ejemplo": "portrait, 1woman, detailed face, realistic skin, natural lighting, professional photography, 8K",
     "sampler_recomendado": "Euler a",
     "pasos": "20-30",
     "cfg": "6-8",
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Merge experimental. Orientado a femenino. Base SD 1.5."
+    "limitaciones": "Merge experimental. Orientado a femenino. Base SD 1.5.",
+    "vigente": true
   },
   "Woman Realistic 3.1.0": {
     "nota": 4.3,
@@ -1253,40 +1270,50 @@
     ],
     "max_imagenes": 4,
     "best_for": "Woman Realistic 3.1.0. 922.6K usos. Fotorrealismo femenino. SD 2.1 base. Excelente para retratos de mujeres.",
+    "best_for_en": "SDXL checkpoint specialized in realistic female figures (often NSFW). Tag-based with negative.",
     "prompt_formula": "Realism, (masterpiece:1.4, best quality), intricate details + sujeto + estilo.",
     "prompt_ejemplo": "Realistic, masterpiece, best quality, 1girl, detailed face, elegant dress, Victorian mansion",
     "sampler_recomendado": "DPM++ SDE Karras",
     "pasos": 15,
     "cfg": 6,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Trigger words: Realism, Photorealism, Woman, Vestido, Minifalda. Base SD 2.1."
+    "limitaciones": "Trigger words: Realism, Photorealism, Woman, Vestido, Minifalda. Base SD 2.1.",
+    "vigente": true
   },
   "Alchemist Mix (Illustrious Realism)": {
-    "nota": 4.9,
+    "nota": 5.0,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
-      "16:9"
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "Alchemist Mix (Illustrious Realism). 209.7K usos. Merge de Illustrious + RillusmRealistic + RedcraftCADS. Semi-realismo de alta calidad.",
+    "best_for": "Checkpoint Illustrious anime + realismo con color vivo y VAE modificado. Tag-based con negative. Euler a, 35 pasos, CFG 4.5, clip skip 2.",
     "prompt_formula": "DSLR photo style: very awa, masterpiece, best quality, year 2024, absurdres, highres + sujeto + detalles.",
     "prompt_ejemplo": "DSLR, realistic, cosplay photo, very awa, masterpiece, best quality, year 2024, absurdres, highres, realistic skin texture, photography shot with Canon EOS 5D",
-    "sampler_recomendado": "Euler a",
+    "sampler_recomendado": "Euler a (35 pasos, CFG 4.5, clip skip 2)",
     "pasos": 30,
     "cfg": 4.5,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Rostro en distancias largas puede requerir inpaint. v4.1 Finetune (jul 2025)."
+    "limitaciones": "Rostro en distancias largas puede requerir inpaint. v4.1 Finetune (jul 2025).",
+    "vigente": true,
+    "best_for_en": "Illustrious checkpoint blending anime + realism with vivid color and a modified VAE. Tag-based with negative. Euler a, 35 steps, CFG 4.5, clip skip 2."
   },
   "FantasticChix-HR": {
     "nota": 4.7,
@@ -1296,24 +1323,31 @@
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
-      "16:9"
+      "16:9",
+      "1:2",
+      "2:1",
+      "5:4"
     ],
-    "max_chars": 1000,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 4,
-    "best_for": "FantasticChix-HR. 695.8K usos. Semi-realismo/mezcla. Fusiona Fantastic Mix V4, ChikMix V3, ZemiHR V2. Retratos femeninos excelentes.",
+    "best_for": "Checkpoint Illustrious/anime de alta resolución. Tag-based con negative. DPM++ SDE Karras, 20 pasos, CFG 7.0, clip skip 2.",
     "prompt_formula": "Simple prompts funcionan bien: 1girl + sujeto + calidad. Soporta LoRAs.",
     "prompt_ejemplo": "A 21 year old female, masterpiece, best quality, detailed skin, natural lighting",
-    "sampler_recomendado": "DPM++ SDE Karras",
+    "sampler_recomendado": "DPM++ SDE Karras (20 pasos, CFG 7.0, clip skip 2, upscaler 4x-UltraSharp)",
     "pasos": 20,
     "cfg": 7,
     "clip_skip": 1,
     "coste_energia": "Variable — gratis VIP",
-    "limitaciones": "Requiere VAE: vae-ft-mse-840000-ema-pruned. Base SD 1.5."
+    "limitaciones": "Requiere VAE: vae-ft-mse-840000-ema-pruned. Base SD 1.5.",
+    "vigente": true,
+    "best_for_en": "High-resolution Illustrious/anime checkpoint. Tag-based with negative. DPM++ SDE Karras, 20 steps, CFG 7.0, clip skip 2."
   },
   "Juggernaut XL": {
     "nota": 4.9,
@@ -4647,5 +4681,60 @@
     "prompt_formula": "Lenguaje natural descriptivo: sujeto + escena + estilo + iluminación + composición. Puedes apoyarte en imágenes de referencia (hasta 10).",
     "prompt_ejemplo": "A serene mountain lake at sunrise, mist over the water, golden light, a lone wooden cabin on the shore, photorealistic, wide landscape composition.",
     "limitaciones": "Plataforma de lenguaje natural (sin pesos ni negative). El estilo se elige en su propio selector."
+  },
+  "WildCardX-REAL": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "vigente": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "sampler_recomendado": "DPM++ 2M Karras (30 pasos, CFG 5.5, clip skip 2, upscaler 4x-UltraSharp)",
+    "best_for": "Realismo fotográfico SDXL para contenido adulto (NSFW) y SFW. Formato tag-based con negative. Buen detalle anatómico y de piel.",
+    "best_for_en": "SDXL photorealism for adult (NSFW) and SFW content. Tag-based format with negative. Good anatomical and skin detail.",
+    "prompt_formula": "Tags SD ordenados: calidad + sujeto + descripción + escena + iluminación. Pesos (tag:1.2) opcionales. Negative para limpiar artefactos.",
+    "prompt_ejemplo": "masterpiece, best quality, 1woman, brown hair, natural light, indoor, detailed skin",
+    "limitaciones": "Modelo adulto: usar el toggle 🔞 NSFW. 2000 chars pos/neg."
+  },
+  "Real Dream Klein": {
+    "nota": 4.8,
+    "has_negative": true,
+    "is_natural": true,
+    "vigente": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "4:3",
+      "9:16",
+      "1:2",
+      "4:5"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "sampler_recomendado": "Euler (25 pasos, hasta 2048px)",
+    "best_for": "Real Dream sobre FLUX.2 Klein (5B). Lenguaje natural, fotorrealismo. Euler, 25 pasos, hasta 2048px. Soporta negative.",
+    "best_for_en": "Real Dream on FLUX.2 Klein (5B). Natural language, photorealism. Euler, 25 steps, up to 2048px. Supports negative.",
+    "prompt_formula": "Prosa natural: sujeto + escena + iluminación + detalles de cámara. Magia de sugerencia disponible en SeaArt.",
+    "prompt_ejemplo": "A candid portrait of a woman by a sunlit window, soft natural light, shallow depth of field, photorealistic.",
+    "limitaciones": "Base FLUX Klein: lenguaje natural, no tags por comas. Hasta 2048px."
   }
 }
