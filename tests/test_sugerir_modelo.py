@@ -90,3 +90,14 @@ def test_sugerir_modelo_temperatura_con_variedad():
     svc._cmd_sugerir_modelo()
     # Subida de 0.3 → 0.5 para que no salga siempre lo mismo.
     assert app.deepseek.temperature == 0.5
+
+
+def test_sugerir_modelo_incluye_guia_de_estilo():
+    """El prompt debe pedir al LLM que ajuste el ESTILO del modelo a la idea
+    (si no, mete modelos estilizados —cómic/anime— en ideas realistas)."""
+    app = _FakeApp("una cena incómoda y repulsiva, fotorrealista")
+    svc = ToolsCreativeService(app)
+    svc._cmd_sugerir_modelo()
+    p = app.deepseek.peticion.lower()
+    assert "estilo visual" in p
+    assert "fotorrealista" in p and "estilizado" in p

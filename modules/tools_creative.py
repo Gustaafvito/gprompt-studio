@@ -416,12 +416,22 @@ class ToolsCreativeService:
         specs_resumen = []
         for m in modelos_lista:
             s = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
-            specs_resumen.append(f"- {m}: {s.get('best_for', '')[:120]}")
+            # 180 chars (antes 120): no cortar los descriptores de ESTILO del
+            # best_for (p.ej. "estética punk-ink", "anime", "fotorrealista"),
+            # que el LLM necesita para no elegir un modelo estilizado para una
+            # idea realista. Ver fix sesión 34.
+            specs_resumen.append(f"- {m}: {s.get('best_for', '')[:180]}")
 
         peticion = (
             f"Analiza esta idea y sugiere los 3 MEJORES modelos de {modo} rankeados.\n\n"
             f"IDEA: {idea}\n\n"
             f"MODELOS DISPONIBLES:\n" + "\n".join(specs_resumen) + "\n\n"
+            f"IMPORTANTE — el ESTILO VISUAL del modelo debe encajar con lo que pide la idea:\n"
+            f"- Si la idea busca una escena realista, visceral o fotográfica, prioriza modelos "
+            f"FOTORREALISTAS o cinematográficos y EVITA los muy estilizados (anime, cómic, "
+            f"ink/punk, cartoon, 3D) salvo que la idea pida ese estilo explícitamente.\n"
+            f"- Si la idea pide un estilo concreto (anime, cómic, acuarela…), elige modelos de ESE estilo.\n"
+            f"No te dejes llevar solo por palabras del tema (p.ej. 'horror') si el modelo no encaja en estilo.\n\n"
             f"Responde EN ESPAÑOL con este formato EXACTO (importante mantener \"#1:\", \"#2:\", \"#3:\"):\n\n"
             f"#1: [nombre exacto del modelo]\n"
             f"RAZÓN: [1 frase concreta]\n\n"
