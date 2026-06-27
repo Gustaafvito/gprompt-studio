@@ -2391,9 +2391,11 @@
       "Auto"
     ],
     "best_for": "Modo automático de Magnific. Selecciona el mejor modelo según tu prompt y referencias. ~10s de generación. Ideal cuando no sabes qué modelo elegir.",
+    "best_for_en": "Magnific's automatic mode. Picks the best model based on your prompt and references. ~10s generation. Ideal when you don't know which model to choose.",
     "prompt_formula": "Lenguaje natural muy descriptivo. Magnific decide internamente qué modelo usar según contenido.",
     "prompt_ejemplo": "A cinematic portrait of a young woman with auburn hair against a soft blurred forest background, golden hour lighting",
-    "limitaciones": "No tienes control sobre qué modelo se usa internamente."
+    "limitaciones": "No tienes control sobre qué modelo se usa internamente.",
+    "vigente": true
   },
   "GPT 2": {
     "nota": 4.9,
@@ -2414,6 +2416,7 @@
       "Quality"
     ],
     "best_for": "GPT Image 2 en Magnific (Destacado/Nuevo). Salida 2K-4K. ~1m 27s. El más reciente con razonamiento integrado, text rendering casi perfecto, fotorrealismo top.",
+    "best_for_en": "GPT Image 2 on Magnific (Featured/New). 2K-4K output. ~1m 27s. The latest, with built-in reasoning, near-perfect text rendering, top-tier photorealism.",
     "prompt_formula": "Lenguaje natural muy estructurado. Estructura: scene → subject → key details → constraints. Lenguaje fotográfico (lens, lighting, framing) y texturas reales.",
     "prompt_ejemplo": "Photorealistic candid photo of an elderly fisherman on his boat at dawn. Weathered skin with visible pores, sun texture. Adjusting nets, dog nearby. 35mm film aesthetic, 50mm lens, soft coastal daylight, shallow DOF.",
     "prompt_tips": [
@@ -2425,7 +2428,8 @@
       "SIN NEGATIVE PROMPT: No funciona aquí.",
       "REFERENCIAS: Soporta hasta varias imágenes de referencia."
     ],
-    "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Máx ~160 palabras."
+    "limitaciones": "Lento (~1m 27s). Sin negative ni pesos. Máx ~160 palabras.",
+    "vigente": true
   },
   "GPT 1.5 - High": {
     "nota": 4.7,
@@ -2443,6 +2447,7 @@
       "High"
     ],
     "best_for": "GPT Image 1.5 alta calidad en Magnific. ~59s. Buena edición de imagen, preserva detalles, branding consistente.",
+    "best_for_en": "GPT Image 1.5 high quality on Magnific. ~59s. Good image editing, preserves details, consistent branding.",
     "prompt_formula": "Lenguaje natural estructurado. Para edición: 'Change X to Y, keep Z intact'.",
     "prompt_ejemplo": "Edit this product photo: change the background to a clean white studio with soft shadows, keep the product, lighting and proportions exactly as they are",
     "prompt_tips": [
@@ -2450,7 +2455,8 @@
       "REFERENCIAS: Soporta varias imágenes de referencia.",
       "INGLÉS MEJOR: Para resultados más predecibles."
     ],
-    "limitaciones": "Sin negative prompt ni pesos."
+    "limitaciones": "Sin negative prompt ni pesos.",
+    "vigente": true
   },
   "GPT 1.5": {
     "nota": 4.6,
@@ -2468,9 +2474,11 @@
       "Standard"
     ],
     "best_for": "GPT Image 1.5 estándar. ~41s. 4x más rápido que GPT 1, mejor edición, preserva detalles.",
+    "best_for_en": "Standard GPT Image 1.5. ~41s. 4x faster than GPT 1, better editing, preserves details.",
     "prompt_formula": "Lenguaje natural estructurado.",
     "prompt_ejemplo": "Modern poster design with bold typography, minimalist layout, gradient background, professional design",
-    "limitaciones": "Sin negative ni pesos."
+    "limitaciones": "Sin negative ni pesos.",
+    "vigente": true
   },
   "GPT 1 - HQ": {
     "nota": 4.5,
@@ -2486,6 +2494,7 @@
       "HQ"
     ],
     "best_for": "GPT Image 1 alta calidad. ~1m 3s. Modelo viral por estilo Studio Ghibli. Excelente integración multimodal.",
+    "best_for_en": "GPT Image 1 high quality. ~1m 3s. Went viral for its Studio Ghibli style. Excellent multimodal integration.",
     "prompt_formula": "Lenguaje natural en prosa. Estructura: scene → subject → details → style.",
     "prompt_ejemplo": "Studio Ghibli style illustration of a young girl walking through a field of sunflowers at dusk, soft warm light, dreamy atmosphere",
     "prompt_tips": [
@@ -2493,7 +2502,8 @@
       "ESTILO ARTÍSTICO: Menciona estilos como 'Studio Ghibli', 'Pixar', etc.",
       "EMOCIÓN Y ATMÓSFERA: Describe el mood además de lo visual."
     ],
-    "limitaciones": "Lento (~1m 3s). Warm color bias. Sin negative ni pesos."
+    "limitaciones": "Lento (~1m 3s). Warm color bias. Sin negative ni pesos.",
+    "vigente": true
   },
   "GPT": {
     "nota": 4.3,
@@ -2509,9 +2519,11 @@
       "Standard"
     ],
     "best_for": "GPT Image base. ~40s. Versión rápida y económica.",
+    "best_for_en": "Base GPT Image. ~40s. Fast, economical version.",
     "prompt_formula": "Lenguaje natural simple. Soporta referencias.",
     "prompt_ejemplo": "A vibrant illustration of a cyberpunk cat in a neon-lit alleyway, colorful, detailed",
-    "limitaciones": "Calidad inferior a GPT 1.5/2. Sin negative."
+    "limitaciones": "Calidad inferior a GPT 1.5/2. Sin negative.",
+    "vigente": true
   },
   "Flux.2 Max": {
     "nota": 4.8,
@@ -2531,6 +2543,7 @@
       "Max"
     ],
     "best_for": "Flux 2 Max en Magnific. Salida 2K. ~38s. Máxima calidad de la familia Flux 2. Ideal para hero shots, branding crítico.",
+    "best_for_en": "Flux 2 Max on Magnific. 2K output. ~38s. Highest quality in the Flux 2 family. Ideal for hero shots and critical branding.",
     "prompt_formula": "Lenguaje natural muy descriptivo y específico. Flux 2 entiende prompts complejos con múltiples sujetos y relaciones espaciales.",
     "prompt_ejemplo": "A high-end fashion editorial photograph of a model standing in a brutalist concrete corridor, dramatic side lighting from a single skylight, wearing a sculptural black dress, photorealistic, magazine quality",
     "prompt_tips": [
@@ -2539,7 +2552,8 @@
       "RELACIONES ESPACIALES: Describe posiciones y direcciones con precisión.",
       "ILUMINACIÓN DRAMÁTICA: Funciona muy bien con descripciones de luz."
     ],
-    "limitaciones": "Sin negative ni pesos. Más lento que Pro."
+    "limitaciones": "Sin negative ni pesos. Más lento que Pro.",
+    "vigente": true
   },
   "Flux.2 Pro": {
     "nota": 4.7,
@@ -2559,6 +2573,7 @@
       "Pro"
     ],
     "best_for": "Flux 2 Pro. Salida 2K. ~22s. Producción profesional, alta resolución, fotorrealismo top, hasta 10 imágenes ref. Para uso comercial intensivo.",
+    "best_for_en": "Flux 2 Pro. 2K output. ~22s. Professional production, high resolution, top photorealism, up to 10 reference images. For heavy commercial use.",
     "prompt_formula": "Lenguaje natural fluido + tipografía explícita si necesitas texto. Hasta 10 referencias.",
     "prompt_ejemplo": "Professional product photo of a luxury watch on dark velvet, soft directional lighting from upper left, macro detail, sharp focus on dial, depth of field",
     "prompt_tips": [
@@ -2566,7 +2581,8 @@
       "TIPOGRAFÍA: Describe explícitamente si necesitas texto visible.",
       "FLUIDO Y DESCRIPTIVO: No necesitas estructura rígida."
     ],
-    "limitaciones": "Sin negative ni pesos."
+    "limitaciones": "Sin negative ni pesos.",
+    "vigente": true
   },
   "Flux.2 Flex": {
     "nota": 4.6,
@@ -2584,6 +2600,7 @@
       "Flex"
     ],
     "best_for": "Flux 2 Flex. Salida 2K. ~25s. Especializado en TIPOGRAFÍA y detalles finos. El mejor cuando el texto en imagen es crítico.",
+    "best_for_en": "Flux 2 Flex. 2K output. ~25s. Specialized in TYPOGRAPHY and fine detail. Best when in-image text is critical.",
     "prompt_formula": "Para texto: usar comillas y describir tipografía explícitamente. 'Bold serif typeface', 'handwritten script', etc.",
     "prompt_ejemplo": "Vintage diner sign with the text \"DINER\" in bold red retro typography, neon accent, weathered metal background, 1950s aesthetic",
     "prompt_tips": [
@@ -2591,7 +2608,8 @@
       "TIPOGRAFÍA EXPLÍCITA: Describe fuente, peso, estilo.",
       "MEJOR PARA TEXTO: Que otros Flux para renderizar palabras."
     ],
-    "limitaciones": "Optimizado para texto. Para foto pura, Pro o Max son mejores."
+    "limitaciones": "Optimizado para texto. Para foto pura, Pro o Max son mejores.",
+    "vigente": true
   },
   "Flux.2 Klein": {
     "nota": 4.5,
@@ -2607,6 +2625,7 @@
       "Klein"
     ],
     "best_for": "Flux 2 Klein. Salida 2K. ⚡ ~7s (RÁPIDO). Compacto para generación en tiempo real. Para iteración rápida.",
+    "best_for_en": "Flux 2 Klein. 2K output. ⚡ ~7s (FAST). Compact for real-time generation. For fast iteration.",
     "prompt_formula": "Lenguaje natural conciso. Optimizado para velocidad.",
     "prompt_ejemplo": "A red apple on a wooden table, soft natural light from the right, photorealistic",
     "prompt_tips": [
@@ -2614,7 +2633,8 @@
       "VELOCIDAD: Ideal para iterar y probar ideas rápido.",
       "NATURAL PERO BREVE: No necesitas essays."
     ],
-    "limitaciones": "Calidad menor que Pro/Max pero muy rápido."
+    "limitaciones": "Calidad menor que Pro/Max pero muy rápido.",
+    "vigente": true
   },
   "FLUX.2 [Klein]": {
     "nota": null,
@@ -2659,6 +2679,7 @@
       "Max"
     ],
     "best_for": "Flux 1 Kontext Max. ~18s. Modelo de EDICIÓN avanzada. Preserva contexto entre ediciones múltiples.",
+    "best_for_en": "Flux 1 Kontext Max. ~18s. Advanced EDITING model. Preserves context across multiple edits.",
     "prompt_formula": "Instrucciones de edición específicas: 'Change [elemento] to [nuevo]', 'Keep [elemento] exactly the same', 'Add [elemento] to [posición]'.",
     "prompt_ejemplo": "Change the woman's dress from red to emerald green, keep her face, hair, pose and lighting exactly the same",
     "prompt_tips": [
@@ -2666,7 +2687,8 @@
       "PRESERVA CONTEXTO: Funciona mejor con múltiples ediciones.",
       "REFERENCIAS: Soporta imágenes de referencia para estilo."
     ],
-    "limitaciones": "Especializado en edición. Para generación desde cero, otros Flux son mejores."
+    "limitaciones": "Especializado en edición. Para generación desde cero, otros Flux son mejores.",
+    "vigente": true
   },
   "Flux.1 Kontext Pro": {
     "nota": 4.5,
@@ -2682,9 +2704,11 @@
       "Pro"
     ],
     "best_for": "Flux 1 Kontext Pro. ~13s. Edición rápida con preservación de contexto.",
+    "best_for_en": "Flux 1 Kontext Pro. ~13s. Fast editing with context preservation.",
     "prompt_formula": "Instrucciones de edición concisas y específicas.",
     "prompt_ejemplo": "Add subtle bokeh background blur, keep subject sharp",
-    "limitaciones": "Para edición. Más rápido que Max pero menos preciso."
+    "limitaciones": "Para edición. Más rápido que Max pero menos preciso.",
+    "vigente": true
   },
   "Flux.1 Realism": {
     "nota": 4.6,
@@ -2702,6 +2726,7 @@
       "Realism"
     ],
     "best_for": "Flux 1 Realism. ⚡ ~8s. Optimizado para FOTORREALISMO. Pieles, texturas, escenarios fotográficos.",
+    "best_for_en": "Flux 1 Realism. ⚡ ~8s. Optimized for PHOTOREALISM. Skin, textures, photographic scenes.",
     "prompt_formula": "Lenguaje natural fotográfico. Mencionar lente, distancia focal, tipo de cámara mejora resultados.",
     "prompt_ejemplo": "Candid photograph of a barista preparing coffee, shallow depth of field, 50mm lens, natural window light, film grain",
     "prompt_tips": [
@@ -2709,7 +2734,8 @@
       "TEXTURAS REALES: Piel con poros, tela con textura, etc.",
       "REFERENCIAS: Funcionan muy bien para realismo."
     ],
-    "limitaciones": "Para arte estilizado, Flux 2 Max es mejor."
+    "limitaciones": "Para arte estilizado, Flux 2 Max es mejor.",
+    "vigente": true
   },
   "Flux.1 Fast": {
     "nota": 4.3,
@@ -2725,9 +2751,11 @@
       "Fast"
     ],
     "best_for": "Flux 1 Fast. ⚡ ~8s. Velocidad máxima en familia Flux 1. Ideal para iteración rápida y exploración.",
+    "best_for_en": "Flux 1 Fast. ⚡ ~8s. Top speed in the Flux 1 family. Ideal for fast iteration and exploration.",
     "prompt_formula": "Prompts cortos y directos.",
     "prompt_ejemplo": "A cat in a garden, golden hour light",
-    "limitaciones": "Calidad más baja que Realism o 1.1."
+    "limitaciones": "Calidad más baja que Realism o 1.1.",
+    "vigente": true
   },
   "Flux.1.1": {
     "nota": 4.5,
@@ -2743,9 +2771,11 @@
       "Standard"
     ],
     "best_for": "Flux 1.1 ULTRA RÁPIDO. ⚡ ~6s. Mejorado respecto Flux 1 base.",
+    "best_for_en": "Flux 1.1 ULTRA FAST. ⚡ ~6s. Improved over base Flux 1.",
     "prompt_formula": "Lenguaje natural fluido.",
     "prompt_ejemplo": "A young woman with curly hair laughing, soft studio lighting, professional portrait",
-    "limitaciones": "Para máxima calidad usar Flux 2 Max o Pro."
+    "limitaciones": "Para máxima calidad usar Flux 2 Max o Pro.",
+    "vigente": true
   },
   "Flux.1": {
     "nota": 4.3,
@@ -2761,9 +2791,11 @@
       "Standard"
     ],
     "best_for": "Flux 1 base. ~17s. El primer Flux de Black Forest Labs.",
+    "best_for_en": "Base Flux 1. ~17s. Black Forest Labs' first Flux.",
     "prompt_formula": "Lenguaje natural descriptivo.",
     "prompt_ejemplo": "A serene mountain landscape at sunset, dramatic clouds, vibrant colors",
-    "limitaciones": "Reemplazado por versiones más recientes."
+    "limitaciones": "Reemplazado por versiones más recientes.",
+    "vigente": true
   },
   "Mystic 2.5 Fluid": {
     "nota": 4.7,
@@ -2783,6 +2815,7 @@
       "Fluid"
     ],
     "best_for": "Mystic 2.5 Fluid. ~24s. 80 créditos. Hiperrealismo nativo de Magnific basado en Flux + tecnología de upscaling Magnific. 2K nativo. El mejor para retratos, expresiones faciales.",
+    "best_for_en": "Mystic 2.5 Fluid. ~24s. 80 credits. Magnific's native hyperrealism based on Flux + Magnific upscaling tech. Native 2K. Best for portraits and facial expressions.",
     "prompt_formula": "Lenguaje natural muy descriptivo. Soporta texto en imagen con comillas.",
     "prompt_ejemplo": "A young woman with long brown hair wearing a yellow dress against a patterned background, natural skin texture, individual hair strands, soft daylight, 2K resolution",
     "prompt_tips": [
@@ -2790,7 +2823,8 @@
       "RETRATOS: Excelente para rostros y expresiones.",
       "UPSDALING NATIVO: 2K de salida sin post-procesamiento."
     ],
-    "limitaciones": "Costoso (80 créditos). Para diseño con texto, Ideogram funciona mejor."
+    "limitaciones": "Costoso (80 créditos). Para diseño con texto, Ideogram funciona mejor.",
+    "vigente": true
   },
   "Google Imagen 4 Ultra": {
     "nota": 4.8,
@@ -2808,6 +2842,7 @@
       "Ultra"
     ],
     "best_for": "Google Imagen 4 Ultra. ~18s. Fotorrealismo top de Google. Excelente entendimiento espacial y físico. Ideal para escenas complejas.",
+    "best_for_en": "Google Imagen 4 Ultra. ~18s. Google's top photorealism. Excellent spatial and physical understanding. Ideal for complex scenes.",
     "prompt_formula": "Lenguaje natural muy descriptivo. Imagen entiende relaciones espaciales precisas.",
     "prompt_ejemplo": "A red coffee mug placed on a wooden desk to the right of an open notebook, soft morning light streaming through a window from the left, shallow depth of field",
     "prompt_tips": [
@@ -2815,7 +2850,8 @@
       "FÍSICA REALISTA: Entiende gravedad, luz, sombras correctamente.",
       "ESCENAS COMPLEJAS: Maneja múltiples objetos y sus interacciones."
     ],
-    "limitaciones": "Sin negative."
+    "limitaciones": "Sin negative.",
+    "vigente": true
   },
   "Google Imagen 4": {
     "nota": 4.7,
@@ -2833,9 +2869,11 @@
       "Standard"
     ],
     "best_for": "Google Imagen 4. ⚡ ~10s. Fotorrealismo + rápido. Buen balance velocidad/calidad.",
+    "best_for_en": "Google Imagen 4. ⚡ ~10s. Photorealism + fast. Good speed/quality balance.",
     "prompt_formula": "Lenguaje natural descriptivo con relaciones espaciales claras.",
     "prompt_ejemplo": "A photorealistic portrait of a young woman with auburn hair, soft natural lighting from a window on the left, blurred forest background",
-    "limitaciones": "Menos detalle que Imagen 4 Ultra."
+    "limitaciones": "Menos detalle que Imagen 4 Ultra.",
+    "vigente": true
   },
   "Google Imagen 3": {
     "nota": 4.5,
@@ -2851,9 +2889,11 @@
       "Standard"
     ],
     "best_for": "Google Imagen 3. ⚡ ~9s. Generación rápida calidad media.",
+    "best_for_en": "Google Imagen 3. ⚡ ~9s. Fast, medium-quality generation.",
     "prompt_formula": "Lenguaje natural simple.",
     "prompt_ejemplo": "A cat sitting in a garden of wildflowers, sunny day, photorealistic",
-    "limitaciones": "Reemplazado por Imagen 4. Calidad menor."
+    "limitaciones": "Reemplazado por Imagen 4. Calidad menor.",
+    "vigente": true
   },
   "Seedream 5 Lite": {
     "nota": 4.7,
@@ -2873,6 +2913,7 @@
       "Lite"
     ],
     "best_for": "Seedream 5 Lite (Destacado/Nuevo). Salida 2K. ~51s. Modelo más reciente de ByteDance. Excelente para fotorrealismo y arte.",
+    "best_for_en": "Seedream 5 Lite (Featured/New). 2K output. ~51s. ByteDance's latest model. Excellent for photorealism and art.",
     "prompt_formula": "Lenguaje natural muy descriptivo. Soporta múltiples sujetos y composiciones complejas.",
     "prompt_ejemplo": "A cinematic shot of two friends sitting at a vintage diner counter, neon reflections on the chrome surface, warm dramatic lighting, 35mm film aesthetic",
     "prompt_tips": [
@@ -2880,7 +2921,8 @@
       "MÚLTIPLES SUJETOS: Maneja grupos y composiciones complejas.",
       "RECIENTE: Último modelo de ByteDance, tecnología actualizada."
     ],
-    "limitaciones": "Más lento que Flux Klein."
+    "limitaciones": "Más lento que Flux Klein.",
+    "vigente": true
   },
   "Seedream 4.5": {
     "nota": 3.1,
@@ -2920,9 +2962,11 @@
       "4K"
     ],
     "best_for": "Seedream 4 4K. ~37s. Genera directamente en 4K nativo. Para impresión y trabajos de alta resolución.",
+    "best_for_en": "Seedream 4 4K. ~37s. Generates directly in native 4K. For print and high-resolution work.",
     "prompt_formula": "Lenguaje natural detallado. Aprovecha la alta resolución pidiendo detalles finos.",
     "prompt_ejemplo": "An intricate macro photograph of a butterfly wing showing fine scale patterns, ultra-detailed, 4K resolution",
-    "limitaciones": "Sin negative."
+    "limitaciones": "Sin negative.",
+    "vigente": true
   },
   "Seedream 4": {
     "nota": 4.4,
@@ -2938,9 +2982,11 @@
       "Standard"
     ],
     "best_for": "Seedream 4. ~19s. Versión estándar, balance calidad/velocidad.",
+    "best_for_en": "Seedream 4. ~19s. Standard version, quality/speed balance.",
     "prompt_formula": "Lenguaje natural fluido.",
     "prompt_ejemplo": "A serene Japanese garden with a koi pond, cherry blossoms falling, soft natural light",
-    "limitaciones": "Reemplazado por Seedream 4.5 y 5 Lite."
+    "limitaciones": "Reemplazado por Seedream 4.5 y 5 Lite.",
+    "vigente": true
   },
   "Recraft V4 Pro": {
     "nota": 4.7,
@@ -2960,6 +3006,7 @@
       "Pro"
     ],
     "best_for": "Recraft V4 Pro (Nuevo). ~35s. Soporta NEGATIVE PROMPT. Especialista en arte vectorial, ilustraciones, branding. Mejor que V3.",
+    "best_for_en": "Recraft V4 Pro (New). ~35s. Supports NEGATIVE PROMPT. Specialist in vector art, illustrations and branding. Better than V3.",
     "prompt_formula": "Lenguaje natural + estilo vectorial. 'Flat illustration', 'vector art', 'icon style'.",
     "prompt_ejemplo": "Flat vector illustration of a cozy coffee shop at night, warm color palette, geometric shapes, minimalist design",
     "prompt_tips": [
@@ -2968,7 +3015,8 @@
       "SVG OUTPUT: Genera graphics escalables editables.",
       "REFERENCIAS: Hasta 3 imágenes de estilo."
     ],
-    "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial."
+    "limitaciones": "No fotorrealismo. Mejor para gráfico/vectorial.",
+    "vigente": true
   },
   "Recraft V4": {
     "nota": 4.5,
@@ -2986,9 +3034,11 @@
       "Standard"
     ],
     "best_for": "Recraft V4 (Nuevo). ~18s. Soporta NEGATIVE PROMPT. Versión estándar para vectorial.",
+    "best_for_en": "Recraft V4 (New). ~18s. Supports NEGATIVE PROMPT. Standard version for vector art.",
     "prompt_formula": "Lenguaje natural + estilo vectorial.",
     "prompt_ejemplo": "Minimalist vector poster with geometric shapes, monochrome palette, clean lines",
-    "limitaciones": "No fotorrealismo."
+    "limitaciones": "No fotorrealismo.",
+    "vigente": true
   },
   "Z-Image": {
     "nota": 4.4,
@@ -3005,6 +3055,7 @@
       "Turbo"
     ],
     "best_for": "Z-Image en Magnific. ⚡ ~8s. Modelo Turbo: tags limpios sin pesos ni negative. Latencia mínima.",
+    "best_for_en": "Z-Image on Magnific. ⚡ ~8s. Turbo model: clean tags, no weights or negative. Minimal latency.",
     "prompt_formula": "Tags limpios separados por comas SIN pesos numéricos.",
     "prompt_ejemplo": "close-up portrait, silver hair, blue eyes, detailed skin, soft studio lighting, 8K, masterpiece",
     "prompt_tips": [
@@ -3012,7 +3063,8 @@
       "COMAS SEPARAN: keyword1, keyword2, keyword3.",
       "MÁX SIMPLICIDAD: Diseñado para velocidad."
     ],
-    "limitaciones": "Sin negative ni pesos. Para alta calidad usar Mystic/Flux."
+    "limitaciones": "Sin negative ni pesos. Para alta calidad usar Mystic/Flux.",
+    "vigente": true
   },
   "Qwen": {
     "nota": 4.3,
@@ -3028,9 +3080,11 @@
       "Standard"
     ],
     "best_for": "Qwen Image en Magnific. ~12s. Buena calidad general, soporta referencias. De Alibaba/Aliyun.",
+    "best_for_en": "Qwen Image on Magnific. ~12s. Good general quality, supports references. From Alibaba/Aliyun.",
     "prompt_formula": "Lenguaje natural descriptivo.",
     "prompt_ejemplo": "A modern minimalist living room with large windows, natural light, scandinavian design",
-    "limitaciones": "Sin negative."
+    "limitaciones": "Sin negative.",
+    "vigente": true
   },
   "Grok": {
     "nota": 4.2,
@@ -3046,9 +3100,11 @@
       "Standard"
     ],
     "best_for": "Grok Imagine en Magnific. ~11s. Modelo de xAI. Buena para arte conceptual y escenas creativas.",
+    "best_for_en": "Grok Imagine on Magnific. ~11s. xAI's model. Good for concept art and creative scenes.",
     "prompt_formula": "Lenguaje natural creativo. Le va bien lo absurdo y la fantasía.",
     "prompt_ejemplo": "A surreal scene of giant mushrooms in a crystal forest, dreamy ethereal lighting, fantasy art style",
-    "limitaciones": "Sin negative ni pesos."
+    "limitaciones": "Sin negative ni pesos.",
+    "vigente": true
   },
   "Classic": {
     "nota": 4.0,
@@ -3064,6 +3120,7 @@
       "Classic"
     ],
     "best_for": "Modelo Classic de Magnific. ⚡ ~4s. Soporta NEGATIVE PROMPT. Tags estilo Stable Diffusion. Ideal cuando quieres control con negatives.",
+    "best_for_en": "Magnific's Classic model. ⚡ ~4s. Supports NEGATIVE PROMPT. Stable Diffusion-style tags. Ideal when you want control with negatives.",
     "prompt_formula": "Tags con pesos estilo Stable Diffusion. (tag:1.2). Soporta negative.",
     "prompt_ejemplo": "(beautiful portrait:1.3), 1girl, detailed face, soft lighting, professional photography, 8K",
     "prompt_tips": [
@@ -3072,7 +3129,8 @@
       "TAGS COMO SD: Inspirado en Stable Diffusion clásico.",
       "RÁPIDO: ~4s para generación."
     ],
-    "limitaciones": "Calidad inferior a modelos modernos pero soporta negative."
+    "limitaciones": "Calidad inferior a modelos modernos pero soporta negative.",
+    "vigente": true
   },
   "Classic Fast": {
     "nota": 3.9,
@@ -3088,6 +3146,7 @@
       "Fast"
     ],
     "best_for": "Classic Fast. ⚡ ~2s (más rápido). Soporta NEGATIVE PROMPT. Ideal para iteración rápida con tags + negative.",
+    "best_for_en": "Classic Fast. ⚡ ~2s (faster). Supports NEGATIVE PROMPT. Ideal for fast iteration with tags + negative.",
     "prompt_formula": "Tags con pesos. Soporta negative.",
     "prompt_ejemplo": "(portrait:1.2), 1girl, detailed face, studio lighting, masterpiece",
     "prompt_tips": [
@@ -3095,7 +3154,8 @@
       "TAGS SIMPLES: No necesitas essays.",
       "NEGATIVE DISPONIBLE: Control sobre qué excluir."
     ],
-    "limitaciones": "Calidad menor que Classic estándar."
+    "limitaciones": "Calidad menor que Classic estándar.",
+    "vigente": true
   },
   "Reve 2.0": {
     "nota": 4.8,
