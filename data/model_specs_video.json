@@ -289,7 +289,7 @@
   },
   "PixVerse V6": {
     "nota": 4.3,
-    "has_negative": true,
+    "has_negative": false,
     "has_audio": false,
     "audio_desc": "",
     "duraciones": [
