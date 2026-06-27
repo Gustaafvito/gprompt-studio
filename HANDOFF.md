@@ -91,9 +91,13 @@ Tres bloques, todos en `main` (780 → 784 verdes, ruff limpio):
 
 Catálogo vídeo **76 → 77** (Seedance 1.0 Fast). Plataformas imagen +1 (Dola), vídeo +1.
 
-**PENDIENTE (auditar uno a uno, tag-based ocultos en SeaArt):** RealVisXL V5.0 fp16 (4.6),
-Juggernaut-XL v9 RunDiffusionPhoto v2 (4.7), JuggernautXL Ragnarok (4.5), Realities Edge XL
-Turbo V7 (4.7), Classic (4.0), Classic Fast (3.9), Z-Image (4.4) — reactivar con panel real.
+6. **Realismo SD reactivado (5 modelos, panel real)**: RealVisXL V5.0 fp16 (4.9),
+   Juggernaut-XL v9 RunDiffusionPhoto v2 (4.9), JuggernautXL Ragnarok (4.5), Realities Edge XL
+   Turbo V7 (4.9) + **TFV.SDXL.BAKED** nuevo (5.0). Ratios completos, modo Calidad, samplers/pasos
+   reales. Grupo **Realismo SD ahora 17/17 vigentes**. Catálogo imagen **167 → 168**.
+
+**NOTA:** Classic (4.0), Classic Fast (3.9), Z-Image (4.4) son de **Magnific**, NO de SeaArt
+→ fuera del scope de esta auditoría; quedan ocultos (`vigente:null`).
 
 ---
 

@@ -1053,7 +1053,7 @@
     "best_for_en": "SD photorealism classic. 1.2M uses, rating 5.0. Excellent for portraits, photography and realistic fantasy. Face/character repair."
   },
   "Realities Edge XL Turbo V7": {
-    "nota": 4.7,
+    "nota": 4.9,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
@@ -1069,21 +1069,23 @@
       "4:5",
       "5:4"
     ],
-    "max_chars": 1200,
+    "max_chars": 2000,
     "modos_gen": [
       "Estándar",
       "Calidad"
     ],
     "max_imagenes": 8,
-    "best_for": "SDXL Turbo ultrarrápido. Prompts cortos y directos dan mejores resultados. Fotorrealismo, 3D, retratos, mangas. Versión Lightning disponible.",
+    "best_for": "Checkpoint SDXL Turbo/Lightning fotorrealista (V7). Pocos pasos, CFG bajo. En SeaArt SÍ usa negative.",
     "prompt_formula": "Tag-based SD: prompts cortos y concisos. Este modelo responde mejor a prompts simples y directos que a prompts muy elaborados.",
     "prompt_ejemplo": "portrait of a rugged man, cinematic dust, sharp details, dramatic light, photorealistic, 8K",
-    "sampler_recomendado": "DPM++ SDE Karras",
+    "sampler_recomendado": "DPM++ SDE Karras (20 pasos, CFG 2.0, clip skip 2) — Turbo/Lightning, pocos pasos",
     "pasos": 20,
     "cfg": 2,
     "clip_skip": 2,
     "coste_energia": "Gratis VIP",
-    "limitaciones": "CFG muy bajo (2.0). Resolución por defecto 1152x1536. Prompts largos pueden dar resultados inconsistentes."
+    "limitaciones": "CFG muy bajo (2.0). Resolución por defecto 1152x1536. Prompts largos pueden dar resultados inconsistentes.",
+    "vigente": true,
+    "best_for_en": "Photorealistic SDXL Turbo/Lightning checkpoint (V7). Few steps, low CFG. On SeaArt it DOES use a negative."
   },
   "CyberRealistic": {
     "nota": 4.6,
@@ -1741,50 +1743,66 @@
     "best_for_en": "Cinematic CG/3D render style. Ideal for mech suits, sci-fi, armored characters, epic scenes with dramatic lighting."
   },
   "Juggernaut-XL v9 RunDiffusionPhoto v2": {
-    "nota": 4.7,
+    "nota": 4.9,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
       "16:9",
+      "1:2",
+      "2:1",
       "4:5",
       "5:4"
     ],
     "max_chars": 2000,
     "modos_gen": [
-      "Estándar"
+      "Estándar",
+      "Calidad"
     ],
-    "best_for": "Fotorrealismo SDXL premium. Excelente para retratos, personas, escenas naturales. Uno de los mejores SDXL para foto realista.",
+    "best_for": "Checkpoint SDXL fotorrealista líder (KandooAI/RunDiffusion), versión v9 RunDiffusion Photo v2. Tag-based con negative.",
     "prompt_formula": "Tags SDXL con pesos. cinematic photo, RAW photo, dslr, ultra detailed.",
     "prompt_ejemplo": "(cinematic photo:1.3), 1girl, detailed face, soft natural lighting, shallow DOF, 8K, RAW photo, masterpiece",
-    "sampler_recomendado": "DPM++ 2M Karras",
+    "sampler_recomendado": "DPM++ 2M SDE (30 pasos, CFG 4.5, clip skip 2)",
     "pasos": 30,
-    "cfg": 5
+    "cfg": 5,
+    "vigente": true,
+    "best_for_en": "Leading photorealistic SDXL checkpoint (KandooAI/RunDiffusion), v9 RunDiffusion Photo v2. Tag-based with negative."
   },
   "RealVisXL V5.0 fp16": {
-    "nota": 4.6,
+    "nota": 4.9,
     "has_negative": true,
     "is_natural": false,
     "ratios": [
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
-      "16:9"
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
     ],
     "max_chars": 2000,
     "modos_gen": [
-      "Estándar"
+      "Estándar",
+      "Calidad"
     ],
-    "best_for": "Hiperrealismo SDXL. Pieles, texturas reales, escenarios fotográficos. Excelente para portraits.",
+    "best_for": "Checkpoint SDXL fotorrealista (merge de Juggernaut/DreamShaper/RealXL…). SFW y NSFW de buena calidad. Tag-based con negative.",
     "prompt_formula": "RAW photo, photographic style, ultra realistic, professional photography.",
     "prompt_ejemplo": "RAW photo, professional portrait, 1woman, natural skin texture, golden hour lighting, 85mm lens, bokeh background",
-    "sampler_recomendado": "DPM++ 2M Karras",
+    "sampler_recomendado": "DPM++ SDE Karras (30+ pasos) o DPM++ 2M Karras (50+); panel default DPM++ 2M 40 pasos, CFG 7, clip skip 2, VAE baked",
     "pasos": 30,
-    "cfg": 5
+    "cfg": 5,
+    "vigente": true,
+    "best_for_en": "Photorealistic SDXL checkpoint (merge of Juggernaut/DreamShaper/RealXL…). Good-quality SFW and NSFW. Tag-based with negative."
   },
   "JuggernautXL Ragnarok": {
     "nota": 4.5,
@@ -1794,19 +1812,28 @@
       "1:1",
       "2:3",
       "3:2",
+      "3:4",
+      "4:3",
       "9:16",
-      "16:9"
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
     ],
     "max_chars": 2000,
     "modos_gen": [
-      "Estándar"
+      "Estándar",
+      "Calidad"
     ],
-    "best_for": "Variante de Juggernaut con estética más cinematográfica/fantasy. Bueno para escenas épicas y entornos detallados.",
+    "best_for": "Versión Ragnarok del Juggernaut XL (RunDiffusion). SDXL fotorrealista, tag-based con negative.",
     "prompt_formula": "Tags SDXL con énfasis en cinematic + fantasy.",
     "prompt_ejemplo": "(epic cinematic shot:1.3), warrior in dramatic landscape, volumetric lighting, intricate armor details, 8K",
-    "sampler_recomendado": "DPM++ 2M Karras",
+    "sampler_recomendado": "DPM++ 2M SDE / DPM++ SDE Karras (~30 pasos, CFG ~4.5, clip skip 2)",
     "pasos": 30,
-    "cfg": 5
+    "cfg": 5,
+    "vigente": true,
+    "best_for_en": "Ragnarok version of Juggernaut XL (RunDiffusion). Photorealistic SDXL, tag-based with negative."
   },
   "z_image_bf16 (Base)": {
     "nota": 4.4,
@@ -4736,5 +4763,35 @@
     "prompt_formula": "Prosa natural: sujeto + escena + iluminación + detalles de cámara. Magia de sugerencia disponible en SeaArt.",
     "prompt_ejemplo": "A candid portrait of a woman by a sunlit window, soft natural light, shallow depth of field, photorealistic.",
     "limitaciones": "Base FLUX Klein: lenguaje natural, no tags por comas. Hasta 2048px."
+  },
+  "TFV.SDXL.BAKED": {
+    "nota": 5.0,
+    "has_negative": true,
+    "is_natural": false,
+    "vigente": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "sampler_recomendado": "DPM++ 2M Karras (40 pasos, CFG 4.0, clip skip 1, upscaler 4x-UltraSharp)",
+    "best_for": "Checkpoint SDXL de propósito general (modelo base, SFW). Buen realismo. Tag-based con negative. DPM++ 2M Karras, 40 pasos, CFG 4.0, clip skip 1.",
+    "best_for_en": "General-purpose SDXL checkpoint (base model, SFW). Solid realism. Tag-based with negative. DPM++ 2M Karras, 40 steps, CFG 4.0, clip skip 1.",
+    "prompt_formula": "Tags SD ordenados: calidad + sujeto + escena + iluminación. Pesos (tag:1.2) opcionales. Negative para limpiar artefactos.",
+    "prompt_ejemplo": "masterpiece, best quality, a man in a dark cathedral, dramatic lighting, cinematic, highly detailed",
+    "limitaciones": "2000 chars pos/neg. clip skip 1."
   }
 }
