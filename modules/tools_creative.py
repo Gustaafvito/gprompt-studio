@@ -409,9 +409,12 @@ class ToolsCreativeService:
         else:
             modelos_lista = [m for m in MODELOS_AUDIO_FLAT if not m.startswith("──")]
 
-        # Resumen de specs para el LLM
+        # Resumen de specs para el LLM — TODOS los modelos del modo activo.
+        # (Antes se enviaban solo los 20 primeros de la lista → el LLM siempre
+        #  sugería los mismos modelos, sesgados al inicio alfabético; los ~100
+        #  restantes nunca podían salir. Ver fix sesión 34.)
         specs_resumen = []
-        for m in modelos_lista[:20]:
+        for m in modelos_lista:
             s = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
             specs_resumen.append(f"- {m}: {s.get('best_for', '')[:120]}")
 
@@ -430,7 +433,7 @@ class ToolsCreativeService:
 
         def _worker():
             try:
-                resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=600)
+                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=600)
                 resp = limpiar_marcadores(resp)
 
                 # Parsear las 3 sugerencias
