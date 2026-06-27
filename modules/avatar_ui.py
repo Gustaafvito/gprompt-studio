@@ -614,14 +614,12 @@ def abrir_avatar_window(app) -> None:
         from config import (
             GRUPOS_DALLE_IMAGEN,
             GRUPOS_IMAGEN_VIGENTES,
-            GRUPOS_MIDJOURNEY_IMAGEN,
             get_image_model_specs,
         )
         from modules.avatar_generator import adaptar_dataset_a_modelo
 
         plataformas_destino = {
             "SeaArt": GRUPOS_IMAGEN_VIGENTES,
-            "Midjourney": GRUPOS_MIDJOURNEY_IMAGEN,
             "ChatGPT / GPT Image": GRUPOS_DALLE_IMAGEN,
         }
         modelo_activo = app.footer.modelo_imagen_valido() or ""

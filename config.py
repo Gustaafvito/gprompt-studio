@@ -967,17 +967,6 @@ GRUPOS_DALLE_IMAGEN = [
 ]
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
 
-# Modelos exclusivos de Midjourney
-GRUPOS_MIDJOURNEY_IMAGEN = [
-    ("── Midjourney ──", sorted([
-        "Midjourney v8.1", "Midjourney v8", "Midjourney v7", "Midjourney v6.1", "Midjourney v6",
-    ])),
-    ("── Niji (Anime) ──", sorted([
-        "Niji 7", "Niji 6", "Niji 5",
-    ])),
-]
-MODELOS_MIDJOURNEY_IMAGEN_FLAT = _lista_plana(GRUPOS_MIDJOURNEY_IMAGEN)
-
 # Dola (dola.com) — chat con IA (afiliado Dreamina/ByteDance). Generación de
 # imagen en lenguaje natural con estilos propios + hasta 10 imgs de referencia.
 GRUPOS_DOLA_IMAGEN = [
@@ -989,7 +978,6 @@ MODELOS_DOLA_IMAGEN_FLAT = _lista_plana(GRUPOS_DOLA_IMAGEN)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
     "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
     "ComfyUI / A1111 / Forge":      MODELOS_IMAGEN_COMFYUI_FLAT,
-    "Midjourney":                    MODELOS_MIDJOURNEY_IMAGEN_FLAT,
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
     "Dola":                          MODELOS_DOLA_IMAGEN_FLAT,
@@ -1396,7 +1384,6 @@ def detectar_familia_video(modelo_nombre: str) -> str | None:
 PLATAFORMAS_IMAGEN = {
     "SeaArt / Tensor.Art":        "sd",
     "ComfyUI / A1111 / Forge":    "sd",
-    "Midjourney":                  "natural",
     "ChatGPT / GPT Image":         "natural",
     "Magnific":                    "natural",
     "Dola":                        "natural",

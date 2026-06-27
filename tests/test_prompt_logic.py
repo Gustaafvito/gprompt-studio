@@ -47,8 +47,8 @@ class TestIsNaturalMode:
         assert is_natural_mode("video", "PlataformaFake", "") is True
 
     # ── modo imagen — plataformas sin modelos (natural / sd) ───────
-    def test_imagen_midjourney_es_natural(self):
-        assert is_natural_mode("imagen", "Midjourney", "") is True
+    def test_imagen_dola_es_natural(self):
+        assert is_natural_mode("imagen", "Dola", "") is True
 
     def test_imagen_chatgpt_es_natural(self):
         assert is_natural_mode("imagen", "ChatGPT / GPT Image", "") is True
@@ -206,8 +206,8 @@ class TestDebeMostrarNegatives:
 
     # ── modo imagen ────────────────────────────────────────────────
     def test_imagen_plataforma_natural_sin_modelos(self):
-        # Midjourney → "natural" → False
-        assert debe_mostrar_negatives("imagen", "Midjourney", "", "") is False
+        # Dola → "natural" → False
+        assert debe_mostrar_negatives("imagen", "Dola", "", "") is False
 
     def test_imagen_plataforma_sd_sin_modelos(self):
         # SeaArt / Tensor.Art con modelo vacío → cae a default "sd" → True
