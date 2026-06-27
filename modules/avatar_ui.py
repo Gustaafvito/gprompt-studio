@@ -613,7 +613,6 @@ def abrir_avatar_window(app) -> None:
     try:
         from config import (
             GRUPOS_DALLE_IMAGEN,
-            GRUPOS_IDEOGRAM_IMAGEN,
             GRUPOS_IMAGEN_VIGENTES,
             GRUPOS_MIDJOURNEY_IMAGEN,
             get_image_model_specs,
@@ -624,7 +623,6 @@ def abrir_avatar_window(app) -> None:
             "SeaArt": GRUPOS_IMAGEN_VIGENTES,
             "Midjourney": GRUPOS_MIDJOURNEY_IMAGEN,
             "ChatGPT / GPT Image": GRUPOS_DALLE_IMAGEN,
-            "Ideogram / Recraft": GRUPOS_IDEOGRAM_IMAGEN,
         }
         modelo_activo = app.footer.modelo_imagen_valido() or ""
 

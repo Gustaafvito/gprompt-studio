@@ -978,14 +978,6 @@ GRUPOS_MIDJOURNEY_IMAGEN = [
 ]
 MODELOS_MIDJOURNEY_IMAGEN_FLAT = _lista_plana(GRUPOS_MIDJOURNEY_IMAGEN)
 
-# Modelos exclusivos de Ideogram / Recraft
-GRUPOS_IDEOGRAM_IMAGEN = [
-    ("── Ideogram / Recraft ──", sorted([
-        "Ideogram v3", "Recraft v3",
-    ])),
-]
-MODELOS_IDEOGRAM_IMAGEN_FLAT = _lista_plana(GRUPOS_IDEOGRAM_IMAGEN)
-
 # Dola (dola.com) — chat con IA (afiliado Dreamina/ByteDance). Generación de
 # imagen en lenguaje natural con estilos propios + hasta 10 imgs de referencia.
 GRUPOS_DOLA_IMAGEN = [
@@ -999,7 +991,6 @@ MODELOS_POR_PLATAFORMA_IMAGEN = {
     "ComfyUI / A1111 / Forge":      MODELOS_IMAGEN_COMFYUI_FLAT,
     "Midjourney":                    MODELOS_MIDJOURNEY_IMAGEN_FLAT,
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
-    "Ideogram / Recraft":            MODELOS_IDEOGRAM_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
     "Dola":                          MODELOS_DOLA_IMAGEN_FLAT,
 }
@@ -1407,7 +1398,6 @@ PLATAFORMAS_IMAGEN = {
     "ComfyUI / A1111 / Forge":    "sd",
     "Midjourney":                  "natural",
     "ChatGPT / GPT Image":         "natural",
-    "Ideogram / Recraft":          "natural",
     "Magnific":                    "natural",
     "Dola":                        "natural",
 }
