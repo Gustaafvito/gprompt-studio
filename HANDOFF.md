@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 33**.
+Actualizado al cierre de la **sesión 34**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **784 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **787 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -37,10 +37,11 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Pre-commit hooks | Activos (line endings, ruff, large files, secrets) |
 | Build `.exe` | onedir + onefile + installer (Inno Setup) — al día |
 | Code-signing | Opcional vía env vars (`GPROMPT_SIGN_*`), ver BUILD.md |
-| Modelos de imagen VISIBLES | ~93 vigentes / 164 total (filtro `vigente:true`) |
+| Modelos de imagen VISIBLES | **120 vigentes / 122 en grupos** (168 specs totales; filtro `vigente:true`). Solo 2 ocultos en grupos: SeaArt Film Edit 3.0, SD 3.5 Large Turbo |
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
-| Familia Anime/Ilustración | **17/17** vigentes ✅ (auditados sesión 22-23) |
-| Familia Realismo SD | **6/15** vigentes (9 ocultos, pendiente auditoría) |
+| Familia Anime/Ilustración | **16/16** vigentes ✅ (auditados sesión 22-23; XE: Anime Hentai movido a grupo NSFW) |
+| Familia Realismo SD | **CERRADA — 17/17** vigentes ✅ (5 reactivados sesión 34 por panel) |
+| **Plataforma Magnific (imagen)** | **SIN AUDITAR** — ~30 modelos con spec pero NO vigentes (solo 1). Grupos internos: OpenAI GPT, Flux, Mystic, Google Imagen, Seedream, Recraft, Otros. Ver Pendiente 🔴 |
 | Modelos vídeo | **77 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Sesión 31: +4 (StarDream 2.0 Mini, Seedance 2.0 Mini, SeaArt Pony 1.1, Happy Horse 1.1, por panel). Reference (Vidu Drama/Ad, Drama/Ad) descartados por convención |
 | Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
 | Plataforma ComfyUI | **Operativa** (sesión 28+31): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens. **Specs sintéticas por familia** — imagen `comfy_image_specs` (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) **y vídeo `comfy_video_specs`** (ltx/wan/svd/hunyuan/cogvideo/mochi), ambas bilingües (`best_for_en` + `prompt_formula/ejemplo`). Pendiente: estilos por familia + wiring en caliente del dropdown |
@@ -62,6 +63,35 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 34 — Realismo SD cerrado + fix "Sugerir modelo"
+
+Tres bloques en `main` (784 → 787 verdes, ruff limpio, distribuible regenerado 3×):
+
+1. **Realismo SD reactivado (5 modelos, panel real)** (`f3bfdba`): RealVisXL V5.0 fp16
+   (4.9), Juggernaut-XL v9 RunDiffusionPhoto v2 (4.9), JuggernautXL Ragnarok (4.5),
+   Realities Edge XL Turbo V7 (4.9) + **TFV.SDXL.BAKED** nuevo (5.0). Ratios completos,
+   modo Calidad, samplers/pasos reales, `best_for`+`best_for_en`. Grupo **Realismo SD
+   ahora 17/17 vigentes**. Catálogo imagen 167 → 168.
+
+2. **fix "Sugerir modelo" — variedad** (`e71d65c`): el sugeridor recortaba la lista a
+   `modelos_lista[:20]` → el LLM SIEMPRE devolvía los mismos 20 modelos (sesgados al
+   inicio alfabético, casi todos anime) y los ~100 restantes nunca podían salir. Ahora
+   se envía la lista COMPLETA del modo activo. Temperatura 0.3 → 0.5 para variedad. +2 tests.
+
+3. **fix "Sugerir modelo" — ajuste de estilo** (`e2443fd`): el LLM elegía por tema
+   (p.ej. "horror" → metía Inkpunk, un modelo de cómic, en una idea realista). Ahora el
+   prompt (1) instruye priorizar modelos fotorrealistas/cine para escenas realistas y
+   evitar los muy estilizados salvo que la idea pida ese estilo, y (2) sube el recorte de
+   `best_for` 120 → 180 chars para no cortar descriptores de estilo. +1 test.
+   **Verificado en vivo** por el usuario: las sugerencias ahora aciertan (3 modelos
+   fotorrealistas/cine bien razonados; Inkpunk desapareció).
+
+> **Nota de catálogo:** Classic (4.0), Classic Fast (3.9), Z-Image (4.4) que quedaban
+> "pendientes" NO son de SeaArt sino de **Magnific** → fuera del scope de la auditoría
+> SeaArt; se auditarán cuando se ataque la plataforma Magnific entera (ver Pendiente 🔴).
 
 ---
 
@@ -639,13 +669,31 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
   idioma un setup/pref viejo puede no recargar la selección (aceptable, requiere
   reinicio igual).
 
-### 🔴 ALTA
-- **Vídeo SeaArt — quedan ~8 motores externos**: Wan 2.7, Vidu Q3 Pro/Reference,
-  Kling 3.0 turbo, Kling O1, Grok Imagine (+1.5), StarDream 2.0 Fast, Happy Horse,
-  Hailuo 2.3 fast. Panel a panel; remake/edición/referencia se descartan.
-- **Auditoría specs Anime/Ilustración**: 6/17 vigentes, 11 ocultos sin auditar.
-  Requiere pantallazos del panel SeaArt (Illustrious, NoobAI, etc.).
-- **Auditoría specs Realismo SD**: 6/15 vigentes, 9 ocultos sin auditar.
+### 🔴 ALTA — Auditoría por plataforma (estado real al cierre sesión 34)
+
+**IMAGEN** — SeaArt/Tensor.Art prácticamente CERRADO (FLUX 25/25, Anime 16/16,
+Realismo SD 17/17, Z-Image, GPT, Kling, MAI, Midjourney/Niji, Nano Banana, Qwen,
+Seedream, Sora, Wan… todos vigentes). Lo que FALTA:
+- **Plataforma Magnific — SIN AUDITAR (la gorda)**: ~30 modelos con spec pero NO
+  vigentes (solo 1). Grupos internos: OpenAI GPT, Familia Flux, Mystic, Google Imagen,
+  Seedream, Recraft, Otros Magnific. (Classic / Classic Fast / Z-Image son de aquí.)
+  Auditar panel a panel como SeaArt. → `MODELOS_POR_PLATAFORMA_IMAGEN["Magnific"]`.
+- Standalone con ocultos sueltos: **Midjourney** (3/8 vigentes), Ideogram/Recraft.
+
+**VÍDEO** — SeaArt Video CERRADO (76/77 auditados con panel). Lo que FALTA:
+- **~8 motores externos en SeaArt**: Wan 2.7, Vidu Q3 Pro/Reference, Kling 3.0 turbo,
+  Kling O1, Grok Imagine (+1.5), StarDream 2.0 Fast, Happy Horse, Hailuo 2.3 fast.
+  Panel a panel; remake/edición/referencia se descartan.
+- **Plataformas de vídeo VACÍAS**: Pika/Luma, Runway Gen, Pixverse.ai, Sora/Veo están
+  en `PLATAFORMAS_VIDEO` pero SIN lista en `MODELOS_POR_PLATAFORMA_VIDEO` → no ofrecen
+  modelos. Decidir si se pueblan o se quitan del selector.
+
+**AUDIO** — el más fino: solo **11 modelos** (Suno ×4, Udio ×2, Minimax ×2, MusicGo,
+Mureka V9⚠️ provisional sin panel). Plataformas: Suno, Udio, SeaArt Audio. Falta:
+auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
+
+> **Filtro `vigente` solo en IMAGEN**: vídeo/audio aún NO lo aplican (todos sus
+> modelos se muestran). Pendiente extender el filtro a los 3 modos si se quiere curar.
 
 ### 🟡 MEDIA
 - **ComfyUI — estilos por familia**: `ESTILOS_POR_FAMILIA` no cubre las familias
@@ -676,6 +724,16 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
 - Performance: semáforo de workers, virtual scrolling en historial/favoritos.
 - Auditar `[silent]` que oculten bugs: arrancar con `GPROMPT_DEBUG=1`.
 - Features ambiciosos: export PDF, plugin system, API REST.
+- **⚡ Modo Auto / Agente** (idea sesión 34, aparcada): un botón que, a partir de la
+  idea, encadene de forma autónoma sugerir-modelo → generar prompt → puntuar → refinar
+  en bucle (hasta umbral/N) → negative. Enfoque **A** (bucle agéntico con JSON, sin
+  tocar providers): el LLM responde `{accion,args}`, se ejecuta el método Python y se
+  le devuelve el resultado. Reusa el optimizador en bucle (que YA es un mini-agente) +
+  `_cmd_sugerir_modelo` + scoring. ~80% existe; lo nuevo es el orquestador + system
+  prompt + botón + estado. Enfoque **B** (tool-calling nativo `tools=`) más robusto pero
+  hay que ampliar `BaseLLMProvider.completar` por provider. La capa LLM hoy es
+  texto→texto (`completar(msgs)->str`), sin tool-calling. Avisos: coste (varias llamadas/
+  run), errores, mantener testeable con `_SyncExec`.
 
 ---
 
@@ -684,7 +742,7 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 784 passed / 0 failing ✅ (sesión 33)
+python -m pytest tests -q                     # → 787 passed / 0 failing ✅ (sesión 34)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
