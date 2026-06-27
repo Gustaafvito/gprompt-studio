@@ -41,7 +41,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | Familia FLUX | **CERRADA — 25/25** vigentes ✅ |
 | Familia Anime/Ilustración | **16/16** vigentes ✅ (auditados sesión 22-23; XE: Anime Hentai movido a grupo NSFW) |
 | Familia Realismo SD | **CERRADA — 17/17** vigentes ✅ (5 reactivados sesión 34 por panel) |
-| **Plataforma Magnific (imagen)** | **SIN AUDITAR** — ~30 modelos con spec pero NO vigentes (solo 1). Grupos internos: OpenAI GPT, Flux, Mystic, Google Imagen, Seedream, Recraft, Otros. Ver Pendiente 🔴 |
+| **Plataformas de imagen** | **TODAS CERRADAS** ✅ — selector: SeaArt/Tensor.Art · ComfyUI (auto-discovery) · ChatGPT/GPT Image · **Magnific** (31 modelos, bilingüe) · Dola. Quitadas Ideogram/Recraft y Midjourney (externas, no usadas). **Imagen 100% auditado** |
 | Modelos vídeo | **77 totales**, por familia, alfabéticas (Grok · Hailuo · Happy Horse · Kling · Nano Banana · Otros · PixVerse · SeaArt Oficiales · Seedance · StarDream · Vidu · Wan). Sesión 31: +4 (StarDream 2.0 Mini, Seedance 2.0 Mini, SeaArt Pony 1.1, Happy Horse 1.1, por panel). Reference (Vidu Drama/Ad, Drama/Ad) descartados por convención |
 | Modelos audio | **11** (Suno ×4, Udio ×2, Minimax ×2, MusicGo, Mureka V9⚠️prov.). SeaArt audio: Minimax Music 2.5 + Mureka V9 |
 | Plataforma ComfyUI | **Operativa** (sesión 28+31): auto-discovery recursivo (checkpoints+diffusion_models+unet, clasifica imagen/vídeo/audio), detección Turbo por tokens. **Specs sintéticas por familia** — imagen `comfy_image_specs` (flux/z_image/qwen/ideogram/pony/illustrious/sd15/sdxl) **y vídeo `comfy_video_specs`** (ltx/wan/svd/hunyuan/cogvideo/mochi), ambas bilingües (`best_for_en` + `prompt_formula/ejemplo`). Pendiente: estilos por familia + wiring en caliente del dropdown |
@@ -66,9 +66,11 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 ---
 
-## ✅ Sesión 34 — Realismo SD cerrado + fix "Sugerir modelo"
+## ✅ Sesión 34 — Realismo SD + fix "Sugerir" + limpieza de plataformas + Magnific cerrado → IMAGEN 100%
 
-Tres bloques en `main` (784 → 787 verdes, ruff limpio, distribuible regenerado 3×):
+Varios bloques en `main` (784 → 787 verdes, ruff limpio, distribuible regenerado 5×).
+**Resultado: el catálogo de IMAGEN queda 100% auditado** (todas las plataformas del
+selector cerradas; no queda ninguna pendiente).
 
 1. **Realismo SD reactivado (5 modelos, panel real)** (`f3bfdba`): RealVisXL V5.0 fp16
    (4.9), Juggernaut-XL v9 RunDiffusionPhoto v2 (4.9), JuggernautXL Ragnarok (4.5),
@@ -89,9 +91,27 @@ Tres bloques en `main` (784 → 787 verdes, ruff limpio, distribuible regenerado
    **Verificado en vivo** por el usuario: las sugerencias ahora aciertan (3 modelos
    fotorrealistas/cine bien razonados; Inkpunk desapareció).
 
-> **Nota de catálogo:** Classic (4.0), Classic Fast (3.9), Z-Image (4.4) que quedaban
-> "pendientes" NO son de SeaArt sino de **Magnific** → fuera del scope de la auditoría
-> SeaArt; se auditarán cuando se ataque la plataforma Magnific entera (ver Pendiente 🔴).
+4. **PixVerse V6 (vídeo) sin negativo** (`78d414f`): el panel de SeaArt no ofrece
+   etiqueta negativa; estaba `has_negative:true` por error → `false`.
+
+5. **Limpieza de plataformas de imagen** (`bc4c4cf` Ideogram, `d6af8ee` Midjourney):
+   quitadas del selector dos plataformas externas que el usuario no usa/paga:
+   **Ideogram / Recraft** (Ideogram v3, Recraft v3) y **Midjourney** standalone (MJ
+   v6-v8.1 + Niji 5/6/7, servicio de pago). Eliminadas de `PLATAFORMAS_IMAGEN`,
+   `MODELOS_POR_PLATAFORMA_IMAGEN`, sus `GRUPOS_*` y el adaptador de Avatar. Los specs
+   se quedan en el JSON (política: no borrar). **No se pierde nada**: MJ/Niji siguen vía
+   SeaArt (v8.1, Niji 6/7, vigentes) e Ideogram 4 via SeaArt. Tests actualizados.
+
+6. **Plataforma Magnific CERRADA** (`91f6485`): los 31 modelos ya tenían specs completas
+   (recopiladas de la web pública de magnific.ai: ratios, max_chars, modos, `best_for`,
+   tips, tiempos, créditos). **Hallazgo clave**: el filtro `vigente` NO aplica a Magnific
+   (solo a la lista SeaArt `MODELOS_IMAGEN_FLAT`; ver `ui_events.py:194-197` que muestra
+   la lista de plataforma sin filtrar) → los 31 YA se veían/usaban. Único hueco real: la
+   capa EN. Añadido `best_for_en` a los 30 que faltaban (traducción del `best_for`) +
+   `vigente:true` en los 31 para blindarlos si se extiende el filtro a todas las plataformas.
+
+**Selector de imagen final (5 plataformas, todas cerradas):** SeaArt/Tensor.Art ·
+ComfyUI/A1111/Forge (auto-discovery) · ChatGPT/GPT Image · Magnific · Dola.
 
 ---
 
@@ -671,14 +691,11 @@ cuelan en modo EN. `tr()` sigue siendo unidireccional ES→EN.
 
 ### 🔴 ALTA — Auditoría por plataforma (estado real al cierre sesión 34)
 
-**IMAGEN** — SeaArt/Tensor.Art prácticamente CERRADO (FLUX 25/25, Anime 16/16,
-Realismo SD 17/17, Z-Image, GPT, Kling, MAI, Midjourney/Niji, Nano Banana, Qwen,
-Seedream, Sora, Wan… todos vigentes). Lo que FALTA:
-- **Plataforma Magnific — SIN AUDITAR (la gorda)**: ~30 modelos con spec pero NO
-  vigentes (solo 1). Grupos internos: OpenAI GPT, Familia Flux, Mystic, Google Imagen,
-  Seedream, Recraft, Otros Magnific. (Classic / Classic Fast / Z-Image son de aquí.)
-  Auditar panel a panel como SeaArt. → `MODELOS_POR_PLATAFORMA_IMAGEN["Magnific"]`.
-- Standalone con ocultos sueltos: **Midjourney** (3/8 vigentes), Ideogram/Recraft.
+**IMAGEN — 100% CERRADO** ✅ (sesión 34). Todas las plataformas del selector auditadas:
+SeaArt/Tensor.Art (FLUX 25/25, Anime 16/16, Realismo SD 17/17, Z-Image, GPT, Kling, MAI,
+Midjourney/Niji, Nano Banana, Qwen, Seedream, Sora, Wan), ChatGPT/GPT Image, **Magnific**
+(31 modelos, bilingüe), Dola, y ComfyUI (auto-discovery). Quitadas Ideogram/Recraft y
+Midjourney standalone (externas, no usadas). **Nada pendiente en imagen.**
 
 **VÍDEO** — SeaArt Video CERRADO (76/77 auditados con panel). Lo que FALTA:
 - **~8 motores externos en SeaArt**: Wan 2.7, Vidu Q3 Pro/Reference, Kling 3.0 turbo,
