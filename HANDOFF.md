@@ -5,7 +5,7 @@ Documento vivo para retomar el proyecto en una sesión nueva. Se mantiene
 round-a-round de las sesiones 6-19 está archivado en
 [`docs/handoff-historico.md`](docs/handoff-historico.md) (no se actualiza).
 
-Actualizado al cierre de la **sesión 34**.
+Actualizado al cierre de la **sesión 35**.
 
 ---
 
@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **787 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **805 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -63,6 +63,54 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 | `modules/ui_builders.py` | 1928 |
 | `modules/data_mgmt.py` | 1582 |
 | `modules/core.py` | 1242 |
+
+---
+
+## ✅ Sesión 35 — Avatar/LoRA a fondo + estilo Anime + fixes de longitud y ficha
+
+Bloque grande sobre el **Generador de Dataset LoRA (Avatar)** + estilos, todo en
+`main` (787 → 805 verdes, ruff limpio, distribuible regenerado varias veces).
+
+**Avatar — refactor del documento de especificaciones (3 partes):**
+1. **30 ángulos por tipo** (`66da979`): los 4 tipos (Personaje/Paisaje/Objeto/Estilo)
+   ampliados a 30 (antes 24/15/12/10). En Estilo, sujetos variados (naturaleza, urbano,
+   objetos, fantasía, detalles) que es lo que enseña el ESTILO, no el contenido.
+2. **Consejos SeaArt por tipo** (`61cc17f`): `CONSEJOS_SEAART.txt` antes escribía siempre
+   "LoRA DE PERSONAJE"; ahora `CONSEJOS_LORA_POR_TIPO` con guía específica por tipo.
+3. **Aspect ratio por plano (Parte 3)** (`3d2e459`): cada item del dataset trae un `ratio`
+   sugerido (1:1 retratos/detalle, 9:16 cuerpo entero/torres, 3:2 paisajes/abstracto).
+   Helper `ratio_sugerido()` (patrón de `requiere_rotacion`) + override por ángulo. Se
+   exporta en ficha, prompts_todos.txt, dataset.json y CONSEJOS.
+4. **Selección equilibrada (Parte 2)** (`66da979`): botones **Todos/Ninguno/⚖ Equilibrado**
+   + `*_BALANCED_ANGLE_SET` por tipo (Personaje 22 control-heavy; Objeto 27 sin agresivas;
+   Estilo/Paisaje 30). NO es un reponderador oculto: respeta la selección manual.
+5. **Aviso vistas agresivas (Parte 1.2)** (`213fb9f`): campo `warn` data-driven → ⚠ +
+   tooltip en cenital/inferior/isométrica/contrapicado de Objeto.
+6. **Fix ficha automática vacía** (`7df9ac5`): `parsear_ficha_json` tenía las claves
+   HARDCODEADAS solo para Personaje → en Estilo/Objeto/Paisaje descartaba todo menos el
+   trigger. Ahora claves dinámicas de TODOS los `form_fields` + match de combo tolerante
+   a acentos (`_norm_opcion`: "fotografia" caza "Fotografía").
+7. **Estilo Anime en los 4 tipos** (`bd7a75a`): Personaje ya lo tenía; añadido a Estilo/
+   Objeto/Paisaje para crear datasets anime de cualquier cosa.
+
+**Estilo Anime en Z-Image (generador principal):**
+- `2631dd2`: "Anime" en `ESTILOS_POR_FAMILIA["z_image"]` + categoría en su inyección.
+- `c372e92`: **autodetección** — un LoRA anime (tokens en nombre/trigger) preselecciona
+  Anime si la familia lo admite y el usuario está en Auto (no pisa elección manual).
+  Helper puro `estilo_familia_desde_lora()`.
+- `b2b9b1c`: **fix raíz** — el preámbulo de quality tags de Z-Image estaba hardcodeado con
+  `raw photo:1.2` → con Anime seguía forzando foto. Ahora el preámbulo se adapta al estilo
+  (`_PREAMBULOS_Z`) y NO mete "raw photo" en Anime/estilizados.
+
+**Fixes transversales:**
+- **Recorte de longitud en vídeo** (`203143c`): `recortar_si_excede` exigía la etiqueta
+  `PROMPT:` (regex); los prompts de vídeo salen en PROSA sin etiqueta → no se recortaban
+  (SeaArt Flash se iba a ~950 con máx 800). Ahora `_recortar_prosa` recorta por frontera
+  de frase (. ! ?) > coma > espacio, sin partir palabras.
+- **Sugerir modelo** (`e71d65c`, `e2443fd`): ofrece TODOS los modelos (no 20) + ajuste de
+  estilo (no metía modelos estilizados en ideas realistas). Temperatura 0.3 → 0.5.
+- **PixVerse V6** (`78d414f`): `has_negative:false` (panel real).
+- **build_release** (`79dfcdb`): reintento anti-OneDrive al copiar el .exe.
 
 ---
 
@@ -759,7 +807,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 787 passed / 0 failing ✅ (sesión 34)
+python -m pytest tests -q                     # → 805 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
