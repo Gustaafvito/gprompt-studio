@@ -1275,7 +1275,7 @@ _PAL_CINE_IMG = ["Auto", "Cinematográfico", "Fotorrealista", "Dramático", "Edi
 ESTILOS_POR_FAMILIA = {
     # ── Especiales (inyección a medida, NO tocar las claves) ──
     "z_image": [
-        "Auto", "Photoreal", "Creative", "Fantasy", "SciFi",
+        "Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi",
     ],
     "gpt_image": [
         "Auto", "Photoreal", "Editorial", "Illustration",

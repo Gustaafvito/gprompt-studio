@@ -412,6 +412,7 @@ class PromptsInyeccionService:
         if estilo_z != "Auto":
             categoria_map = {
                 "Photoreal": "📷 FOTORREALISMO PURO (retratos, comida, productos, gente real)",
+                "Anime":     "🌸 ANIME / ILUSTRACIÓN JAPONESA (lineart limpio, cel-shading, colores vivos)",
                 "Creative":  "🎨 CREATIVO / ILUSTRACIÓN / ARTE CONCEPTUAL (estilizado, no foto)",
                 "Fantasy":   "🐉 FANTASÍA MÍSTICA / ÉPICA (dragones, fénix, magia, dioses)",
                 "SciFi":     "🤖 CIENCIA FICCIÓN / CYBERPUNK (robots, tech, naves, AI)",
