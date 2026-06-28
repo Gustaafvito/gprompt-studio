@@ -29,6 +29,50 @@ from modules.avatar_config import (
 # con un prompt más fuerte y un negative anti-frontal.
 _ROTACION_CUES = ("three-quarter", "profile", "back view", "over the shoulder")
 
+# Aspect ratio SUGERIDO por plano (para el flujo con Z-Image y similares).
+# Se infiere del encuadre, igual que requiere_rotacion. Un ángulo puede llevar
+# un campo "ratio" explícito que tiene prioridad sobre la inferencia.
+#   9:16 vertical  → cuerpo entero, figuras de pie, torres/castillos verticales.
+#   1:1  cuadrado  → retratos cerrados, primeros planos, detalle, still life.
+#   3:2  horizontal→ paisajes/escenas abiertas, batallas, composiciones abstractas.
+_RATIO_VERTICAL_CUES = (
+    "full body", "full length", "head to feet", "standing", "cowboy",
+    "walking", "hands on hips", "hands in pockets", "arms crossed",
+    "castle", "fortress", "tower",
+)
+_RATIO_SQUARE_CUES = (
+    # OJO: nada de "eye" (matchea "bird's eye"/"worm's eye") ni "texture"
+    # (matchea "colors and textures"); esos plano son horizontales. Para el
+    # ojo humano de la pestaña Estilo se usa "close-up", que sí encaja.
+    "close-up", "headshot", "portrait", "macro", "still life", "bust",
+    "upper body", "detail", "pattern", "hands", "logo",
+    "flowers", "feature", "centered",
+)
+_RATIO_HORIZONTAL_CUES = (
+    "landscape", "panoramic", "panorama", "aerial", "wide", "vista", "horizon",
+    "scene", "abstract", "action", "battle", "market", "skyline",
+    "mountain", "ocean", "forest", "group of people", "sky",
+)
+
+
+def ratio_sugerido(angulo: dict) -> str:
+    """Aspect ratio recomendado para el plano (1:1, 9:16 o 3:2).
+
+    Prioridad: campo explícito "ratio" del ángulo > vertical (cuerpo entero/
+    torres) > cuadrado (retrato/detalle) > horizontal (escena/paisaje). Por
+    defecto 1:1 (el más seguro para sujetos centrados)."""
+    explicito = angulo.get("ratio")
+    if explicito:
+        return explicito
+    texto = (angulo.get("framing", "") + " " + angulo.get("prompt", "")).lower()
+    if any(c in texto for c in _RATIO_VERTICAL_CUES):
+        return "9:16"
+    if any(c in texto for c in _RATIO_SQUARE_CUES):
+        return "1:1"
+    if any(c in texto for c in _RATIO_HORIZONTAL_CUES):
+        return "3:2"
+    return "1:1"
+
 
 def requiere_rotacion(angulo: dict) -> bool:
     """True si la toma necesita una orientación distinta a la frontal.
@@ -282,6 +326,7 @@ def ensamblar_dataset(
             "prompt": prompt,
             "negative": negativo_para_angulo(angulo, incluir_negative),
             "caption": caption,
+            "ratio": ratio_sugerido(angulo),
         })
 
     return dataset
@@ -532,6 +577,7 @@ def ensamblar_dataset_generico(
             "prompt": prompt,
             "negative": negative,
             "caption": caption,
+            "ratio": ratio_sugerido(angulo),
         })
 
     return dataset
@@ -610,5 +656,6 @@ def ensamblar_dataset_edicion(
             "prompt": prompt,
             "negative": negative,
             "caption": ", ".join(partes_caption),
+            "ratio": ratio_sugerido(angulo),
         })
     return dataset

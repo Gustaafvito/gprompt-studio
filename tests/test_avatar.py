@@ -35,6 +35,7 @@ from modules.avatar_prompts import (
     ensamblar_dataset_edicion,
     fondo_para_indice,
     parsear_ficha_json,
+    ratio_sugerido,
 )
 
 DESC = ("a 28 year old woman with fair skin, oval face, green eyes, "
@@ -458,6 +459,40 @@ class TestPipeline:
         }
         r.update(extra)
         return r
+
+    def test_ratio_sugerido_por_plano(self):
+        # Explícito gana siempre.
+        assert ratio_sugerido({"ratio": "3:2", "framing": "portrait"}) == "3:2"
+        # Cuerpo entero / torres → vertical.
+        assert ratio_sugerido({"framing": "full body, front view"}) == "9:16"
+        assert ratio_sugerido({"framing": "castle, fortress", "prompt": ""}) == "9:16"
+        # Retrato / primer plano / detalle → cuadrado.
+        assert ratio_sugerido({"framing": "close-up portrait"}) == "1:1"
+        assert ratio_sugerido({"framing": "macro detail, texture"}) == "1:1"
+        # Paisaje / escena / abstracto → horizontal.
+        assert ratio_sugerido({"framing": "panoramic landscape"}) == "3:2"
+        assert ratio_sugerido({"framing": "abstract composition"}) == "3:2"
+        # Sin pistas → 1:1 (seguro).
+        assert ratio_sugerido({"framing": "", "prompt": ""}) == "1:1"
+        # No hay falsos positivos por "bird's eye" / "worm's eye".
+        assert ratio_sugerido({"framing": "aerial view",
+                               "prompt": "bird's eye perspective"}) == "3:2"
+
+    def test_dataset_incluye_ratio_en_cada_item(self):
+        ds = ensamblar_dataset("ohwx_ana", DESC, ["face_front", "full_front"],
+                               "photorealistic", "gray background")
+        assert ds[0]["ratio"] == "1:1"    # close-up
+        assert ds[1]["ratio"] == "9:16"   # full body
+
+    def test_export_escribe_ratio_en_ficha_y_consejos(self, tmp_path):
+        r = generar_dataset_avatar(
+            _llm_fake, {}, "ohwx_test", ["full_front"], "style", "bg")
+        base = exportar_dataset(r, str(tmp_path))
+        with open(os.path.join(base, "prompts", "09_full_front.txt"),
+                  encoding="utf-8") as f:
+            assert "RATIO SUGERIDO: 9:16" in f.read()
+        with open(os.path.join(base, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
+            assert "ASPECT RATIO POR PLANO" in f.read()
 
     def test_consejos_se_adaptan_al_tipo_de_lora(self, tmp_path):
         # Estilo: consejo de ESTILO, no de personaje.

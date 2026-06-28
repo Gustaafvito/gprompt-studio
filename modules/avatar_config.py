@@ -388,6 +388,7 @@ LANDSCAPE_ANGLES = {
         "framing": "ground level, low angle",
         "filename": "03_ground_level",
         "group": "composicion",
+        "ratio": "3:2",  # paisaje horizontal pese al "detail" del prompt
     },
     "ls_midground": {
         "label": "Plano medio (sujeto + entorno)",
@@ -465,6 +466,7 @@ LANDSCAPE_ANGLES = {
         "framing": "long exposure effect",
         "filename": "14_long_exposure",
         "group": "tecnica",
+        "ratio": "3:2",  # técnica de paisaje (agua/nubes) → horizontal
     },
     "ls_reflection": {
         "label": "Reflejo en agua",
@@ -929,6 +931,7 @@ STYLE_ANGLES = {
         "framing": "animal subject",
         "filename": "06_animal",
         "group": "sujetos",
+        "ratio": "3:2",  # animal a cuerpo entero → horizontal, no 9:16
     },
     "sty_architecture": {
         "label": "Arquitectura",
@@ -1029,6 +1032,7 @@ STYLE_ANGLES = {
         "framing": "vehicle",
         "filename": "20_vehicle",
         "group": "urbano_objetos",
+        "ratio": "3:2",  # los vehículos son más anchos que altos
     },
     "sty_food": {
         "label": "Comida / plato",

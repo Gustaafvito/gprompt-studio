@@ -216,8 +216,10 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     lineas_todos = []
     for item in resultado["dataset"]:
         nombre = item["filename"]
+        ratio = item.get("ratio", "")
+        ratio_linea = f"RATIO SUGERIDO: {ratio}\n\n" if ratio else ""
 
-        contenido = f"PROMPT:\n{item['prompt']}\n"
+        contenido = f"{ratio_linea}PROMPT:\n{item['prompt']}\n"
         if item["negative"]:
             contenido += f"\nNEGATIVE PROMPT:\n{item['negative']}\n"
         with open(os.path.join(dir_prompts, f"{nombre}.txt"), "w", encoding="utf-8") as f:
@@ -226,7 +228,8 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
             f.write(item["caption"])
 
-        bloque = f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n"
+        cab_ratio = f"  [ratio {ratio}]" if ratio else ""
+        bloque = f"=== {nombre} | {item['label']}{cab_ratio} ===\n{item['prompt']}\n"
         # El negative varía por encuadre (los primeros planos añaden el cuerpo
         # al negative para forzar el recorte), así que va por bloque, no uno
         # compartido al final.
@@ -364,11 +367,21 @@ _CONSEJOS_PAISAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PAISAJE / L
   etiquetes); las condiciones (luz, clima, encuadre) SÍ van en la caption.
 """
 
+_CONSEJOS_RATIOS = """
+ASPECT RATIO POR PLANO (clave en Z-Image y modelos modernos)
+------------------------------------------------------------
+Cada prompt trae un "RATIO SUGERIDO". Úsalo al generar en SeaArt:
+• 1:1  (cuadrado)   → retratos cerrados, primeros planos, detalle, still life.
+• 9:16 (vertical)   → cuerpo entero, figuras de pie, torres/castillos.
+• 3:2  (horizontal) → paisajes/escenas abiertas, batallas, abstracto, vehículos.
+Usar el ratio coherente con el plano mejora el encuadre y evita recortes raros.
+"""
+
 CONSEJOS_LORA_POR_TIPO = {
-    "Personaje": _CONSEJOS_PERSONAJE,
-    "Estilo": _CONSEJOS_ESTILO,
-    "Objeto": _CONSEJOS_OBJETO,
-    "Paisaje": _CONSEJOS_PAISAJE,
+    "Personaje": _CONSEJOS_PERSONAJE + _CONSEJOS_RATIOS,
+    "Estilo": _CONSEJOS_ESTILO + _CONSEJOS_RATIOS,
+    "Objeto": _CONSEJOS_OBJETO + _CONSEJOS_RATIOS,
+    "Paisaje": _CONSEJOS_PAISAJE + _CONSEJOS_RATIOS,
 }
 
 # Retrocompat: algunos sitios importaban el texto único.
