@@ -162,6 +162,20 @@ class TestFichaAutomatica:
         f = parsear_ficha_json('{"edad": 25, "pelo": "negro"}')
         assert f["edad"] == "25"
 
+    def test_acepta_claves_de_estilo_objeto_paisaje(self):
+        # Bug histórico: el parser solo aceptaba claves de Personaje, así que la
+        # ficha automática de Estilo/Objeto/Paisaje quedaba vacía (solo trigger).
+        f = parsear_ficha_json(
+            '{"trigger": "ohwx_estilo_gotico", "nombre_estilo": "gotico oscuro", '
+            '"tecnica": "Arte digital 2D", "paleta": "negros y purpuras", '
+            '"rasgos_estilo": "ornamentos, alto contraste", "epoca": "victoriana"}')
+        assert f["nombre_estilo"] == "gotico oscuro"
+        assert f["tecnica"] == "Arte digital 2D"
+        assert f["paleta"] and f["rasgos_estilo"] and f["epoca"]
+        # Objeto/Paisaje también
+        fo = parsear_ficha_json('{"nombre_objeto": "reloj", "materiales": "laton"}')
+        assert fo.get("nombre_objeto") == "reloj"
+
     def test_prompt_vision_exige_json_y_mismas_claves(self):
         # La ficha por visión reutiliza parsear_ficha_json → mismas claves
         assert "JSON" in PROMPT_VISION_FICHA

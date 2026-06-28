@@ -40,6 +40,15 @@ from modules.i18n import tr
 from workers import log_future_exc
 
 
+def _norm_opcion(s: str) -> str:
+    """Normaliza para comparar opciones de combo: sin acentos, minúsculas y
+    espacios colapsados (p.ej. 'Fotografía' == 'fotografia ')."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s))
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return " ".join(s.lower().split())
+
+
 class AvatarFrame(ctk.CTkFrame):
     def __init__(self, master, llm_call, carpeta_salida_default=".",
                  adaptador=None, modelo_destino="", modelos_destino=None,
@@ -448,10 +457,16 @@ class AvatarFrame(ctk.CTkFrame):
             if not valor:
                 continue
             if isinstance(widget, ctk.CTkOptionMenu):
-                # Solo aceptar valores que existan en el desplegable
+                # Aceptar valores del desplegable, tolerante a acentos/espacios
+                # (p.ej. el LLM devuelve "fotografia" → opción "Fotografía").
                 opciones = list(widget.cget("values"))
+                vnorm = _norm_opcion(valor)
                 match = next((o for o in opciones
-                              if o.lower() == valor.lower()), None)
+                              if _norm_opcion(o) == vnorm), None)
+                if not match:  # match parcial (contiene) como último recurso
+                    match = next((o for o in opciones
+                                  if vnorm in _norm_opcion(o)
+                                  or _norm_opcion(o) in vnorm), None)
                 if match:
                     widget.set(match)
             else:

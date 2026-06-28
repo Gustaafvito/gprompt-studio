@@ -231,11 +231,29 @@ def construir_user_prompt_ficha(tema: str = "") -> str:
             "(varía género, edad, etnia y estilo).\n\nDevuelve SOLO el JSON.")
 
 
-def parsear_ficha_json(respuesta: str) -> dict:
+def _claves_ficha_validas() -> set:
+    """Claves aceptadas en la ficha: 'trigger' + TODOS los campos de formulario
+    de TODOS los tipos de LoRA (Personaje/Paisaje/Objeto/Estilo). Así el parser
+    no descarta los campos de un tipo que no sea Personaje (bug histórico)."""
+    claves = {"trigger"}
+    try:
+        from modules.avatar_config import LORA_TYPES
+        for cfg in LORA_TYPES.values():
+            for campo in cfg.get("form_fields", []):
+                if campo.get("key"):
+                    claves.add(campo["key"])
+    except Exception:
+        # Fallback al set de Personaje si algo falla en el import.
+        claves |= {"genero", "edad", "etnia_piel", "pelo", "ojos",
+                   "rasgos", "complexion", "ropa"}
+    return claves
+
+
+def parsear_ficha_json(respuesta: str, claves_validas: set | None = None) -> dict:
     """Extrae la ficha del JSON de la respuesta del LLM.
 
-    Devuelve {} si no hay JSON parseable. Filtra a las claves conocidas
-    del formulario (+trigger) y descarta valores vacíos o no escalares.
+    Devuelve {} si no hay JSON parseable. Filtra a las claves conocidas del
+    formulario (+trigger, de TODOS los tipos) y descarta vacíos o no escalares.
     """
     import json as _json
     import re as _re
@@ -249,8 +267,7 @@ def parsear_ficha_json(respuesta: str) -> dict:
         return {}
     if not isinstance(datos, dict):
         return {}
-    claves = {"trigger", "genero", "edad", "etnia_piel", "pelo", "ojos",
-              "rasgos", "complexion", "ropa"}
+    claves = claves_validas if claves_validas is not None else _claves_ficha_validas()
     ficha = {}
     for k, v in datos.items():
         if k in claves and isinstance(v, (str, int, float)) and str(v).strip():
