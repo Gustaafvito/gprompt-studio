@@ -345,6 +345,9 @@ class UiEventsService:
                         if self.app.familia_estilo_var.get() not in estilos:
                             self.app.familia_estilo_var.set("Auto")
                         self.app.combo_familia_estilo.set(tr(self.app.familia_estilo_var.get()))
+                        # Si hay un LoRA anime activo y la familia admite Anime,
+                        # preseleccionarlo (solo si quedó en Auto).
+                        self.app.footer._autodetectar_estilo_familia()
                     except Exception as _e:
                         logger.debug(f"[silent estilo reset] {_e}")
                     # Mostrar el combo si no está visible

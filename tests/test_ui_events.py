@@ -329,3 +329,19 @@ class TestOnPlataformaCambio:
         h._actualizar_motores_video = MagicMock()  # mockear método del servicio
         h._on_plataforma_cambio()
         h._actualizar_motores_video.assert_called_once()
+
+
+class TestEstiloFamiliaDesdeLora:
+    """Helper puro: deduce el estilo de familia desde el nombre/trigger del LoRA."""
+
+    def test_detecta_anime_en_nombre_o_trigger(self):
+        from modules.ui_footer import estilo_familia_desde_lora as f
+        assert f(["Anime 90s Retro"]) == "Anime"
+        assert f(["mi_lora", "mangastyle_trigger"]) == "Anime"
+        assert f(["ToonMix v2"]) == "Anime"
+
+    def test_no_falsos_positivos(self):
+        from modules.ui_footer import estilo_familia_desde_lora as f
+        assert f(["RealVis Portrait"]) is None
+        assert f(["", None]) is None
+        assert f([]) is None

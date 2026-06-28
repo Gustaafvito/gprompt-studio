@@ -37,6 +37,24 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Tokens que delatan un LoRA de estilo anime/ilustración en su nombre o trigger.
+# Sirven para preseleccionar el estilo "Anime" del combo de familia y que un
+# LoRA anime no acabe generando fotorrealismo.
+_ANIME_LORA_TOKENS = (
+    "anime", "manga", "toon", "cartoon", "comic", "cómic", "chibi", "waifu",
+    "illustr", "ilustr", "cel shad", "cel-shad", "2.5d",
+)
+
+
+def estilo_familia_desde_lora(textos) -> str | None:
+    """Sugiere un estilo de familia a partir de los nombres/triggers de los
+    LoRAs activos. Hoy solo detecta 'Anime' (ampliable). Devuelve None si nada
+    encaja. Función pura (sin estado) para poder testearla aislada."""
+    blob = " ".join(t for t in textos if t).lower()
+    if any(tok in blob for tok in _ANIME_LORA_TOKENS):
+        return "Anime"
+    return None
+
 
 def _get_real_is_light():
     return ctk.get_appearance_mode().lower() == 'light'
@@ -824,6 +842,45 @@ class UiFooterService:
             self.actualizar_fuentes_activas()
         except Exception:
             pass
+        # Autodetectar estilo de familia desde el LoRA (p.ej. un LoRA anime
+        # preselecciona "Anime" para que no tire a fotorrealismo).
+        try:
+            self._autodetectar_estilo_familia()
+        except Exception as e:
+            logger.debug(f"[silent estilo auto lora] {e}")
+
+    def _autodetectar_estilo_familia(self):
+        """Si hay un LoRA con pinta de anime activo, el modelo/familia admite
+        'Anime' y el usuario NO ha forzado otro estilo (está en 'Auto'),
+        preselecciona 'Anime' en el combo Estilo. No pisa elecciones manuales."""
+        if not (hasattr(self.app, "familia_estilo_var")
+                and hasattr(self.app, "combo_familia_estilo")):
+            return
+        if (self.app.familia_estilo_var.get() or "Auto") != "Auto":
+            return  # el usuario eligió algo: respetarlo
+        textos = []
+        try:
+            n = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
+            if n and n != tr("— Sin LoRA —"):
+                textos.append(n)
+                textos.append(self.app.store.trigger_lora(n) or "")
+        except Exception:
+            pass
+        for l in getattr(self.app, "loras_multi", []) or []:
+            if isinstance(l, dict):
+                textos.append(l.get("nombre", ""))
+                textos.append(l.get("trigger", ""))
+        sugerido = estilo_familia_desde_lora(textos)
+        if not sugerido:
+            return
+        from config import ESTILOS_POR_FAMILIA, detectar_familia
+        modelo = (self.app.combo_modelo_imagen.get()
+                  if hasattr(self.app, "combo_modelo_imagen") else "")
+        familia = detectar_familia(modelo) if modelo else None
+        estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
+        if sugerido in estilos:
+            self.app.familia_estilo_var.set(sugerido)
+            self.app.combo_familia_estilo.set(tr(sugerido))
 
     def _es_lora_compatible(self, familia_lora):
         """Devuelve True/False si el LoRA es compatible con el modelo activo. None si no se puede determinar."""
