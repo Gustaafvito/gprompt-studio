@@ -426,6 +426,28 @@ class PromptsInyeccionService:
                 f"explícitamente '{estilo_z}'.\n"
             )
 
+        # El preámbulo de quality tags se ADAPTA al estilo elegido: con Anime u
+        # otros estilizados NO debe forzar "raw photo" (rompería el look). En
+        # Auto/Photoreal usa el preámbulo fotográfico clásico.
+        _PREAMBULOS_Z = {
+            "Anime": ("(masterpiece, best quality, anime, illustration:1.2), "
+                      "highly detailed, clean sharp lineart, vibrant colors, "
+                      "cel shading, <encuadre sugerido: close-up / medium / wide>.\n"),
+            "Creative": ("(masterpiece, best quality, digital illustration, "
+                         "concept art:1.2), highly detailed, painterly, stylized "
+                         "(NOT photographic), <encuadre sugerido>.\n"),
+            "Fantasy": ("(masterpiece, best quality, fantasy illustration, "
+                        "epic:1.2), highly detailed, dramatic mystical "
+                        "atmosphere, <encuadre sugerido>.\n"),
+            "SciFi": ("(masterpiece, best quality, sci-fi concept art:1.2), "
+                      "highly detailed, sleek futuristic, <encuadre sugerido>.\n"),
+        }
+        preambulo = _PREAMBULOS_Z.get(
+            estilo_z,
+            "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
+            "ultra-detailed, sharp focus, cinematic composition, depth of field, "
+            "<lente sugerida: 35mm lens shot, wide-angle drone, macro>.\n")
+
         if lora_trigger:
             bloques_positivos = (
                 "[Subject & Composition] <SHOT type (close-up / medium / wide) + "
@@ -450,12 +472,6 @@ class PromptsInyeccionService:
                 "[Mood] <Emotional atmosphere — tense, peaceful, epic, "
                 "melancholic, haunting, etc. Plus one line about temporal/"
                 "geometric coherence and realism level.>\n"
-            )
-            preambulo = (
-                "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
-                "ultra-detailed, sharp focus, cinematic composition, "
-                "depth of field, <lente sugerida: 35mm lens shot, wide-angle "
-                "drone, macro>.\n"
             )
             triggers_list_str = ", ".join(f"`{t}`" for t in triggers_lora)
             plural_palabra = "trigger" if len(triggers_lora) == 1 else "triggers"
@@ -517,11 +533,6 @@ class PromptsInyeccionService:
                 "volumetric, dappled shadows, rim light) + atmósfera "
                 "emocional (tense, peaceful, epic, melancholic).>\n"
             )
-            preambulo = (
-                "(masterpiece, top quality, best quality, raw photo:1.2), 8k, "
-                "ultra-detailed, sharp focus, cinematic composition, "
-                "<lente sugerida: ej 35mm lens shot, wide-angle drone, macro>.\n"
-            )
             nota_lora = ""
 
         extra += (
@@ -564,6 +575,10 @@ class PromptsInyeccionService:
             "       cartoon, illustration, painting, anime, 3d render, "
             "smooth airbrushed skin, plastic skin, heavy makeup, "
             "studio lighting, artificial reflections, oversaturated\n"
+            "   🌸 ANIME / ILUSTRACIÓN JAPONESA (lineart, cel-shading):\n"
+            "       photorealistic, realistic, photograph, raw photo, "
+            "3d render, real skin texture, hyperrealistic, lifelike, "
+            "photo, depth of field photography\n"
             "   🐉 FANTASÍA MÍSTICA / ÉPICA (dragones, fénix, magia, dioses):\n"
             "       cute creature, friendly, mundane background, modern "
             "elements, boring lighting, flat colors, photorealistic city\n"

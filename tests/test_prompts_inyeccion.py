@@ -233,6 +233,21 @@ class TestInyectarFormatoZImage:
         assert "masterpiece" in out
         assert "raw photo:1.2" in out
 
+    def test_estilo_anime_no_fuerza_raw_photo(self):
+        # Con Anime, el preámbulo NO debe meter "raw photo" (rompería el look),
+        # y el negative estilístico debe empujar a quitar el realismo.
+        h = _host(familia_estilo_var=_var("Anime"))
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert "anime" in out.lower()
+        assert "raw photo:1.2" not in out          # preámbulo ya no es foto
+        assert "ANIME / ILUSTRACIÓN JAPONESA" in out
+        assert "photorealistic" in out             # negative anti-realismo
+
+    def test_estilo_auto_mantiene_preambulo_foto(self):
+        h = _host(familia_estilo_var=_var("Auto"))
+        out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
+        assert "raw photo:1.2" in out
+
     def test_incluye_3_categorias_negative_dinamico(self):
         h = _host()
         out = h._inyectar_formato_z_image("Z-Image-Base", self.SPECS_Z, "")
