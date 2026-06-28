@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 from pathlib import Path
 
 try:  # consolas Windows (cp1252) no encodean ✓/→/▶ — forzar UTF-8
@@ -56,16 +57,43 @@ def export_limpio() -> Path:
     return CLEAN
 
 
+def _con_reintentos(accion, descripcion, intentos=5, espera=3.0):
+    """Reintenta una operación de archivo que OneDrive puede bloquear
+    temporalmente al sincronizar (PermissionError sobre el .exe de destino).
+
+    El distribuible vive en OneDrive; al copiar los .exe (130 MB) el cliente
+    de sincronización a veces tiene el fichero abierto y la copia falla. Un
+    reintento corto lo resuelve sin intervención manual."""
+    for i in range(intentos):
+        try:
+            return accion()
+        except (PermissionError, OSError) as e:
+            if i == intentos - 1:
+                raise
+            print(f"  ⚠ {descripcion}: bloqueado ({type(e).__name__}); "
+                  f"reintento {i + 1}/{intentos - 1} en {espera:.0f}s "
+                  f"(¿OneDrive sincronizando?)…")
+            time.sleep(espera)
+
+
 def copiar_artefactos(src_dist: Path):
     DEST.mkdir(parents=True, exist_ok=True)
     portable = DEST / "GPromptStudio-Portable"
-    if portable.exists():
-        shutil.rmtree(portable)
-    shutil.copytree(src_dist / "GPromptStudio", portable)
-    shutil.copy2(src_dist / "GPromptStudio.exe",
-                 DEST / "GPromptStudio-Portable-Onefile.exe")
-    shutil.copy2(src_dist / "installer" / "GPromptStudio-Setup-1.0.0.exe",
-                 DEST / "GPromptStudio-Setup-1.0.0.exe")
+
+    def _copiar_portable():
+        if portable.exists():
+            shutil.rmtree(portable)
+        shutil.copytree(src_dist / "GPromptStudio", portable)
+
+    _con_reintentos(_copiar_portable, "onedir Portable")
+    _con_reintentos(
+        lambda: shutil.copy2(src_dist / "GPromptStudio.exe",
+                             DEST / "GPromptStudio-Portable-Onefile.exe"),
+        "onefile .exe")
+    _con_reintentos(
+        lambda: shutil.copy2(src_dist / "installer" / "GPromptStudio-Setup-1.0.0.exe",
+                             DEST / "GPromptStudio-Setup-1.0.0.exe"),
+        "installer .exe")
     print(f"✓ 3 artefactos copiados a {DEST}")
 
 
