@@ -322,9 +322,13 @@ class AvatarFrame(ctk.CTkFrame):
                 if datos["group"] != grupo:
                     continue
                 var = ctk.BooleanVar(value=True)
+                aviso = datos.get("warn")
+                etiqueta = f"⚠ {datos['label']}" if aviso else datos["label"]
                 chk = ctk.CTkCheckBox(
-                    self._frame_angulos, text=datos["label"], variable=var)
+                    self._frame_angulos, text=etiqueta, variable=var)
                 chk.grid(row=fila, column=0, sticky="w", padx=16, pady=2); fila += 1
+                if aviso:
+                    CTkToolTip(chk, message=tr(aviso))
                 self._angulo_vars[key] = var
 
     def _marcar_angulos(self, valor: bool) -> None:

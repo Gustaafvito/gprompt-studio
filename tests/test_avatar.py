@@ -78,6 +78,14 @@ class TestAvatarConfig:
         for agresiva in ("obj_bottom", "obj_isometric", "obj_hero_low"):
             assert agresiva not in bal
 
+    def test_vistas_agresivas_de_objeto_tienen_aviso(self):
+        # Las vistas agresivas llevan campo "warn" (la UI muestra ⚠ + tooltip).
+        angles = LORA_TYPES["Objeto"]["angles"]
+        for k in ("obj_top", "obj_bottom", "obj_isometric", "obj_hero_low"):
+            assert angles[k].get("warn"), f"{k} sin aviso"
+        # Una vista normal NO lleva aviso.
+        assert not angles["obj_front"].get("warn")
+
     def test_angulos_tienen_campos_obligatorios(self):
         for key, datos in AVATAR_ANGLES.items():
             for campo in ("label", "prompt", "framing", "filename", "group"):

@@ -696,6 +696,7 @@ OBJECT_ANGLES = {
         "framing": "top view, flat lay",
         "filename": "06_top",
         "group": "vistas",
+        "warn": "Vista cenital agresiva — recomendado máx. 1-2 en el dataset.",
     },
     "obj_back": {
         "label": "Vista posterior",
@@ -747,6 +748,7 @@ OBJECT_ANGLES = {
         "framing": "bottom view",
         "filename": "13_bottom",
         "group": "vistas",
+        "warn": "Vista poco habitual y agresiva — recomendado máx. 1-2 en el dataset.",
     },
     "obj_elevated_45": {
         "label": "Picado 45° (elevado)",
@@ -761,6 +763,7 @@ OBJECT_ANGLES = {
         "framing": "isometric perspective",
         "filename": "15_isometric",
         "group": "vistas",
+        "warn": "Perspectiva muy marcada — recomendado máx. 1-2 en el dataset.",
     },
     "obj_hero_low": {
         "label": "Contrapicado heroico",
@@ -768,6 +771,7 @@ OBJECT_ANGLES = {
         "framing": "low hero angle",
         "filename": "16_hero_low",
         "group": "vistas",
+        "warn": "Contrapicado dramático — recomendado máx. 1-2 en el dataset.",
     },
     "obj_open_state": {
         "label": "Abierto / estado interior",
