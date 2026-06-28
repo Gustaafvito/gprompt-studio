@@ -78,6 +78,13 @@ class TestAvatarConfig:
         for agresiva in ("obj_bottom", "obj_isometric", "obj_hero_low"):
             assert agresiva not in bal
 
+    def test_todos_los_tipos_tienen_estilo_anime(self):
+        # "Anime" disponible en el combo Estilo visual de los 4 tipos, para
+        # crear LoRAs anime de personaje/estilo/objeto/paisaje.
+        for tipo, cfg in LORA_TYPES.items():
+            assert "Anime" in cfg["styles"], f"{tipo} sin estilo Anime"
+            assert "anime" in cfg["styles"]["Anime"].lower()
+
     def test_vistas_agresivas_de_objeto_tienen_aviso(self):
         # Las vistas agresivas llevan campo "warn" (la UI muestra ⚠ + tooltip).
         angles = LORA_TYPES["Objeto"]["angles"]

@@ -638,6 +638,7 @@ LANDSCAPE_FORM_FIELDS = [
 
 LANDSCAPE_STYLES = {
     "Fotografía realista": "professional nature photography, ultra sharp, RAW photo quality, 16mm lens",
+    "Anime": "anime background art, clean lineart, cel shading, vibrant colors, anime scenery, Makoto Shinkai style",
     "Cinematográfico": "cinematic landscape, anamorphic lens, film grain, color graded",
     "Pintura al óleo": "oil painting style, visible brushstrokes, rich texture, traditional art",
     "Acuarela": "watercolor painting, soft washes, translucent layers, paper texture",
@@ -907,6 +908,7 @@ OBJECT_FORM_FIELDS = [
 
 OBJECT_STYLES = {
     "Fotografía de producto": "professional product photography, studio lighting, clean white background, commercial quality",
+    "Anime": "anime style object, clean lineart, cel shading, vibrant colors, anime illustration",
     "Editorial / Lifestyle": "editorial lifestyle product shot, atmospheric lighting, contextual background, magazine quality",
     "Render 3D": "3D product render, photorealistic rendering, perfect lighting, no imperfections",
     "Artístico / Dramático": "artistic dramatic product shot, moody lighting, artistic composition, fine art photography",
@@ -1173,6 +1175,7 @@ STYLE_FORM_FIELDS = [
 
 STYLE_STYLES = {
     "Coherente (sin estilo adicional)": "",
+    "Anime": "anime style, clean lineart, cel shading, vibrant colors, high quality anime illustration",
     "Alta calidad base": "masterpiece, high quality, detailed",
     "Arte digital": "digital art, high resolution, detailed",
     "Ilustración": "illustration, detailed artwork",
