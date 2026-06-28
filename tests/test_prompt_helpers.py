@@ -361,6 +361,25 @@ class TestRecortarSiExcede:
         result = recortar_si_excede(texto, 1000)
         assert result == texto
 
+    # ── prosa SIN etiqueta (prompts de vídeo) → se recorta igual ──────
+    def test_prosa_sin_etiqueta_se_recorta_a_max(self):
+        prosa = "A cinematic shot of an anime girl smiling. " * 30
+        out = recortar_si_excede(prosa, 800)
+        assert len(out) <= 800
+        assert out.endswith(".")  # cortado en un fin de frase limpio
+        assert " smili" not in out[-5:]  # no parte una palabra a la mitad
+
+    def test_prosa_corta_no_se_toca(self):
+        prosa = "A short anime video prompt without label."
+        assert recortar_si_excede(prosa, 800) == prosa
+
+    def test_prosa_sin_frase_corta_por_espacio(self):
+        # Sin signos de puntuación: corta por el último espacio, no a media palabra.
+        prosa = "word " * 400  # 2000 chars, sin puntos ni comas
+        out = recortar_si_excede(prosa, 100)
+        assert len(out) <= 100
+        assert not out.endswith("wor")  # palabra completa
+
     # ── recorta preservando tags completos ─────────────────────────
     def test_recorta_positive_por_tags_completos(self):
         # Construimos un prompt donde cada tag mide ~10 chars → con max=25 solo caben 2

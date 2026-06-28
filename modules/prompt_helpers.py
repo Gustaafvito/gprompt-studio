@@ -131,6 +131,26 @@ def extraer_negative_de_texto(texto: str):
     return None
 
 
+def _recortar_prosa(texto: str, max_chars: int) -> str:
+    """Recorta un texto en PROSA (sin etiqueta PROMPT:) a max_chars sin cortar
+    palabras a la mitad. Prioriza: fin de frase completo > coma > último
+    espacio. Pensado para prompts de vídeo en lenguaje natural."""
+    if not max_chars or len(texto) <= max_chars:
+        return texto
+    ventana = texto[:max_chars]
+    # 1) último final de frase completo (., !, ?) si conserva ≥50% del límite
+    fin_frase = max(ventana.rfind(". "), ventana.rfind("! "), ventana.rfind("? "))
+    if fin_frase >= max_chars * 0.5:
+        return texto[:fin_frase + 1].rstrip()
+    # 2) última coma con el mismo criterio
+    coma = ventana.rfind(", ")
+    if coma >= max_chars * 0.5:
+        return texto[:coma].rstrip()
+    # 3) último espacio (nunca partir una palabra)
+    esp = ventana.rfind(" ")
+    return (texto[:esp] if esp > 0 else ventana).rstrip()
+
+
 def recortar_si_excede(
     texto: str, max_chars: int, max_chars_negative: int | None = None
 ) -> str:
@@ -161,7 +181,10 @@ def recortar_si_excede(
             texto, re.DOTALL | re.IGNORECASE,
         )
         if not m_pos:
-            return texto
+            # Prompts de vídeo (y otros) salen en PROSA sin etiqueta "PROMPT:".
+            # Antes se devolvían intactos → se saltaban el límite del modelo.
+            # Ahora se recorta el texto completo por frontera de frase.
+            return _recortar_prosa(texto, max_chars)
         pos = m_pos.group(1).strip()
         neg = m_neg.group(1).strip() if m_neg else ""
 

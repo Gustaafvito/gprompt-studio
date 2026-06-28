@@ -225,10 +225,19 @@ class TestRecortarSiExcede:
         neg_part = result.split("NEGATIVE PROMPT:")[1].strip()
         assert len(neg_part) <= 500
 
-    def test_sin_pos_marker_devuelve_texto_tal_cual(self):
+    def test_sin_pos_marker_cabe_devuelve_intacto(self):
+        h = _Host()
+        texto = "texto corto"
+        assert h._recortar_si_excede(texto, 100) == texto
+
+    def test_sin_pos_marker_excede_recorta_prosa(self):
+        # Prosa sin etiqueta PROMPT: (típico en vídeo) ahora SÍ se recorta
+        # al límite del modelo, por frontera de palabra (fix vídeo).
         h = _Host()
         texto = "texto sin marcador alguno"
-        assert h._recortar_si_excede(texto, 10) == texto
+        out = h._recortar_si_excede(texto, 10)
+        assert len(out) <= 10
+        assert texto.startswith(out)  # prefijo, sin partir palabra
 
 
 # ─────────────────────── _extraer_pos_de_bloque ───────────────────────
