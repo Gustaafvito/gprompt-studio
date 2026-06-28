@@ -278,13 +278,17 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
 
     # Consejos de la guía OFICIAL de SeaArt para entrenamiento LoRA
     # (docs.seaart.ai → Entrenamiento de LoRA avanzado → datasets).
+    # El consejo se elige según el TIPO de LoRA (Personaje/Estilo/Objeto/Paisaje):
+    # cada tipo tiene reglas distintas (p.ej. en Estilo la clave es variar sujetos).
+    tipo = resultado.get("tipo_lora", "Personaje")
+    consejo = CONSEJOS_LORA_POR_TIPO.get(tipo, CONSEJOS_LORA_POR_TIPO["Personaje"])
     with open(os.path.join(base, "CONSEJOS_SEAART.txt"), "w", encoding="utf-8") as f:
-        f.write(CONSEJOS_LORA_SEAART)
+        f.write(consejo)
 
     return base
 
 
-CONSEJOS_LORA_SEAART = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJE
+_CONSEJOS_PERSONAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJE
 ====================================================
 (fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
 
@@ -306,6 +310,69 @@ CONSEJOS_LORA_SEAART = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJ
   (no la etiquetes); el fondo, la iluminación, la pose y la expresión
   SÍ van en la caption (este dataset ya lo hace así).
 """
+
+_CONSEJOS_ESTILO = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE ESTILO
+==================================================
+(fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
+
+• CANTIDAD: 20-40 imágenes de SUJETOS VARIADOS (este generador ya da hasta 30).
+• CLAVE DEL ESTILO — VARÍA EL SUJETO: lo que enseña el estilo es la VARIEDAD
+  de contenidos renderizados igual. Si todo son retratos, el LoRA aprenderá
+  "retratos en este estilo", no el estilo en general. Mezcla personas,
+  naturaleza, objetos, arquitectura, fantasía, detalles… (este dataset lo hace).
+• LO QUE DEBE REPETIRSE es el ESTILO (paleta, trazo, sombreado, técnica),
+  NO el contenido. Mantén la descripción de estilo idéntica en todas las imágenes.
+• FONDOS: aquí el fondo/color SÍ forma parte del estilo y puede ser coherente;
+  lo que cambia es el SUJETO, no la estética.
+• RESOLUCIÓN: 1024x1024 para SDXL / Flux / SD 3.5 (512x512 para SD 1.5).
+• CAPTIONS: describe el CONTENIDO (qué se ve), NO el estilo. Deepbooru para
+  anime/cómic/ilustración; BLIP para foto/render. Umbral 0.5-0.8.
+• REGLA DE ORO: el ESTILO va en el TRIGGER WORD (no lo etiquetes); el sujeto
+  y la escena SÍ van en la caption (este dataset ya lo hace así).
+"""
+
+_CONSEJOS_OBJETO = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE OBJETO / PRODUCTO
+============================================================
+(fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
+
+• CANTIDAD: 20-40 vistas del MISMO objeto desde ángulos distintos.
+• CLAVE — MUCHAS VISTAS: frontal, laterales, 3/4, superior, inferior, posterior
+  y primeros planos de detalle. Así el LoRA aprende la forma 3D COMPLETA y no
+  solo una cara (este generador ya da hasta 30 vistas).
+• FONDOS: varía el fondo y el contexto (estudio, superficie natural, lifestyle)
+  — si repites fondo, el LoRA lo absorberá. Máx. 3-6 imágenes por fondo.
+• ILUMINACIÓN: varía la luz (suave, dramática, contraluz) para un LoRA robusto.
+• RESOLUCIÓN: 1024x1024 para SDXL / Flux / SD 3.5 (512x512 para SD 1.5).
+• CAPTIONS: describe el ángulo, el fondo y la luz, NO la identidad del objeto.
+• REGLA DE ORO: la identidad del objeto va en el TRIGGER WORD (no la etiquetes);
+  el ángulo, el fondo y la iluminación SÍ van en la caption (este dataset lo hace).
+"""
+
+_CONSEJOS_PAISAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PAISAJE / LUGAR
+==========================================================
+(fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
+
+• CANTIDAD: 20-40 encuadres del mismo tipo de paisaje o lugar.
+• CLAVE — VARÍA CONDICIONES: encuadre (panorámica, detalle, aéreo), luz
+  (amanecer, mediodía, hora dorada, noche), clima (niebla, lluvia, nieve) y
+  estación. Así el LoRA captura el LUGAR/BIOMA en todas sus condiciones
+  (este generador ya da hasta 30 encuadres).
+• SIN PERSONAS: un LoRA de paisaje no debe incluir gente (el negative ya la excluye).
+• RESOLUCIÓN: 1024x1024 (o formato panorámico) para SDXL / Flux / SD 3.5.
+• CAPTIONS: describe el encuadre, la luz y el clima, NO el bioma en sí.
+• REGLA DE ORO: la identidad del lugar/bioma va en el TRIGGER WORD (no la
+  etiquetes); las condiciones (luz, clima, encuadre) SÍ van en la caption.
+"""
+
+CONSEJOS_LORA_POR_TIPO = {
+    "Personaje": _CONSEJOS_PERSONAJE,
+    "Estilo": _CONSEJOS_ESTILO,
+    "Objeto": _CONSEJOS_OBJETO,
+    "Paisaje": _CONSEJOS_PAISAJE,
+}
+
+# Retrocompat: algunos sitios importaban el texto único.
+CONSEJOS_LORA_SEAART = _CONSEJOS_PERSONAJE
 
 
 # ---------------------------------------------------------------------------

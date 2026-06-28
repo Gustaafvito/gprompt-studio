@@ -49,7 +49,7 @@ def _llm_fake(system, user):
 
 class TestAvatarConfig:
     def test_angulos_canonicos(self):
-        assert len(AVATAR_ANGLES) == 24
+        assert len(AVATAR_ANGLES) == 30
         assert DEFAULT_ANGLE_SET == list(AVATAR_ANGLES.keys())
         # Todos los grupos referenciados existen en ANGLE_GROUPS
         grupos_usados = {d["group"] for d in AVATAR_ANGLES.values()}
@@ -168,7 +168,7 @@ class TestEnsamblarDataset:
         # en TODAS las tomas. La ropa solo se omite en los primeros planos.
         ds = ensamblar_dataset("ohwx_ana", DESC, DEFAULT_ANGLE_SET,
                                "photorealistic", "gray background")
-        assert len(ds) == 24
+        assert len(ds) == 30
         core = DESC.split(", wearing")[0]  # identidad sin ropa
         for item in ds:
             assert core in item["prompt"]
@@ -294,7 +294,7 @@ class TestRotacionFondos:
 class TestDatasetEdicion:
     def test_prompts_de_edicion(self):
         ds = ensamblar_dataset_edicion("ohwx_t", DEFAULT_ANGLE_SET, "gray bg")
-        assert len(ds) == 24
+        assert len(ds) == 30
 
     def test_prompt_frontal_conserva_identidad_y_cambia_camara(self):
         # Las tomas frontales (la pose ya coincide con la referencia) clavan
@@ -380,8 +380,8 @@ class TestPipeline:
             DEFAULT_ANGLE_SET, "photorealistic", "gray bg")
         assert r["trigger_word"] == "ohwx_ana"
         assert r["descripcion_canonica"] == DESC
-        assert r["total_prompts"] == 24
-        assert len(r["dataset"]) == 24
+        assert r["total_prompts"] == 30
+        assert len(r["dataset"]) == 30
 
     def test_adaptar_modelo_sin_negative_vacia_negatives(self):
         r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
@@ -443,3 +443,40 @@ class TestPipeline:
             contenido = f.read()
         assert "PROMPT:" in contenido
         assert "NEGATIVE PROMPT:" in contenido
+
+    def _resultado_minimo(self, **extra):
+        r = {
+            "trigger_word": "ohwx_x",
+            "descripcion_canonica": "in the style of x",
+            "creado": "2026-01-01T00:00:00",
+            "total_prompts": 1,
+            "dataset": [{
+                "angle_key": "a", "label": "L", "filename": "01_x",
+                "prompt": "ohwx_x, subject", "negative": "",
+                "caption": "ohwx_x, subject",
+            }],
+        }
+        r.update(extra)
+        return r
+
+    def test_consejos_se_adaptan_al_tipo_de_lora(self, tmp_path):
+        # Estilo: consejo de ESTILO, no de personaje.
+        base = exportar_dataset(self._resultado_minimo(tipo_lora="Estilo"),
+                                str(tmp_path / "estilo"))
+        with open(os.path.join(base, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
+            txt = f.read()
+        assert "LoRA DE ESTILO" in txt
+        assert "VARÍA EL SUJETO" in txt
+        assert "PERSONAJE" not in txt
+
+        # Objeto y Paisaje también tienen su propio consejo.
+        for tipo, marca in [("Objeto", "OBJETO"), ("Paisaje", "PAISAJE")]:
+            b = exportar_dataset(self._resultado_minimo(tipo_lora=tipo),
+                                 str(tmp_path / tipo))
+            with open(os.path.join(b, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
+                assert f"LoRA DE {marca}" in f.read()
+
+        # Sin tipo_lora (pipeline Personaje) → consejo de personaje.
+        base_p = exportar_dataset(self._resultado_minimo(), str(tmp_path / "pers"))
+        with open(os.path.join(base_p, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
+            assert "LoRA DE PERSONAJE" in f.read()
