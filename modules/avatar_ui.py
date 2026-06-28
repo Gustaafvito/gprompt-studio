@@ -19,6 +19,12 @@ import tkinter.messagebox as messagebox
 
 import customtkinter as ctk
 
+try:
+    from CTkToolTip import CTkToolTip
+except ImportError:
+    class CTkToolTip:
+        def __init__(self, *args, **kwargs): pass
+
 from modules.avatar_config import (
     LORA_TYPES,
 )
@@ -288,6 +294,25 @@ class AvatarFrame(ctk.CTkFrame):
         """Rellena el scrollable frame de ángulos según el cfg del tipo."""
         fila = 0
         self._frame_angulos.grid_columnconfigure(0, weight=1)
+
+        # Barra de selección rápida: Todos / Ninguno / Equilibrado.
+        barra = ctk.CTkFrame(self._frame_angulos, fg_color="transparent")
+        barra.grid(row=fila, column=0, sticky="ew", padx=8, pady=(2, 6)); fila += 1
+        ctk.CTkButton(barra, text=tr("Todos"), width=58, height=24,
+                      command=lambda: self._marcar_angulos(True)).pack(side="left", padx=(0, 4))
+        ctk.CTkButton(barra, text=tr("Ninguno"), width=64, height=24,
+                      fg_color="#6b7280", hover_color="#4b5563",
+                      command=lambda: self._marcar_angulos(False)).pack(side="left", padx=4)
+        n_eq = len(cfg.get("balanced_angles") or cfg["angles"])
+        boton_eq = ctk.CTkButton(
+            barra, text=tr("⚖ Equilibrado ({0})").format(n_eq),
+            width=126, height=24, fg_color="#0e7490", hover_color="#155e75",
+            command=self._aplicar_equilibrado)
+        boton_eq.pack(side="left", padx=4)
+        CTkToolTip(boton_eq, message=tr(
+            "Marca la selección recomendada por la guía SeaArt para este tipo "
+            "de LoRA (reparto equilibrado, sin sesgar el entrenamiento)."))
+
         for grupo, titulo_grupo in cfg["angle_groups"].items():
             ctk.CTkLabel(
                 self._frame_angulos, text=titulo_grupo,
@@ -301,6 +326,22 @@ class AvatarFrame(ctk.CTkFrame):
                     self._frame_angulos, text=datos["label"], variable=var)
                 chk.grid(row=fila, column=0, sticky="w", padx=16, pady=2); fila += 1
                 self._angulo_vars[key] = var
+
+    def _marcar_angulos(self, valor: bool) -> None:
+        """Marca/desmarca TODOS los checkboxes de ángulo."""
+        for v in self._angulo_vars.values():
+            v.set(valor)
+
+    def _aplicar_equilibrado(self) -> None:
+        """Aplica la selección equilibrada recomendada para el tipo activo."""
+        cfg = LORA_TYPES[self._tipo_lora]
+        balanced = set(cfg.get("balanced_angles") or cfg["angles"].keys())
+        for k, v in self._angulo_vars.items():
+            v.set(k in balanced)
+        n = sum(1 for v in self._angulo_vars.values() if v.get())
+        if hasattr(self, "label_estado"):
+            self.label_estado.configure(
+                text=tr("⚖ Selección equilibrada aplicada: {0} ángulos").format(n))
 
     # ------------------------------------------------------------- acciones
     def _on_ficha_auto(self):

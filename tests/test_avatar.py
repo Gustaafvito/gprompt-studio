@@ -18,6 +18,7 @@ from modules.avatar_config import (
     AVATAR_LIGHTING,
     AVATAR_NEGATIVE_PROMPT,
     DEFAULT_ANGLE_SET,
+    LORA_TYPES,
 )
 from modules.avatar_generator import (
     _slug_carpeta,
@@ -55,6 +56,27 @@ class TestAvatarConfig:
         # Todos los grupos referenciados existen en ANGLE_GROUPS
         grupos_usados = {d["group"] for d in AVATAR_ANGLES.values()}
         assert grupos_usados <= set(ANGLE_GROUPS)
+
+    def test_balanced_angles_son_subconjunto_valido(self):
+        # Cada tipo define balanced_angles ⊆ angles, no vacío, sin duplicados.
+        for tipo, cfg in LORA_TYPES.items():
+            bal = cfg["balanced_angles"]
+            assert bal, f"{tipo} sin balanced_angles"
+            assert len(bal) == len(set(bal)), f"{tipo} balanced con duplicados"
+            assert set(bal) <= set(cfg["angles"]), f"{tipo} balanced fuera de angles"
+
+    def test_balanced_personaje_prioriza_control_y_limita_expresiones(self):
+        bal = LORA_TYPES["Personaje"]["balanced_angles"]
+        control = [k for k in bal if k.split("_")[0] in ("face", "bust", "full")]
+        expresiones = [k for k in bal if k.startswith("expression")]
+        # ≥50% planos de control (la guía pide ~60%) y expresiones limitadas (≤5).
+        assert len(control) / len(bal) >= 0.5
+        assert len(expresiones) <= 5
+
+    def test_balanced_objeto_excluye_vistas_agresivas(self):
+        bal = set(LORA_TYPES["Objeto"]["balanced_angles"])
+        for agresiva in ("obj_bottom", "obj_isometric", "obj_hero_low"):
+            assert agresiva not in bal
 
     def test_angulos_tienen_campos_obligatorios(self):
         for key, datos in AVATAR_ANGLES.items():

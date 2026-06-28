@@ -245,6 +245,25 @@ AVATAR_ANGLES = {
 # Set por defecto recomendado para un LoRA de personaje (30 vistas)
 DEFAULT_ANGLE_SET = list(AVATAR_ANGLES.keys())
 
+# Selección EQUILIBRADA (botón "⚖ Equilibrado"): para personaje la guía SeaArt
+# pide ~60% planos de control (rostro/busto/cuerpo neutros, para memorizar ropa
+# y rasgos) y limitar expresiones extremas a 4-5. "Todos los 30" hace lo
+# contrario (sobran expresiones/poses), así que aquí curamos: 12 control + 4
+# expresiones + 4 poses + 2 ángulos de cámara = 22 (control = 55%).
+AVATAR_BALANCED_ANGLE_SET = [
+    # Control (12): rostro, busto y cuerpo entero, todas las orientaciones
+    "face_front", "face_34_left", "face_34_right",
+    "face_profile_left", "face_profile_right",
+    "bust_front", "bust_34_left", "bust_34_right",
+    "full_front", "full_34_left", "full_34_right", "full_back",
+    # Expresiones (4, limitadas para que no se vuelvan rasgos permanentes)
+    "expression_smile", "expression_serious",
+    "expression_surprised", "expression_eyes_closed",
+    # Poses (4) y ángulos de cámara (2)
+    "cowboy_front", "seated_floor", "over_shoulder", "dynamic_action",
+    "low_angle", "high_angle",
+]
+
 # Grupos para organizar los checkboxes en la UI
 ANGLE_GROUPS = {
     "rostro": "Rostro / Retrato",
@@ -593,6 +612,9 @@ LANDSCAPE_ANGLE_GROUPS = {
 }
 
 LANDSCAPE_DEFAULT_ANGLE_SET = list(LANDSCAPE_ANGLES.keys())
+# Paisaje: la variedad de condiciones (luz/clima/encuadre) ES el objetivo,
+# así que el set equilibrado = el completo.
+LANDSCAPE_BALANCED_ANGLE_SET = list(LANDSCAPE_ANGLES.keys())
 
 LANDSCAPE_FORM_FIELDS = [
     {"key": "tipo_paisaje", "label": "Tipo de paisaje", "type": "option",
@@ -854,6 +876,13 @@ OBJECT_ANGLE_GROUPS = {
 }
 
 OBJECT_DEFAULT_ANGLE_SET = list(OBJECT_ANGLES.keys())
+# Objeto: el set equilibrado excluye las vistas más agresivas (inferior,
+# isométrica, contrapicado heroico) que sesgan el dataset si se abusa de ellas
+# (máx. 1-2 recomendado). Deja la flat-lay y el picado 45º como cenitales suaves.
+_OBJECT_VISTAS_AGRESIVAS = {"obj_bottom", "obj_isometric", "obj_hero_low"}
+OBJECT_BALANCED_ANGLE_SET = [
+    k for k in OBJECT_ANGLES if k not in _OBJECT_VISTAS_AGRESIVAS
+]
 
 OBJECT_FORM_FIELDS = [
     {"key": "nombre_objeto", "label": "Nombre del objeto / producto", "type": "entry",
@@ -1116,6 +1145,10 @@ STYLE_ANGLE_GROUPS = {
 }
 
 STYLE_DEFAULT_ANGLE_SET = list(STYLE_ANGLES.keys())
+# Estilo: los 30 ya reparten ~6 humanos / ~9 entornos / ~7 objetos / ~8
+# detalles-fantasía-abstracto (cerca de 25% cada categoría), que es lo que
+# enseña el ESTILO sin sesgar a un solo sujeto → equilibrado = completo.
+STYLE_BALANCED_ANGLE_SET = list(STYLE_ANGLES.keys())
 
 STYLE_FORM_FIELDS = [
     {"key": "nombre_estilo", "label": "Nombre / descripción del estilo", "type": "entry",
@@ -1156,6 +1189,7 @@ LORA_TYPES = {
         "angles": AVATAR_ANGLES,
         "angle_groups": ANGLE_GROUPS,
         "default_angles": DEFAULT_ANGLE_SET,
+        "balanced_angles": AVATAR_BALANCED_ANGLE_SET,
         "form_fields": AVATAR_FORM_FIELDS,
         "styles": AVATAR_STYLES,
         "backgrounds": AVATAR_BACKGROUNDS,
@@ -1174,6 +1208,7 @@ LORA_TYPES = {
         "angles": LANDSCAPE_ANGLES,
         "angle_groups": LANDSCAPE_ANGLE_GROUPS,
         "default_angles": LANDSCAPE_DEFAULT_ANGLE_SET,
+        "balanced_angles": LANDSCAPE_BALANCED_ANGLE_SET,
         "form_fields": LANDSCAPE_FORM_FIELDS,
         "styles": LANDSCAPE_STYLES,
         "backgrounds": None,
@@ -1192,6 +1227,7 @@ LORA_TYPES = {
         "angles": OBJECT_ANGLES,
         "angle_groups": OBJECT_ANGLE_GROUPS,
         "default_angles": OBJECT_DEFAULT_ANGLE_SET,
+        "balanced_angles": OBJECT_BALANCED_ANGLE_SET,
         "form_fields": OBJECT_FORM_FIELDS,
         "styles": OBJECT_STYLES,
         "backgrounds": AVATAR_BACKGROUNDS,
@@ -1210,6 +1246,7 @@ LORA_TYPES = {
         "angles": STYLE_ANGLES,
         "angle_groups": STYLE_ANGLE_GROUPS,
         "default_angles": STYLE_DEFAULT_ANGLE_SET,
+        "balanced_angles": STYLE_BALANCED_ANGLE_SET,
         "form_fields": STYLE_FORM_FIELDS,
         "styles": STYLE_STYLES,
         "backgrounds": None,
