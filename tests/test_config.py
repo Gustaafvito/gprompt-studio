@@ -195,6 +195,24 @@ class TestModelosVigentes:
         flux = next(ms for cab, ms in GRUPOS_IMAGEN if "FLUX" in cab.upper())
         assert flux.index("lyh_anime_Flux") < flux.index("Midjourney Mimic Neo")
 
+    def test_estilos_y_destinos_orden_alfabetico_insensible(self):
+        # Estilos (imagen/vídeo/audio) y destinos ordenados case+acento-insensible
+        # (auto-orden al añadir; "Épico"/"Ópera" no caen al final).
+        from config import (
+            DESTINOS,
+            ESTILOS_AUDIO,
+            ESTILOS_IMAGEN,
+            ESTILOS_VIDEO,
+            clave_alfabetica,
+        )
+        for nombre, lista in [("IMG", ESTILOS_IMAGEN), ("VID", ESTILOS_VIDEO),
+                              ("AUD", ESTILOS_AUDIO)]:
+            assert lista == sorted(lista, key=clave_alfabetica), f"estilos {nombre}"
+        # Destinos: "— Personal —" primero, el resto ordenado.
+        assert DESTINOS[0] == "— Personal —"
+        resto = DESTINOS[1:]
+        assert resto == sorted(resto, key=clave_alfabetica)
+
     def test_todos_los_catalogos_orden_alfabetico(self):
         # Vídeo, audio y ComfyUI también: cada grupo case-insensitive ordenado.
         # (ComfyUI usaba sorted() sin key=str.lower → "zImageBase" mal colocado.)

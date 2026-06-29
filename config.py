@@ -1001,11 +1001,19 @@ RATIOS_VIDEO  = ["1:1", "3:4", "4:3", "9:16", "16:9", "21:9"]
 ESTILOS_GRUPOS = _load_json_data("estilos_grupos.json")
 
 # Se genera la lista plana y se ordena TODO globalmente de la A a la Z
+def clave_alfabetica(s: str) -> str:
+    """Clave de orden alfabético insensible a mayúsculas Y acentos, para que
+    listas mixtas ES/EN ordenen bien ('Épico' junto a la E, no al final)."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s))
+    return "".join(c for c in s if not unicodedata.combining(c)).lower()
+
+
 ESTILOS_IMAGEN = []
 for grupo in ESTILOS_GRUPOS.values():
     ESTILOS_IMAGEN.extend(grupo)
 
-ESTILOS_IMAGEN = sorted(ESTILOS_IMAGEN)
+ESTILOS_IMAGEN = sorted(ESTILOS_IMAGEN, key=clave_alfabetica)
 
 ESTILOS_VIDEO = sorted([
     # Géneros narrativos
@@ -1059,7 +1067,7 @@ ESTILOS_VIDEO = sorted([
     # ── Interactivo/VR ──
     "360° Video", "VR Experience", "Interactive Video",
     "Gamified Content", "Immersive / AR",
-])
+], key=clave_alfabetica)
 
 # Presets de LOOK visual para el combo "Estilo" de la barra de vídeo.
 # Complementan los géneros narrativos de ESTILOS_VIDEO (checkboxes): aquí se
@@ -1103,7 +1111,7 @@ ESTILOS_AUDIO = sorted([
     "Estudio / Focus",
     # Otros
     "Ópera / Coral", "Vaporwave", "Chiptune 8-bit",
-])
+], key=clave_alfabetica)
 
 EMOCIONES_AUDIO = sorted([
     "Alegre", "Melancólico", "Épico", "Romántico", "Enérgico", "Relajado",
@@ -1425,7 +1433,7 @@ DESTINOS = ["— Personal —"] + sorted([
     "LinkedIn",
     "Web / Blog",
     "Cliente",
-])
+], key=clave_alfabetica)
 
 # ── Motores por plataforma ────────────────────────────
 MOTORES_VIDEO = {
