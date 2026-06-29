@@ -93,11 +93,13 @@ Bloque grande sobre el **Generador de Dataset LoRA (Avatar)** + estilos, todo en
 7. **Estilo Anime en los 4 tipos** (`bd7a75a`): Personaje ya lo tenía; añadido a Estilo/
    Objeto/Paisaje para crear datasets anime de cualquier cosa.
 
-**LoRA — trigger al inicio** (`f53f9f6`): checkbox **"⬆ al inicio"** junto al combo de LoRA
-(pref `lora_inicio`, default OFF) que mueve el trigger primario al PRINCIPIO del POSITIVE
-(convención SeaArt; antes iba en su bloque, sobre todo en Z-Image). Helper puro
-`mover_trigger_al_inicio()` quita el trigger contiguo de donde esté sin borrar rasgos que
-el LLM repita en la descripción ("amber eyes" del subject se conserva).
+**LoRA — trigger al inicio** (`f53f9f6` + `7d96ca4`): checkbox **"⬆ al inicio"** junto al
+combo de LoRA (pref `lora_inicio`, **default ON**) que mueve el trigger primario al PRINCIPIO
+del POSITIVE (convención SeaArt; antes iba en su bloque, sobre todo en Z-Image). Helper puro
+`mover_trigger_al_inicio()` quita el trigger contiguo de donde esté sin borrar rasgos que el
+LLM repita en la descripción ("amber eyes" del subject se conserva). En Z-Image, el bloque
+`[LoRA Activation & Style]` (ya sin la activación) se renombra a `[Style & Aesthetic]` o se
+elimina si queda vacío. El trigger NO se duplica.
 
 **Estilo Anime en Z-Image (generador principal):**
 - `2631dd2`: "Anime" en `ESTILOS_POR_FAMILIA["z_image"]` + categoría en su inyección.
