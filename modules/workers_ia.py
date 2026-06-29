@@ -26,6 +26,7 @@ import logging
 import re
 
 from modules.i18n import tr
+from modules.prompt_helpers import mover_trigger_al_inicio
 from workers import limpiar_marcadores, parsear_ideas
 
 logger = logging.getLogger("gprompt")
@@ -142,6 +143,27 @@ class WorkersIaService:
             return texto[:insert_pos] + f" {trigger}, " + texto[insert_pos:].lstrip()
         return f"POSITIVE PROMPT: {trigger}, {texto.lstrip()}"
 
+    def _mover_lora_al_inicio_si_pref(self, texto, es_ideas=False):
+        """Si la pref 'LoRA al inicio' está activa, mueve el trigger del LoRA
+        primario al principio del POSITIVE (convención SeaArt). No aplica a
+        ideas ni si no hay LoRA/trigger."""
+        if es_ideas or not texto:
+            return texto
+        try:
+            if not (hasattr(self.app, "lora_inicio_var")
+                    and self.app.lora_inicio_var.get()):
+                return texto
+            nombre = (self.app.combo_lora.get()
+                      if hasattr(self.app, "combo_lora") else "")
+            if not nombre or nombre == tr("— Sin LoRA —"):
+                return texto
+            trigger = self.app.store.trigger_lora(nombre)
+        except Exception:
+            return texto
+        if not trigger or not trigger.strip():
+            return texto
+        return mover_trigger_al_inicio(texto, trigger)
+
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
                    es_refinamiento=False, texto_previo=None):
         try:
@@ -156,6 +178,9 @@ class WorkersIaService:
             texto = limpiar_marcadores(texto)  # Eliminar ** y __ del resultado
             # Safety-net: garantizar trigger del LoRA en el output
             texto = self._garantizar_lora_trigger(texto, es_ideas=es_ideas)
+            # Opcional (pref "LoRA al inicio"): mover el trigger al principio
+            # del POSITIVE (convención SeaArt: los LoRAs van primero).
+            texto = self._mover_lora_al_inicio_si_pref(texto, es_ideas=es_ideas)
 
             # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta
             if max_c and not es_ideas and not es_variaciones:
@@ -307,6 +332,7 @@ class WorkersIaService:
             texto = limpiar_marcadores(texto)
             # Safety-net: garantizar trigger del LoRA en el output
             texto = self._garantizar_lora_trigger(texto)
+            texto = self._mover_lora_al_inicio_si_pref(texto)
 
             # Limpiar NEGATIVE si el modelo no lo soporta
             if not has_neg:

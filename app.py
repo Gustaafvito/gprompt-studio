@@ -236,6 +236,7 @@ class ArquitectoApp(
         self.destino_var           = ctk.StringVar(value="— Personal —")
         self.brief_var             = ctk.BooleanVar(value=_prefs.get("brief", False))
         self.switch_ref_visual_var = ctk.BooleanVar(value=_prefs.get("switch_ref_visual", False))
+        self.lora_inicio_var       = ctk.BooleanVar(value=_prefs.get("lora_inicio", False))
         _estilo_inicial = (
             _prefs.get("familia_estilo") or _prefs.get("z_image_estilo") or "Auto"
         )
@@ -275,6 +276,8 @@ class ArquitectoApp(
                 "write", _persistir("brief", self.brief_var.get))
             self.switch_ref_visual_var.trace_add(
                 "write", _persistir("switch_ref_visual", self.switch_ref_visual_var.get))
+            self.lora_inicio_var.trace_add(
+                "write", _persistir("lora_inicio", self.lora_inicio_var.get))
             self.familia_estilo_var.trace_add(
                 "write", _persistir("familia_estilo", self.familia_estilo_var.get))
             self.estilo_video_var.trace_add(

@@ -1098,6 +1098,17 @@ class UIBuildersService:
             command=self.app.footer._abrir_multi_lora_modal,
         ).pack(side="left", padx=(2, 0))
 
+        # Checkbox "⬆ al inicio" — coloca el trigger del LoRA al principio del
+        # POSITIVE (convención SeaArt). Persistido en preferencias.
+        chk_lora_inicio = ctk.CTkCheckBox(
+            self.app.frame_pers_lora, text=tr("⬆ al inicio"), width=20,
+            variable=self.app.lora_inicio_var, font=ctk.CTkFont(size=10),
+            checkbox_width=16, checkbox_height=16)
+        chk_lora_inicio.pack(side="left", padx=(6, 0))
+        CTkToolTip(chk_lora_inicio, message=tr(
+            "Coloca el trigger del LoRA al PRINCIPIO del prompt (como SeaArt). "
+            "Si lo desactivas, va en su bloque/posición normal."))
+
         # Label trigger visible (Mejora bonus LoRAs)
         lora_color = "#7c3aed" if is_light else "#9b59b6"
         self.app.lbl_lora_trigger = ctk.CTkLabel(self.app.frame_pers_lora, text="",

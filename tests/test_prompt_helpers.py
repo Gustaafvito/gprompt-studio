@@ -380,6 +380,35 @@ class TestRecortarSiExcede:
         assert len(out) <= 100
         assert not out.endswith("wor")  # palabra completa
 
+
+class TestMoverTriggerAlInicio:
+
+    def test_tag_single_va_al_inicio_y_conserva_comas(self):
+        from modules.prompt_helpers import mover_trigger_al_inicio as M
+        out = M("POSITIVE PROMPT: 1girl, lmnlhrr, red hair\nNEGATIVE PROMPT: blurry",
+                "lmnlhrr")
+        # El trigger queda justo tras la etiqueta
+        assert out.startswith("POSITIVE PROMPT: lmnlhrr style,")
+        assert "1girl, red hair" in out
+        assert "NEGATIVE PROMPT: blurry" in out  # negative intacto
+
+    def test_zimage_multitermino_no_borra_rasgos_del_subject(self):
+        from modules.prompt_helpers import mover_trigger_al_inicio as M
+        z = ("POSITIVE PROMPT: (masterpiece:1.2), 8k.\n"
+             "[Subject & Composition] a girl with amber eyes.\n"
+             "[LoRA Activation & Style] Nyra, Amber Eyes, Undercut, cinematic.\n"
+             "NEGATIVE PROMPT: blurry")
+        out = M(z, "Nyra, Amber Eyes, Undercut")
+        assert out.startswith("POSITIVE PROMPT: Nyra, Amber Eyes, Undercut,")
+        assert "amber eyes" in out  # NO se borra el rasgo del subject
+        # Y se quitó del bloque dedicado
+        assert "Nyra, Amber Eyes, Undercut, cinematic" not in out
+
+    def test_sin_trigger_o_vacio_no_toca(self):
+        from modules.prompt_helpers import mover_trigger_al_inicio as M
+        assert M("POSITIVE PROMPT: a, b", "") == "POSITIVE PROMPT: a, b"
+        assert M("", "x") == ""
+
     # ── recorta preservando tags completos ─────────────────────────
     def test_recorta_positive_por_tags_completos(self):
         # Construimos un prompt donde cada tag mide ~10 chars → con max=25 solo caben 2

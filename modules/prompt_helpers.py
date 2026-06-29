@@ -131,6 +131,57 @@ def extraer_negative_de_texto(texto: str):
     return None
 
 
+def mover_trigger_al_inicio(texto: str, trigger: str) -> str:
+    """Mueve el trigger del LoRA al PRINCIPIO del POSITIVE PROMPT (convención
+    SeaArt: los LoRAs van primero). Quita las apariciones del trigger en el
+    resto del positivo y lo inserta justo tras la etiqueta POSITIVE/PROMPT (o
+    al inicio si es prosa sin etiqueta). NO toca el NEGATIVE. Si algo falla,
+    devuelve el texto intacto."""
+    if not texto or not trigger or not trigger.strip():
+        return texto
+    try:
+        trigger = trigger.strip()
+        inserto = trigger if "," in trigger else f"{trigger} style"
+
+        # Separar POSITIVE de NEGATIVE: solo tocamos el positivo.
+        m_neg = re.search(r"\n\s*NEGATIVE\s+PROMPT\s*:", texto, re.IGNORECASE)
+        pos = texto[:m_neg.start()] if m_neg else texto
+        neg = texto[m_neg.start():] if m_neg else ""
+
+        # Quitar la aparición CONTIGUA del trigger completo (no término a
+        # término: así no se borran rasgos —p.ej. "amber eyes"— que el LLM
+        # repita en la descripción). Consume una coma adyacente (la de
+        # delante si existe, si no la de detrás).
+        patron = re.compile(
+            rf"(?:,\s*)?{re.escape(trigger)}(?:\s+style)?(?:\s*,)?",
+            re.IGNORECASE,
+        )
+        pos = patron.sub(lambda m: "," if m.group(0).strip().endswith(",")
+                         and m.group(0).strip().startswith(",") else "", pos, count=1)
+        # Resto de apariciones (sin contar separadores) por si quedara alguna.
+        pos = re.compile(rf"\b{re.escape(trigger)}(?:\s+style)?\b",
+                         re.IGNORECASE).sub("", pos)
+
+        # Insertar al inicio: tras la etiqueta POSITIVE/PROMPT si existe.
+        m_lbl = re.search(r"(POSITIVE\s+PROMPT\s*:|^PROMPT\s*:)", pos,
+                          re.IGNORECASE | re.MULTILINE)
+        if m_lbl:
+            ins = m_lbl.end()
+            pos = pos[:ins] + f" {inserto}," + pos[ins:]
+        else:
+            pos = f"{inserto}, " + pos.lstrip()
+
+        # Limpieza de separadores sobrantes.
+        pos = re.sub(r",\s*,", ",", pos)            # comas dobles
+        pos = re.sub(r":\s*,\s*", ": ", pos)         # "PROMPT: , x" → "PROMPT: x"
+        pos = re.sub(r"\]\s*,\s*", "] ", pos)        # "] , x" → "] x"
+        pos = re.sub(r"[ \t]{2,}", " ", pos)         # espacios dobles
+        pos = re.sub(r"^[ \t]+", "", pos, flags=re.MULTILINE)
+        return pos + neg
+    except Exception:
+        return texto
+
+
 def _recortar_prosa(texto: str, max_chars: int) -> str:
     """Recorta un texto en PROSA (sin etiqueta PROMPT:) a max_chars sin cortar
     palabras a la mitad. Prioriza: fin de frase completo > coma > último
