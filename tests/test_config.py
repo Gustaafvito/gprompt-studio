@@ -195,6 +195,24 @@ class TestModelosVigentes:
         flux = next(ms for cab, ms in GRUPOS_IMAGEN if "FLUX" in cab.upper())
         assert flux.index("lyh_anime_Flux") < flux.index("Midjourney Mimic Neo")
 
+    def test_todos_los_catalogos_orden_alfabetico(self):
+        # Vídeo, audio y ComfyUI también: cada grupo case-insensitive ordenado.
+        # (ComfyUI usaba sorted() sin key=str.lower → "zImageBase" mal colocado.)
+        from config import (
+            GRUPOS_AUDIO,
+            GRUPOS_IMAGEN_COMFYUI,
+            GRUPOS_VIDEO,
+            GRUPOS_VIDEO_COMFYUI,
+        )
+        for nombre, grupos in [
+            ("VIDEO", GRUPOS_VIDEO), ("AUDIO", GRUPOS_AUDIO),
+            ("COMFY_IMG", GRUPOS_IMAGEN_COMFYUI),
+            ("COMFY_VID", GRUPOS_VIDEO_COMFYUI),
+        ]:
+            for cabecera, modelos in grupos:
+                assert modelos == sorted(modelos, key=str.lower), \
+                    f"{nombre} desordenado: {cabecera}"
+
     def test_modelo_sin_nota_no_rompe(self):
         # Real Vision - FLUX no tiene nota (None). Debe seguir vigente y los
         # puntos que usan nota deben tolerarlo (label 's/n', sort -> 0).

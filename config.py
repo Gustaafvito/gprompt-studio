@@ -778,8 +778,8 @@ def _cargar_modelos_locales():
             logger.warning(f"Error leyendo mis_modelos_comfy.json, usando fallback: {e}")
             data = plantilla_default
 
-    grupos_img = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("imagen", [])]
-    grupos_vid = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []))) for item in data.get("video", [])]
+    grupos_img = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []), key=str.lower)) for item in data.get("imagen", [])]
+    grupos_vid = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []), key=str.lower)) for item in data.get("video", [])]
 
     # Auto-discovery: agregar modelos de ComfyUI si se configuró ruta. La ruta
     # puede venir en el propio JSON ("comfyui_path") o en las preferencias.
