@@ -78,6 +78,28 @@ class TestAvatarConfig:
         for agresiva in ("obj_bottom", "obj_isometric", "obj_hero_low"):
             assert agresiva not in bal
 
+    def test_negativo_por_angulo_excluye_personas_solo_donde_toca(self):
+        from modules.avatar_config import (
+            LANDSCAPE_NEGATIVE_PROMPT,
+            STYLE_NEGATIVE_PROMPT,
+        )
+        from modules.avatar_prompts import negativo_generico_para_angulo as N
+        arq = {"prompt": "architectural exterior, no people"}
+        ret = {"prompt": "portrait of a woman"}
+        urb = {"prompt": "urban street, few people in distance"}
+        # Estilo (base SIN personas): arquitectura excluye, retrato/urbano no.
+        assert "person" in N(arq, STYLE_NEGATIVE_PROMPT).lower()
+        assert "person" not in N(ret, STYLE_NEGATIVE_PROMPT).lower()
+        assert "person" not in N(urb, STYLE_NEGATIVE_PROMPT).lower()
+        # Paisaje (base YA excluye): no duplica el bloque de personas.
+        out = N(arq, LANDSCAPE_NEGATIVE_PROMPT)
+        assert out.lower().count("person") == 1
+        # neg_extra del ángulo se añade siempre.
+        out2 = N({"prompt": "x", "neg_extra": "lens flare"}, STYLE_NEGATIVE_PROMPT)
+        assert "lens flare" in out2
+        # incluir_negative=False → vacío.
+        assert N(arq, STYLE_NEGATIVE_PROMPT, incluir_negative=False) == ""
+
     def test_todos_los_tipos_tienen_estilo_anime(self):
         # "Anime" disponible en el combo Estilo visual de los 4 tipos, para
         # crear LoRAs anime de personaje/estilo/objeto/paisaje.

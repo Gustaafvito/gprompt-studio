@@ -543,6 +543,41 @@ def construir_user_prompt_para_tipo(tipo: str, form_data: dict) -> str:
     return construir_user_prompt_canonico(form_data)
 
 
+# Términos para excluir personas en ángulos que deben ir SIN gente
+# (arquitectura, paisaje, monumentos…). Refuerza el "no people" del positivo,
+# que por sí solo el modelo suele ignorar.
+_NEG_SIN_PERSONAS = ("person, people, human, man, woman, child, "
+                     "figure, crowd, silhouette, portrait, face")
+
+
+def negativo_generico_para_angulo(angulo: dict, negative_base: str,
+                                  incluir_negative: bool = True) -> str:
+    """Negative POR ÁNGULO para tipos no-personaje (Estilo/Paisaje/Objeto).
+
+    Parte del negative_base del tipo y añade:
+      - exclusión de personas si el ángulo es explícitamente SIN gente (su
+        positivo dice 'no people'/'no person') y el base no lo cubre ya. Evita
+        que en arquitectura/paisaje/monumentos se cuelen figuras.
+      - cualquier 'neg_extra' declarado en el propio ángulo (override manual).
+    """
+    if not incluir_negative:
+        return ""
+    base = (negative_base or "").strip().strip(",")
+    prompt = (angulo.get("prompt", "") or "").lower()
+    partes = [base] if base else []
+
+    sin_personas = ("no people" in prompt or "no person" in prompt)
+    ya_excluye = "person" in base.lower() or "people" in base.lower()
+    if sin_personas and not ya_excluye:
+        partes.append(_NEG_SIN_PERSONAS)
+
+    extra = (angulo.get("neg_extra", "") or "").strip().strip(",")
+    if extra:
+        partes.append(extra)
+
+    return ", ".join(p for p in partes if p)
+
+
 def ensamblar_dataset_generico(
     tipo: str,
     trigger_word: str,
@@ -585,7 +620,8 @@ def ensamblar_dataset_generico(
             partes_caption.append(lighting.split(",")[0].strip())
         caption = ", ".join(partes_caption)
 
-        negative = negative_base if incluir_negative else ""
+        negative = negativo_generico_para_angulo(
+            angulo, negative_base, incluir_negative)
 
         dataset.append({
             "angle_key": key,
