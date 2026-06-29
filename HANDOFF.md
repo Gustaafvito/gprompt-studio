@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **808 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **810 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -118,7 +118,17 @@ elimina si queda vacío. El trigger NO se duplica.
 - **Sugerir modelo** (`e71d65c`, `e2443fd`): ofrece TODOS los modelos (no 20) + ajuste de
   estilo (no metía modelos estilizados en ideas realistas). Temperatura 0.3 → 0.5.
 - **PixVerse V6** (`78d414f`): `has_negative:false` (panel real).
-- **build_release** (`79dfcdb`): reintento anti-OneDrive al copiar el .exe.
+- **build_release** (`79dfcdb`): reintento anti-OneDrive al copiar el .exe (visto en acción).
+
+**Auditoría de orden alfabético** (`175eb1a` + `1a34755`):
+- ComfyUI ordenaba `sorted()` sin `key=str.lower` → nombres con mayúsculas mal colocados;
+  ahora case-insensitive como el resto. Resto de catálogos (imagen/vídeo/audio/Magnific/
+  GPT/Dola): OK.
+- Nuevo `config.clave_alfabetica` (sin acentos + minúsculas). Estilos (imagen/vídeo/audio)
+  y Destinos pasan a orden **case+acento-insensible** ("Épico"/"Ópera" ya no caen al final).
+  `nombres_loras/personajes/plantillas` (combos) pasan de "más nuevo primero" a alfabético
+  (búsqueda por nombre; el modal de gestión por índice no se toca). **Ratios se quedan en
+  orden canónico** (1:1→16:9, intencional). +2 tests guardián.
 
 ---
 
@@ -815,7 +825,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 808 passed / 0 failing ✅ (sesión 35)
+python -m pytest tests -q                     # → 810 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
