@@ -236,7 +236,7 @@ class ArquitectoApp(
         self.destino_var           = ctk.StringVar(value="— Personal —")
         self.brief_var             = ctk.BooleanVar(value=_prefs.get("brief", False))
         self.switch_ref_visual_var = ctk.BooleanVar(value=_prefs.get("switch_ref_visual", False))
-        self.lora_inicio_var       = ctk.BooleanVar(value=_prefs.get("lora_inicio", False))
+        self.lora_inicio_var       = ctk.BooleanVar(value=_prefs.get("lora_inicio", True))
         _estilo_inicial = (
             _prefs.get("familia_estilo") or _prefs.get("z_image_estilo") or "Auto"
         )

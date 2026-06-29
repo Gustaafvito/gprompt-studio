@@ -177,6 +177,16 @@ def mover_trigger_al_inicio(texto: str, trigger: str) -> str:
         pos = re.sub(r"\]\s*,\s*", "] ", pos)        # "] , x" → "] x"
         pos = re.sub(r"[ \t]{2,}", " ", pos)         # espacios dobles
         pos = re.sub(r"^[ \t]+", "", pos, flags=re.MULTILINE)
+
+        # El bloque [LoRA Activation & Style] de Z-Image ya no contiene la
+        # activación (está al inicio): si solo le queda la línea de estilo,
+        # renómbralo a [Style & Aesthetic]; si quedó vacío, elimínalo.
+        def _arreglar_bloque(m):
+            contenido = m.group(1).strip(" ,.")
+            return f"[Style & Aesthetic] {contenido}" if contenido else ""
+        pos = re.sub(r"\[LoRA Activation & Style\][ \t]*([^\n]*)",
+                     _arreglar_bloque, pos, flags=re.IGNORECASE)
+        pos = re.sub(r"\n[ \t]*\n", "\n", pos)       # líneas en blanco sobrantes
         return pos + neg
     except Exception:
         return texto

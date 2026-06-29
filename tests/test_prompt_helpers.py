@@ -403,6 +403,9 @@ class TestMoverTriggerAlInicio:
         assert "amber eyes" in out  # NO se borra el rasgo del subject
         # Y se quitó del bloque dedicado
         assert "Nyra, Amber Eyes, Undercut, cinematic" not in out
+        # El bloque ya no se llama "LoRA Activation" (la activación está al inicio)
+        assert "[LoRA Activation & Style]" not in out
+        assert "[Style & Aesthetic]" in out  # conserva la línea de estilo
 
     def test_sin_trigger_o_vacio_no_toca(self):
         from modules.prompt_helpers import mover_trigger_al_inicio as M
