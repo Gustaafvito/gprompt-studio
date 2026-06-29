@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **805 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **808 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -92,6 +92,12 @@ Bloque grande sobre el **Generador de Dataset LoRA (Avatar)** + estilos, todo en
    a acentos (`_norm_opcion`: "fotografia" caza "Fotografía").
 7. **Estilo Anime en los 4 tipos** (`bd7a75a`): Personaje ya lo tenía; añadido a Estilo/
    Objeto/Paisaje para crear datasets anime de cualquier cosa.
+
+**LoRA — trigger al inicio** (`f53f9f6`): checkbox **"⬆ al inicio"** junto al combo de LoRA
+(pref `lora_inicio`, default OFF) que mueve el trigger primario al PRINCIPIO del POSITIVE
+(convención SeaArt; antes iba en su bloque, sobre todo en Z-Image). Helper puro
+`mover_trigger_al_inicio()` quita el trigger contiguo de donde esté sin borrar rasgos que
+el LLM repita en la descripción ("amber eyes" del subject se conserva).
 
 **Estilo Anime en Z-Image (generador principal):**
 - `2631dd2`: "Anime" en `ESTILOS_POR_FAMILIA["z_image"]` + categoría en su inyección.
@@ -807,7 +813,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 805 passed / 0 failing ✅ (sesión 35)
+python -m pytest tests -q                     # → 808 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
