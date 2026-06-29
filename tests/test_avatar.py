@@ -88,7 +88,10 @@ class TestAvatarConfig:
         ret = {"prompt": "portrait of a woman"}
         urb = {"prompt": "urban street, few people in distance"}
         # Estilo (base SIN personas): arquitectura excluye, retrato/urbano no.
-        assert "person" in N(arq, STYLE_NEGATIVE_PROMPT).lower()
+        neg_arq = N(arq, STYLE_NEGATIVE_PROMPT).lower()
+        assert "person" in neg_arq
+        # También excluye FIGURAS no-humanas (estilos biomecánicos/cyborg).
+        assert "robot" in neg_arq and "cyborg" in neg_arq and "android" in neg_arq
         assert "person" not in N(ret, STYLE_NEGATIVE_PROMPT).lower()
         assert "person" not in N(urb, STYLE_NEGATIVE_PROMPT).lower()
         # Paisaje (base YA excluye): no duplica el bloque de personas.
@@ -99,6 +102,19 @@ class TestAvatarConfig:
         assert "lens flare" in out2
         # incluir_negative=False → vacío.
         assert N(arq, STYLE_NEGATIVE_PROMPT, incluir_negative=False) == ""
+
+    def test_refuerzo_antifigura_en_positivo_solo_sin_gente(self):
+        # Ángulos sin gente añaden refuerzo anti-figura al POSITIVO (estilos
+        # biomecánicos/cyborg metían un humanoide en el paisaje).
+        from modules.avatar_config import LORA_TYPES
+        from modules.avatar_generator import generar_dataset_lora
+        cfg = LORA_TYPES["Estilo"]
+        r = generar_dataset_lora(
+            "Estilo", _llm_fake, {}, "st", cfg["default_angles"], "", None)
+        d = {it["filename"]: it["prompt"] for it in r["dataset"]}
+        assert "no robots" in d["03_landscape"]       # paisaje sin gente
+        assert "no robots" in d["07_architecture"]     # arquitectura
+        assert "no robots" not in d["01_portrait_woman"]  # retrato: NO
 
     def test_todos_los_tipos_tienen_estilo_anime(self):
         # "Anime" disponible en el combo Estilo visual de los 4 tipos, para

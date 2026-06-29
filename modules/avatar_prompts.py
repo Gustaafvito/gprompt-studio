@@ -543,11 +543,15 @@ def construir_user_prompt_para_tipo(tipo: str, form_data: dict) -> str:
     return construir_user_prompt_canonico(form_data)
 
 
-# Términos para excluir personas en ángulos que deben ir SIN gente
+# Términos para excluir FIGURAS en ángulos que deben ir SIN gente
 # (arquitectura, paisaje, monumentos…). Refuerza el "no people" del positivo,
-# que por sí solo el modelo suele ignorar.
-_NEG_SIN_PERSONAS = ("person, people, human, man, woman, child, "
-                     "figure, crowd, silhouette, portrait, face")
+# que por sí solo el modelo suele ignorar. Incluye robot/cyborg/android/
+# character/humanoid/creature porque los estilos "biomecánicos/cyborg/mecha"
+# meten un humanoide cromado en el paisaje aunque pidas "no people".
+_NEG_SIN_PERSONAS = (
+    "person, people, human, man, woman, child, figure, humanoid, "
+    "robot, cyborg, android, mannequin, statue, character, creature, "
+    "crowd, pedestrian, silhouette, portrait, face")
 
 
 def negativo_generico_para_angulo(angulo: dict, negative_base: str,
@@ -605,6 +609,11 @@ def ensamblar_dataset_generico(
 
         fondo_i = fondo_para_indice(fondo, i) if fondo else ""
         partes = [trigger, angulo["prompt"], desc]
+        # Refuerzo anti-figura en el POSITIVO para ángulos sin gente: los
+        # estilos biomecánicos/cyborg meten un humanoide cromado en el paisaje
+        # aunque el negativo lo prohíba. (El "no people" del ángulo no basta.)
+        if "no people" in (angulo.get("prompt", "") or "").lower():
+            partes.append("no robots, cyborgs, androids or characters, empty scene")
         if fondo_i:
             partes.append(fondo_i)
         if lighting:
