@@ -114,7 +114,9 @@ class TestAvatarConfig:
         d = {it["filename"]: it["prompt"] for it in r["dataset"]}
         assert "no robots" in d["03_landscape"]       # paisaje sin gente
         assert "no robots" in d["07_architecture"]     # arquitectura
+        assert "no robots" in d["04_urban"]            # urbano (ahora sin gente)
         assert "no robots" not in d["01_portrait_woman"]  # retrato: NO
+        assert "no robots" not in d["13_group_people"]    # grupo: NO
 
     def test_todos_los_tipos_tienen_estilo_anime(self):
         # "Anime" disponible en el combo Estilo visual de los 4 tipos, para

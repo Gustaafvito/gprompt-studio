@@ -948,7 +948,7 @@ STYLE_ANGLES = {
     },
     "sty_urban": {
         "label": "Escena urbana",
-        "prompt": "urban city street scene, buildings and architecture, daytime, few people in distance",
+        "prompt": "urban city street scene, buildings and architecture, empty street, daytime, no people",
         "framing": "urban scene",
         "filename": "04_urban",
         "group": "sujetos",
@@ -1092,7 +1092,7 @@ STYLE_ANGLES = {
     },
     "sty_market": {
         "label": "Mercado / puestos",
-        "prompt": "a busy market with stalls and goods, lively scene, varied colors and textures, few people in distance",
+        "prompt": "market stalls full of goods, varied colors and textures, daytime, no people, empty of vendors",
         "framing": "market stalls",
         "filename": "24_market",
         "group": "urbano_objetos",
