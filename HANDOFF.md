@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **810 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **811 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -92,6 +92,12 @@ Bloque grande sobre el **Generador de Dataset LoRA (Avatar)** + estilos, todo en
    a acentos (`_norm_opcion`: "fotografia" caza "Fotografía").
 7. **Estilo Anime en los 4 tipos** (`bd7a75a`): Personaje ya lo tenía; añadido a Estilo/
    Objeto/Paisaje para crear datasets anime de cualquier cosa.
+8. **Negativo POR ÁNGULO en Estilo/Paisaje/Objeto** (`84f886c`): el negativo era fijo
+   igual para los 30; en Estilo salían personas en arquitectura/monumentos.
+   `negativo_generico_para_angulo()` refuerza con exclusión de gente los ángulos cuyo
+   positivo dice "no people" (arquitectura, paisaje, castillo…) y deja intactos los de
+   personas (retrato/grupo/urbano). Paisaje/Objeto (base ya excluye) no duplican. Campo
+   `neg_extra` por ángulo como override.
 
 **LoRA — trigger al inicio** (`f53f9f6` + `7d96ca4`): checkbox **"⬆ al inicio"** junto al
 combo de LoRA (pref `lora_inicio`, **default ON**) que mueve el trigger primario al PRINCIPIO
@@ -825,7 +831,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 810 passed / 0 failing ✅ (sesión 35)
+python -m pytest tests -q                     # → 811 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
