@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **811 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **817 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -135,6 +135,20 @@ elimina si queda vacío. El trigger NO se duplica.
   `nombres_loras/personajes/plantillas` (combos) pasan de "más nuevo primero" a alfabético
   (búsqueda por nombre; el modal de gestión por índice no se toca). **Ratios se quedan en
   orden canónico** (1:1→16:9, intencional). +2 tests guardián.
+
+**Negativo por ángulo + anti-figura en Avatar** (`84f886c` + `5b053b1` + `7661df1`): el
+negativo del dataset (Estilo/Paisaje/Objeto) pasa a ser POR ÁNGULO. Los ángulos sin gente
+(arquitectura/paisaje/monumentos) excluyen `person…` Y `robot/cyborg/android/character…`
+(los estilos biomecánicos metían un humanoide cromado) + refuerzo en el positivo
+("no robots, cyborgs…"). Urbano/mercado cambiados a "no people" (evita robots gigantes).
+Retrato/grupo conservan gente. Caso real del usuario (estilo bioliquid).
+
+**Modo Cortometraje** (`7861bf6`): nuevo botón **🎬 Corto** (NARRATIVA, solo VÍDEO) para el
+flujo SeaArt **reference-to-video** (Vidu Drama/Kling). Genera un GUION de N escenas (3-12):
+bloque PERSONAJES (prompt de imagen + etiqueta `@ref`) + N escenas con Tiempo/Plano/Tema/
+Acción/Cámara/Diálogo/SFX, coherencia de personaje entre escenas. Ventana con copiar/exportar
+.txt. `construir_peticion_cortometraje()` pura. Botón video-only (como Board). **Reabre la
+decisión "descartar modelos Reference"**: en este flujo el prompt ES el valor (no las refs).
 
 ---
 
@@ -831,7 +845,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 811 passed / 0 failing ✅ (sesión 35)
+python -m pytest tests -q                     # → 817 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
