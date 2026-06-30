@@ -35,8 +35,51 @@ import pyperclip
 
 from config import get_image_model_specs, get_theme_colors
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
+
+
+def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
+                                    n: int, idioma: str = "es") -> str:
+    """Petición al LLM para un guion de cortometraje de N escenas en el formato
+    del flujo SeaArt reference-to-video: bloque PERSONAJES (con prompt de imagen
+    + etiqueta @ref) + N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
+    Función pura (sin estado) para testearla aislada."""
+    idioma_txt = "INGLÉS" if (idioma or "es").startswith("en") else "ESPAÑOL"
+    pers = (contexto_personajes or "").strip() or \
+        "Inventa 1-2 protagonistas coherentes a partir de la premisa."
+    return (
+        "Eres un director de cortometrajes virales de IA (drama vertical estilo "
+        "Netflix/redes). A partir de la PREMISA escribe un guion para generar el "
+        "corto ESCENA POR ESCENA con un modelo de vídeo por REFERENCIA (Vidu/Kling): "
+        "se suben imágenes de los personajes y se etiqueta cada uno con @ref para "
+        "mantener la coherencia del rostro.\n\n"
+        f"PREMISA: {logline}\n"
+        f"PERSONAJES: {pers}\n"
+        f"NÚMERO DE ESCENAS: {n}\n\n"
+        f"Devuelve TODO en {idioma_txt}, con EXACTAMENTE este formato (sin texto extra):\n\n"
+        "=== PERSONAJES ===\n"
+        "[Nombre1] @ref1: <prompt de IMAGEN para diseñar al personaje — edad, etnia, "
+        "pelo, ojos, complexión, vestuario, atmósfera, iluminación cinematográfica, "
+        "8K, ultra-detallado, retrato>\n"
+        "[Nombre2] @ref2: <igual, si la premisa tiene 2 protagonistas>\n\n"
+        "=== ESCENA 1 ===\n"
+        "Tiempo: 0-Xs\n"
+        "Plano: <tipo de plano (primer plano, plano medio, general, contrapicado…)>\n"
+        "Tema: <gancho/emoción central de la escena>\n"
+        "Acción: <descripción visual detallada de lo que ocurre; etiqueta a los "
+        "personajes como Nombre@ref donde aparezcan>\n"
+        "Cámara: <movimiento de cámara concreto>\n"
+        "Diálogo: <Nombre: \"línea breve\">  (usa \"—\" si no hay)\n"
+        "SFX: <efectos de sonido>\n\n"
+        f"=== ESCENA 2 ===\n... (continúa hasta === ESCENA {n} ===)\n\n"
+        "REGLAS:\n"
+        "- Coherencia: usa el MISMO @ref para cada personaje en TODAS las escenas.\n"
+        "- Arco narrativo: gancho inicial → desarrollo → giro → clímax → cierre potente.\n"
+        "- Cada escena es un clip independiente de 5-12s.\n"
+        "- Diálogos cortos y con punch; describe SIEMPRE la acción visual.\n"
+        "- Mantén una paleta y atmósfera coherentes entre escenas."
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -518,6 +561,111 @@ class MultiPromptService:
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+
+    # ── Cortometraje (guion multi-escena para vídeo reference-to-video) ──
+    def _cmd_cortometraje(self):
+        """Genera un GUION de cortometraje de N escenas (flujo SeaArt
+        reference-to-video): bloque de personajes con prompts de imagen +
+        N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
+        """
+        if self.app.modo_var.get() != "video":
+            return self.app.dialogs.set_estado(
+                tr("⚠️ El Cortometraje solo está disponible en modo VÍDEO."), "#e67e22")
+        idea = self.app.txt_idea.get("1.0", "end").strip()
+        if not idea or len(idea) < 10:
+            return self.app.dialogs.set_estado(
+                tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), "#e67e22")
+
+        n = self.app._pedir_n_modal(
+            "🎬 Cortometraje — número de escenas",
+            "¿Cuántas escenas? Cada una es un clip de vídeo independiente.",
+            n_min=3, n_max=12, default=6, key_pref="corto_n",
+        )
+        if n is None:
+            return
+
+        pers_ctx = ""
+        try:
+            pers_ctx = self.app.footer.personaje_activo() or ""
+        except Exception as _e:
+            logger.debug(f"[silent personaje] {_e}")
+
+        peticion = construir_peticion_cortometraje(idea, pers_ctx, n, get_idioma())
+
+        try: self.app._sesion_log(f"🎬 Cortometraje: guion de {n} escenas")
+        except Exception as e:
+            logger.debug(f"[silent] {e}")
+        self.app.dialogs.set_estado(
+            tr('🎬 Escribiendo guion de {0} escenas...').format(n), "#f39c12")
+        self.app.dialogs.toggle_botones(False)
+
+        def _worker():
+            try:
+                max_tok = min(8000, 2000 + n * 500)
+                resp = self.app.deepseek.generar(peticion, temperature=0.85, max_tokens=max_tok)
+                resp = limpiar_marcadores(resp)
+
+                def _mostrar():
+                    self._mostrar_guion_cortometraje(resp, n)
+                    self.app.dialogs.set_estado(
+                        tr('🎬 Guion de {0} escenas listo').format(n), "#2ecc71")
+                    self.app.dialogs.toggle_botones(True)
+                    self.app.dialogs._sonar_completado()
+                self.app.after(0, _mostrar)
+            except Exception as e:
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
+                    tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
+
+        self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+
+    def _mostrar_guion_cortometraje(self, texto: str, n: int):
+        """Ventana con el guion del cortometraje + copiar/exportar."""
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+        v = GPromptWindow(self.app)
+        v.title(tr("🎬 Guion de cortometraje"))
+        v.geometry("740x660")
+        v.transient(self.app)
+
+        ctk.CTkLabel(v, text=tr('🎬 Guion de cortometraje — {0} escenas').format(n),
+                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 2))
+        ctk.CTkLabel(
+            v, text=tr("Genera cada escena en SeaArt; etiqueta los personajes con @ref para mantener la cara."),
+            font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        txt = ctk.CTkTextbox(v, wrap="word",
+                             font=ctk.CTkFont(family="Consolas", size=12))
+        txt.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+        txt.insert("1.0", texto)
+
+        fila = ctk.CTkFrame(v, fg_color="transparent")
+        fila.pack(fill="x", padx=12, pady=(0, 12))
+
+        def _copiar():
+            try:
+                pyperclip.copy(txt.get("1.0", "end").strip())
+                self.app.dialogs.set_estado(tr("📋 Guion copiado"), "#2ecc71")
+            except Exception as _e:
+                logger.debug(f"[silent copiar] {_e}")
+
+        def _exportar():
+            from tkinter import filedialog
+            ruta = filedialog.asksaveasfilename(
+                defaultextension=".txt", filetypes=[("Texto", "*.txt")],
+                initialfile="cortometraje.txt", parent=v)
+            if not ruta:
+                return
+            try:
+                with open(ruta, "w", encoding="utf-8") as f:
+                    f.write(txt.get("1.0", "end").strip())
+                self.app.dialogs.set_estado(tr("💾 Guion exportado"), "#2ecc71")
+            except Exception as _e:
+                logger.debug(f"[silent export] {_e}")
+
+        ctk.CTkButton(fila, text=tr("📋 Copiar todo"), command=_copiar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(fila, text=tr("💾 Exportar .txt"), command=_exportar,
+                      fg_color="#7c3aed", hover_color="#6d28d9").pack(side="left")
 
     def _cmd_storyboard_imagen(self):
         """Storyboard cinematográfico para modelos de IMAGEN.

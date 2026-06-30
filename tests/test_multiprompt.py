@@ -12,7 +12,10 @@ Cobertura:
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from modules.multiprompt import MultiPromptService
+from modules.multiprompt import (
+    MultiPromptService,
+    construir_peticion_cortometraje,
+)
 
 
 def _var(value):
@@ -166,6 +169,40 @@ class TestCmdStoryboardVideo:
     def test_idea_vacia_warns(self):
         h = _host(modo="video", idea="")
         h._cmd_storyboard_video()
+        h.app.dialogs.set_estado.assert_called_once()
+
+
+# ─────────────────────── Cortometraje ─────────────────────────────────
+
+
+class TestCortometraje:
+
+    def test_peticion_tiene_formato_completo(self):
+        p = construir_peticion_cortometraje(
+            "una ex se venga en el apocalipsis", "Emma: mujer fría", 6, "es")
+        assert "=== PERSONAJES ===" in p
+        assert "=== ESCENA 1 ===" in p and "ESCENA 6" in p
+        assert "@ref" in p
+        for campo in ("Tiempo:", "Plano:", "Tema:", "Acción:",
+                      "Cámara:", "Diálogo:", "SFX:"):
+            assert campo in p, f"falta {campo}"
+
+    def test_peticion_idioma_en(self):
+        assert "INGLÉS" in construir_peticion_cortometraje("x", "", 4, "en")
+        assert "ESPAÑOL" in construir_peticion_cortometraje("x", "", 4, "es")
+
+    def test_sin_personajes_usa_fallback(self):
+        p = construir_peticion_cortometraje("premisa", "", 3, "es")
+        assert "Inventa" in p  # fallback de personajes
+
+    def test_modo_no_video_warns(self):
+        h = _host(modo="imagen")
+        h._cmd_cortometraje()
+        assert "VÍDEO" in h.app.dialogs.set_estado.call_args[0][0]
+
+    def test_idea_vacia_warns(self):
+        h = _host(modo="video", idea="")
+        h._cmd_cortometraje()
         h.app.dialogs.set_estado.assert_called_once()
 
 

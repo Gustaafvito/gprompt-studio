@@ -1829,6 +1829,7 @@ class UIBuildersService:
                 ("🎞 Story",           70, ROSA_NARR,    self.app.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
                 ("🖼 Storyboard",      85, ROSA_NARR,    self.app.multi.cmd_storyboard_imagen, "Storyboard cinematográfico (solo IMAGEN): N paneles. Auto-detecta formato: natural (GPT Image/DALL-E/MJ) o tag-based (SD/Comfy)"),
                 ("📽 Board",           70, ROSA_NARR,    self.app.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("🎬 Corto",           70, ROSA_NARR,    self.app.multi.cmd_cortometraje,     "Cortometraje (solo VÍDEO): guion de N escenas con plano/acción/cámara/diálogo/SFX + @referencias de personaje. Para el flujo reference-to-video (Vidu/Kling)"),
                 ("🌀 Walk",            70, ROSA_NARR,    self.app.multi.cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
             ]),
             ("🎬 CONVERSIÓN", CYAN_CONV, [
@@ -1873,6 +1874,8 @@ class UIBuildersService:
                         self.app.btn_story = btn
                     elif text == "📽 Board":
                         self.app.btn_board = btn
+                    elif text == "🎬 Corto":
+                        self.app.btn_corto = btn
 
         _render_grupos(row1, grupos_r1)
 

@@ -150,6 +150,13 @@ class UiEventsService:
                 else:
                     self.app.btn_board.configure(state="disabled", fg_color="#3a3a3a",
                                               text=tr("📽 Board"))
+            if hasattr(self.app, 'btn_corto'):
+                if modo == "video":
+                    self.app.btn_corto.configure(state="normal", fg_color="#be185d",
+                                              text=tr("🎬 Corto"))
+                else:
+                    self.app.btn_corto.configure(state="disabled", fg_color="#3a3a3a",
+                                              text=tr("🎬 Corto"))
         except Exception as _e:
             logger.debug(f"[silent on_modo_cambio btns] {_e}")
 
