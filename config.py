@@ -224,6 +224,7 @@ GRUPOS_VIDEO = [
         "Hailuo 2.0", "Hailuo 2.3 Fast",
     ])),
     ("── Vidu ──", sorted([
+        "Drama Reference",
         "Vidu Ad Reference",
         "Vidu Drama Reference",
         "Vidu Q3 Pro", "Vidu Q3 Turbo",

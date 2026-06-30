@@ -2220,5 +2220,26 @@
     "prompt_formula": "Etiqueta producto/modelos (@imagenN) + describe plano, acción, cámara y mensaje del spot. Genera plano por plano. Máx 5000 chars.",
     "prompt_ejemplo": "Product@imagen1 rotates slowly on a glossy podium, dramatic rim light, fast push-in. Model@imagen2 smiles holding it. Upbeat commercial lighting, premium look.",
     "limitaciones": "Por referencia: requiere subir imágenes (hasta 7). Duración 12s. Sin prompt negativo. Audio no confirmado en panel. Hasta 4 generaciones por tirada. max_chars/refs alineados con el panel de Vidu Drama Reference (misma UI)."
+  },
+  "Drama Reference": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "12s"
+    ],
+    "ratios": [
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "max_imagenes": 4,
+    "max_imagenes_referencia": 7,
+    "best_for": "Drama Reference (V1.0, SeaArt). Modelo de vídeo por REFERENCIA para drama/cortometraje (gemelo SeaArt de Vidu Drama Reference, mismo motor). Subes hasta 7 imágenes (personajes, objetos, escenas, efectos) y las etiquetas con @ para componer cada escena manteniendo la cara. El prompt describe la acción/escena. Ideal para el modo 🎬 Cortometraje.",
+    "best_for_en": "Drama Reference (V1.0, SeaArt). Reference-based video model for drama/short films (SeaArt twin of Vidu Drama Reference, same engine). Upload up to 7 images (characters, objects, scenes, effects) and tag them with @ to compose each scene with consistent faces. The prompt describes the action/scene. Ideal for the 🎬 Short Film mode.",
+    "prompt_formula": "Etiqueta los personajes (Nombre@imagenN) + describe plano, acción, cámara, diálogo y atmósfera de la escena. Genera escena por escena. Máx 5000 chars.",
+    "prompt_ejemplo": "Emma@imagen1 stands by the frosted window, cold expression, slow push-in on her face, then a mocking whisper. Cinematic blue post-apocalyptic lighting.",
+    "limitaciones": "Por referencia: requiere subir imágenes (hasta 7). Duración 12s. Sin prompt negativo. Audio no confirmado en panel. Hasta 4 generaciones por tirada."
   }
 }
