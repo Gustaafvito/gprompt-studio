@@ -147,8 +147,15 @@ Retrato/grupo conservan gente. Caso real del usuario (estilo bioliquid).
 flujo SeaArt **reference-to-video** (Vidu Drama/Kling). Genera un GUION de N escenas (3-12):
 bloque PERSONAJES (prompt de imagen + etiqueta `@ref`) + N escenas con Tiempo/Plano/Tema/
 Acción/Cámara/Diálogo/SFX, coherencia de personaje entre escenas. Ventana con copiar/exportar
-.txt. `construir_peticion_cortometraje()` pura. Botón video-only (como Board). **Reabre la
-decisión "descartar modelos Reference"**: en este flujo el prompt ES el valor (no las refs).
+.txt. `construir_peticion_cortometraje()` pura. Botón video-only (como Board).
+
+**Modelos Reference dados de alta** (`f9f69ab` + `7e88406`): con el modo Cortometraje, los
+modelos por referencia ya tienen sentido (el prompt ES el valor, no solo las refs). Añadidos
+a la familia **Vidu** con panel real: **Vidu Drama Reference** y **Vidu Ad Reference** (V1.0,
+9:16/16:9, 12s, max_chars 5000, sin negativo, 4 generaciones, **7 imágenes de referencia**
+`max_imagenes_referencia`, `@ref` por personaje). Catálogo vídeo **77 → 79**. Pendientes si
+el usuario los usa: Vidu Q3 Reference y otros Reference. (Remake/edición —Clip Remake/Refer,
+Spark/Opera Refer, Ultra Remix— siguen descartados: vídeo-a-vídeo puro.)
 
 ---
 
