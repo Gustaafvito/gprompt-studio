@@ -149,13 +149,21 @@ bloque PERSONAJES (prompt de imagen + etiqueta `@ref`) + N escenas con Tiempo/Pl
 Acción/Cámara/Diálogo/SFX, coherencia de personaje entre escenas. Ventana con copiar/exportar
 .txt. `construir_peticion_cortometraje()` pura. Botón video-only (como Board).
 
-**Modelos Reference dados de alta** (`f9f69ab` + `7e88406`): con el modo Cortometraje, los
-modelos por referencia ya tienen sentido (el prompt ES el valor, no solo las refs). Añadidos
-a la familia **Vidu** con panel real: **Vidu Drama Reference** y **Vidu Ad Reference** (V1.0,
-9:16/16:9, 12s, max_chars 5000, sin negativo, 4 generaciones, **7 imágenes de referencia**
-`max_imagenes_referencia`, `@ref` por personaje). Catálogo vídeo **77 → 79**. Pendientes si
-el usuario los usa: Vidu Q3 Reference y otros Reference. (Remake/edición —Clip Remake/Refer,
-Spark/Opera Refer, Ultra Remix— siguen descartados: vídeo-a-vídeo puro.)
+**Modelos Reference + grupo propio** (`f9f69ab`, `7e88406`, `e27609b`, `0441052`): con el
+modo Cortometraje, los modelos por referencia ya tienen sentido (el prompt ES el valor).
+Nuevo grupo **── Reference ──** en `GRUPOS_VIDEO` (antes mezclados en Vidu) con los 4
+reference-to-video, panel real, 7 imágenes de referencia (`max_imagenes_referencia`), 5000
+chars, sin negativo, `@ref` por personaje:
+- **Drama Reference** (SeaArt) y **Vidu Drama Reference** = 🎬 cine/cortometraje (16:9/9:16, 12s).
+- **Vidu Ad Reference** = 📢 anuncios (16:9/9:16, 12s).
+- **Ad Reference** (SeaArt) = 📢 anuncios, el ÚNICO con specs propias: **720p/1080p, 5/10/15s,
+  +1:1**. Los otros 3 comparten panel.
+Distinción cine/publicidad en el `best_for`. Catálogo vídeo **77 → 81**. **PENDIENTE**: Vidu
+Q3 Reference (falta panel). (Remake/edición —Clip Remake/Refer, Spark/Opera Refer, Ultra
+Remix— siguen descartados: vídeo-a-vídeo puro.)
+
+**Fix UI** (`8a93579`): el botón 🖼 Storyboard (solo IMAGEN) se deshabilita en modo
+vídeo/audio (antes seguía activo, como sí hacía 🎞 Story).
 
 ---
 
