@@ -2241,5 +2241,32 @@
     "prompt_formula": "Etiqueta los personajes (Nombre@imagenN) + describe plano, acción, cámara, diálogo y atmósfera de la escena. Genera escena por escena. Máx 5000 chars.",
     "prompt_ejemplo": "Emma@imagen1 stands by the frosted window, cold expression, slow push-in on her face, then a mocking whisper. Cinematic blue post-apocalyptic lighting.",
     "limitaciones": "Por referencia: requiere subir imágenes (hasta 7). Duración 12s. Sin prompt negativo. Audio no confirmado en panel. Hasta 4 generaciones por tirada."
+  },
+  "Ad Reference": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 5000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "max_imagenes_referencia": 7,
+    "best_for": "Ad Reference (V1.0, SeaArt). Modelo de vídeo por REFERENCIA para ANUNCIOS/publicidad. A diferencia de los Drama, ofrece modos 720p/1080p, duraciones 5/10/15s y ratio 1:1 (además de 9:16/16:9). Subes hasta 7 imágenes (producto, modelos, escenas, logos) y las etiquetas con @ para componer cada plano con coherencia. El prompt describe la acción/mensaje del spot.",
+    "best_for_en": "Ad Reference (V1.0, SeaArt). Reference-based video model for ADS/commercials. Unlike the Drama ones it offers 720p/1080p modes, 5/10/15s durations and 1:1 ratio (plus 9:16/16:9). Upload up to 7 images (product, models, scenes, logos) and tag them with @ to compose each shot consistently. The prompt describes the ad's action/message.",
+    "prompt_formula": "Etiqueta producto/modelos (@imagenN) + describe plano, acción, cámara y mensaje del spot. Genera plano por plano. Máx 5000 chars.",
+    "prompt_ejemplo": "Product@imagen1 rotates on a glossy podium, dramatic rim light, fast push-in. Model@imagen2 smiles holding it. Upbeat premium commercial lighting.",
+    "limitaciones": "Por referencia: requiere subir imágenes (hasta 7). Duraciones 5/10/15s, modos 720p/1080p. Sin prompt negativo. Audio no confirmado. Cantidad de generación no visible en panel."
   }
 }

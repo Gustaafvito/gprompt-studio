@@ -224,10 +224,16 @@ GRUPOS_VIDEO = [
         "Hailuo 2.0", "Hailuo 2.3 Fast",
     ])),
     ("── Vidu ──", sorted([
+        "Vidu Q3 Pro", "Vidu Q3 Turbo",
+    ])),
+    # Reference-to-video: subes imágenes de personajes/objetos y etiquetas con
+    # @ref. El prompt describe la escena → flujo del modo 🎬 Cortometraje.
+    # "Drama" = cine/cortometraje · "Ad" = anuncios/publicidad.
+    ("── Reference ──", sorted([
+        "Ad Reference",
         "Drama Reference",
         "Vidu Ad Reference",
         "Vidu Drama Reference",
-        "Vidu Q3 Pro", "Vidu Q3 Turbo",
     ])),
     ("── Grok ──", sorted([
         "Grok Imagine Video", "Grok Imagine Video 1.5",
@@ -1370,6 +1376,7 @@ ESTILOS_POR_FAMILIA_VIDEO = {
     "── Seedance ──": _PALV_CINE,
     "── StarDream ──": _PALV_CINE,
     "── Vidu ──": _PALV_CINE,
+    "── Reference ──": _PALV_CINE,
     "── Otros Motores ──": _PALV_CINE,
     "── Wan ──": _PALV_REAL,
     "── Hailuo ──": _PALV_REAL,
