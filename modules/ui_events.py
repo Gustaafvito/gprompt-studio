@@ -143,6 +143,13 @@ class UiEventsService:
                 else:
                     self.app.btn_story.configure(state="disabled", fg_color="#3a3a3a",
                                               text=tr("🎞 Story"))
+            if hasattr(self.app, 'btn_storyboard_img'):
+                if modo == "imagen":
+                    self.app.btn_storyboard_img.configure(state="normal", fg_color="#be185d",
+                                              text=tr("🖼 Storyboard"))
+                else:
+                    self.app.btn_storyboard_img.configure(state="disabled", fg_color="#3a3a3a",
+                                              text=tr("🖼 Storyboard"))
             if hasattr(self.app, 'btn_board'):
                 if modo == "video":
                     self.app.btn_board.configure(state="normal", fg_color="#be185d",

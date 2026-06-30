@@ -1872,6 +1872,8 @@ class UIBuildersService:
                         btn.bind("<Button-3>", self.app.refinar.menu_refinar_especifico)
                     elif text == "🎞 Story":
                         self.app.btn_story = btn
+                    elif text == "🖼 Storyboard":
+                        self.app.btn_storyboard_img = btn
                     elif text == "📽 Board":
                         self.app.btn_board = btn
                     elif text == "🎬 Corto":
