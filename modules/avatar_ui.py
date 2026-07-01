@@ -36,7 +36,7 @@ from modules.avatar_prompts import (
     parsear_ficha_json,
     system_prompt_ficha_para_tipo,
 )
-from modules.i18n import tr
+from modules.i18n import tr, tr_es
 from workers import log_future_exc
 
 
@@ -100,13 +100,19 @@ class AvatarFrame(ctk.CTkFrame):
         fila_tipo.grid(row=1, column=0, columnspan=2, pady=(0, 4), sticky="n")
         ctk.CTkLabel(fila_tipo, text=tr("Tipo de LoRA:"),
                      font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+        # El segmented muestra la traducción; el mapa recupera el tipo ES
+        # ("Personaje"...) que es la clave de LORA_TYPES.
+        self._tipo_disp2key = {
+            tr(v): v.split(" ", 1)[1]
+            for v in ("🧑 Personaje", "🏔 Paisaje", "📦 Objeto", "🎨 Estilo")
+        }
         self._seg_tipo = ctk.CTkSegmentedButton(
             fila_tipo,
-            values=["🧑 Personaje", "🏔 Paisaje", "📦 Objeto", "🎨 Estilo"],
+            values=list(self._tipo_disp2key),
             command=self._on_tipo_change,
             font=ctk.CTkFont(size=12),
         )
-        self._seg_tipo.set("🧑 Personaje")
+        self._seg_tipo.set(tr("🧑 Personaje"))
         self._seg_tipo.pack(side="left")
 
         # Selector de modelo destino: el dataset se adapta a sus specs
@@ -128,12 +134,15 @@ class AvatarFrame(ctk.CTkFrame):
 
             ctk.CTkLabel(fila_modelo, text="📁",
                          font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
-            grupos_ini = [g for g, _ in self.plataformas_destino.get(plat_ini, [])]
+            # El combo muestra el grupo traducido; los lookups des-traducen
+            # con tr_es() (los nombres de grupo son claves ES de los datos).
+            grupos_ini = [tr(g) for g, _ in self.plataformas_destino.get(plat_ini, [])]
             self.menu_grupo = ctk.CTkOptionMenu(
                 fila_modelo, values=grupos_ini or [""],
                 width=210, command=self._on_grupo_change,
                 font=ctk.CTkFont(size=11))
-            self.menu_grupo.set(grupo_ini if grupo_ini in grupos_ini else (grupos_ini[0] if grupos_ini else ""))
+            self.menu_grupo.set(tr(grupo_ini) if tr(grupo_ini) in grupos_ini
+                                else (grupos_ini[0] if grupos_ini else ""))
             self.menu_grupo.pack(side="left", padx=(0, 10))
 
             ctk.CTkLabel(fila_modelo, text="🎯",
@@ -171,14 +180,14 @@ class AvatarFrame(ctk.CTkFrame):
 
         # --- Columna izquierda: formulario dinámico ---
         cfg = LORA_TYPES[self._tipo_lora]
-        form = ctk.CTkScrollableFrame(self, label_text=cfg["label_form"])
+        form = ctk.CTkScrollableFrame(self, label_text=tr(cfg["label_form"]))
         form.grid(row=2, column=0, padx=(12, 6), pady=6, sticky="nsew")
         self._frame_form = form
 
         self._poblar_form(form, cfg)
 
         # --- Columna derecha: ángulos dinámicos ---
-        angulos = ctk.CTkScrollableFrame(self, label_text=cfg["label_angles"])
+        angulos = ctk.CTkScrollableFrame(self, label_text=tr(cfg["label_angles"]))
         angulos.grid(row=2, column=1, padx=(6, 12), pady=6, sticky="nsew")
         self._frame_angulos = angulos
         self._poblar_angulos(cfg)
@@ -197,21 +206,22 @@ class AvatarFrame(ctk.CTkFrame):
 
     # ----------------------------------------------------------- tipo LoRA
     def _on_tipo_change(self, valor: str) -> None:
-        # "🧑 Personaje" → "Personaje"
-        tipo = valor.split(" ", 1)[1] if " " in valor else valor
+        # "🧑 Character" (display) → "Personaje" (clave de LORA_TYPES)
+        tipo = self._tipo_disp2key.get(
+            valor, valor.split(" ", 1)[1] if " " in valor else valor)
         self._tipo_lora = tipo
         self._imagen_referencia = ""
         cfg = LORA_TYPES[tipo]
 
         # Reconstruir form
-        self._frame_form.configure(label_text=cfg["label_form"])
+        self._frame_form.configure(label_text=tr(cfg["label_form"]))
         for w in self._frame_form.winfo_children():
             w.destroy()
         self._campos = {}
         self._poblar_form(self._frame_form, cfg)
 
         # Reconstruir ángulos
-        self._frame_angulos.configure(label_text=cfg["label_angles"])
+        self._frame_angulos.configure(label_text=tr(cfg["label_angles"]))
         for w in self._frame_angulos.winfo_children():
             w.destroy()
         self._angulo_vars = {}
@@ -255,27 +265,30 @@ class AvatarFrame(ctk.CTkFrame):
                                    padx=8, pady=(0, 4)); fila += 1
 
         # Trigger word
-        ctk.CTkLabel(form, text=cfg["label_trigger"]).grid(
+        ctk.CTkLabel(form, text=tr(cfg["label_trigger"])).grid(
             row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
         self.entry_trigger = ctk.CTkEntry(
-            form, placeholder_text=cfg["placeholder_trigger"])
+            form, placeholder_text=tr(cfg["placeholder_trigger"]))
         self.entry_trigger.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
 
         # Campos específicos del tipo
         for campo in cfg["form_fields"]:
-            ctk.CTkLabel(form, text=campo["label"]).grid(
+            ctk.CTkLabel(form, text=tr(campo["label"])).grid(
                 row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
             if campo["type"] == "option":
-                widget = ctk.CTkOptionMenu(form, values=campo["options"])
+                widget = ctk.CTkOptionMenu(
+                    form, values=[tr(o) for o in campo["options"]])
             else:
-                widget = ctk.CTkEntry(form, placeholder_text=campo.get("placeholder", ""))
+                widget = ctk.CTkEntry(
+                    form, placeholder_text=tr(campo.get("placeholder", "")))
             widget.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
             self._campos[campo["key"]] = widget
 
         # Estilo visual
         ctk.CTkLabel(form, text=tr("Estilo visual")).grid(
             row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
-        self.menu_estilo = ctk.CTkOptionMenu(form, values=list(cfg["styles"].keys()))
+        self.menu_estilo = ctk.CTkOptionMenu(
+            form, values=[tr(k) for k in cfg["styles"]])
         self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
 
         # Fondo — solo si el tipo tiene fondos
@@ -283,7 +296,7 @@ class AvatarFrame(ctk.CTkFrame):
             ctk.CTkLabel(form, text=tr("Fondo (si NO se varían fondos)")).grid(
                 row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
             self.menu_fondo = ctk.CTkOptionMenu(
-                form, values=list(cfg["backgrounds"].keys()))
+                form, values=[tr(k) for k in cfg["backgrounds"]])
             self.menu_fondo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
 
             self.check_variar_fondos = ctk.CTkCheckBox(
@@ -324,7 +337,7 @@ class AvatarFrame(ctk.CTkFrame):
 
         for grupo, titulo_grupo in cfg["angle_groups"].items():
             ctk.CTkLabel(
-                self._frame_angulos, text=titulo_grupo,
+                self._frame_angulos, text=tr(titulo_grupo),
                 font=ctk.CTkFont(weight="bold"),
             ).grid(row=fila, column=0, sticky="w", padx=8, pady=(10, 2)); fila += 1
             for key, datos in cfg["angles"].items():
@@ -332,7 +345,8 @@ class AvatarFrame(ctk.CTkFrame):
                     continue
                 var = ctk.BooleanVar(value=True)
                 aviso = datos.get("warn")
-                etiqueta = f"⚠ {datos['label']}" if aviso else datos["label"]
+                etiqueta = (f"⚠ {tr(datos['label'])}" if aviso
+                            else tr(datos["label"]))
                 chk = ctk.CTkCheckBox(
                     self._frame_angulos, text=etiqueta, variable=var)
                 chk.grid(row=fila, column=0, sticky="w", padx=16, pady=2); fila += 1
@@ -459,14 +473,20 @@ class AvatarFrame(ctk.CTkFrame):
             if isinstance(widget, ctk.CTkOptionMenu):
                 # Aceptar valores del desplegable, tolerante a acentos/espacios
                 # (p.ej. el LLM devuelve "fotografia" → opción "Fotografía").
+                # El LLM responde en ES; con la UI en EN el combo muestra la
+                # traducción, así que se compara también contra tr_es(opción).
                 opciones = list(widget.cget("values"))
                 vnorm = _norm_opcion(valor)
+
+                def _normas(o):
+                    return {_norm_opcion(o), _norm_opcion(tr_es(o))}
+
                 match = next((o for o in opciones
-                              if _norm_opcion(o) == vnorm), None)
+                              if vnorm in _normas(o)), None)
                 if not match:  # match parcial (contiene) como último recurso
                     match = next((o for o in opciones
-                                  if vnorm in _norm_opcion(o)
-                                  or _norm_opcion(o) in vnorm), None)
+                                  if any(vnorm in n or n in vnorm
+                                         for n in _normas(o))), None)
                 if match:
                     widget.set(match)
             else:
@@ -535,11 +555,11 @@ class AvatarFrame(ctk.CTkFrame):
             if cfg.get("backgrounds") and self.check_variar_fondos and self.check_variar_fondos.get():
                 fondo = cfg["backgrounds_rotacion"]
             elif cfg.get("backgrounds") and self.menu_fondo:
-                fondo = cfg["backgrounds"][self.menu_fondo.get()]
+                fondo = cfg["backgrounds"][tr_es(self.menu_fondo.get())]
             else:
                 fondo = None
 
-            estilo_sufijo = cfg["styles"].get(self.menu_estilo.get(), "")
+            estilo_sufijo = cfg["styles"].get(tr_es(self.menu_estilo.get()), "")
 
             resultado = generar_dataset_lora(
                 tipo=self._tipo_lora,
@@ -585,6 +605,7 @@ class AvatarFrame(ctk.CTkFrame):
 
     # ── Helpers selector plataforma/grupo/modelo ──────────────────────
     def _get_modelos_grupo(self, plataforma: str, grupo: str) -> list:
+        grupo = tr_es(grupo)  # el combo puede mostrar el nombre traducido
         for g, ms in self.plataformas_destino.get(plataforma, []):
             if g == grupo:
                 return list(ms)
@@ -601,7 +622,7 @@ class AvatarFrame(ctk.CTkFrame):
 
     def _on_plataforma_change(self, plat: str) -> None:
         grupos = self.plataformas_destino.get(plat, [])
-        nombres = [g for g, _ in grupos]
+        nombres = [tr(g) for g, _ in grupos]
         self.menu_grupo.configure(values=nombres or [""])
         nuevo = nombres[0] if nombres else ""
         self.menu_grupo.set(nuevo)

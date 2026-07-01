@@ -52,6 +52,45 @@ def test_traducciones_no_vacias_y_sin_claves_vacias():
     assert all(k and v for k, v in i18n.TRADUCCIONES.items())
 
 
+def test_cobertura_avatar_config_traducido():
+    """Todo texto visible del Avatar dataset (data-driven) tiene entrada EN.
+
+    avatar_ui.py los muestra con tr(variable), que el test de literales no ve:
+    labels/placeholders/opciones del formulario, títulos de grupo, etiquetas
+    de ángulo, avisos, estilos y fondos de los 4 tipos de LoRA.
+    """
+    from modules.avatar_config import LORA_TYPES
+    faltan = set()
+    for cfg in LORA_TYPES.values():
+        for k in ("label_form", "label_angles", "label_trigger",
+                  "placeholder_trigger"):
+            if cfg.get(k):
+                faltan.add(cfg[k])
+        for campo in cfg.get("form_fields", []):
+            faltan.add(campo["label"])
+            faltan.update(campo.get("options", []))
+            if campo.get("placeholder"):
+                faltan.add(campo["placeholder"])
+        faltan.update(cfg.get("angle_groups", {}).values())
+        for datos in cfg.get("angles", {}).values():
+            faltan.add(datos["label"])
+            if datos.get("warn"):
+                faltan.add(datos["warn"])
+        faltan.update(cfg.get("styles", {}))
+        faltan.update(cfg.get("backgrounds") or {})
+    faltan -= set(i18n.TRADUCCIONES)
+    assert not faltan, (
+        f"{len(faltan)} textos del Avatar dataset sin traducción EN: "
+        + "; ".join(repr(t) for t in sorted(faltan)[:10]))
+
+
+def test_tr_es_destraduce():
+    assert i18n.tr_es("Woman") == "Mujer"
+    assert i18n.tr_es("🧑 Character") == "🧑 Personaje"
+    assert i18n.tr_es("Mujer") == "Mujer"           # identidad si ya es ES
+    assert i18n.tr_es("texto inventado") == "texto inventado"
+
+
 def test_cobertura_todo_tr_literal_esta_traducido():
     """Todo tr('literal') del código debe tener entrada en TRADUCCIONES.
 
