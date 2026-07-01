@@ -34,6 +34,34 @@ def _host(**attrs):
     return PromptsInyeccionService(app)
 
 
+class TestVideoRefuerzos:
+    """Inyección de vídeo: idioma inglés forzado + no inventar @referencias."""
+
+    def _svc(self, imagen_cargada=None):
+        s = _host(
+            modo_var=_var("video"),
+            combo_modelo_video=_var("Seedance 2.0"),
+            duracion_var=_var("10s"),
+            estilo_video_var=_var("Auto"),
+            imagen_cargada=imagen_cargada,
+        )
+        s._calcular_n_shots = lambda: 3
+        s._duracion_a_segundos = lambda d: 10
+        return s
+
+    def test_prompt_video_siempre_en_ingles(self):
+        out = self._svc()._inyectar_specs_video("SYS")
+        assert "PROMPT FINAL SIEMPRE en INGLÉS" in out
+
+    def test_sin_imagen_prohibe_referencias(self):
+        out = self._svc(imagen_cargada=None)._inyectar_specs_video("SYS")
+        assert "SIN REFERENCIAS" in out and "@Image" in out
+
+    def test_con_imagen_no_avisa_sin_refs(self):
+        out = self._svc(imagen_cargada="foto.png")._inyectar_specs_video("SYS")
+        assert "SIN REFERENCIAS" not in out
+
+
 class TestCalcularNShots:
     """Helper _calcular_n_shots: Auto + override manual + duraciones largas."""
 

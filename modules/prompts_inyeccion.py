@@ -142,6 +142,25 @@ class PromptsInyeccionService:
         if specs.get("limitaciones"):
             extra += f"• Limitaciones a respetar: {specs['limitaciones']}\n"
 
+        # Refuerzo IDIOMA: los prompt_formula/tips de varios modelos (Seedance,
+        # Vidu…) están en español y arrastran al LLM a responder en español. El
+        # prompt de vídeo SIEMPRE va en inglés (los diálogos pueden ir en otro).
+        extra += (
+            "• ⚠️ IDIOMA DEL PROMPT: escribe el PROMPT FINAL SIEMPRE en INGLÉS, "
+            "aunque estas instrucciones o los ejemplos estén en español. "
+            "(Solo los diálogos/voz-over pueden ir en el idioma que pida el usuario.)\n"
+        )
+        # Refuerzo REFERENCIAS: si el usuario NO cargó imagen de referencia, no
+        # inventes etiquetas @Image/@Video/@Audio (Seedance/Vidu las llevan en sus
+        # ejemplos y el LLM las copia aunque no existan).
+        if not getattr(self.app, "imagen_cargada", None):
+            extra += (
+                "• ⚠️ SIN REFERENCIAS: el usuario NO ha subido imágenes de "
+                "referencia. Usa la fórmula BÁSICA (sujeto + escena + acción + "
+                "cámara + estilo). NO uses etiquetas @Image/@Video/@Audio/@ref ni "
+                "menciones imágenes de referencia inexistentes.\n"
+            )
+
         extra = self._inyectar_estilo_video(extra)
         extra = self._inyectar_template(motor, extra)
         extra += REGLAS_APROVECHAR_BUDGET
