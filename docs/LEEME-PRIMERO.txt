@@ -1,0 +1,138 @@
+═══════════════════════════════════════════════════════════════════
+  G-Prompt Studio v1.0.0 — Listo para distribuir
+═══════════════════════════════════════════════════════════════════
+
+Aquí tienes TRES opciones para usar la app o compartirla:
+
+
+OPCIÓN 1 (RECOMENDADA): INSTALADOR
+═══════════════════════════════════════════════════════════════════
+
+Archivo: GPromptStudio-Setup-1.0.0.exe  (~90 MB)
+
+QUÉ HACE:
+  - Asistente de instalación profesional.
+  - Crea acceso directo en el menú Inicio.
+  - Opcional: acceso directo en el escritorio.
+  - Aparece en "Agregar o quitar programas" para desinstalar limpio.
+  - Comprimido con LZMA2 (más pequeño que la carpeta portable).
+
+CÓMO USAR:
+  1. Doble-click en GPromptStudio-Setup-1.0.0.exe
+  2. Acepta la advertencia de Windows SmartScreen
+     ("Más info" → "Ejecutar de todas formas")
+     [Esto es normal en programas no firmados con certificado]
+  3. Sigue el asistente: Siguiente → Instalar → Finalizar
+  4. Lanza desde el menú Inicio o desde el escritorio.
+
+CÓMO COMPARTIR:
+  Sube este archivo (~90 MB) a Google Drive / WeTransfer / Mega.
+  El receptor solo necesita el .exe del instalador, nada más.
+
+
+OPCIÓN 2: PORTABLE (sin instalación)
+═══════════════════════════════════════════════════════════════════
+
+Carpeta: GPromptStudio-Portable/  (~327 MB sin comprimir)
+
+QUÉ HACE:
+  - Una carpeta autocontenida. No requiere instalación.
+  - Borrando la carpeta desinstalas completamente.
+  - Útil si quieres llevarla en un USB o probarla sin tocar el SO.
+
+CÓMO USAR:
+  1. Entra en la carpeta GPromptStudio-Portable
+  2. Doble-click en GPromptStudio.exe
+  3. La app abre directamente.
+
+CÓMO COMPARTIR:
+  Comprime la carpeta a ZIP y súbela (~130 MB en ZIP).
+
+
+OPCIÓN 3: ONEFILE (un solo .exe portable)
+═══════════════════════════════════════════════════════════════════
+
+Archivo: GPromptStudio-Portable-Onefile.exe  (~128 MB)
+
+QUÉ HACE:
+  - TODO en un único .exe. Sin instalación ni carpetas.
+  - Arranca algo más lento que las otras opciones (se descomprime
+    en una carpeta temporal en cada arranque — es normal).
+
+CÓMO USAR:
+  Doble-click y listo. Misma advertencia SmartScreen que el instalador.
+
+CÓMO COMPARTIR:
+  Es el más cómodo de enviar: un solo archivo, nada que descomprimir.
+
+NOTA: las tres opciones son ALTERNATIVAS, no acumulativas. Elige una.
+
+
+SOBRE SEGURIDAD Y PRIVACIDAD
+═══════════════════════════════════════════════════════════════════
+
+  ✓ NINGUNA de las API keys del autor está en este paquete.
+    Verificable: el .exe NUNCA contiene "sk_..." ni similar. Las keys
+    se leen del Windows Credential Manager (gestor del SO) en cada
+    arranque — no se bundlean.
+  ✓ Las keys que metas tú se guardan cifradas en:
+    - Windows Credential Manager (recomendado, gestor del SO)
+    - keys.json cifrado con DPAPI de Windows (fallback en
+      %USERPROFILE%\.arquitecto_prompts — solo tu usuario de Windows
+      puede descifrarlo)
+  ✓ Las dependencias del .exe pasan una auditoría de CVEs conocidos
+    (pip-audit) en cada build.
+  ✓ La app NO envía datos a ningún servidor del autor.
+  ✓ Solo se comunica con los proveedores de LLM que tú configures
+    (DeepSeek, OpenRouter, Groq, Anthropic, OpenAI, Gemini, etc.).
+
+  Pollinations.ai (previews de imagen en el comparador 👁) es
+  OPCIONAL. Sin key funciona en modo anónimo (más lento, con
+  rate limit). Si quieres velocidad sin cola, regístrate gratis
+  en pollinations.ai → API → "+ API Key" y pégala desde:
+    Header → 🔑 API Keys → sección "🖼 Proveedores de IMAGEN"
+  CADA USUARIO usa su propia key — el autor NO se hace cargo del
+  coste de tu cuenta. ~555 imágenes flux por 1€ (1 Pollen).
+
+
+PRIMER ARRANQUE
+═══════════════════════════════════════════════════════════════════
+
+  Al abrir por primera vez verás todos los proveedores como
+  "⚠️ sin configurar". Tendrás que añadir TU PROPIA API key desde:
+
+  Header → 🔑 API Keys (o desde el menú de proveedores)
+
+  Tienes botones "🌐 Obtener key" que abren la web de cada proveedor
+  donde puedes generar tu clave gratuita o de pago.
+
+  IDIOMA: la interfaz es bilingüe español/inglés. Se detecta el
+  idioma de Windows en el primer arranque; puedes cambiarlo en
+  menú UI → 🌐 Idioma (se aplica al reiniciar la app).
+
+
+REQUISITOS DEL SISTEMA
+═══════════════════════════════════════════════════════════════════
+
+  - Windows 10 / 11 (64-bit)
+  - 4 GB RAM mínimo (8 GB recomendado)
+  - 500 MB de espacio en disco (300 MB instalado)
+  - Conexión a internet (para llamadas a APIs de LLM)
+  - NO requiere Python ni dependencias previas.
+
+
+SOPORTE Y CÓDIGO FUENTE
+═══════════════════════════════════════════════════════════════════
+
+  El código fuente vive en:
+    C:\Proyectos\gprompt-studio
+  (repositorio git privado: github.com/Gustaafvito/gprompt-studio)
+
+  Para generar una nueva versión del distribuible completo:
+    python build_release.py
+  (tests + auditoría CVEs + onedir + instalador + onefile, y copia
+  los 3 artefactos y este LEEME a esta carpeta)
+
+  Para más info: ver docs/BUILD.md en el repositorio.
+
+═══════════════════════════════════════════════════════════════════

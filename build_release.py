@@ -138,7 +138,13 @@ def copiar_artefactos(src_dist: Path):
         lambda: shutil.copy2(src_dist / "installer" / "GPromptStudio-Setup-1.0.0.exe",
                              DEST / "GPromptStudio-Setup-1.0.0.exe"),
         "installer .exe")
-    print(f"✓ 3 artefactos copiados a {DEST}")
+    # README del distribuible: versionado en el repo para que no se quede
+    # obsoleto en el escritorio (rutas, tamaños, opciones).
+    _con_reintentos(
+        lambda: shutil.copy2(ROOT / "docs" / "LEEME-PRIMERO.txt",
+                             DEST / "LEEME-PRIMERO.txt"),
+        "LEEME-PRIMERO.txt")
+    print(f"✓ 3 artefactos + LEEME copiados a {DEST}")
 
 
 def main():
