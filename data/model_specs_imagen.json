@@ -4427,7 +4427,7 @@
   },
   "Kling 3.0 Image": {
     "vigente": true,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": true,
     "max_chars": 2000,
     "ratios": [
