@@ -560,7 +560,12 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         if usage is not None:
             self._registrar_uso(getattr(usage, "prompt_tokens", 0),
                                 getattr(usage, "completion_tokens", 0))
-        return res.choices[0].message.content
+        # `choices` puede venir vacío y `content` puede ser None (p.ej.
+        # respuesta filtrada o proveedor "compatible" que no lo rellena).
+        # Sin este guard, un None se propaga al historial y a los parsers.
+        if not getattr(res, "choices", None):
+            raise Exception(f"{modelo}: respuesta sin choices (filtrada o vacía)")
+        return res.choices[0].message.content or ""
 
 
 class OllamaProvider(OpenAICompatibleProvider):

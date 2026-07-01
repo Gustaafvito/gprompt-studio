@@ -16,11 +16,13 @@ for _stream in (sys.stdout, sys.stderr):
         except Exception:
             pass
 
-import customtkinter as ctk
-
 # ─── Logging ───────────────────────────────────────────────
 # Todo (datos, keys, logs, backups) vive en ~/.arquitecto_prompts/
 # Importamos LOGS_DIR de config para tener una sola fuente de verdad.
+from logging.handlers import RotatingFileHandler
+
+import customtkinter as ctk
+
 from config import LOGS_DIR
 
 LOG_DIR = str(LOGS_DIR)
@@ -30,7 +32,11 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(LOG_DIR, "gprompt.log"), encoding="utf-8"),
+        # Rotación: 2 MB por archivo, 3 backups (~8 MB máx en disco).
+        # Sin esto gprompt.log crecía sin límite entre sesiones.
+        RotatingFileHandler(os.path.join(LOG_DIR, "gprompt.log"),
+                            maxBytes=2_000_000, backupCount=3,
+                            encoding="utf-8"),
         logging.StreamHandler(sys.stdout),
     ],
 )
@@ -52,11 +58,21 @@ install_ctk_tooltip_patches(logger)
 
 # ─── Validación y recuperación de preferencias ─────────────
 
+def _ruta_preferencias() -> str:
+    """Ruta REAL de preferencias.json (~/.arquitecto_prompts/).
+
+    Antes se leía preferencias.json junto a main.py (ruta legacy que
+    normalmente no existe), por lo que el tema guardado nunca se
+    aplicaba en el arranque y la validación operaba sobre nada.
+    """
+    from config import ARCHIVOS
+    return str(ARCHIVOS["preferencias"])
+
+
 def _validate_and_fix_prefs() -> bool:
     """Valida preferencias.json y repara si está corrupto.
     Devuelve True si todo OK, False si necesita intervención."""
-    base = os.path.dirname(os.path.abspath(__file__))
-    prefs_path = os.path.join(base, "preferencias.json")
+    prefs_path = _ruta_preferencias()
 
     if not os.path.exists(prefs_path):
         return True
@@ -122,7 +138,7 @@ def _atomic_write(path: str, data: dict):
 def _cargar_tema():
     """Aplica tema guardado y theme.json personalizado."""
     base = os.path.dirname(os.path.abspath(__file__))
-    prefs_path = os.path.join(base, "preferencias.json")
+    prefs_path = _ruta_preferencias()
 
     tema_guardado = "dark"
     if os.path.exists(prefs_path):
