@@ -90,7 +90,7 @@ class CoreMixin:
         for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
             if hasattr(self, attr):
                 try: getattr(self, attr).set(dest)
-                except: pass
+                except Exception: pass
 
         auto_ratios = {
             "Instagram":        "9:16",
@@ -484,7 +484,7 @@ class CoreMixin:
                     frame.pack_forget()
                     for w in frame.winfo_children(): w.destroy()
                     frame.destroy()
-                except: pass
+                except Exception: pass
                 setattr(self, attr, None)
 
     def _mostrar_ideas(self, ideas):

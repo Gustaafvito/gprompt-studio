@@ -952,7 +952,7 @@ class UIBuildersService:
         for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
             if hasattr(self, attr):
                 try: getattr(self, attr).set(dest)
-                except: pass
+                except Exception: pass
 
         auto_ratios = {
             "Instagram":        "9:16",

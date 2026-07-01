@@ -49,13 +49,13 @@ LLM_PROVIDERS = {
         "descripcion": "Calidad excelente para creatividad. Pago (desde $3/1M).",
         "url_obtener_key": "https://console.anthropic.com/settings/keys",
         "tipo": "anthropic",
-        # IDs oficiales junio 2026 (skill claude-api). Sonnet 4.6 como
+        # IDs oficiales julio 2026 (skill claude-api). Sonnet 4.6 como
         # default: mejor equilibrio velocidad/inteligencia/precio.
-        # NOTA: claude-fable-5 retirado por Anthropic el 12-jun-2026
-        # (orden gobierno EE.UU., suspensión para todos los usuarios).
-        # Si lo restauran, volver a añadirlo aquí + a PRECIOS y al guard.
+        # claude-fable-5 restaurado el 1-jul-2026 (suspendido 12-jun-2026
+        # por orden del gobierno EE.UU., ya levantada).
         "model_default": "claude-sonnet-4-6",
         "modelos": [
+            "claude-fable-5",      # tope de gama Mythos-class ($10/$50)
             "claude-opus-4-8",     # Opus actual ($5/$25)
             "claude-sonnet-4-6",   # equilibrio ($3/$15)
             "claude-haiku-4-5",    # rápido y barato ($1/$5)
@@ -309,9 +309,7 @@ IMAGE_PROVIDERS = {
 # Tiene prioridad sobre PRECIOS_USD_1M cuando el modelo es conocido.
 # Claude: IDs y precios oficiales de Anthropic (junio 2026).
 PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
-    # claude-fable-5 retirado 12-jun-2026 (ver nota en LLM_PROVIDERS).
-    # Se deja el precio comentado por si se restaura el acceso.
-    # "claude-fable-5":          (10.00, 50.00),
+    "claude-fable-5":            (10.00, 50.00),
     "claude-opus-4-8":           (5.00, 25.00),
     "claude-opus-4-7":           (5.00, 25.00),
     "claude-opus-4-6":           (5.00, 25.00),
@@ -679,9 +677,7 @@ class GeminiProvider(BaseLLMProvider):
 # Modelos Claude que RECHAZAN parámetros de sampling (temperature/top_p/
 # top_k devuelven 400): Opus 4.7/4.8 los tienen eliminados.
 # Fuente: doc oficial de migración de Anthropic (junio 2026).
-# claude-fable-5 se mantiene como entrada DEFENSIVA: está retirado del
-# catálogo (12-jun-2026) pero, si Anthropic restaura el acceso, ya
-# queda blindado contra el 400 sin tener que recordar añadirlo.
+# claude-fable-5 (restaurado 1-jul-2026) rechaza sampling igual que Opus.
 MODELOS_CLAUDE_SIN_SAMPLING = ("claude-fable-5", "claude-opus-4-8", "claude-opus-4-7")
 
 

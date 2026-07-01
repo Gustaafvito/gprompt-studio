@@ -117,7 +117,6 @@ ignore = [
     "E702",   # multiple statements on one line con ;
     "E401",   # multiple imports en una línea
     "E402",   # imports no al principio (monkey-patches CTkToolTip)
-    "E722",   # bare except (defensivo en IA, se decide caso a caso)
     "E731",   # lambda assignment
     "E741",   # ambiguous variable name (l/I/O)
     "W291",   # trailing whitespace

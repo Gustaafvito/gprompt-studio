@@ -1318,7 +1318,7 @@ class ToolsCreativeService:
 
         def _ejecutar():
             try: cantidad = int(ent_n.get())
-            except: cantidad = 5
+            except Exception: cantidad = 5
             cantidad = max(1, min(cantidad, 20))
             elemento = var_op.get()
             extra = ent_extra.get().strip()

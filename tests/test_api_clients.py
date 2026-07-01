@@ -397,12 +397,13 @@ from api_clients import (  # noqa: E402
 class TestModelosClaude:
     def test_ids_oficiales_en_lista_seleccionable(self):
         modelos = LLM_PROVIDERS["claude"]["modelos"]
-        for mid in ("claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5"):
+        for mid in ("claude-fable-5", "claude-opus-4-8",
+                    "claude-sonnet-4-6", "claude-haiku-4-5"):
             assert mid in modelos
 
-    def test_fable_retirado_no_seleccionable(self):
-        # claude-fable-5 suspendido por Anthropic el 12-jun-2026
-        assert "claude-fable-5" not in LLM_PROVIDERS["claude"]["modelos"]
+    def test_fable_restaurado_con_precio(self):
+        # claude-fable-5 restaurado el 1-jul-2026 (suspendido 12-jun-2026)
+        assert PRECIOS_USD_1M_MODELO["claude-fable-5"] == (10.00, 50.00)
 
     def test_default_claude_es_sonnet_46(self):
         assert LLM_PROVIDERS["claude"]["model_default"] == "claude-sonnet-4-6"
@@ -413,8 +414,8 @@ class TestModelosClaude:
             assert modelo_acepta_temperature(mid) is False
         assert modelo_acepta_temperature("claude-opus-4-8") is False
 
-    def test_fable_sigue_blindado_por_si_se_restaura(self):
-        # Entrada defensiva en el guard aunque esté fuera del catálogo
+    def test_fable_no_acepta_temperature(self):
+        # Fable 5 rechaza temperature igual que Opus 4.8/4.7
         assert modelo_acepta_temperature("claude-fable-5") is False
 
     def test_sonnet_y_haiku_si_aceptan_temperature(self):

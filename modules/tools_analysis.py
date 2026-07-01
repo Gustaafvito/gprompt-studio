@@ -1781,7 +1781,7 @@ class ToolsAnalysisService:
                 self.app.plataforma_var.set(seed["plataforma"])
                 if hasattr(self.app, '_on_plataforma_cambio'):
                     try: self.app.events.on_plataforma_cambio()
-                    except: pass
+                    except Exception: pass
                 aplicado = True
 
         # Ahora que la plataforma está puesta, cargar el modelo de imagen
@@ -1791,7 +1791,7 @@ class ToolsAnalysisService:
                 self.app.modelo_img_var.set(seed["modelo_img"])
                 if hasattr(self.app, '_on_modelo_imagen_cambio'):
                     try: self.app.events.on_modelo_imagen_cambio()
-                    except: pass
+                    except Exception: pass
                 aplicado = True
             elif seed["modelo_img"]:
                 mensajes.append(f"Modelo '{seed['modelo_img']}' no disponible")

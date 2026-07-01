@@ -12,6 +12,7 @@ arrastrar caches ni archivos locales.
 Uso:
     python build_release.py                # tests + export limpio + build + copia
     python build_release.py --skip-tests   # sin correr la suite de tests
+    python build_release.py --skip-audit   # sin pip-audit de dependencias
     python build_release.py --export-only  # solo el export limpio (sin buildear)
     python build_release.py --keep         # no borra la carpeta de build al terminar
     python build_release.py --yes          # no pregunta si el árbol está sucio
@@ -37,10 +38,53 @@ ROOT = Path(__file__).resolve().parent
 CLEAN = ROOT.parent / "GPromptStudio-build-clean"
 DEST = Path.home() / "OneDrive" / "Desktop" / "GPromptStudio-Distribuible"
 
+# Paquetes que PyInstaller empaqueta dentro del .exe (directos + transitivos
+# relevantes). El entorno global tiene ~230 paquetes de otros proyectos que NO
+# entran en el build — auditar solo estos evita falsos positivos.
+APP_DEPS = [
+    "anthropic", "certifi", "charset-normalizer", "cryptography", "CTkToolTip",
+    "customtkinter", "google-genai", "httpcore", "httpx", "idna", "keyring",
+    "openai", "pillow", "plyer", "pydantic", "pyperclip", "python-dotenv",
+    "requests", "urllib3",
+]
+
 
 def run(cmd, cwd=None):
     print(f"  $ {' '.join(str(c) for c in cmd)}")
     subprocess.run(cmd, cwd=cwd, check=True)
+
+
+def audit_deps():
+    """pip-audit sobre las dependencias que van dentro del .exe. Avisa, no bloquea."""
+    import importlib.metadata as md
+    import tempfile
+
+    pins = []
+    for pkg in APP_DEPS:
+        try:
+            pins.append(f"{pkg}=={md.version(pkg)}")
+        except md.PackageNotFoundError:
+            continue
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".txt", delete=False, encoding="utf-8"
+    ) as f:
+        f.write("\n".join(pins))
+        req = Path(f.name)
+    try:
+        res = subprocess.run(
+            [sys.executable, "-m", "pip_audit", "-r", str(req), "--no-deps"],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+    finally:
+        req.unlink(missing_ok=True)
+    salida = (res.stdout or "") + (res.stderr or "")
+    if "No module named" in salida:
+        print("  (pip-audit no instalado — auditoría omitida; pip install pip-audit)")
+    elif res.returncode != 0:
+        print(salida.strip())
+        print("⚠️  Vulnerabilidades conocidas en dependencias del .exe (el build continúa).")
+    else:
+        print("  ✓ Sin CVEs conocidos en las dependencias del .exe")
 
 
 def export_limpio() -> Path:
@@ -100,6 +144,8 @@ def copiar_artefactos(src_dist: Path):
 def main():
     ap = argparse.ArgumentParser(description="Build limpio del .exe definitivo")
     ap.add_argument("--skip-tests", action="store_true")
+    ap.add_argument("--skip-audit", action="store_true",
+                    help="no correr pip-audit sobre las dependencias del .exe")
     ap.add_argument("--export-only", action="store_true")
     ap.add_argument("--keep", action="store_true",
                     help="no borrar la carpeta de build limpio al terminar")
@@ -121,6 +167,10 @@ def main():
     if not args.skip_tests:
         print("▶ Tests…")
         run([sys.executable, "-m", "pytest", "tests", "-q"], cwd=ROOT)
+
+    if not args.skip_audit:
+        print("▶ Auditoría CVEs (pip-audit)…")
+        audit_deps()
 
     clean = export_limpio()
     if args.export_only:

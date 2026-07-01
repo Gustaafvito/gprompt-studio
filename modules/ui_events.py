@@ -80,7 +80,7 @@ class UiEventsService:
         if hasattr(self.app, '_seg_modo'):
             mapa_inv = {"imagen": tr("Imagen"), "video": tr("Vídeo"), "audio": tr("Audio")}
             try: self.app._seg_modo.set(mapa_inv.get(modo, tr("Imagen")))
-            except: pass
+            except Exception: pass
 
         _TABS_CON_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos"), tr("🏷️ Tags")]
         _TABS_SIN_TAGS    = [tr("⚙️ Ajustes Extra"), tr("🎨 Estilos"), tr("🚫 Negativos")]
@@ -325,7 +325,7 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
         try: self.app.dialogs._actualizar_tokens()
-        except: pass
+        except Exception: pass
 
     def _on_modelo_imagen_cambio(self, modelo_name: str | None = None) -> None:
         if not modelo_name: modelo_name = self.app.combo_modelo_imagen.get()
@@ -442,7 +442,7 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
         try: self.app.dialogs._actualizar_tokens()
-        except: pass
+        except Exception: pass
         try:
             self.app.after(500, lambda: self.app.footer._recomendar_loras_para_modelo(modelo_name))
         except Exception as e:

@@ -390,7 +390,7 @@ class VisionChain:
                             # Encontrar el primer JSON completo
                             try:
                                 adn = json.loads(partial[:je.pos])
-                            except:
+                            except Exception:
                                 # Si falla, buscar primer { y intentar cerrar correctamente
                                 match = re.search(r"[\[{]", partial)
                                 if match:
