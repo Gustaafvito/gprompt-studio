@@ -1,5 +1,10 @@
 """Tests para modules/i18n.py — interfaz bilingüe ES/EN."""
+import ast
+from pathlib import Path
+
 from modules import i18n
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def _reset():
@@ -45,3 +50,29 @@ def test_set_idioma_normaliza():
 def test_traducciones_no_vacias_y_sin_claves_vacias():
     assert len(i18n.TRADUCCIONES) > 10
     assert all(k and v for k, v in i18n.TRADUCCIONES.items())
+
+
+def test_cobertura_todo_tr_literal_esta_traducido():
+    """Todo tr('literal') del código debe tener entrada en TRADUCCIONES.
+
+    Si este test falla, el texto nuevo se mostraría en español en la UI
+    inglesa (el fallback lo hace invisible en desarrollo). Los tr(variable)
+    dinámicos no se pueden comprobar aquí; sus valores se añaden a mano.
+    """
+    faltan = {}
+    for py in list(ROOT.glob("*.py")) + list((ROOT / "modules").glob("*.py")):
+        tree = ast.parse(py.read_text(encoding="utf-8"), filename=str(py))
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and node.args):
+                continue
+            f = node.func
+            name = f.id if isinstance(f, ast.Name) else (
+                f.attr if isinstance(f, ast.Attribute) else None)
+            arg = node.args[0]
+            if (name == "tr" and isinstance(arg, ast.Constant)
+                    and isinstance(arg.value, str)
+                    and arg.value not in i18n.TRADUCCIONES):
+                faltan.setdefault(arg.value, f"{py.name}:{node.lineno}")
+    assert not faltan, (
+        f"{len(faltan)} textos tr() sin traducción EN: "
+        + "; ".join(f"{t!r} ({loc})" for t, loc in list(faltan.items())[:10]))
