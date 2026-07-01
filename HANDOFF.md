@@ -27,7 +27,7 @@ Empaquetado: ver [`docs/BUILD.md`](docs/BUILD.md). Añadir modelos: ver
 
 | Métrica | Valor |
 |---|---|
-| Tests | **817 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
+| Tests | **820 passed / 0 failing** (`python -m pytest tests -q`) ✅ |
 | Idioma UI | **Bilingüe ES/EN — MERGEADO a `main`** (~1290 traducciones). UI estática+dinámica + config-driven (pestañas, Tags, negativos, ratio `Libre`, combo Estilo vía mapeo display↔clave, **centinelas `— Sin X —`** en 34 sitios) + ideas del LLM en idioma de UI + 177 descripciones de modelo (`best_for_en`, helper `config.best_for_display`) + **Brain labels** + **detección idioma del SO en 1er arranque** (`idioma_inicial`) + **Auto-translate OFF por defecto en EN** + setups por defecto renombrados a EN. Toggle UI→Idioma con auto-reinicio. ⚠️ **PENDIENTE (ver Pendiente i18n)**: `tr()` solo hace ES→EN, así que en modo ES los datos nativos en inglés (estilos tipo `Photoreal/Cyberpunk`, nombres de modelos/LoRAs, setups) se ven en inglés → "mezcla". Decisión abierta: traducción bidireccional (EN→ES) vs dejar datos-convención fijos. |
 | Build definitivo | `python build_release.py` (export limpio de HEAD + build + copia al distribuible) |
 | Working tree | Limpio |
@@ -164,6 +164,19 @@ Remix— siguen descartados: vídeo-a-vídeo puro.)
 
 **Fix UI** (`8a93579`): el botón 🖼 Storyboard (solo IMAGEN) se deshabilita en modo
 vídeo/audio (antes seguía activo, como sí hacía 🎞 Story).
+
+**Fixes de catálogo/inyección (finales de sesión):**
+- **Kling 3.0 Image** (`0c55f70`): `has_negative:true` (el fix global de sesión 33 lo dejó
+  en false, pero el modelo de imagen SÍ lleva negativo; los Kling de vídeo siguen sin él).
+  ⚠️ PENDIENTE confirmar Kling 3.0 Omni Image Editing y Kling O1 Image (¿negativo?).
+- **Vídeo — idioma + @referencias** (`a1acfc7`): con Seedance 2.0 el prompt salía en
+  castellano y metía `@Image/@Video/@Audio` sin haber subido referencias (su
+  `prompt_formula/tips/ejemplo` están en español y llenos de @refs, y el LLM los copiaba).
+  `_inyectar_specs_video` refuerza: (1) PROMPT FINAL siempre en INGLÉS (solo diálogos en
+  otro idioma), (2) si `imagen_cargada` es None → prohibir @refs y usar la fórmula básica.
+
+**PENDIENTE (datos del usuario):** `max_chars` real de SeaArt Film V2.0 (panel `0/XXXX`,
+ahora 2000); panel de Vidu Q3 Reference; negativo de Kling Omni/O1 Image.
 
 ---
 
@@ -860,7 +873,7 @@ auditar Mureka V9 con panel real + decidir si se amplía el catálogo de audio.
 ```powershell
 # Baseline
 python -c "import app; print('OK')"          # → OK
-python -m pytest tests -q                     # → 817 passed / 0 failing ✅ (sesión 35)
+python -m pytest tests -q                     # → 820 passed / 0 failing ✅ (sesión 35)
 ruff check .                                  # → All checks passed
 
 # Arrancar (keys del usuario: deepseek, gemini, openrouter; sin Anthropic)
