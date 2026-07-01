@@ -24,11 +24,49 @@ from workers import log_future_exc
 logger = logging.getLogger("gprompt")
 
 
+# Máximo de previews en ~/.arquitecto_prompts/preview_cache/. Cada una pesa
+# ~200-500 KB; 300 acota el caché a ~60-150 MB. Sin purga crecía sin límite.
+_MAX_CACHE_PREVIEWS = 300
+
+
+def _purgar_cache_previews(max_files: int = _MAX_CACHE_PREVIEWS) -> int:
+    """Borra las previews menos usadas dejando `max_files` (LRU por mtime).
+
+    El mtime se refresca en cada cache-hit (touch en generar()), así que
+    ordenar por mtime ≈ menos usadas primero. Devuelve cuántas borró.
+    """
+    from pathlib import Path
+    cache_dir = Path.home() / ".arquitecto_prompts" / "preview_cache"
+    if not cache_dir.exists():
+        return 0
+    try:
+        files = sorted(cache_dir.glob("*.png"),
+                       key=lambda f: f.stat().st_mtime, reverse=True)
+    except OSError as e:
+        logger.debug(f"[silent] purga preview_cache: {e}")
+        return 0
+    borradas = 0
+    for f in files[max_files:]:
+        try:
+            f.unlink()
+            borradas += 1
+        except OSError as e:
+            logger.debug(f"[silent] purga preview_cache unlink: {e}")
+    if borradas:
+        logger.info(f"preview_cache: purgadas {borradas} previews antiguas "
+                    f"(quedan {min(len(files), max_files)})")
+    return borradas
+
+
 class PreviewPollinationsService:
     """Boceto rápido vía Pollinations.ai. Recibe la app por composición."""
 
     def __init__(self, app):
         self.app = app
+        # Purga en hilo de fondo para no frenar el arranque (I/O sobre
+        # cientos de ficheros, posiblemente en disco lento).
+        import threading
+        threading.Thread(target=_purgar_cache_previews, daemon=True).start()
 
     def generar(self, prompt_text, on_imagen, on_error,
                 parent_widget=None, size=512,
@@ -91,6 +129,12 @@ class PreviewPollinationsService:
             try:
                 img = _Image.open(cache_path)
                 img.load()
+                # Refrescar mtime: la purga LRU ordena por mtime, así los
+                # previews que se siguen usando no se borran.
+                try:
+                    cache_path.touch()
+                except OSError as _e:
+                    logger.debug(f"[silent] cache touch: {_e}")
                 return _safe_cb(on_imagen, img)
             except Exception as _e:
                 logger.debug(f"[silent] cache load: {_e}")

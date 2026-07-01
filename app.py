@@ -364,12 +364,34 @@ class ArquitectoApp(
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
         self.after(900, self._marcar_init_completo)
+        # Auto-discovery ComfyUI en hilo de fondo: el rglob recursivo sobre
+        # models/ puede tardar segundos con carpetas grandes y antes corría
+        # en el import de config.py (frenaba el arranque). Al terminar,
+        # repoblar el combo de modelos en el hilo Tk.
+        self.after(400, self._lanzar_autodiscovery_comfy)
         try:
             prefs = self.store.cargar_preferencias() or {}
             if not prefs.get("nombre"):
                 self.after(1200, self._wizard_nombre)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
+
+    def _lanzar_autodiscovery_comfy(self):
+        """Escanea ComfyUI en un hilo y refresca los combos si halló modelos."""
+        import threading
+
+        def _worker():
+            try:
+                from config import aplicar_autodiscovery_comfy
+                total = aplicar_autodiscovery_comfy()
+                if total > 0:
+                    # Repoblar combos en el hilo de Tk (los dicts por
+                    # plataforma comparten las listas mutadas in place).
+                    self.after(0, self.events._on_plataforma_cambio)
+            except Exception as e:
+                logger.debug(f"[silent] autodiscovery comfy: {e}")
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _marcar_init_completo(self):
         """Activa el flag _gprompt_init_done en sys.modules (post-init)."""

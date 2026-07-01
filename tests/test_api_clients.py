@@ -109,6 +109,73 @@ class TestBaseLLMProvider:
             p.completar([])
 
 
+class TestKeysFallbackCifrado:
+    """keys.json: DPAPI (v2, Windows) con lectura retrocompatible del AES v1."""
+
+    def _usar_ruta_tmp(self, monkeypatch, tmp_path):
+        import config
+        monkeypatch.setitem(config.ARCHIVOS, "keys", tmp_path / "keys.json")
+        return tmp_path / "keys.json"
+
+    def test_roundtrip_guardar_cargar(self, monkeypatch, tmp_path):
+        from api_clients import _cargar_keys_fallback, _guardar_keys_fallback
+        self._usar_ruta_tmp(monkeypatch, tmp_path)
+        _guardar_keys_fallback("deepseek", "sk-test-123456789")
+        assert _cargar_keys_fallback("deepseek") == "sk-test-123456789"
+
+    def test_la_key_no_queda_en_claro_en_disco(self, monkeypatch, tmp_path):
+        import json as _json
+
+        from api_clients import _guardar_keys_fallback
+        ruta = self._usar_ruta_tmp(monkeypatch, tmp_path)
+        _guardar_keys_fallback("groq", "gsk_super_secreta_987654")
+        contenido = ruta.read_text(encoding="utf-8")
+        assert "gsk_super_secreta_987654" not in contenido
+        datos = _json.loads(contenido)
+        assert datos.get("encrypted") in ("dpapi", True)
+
+    def test_en_windows_usa_dpapi_v2(self, monkeypatch, tmp_path):
+        import json as _json
+        import os as _os
+
+        from api_clients import _guardar_keys_fallback
+        if _os.name != "nt":
+            pytest.skip("DPAPI solo en Windows")
+        ruta = self._usar_ruta_tmp(monkeypatch, tmp_path)
+        _guardar_keys_fallback("openai", "sk-proj-abcdef123456")
+        datos = _json.loads(ruta.read_text(encoding="utf-8"))
+        assert datos["version"] == 2
+        assert datos["encrypted"] == "dpapi"
+
+    def test_legacy_aes_v1_se_sigue_leyendo(self, monkeypatch, tmp_path):
+        # Un keys.json v1 (AES MAC+usuario) escrito por versiones anteriores
+        # debe seguir siendo legible tras la migración a DPAPI.
+        import json as _json
+
+        from api_clients import (
+            _cargar_keys_fallback,
+            _cifrar_aes,
+            _obtener_clave_cifrado,
+        )
+        ruta = self._usar_ruta_tmp(monkeypatch, tmp_path)
+        clave = _obtener_clave_cifrado()
+        datos = {"version": 1, "encrypted": True,
+                 "keys": {"mistral": _cifrar_aes("legacy_key_00112233", clave)}}
+        ruta.write_text(_json.dumps(datos), encoding="utf-8")
+        assert _cargar_keys_fallback("mistral") == "legacy_key_00112233"
+
+    def test_borrar_key_del_fallback(self, monkeypatch, tmp_path):
+        from api_clients import (
+            _borrar_keys_fallback,
+            _cargar_keys_fallback,
+            _guardar_keys_fallback,
+        )
+        self._usar_ruta_tmp(monkeypatch, tmp_path)
+        _guardar_keys_fallback("xai", "xai-key-1234567890")
+        _borrar_keys_fallback("xai")
+        assert _cargar_keys_fallback("xai") == ""
+
+
 # ── Tracking de uso y costes (sesión 19) ──────────────────────────
 
 from api_clients import (  # noqa: E402

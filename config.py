@@ -808,16 +808,6 @@ def _cargar_modelos_locales():
     grupos_img = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []), key=str.lower)) for item in data.get("imagen", [])]
     grupos_vid = [(item.get("grupo", "── Otros ──"), sorted(item.get("modelos", []), key=str.lower)) for item in data.get("video", [])]
 
-    # Auto-discovery: agregar modelos de ComfyUI si se configuró ruta. La ruta
-    # puede venir en el propio JSON ("comfyui_path") o en las preferencias.
-    comfy_ruta = data.get("comfyui_path") or get_comfyui_path(_cargar_preferencias_seguras())
-    if comfy_ruta and Path(comfy_ruta).exists():
-        hallados = _escanear_comfy_root(Path(comfy_ruta))
-        if hallados["imagen"]:
-            grupos_img.append(("── ComfyUI Local ──", hallados["imagen"]))
-        if hallados["video"]:
-            grupos_vid.append(("── ComfyUI Video ──", hallados["video"]))
-
     return grupos_img, grupos_vid
 
 
@@ -832,6 +822,56 @@ MODELOS_VIDEO_COMFYUI_FLAT = []
 for g, ms in GRUPOS_VIDEO_COMFYUI:
     MODELOS_VIDEO_COMFYUI_FLAT.append(g)
     MODELOS_VIDEO_COMFYUI_FLAT.extend(ms)
+
+
+# ── Auto-discovery ComfyUI diferido ────────────────────────────────
+# Antes el escaneo (rglob recursivo sobre models/, potencialmente miles de
+# ficheros) corría en el import de config.py y frenaba el arranque. Ahora la
+# app lo lanza en un hilo tras crear la ventana (app.py). Muta las listas IN
+# PLACE porque MODELOS_POR_PLATAFORMA_* y MOTORES_VIDEO comparten las mismas
+# instancias — así los desplegables ven los modelos nuevos al repoblarse.
+_autodiscovery_hecho = False
+
+
+def aplicar_autodiscovery_comfy() -> int:
+    """Escanea la carpeta ComfyUI configurada y añade los modelos hallados a
+    GRUPOS_*_COMFYUI / MODELOS_*_COMFYUI_FLAT (mutación in place).
+
+    Idempotente: la segunda llamada devuelve 0 sin re-escanear.
+    Returns: número de modelos añadidos (0 si no hay ruta o ya se aplicó).
+    """
+    global _autodiscovery_hecho
+    if _autodiscovery_hecho:
+        return 0
+    _autodiscovery_hecho = True
+
+    # La ruta puede venir en el propio JSON ("comfyui_path") o en preferencias.
+    ruta_json_manifest = None
+    try:
+        if ARCHIVOS["modelos_comfy"].exists():
+            with open(ARCHIVOS["modelos_comfy"], encoding="utf-8") as f:
+                ruta_json_manifest = (_json.load(f) or {}).get("comfyui_path")
+    except Exception as e:
+        logger.debug(f"[silent] comfyui_path del manifest: {e}")
+    comfy_ruta = ruta_json_manifest or get_comfyui_path(_cargar_preferencias_seguras())
+    if not comfy_ruta or not Path(comfy_ruta).exists():
+        return 0
+
+    hallados = _escanear_comfy_root(Path(comfy_ruta))
+    total = 0
+    if hallados["imagen"]:
+        GRUPOS_IMAGEN_COMFYUI.append(("── ComfyUI Local ──", hallados["imagen"]))
+        MODELOS_IMAGEN_COMFYUI_FLAT.append("── ComfyUI Local ──")
+        MODELOS_IMAGEN_COMFYUI_FLAT.extend(hallados["imagen"])
+        total += len(hallados["imagen"])
+    if hallados["video"]:
+        GRUPOS_VIDEO_COMFYUI.append(("── ComfyUI Video ──", hallados["video"]))
+        MODELOS_VIDEO_COMFYUI_FLAT.append("── ComfyUI Video ──")
+        MODELOS_VIDEO_COMFYUI_FLAT.extend(hallados["video"])
+        total += len(hallados["video"])
+    if total:
+        logger.info(f"Auto-discovery ComfyUI: {total} modelos añadidos desde {comfy_ruta}")
+    return total
 
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE AUDIO

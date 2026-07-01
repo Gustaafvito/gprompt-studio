@@ -426,10 +426,14 @@ class UsageTracker:
         El coste se calcula por MODELO (suma de los desgloses) usando
         PRECIOS_USD_1M_MODELO cuando el modelo es conocido; None si
         ningún precio es conocido (p.ej. OpenRouter con modelo custom)."""
+        import copy
         with self._lock:
             out = {}
             for pid, d in self._datos.items():
-                out[pid] = dict(d)
+                # deepcopy: dict(d) compartía el subdict "modelos" con el
+                # estado interno — un consumidor que lo mutara corrompía
+                # el tracker.
+                out[pid] = copy.deepcopy(d)
                 costes = []
                 for modelo, m in d.get("modelos", {}).items():
                     costes.append(calcular_coste_usd(
@@ -903,8 +907,42 @@ def _ruta_keys_fallback() -> str:
     return ruta
 
 
+# ── DPAPI (Windows) — cifrado real ligado a la cuenta del usuario ──
+# CryptProtectData cifra con una clave gestionada por Windows que solo el
+# MISMO usuario en la MISMA máquina puede descifrar. Sustituye al esquema
+# AES legacy cuya clave se derivaba de MAC+username (trivial de reproducir
+# por cualquier proceso local). El AES legacy se mantiene SOLO para leer
+# keys.json v1 antiguos y como fallback en sistemas no-Windows.
+
+def _dpapi_disponible() -> bool:
+    return os.name == "nt"
+
+
+def _dpapi_crypt(data: bytes, proteger: bool) -> bytes:
+    """CryptProtectData / CryptUnprotectData (ámbito: usuario actual)."""
+    import ctypes
+    from ctypes import wintypes
+
+    class _BLOB(ctypes.Structure):
+        _fields_ = [("cbData", wintypes.DWORD),
+                    ("pbData", ctypes.POINTER(ctypes.c_char))]
+
+    buf = ctypes.create_string_buffer(data, len(data))
+    blob_in = _BLOB(len(data), ctypes.cast(buf, ctypes.POINTER(ctypes.c_char)))
+    blob_out = _BLOB()
+    fn = (ctypes.windll.crypt32.CryptProtectData if proteger
+          else ctypes.windll.crypt32.CryptUnprotectData)
+    if not fn(ctypes.byref(blob_in), None, None, None, None, 0,
+              ctypes.byref(blob_out)):
+        raise OSError(f"DPAPI {'protect' if proteger else 'unprotect'} falló")
+    try:
+        return ctypes.string_at(blob_out.pbData, blob_out.cbData)
+    finally:
+        ctypes.windll.kernel32.LocalFree(blob_out.pbData)
+
+
 def _obtener_clave_cifrado() -> bytes:
-    """Deriva una clave de cifrado del hardware local."""
+    """Deriva una clave de cifrado del hardware local (esquema LEGACY v1)."""
     import hashlib
     try:
         import uuid
@@ -962,6 +1000,19 @@ def _cargar_dict_fallback() -> dict:
             if not contenido:
                 return {}
             datos = json.loads(contenido)
+            # Formato v2: DPAPI (Windows)
+            if isinstance(datos, dict) and datos.get("encrypted") == "dpapi":
+                import base64
+                descifrado = {}
+                for k, v in datos.get("keys", {}).items():
+                    try:
+                        descifrado[k] = _dpapi_crypt(
+                            base64.b64decode(v), proteger=False).decode("utf-8")
+                    except Exception as e:
+                        logger.debug(f"[silent] DPAPI unprotect '{k}': {e}")
+                        descifrado[k] = ""
+                return descifrado
+            # Formato v1 legacy: AES con clave MAC+usuario
             if isinstance(datos, dict) and "encrypted" in datos:
                 clave = _obtener_clave_cifrado()
                 descifrado = {}
@@ -976,11 +1027,26 @@ def _cargar_dict_fallback() -> dict:
 def _escribir_dict_fallback(d: dict):
     ruta = _ruta_keys_fallback()
     tmp = ruta + ".tmp"
-    clave = _obtener_clave_cifrado()
-    cifrado = {}
-    for k, v in d.items():
-        cifrado[k] = _cifrar_aes(v, clave)
-    datos = {"version": 1, "encrypted": True, "keys": cifrado}
+    datos = None
+    # Preferir DPAPI (cifrado real del SO). Cae al AES legacy si falla
+    # o en sistemas no-Windows.
+    if _dpapi_disponible():
+        try:
+            import base64
+            cifrado = {
+                k: base64.b64encode(
+                    _dpapi_crypt(v.encode("utf-8"), proteger=True)).decode("ascii")
+                for k, v in d.items()
+            }
+            datos = {"version": 2, "encrypted": "dpapi", "keys": cifrado}
+        except Exception as e:
+            logger.warning(f"DPAPI no disponible, usando cifrado legacy: {e}")
+    if datos is None:
+        clave = _obtener_clave_cifrado()
+        cifrado = {}
+        for k, v in d.items():
+            cifrado[k] = _cifrar_aes(v, clave)
+        datos = {"version": 1, "encrypted": True, "keys": cifrado}
     try:
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(datos, f, indent=2, ensure_ascii=False)
