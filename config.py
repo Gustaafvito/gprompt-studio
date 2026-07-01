@@ -3,6 +3,7 @@ G-Prompt Studio v1.0 — Configuración y constantes.
 Modelos, estilos, ratios, presets de negativos, colores UI.
 """
 import logging
+import re
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -461,12 +462,29 @@ _COMFY_SUBDIRS = ("checkpoints", "diffusion_models", "unet")
 _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 
 
+# Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
+# "mochimix" clasificarían mal como vídeo): solo casan si NO están pegados a
+# otra letra. Dígitos y separadores SÍ cuentan como límite, así "wan2.2",
+# "svd_xt" o "ltx-2.3" siguen casando. El resto de tokens ("xl", "pony",
+# "noobai"...) se mantiene como substring porque la convención real los pega
+# al nombre ("juggernautXL", "T-ponynai3", "CogVideoX").
+_TOKENS_LIMITE_PALABRA = frozenset({"wan", "svd", "ltx", "i2v", "t2v", "mochi"})
+
+
+def _token_en_nombre(token: str, nombre_lower: str) -> bool:
+    """True si `token` aparece en el nombre (con límite de palabra si es ambiguo)."""
+    if token in _TOKENS_LIMITE_PALABRA:
+        return re.search(rf"(?<![a-z]){re.escape(token)}(?![a-z])",
+                         nombre_lower) is not None
+    return token in nombre_lower
+
+
 def clasificar_modelo_comfy(nombre: str) -> str:
     """Clasifica un checkpoint ComfyUI por su nombre: 'audio' | 'video' | 'imagen'."""
     n = (nombre or "").lower()
-    if any(t in n for t in _COMFY_TOKENS_AUDIO):
+    if any(_token_en_nombre(t, n) for t in _COMFY_TOKENS_AUDIO):
         return "audio"
-    if any(t in n for t in _COMFY_TOKENS_VIDEO):
+    if any(_token_en_nombre(t, n) for t in _COMFY_TOKENS_VIDEO):
         return "video"
     return "imagen"
 
@@ -590,7 +608,7 @@ def detectar_familia_comfy(nombre: str) -> str:
     """Familia ComfyUI ('flux'|'sdxl'|'pony'…) por nombre, o '' si no se reconoce."""
     n = (nombre or "").lower()
     for clave, tokens in _COMFY_FAMILIAS:
-        if any(t in n for t in tokens):
+        if any(_token_en_nombre(t, n) for t in tokens):
             return clave
     return ""
 
@@ -715,7 +733,7 @@ def detectar_familia_comfy_video(nombre: str) -> str:
     """Familia de vídeo ComfyUI ('ltx'|'wan'|'svd'…) por nombre, o '' si no."""
     n = (nombre or "").lower()
     for clave, tokens in _COMFY_FAMILIAS_VIDEO:
-        if any(t in n for t in tokens):
+        if any(_token_en_nombre(t, n) for t in tokens):
             return clave
     return ""
 

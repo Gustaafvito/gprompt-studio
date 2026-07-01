@@ -10,6 +10,7 @@ Para añadir un proveedor nuevo solo hay que crear su clase aquí.
 import json
 import logging
 import os
+import re
 import urllib.request
 
 try:
@@ -598,6 +599,24 @@ class OllamaProvider(OpenAICompatibleProvider):
         return super().completar(messages, temperature, max_tokens, model=modelo)
 
 
+def _limpiar_respuesta_gemini(raw: str) -> str:
+    """Elimina ecos de tags <system-reminder> de una respuesta de Gemini.
+
+    Solo se tocan esos tags (nunca legítimos en un prompt generado) y se
+    loggea cuando actúa. El scrubbing anterior borraba además frases
+    genéricas ("You are Claude", "You are an AI"...) y corrompía en
+    silencio prompts que las contenían de verdad.
+    """
+    limpio = re.sub(r"<system-reminder>.*?</system-reminder>", "",
+                    raw, flags=re.DOTALL)
+    limpio = (limpio.replace("<system-reminder>", "")
+                    .replace("</system-reminder>", ""))
+    if limpio != raw:
+        logger.warning("GeminiProvider: tags <system-reminder> "
+                       "eliminados de la respuesta")
+    return limpio.strip()
+
+
 class GeminiProvider(BaseLLMProvider):
     """Adapter para Google Gemini con soporte nativo multi-turno (chat sessions)."""
 
@@ -650,17 +669,7 @@ class GeminiProvider(BaseLLMProvider):
             self._registrar_uso(getattr(meta, "prompt_token_count", 0),
                                 getattr(meta, "candidates_token_count", 0))
 
-        raw = response.text or ""
-        markers = [
-            "<system-reminder>", "<system-reminder",
-            "Your operational mode", "You are no longer in read-only mode",
-            "You are permitted to make file changes", "You are a helpful assistant",
-            "You are Claude", "You are an AI"
-        ]
-        for marker in markers:
-            while marker in raw:
-                raw = raw.replace(marker, "")
-        return raw.strip()
+        return _limpiar_respuesta_gemini(response.text or "")
 
 
 # Modelos Claude que RECHAZAN parámetros de sampling (temperature/top_p/

@@ -78,6 +78,30 @@ class TestGeminiProvider:
             p.completar([{"role": "user", "content": "hello"}])
 
 
+class TestLimpiarRespuestaGemini:
+    """El scrubbing elimina SOLO tags <system-reminder>, nunca frases legítimas."""
+
+    def test_elimina_bloque_system_reminder(self):
+        from api_clients import _limpiar_respuesta_gemini
+        raw = "prompt bueno <system-reminder>eco del harness</system-reminder> final"
+        assert _limpiar_respuesta_gemini(raw) == "prompt bueno  final".strip()
+
+    def test_elimina_tag_suelto_sin_cierre(self):
+        from api_clients import _limpiar_respuesta_gemini
+        assert _limpiar_respuesta_gemini("<system-reminder>texto") == "texto"
+
+    def test_no_toca_frases_legitimas(self):
+        # Regresión: el scrubbing viejo borraba estas frases del prompt.
+        from api_clients import _limpiar_respuesta_gemini
+        raw = ('A robot saying "You are Claude, an AI assistant" on a screen, '
+               "cinematic lighting, You are a helpful assistant written in neon")
+        assert _limpiar_respuesta_gemini(raw) == raw
+
+    def test_texto_limpio_pasa_intacto(self):
+        from api_clients import _limpiar_respuesta_gemini
+        assert _limpiar_respuesta_gemini("  prompt normal  ") == "prompt normal"
+
+
 class TestBaseLLMProvider:
     def test_abstract_completar_raises(self):
         p = BaseLLMProvider(api_key="test")

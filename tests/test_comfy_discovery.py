@@ -40,6 +40,19 @@ class TestClasificarModeloComfy:
         assert config.clasificar_modelo_comfy("") == "imagen"
         assert config.clasificar_modelo_comfy(None) == "imagen"
 
+    def test_tokens_ambiguos_no_casan_dentro_de_palabras(self):
+        # "wan"/"mochi"/"svd" pegados a otra letra NO son vídeo:
+        # wanostyle (LoRA Wano/One Piece), swan, mochi en nombres anime.
+        assert config.clasificar_modelo_comfy("wanostyle_offset") == "imagen"
+        assert config.clasificar_modelo_comfy("blackSwan_mix_v3") == "imagen"
+        assert config.clasificar_modelo_comfy("mochimix_anime_v2") == "imagen"
+
+    def test_tokens_ambiguos_casan_con_digitos_y_separadores(self):
+        # Dígitos y separadores sí son límite válido (convención real).
+        assert config.clasificar_modelo_comfy("wan21_t2v_1.3B") == "video"
+        assert config.clasificar_modelo_comfy("Wan2_1-I2V-14B") == "video"
+        assert config.clasificar_modelo_comfy("svd_xt_1_1") == "video"
+
 
 # ──────────────────────────────────────────────────────────────────
 # _escanear_comfy_root / escanear_modelos_comfyui
@@ -244,6 +257,11 @@ class TestDetectarFamiliaComfyVideo:
     def test_desconocido_vacio(self):
         assert config.detectar_familia_comfy_video("juggernautXL_v9") == ""
         assert config.detectar_familia_comfy_video("") == ""
+
+    def test_tokens_ambiguos_no_casan_dentro_de_palabras(self):
+        assert config.detectar_familia_comfy_video("wanostyle_offset") == ""
+        assert config.detectar_familia_comfy_video("blackSwan_mix") == ""
+        assert config.detectar_familia_comfy_video("mochimix_anime") == ""
 
 
 class TestComfyVideoSpecs:
