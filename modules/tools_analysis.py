@@ -735,9 +735,9 @@ class ToolsAnalysisService:
                      font=ctk.CTkFont(size=18, weight="bold"),
                      text_color=c_text).pack(side="left")
 
-        filtro_var = ctk.StringVar(value="Todo")
+        filtro_var = ctk.StringVar(value=tr("Todo"))
         seg = ctk.CTkSegmentedButton(
-            header, values=["7d", "30d", "90d", "Todo"],
+            header, values=["7d", "30d", "90d", tr("Todo")],
             variable=filtro_var,
             command=lambda _v: _render(),
         )
@@ -748,7 +748,7 @@ class ToolsAnalysisService:
         scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
         def _filtrar_por_rango(hist_all: list, rango: str) -> list:
-            if rango == "Todo":
+            if rango == tr("Todo"):
                 return list(hist_all)
             dias = {"7d": 7, "30d": 30, "90d": 90}.get(rango)
             if not dias:

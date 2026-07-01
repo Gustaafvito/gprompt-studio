@@ -116,9 +116,10 @@ class DataMgmtService:
             fecha = borrador.get("fecha", "")
             preview = (idea or salida)[:100]
             if messagebox.askyesno(tr("📝 Borrador encontrado"),
-                                      f"Hay un borrador no guardado de la sesión anterior ({fecha}):\n\n"
-                                      f"\"{preview}{'...' if len(preview) >= 100 else ''}\"\n\n"
-                                      f"¿Quieres restaurarlo?",
+                                      tr('Hay un borrador no guardado de la sesión anterior ({0}):\n\n'
+                                         '"{1}"\n\n¿Quieres restaurarlo?').format(
+                                          fecha,
+                                          preview + ('...' if len(preview) >= 100 else '')),
                                       parent=self.app):
                 if idea:
                     self.app.txt_idea.delete("1.0", "end")

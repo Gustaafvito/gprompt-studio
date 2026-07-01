@@ -1609,9 +1609,9 @@ class ToolsCreativeService:
             # Si ya existe ese nombre, preguntar si sobreescribir
             if any(p.get("nombre") == nombre for p in presets):
                 from tkinter import messagebox as _mb
-                if not _mb.askyesno("Ya existe",
-                                    f"Ya existe un preset llamado '{nombre}'. "
-                                    f"¿Sobrescribir?",
+                if not _mb.askyesno(tr("Ya existe"),
+                                    tr("Ya existe un preset llamado '{0}'. "
+                                       "¿Sobrescribir?").format(nombre),
                                     parent=vent):
                     return
                 presets = [p for p in presets if p.get("nombre") != nombre]
@@ -1658,8 +1658,8 @@ class ToolsCreativeService:
 
                     def _borrar(p=preset):
                         from tkinter import messagebox as _mb
-                        if not _mb.askyesno("Confirmar",
-                                            f"¿Borrar preset '{p['nombre']}'?",
+                        if not _mb.askyesno(tr("Confirmar"),
+                                            tr("¿Borrar preset '{0}'?").format(p['nombre']),
                                             parent=win):
                             return
                         nuevos = [x for x in _cargar_presets()
@@ -1996,8 +1996,8 @@ class ToolsCreativeService:
 
                 def _borrar(i=idx, nombre=p.get("nombre", "?")):
                     from tkinter import messagebox as _mb
-                    if not _mb.askyesno("Confirmar",
-                                        f"¿Borrar paleta '{nombre}'?",
+                    if not _mb.askyesno(tr("Confirmar"),
+                                        tr("¿Borrar paleta '{0}'?").format(nombre),
                                         parent=win):
                         return
                     try:

@@ -1159,10 +1159,10 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
 
     # ── Filtro por modo ──
     ctk.CTkLabel(frame_busqueda, text=tr("Modo:")).pack(side="left", padx=(12, 4))
-    filtro_modo_var = ctk.StringVar(value="Todos")
+    filtro_modo_var = ctk.StringVar(value=tr("Todos"))
     combo_filtro_modo = ctk.CTkComboBox(
         frame_busqueda, width=110, variable=filtro_modo_var,
-        values=["Todos", "imagen", "video", "audio"],
+        values=[tr("Todos"), "imagen", "video", "audio"],
         command=lambda _v: refrescar(),
     )
     combo_filtro_modo.pack(side="left")
@@ -1182,9 +1182,10 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
 
         termino = entry_buscar.get().strip().lower()
         modo_sel = filtro_modo_var.get()
+        es_todos = modo_sel == tr("Todos")
 
         def _coincide(entrada: dict) -> bool:
-            if modo_sel != "Todos" and entrada.get("modo", "") != modo_sel:
+            if not es_todos and entrada.get("modo", "") != modo_sel:
                 return False
             if not termino:
                 return True
@@ -1207,21 +1208,22 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         visibles = min(estado["visible"], total_filtrado)
 
         suf_filtro = []
-        if termino: suf_filtro.append(f"búsqueda '{termino}'")
-        if modo_sel != "Todos": suf_filtro.append(f"modo={modo_sel}")
+        if termino: suf_filtro.append(tr("búsqueda '{0}'").format(termino))
+        if not es_todos: suf_filtro.append(tr("modo={0}").format(modo_sel))
         filtro_txt = " · " + " · ".join(suf_filtro) if suf_filtro else ""
         lbl_contador.configure(
             text=tr('{0} de {1} mostrados ({2} total){3}').format((visibles), (total_filtrado), (total), (filtro_txt))
         )
 
         if total_filtrado == 0:
-            msg = "Sin resultados con esos filtros" if (termino or modo_sel != "Todos") else "(sin entradas)"
+            msg = (tr("Sin resultados con esos filtros")
+                   if (termino or not es_todos) else tr("(sin entradas)"))
             ctk.CTkLabel(frame_lista, text=msg, text_color=cc["empty_text"]).pack(pady=20)
             return
 
         # ── Agrupar SOLO si: historial + sin búsqueda + sin filtro modo ──
         items_pag = filtrados[:visibles]
-        if coleccion == "historial" and not termino and modo_sel == "Todos":
+        if coleccion == "historial" and not termino and es_todos:
             _renderizar_agrupado(items_pag)
         else:
             for idx_real, entrada in items_pag:

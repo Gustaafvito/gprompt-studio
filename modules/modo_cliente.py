@@ -580,8 +580,9 @@ class ModoClienteService:
                 mas = f"\n+{len(fallos)-5} más" if len(fallos) > 5 else ""
                 from tkinter import messagebox as _mb
                 _mb.showwarning(
-                    "Imágenes rechazadas",
-                    f"{len(fallos)} imagen(es) no se pudieron leer:\n\n{detalle}{mas}",
+                    tr("Imágenes rechazadas"),
+                    tr("{0} imagen(es) no se pudieron leer:\n\n{1}{2}").format(
+                        len(fallos), detalle, mas),
                     parent=vent,
                 )
 
@@ -630,9 +631,10 @@ class ModoClienteService:
                 detalle = "\n".join(f"• {n}: {err}" for n, err in fallos_open[:5])
                 from tkinter import messagebox as _mb
                 _mb.showwarning(
-                    "Imágenes no leídas",
-                    f"{len(fallos_open)} imagen(es) no se pudieron abrir y se "
-                    f"omitirán del análisis:\n\n{detalle}",
+                    tr("Imágenes no leídas"),
+                    tr("{0} imagen(es) no se pudieron abrir y se "
+                       "omitirán del análisis:\n\n{1}").format(
+                        len(fallos_open), detalle),
                     parent=vent,
                 )
             total_imgs = len(todas_imagenes)
@@ -842,8 +844,8 @@ class ModoClienteService:
 
                 def _borrar(i=idx, nombre=est.get("nombre","?")):
                     from tkinter import messagebox as _mb
-                    if not _mb.askyesno("Confirmar",
-                                        f"¿Borrar estilo '{nombre}'?",
+                    if not _mb.askyesno(tr("Confirmar"),
+                                        tr("¿Borrar estilo '{0}'?").format(nombre),
                                         parent=win):
                         return
                     prefs_b = self.app.store.cargar_preferencias()

@@ -1108,12 +1108,12 @@ class CoreMixin:
         if idea or salida:
             from tkinter import messagebox
             if not messagebox.askyesno(tr("Confirmar reset"),
-                                     "¿Seguro? Perderás:\n"
-                                     f"{'  • Idea actual' if idea else ''}\n"
-                                     f"{'  • Prompt generado' if salida else ''}\n"
-                                     "  • Imagen de referencia\n"
-                                     "  • Estilos marcados\n\n"
-                                     "Esta acción no se puede deshacer.",
+                                     tr("¿Seguro? Perderás:\n{0}\n{1}\n"
+                                        "  • Imagen de referencia\n"
+                                        "  • Estilos marcados\n\n"
+                                        "Esta acción no se puede deshacer.").format(
+                                         tr('  • Idea actual') if idea else '',
+                                         tr('  • Prompt generado') if salida else ''),
                                      parent=self):
                 return
 

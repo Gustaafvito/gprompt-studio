@@ -1449,9 +1449,9 @@ class ArquitectoApp(
 
                 def _borrar(name=nombre):
                     from tkinter import messagebox as _mb
-                    if not _mb.askyesno("Confirmar",
-                                        f"¿Borrar plantilla '{name}'?\n"
-                                        f"(usa '↩ Restaurar' arriba para recuperarla)",
+                    if not _mb.askyesno(tr("Confirmar"),
+                                        tr("¿Borrar plantilla '{0}'?\n"
+                                           "(usa '↩ Restaurar' arriba para recuperarla)").format(name),
                                         parent=vent):
                         return
                     prefs_act = self.store.cargar_preferencias()
@@ -1605,10 +1605,10 @@ class ArquitectoApp(
             if faltan:
                 from tkinter import messagebox as _mb
                 if not _mb.askyesno(
-                    "Variables sin rellenar",
-                    f"No has rellenado: {', '.join(faltan)}.\n\n"
-                    f"Si continúas, los valores quedarán como {{{{nombre}}}} literales.\n\n"
-                    f"¿Aplicar de todas formas?",
+                    tr("Variables sin rellenar"),
+                    tr("No has rellenado: {0}.\n\n"
+                       "Si continúas, los valores quedarán como {{{{nombre}}}} literales.\n\n"
+                       "¿Aplicar de todas formas?").format(", ".join(faltan)),
                     parent=wiz,
                 ):
                     return

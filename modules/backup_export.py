@@ -12,7 +12,7 @@ import pyperclip
 
 from config import VERSION
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import tr, tr_es
 
 logger = logging.getLogger(__name__)
 
@@ -344,7 +344,8 @@ class BackupExportService:
             self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), "#2ecc71")
             messagebox.showinfo(
                 tr("Exportación completada"),
-                f"Exportadas {n} filas desde {len(colecciones)} colección(es) a:\n{archivo}",
+                tr("Exportadas {0} filas desde {1} colección(es) a:\n{2}").format(
+                    n, len(colecciones), archivo),
                 parent=self.app,
             )
         except Exception as e:
@@ -508,13 +509,13 @@ class BackupExportService:
         filtro_row.pack(fill="x", padx=12, pady=(0, 4))
         ctk.CTkLabel(filtro_row, text=tr("Modo:")).pack(side="left", padx=(0, 8))
         modo_activo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
-        valor_inicial = {
+        valor_inicial = tr({
             "imagen": "🖼 Imagen", "video": "🎬 Vídeo", "audio": "🎵 Audio"
-        }.get(modo_activo, "🖼 Imagen")
+        }.get(modo_activo, "🖼 Imagen"))
         filtro_var = ctk.StringVar(value=valor_inicial)
         seg = ctk.CTkSegmentedButton(
             filtro_row,
-            values=["🖼 Imagen", "🎬 Vídeo", "🎵 Audio", "📦 Todos"],
+            values=[tr(v) for v in ("🖼 Imagen", "🎬 Vídeo", "🎵 Audio", "📦 Todos")],
             variable=filtro_var,
             command=lambda _v: _render(),
         )
@@ -547,7 +548,7 @@ class BackupExportService:
         def _render():
             for w in scroll.winfo_children():
                 w.destroy()
-            label = filtro_var.get()
+            label = tr_es(filtro_var.get())
             modo_sel = {
                 "🖼 Imagen": "imagen",
                 "🎬 Vídeo":  "video",
@@ -595,7 +596,7 @@ class BackupExportService:
 
         # ── Botón Copiar Todos (solo del filtro actual) ──
         def _copiar_filtrados():
-            label = filtro_var.get()
+            label = tr_es(filtro_var.get())
             modo_sel = {
                 "🖼 Imagen": "imagen", "🎬 Vídeo": "video",
                 "🎵 Audio": "audio", "📦 Todos": None
