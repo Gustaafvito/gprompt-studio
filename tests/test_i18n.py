@@ -78,7 +78,7 @@ def test_ningun_sink_de_ui_con_espanol_sin_tr():
     """
     ui_keywords = {"text", "label_text", "placeholder_text", "message", "title"}
     ui_methods = {"title", "showinfo", "showwarning", "showerror", "askyesno",
-                  "askokcancel", "show_toast", "set_estado"}
+                  "askokcancel", "askstring", "show_toast", "set_estado", "add"}
     # dialogs.py: avisos del cambio de idioma, bilingües ES+EN a propósito.
     permitidos = {"dialogs.py"}
 
@@ -147,6 +147,19 @@ def test_cobertura_dominios_combos_dinamicos():
     assert not fugas, (
         f"{len(fugas)} valores de combos dinámicos sin traducción EN: "
         + "; ".join(fugas[:8]))
+
+
+def test_cobertura_negative_builder_traducido():
+    """Tabs e items del NEGATIVE builder (data-driven) tienen entrada EN."""
+    from modules.tools_creative import NEGATIVE_BUILDER_CATEGORIAS
+    faltan = set()
+    for cat, items in NEGATIVE_BUILDER_CATEGORIAS.items():
+        faltan.add(cat)
+        faltan.update(nombre for nombre, _tags in items)
+    faltan -= set(i18n.TRADUCCIONES)
+    assert not faltan, (
+        f"{len(faltan)} textos del NEGATIVE builder sin traducción EN: "
+        + "; ".join(repr(t) for t in sorted(faltan)[:10]))
 
 
 def test_cobertura_avatar_config_traducido():

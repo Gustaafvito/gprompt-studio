@@ -1621,7 +1621,7 @@ class ToolsAnalysisService:
         seeds = prefs.get("seeds_favoritos", [])
 
         # Pedir nombre
-        nombre = simpledialog.askstring("💎 Guardar Seed", "Nombre para este seed:", parent=self.app)
+        nombre = simpledialog.askstring(tr("💎 Guardar Seed"), tr("Nombre para este seed:"), parent=self.app)
         if not nombre:
             return
 

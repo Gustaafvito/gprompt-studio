@@ -502,7 +502,7 @@ class AdnVisualService:
 
                         sugerencia = f"ADN {estetica[:20] if estetica else 'visual'} {len(adns)+1}"
 
-                        nombre = simpledialog.askstring("💾 Guardar ADN", "Nombre para el ADN:",
+                        nombre = simpledialog.askstring(tr("💾 Guardar ADN"), tr("Nombre para el ADN:"),
                                                           initialvalue=sugerencia)
                         if not nombre:
                             return

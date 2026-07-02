@@ -137,7 +137,7 @@ class DataMgmtService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _cmd_guardar_plantilla(self) -> None:
-        nombre = simpledialog.askstring("Guardar Plantilla", "Nombre para la plantilla:", parent=self.app)
+        nombre = simpledialog.askstring(tr("Guardar Plantilla"), tr("Nombre para la plantilla:"), parent=self.app)
         if not nombre or not nombre.strip(): return
         nombre = nombre.strip()
         neg_extra = self.app.txt_negative.get("1.0", "end").strip() if hasattr(self.app, 'txt_negative') else ""
@@ -590,7 +590,7 @@ class DataMgmtService:
         if not texto:
             self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar como estrella."), "#e67e22")
             return
-        nota = simpledialog.askstring("🌟 Prompt Estrella", "Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):", parent=self.app)
+        nota = simpledialog.askstring(tr("🌟 Prompt Estrella"), tr("Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):"), parent=self.app)
         if not nota: nota = ""
         modo = self.app.modo_var.get()
         modelo = ""
@@ -885,7 +885,7 @@ class DataMgmtService:
             if not pos:
                 self.app.dialogs.set_estado(tr("⚠️ No hay POSITIVE para guardar como fórmula."), "#e67e22")
                 return
-            nombre = simpledialog.askstring("📐 Nueva fórmula", "Nombre para esta fórmula:", parent=vent)
+            nombre = simpledialog.askstring(tr("📐 Nueva fórmula"), tr("Nombre para esta fórmula:"), parent=vent)
             if not nombre: return
             actual = prefs.get("formulas", [])
             actual.append({
@@ -982,8 +982,8 @@ class DataMgmtService:
                 def _renombrar(idx_l=i, form_l=f):
                     from tkinter import simpledialog
                     nuevo = simpledialog.askstring(
-                        "Renombrar fórmula",
-                        "Nuevo nombre:",
+                        tr("Renombrar fórmula"),
+                        tr("Nuevo nombre:"),
                         initialvalue=form_l.get("nombre", ""),
                         parent=vent,
                     )

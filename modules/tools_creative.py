@@ -27,6 +27,61 @@ from modules.gprompt_window import GPromptWindow
 if TYPE_CHECKING:
     pass
 
+# Catálogo del NEGATIVE builder: {tab: [(nombre_es, tags_negative), ...]}.
+# Los nombres ES son la CLAVE interna (presets guardados, _marcar); la UI
+# muestra tr(nombre). A nivel de módulo para el test de cobertura i18n.
+NEGATIVE_BUILDER_CATEGORIAS = {
+    "🔥 Anatomía": [
+        ("Manos malas", "(bad hands:1.4), (deformed hands:1.3), (extra fingers:1.4), missing fingers, fused fingers"),
+        ("Cara mal", "(deformed face:1.3), (asymmetric face:1.2), bad anatomy, ugly face"),
+        ("Ojos raros", "(crossed eyes:1.3), (dead eyes:1.2), unaligned eyes, lazy eye"),
+        ("Boca / dientes", "(bad teeth:1.3), crooked teeth, deformed mouth, ugly smile"),
+        ("Múltiples cabezas", "(multiple heads:1.4), conjoined twins, cloned face"),
+        ("Cuerpo deforme", "(bad anatomy:1.4), (mutation:1.3), extra limbs, deformed body"),
+        ("Pies malos", "(bad feet:1.3), deformed toes, fused toes, missing legs"),
+        ("Proporciones malas", "(bad proportions:1.3), gigantic head, tiny body, long neck"),
+    ],
+    "📷 Calidad": [
+        ("Baja calidad", "(low quality:1.4), (worst quality:1.4), lowres, blurry, jpeg artifacts"),
+        ("Pixelado", "(pixelated:1.3), aliasing, compression artifacts"),
+        ("Sobreexpuesto", "(overexposed:1.3), washed out colors, blown highlights"),
+        ("Subexpuesto", "(underexposed:1.2), too dark, crushed shadows"),
+        ("Ruido", "(noisy:1.3), grainy, film grain"),
+        ("Desenfoque", "(out of focus:1.3), motion blur, soft focus"),
+        ("Color saturado mal", "oversaturated, neon vomit, ugly color cast"),
+        ("Tinte amarillo", "(yellow tint:1.2), color cast, white balance off"),
+    ],
+    "📝 Texto": [
+        ("Texto / letras", "(text:1.4), (watermark:1.4), letters, words, signature"),
+        ("Logos / firmas", "logo, brand, copyright, username, artist signature"),
+        ("Marca de agua", "(watermark:1.5), stamps, labels"),
+        ("Bordes / frame", "(border:1.3), frame, picture frame, vignette"),
+        ("Caption / subtítulo", "caption, subtitle, dialog text, speech bubble"),
+    ],
+    "🎨 Estilo": [
+        ("Sin anime", "(anime:1.3), (cartoon:1.3), (illustration:1.3), unrealistic"),
+        ("Sin foto", "(photorealistic:1.3), (photograph:1.3), realistic skin"),
+        ("Sin 3D", "(3d render:1.3), CGI, plastic look, video game graphics"),
+        ("Sin pintura", "(painting:1.2), (drawing:1.2), brush strokes, oil painting"),
+        ("Sin sketch", "(sketch:1.3), pencil drawing, line art, lineart"),
+        ("Sin abstracto", "(abstract:1.2), abstract art, non-representational"),
+    ],
+    "🚫 Composición": [
+        ("Recortado", "(cropped:1.3), out of frame, cut off"),
+        ("Multi-sujeto", "(multiple subjects:1.3), too many people, group, crowd"),
+        ("Plano", "flat lighting, no depth, boring composition"),
+        ("Simétrico forzado", "(perfect symmetry:1.2), too symmetrical"),
+        ("Plano centrado", "centered subject, plain background, dead center"),
+        ("Fondo desordenado", "cluttered background, busy background, distracting"),
+    ],
+    "✨ Realismo": [
+        ("Piel plástica", "(plastic skin:1.3), waxy skin, smooth skin, doll-like"),
+        ("Sin uncanny", "(uncanny valley:1.3), creepy, soulless"),
+        ("Sin filtro IG", "(instagram filter:1.2), heavy makeup, beauty filter"),
+        ("Errores luz", "(unnatural lighting:1.2), unrealistic shadows, no shadow"),
+    ],
+}
+
 class ToolsCreativeService:
     """18 herramientas creativas: sorpréndeme, pulse, sugerir modelo,
     análisis inverso, sugerir estilos, anclaje visual, color palette,
@@ -1224,8 +1279,8 @@ class ToolsCreativeService:
                             adns_b = []
                         sugerencia = f"ADN rasgos {len(adns_b) + 1}"
                         nombre = simpledialog.askstring(
-                            "💾 Guardar ADN",
-                            "Nombre para este ADN:",
+                            tr("💾 Guardar ADN"),
+                            tr("Nombre para este ADN:"),
                             initialvalue=sugerencia,
                             parent=vent2,
                         )
@@ -1388,8 +1443,8 @@ class ToolsCreativeService:
 
         # Pedir el segundo prompt
         from tkinter import simpledialog
-        otro = simpledialog.askstring("🔍 Comparar consistencia",
-                                        "Pega aquí el otro prompt a comparar (el actual es el del resultado):",
+        otro = simpledialog.askstring(tr("🔍 Comparar consistencia"),
+                                        tr("Pega aquí el otro prompt a comparar (el actual es el del resultado):"),
                                         parent=self.app)
         if not otro or len(otro) < 20:
             return self.app.dialogs.set_estado(tr("⚠️ Pega un prompt válido para comparar."), "#e67e22")
@@ -1468,57 +1523,7 @@ class ToolsCreativeService:
         tabs = ctk.CTkTabview(vent, height=460)
         tabs.pack(fill="both", expand=True, padx=12, pady=(0, 4))
 
-        categorias = {
-            "🔥 Anatomía": [
-                ("Manos malas", "(bad hands:1.4), (deformed hands:1.3), (extra fingers:1.4), missing fingers, fused fingers"),
-                ("Cara mal", "(deformed face:1.3), (asymmetric face:1.2), bad anatomy, ugly face"),
-                ("Ojos raros", "(crossed eyes:1.3), (dead eyes:1.2), unaligned eyes, lazy eye"),
-                ("Boca / dientes", "(bad teeth:1.3), crooked teeth, deformed mouth, ugly smile"),
-                ("Múltiples cabezas", "(multiple heads:1.4), conjoined twins, cloned face"),
-                ("Cuerpo deforme", "(bad anatomy:1.4), (mutation:1.3), extra limbs, deformed body"),
-                ("Pies malos", "(bad feet:1.3), deformed toes, fused toes, missing legs"),
-                ("Proporciones malas", "(bad proportions:1.3), gigantic head, tiny body, long neck"),
-            ],
-            "📷 Calidad": [
-                ("Baja calidad", "(low quality:1.4), (worst quality:1.4), lowres, blurry, jpeg artifacts"),
-                ("Pixelado", "(pixelated:1.3), aliasing, compression artifacts"),
-                ("Sobreexpuesto", "(overexposed:1.3), washed out colors, blown highlights"),
-                ("Subexpuesto", "(underexposed:1.2), too dark, crushed shadows"),
-                ("Ruido", "(noisy:1.3), grainy, film grain"),
-                ("Desenfoque", "(out of focus:1.3), motion blur, soft focus"),
-                ("Color saturado mal", "oversaturated, neon vomit, ugly color cast"),
-                ("Tinte amarillo", "(yellow tint:1.2), color cast, white balance off"),
-            ],
-            "📝 Texto": [
-                ("Texto / letras", "(text:1.4), (watermark:1.4), letters, words, signature"),
-                ("Logos / firmas", "logo, brand, copyright, username, artist signature"),
-                ("Marca de agua", "(watermark:1.5), stamps, labels"),
-                ("Bordes / frame", "(border:1.3), frame, picture frame, vignette"),
-                ("Caption / subtítulo", "caption, subtitle, dialog text, speech bubble"),
-            ],
-            "🎨 Estilo": [
-                ("Sin anime", "(anime:1.3), (cartoon:1.3), (illustration:1.3), unrealistic"),
-                ("Sin foto", "(photorealistic:1.3), (photograph:1.3), realistic skin"),
-                ("Sin 3D", "(3d render:1.3), CGI, plastic look, video game graphics"),
-                ("Sin pintura", "(painting:1.2), (drawing:1.2), brush strokes, oil painting"),
-                ("Sin sketch", "(sketch:1.3), pencil drawing, line art, lineart"),
-                ("Sin abstracto", "(abstract:1.2), abstract art, non-representational"),
-            ],
-            "🚫 Composición": [
-                ("Recortado", "(cropped:1.3), out of frame, cut off"),
-                ("Multi-sujeto", "(multiple subjects:1.3), too many people, group, crowd"),
-                ("Plano", "flat lighting, no depth, boring composition"),
-                ("Simétrico forzado", "(perfect symmetry:1.2), too symmetrical"),
-                ("Plano centrado", "centered subject, plain background, dead center"),
-                ("Fondo desordenado", "cluttered background, busy background, distracting"),
-            ],
-            "✨ Realismo": [
-                ("Piel plástica", "(plastic skin:1.3), waxy skin, smooth skin, doll-like"),
-                ("Sin uncanny", "(uncanny valley:1.3), creepy, soulless"),
-                ("Sin filtro IG", "(instagram filter:1.2), heavy makeup, beauty filter"),
-                ("Errores luz", "(unnatural lighting:1.2), unrealistic shadows, no shadow"),
-            ],
-        }
+        categorias = NEGATIVE_BUILDER_CATEGORIAS
 
         # check_vars[nombre] = (BooleanVar, tags, checkbox_widget)
         # Los checkboxes se crean UNA SOLA VEZ al inicio. El filtro
@@ -1527,7 +1532,7 @@ class ToolsCreativeService:
 
         def _actualizar_lbl():
             n = sum(1 for tup in check_vars.values() if tup[0].get())
-            activos = [nom for nom, tup in check_vars.items() if tup[0].get()]
+            activos = [tr(nom) for nom, tup in check_vars.items() if tup[0].get()]
             extra = f"… (+{len(activos) - 5})" if len(activos) > 5 else ""
             lbl_activos.configure(
                 text=tr('✅ {0} activos: {1}{2}').format((n), (', '.join(activos[:5])), (extra))
@@ -1535,7 +1540,7 @@ class ToolsCreativeService:
 
         def _crear_checkbox(tab_frame, nombre, tags):
             v = ctk.BooleanVar()
-            cb = ctk.CTkCheckBox(tab_frame, text=nombre, variable=v,
+            cb = ctk.CTkCheckBox(tab_frame, text=tr(nombre), variable=v,
                                  font=ctk.CTkFont(size=10),
                                  onvalue=True, offvalue=False)
             cb.pack(anchor="w", padx=16, pady=1)
@@ -1544,7 +1549,7 @@ class ToolsCreativeService:
 
         # Crear todos los checkboxes UNA SOLA VEZ
         for cat_nombre, cat_items in categorias.items():
-            tab = tabs.add(cat_nombre)
+            tab = tabs.add(tr(cat_nombre))
             for nombre, tags in cat_items:
                 _crear_checkbox(tab, nombre, tags)
 
@@ -1553,7 +1558,8 @@ class ToolsCreativeService:
             los checkboxes, así el estado marcado/desmarcado se conserva."""
             filtro = search_entry.get().lower().strip()
             for nombre, (v, tags, cb) in check_vars.items():
-                if not filtro or filtro in nombre.lower() or filtro in tags.lower():
+                if (not filtro or filtro in nombre.lower()
+                        or filtro in tr(nombre).lower() or filtro in tags.lower()):
                     if not cb.winfo_ismapped():
                         cb.pack(anchor="w", padx=16, pady=1)
                 else:
@@ -1599,8 +1605,8 @@ class ToolsCreativeService:
             from tkinter import simpledialog
             presets = _cargar_presets()
             sugerencia = f"Preset {len(presets) + 1}"
-            nombre = simpledialog.askstring("Guardar preset NEGATIVE",
-                                            "Nombre del preset:",
+            nombre = simpledialog.askstring(tr("Guardar preset NEGATIVE"),
+                                            tr("Nombre del preset:"),
                                             initialvalue=sugerencia,
                                             parent=vent)
             if not nombre:
@@ -1675,7 +1681,7 @@ class ToolsCreativeService:
                                   command=_borrar).pack(side="right", padx=2)
                     ctk.CTkLabel(
                         row,
-                        text=f"{', '.join(preset['items'][:8])}"
+                        text=f"{', '.join(tr(i) for i in preset['items'][:8])}"
                              f"{'…' if len(preset['items']) > 8 else ''}",
                         font=ctk.CTkFont(size=9), text_color="#888888",
                         wraplength=380,
@@ -1898,9 +1904,9 @@ class ToolsCreativeService:
                         # Pedir nombre al usuario en vez de auto-numerar
                         from tkinter import simpledialog
                         nombre = simpledialog.askstring(
-                            "Guardar paleta",
-                            "Nombre de la paleta:",
-                            initialvalue=f"Paleta {len(self.app.store.paletas or []) + 1}",
+                            tr("Guardar paleta"),
+                            tr("Nombre de la paleta:"),
+                            initialvalue=tr("Paleta {0}").format(len(self.app.store.paletas or []) + 1),
                             parent=vent,
                         )
                         if not nombre:

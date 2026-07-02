@@ -247,8 +247,8 @@ class ToolsWorkflowService:
         if not setup:
             self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), "#e67e22")
             return
-        nombre = simpledialog.askstring("💾 Guardar setup",
-                                          "Nombre para este setup:\n(modelo, plataforma, ratio, estilos, negatives…)",
+        nombre = simpledialog.askstring(tr("💾 Guardar setup"),
+                                          tr("Nombre para este setup:\n(modelo, plataforma, ratio, estilos, negatives…)"),
                                           parent=self.app)
         if not nombre or not nombre.strip(): return
         nombre = nombre.strip()[:60]

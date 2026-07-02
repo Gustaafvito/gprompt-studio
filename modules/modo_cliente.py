@@ -710,8 +710,8 @@ class ModoClienteService:
                                 estilos_g = []
                             sugerencia = f"Estilo Moodboard {len(estilos_g) + 1}"
                             nombre = simpledialog.askstring(
-                                "💾 Guardar estilo",
-                                "Nombre del estilo (lo verás en 📚 Mis estilos):",
+                                tr("💾 Guardar estilo"),
+                                tr("Nombre del estilo (lo verás en 📚 Mis estilos):"),
                                 initialvalue=sugerencia,
                                 parent=vent2,
                             )
