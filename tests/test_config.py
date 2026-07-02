@@ -48,6 +48,50 @@ class TestRatiosOrdenCanonico:
             assert _ratios_en_orden_canonico(s["ratios"], RATIOS_VIDEO), fam
 
 
+class TestCatalogoSpecsCompleto:
+    """Candado (auditoría 2026-07-02): todo modelo visible en la UI resuelve
+    specs. Las plataformas cloud deben tener entrada CURADA en el JSON; los
+    checkpoints ComfyUI locales pueden caer al sintetizador por familia."""
+
+    COMFY = "ComfyUI / A1111 / Forge"
+
+    @staticmethod
+    def _json(nombre):
+        import json
+        path = os.path.join(os.path.dirname(__file__), "..", "data", nombre)
+        return json.load(open(path, encoding="utf-8"))
+
+    def test_imagen_todo_modelo_ui_resuelve_specs(self):
+        import config
+        from config import get_image_model_specs
+        specs = self._json("model_specs_imagen.json")
+        fallos = []
+        for plat, flat in config.MODELOS_POR_PLATAFORMA_IMAGEN.items():
+            for m in flat:
+                if m.startswith("──"):
+                    continue
+                ok = (get_image_model_specs(m) is not None
+                      if plat == self.COMFY else m in specs)
+                if not ok:
+                    fallos.append(f"{plat} -> {m}")
+        assert not fallos, f"modelos de imagen sin spec: {fallos}"
+
+    def test_video_todo_modelo_ui_resuelve_specs(self):
+        import config
+        from config import get_model_specs
+        specs = self._json("model_specs_video.json")
+        fallos = []
+        for plat, flat in config.MODELOS_POR_PLATAFORMA_VIDEO.items():
+            for m in flat:
+                if m.startswith("──"):
+                    continue
+                ok = (get_model_specs(m) is not None
+                      if plat == self.COMFY else m in specs)
+                if not ok:
+                    fallos.append(f"{plat} -> {m}")
+        assert not fallos, f"modelos de vídeo sin spec: {fallos}"
+
+
 class TestStyleGuideBilingue:
     """La guía de estilos tiene versión EN con las MISMAS claves (nombres)."""
 
