@@ -107,9 +107,9 @@ class MultiPromptService:
             return self.app.dialogs.set_estado(tr("⚠️ Escribe un concepto base."), "#e67e22")
 
         n = self.app._pedir_n_modal(
-            "🎭 Mood — número de prompts",
-            "¿Cuántos prompts en el moodboard?\n"
-            "Comparten mood/atmósfera pero con sujetos distintos.",
+            tr("🎭 Mood — número de prompts"),
+            tr("¿Cuántos prompts en el moodboard?\n"
+               "Comparten mood/atmósfera pero con sujetos distintos."),
             n_min=4, n_max=10, default=6,
             key_pref="moodboard_n",
         )
@@ -415,9 +415,9 @@ class MultiPromptService:
             return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), "#e67e22")
 
         n = self.app._pedir_n_modal(
-            "📽 Board — número de frames",
-            "¿Cuántos frames clave en el storyboard?\n"
-            "Cuentan una microhistoria visual coherente.",
+            tr("📽 Board — número de frames"),
+            tr("¿Cuántos frames clave en el storyboard?\n"
+               "Cuentan una microhistoria visual coherente."),
             n_min=3, n_max=8, default=4,
             key_pref="board_n",
         )
@@ -469,7 +469,7 @@ class MultiPromptService:
                     self.app._abrir_comparador(
                         bloques[:n],
                         extra_botones=[
-                            ("🎬 Encadenar como prompt de vídeo", "#7c3aed", _encadenar_video),
+                            (tr("🎬 Encadenar como prompt de vídeo"), "#7c3aed", _encadenar_video),
                         ],
                     )
                     self.app.dialogs.set_estado(
@@ -577,8 +577,8 @@ class MultiPromptService:
                 tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), "#e67e22")
 
         n = self.app._pedir_n_modal(
-            "🎬 Cortometraje — número de escenas",
-            "¿Cuántas escenas? Cada una es un clip de vídeo independiente.",
+            tr("🎬 Cortometraje — número de escenas"),
+            tr("¿Cuántas escenas? Cada una es un clip de vídeo independiente."),
             n_min=3, n_max=12, default=6, key_pref="corto_n",
         )
         if n is None:
@@ -652,7 +652,7 @@ class MultiPromptService:
         def _exportar():
             from tkinter import filedialog
             ruta = filedialog.asksaveasfilename(
-                defaultextension=".txt", filetypes=[("Texto", "*.txt")],
+                defaultextension=".txt", filetypes=[(tr("Texto"), "*.txt")],
                 initialfile="cortometraje.txt", parent=v)
             if not ruta:
                 return
@@ -697,10 +697,10 @@ class MultiPromptService:
         modelo_label = modelo or "modelo no detectado"
 
         n = self.app._pedir_n_modal(
-            "🖼 Storyboard — número de paneles",
-            f"¿Cuántos paneles en el storyboard?\n"
-            f"Cada panel tendrá su shot type y prompt cinematográfico.\n"
-            f"📐 Formato: {formato_etiqueta} · Modelo: {modelo_label}",
+            tr("🖼 Storyboard — número de paneles"),
+            tr("¿Cuántos paneles en el storyboard?\n"
+               "Cada panel tendrá su shot type y prompt cinematográfico.\n"
+               "📐 Formato: {0} · Modelo: {1}").format(formato_etiqueta, modelo_label),
             n_min=3, n_max=12, default=9,
             key_pref="storyboard_img_n",
         )

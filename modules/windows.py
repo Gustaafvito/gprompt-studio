@@ -596,7 +596,7 @@ def abrir_batch_variables(app):
                  font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
     txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=12))
     txt_tmpl.pack(fill="x", padx=8, pady=(0, 8))
-    txt_tmpl.insert("1.0", plantilla or "una {animal} en {lugar} con iluminación {luz}")
+    txt_tmpl.insert("1.0", plantilla or tr("una {animal} en {lugar} con iluminación {luz}"))
 
     # Frame de variables dinámico
     frame_vars_outer = ctk.CTkFrame(ventana)
@@ -781,10 +781,10 @@ def abrir_batch(app):
                          font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=12, pady=(8, 2))
             entry_blista[0] = ctk.CTkTextbox(frame_panel, height=140, font=ctk.CTkFont(size=13))
             entry_blista[0].pack(fill="x", padx=12, pady=(0, 8))
-            entry_blista[0].insert("1.0",
+            entry_blista[0].insert("1.0", tr(
                 "chica anime en playa al atardecer\n"
                 "robot samurái en ciudad cyberpunk\n"
-                "mago anciano en biblioteca encantada\n")
+                "mago anciano en biblioteca encantada\n"))
 
     actualizar_panel()
 
@@ -1065,7 +1065,7 @@ def abrir_batch(app):
         if not texto or texto.startswith("⏳"):
             return
         ruta = filedialog.asksaveasfilename(
-            defaultextension=".txt", filetypes=[("Texto", "*.txt")],
+            defaultextension=".txt", filetypes=[(tr("Texto"), "*.txt")],
             initialfile=f"batch_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
             parent=ventana)
         if ruta:
@@ -1306,7 +1306,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         flecha = ctk.CTkLabel(hdr, text="▼" if expanded else "▶", font=ctk.CTkFont(size=11),
                               text_color=cc["card_hdr_text"], cursor="hand2")
         flecha.pack(side="left", padx=(10, 6))
-        ctk.CTkLabel(hdr, text=f"{nombre}", font=ctk.CTkFont(size=12, weight="bold"),
+        ctk.CTkLabel(hdr, text=tr(nombre), font=ctk.CTkFont(size=12, weight="bold"),
                      text_color=cc["card_hdr_text"], cursor="hand2").pack(side="left")
         ctk.CTkLabel(hdr, text=f"  ({len(entradas)})", font=ctk.CTkFont(size=10),
                      text_color=cc["empty_text"], cursor="hand2").pack(side="left", padx=4)

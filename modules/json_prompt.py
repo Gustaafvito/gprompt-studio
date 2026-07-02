@@ -436,12 +436,12 @@ class JsonPromptService:
         if resumen.get("negative"):
             partes.append("✅ NEGATIVE incluido")
         if resumen.get("modo"):
-            partes.append(f"🎛 Modo cambiado a {resumen['modo'].upper()}")
+            partes.append(tr("🎛 Modo cambiado a {0}").format(resumen['modo'].upper()))
         if resumen.get("ratio"):
             partes.append(f"📐 Aspect ratio: {resumen['ratio']}")
         if resumen.get("duration"):
-            partes.append(f"⏱ Duración: {resumen['duration']}s (mostrada como nota)")
-        ctk.CTkLabel(vent, text="  ·  ".join(partes) if partes else "Nada aplicado.",
+            partes.append(tr("⏱ Duración: {0}s (mostrada como nota)").format(resumen['duration']))
+        ctk.CTkLabel(vent, text="  ·  ".join(partes) if partes else tr("Nada aplicado."),
                      font=ctk.CTkFont(size=11),
                      text_color="#2ecc71" if partes else "#e67e22",
                      wraplength=720, justify="center").pack(pady=(0, 10), padx=15)
@@ -654,7 +654,7 @@ class JsonPromptService:
             vent,
             text=tr("Listo para enviar a Veo / Sora / Kling u otros motores con JSON API.")
                  if json_valido
-                 else "El LLM no devolvió JSON 100% válido — revisa antes de usar.",
+                 else tr("El LLM no devolvió JSON 100% válido — revisa antes de usar."),
             font=ctk.CTkFont(size=10),
             text_color=c["muted_text"] if json_valido else "#fbbf24",
         ).pack(pady=(0, 8))

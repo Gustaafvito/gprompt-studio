@@ -131,7 +131,7 @@ class ModoClienteService:
             from PIL import Image
             ruta = filedialog.askopenfilename(
                 title=tr("Selecciona imagen de referencia (logo, moodboard...)"),
-                filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
+                filetypes=[(tr("Imágenes"), "*.jpg *.jpeg *.png *.webp")]
             )
             if not ruta: return
             try:
@@ -553,7 +553,7 @@ class ModoClienteService:
         def _anadir_mas():
             nuevas = filedialog.askopenfilenames(
                 title=tr("Selecciona más imágenes"),
-                filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp")]
+                filetypes=[(tr("Imágenes"), "*.jpg *.jpeg *.png *.webp")]
             )
             if not nuevas:
                 return

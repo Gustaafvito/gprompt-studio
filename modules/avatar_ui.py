@@ -391,9 +391,9 @@ class AvatarFrame(ctk.CTkFrame):
                     resp = self.llm_call(sys_p, user_p)
                 ficha = parsear_ficha_json(resp)
                 if not ficha:
-                    raise ValueError(
+                    raise ValueError(tr(
                         "La IA no devolvió una ficha JSON parseable. "
-                        "Prueba otra vez (o con otro tema).")
+                        "Prueba otra vez (o con otro tema)."))
                 self.after(0, lambda: self._aplicar_ficha(ficha))
             except Exception as e:
                 self.after(0, lambda e=e: self._fin_ficha_error(str(e)))
@@ -409,8 +409,8 @@ class AvatarFrame(ctk.CTkFrame):
 
         ruta = filedialog.askopenfilename(
             title=tr("Imagen de referencia del personaje"),
-            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp"),
-                       ("Todos", "*.*")])
+            filetypes=[(tr("Imágenes"), "*.png *.jpg *.jpeg *.webp *.bmp"),
+                       (tr("Todos"), "*.*")])
         if not ruta:
             return
         nombre = os.path.basename(ruta)
@@ -433,9 +433,9 @@ class AvatarFrame(ctk.CTkFrame):
                 resp = self.vision_call(imagen, PROMPT_VISION_FICHA)
                 ficha = parsear_ficha_json(resp)
                 if not ficha:
-                    raise ValueError(
+                    raise ValueError(tr(
                         "La IA de visión no devolvió una ficha JSON parseable. "
-                        "Prueba con otra imagen (mejor un retrato claro).")
+                        "Prueba con otra imagen (mejor un retrato claro)."))
                 self._imagen_referencia = ruta
 
                 def _ok():
@@ -450,7 +450,7 @@ class AvatarFrame(ctk.CTkFrame):
                         self.label_imagen_ref.configure(
                             text=tr('  📷 {0} ✓ ficha extraída').format(nombre))
                     self._aplicar_ficha(
-                        ficha, origen="📷 Ficha extraída de la imagen")
+                        ficha, origen=tr("📷 Ficha extraída de la imagen"))
                 self.after(0, _ok)
             except Exception as e:
                 def _err(e=e):

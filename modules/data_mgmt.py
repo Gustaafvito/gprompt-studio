@@ -222,7 +222,7 @@ class DataMgmtService:
         self.app.dialogs.set_estado(tr("📐 Plantilla '{0}' cargada.").format(nombre), "#9b59b6")
 
     def _cargar_imagen(self) -> None:
-        ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.webp *.bmp")])
+        ruta = filedialog.askopenfilename(filetypes=[(tr("Imágenes"), "*.jpg *.jpeg *.png *.webp *.bmp")])
         if ruta:
             self._cargar_imagen_desde_pil(Image.open(ruta).convert("RGB"), Path(ruta).name)
 
@@ -617,7 +617,7 @@ class DataMgmtService:
             self.app.dialogs.set_estado(tr("⚠️ No hay contenido para exportar."), "#e67e22")
             return
         ruta = filedialog.asksaveasfilename(
-            defaultextension=".txt", filetypes=[("Texto", "*.txt")],
+            defaultextension=".txt", filetypes=[(tr("Texto"), "*.txt")],
             initialfile=f"prompt_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
         if ruta:
             fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -997,7 +997,7 @@ class DataMgmtService:
                         self.app.store.guardar_preferencias(prefs_r)
                     refrescar()
 
-                def _borrar(idx_l=i, n=f.get("nombre", "sin nombre")):
+                def _borrar(idx_l=i, n=f.get("nombre", tr("sin nombre"))):
                     if not messagebox.askyesno(tr("Borrar fórmula"),
                                                tr("¿Borrar la fórmula '{0}'?").format(n),
                                                parent=vent):
@@ -1219,7 +1219,7 @@ class DataMgmtService:
                 modo_emoji = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(ej.get("modo", ""), "")
                 ctk.CTkLabel(
                     hdr,
-                    text=f"  {modo_emoji} {ej.get('titulo', '(sin título)')}  ·  {ej.get('modelo', '')}",
+                    text=f"  {modo_emoji} {ej.get('titulo', tr('(sin título)'))}  ·  {ej.get('modelo', '')}",
                     font=ctk.CTkFont(size=11, weight="bold"),
                     text_color=c["hdr_text"]
                 ).pack(side="left")

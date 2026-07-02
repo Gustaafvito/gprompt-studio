@@ -43,7 +43,7 @@ class BackupExportService:
         from tkinter import filedialog, messagebox
         archivo = filedialog.asksaveasfilename(
             defaultextension=".json",
-            filetypes=[("JSON Backup", "*.json"), ("Todos", "*.*")],
+            filetypes=[("JSON Backup", "*.json"), (tr("Todos"), "*.*")],
             initialfile=f"gprompt_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.json"
         )
         if not archivo:
@@ -103,7 +103,7 @@ class BackupExportService:
         from config import BACKUPS_DIR
 
         archivo = filedialog.askopenfilename(
-            filetypes=[("JSON Backup", "*.json"), ("Todos", "*.*")],
+            filetypes=[("JSON Backup", "*.json"), (tr("Todos"), "*.*")],
         )
         if not archivo:
             return
@@ -291,7 +291,7 @@ class BackupExportService:
         fecha = datetime.datetime.now().strftime("%Y%m%d")
         archivo = filedialog.asksaveasfilename(
             defaultextension=".csv",
-            filetypes=[("CSV", "*.csv"), ("Todos", "*.*")],
+            filetypes=[("CSV", "*.csv"), (tr("Todos"), "*.*")],
             initialfile=f"gprompt_{nombres}_{fecha}.csv",
         )
         if not archivo:
@@ -748,7 +748,7 @@ class BackupExportService:
                             if ff.get('negative'):
                                 txt_form += f"\nNEGATIVE PROMPT: {ff.get('negative')}"
                             self.app.dialogs.actualizar_salida(txt_form)
-                        resultados.append(("🧪 Fórmula", f.get("nombre", "?"), pos_neg, _cargar_formula))
+                        resultados.append((tr("🧪 Fórmula"), f.get("nombre", "?"), pos_neg, _cargar_formula))
 
             if filtros["personajes"].get():
                 for p in (self.app.store.personajes or []):

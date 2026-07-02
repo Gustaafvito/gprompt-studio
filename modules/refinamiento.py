@@ -120,9 +120,9 @@ class RefinamientoService:
             return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para iterar."), "#e67e22")
 
         n = self.app._pedir_n_modal(
-            "🔂 Iterar — número de variantes",
-            "¿Cuántas variantes quieres? Todas cambiarán SOLO el "
-            "elemento que elijas en el siguiente paso.",
+            tr("🔂 Iterar — número de variantes"),
+            tr("¿Cuántas variantes quieres? Todas cambiarán SOLO el "
+               "elemento que elijas en el siguiente paso."),
             n_min=3, n_max=10, default=5,
             key_pref="iteracion_n",
         )
@@ -336,11 +336,11 @@ class RefinamientoService:
 
         self.app._abrir_ventana_diff(
             texto_previo, texto_nuevo,
-            label_a="🔹 Original",
-            label_b="🔸 Refinado",
+            label_a=tr("🔹 Original"),
+            label_b=tr("🔸 Refinado"),
             on_apply=_on_apply,
             on_cancel=_on_cancel,
             on_undo=on_undo,
-            titulo="🔁 Refinamiento — revisa los cambios antes de aplicar",
-            hint="🟢 Verde = añadido por el refinamiento    🔴 Rojo = eliminado del original    ⚪ Sin color = igual",
+            titulo=tr("🔁 Refinamiento — revisa los cambios antes de aplicar"),
+            hint=tr("🟢 Verde = añadido por el refinamiento    🔴 Rojo = eliminado del original    ⚪ Sin color = igual"),
         )

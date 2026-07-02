@@ -249,9 +249,9 @@ class UiFooterService:
             self.app.txt_idea.delete("1.0", "end")
             self.app.ui._actualizar_barra_chars()
 
-        menu.add_command(label="✂️ Cortar" + ("" if tiene_seleccion else "  (sin selección)"),
+        menu.add_command(label=tr("✂️ Cortar") + ("" if tiene_seleccion else tr("  (sin selección)")),
                          command=_cortar, state="normal" if tiene_seleccion else "disabled")
-        menu.add_command(label="📋 Copiar" + ("" if tiene_seleccion else "  (todo)"),
+        menu.add_command(label=tr("📋 Copiar") + ("" if tiene_seleccion else tr("  (todo)")),
                          command=_copiar_sel)
         menu.add_command(label=tr("📥 Pegar"), command=_pegar)
         menu.add_separator()

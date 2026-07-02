@@ -84,7 +84,7 @@ def abrir_glosario(app):
     fila1.pack(fill="x", padx=20, pady=(12, 6))
     ctk.CTkLabel(fila1, text=tr("📚 Glosario de términos AI"),
                  font=ctk.CTkFont(size=18, weight="bold")).pack(side="left")
-    contador_var = ctk.StringVar(value=f"{len(entradas)} términos")
+    contador_var = ctk.StringVar(value=tr("{0} términos").format(len(entradas)))
     ctk.CTkLabel(fila1, textvariable=contador_var, text_color=text_muted).pack(side="left", padx=(10, 0))
     ent_buscar = ctk.CTkEntry(fila1, width=300, placeholder_text=tr("🔍 Buscar término…"))
     ent_buscar.pack(side="right")
@@ -195,9 +195,10 @@ def abrir_glosario(app):
         n = len(filtradas)
 
         if cat_sel_real:
-            contador_var.set(f"{n} en {cat_sel_real}")
+            contador_var.set(tr("{0} en {1}").format(n, cat_sel_real))
         else:
-            contador_var.set(f"{n} de {len(entradas)}" if f else f"{len(entradas)} términos")
+            contador_var.set(tr("{0} de {1}").format(n, len(entradas)) if f
+                             else tr("{0} términos").format(len(entradas)))
 
         if n == 0:
             ctk.CTkLabel(scroll, text=tr("Sin resultados."), text_color=text_muted,

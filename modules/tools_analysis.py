@@ -469,7 +469,7 @@ class ToolsAnalysisService:
                       fg_color="#444", hover_color="#555",
                       command=vent.destroy).pack(side="left", padx=4)
 
-        self.app.dialogs.set_estado(tr("🔍 Análisis listo") + (" (caché)" if cacheado else ""), "#2ecc71")
+        self.app.dialogs.set_estado(tr("🔍 Análisis listo") + (tr(" (caché)") if cacheado else ""), "#2ecc71")
 
     def _cmd_automejora_periodica(self) -> None:
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
@@ -1807,7 +1807,7 @@ class ToolsAnalysisService:
                     except Exception as _e: logger.debug(f"[silent] {_e}")
                 aplicado = True
             elif seed["modelo_vid"]:
-                mensajes.append(f"Modelo vídeo '{seed['modelo_vid']}' no disponible")
+                mensajes.append(tr("Modelo vídeo '{0}' no disponible").format(seed['modelo_vid']))
 
         # Cargar ratio
         if seed.get("ratio") and hasattr(self.app, 'combo_ratio'):
@@ -2056,7 +2056,7 @@ class ToolsAnalysisService:
             ruta = filedialog.asksaveasfilename(
                 title=tr("Guardar workflow ComfyUI"),
                 defaultextension=".json",
-                filetypes=[("JSON", "*.json"), ("Todos", "*.*")],
+                filetypes=[("JSON", "*.json"), (tr("Todos"), "*.*")],
                 initialfile=f"gprompt_workflow_{modelo.replace(' ', '_')}.json"
             )
             if ruta:

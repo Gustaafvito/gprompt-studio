@@ -86,7 +86,7 @@ class DialogsService:
             # Estado
             if refs.get("lbl_estado"):
                 refs["lbl_estado"].configure(
-                    text=tr("✅ configurado") if current else "⚠️ sin configurar",
+                    text=tr("✅ configurado") if current else tr("⚠️ sin configurar"),
                     text_color="#2ecc71" if current else "#e67e22",
                 )
             # Origen

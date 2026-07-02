@@ -104,7 +104,7 @@ class PreviewPollinationsService:
             pos = prompt_text or ""
         pos = (pos or "").strip()
         if not pos:
-            return on_error("Prompt vacío")
+            return on_error(tr("Prompt vacío"))
         pos = pos[:500]
 
         # Cache
@@ -246,7 +246,7 @@ class PreviewPollinationsService:
                                         if on_progress:
                                             _safe_cb(
                                                 on_progress,
-                                                "💸 Sin Pollen — usando endpoint anónimo (más lento)",
+                                                tr("💸 Sin Pollen — usando endpoint anónimo (más lento)"),
                                             )
                                         base_url = "https://image.pollinations.ai/prompt/"
                                         req_headers = {}
@@ -303,9 +303,9 @@ class PreviewPollinationsService:
                 # Si salimos del with sin return → todos los intentos fallaron.
                 # Si la mayoría fueron "queue full", mensaje específico claro.
                 if queue_full_hits >= 4:
-                    last_err = ("Pollinations sobrecargado. Espera 1-2 min "
-                                "y pulsa ♻ para reintentar.")
-                _safe_cb(on_error, last_err or "Pollinations no devolvió imagen")
+                    last_err = tr("Pollinations sobrecargado. Espera 1-2 min "
+                                  "y pulsa ♻ para reintentar.")
+                _safe_cb(on_error, last_err or tr("Pollinations no devolvió imagen"))
             finally:
                 # Defensa: si el counter no se decrementó (excepción antes
                 # de tomar el lock), hacerlo aquí para no dejar la cuenta sesgada.

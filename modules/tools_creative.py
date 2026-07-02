@@ -319,8 +319,8 @@ class ToolsCreativeService:
                     self.app.dialogs.set_estado(tr('⚡ Pulse: {0} versiones listas — compara y elige').format(n), "#2ecc71")
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
-                    self.app._notificar_sistema(f"⚡ Pulse completado",
-                                             f"{n} versiones del prompt listas para comparar")
+                    self.app._notificar_sistema(tr("⚡ Pulse completado"),
+                                             tr("{0} versiones del prompt listas para comparar").format(n))
                 self.app.after(0, _mostrar)
             except Exception as e:
                 logger.error(f"[Pulse] _worker_all falló: {e}")
@@ -1230,7 +1230,7 @@ class ToolsCreativeService:
                 self.app._anclaje_visual = adn
                 if hasattr(self.app, "_actualizar_indicador_adn"):
                     self.app.after(0, self.app._actualizar_indicador_adn)
-                self.app.after(0, lambda: _actualizar_progreso(0.9, "✅ Extracción completada"))
+                self.app.after(0, lambda: _actualizar_progreso(0.9, tr("✅ Extracción completada")))
 
                 def _mostrar():
                     prog_bar.pack_forget()

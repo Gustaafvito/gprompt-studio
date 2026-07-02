@@ -355,7 +355,7 @@ class SesionVideoService:
         def _exp_md():
             ruta = filedialog.asksaveasfilename(
                 defaultextension=".md",
-                filetypes=[("Markdown", "*.md"), ("Todos", "*.*")],
+                filetypes=[("Markdown", "*.md"), (tr("Todos"), "*.*")],
                 initialfile=f"sesion_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md",
                 parent=v)
             if ruta:
@@ -368,7 +368,7 @@ class SesionVideoService:
         def _exp_txt():
             ruta = filedialog.asksaveasfilename(
                 defaultextension=".txt",
-                filetypes=[("Texto", "*.txt"), ("Todos", "*.*")],
+                filetypes=[(tr("Texto"), "*.txt"), (tr("Todos"), "*.*")],
                 initialfile=f"sesion_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.txt",
                 parent=v)
             if ruta:
@@ -451,7 +451,7 @@ class SesionVideoService:
         def _exportar_md():
             ruta = filedialog.asksaveasfilename(
                 defaultextension=".md",
-                filetypes=[("Markdown", "*.md"), ("Todos", "*.*")],
+                filetypes=[("Markdown", "*.md"), (tr("Todos"), "*.*")],
                 initialfile=f"tutorial_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md",
                 parent=v)
             if ruta:

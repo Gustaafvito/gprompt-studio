@@ -23,6 +23,7 @@ from modules.avatar_prompts import (
     ensamblar_dataset_generico,
     system_prompt_canonico_para_tipo,
 )
+from modules.i18n import tr
 
 
 def generar_descripcion_canonica(llm_call, form_data: dict) -> str:
@@ -158,8 +159,8 @@ def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
                 for it in lista:
                     it["negative"] = ""
             avisos.append(
-                f"⚠️ {modelo} NO soporta negative prompt — se ha quitado "
-                f"de los {n_con_negative} prompts del dataset."
+                tr("⚠️ {0} NO soporta negative prompt — se ha quitado "
+                   "de los {1} prompts del dataset.").format(modelo, n_con_negative)
             )
 
     max_c = specs.get("max_chars")
@@ -168,10 +169,11 @@ def adaptar_dataset_a_modelo(resultado: dict, modelo: str, specs: dict) -> list:
                      if len(it["prompt"]) > max_c]
         if excedidos:
             avisos.append(
-                f"⚠️ {len(excedidos)} prompt(s) exceden el límite de "
-                f"{max_c} caracteres de {modelo} (ej: {excedidos[0]}). "
-                f"Acorta la ropa/rasgos en la ficha y regenera — NO se "
-                f"truncan automáticamente para no romper la identidad."
+                tr("⚠️ {0} prompt(s) exceden el límite de "
+                   "{1} caracteres de {2} (ej: {3}). "
+                   "Acorta la ropa/rasgos en la ficha y regenera — NO se "
+                   "truncan automáticamente para no romper la identidad.").format(
+                    len(excedidos), max_c, modelo, excedidos[0])
             )
 
     return avisos
@@ -239,11 +241,11 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
 
     with open(os.path.join(base, "prompts_todos.txt"), "w", encoding="utf-8") as f:
         if resultado.get("dataset_edicion"):
-            f.write(
+            f.write(tr(
                 "⚠️ Estos son los prompts TEXT-TO-IMAGE. Hay también un modo\n"
                 "   EDICIÓN (prompts_edicion_todos.txt). Son ALTERNATIVOS: usa\n"
                 "   uno U otro por imagen, NO pegues los dos juntos.\n\n"
-            )
+            ))
         f.write("\n".join(lineas_todos))
 
     # Prompts de EDICIÓN img2img (solo si se generaron — requieren

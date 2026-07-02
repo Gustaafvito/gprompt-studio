@@ -367,10 +367,10 @@ def abrir_tutorial(app):
                     except Exception as _e:
                         logger.debug(f"[silent] txt_salida.get: {_e}")
                 if not contenido_salida:
-                    raise RuntimeError(
+                    raise RuntimeError(tr(
                         "Necesitas generar un prompt primero (Ctrl+Enter en la app). "
                         "Esa acción usa el contenido del área de salida."
-                    )
+                    ))
 
             if accion.startswith("focus:"):
                 mensaje = _focus_widget(accion.split(":", 1)[1])

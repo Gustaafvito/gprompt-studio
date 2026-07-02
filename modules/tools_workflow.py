@@ -943,7 +943,7 @@ class ToolsWorkflowService:
         nombre). Devuelve nº de macros nuevas añadidas; -1 si cancelado/error."""
         from tkinter import filedialog
         ruta = filedialog.askopenfilename(
-            filetypes=[("JSON", "*.json"), ("Todos", "*.*")])
+            filetypes=[("JSON", "*.json"), (tr("Todos"), "*.*")])
         if not ruta:
             return -1
         try:
@@ -967,8 +967,8 @@ class ToolsWorkflowService:
         self.app.store.guardar_preferencias(prefs)
         omitidas = len(macros_imp) - len(nuevas)
         self.app.dialogs.set_estado(
-            f"📥 {len(nuevas)} macro(s) importada(s)"
-            + (f" · {omitidas} ya existían" if omitidas else ""), "#2ecc71")
+            tr("📥 {0} macro(s) importada(s)").format(len(nuevas))
+            + (tr(" · {0} ya existían").format(omitidas) if omitidas else ""), "#2ecc71")
         return len(nuevas)
 
     def _ejecutar_macro(self, macro, acciones_disponibles):

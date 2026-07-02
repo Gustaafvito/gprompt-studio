@@ -38,6 +38,7 @@ from config import (
     MODELOS_OLLAMA_VISION,
     MODELOS_OPENROUTER_VISION,
 )
+from modules.i18n import tr
 from prompts import VISION_SYSTEM_PROMPT
 
 if TYPE_CHECKING:
@@ -130,9 +131,9 @@ class DeepSeekWorker:
         """Obtiene el proveedor activo configurado."""
         provider = self.clients.get_active_provider() if hasattr(self.clients, "get_active_provider") else None
         if not provider or not provider.disponible():
-            raise RuntimeError(
+            raise RuntimeError(tr(
                 "No hay proveedor LLM configurado. Abre Ajustes (🔑) para configurar una API key."
-            )
+            ))
         return provider
 
     def _escalar_max_tokens(self, max_tokens: int) -> int:
@@ -323,7 +324,7 @@ class VisionChain:
 
         if ultimo_error:
             raise ultimo_error
-        raise RuntimeError("Sin proveedores de visión disponibles.")
+        raise RuntimeError(tr("Sin proveedores de visión disponibles."))
 
     def _prompt_vision(self, modo: str) -> str:
         if modo == "video":
@@ -368,7 +369,7 @@ class VisionChain:
 
         for nombre, fn in self.proveedores:
             if on_status:
-                on_status(f"🧬 Extrayendo ADN con {nombre}...")
+                on_status(tr("🧬 Extrayendo ADN con {0}...").format(nombre))
             try:
                 desc, motor = fn(imagen_pil, VISION_SYSTEM_PROMPT)
                 if desc and len(desc) >= 10:
@@ -421,7 +422,7 @@ class VisionChain:
 
         if ultimo_error:
             raise ultimo_error
-        raise RuntimeError("Sin proveedores de visión disponibles.")
+        raise RuntimeError(tr("Sin proveedores de visión disponibles."))
 
     # ── Gemini ────────────────────────────────────────────────────
 
@@ -453,7 +454,7 @@ class VisionChain:
             if not api_key:
                 api_key = os.getenv("GEMINI_API_KEY", "")
             if not api_key:
-                raise RuntimeError("No hay API key de Gemini configurada.")
+                raise RuntimeError(tr("No hay API key de Gemini configurada."))
             import google.genai as genai
             client = genai.Client(api_key=api_key)
 
@@ -485,7 +486,7 @@ class VisionChain:
                         break
                     else:
                         raise
-        raise ultimo_error or RuntimeError("Gemini: sin respuesta válida.")
+        raise ultimo_error or RuntimeError(tr("Gemini: sin respuesta válida."))
 
     # ── Ollama ────────────────────────────────────────────────────
 
@@ -507,10 +508,10 @@ class VisionChain:
 
     def _describir_ollama(self, imagen_pil, prompt_v: str) -> tuple[str, str]:
         if not self._ollama_disponible():
-            raise RuntimeError("Ollama no disponible.")
+            raise RuntimeError(tr("Ollama no disponible."))
         modelos = self._modelos_ollama_instalados()
         if not modelos:
-            raise RuntimeError("Ollama sin modelos de visión instalados.")
+            raise RuntimeError(tr("Ollama sin modelos de visión instalados."))
 
         buf = io.BytesIO()
         imagen_pil.save(buf, format="JPEG", quality=85)
@@ -533,7 +534,7 @@ class VisionChain:
             except Exception as e:
                 ultimo_error = e
                 continue
-        raise ultimo_error or RuntimeError("Ollama: sin respuesta válida.")
+        raise ultimo_error or RuntimeError(tr("Ollama: sin respuesta válida."))
 
     # ── OpenRouter ────────────────────────────────────────────────
 
@@ -559,4 +560,4 @@ class VisionChain:
             except Exception as e:
                 ultimo_error = e
                 continue
-        raise ultimo_error or RuntimeError("OpenRouter: sin respuesta válida.")
+        raise ultimo_error or RuntimeError(tr("OpenRouter: sin respuesta válida."))

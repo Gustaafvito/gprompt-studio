@@ -991,9 +991,9 @@ class CoreMixin:
 
         # Slider N (antes hardcoded a 3)
         n = self._pedir_n_modal(
-            "🔀 Variaciones",
-            "¿Cuántas variaciones quieres generar?\n"
-            "Menor = más rápido · Mayor = más variedad",
+            tr("🔀 Variaciones"),
+            tr("¿Cuántas variaciones quieres generar?\n"
+               "Menor = más rápido · Mayor = más variedad"),
             n_min=2, n_max=6, default=3,
             key_pref="variaciones_n",
         )
@@ -1168,14 +1168,14 @@ class CoreMixin:
             lbl.pack(fill="x", pady=4)
             chat_frame._parent_canvas.yview_moveto(1.0)
 
-        _add_msg("Sistema", "🤖 Copiloto conectado.\nEscribe qué quieres cambiar o añadir al prompt que tienes en pantalla.", "#3498db")
+        _add_msg("Sistema", tr("🤖 Copiloto conectado.\nEscribe qué quieres cambiar o añadir al prompt que tienes en pantalla."), "#3498db")
 
         def _enviar(event=None):
             instruccion = txt_input.get().strip()
             if not instruccion: return
 
             txt_input.delete(0, "end")
-            _add_msg("Usuario", f"👤 Tú: {instruccion}", "#ffffff")
+            _add_msg("Usuario", tr("👤 Tú: {0}").format(instruccion), "#ffffff")
 
             prompt_base = self.txt_salida.get("1.0", "end").strip()
 

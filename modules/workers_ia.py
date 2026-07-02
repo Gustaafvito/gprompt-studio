@@ -249,7 +249,7 @@ class WorkersIaService:
                 idea_previa = self.app.txt_idea.get("1.0", "end").strip()
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\n{idea_previa}" if idea_previa else desc)
-                self.app.dialogs.actualizar_salida(f"👁 [{motor}] analizó la imagen...\nRevisa y pulsa Generar Prompt.")
+                self.app.dialogs.actualizar_salida(tr("👁 [{0}] analizó la imagen...\nRevisa y pulsa Generar Prompt.").format(motor))
                 self.app.dialogs.set_estado(tr('👁 [{0}] — Edita la descripción y pulsa Generar Prompt').format(motor), "#2ecc71")
                 self.app.dialogs.toggle_botones(True)
                 self.app.txt_idea.focus_set()

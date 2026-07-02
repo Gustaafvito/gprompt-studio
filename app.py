@@ -352,7 +352,7 @@ class ArquitectoApp(
         self.after(900, self._actualizar_indicador_adn)
         self.protocol("WM_DELETE_WINDOW", self.dialogs._on_cerrar)
         try:
-            self._splash_estado("¡Listo!")
+            self._splash_estado(tr("¡Listo!"))
             self.after(150, self._cerrar_splash)
             self.after(180, self.deiconify)
             self.after(220, lambda: self.lift())
@@ -2419,12 +2419,12 @@ class ArquitectoApp(
         self.combo_default_llm.pack(anchor="w", padx=20)
 
         ctk.CTkLabel(tab_gen, text=tr("▶️ Modo por defecto al iniciar:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
-        _modos_display = ["Audio", "Imagen", "Vídeo"]
-        _modo_to_display = {"audio": "Audio", "imagen": "Imagen", "video": "Vídeo"}
-        _modo_from_display = {"Audio": "audio", "Imagen": "imagen", "Vídeo": "video"}
+        _modos_display = [tr("Audio"), tr("Imagen"), tr("Vídeo")]
+        _modo_to_display = {"audio": tr("Audio"), "imagen": tr("Imagen"), "video": tr("Vídeo")}
+        _modo_from_display = {tr("Audio"): "audio", tr("Imagen"): "imagen", tr("Vídeo"): "video"}
         self._modo_from_display = _modo_from_display
         self.combo_default_modo = ctk.CTkComboBox(tab_gen, values=_modos_display, width=250)
-        self.combo_default_modo.set(_modo_to_display.get(self.modo_var.get(), "Imagen"))
+        self.combo_default_modo.set(_modo_to_display.get(self.modo_var.get(), tr("Imagen")))
         self.combo_default_modo.pack(anchor="w", padx=20)
 
         ctk.CTkLabel(tab_gen, text=tr("🎨 Tema de interfaz:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
@@ -2502,7 +2502,8 @@ class ArquitectoApp(
         self._on_llm_cambio(label=nuevo_llm)
 
         # Aplicar modo (mapear display → internal)
-        _modo_from_display = getattr(self, '_modo_from_display', {"Audio": "audio", "Imagen": "imagen", "Vídeo": "video"})
+        _modo_from_display = getattr(self, '_modo_from_display',
+                                     {tr("Audio"): "audio", tr("Imagen"): "imagen", tr("Vídeo"): "video"})
         nuevo_modo = _modo_from_display.get(self.combo_default_modo.get(), "imagen")
         if self.modo_var.get() != nuevo_modo:
             self.modo_var.set(nuevo_modo)
