@@ -280,13 +280,16 @@ class UiEventsService:
 
             try:
                 tip_rico = (
-                    f"⭐ Nota: {specs.get('nota') or '?'}/5\n"
-                    f"📝 Max: {specs.get('max_chars', '?')} chars\n"
-                    f"⏱ Duraciones: {', '.join(specs.get('duraciones', []))}\n"
-                    f"📐 Ratios: {', '.join(specs.get('ratios', []))}\n\n"
-                    f"🎯 Ideal para:\n{specs.get('best_for', '')[:300]}\n\n"
-                    f"📐 Fórmula:\n{specs.get('prompt_formula', '?')[:200]}\n\n"
-                    f"💡 Ejemplo:\n{specs.get('prompt_ejemplo', '?')[:250]}"
+                    tr("⭐ Nota: {0}/5\n📝 Max: {1} chars\n"
+                       "⏱ Duraciones: {2}\n📐 Ratios: {3}\n\n"
+                       "🎯 Ideal para:\n{4}\n\n📐 Fórmula:\n{5}\n\n"
+                       "💡 Ejemplo:\n{6}").format(
+                        specs.get('nota') or '?', specs.get('max_chars', '?'),
+                        ', '.join(specs.get('duraciones', [])),
+                        ', '.join(specs.get('ratios', [])),
+                        specs.get('best_for', '')[:300],
+                        specs.get('prompt_formula', '?')[:200],
+                        specs.get('prompt_ejemplo', '?')[:250])
                 )
 
                 tips = specs.get('prompt_tips', [])
@@ -391,11 +394,13 @@ class UiEventsService:
 
             try:
                 tip_rico = (
-                    f"⭐ Nota: {specs.get('nota') or '?'}/5\n"
-                    f"📝 Max: {specs.get('max_chars', '?')} chars\n\n"
-                    f"🎯 Ideal para:\n{specs.get('best_for', '')[:300]}\n\n"
-                    f"📐 Fórmula:\n{specs.get('prompt_formula', '?')[:200]}\n\n"
-                    f"💡 Ejemplo:\n{specs.get('prompt_ejemplo', '?')[:250]}"
+                    tr("⭐ Nota: {0}/5\n📝 Max: {1} chars\n\n"
+                       "🎯 Ideal para:\n{2}\n\n📐 Fórmula:\n{3}\n\n"
+                       "💡 Ejemplo:\n{4}").format(
+                        specs.get('nota') or '?', specs.get('max_chars', '?'),
+                        specs.get('best_for', '')[:300],
+                        specs.get('prompt_formula', '?')[:200],
+                        specs.get('prompt_ejemplo', '?')[:250])
                 )
                 # Reusar el tooltip (no recrear Toplevel cada cambio → evita lag/leak)
                 existente = getattr(self.app, '_tooltip_modelo_actual', None)

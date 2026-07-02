@@ -139,13 +139,13 @@ class DashboardService:
         # FEATURE 21 — Saludo personalizado por hora del día
         hora = _dt.datetime.now().hour
         if 5 <= hora < 12:
-            saludo = "🌅 Buenos días"
+            saludo = tr("🌅 Buenos días")
         elif 12 <= hora < 19:
-            saludo = "☀️ Buenas tardes"
+            saludo = tr("☀️ Buenas tardes")
         elif 19 <= hora < 24:
-            saludo = "🌆 Buenas noches"
+            saludo = tr("🌆 Buenas noches")
         else:
-            saludo = "🌙 De madrugada"
+            saludo = tr("🌙 De madrugada")
 
         nombre_user = "Creador"
         try:
@@ -1164,7 +1164,7 @@ class DashboardService:
                     if idea:
                         try:
                             self.app.txt_idea.delete("1.0", "end")
-                            self.app.txt_idea.insert("1.0", idea)
+                            self.app.txt_idea.insert("1.0", tr(idea))
                             self.app.txt_idea.focus_set()
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
@@ -1184,7 +1184,7 @@ class DashboardService:
         ctk.CTkLabel(reto_frame, text=tr("🎯 Reto del día"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_blue).pack(anchor="w", padx=12, pady=(10, 4))
-        ctk.CTkLabel(reto_frame, text=reto_desc,
+        ctk.CTkLabel(reto_frame, text=tr(reto_desc),
                      font=ctk.CTkFont(size=11, weight="bold"), wraplength=280,
                      fg_color="transparent", text_color=text_primary,
                      anchor="w", justify="left").pack(fill="x", padx=12, pady=(0, 4))
@@ -1192,9 +1192,9 @@ class DashboardService:
         # Línea de detalles (modo + modelo + audio extras si aplica)
         emoji_modo_r = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(reto_modo, "•")
         ratio_str_r = f" · {reto_ratio}" if reto_ratio else ""
-        detalles_r = f"{emoji_modo_r} {reto_modelo}{ratio_str_r} · {reto_estilo}"
+        detalles_r = f"{emoji_modo_r} {reto_modelo}{ratio_str_r} · {tr(reto_estilo)}"
         if reto_modo == "audio" and reto_emo:
-            detalles_r += f"\n💗 {reto_emo} · 🎤 {reto_voz} · 🌐 {reto_idioma}"
+            detalles_r += f"\n💗 {tr(reto_emo)} · 🎤 {tr(reto_voz)} · 🌐 {tr(reto_idioma)}"
         ctk.CTkLabel(reto_frame, text=detalles_r,
                      font=ctk.CTkFont(size=9, slant="italic"), wraplength=280,
                      fg_color="transparent", text_color=text_secondary,
@@ -1223,10 +1223,10 @@ class DashboardService:
         ctk.CTkLabel(estilo_frame, text=tr('{0} Estilo del día').format(emoji_est),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_pink).pack(anchor="w", padx=12, pady=(10, 2))
-        ctk.CTkLabel(estilo_frame, text=nombre_est,
+        ctk.CTkLabel(estilo_frame, text=tr(nombre_est),
                      font=ctk.CTkFont(size=14, weight="bold"),
                      fg_color="transparent", text_color=text_primary).pack(anchor="w", padx=12)
-        ctk.CTkLabel(estilo_frame, text=sugerencia_est,
+        ctk.CTkLabel(estilo_frame, text=tr(sugerencia_est),
                      font=ctk.CTkFont(size=10, slant="italic"), wraplength=280,
                      fg_color="transparent", text_color=text_secondary,
                      anchor="w", justify="left").pack(fill="x", padx=12, pady=(2, 4))
@@ -1236,7 +1236,7 @@ class DashboardService:
         ratio_str_e = f" · {est_ratio}" if est_ratio else ""
         detalles_e = f"{emoji_modo_e} {est_modelo}{ratio_str_e}"
         if est_modo == "audio" and est_emo:
-            detalles_e += f"\n💗 {est_emo} · 🎤 {est_voz}"
+            detalles_e += f"\n💗 {tr(est_emo)} · 🎤 {tr(est_voz)}"
         ctk.CTkLabel(estilo_frame, text=detalles_e,
                      font=ctk.CTkFont(size=9, slant="italic"), wraplength=280,
                      fg_color="transparent", text_color=text_secondary,
@@ -1337,7 +1337,7 @@ class DashboardService:
                              font=ctk.CTkFont(family="Consolas", size=9, weight="bold"),
                              fg_color=card_bg_alt, corner_radius=3,
                              text_color=accent_blue, width=88, anchor="center").pack(side="left", padx=(0, 5))
-                ctk.CTkLabel(row, text=accion, font=ctk.CTkFont(size=9),
+                ctk.CTkLabel(row, text=tr(accion), font=ctk.CTkFont(size=9),
                              fg_color="transparent", text_color=text_secondary,
                              anchor="w").pack(side="left", fill="x", expand=True)
         ctk.CTkLabel(atajos_frame, text="", fg_color="transparent").pack(pady=2)
@@ -1430,7 +1430,7 @@ class DashboardService:
         ctk.CTkLabel(tip_frame, text=tr("💡 Tip del día"),
                      font=ctk.CTkFont(size=11, weight="bold"),
                      fg_color="transparent", text_color=accent_amber).pack(anchor="w", padx=12, pady=(10, 4))
-        ctk.CTkLabel(tip_frame, text=tip,
+        ctk.CTkLabel(tip_frame, text=tr(tip),
                      font=ctk.CTkFont(size=10, slant="italic"),
                      fg_color="transparent", text_color=text_primary,
                      wraplength=280, justify="left").pack(fill="x", padx=12, pady=(0, 10))
@@ -1464,7 +1464,7 @@ class DashboardService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _h
-            card = ctk.CTkButton(quick_grid, text=f"{label}\n{tip}", width=200, height=56,
+            card = ctk.CTkButton(quick_grid, text=f"{tr(label)}\n{tr(tip)}", width=200, height=56,
                                   fg_color=card_bg, hover_color="#e5e7eb" if is_light else "#1f2937",
                                   corner_radius=8, border_color=card_border, border_width=1,
                                   font=ctk.CTkFont(size=11, weight="bold"),
@@ -1502,7 +1502,7 @@ class DashboardService:
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _h
-            card = ctk.CTkButton(tools_frame, text=label, width=160, height=38,
+            card = ctk.CTkButton(tools_frame, text=tr(label), width=160, height=38,
                                   fg_color=card_bg, hover_color="#e5e7eb" if is_light else "#1f2937",
                                   corner_radius=8, border_color=card_border, border_width=1,
                                   font=ctk.CTkFont(size=10, weight="bold"),

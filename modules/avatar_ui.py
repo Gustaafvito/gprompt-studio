@@ -638,11 +638,10 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
             text=tr('✅ {0} prompts exportados.').format(resultado['total_prompts']))
-        mensaje = (
-            f"Descripción canónica:\n\n{resultado['descripcion_canonica']}\n\n"
-            f"Exportado en:\n{ruta}")
+        mensaje = tr("Descripción canónica:\n\n{0}\n\nExportado en:\n{1}").format(
+            resultado['descripcion_canonica'], ruta)
         if resultado.get("dataset_edicion"):
-            mensaje += (
+            mensaje += tr(
                 "\n\n📷 Incluye prompts_edicion/ (img2img): sube "
                 "referencia.* como SUJETO en MAI / Nano Banana / Reve y "
                 "pega esos prompts — la identidad la ancla tu imagen.")

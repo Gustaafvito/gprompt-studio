@@ -145,6 +145,16 @@ class ArquitectoApp(
         self._pollinations_queue_size = 0
         self.preview = PreviewPollinationsService(self)
         install_components(self)
+        # Idioma ANTES de crear el splash (el DataStore aún no existe:
+        # se lee preferencias.json directamente) para que los mensajes
+        # de arranque ya salgan traducidos.
+        try:
+            from config import _cargar_preferencias_seguras
+            from modules.i18n import idioma_inicial, set_idioma
+            set_idioma(idioma_inicial(
+                (_cargar_preferencias_seguras() or {}).get("idioma")))
+        except Exception as _e:
+            logger.debug(f"[silent] idioma temprano: {_e}")
         try:
             self.withdraw()
             self._splash = self._crear_splash()
@@ -162,7 +172,7 @@ class ArquitectoApp(
         """APIClients con wizard de fallback, DataStore, workers y executor.
         Devuelve False si la inicialización debe abortar.
         """
-        self._splash_estado("Inicializando proveedores...")
+        self._splash_estado(tr("Inicializando proveedores..."))
         self.clients = APIClients()
         if self.clients.error:
             self._cerrar_splash()
@@ -174,7 +184,7 @@ class ArquitectoApp(
                 messagebox.showerror(tr("Error de configuración"), self.clients.error)
                 self.destroy()
                 return False
-        self._splash_estado("Cargando datos...")
+        self._splash_estado(tr("Cargando datos..."))
         self.store    = DataStore()
         self.deepseek = DeepSeekWorker(self.clients)
         self.vision   = VisionChain(self.clients)
@@ -199,7 +209,7 @@ class ArquitectoApp(
         self.title(APP_TITLE)
         self._aplicar_geometria_adaptativa()
         self.minsize(820, 620)
-        self._splash_estado("Construyendo interfaz...")
+        self._splash_estado(tr("Construyendo interfaz..."))
 
     def _setup_tk_vars(self):
         """Variables Tk con sus valores iniciales y traces de persistencia."""
@@ -700,7 +710,7 @@ class ArquitectoApp(
             actual = bool(self.attributes("-fullscreen"))
             self.attributes("-fullscreen", not actual)
             if hasattr(self, "show_toast"):
-                msg = "📺 Pantalla completa (F11/Esc para salir)" if not actual else "↩️ Salida pantalla completa"
+                msg = tr("📺 Pantalla completa (F11/Esc para salir)") if not actual else tr("↩️ Salida pantalla completa")
                 try: self.show_toast(msg, "#3b82f6", 1500)
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
@@ -965,8 +975,8 @@ class ArquitectoApp(
                 self.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 versiones para comparar"), "#e67e22")
                 return
             anterior_txt = self._regen_stack[self._regen_idx - 1]
-            etiqueta_actual = f"Versión {self._regen_idx + 1} (actual)"
-            etiqueta_anterior = f"Versión {self._regen_idx} (anterior)"
+            etiqueta_actual = tr("Versión {0} (actual)").format(self._regen_idx + 1)
+            etiqueta_anterior = tr("Versión {0} (anterior)").format(self._regen_idx)
         else:
             # Estamos navegando atrás, comparar con la siguiente
             if self._regen_idx + 1 >= len(self._regen_stack):
@@ -974,8 +984,8 @@ class ArquitectoApp(
                 return
             anterior_txt = self._regen_stack[self._regen_idx]
             actual_txt = self._regen_stack[self._regen_idx + 1]
-            etiqueta_actual = f"Versión {self._regen_idx + 2}"
-            etiqueta_anterior = f"Versión {self._regen_idx + 1}"
+            etiqueta_actual = tr("Versión {0}").format(self._regen_idx + 2)
+            etiqueta_anterior = tr("Versión {0}").format(self._regen_idx + 1)
 
         self._abrir_ventana_diff(anterior_txt, actual_txt, etiqueta_anterior, etiqueta_actual)
 
@@ -992,17 +1002,17 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
         import difflib
         v = GPromptWindow(self)
-        v.title(titulo or "📊 Diff visual entre versiones")
+        v.title(titulo or tr("📊 Diff visual entre versiones"))
         v.geometry("1100x680")
         v.transient(self)
 
-        ctk.CTkLabel(v, text=titulo or "📊 Comparar versiones",
+        ctk.CTkLabel(v, text=titulo or tr("📊 Comparar versiones"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
 
         # Banda de leyenda
         leyenda = ctk.CTkFrame(v, fg_color=c["fg_dark"], corner_radius=6)
         leyenda.pack(fill="x", padx=15, pady=(0, 8))
-        leyenda_txt = hint or "🟢 Verde = añadido en actual    🔴 Rojo = quitado del anterior    ⚪ Sin color = igual"
+        leyenda_txt = hint or tr("🟢 Verde = añadido en actual    🔴 Rojo = quitado del anterior    ⚪ Sin color = igual")
         ctk.CTkLabel(leyenda, text=leyenda_txt,
                      font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=6)
 
@@ -1505,10 +1515,10 @@ class ArquitectoApp(
 
         ctk.CTkLabel(wiz, text=tr("📝 Rellenar variables de '{0}'").format(nombre),
                      font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(12, 4))
-        subtitulo = (f"Esta plantilla tiene {len(variables)} variable(s). "
-                     f"Rellénalas y verás la previsualización abajo.")
+        subtitulo = tr("Esta plantilla tiene {0} variable(s). "
+                       "Rellénalas y verás la previsualización abajo.").format(len(variables))
         if ultimos:
-            subtitulo += "  💾 (recordando tus últimos valores)"
+            subtitulo += tr("  💾 (recordando tus últimos valores)")
         ctk.CTkLabel(wiz, text=subtitulo,
                      font=ctk.CTkFont(size=10),
                      text_color=c["muted_text"]).pack(pady=(0, 10))
@@ -1745,7 +1755,7 @@ class ArquitectoApp(
             hdr = ctk.CTkFrame(col, fg_color=colores_header[i % len(colores_header)], corner_radius=6, height=28)
             hdr.pack(fill="x", padx=5, pady=(5, 3))
             hdr.pack_propagate(False)
-            label_txt = labels[i] if labels and i < len(labels) and labels[i] else f"Variación #{i+1}"
+            label_txt = labels[i] if labels and i < len(labels) and labels[i] else tr("Variación #{0}").format(i + 1)
             ctk.CTkLabel(hdr, text=f"  {label_txt}",
                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
             # Checkbox 🆚 para seleccionar esta variante para comparación lado-a-lado
@@ -1922,8 +1932,8 @@ class ArquitectoApp(
             if len(seleccionadas) != 2:
                 return
             i_a, i_b = seleccionadas
-            label_a = labels[i_a] if labels and i_a < len(labels) and labels[i_a] else f"Variación #{i_a + 1}"
-            label_b = labels[i_b] if labels and i_b < len(labels) and labels[i_b] else f"Variación #{i_b + 1}"
+            label_a = labels[i_a] if labels and i_a < len(labels) and labels[i_a] else tr("Variación #{0}").format(i_a + 1)
+            label_b = labels[i_b] if labels and i_b < len(labels) and labels[i_b] else tr("Variación #{0}").format(i_b + 1)
             self._abrir_diff_lado_a_lado(
                 variaciones[i_a], variaciones[i_b], label_a, label_b
             )
@@ -2228,11 +2238,11 @@ class ArquitectoApp(
         # Crear un Entry por proveedor y guardar referencia
         entries = {}  # provider_id -> (entry, check_fn, name)
         for provider_id, label, placeholder, ayuda, check_fn, nombre in PROVEEDORES_WIZARD:
-            ctk.CTkLabel(frame, text=label,
+            ctk.CTkLabel(frame, text=tr(label),
                          font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
             entry = ctk.CTkEntry(frame, width=520, placeholder_text=placeholder, show="*")
             entry.pack(padx=10)
-            ctk.CTkLabel(frame, text=ayuda,
+            ctk.CTkLabel(frame, text=tr(ayuda),
                          font=ctk.CTkFont(size=10),
                          text_color="#3498db").pack(anchor="w", padx=10, pady=(0, 4))
             entries[provider_id] = (entry, check_fn, nombre)
@@ -2247,11 +2257,11 @@ class ArquitectoApp(
         def _validar_formato(keys: dict[str, str]) -> tuple[bool, str]:
             """Valida que al menos haya una key y que las introducidas tengan formato razonable."""
             if not keys:
-                return False, "⚠️ Introduce al menos una API key."
+                return False, tr("⚠️ Introduce al menos una API key.")
             for pid, valor in keys.items():
                 _, check_fn, nombre = entries[pid]
                 if not check_fn(valor):
-                    return False, f"❌ La key de {nombre} parece incorrecta. Revisa el formato."
+                    return False, tr("❌ La key de {0} parece incorrecta. Revisa el formato.").format(nombre)
             return True, ""
 
         def _test_keys():

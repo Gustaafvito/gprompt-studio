@@ -89,7 +89,7 @@ class AtajosAyudaService:
         try:
             self.app.modo_var.set(modo_destino)
             self.app.events.on_modo_cambio()
-            etiqueta = {"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino]
+            etiqueta = tr({"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino])
             self.app.dialogs.set_estado(tr('{0} (Alt+{1})').format((etiqueta), (1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3)), "#3498db")
         except Exception as e:
             logger.debug(f"[silent] {e}")

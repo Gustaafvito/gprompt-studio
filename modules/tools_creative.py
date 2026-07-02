@@ -210,7 +210,7 @@ class ToolsCreativeService:
         for valor, label in [("3", "3 niveles (rápido): 0.3 · 0.6 · 0.9"),
                               ("5", "5 niveles (completo): 0.2 → 1.0"),
                               ("custom", "🎚 Personalizado (sliders abajo)")]:
-            ctk.CTkRadioButton(cfg, text=label, variable=modo_var, value=valor,
+            ctk.CTkRadioButton(cfg, text=tr(label), variable=modo_var, value=valor,
                                command=_toggle_custom,
                                font=ctk.CTkFont(size=11)
                                ).pack(anchor="w", padx=30, pady=4)
@@ -237,9 +237,9 @@ class ToolsCreativeService:
         def _ejecutar():
             modo_sel = modo_var.get()
             if modo_sel == "3":
-                temperaturas = list(self.app.PULSE_PRESET_3)
+                temperaturas = [(t, tr(lbl)) for t, lbl in self.app.PULSE_PRESET_3]
             elif modo_sel == "5":
-                temperaturas = list(self.app.PULSE_PRESET_5)
+                temperaturas = [(t, tr(lbl)) for t, lbl in self.app.PULSE_PRESET_5]
             else:
                 temps_custom = [round(sl.get(), 2) for sl in custom_sliders]
                 temperaturas = [(t, f"🎚 Custom (T={t:.2f})") for t in temps_custom]
@@ -784,7 +784,7 @@ class ToolsCreativeService:
 
         personajes_data = []
         # Cargar personajes existentes
-        personajes_lista = ["— Personaje nuevo —"] + [p.get("nombre", "?") for p in (self.app.store.personajes or [])]
+        personajes_lista = [tr("— Personaje nuevo —")] + [p.get("nombre", "?") for p in (self.app.store.personajes or [])]
 
         for i in range(3):
             f = ctk.CTkFrame(vent, fg_color=c["fg_frame"], corner_radius=6)
@@ -814,7 +814,7 @@ class ToolsCreativeService:
                                        font=ctk.CTkFont(size=11))
         txt_relacion.pack(fill="x", padx=15, pady=(0, 8))
 
-        _placeholder_relacion = "ej: están negociando un contrato, primero plano de uno, los otros al fondo desenfocados"
+        _placeholder_relacion = tr("ej: están negociando un contrato, primero plano de uno, los otros al fondo desenfocados")
         _relacion_state = {"placeholder_visible": True}
         _color_normal = txt_relacion.cget("text_color")
 
@@ -843,7 +843,7 @@ class ToolsCreativeService:
             for i, p in enumerate(personajes_data):
                 nombre_p = p["combo"].get()
                 desc_p = p["desc"].get().strip()
-                if nombre_p and nombre_p != "— Personaje nuevo —":
+                if nombre_p and nombre_p != tr("— Personaje nuevo —"):
                     # Buscar el personaje en la base de datos
                     pers = next((x for x in (self.app.store.personajes or []) if x.get("nombre") == nombre_p), None)
                     if pers:
@@ -1364,8 +1364,8 @@ class ToolsCreativeService:
             "Paleta de color dominante",
             "Época o ambientación temporal",
         ]
-        var_op = ctk.StringVar(value=opciones[0])
-        cb = ctk.CTkComboBox(sel, values=opciones, variable=var_op, width=340, height=28)
+        var_op = ctk.StringVar(value=tr(opciones[0]))
+        cb = ctk.CTkComboBox(sel, values=[tr(o) for o in opciones], variable=var_op, width=340, height=28)
         cb.pack()
 
         ent_extra = ctk.CTkEntry(sel, placeholder_text=tr("Detalle adicional (opcional)"), width=350, height=28)

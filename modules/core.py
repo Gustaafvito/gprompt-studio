@@ -1219,7 +1219,7 @@ class CoreMixin:
                     if "|||" in respuesta:
                         explicacion, nuevo_prompt = respuesta.split("|||", 1)
                     else:
-                        explicacion = "¡Hecho! Aquí tienes la versión actualizada:"
+                        explicacion = tr("¡Hecho! Aquí tienes la versión actualizada:")
                         nuevo_prompt = respuesta
 
                     explicacion = explicacion.strip()

@@ -155,7 +155,7 @@ class RefinamientoService:
             ("🎬 Estilo/género", "estilo artístico / género"),
         ]
         for label, descripcion in opciones:
-            btn = ctk.CTkButton(sel, text=label, width=300, height=32,
+            btn = ctk.CTkButton(sel, text=tr(label), width=300, height=32,
                                 fg_color="#2563eb" if is_lt else "#1a3a5a",
                                 hover_color="#1d4ed8" if is_lt else "#2a4a6a",
                                 font=ctk.CTkFont(size=11),

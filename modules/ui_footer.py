@@ -824,7 +824,7 @@ class UiFooterService:
             color = "#9b59b6"
         # Mostrar también hint si el LoRA no tiene familia configurada
         if not familia:
-            warning = "  (sin familia · edítalo en 🔗)"
+            warning = tr("  (sin familia · edítalo en 🔗)")
             color = "#4b5563" if ctk.get_appearance_mode().lower() == "light" else "#888888"
         texto = f'→ "{trigger}"'
         if familia: texto += f"  [{familia}]"

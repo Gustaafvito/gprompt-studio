@@ -110,8 +110,8 @@ class AdnVisualService:
             contador_var.set(f"{len(adns_act)} guardado(s){sufijo}")
 
             if not visibles:
-                msg = (f"Sin resultados para '{termino}'" if termino
-                       else "(sin ADNs guardados)")
+                msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                       else tr("(sin ADNs guardados)"))
                 ctk.CTkLabel(scroll, text=msg,
                              text_color=c["muted_text"]).pack(pady=30)
                 return
@@ -330,7 +330,7 @@ class AdnVisualService:
                             btn_ref = bloqueos[key].get("btn")
                             if btn_ref is not None:
                                 btn_ref.configure(text=icono, fg_color=color)
-                            estado = "🔒 BLOQUEADO" if bloqueos[key]["bloqueado"] else "🔓 DESBLOQUEADO"
+                            estado = tr("🔒 BLOQUEADO") if bloqueos[key]["bloqueado"] else tr("🔓 DESBLOQUEADO")
                             bloqueos[key]["label"].configure(text=estado, text_color=color)
 
                         btn_lock = ctk.CTkButton(hdr, text="🔓", width=30, height=22,
@@ -344,7 +344,7 @@ class AdnVisualService:
                         estado_lbl.pack(side="left", padx=(2, 0))
                         bloqueos[cat_key]["label"] = estado_lbl
 
-                        ctk.CTkLabel(hdr, text=cat_nombre, font=ctk.CTkFont(weight="bold")).pack(side="left")
+                        ctk.CTkLabel(hdr, text=tr(cat_nombre), font=ctk.CTkFont(weight="bold")).pack(side="left")
 
                         # Contenido de la categoría
                         if isinstance(datos, dict):
@@ -640,7 +640,7 @@ class AdnVisualService:
                             msg = f"🧬 {plataforma} (bloqueados: {', '.join(cats_bloqueadas[:3])}{'...' if len(cats_bloqueadas) > 3 else ''})"
                             color_ok = "#2ecc71"
                         elif fallos:
-                            msg = f"🧬 {plataforma} - parcial (falló: {', '.join(fallos)})"
+                            msg = tr("🧬 {0} - parcial (falló: {1})").format(plataforma, ', '.join(fallos))
                             color_ok = "#f39c12"
                         else:
                             msg = f"🧬 {plataforma} en idea"

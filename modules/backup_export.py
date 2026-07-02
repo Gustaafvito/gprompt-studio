@@ -58,19 +58,18 @@ class BackupExportService:
                       ("historial", "favoritos", "estrellas",
                        "personajes", "loras", "plantillas", "paletas"))
             tam_kb = os.path.getsize(archivo) / 1024
-            mensaje = (
-                f"Backup guardado correctamente.\n\n"
-                f"Archivo: {os.path.basename(archivo)}\n"
-                f"Tamaño: {tam_kb:.1f} KB\n"
-                f"Total entradas: {tot}\n\n"
-                f"  - Historial:  {len(backup['historial'])}\n"
-                f"  - Favoritos:  {len(backup['favoritos'])}\n"
-                f"  - Estrellas:  {len(backup['estrellas'])}\n"
-                f"  - Personajes: {len(backup['personajes'])}\n"
-                f"  - LoRAs:      {len(backup['loras'])}\n"
-                f"  - Plantillas: {len(backup['plantillas'])}\n"
-                f"  - Paletas:    {len(backup['paletas'])}"
-            )
+            mensaje = tr(
+                "Backup guardado correctamente.\n\n"
+                "Archivo: {0}\nTamaño: {1:.1f} KB\nTotal entradas: {2}\n\n"
+                "  - Historial:  {3}\n  - Favoritos:  {4}\n"
+                "  - Estrellas:  {5}\n  - Personajes: {6}\n"
+                "  - LoRAs:      {7}\n  - Plantillas: {8}\n"
+                "  - Paletas:    {9}"
+            ).format(os.path.basename(archivo), tam_kb, tot,
+                     len(backup['historial']), len(backup['favoritos']),
+                     len(backup['estrellas']), len(backup['personajes']),
+                     len(backup['loras']), len(backup['plantillas']),
+                     len(backup['paletas']))
             messagebox.showinfo(tr("Backup completo"), mensaje, parent=self.app)
             self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), "#2ecc71")
         except Exception as e:
@@ -497,7 +496,7 @@ class BackupExportService:
             ("📝 Ideogram",          ideogram,      "#d97706", "imagen"),
             ("⚡ ComfyUI",           comfyui,       "#0891b2", "imagen"),
             ("🖥 Automatic1111",     a1111,         "#dc2626", "imagen"),
-            ("🎯 SD genérico",       sd,            "#475569", "imagen"),
+            (tr("🎯 SD genérico"),   sd,            "#475569", "imagen"),
             ("🎬 Kling",             kling_prompt,  "#f59e0b", "video"),
             ("🎬 Seedance",          seedance_prompt,"#eab308", "video"),
             ("🎵 Suno",              suno_prompt,   "#ec4899", "audio"),
@@ -667,7 +666,7 @@ class BackupExportService:
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color="#888").pack(side="left", padx=(0, 6))
         for key, label in filtro_labels:
-            ctk.CTkCheckBox(f_filtros, text=label, variable=filtros[key],
+            ctk.CTkCheckBox(f_filtros, text=tr(label), variable=filtros[key],
                             font=ctk.CTkFont(size=10), width=20,
                             command=lambda: _disparar_busqueda()
                             ).pack(side="left", padx=4)
@@ -699,7 +698,7 @@ class BackupExportService:
                         txt_full = str(item).lower()
                     if termino in txt_full:
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
-                        resultados.append(("📋 Historial", item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
+                        resultados.append((tr("📋 Historial"), item.get("fecha", "") if isinstance(item, dict) else "", contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["favoritos"].get():
                 for item in (self.app.store.favoritos or []):
@@ -710,7 +709,7 @@ class BackupExportService:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("⭐ Favorito", nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
+                        resultados.append((tr("⭐ Favorito"), nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["estrellas"].get():
                 for item in (self.app.store.estrellas or []):
@@ -721,7 +720,7 @@ class BackupExportService:
                     if termino in txt.lower():
                         contenido = item.get("contenido", "") if isinstance(item, dict) else str(item)
                         nombre = item.get("nombre", "") if isinstance(item, dict) else ""
-                        resultados.append(("🌟 Estrella", nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
+                        resultados.append((tr("🌟 Estrella"), nombre, contenido[:200], lambda c=contenido: self.app.dialogs.actualizar_salida(c)))
 
             if filtros["seeds"].get():
                 for s in (prefs.get("seeds_favoritos") or []):
@@ -729,13 +728,13 @@ class BackupExportService:
                                      s.get("modelo_img", ""), s.get("modelo_vid", "")]).lower()
                     if termino in txt:
                         desc = f"Modelo: {s.get('modelo_img') or s.get('modelo_vid', '')}, Estilos: {', '.join(s.get('estilos', [])[:3])}"
-                        resultados.append(("💎 Seed", s.get("nombre", "?"), desc, lambda seed=s: self.app._aplicar_seed(seed)))
+                        resultados.append((tr("💎 Seed"), s.get("nombre", "?"), desc, lambda seed=s: self.app._aplicar_seed(seed)))
 
             if filtros["snippets"].get():
                 for s in (prefs.get("snippets") or []):
                     txt = (s.get("nombre", "") + " " + s.get("tags", "")).lower()
                     if termino in txt:
-                        resultados.append(("✂️ Snippet", s.get("nombre", "?"), s.get("tags", "")[:200],
+                        resultados.append((tr("✂️ Snippet"), s.get("nombre", "?"), s.get("tags", "")[:200],
                                             lambda tags=s.get("tags", ""): self.app._aplicar_atajo_tags(tags)))
 
             if filtros["formulas"].get():
@@ -754,14 +753,14 @@ class BackupExportService:
                 for p in (self.app.store.personajes or []):
                     txt = (p.get("nombre", "") + " " + p.get("rasgos", "")).lower()
                     if termino in txt:
-                        resultados.append(("🧑 Personaje", p.get("nombre", "?"), p.get("rasgos", "")[:200],
+                        resultados.append((tr("🧑 Personaje"), p.get("nombre", "?"), p.get("rasgos", "")[:200],
                                             lambda nombre=p.get("nombre", ""): self.app.combo_personaje.set(nombre) if hasattr(self.app, 'combo_personaje') else None))
 
             if filtros["loras"].get():
                 for l in (self.app.store.loras or []):
                     txt = (l.get("nombre", "") + " " + l.get("descripcion", "")).lower()
                     if termino in txt:
-                        resultados.append(("🔗 LoRA", l.get("nombre", "?"), l.get("descripcion", "")[:200],
+                        resultados.append((tr("🔗 LoRA"), l.get("nombre", "?"), l.get("descripcion", "")[:200],
                                             lambda nombre=l.get("nombre", ""): self.app.combo_lora.set(nombre) if hasattr(self.app, 'combo_lora') else None))
 
             if not resultados:
@@ -769,11 +768,11 @@ class BackupExportService:
                 # y "el término no existe en ninguna colección activa".
                 tipos_activos = sum(1 for v in filtros.values() if v.get())
                 if tipos_activos == 0:
-                    msg = "⚠️ No hay tipos seleccionados. Marca al menos uno."
+                    msg = tr("⚠️ No hay tipos seleccionados. Marca al menos uno.")
                 elif tipos_activos < len(filtros):
-                    msg = f"Sin resultados para '{termino}' en los {tipos_activos} tipo(s) seleccionados."
+                    msg = tr("Sin resultados para '{0}' en los {1} tipo(s) seleccionados.").format(termino, tipos_activos)
                 else:
-                    msg = f"Sin resultados para '{termino}'"
+                    msg = tr("Sin resultados para '{0}'").format(termino)
                 ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
                 return

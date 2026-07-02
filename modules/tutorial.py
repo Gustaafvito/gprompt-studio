@@ -278,7 +278,7 @@ def abrir_tutorial(app):
         except Exception as _e:
             logger.debug(f"[silent] focus_set: {_e}")
         _flash_widget(w)
-        return f"✏️ Foco en {widget_name} — busca el borde azul"
+        return tr("✏️ Foco en {0} — busca el borde azul").format(widget_name)
 
     def _focus_modelo() -> str:
         """Resuelve el combo de modelo según el modo activo y le hace focus."""

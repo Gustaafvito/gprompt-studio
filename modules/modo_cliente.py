@@ -28,7 +28,7 @@ import pyperclip
 
 from config import get_theme_colors
 from modules.gprompt_window import GPromptWindow
-from modules.i18n import tr
+from modules.i18n import tr, tr_es
 from workers import limpiar_marcadores, log_future_exc
 
 logger = logging.getLogger(__name__)
@@ -105,10 +105,10 @@ class ModoClienteService:
         plantilla_row.pack(fill="x", padx=20, pady=(0, 8))
         ctk.CTkLabel(plantilla_row, text=tr("Plantilla:"),
                      font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
-        plantilla_var = ctk.StringVar(value="— Personalizada —")
+        plantilla_var = ctk.StringVar(value=tr("— Personalizada —"))
         combo_plantilla = ctk.CTkComboBox(
             plantilla_row, width=280, variable=plantilla_var,
-            values=["— Personalizada —"] + list(PLANTILLAS_BRIEF.keys()),
+            values=[tr("— Personalizada —")] + [tr(k) for k in PLANTILLAS_BRIEF],
         )
         combo_plantilla.pack(side="left")
 
@@ -171,20 +171,20 @@ class ModoClienteService:
             ("Público objetivo", "ej: Mujeres 25-40 urbanas, Profesionales tech, Familia..."),
             ("Restricciones / keywords", "ej: Sin texto, paleta verde-marrón, formato vertical..."),
         ]:
-            ctk.CTkLabel(vent, text=label, font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(4, 2))
-            ent = ctk.CTkEntry(vent, placeholder_text=placeholder, width=560, height=28)
+            ctk.CTkLabel(vent, text=tr(label), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(4, 2))
+            ent = ctk.CTkEntry(vent, placeholder_text=tr(placeholder), width=560, height=28)
             ent.pack(padx=20)
             campos[label] = ent
 
         def _aplicar_plantilla(_v=None):
-            sel = plantilla_var.get()
+            sel = tr_es(plantilla_var.get())
             if sel == "— Personalizada —":
                 return
             datos = PLANTILLAS_BRIEF.get(sel, {})
             for k, ent in campos.items():
                 ent.delete(0, "end")
                 if datos.get(k):
-                    ent.insert(0, datos[k])
+                    ent.insert(0, tr(datos[k]))
         combo_plantilla.configure(command=_aplicar_plantilla)
 
         # ── Cargar último brief desde preferencias ──
@@ -511,7 +511,7 @@ class ModoClienteService:
             for w in thumbs_area.winfo_children():
                 w.destroy()
             n = len(archivos_state['rutas'])
-            sufijo = " (máx 5 procesadas)" if n > 5 else ""
+            sufijo = tr(" (máx 5 procesadas)") if n > 5 else ""
             lbl_count.configure(text=tr('{0} imágenes seleccionadas{1}').format((n), (sufijo)))
             for i, ruta in enumerate(archivos_state["rutas"][:8]):
                 try:
@@ -577,7 +577,7 @@ class ModoClienteService:
                 _actualizar_thumbs()
             if fallos:
                 detalle = "\n".join(f"• {n}: {err}" for n, err in fallos[:5])
-                mas = f"\n+{len(fallos)-5} más" if len(fallos) > 5 else ""
+                mas = tr("\n+{0} más").format(len(fallos) - 5) if len(fallos) > 5 else ""
                 from tkinter import messagebox as _mb
                 _mb.showwarning(
                     tr("Imágenes rechazadas"),

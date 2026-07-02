@@ -243,7 +243,7 @@ class MultiPromptService:
                 marcado = key in tipos_pref
                 vbool = tk.BooleanVar(value=marcado)
                 chk_vars[key] = vbool
-                cb = ctk.CTkCheckBox(grid, text=f"{label}  —  {desc}",
+                cb = ctk.CTkCheckBox(grid, text=f"{label}  —  {tr(desc)}",
                                        variable=vbool,
                                        font=ctk.CTkFont(size=10))
                 cb.grid(row=i, column=0, sticky="w", padx=4, pady=2)
@@ -911,7 +911,7 @@ class MultiPromptService:
         # ─── Estado ──────────────────────────────────────────────
         nodos = [{
             "id": 0, "parent": None, "texto": prompt_raiz, "depth": 0,
-            "hijos": [], "label": "Raíz",
+            "hijos": [], "label": tr("Raíz"),
         }]
         sel = {"id": 0}  # nodo seleccionado actual
         rect_refs = {}   # id_nodo → (rect_canvas_id, text_canvas_id)
@@ -1279,8 +1279,9 @@ class MultiPromptService:
                     cnt_descendientes += 1
                     _contar(h)
             _contar(nid)
-            msg = (f"¿Borrar el nodo {n['label']}"
-                   + (f" y sus {cnt_descendientes} descendientes?" if cnt_descendientes else "?"))
+            msg = (tr("¿Borrar el nodo {0} y sus {1} descendientes?").format(
+                       n['label'], cnt_descendientes) if cnt_descendientes
+                   else tr("¿Borrar el nodo {0}?").format(n['label']))
             if not messagebox.askyesno(tr("Confirmar borrado"), msg, parent=vent):
                 return
             # Marcar para borrar todos los descendientes + este

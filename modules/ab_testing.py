@@ -135,7 +135,7 @@ class AbTestingService:
             var.trace_add("write", lambda *a: _actualizar_checkboxes())
             row = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
             row.pack(fill="x", pady=2)
-            cb = ctk.CTkCheckBox(row, text=f"  {nombre}", variable=var,
+            cb = ctk.CTkCheckBox(row, text=f"  {tr(nombre)}", variable=var,
                                   font=ctk.CTkFont(size=11))
             cb.pack(side="left", padx=10, pady=6)
             dim_checks[nombre] = cb
@@ -199,11 +199,11 @@ class AbTestingService:
                 if isinstance(combo, tuple):
                     dim_name, dim_val = combo
                     variacion = f"Cambia {dim_name} a: {dim_val}"
-                    etiqueta = f"{dim_name}: {dim_val}"
+                    etiqueta = f"{tr(dim_name)}: {dim_val}"
                 else:
                     cambios = ", ".join(f"{d}: {v}" for d, v in combo)
                     variacion = f"Cambia: {cambios}"
-                    etiqueta = "  ·  ".join(f"{d}: {v}" for d, v in combo)
+                    etiqueta = "  ·  ".join(f"{tr(d)}: {v}" for d, v in combo)
 
                 peticion = (
                     "Genera un prompt profesional para esta idea:\n\n"
@@ -435,7 +435,7 @@ class AbTestingService:
             # Mostrar info del modelo en el header
             specs = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
             chars_max = specs.get("max_chars", "?")
-            has_neg = "✅ Neg" if specs.get("has_negative", False) else "❌ Sin neg"
+            has_neg = "✅ Neg" if specs.get("has_negative", False) else tr("❌ Sin neg")
             ctk.CTkLabel(hdr, text=tr('  #{0}  {1}  ·  {2} chars  ·  {3}').format((i+1), (m), (chars_max), (has_neg)),
                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
 

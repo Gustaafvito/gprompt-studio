@@ -184,8 +184,8 @@ def abrir_personajes(app):
         )
 
         if not visibles:
-            msg = (f"Sin resultados para '{termino}'" if termino
-                   else "No hay personajes guardados aún. Pulsa '+ Nuevo personaje'.")
+            msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                   else tr("No hay personajes guardados aún. Pulsa '+ Nuevo personaje'."))
             ctk.CTkLabel(frame_lista, text=msg,
                          text_color=cc_loc["empty_text"]).pack(pady=20)
             return
@@ -264,8 +264,8 @@ def abrir_loras(app):
     ventana.geometry("840x640")
     ventana.grab_set()
 
-    FAMILIAS = ["Todas", "SDXL", "SD15", "Pony", "Illustrious",
-                "Flux", "SD3.5", "Z Image", "Otra"]
+    FAMILIAS = [tr("Todas"), "SDXL", "SD15", "Pony", "Illustrious",
+                "Flux", "SD3.5", "Z Image", tr("Otra")]
 
     # ── Cabecera ──
     head = ctk.CTkFrame(ventana, fg_color="transparent")
@@ -309,7 +309,7 @@ def abrir_loras(app):
                   ).pack(side="left", padx=(6, 8))
 
     ctk.CTkLabel(frame_busqueda, text=tr("Familia:")).pack(side="left", padx=(8, 4))
-    filtro_familia_var = ctk.StringVar(value="Todas")
+    filtro_familia_var = ctk.StringVar(value=tr("Todas"))
     combo_filtro = ctk.CTkComboBox(frame_busqueda, width=120,
                                    values=FAMILIAS, variable=filtro_familia_var,
                                    command=lambda _v: refrescar())
@@ -472,7 +472,7 @@ def abrir_loras(app):
         fam_sel = filtro_familia_var.get()
 
         def _filtra(l):
-            if fam_sel != "Todas" and (l.get("familia", "") or "Otra") != fam_sel:
+            if fam_sel != tr("Todas") and tr(l.get("familia", "") or "Otra") != fam_sel:
                 return False
             if not termino:
                 return True
@@ -481,16 +481,16 @@ def abrir_loras(app):
                     or termino in l.get("descripcion", "").lower())
 
         visibles = [(i, l) for i, l in enumerate(loras) if _filtra(l)]
-        sufijo_filtro = "" if fam_sel == "Todas" else f" · familia={fam_sel}"
+        sufijo_filtro = "" if fam_sel == tr("Todas") else tr(" · familia={0}").format(fam_sel)
         lbl_count.configure(
             text=f"({len(visibles)} de {len(loras)}{sufijo_filtro})"
-            if (termino or fam_sel != "Todas")
+            if (termino or fam_sel != tr("Todas"))
             else f"({len(loras)})"
         )
 
         if not visibles:
-            msg = (f"Sin resultados" if (termino or fam_sel != "Todas")
-                   else "No hay LoRAs guardados aún.\nPulsa '+ Nuevo LoRA' para añadir.")
+            msg = (tr("Sin resultados") if (termino or fam_sel != tr("Todas"))
+                   else tr("No hay LoRAs guardados aún.\nPulsa '+ Nuevo LoRA' para añadir."))
             ctk.CTkLabel(frame_lista, text=msg,
                          text_color=cc_loc["empty_text"], justify="center").pack(pady=20)
             return

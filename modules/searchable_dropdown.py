@@ -30,7 +30,7 @@ def _es_separador(v):
 
 
 def attach_searchable_dropdown(combo, command=None, max_height=380,
-                               placeholder="🔍 Buscar modelo…"):
+                               placeholder=None):
     """Engancha un popup buscador+scroll al CTkComboBox `combo`.
 
     command(valor): se llama al elegir un modelo (como el command del combo;
@@ -110,7 +110,8 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
 
             buscar_var = tkinter.StringVar()
             entry = ctk.CTkEntry(cont, textvariable=buscar_var,
-                                 placeholder_text=placeholder, height=30)
+                                 placeholder_text=placeholder or tr("🔍 Buscar modelo…"),
+                                 height=30)
             entry.pack(fill="x", padx=6, pady=6)
 
             lista = ctk.CTkScrollableFrame(cont, fg_color="transparent")

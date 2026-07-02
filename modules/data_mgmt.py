@@ -767,8 +767,8 @@ class DataMgmtService:
                 visibles.append((i, s))
 
             if not visibles:
-                msg = (f"Sin resultados para '{termino}'" if termino
-                       else "Aún no tienes snippets. Pulsa '➕ Nuevo snippet'.")
+                msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                       else tr("Aún no tienes snippets. Pulsa '➕ Nuevo snippet'."))
                 ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11),
                              text_color="#666666").pack(pady=20)
@@ -946,8 +946,8 @@ class DataMgmtService:
                 visibles.append((i, f))
 
             if not visibles:
-                msg = (f"Sin resultados para '{termino}'" if termino
-                       else "No hay fórmulas. Genera un prompt y guárdalo aquí.")
+                msg = (tr("Sin resultados para '{0}'").format(termino) if termino
+                       else tr("No hay fórmulas. Genera un prompt y guárdalo aquí."))
                 ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11),
                              text_color="#666666").pack(pady=20)
@@ -1091,7 +1091,7 @@ class DataMgmtService:
         for txt, val in [("Todos", "todos"), ("🖼 Imagen", "imagen"),
                          ("🎬 Vídeo", "video"), ("🎵 Audio", "audio")]:
             b = ctk.CTkButton(
-                fila_modos, text=txt, width=78, height=24,
+                fila_modos, text=tr(txt), width=78, height=24,
                 fg_color=c["fg_frame"] if val == modo_actual else c["fg_dark"],
                 hover_color="#2a2a3a", font=ctk.CTkFont(size=10),
                 command=lambda v=val: _set_modo(v)

@@ -5,7 +5,7 @@ import re
 
 import pyperclip
 
-from modules.i18n import tr
+from modules.i18n import tr, tr_es
 
 logger = logging.getLogger(__name__)
 from tkinter import messagebox
@@ -385,8 +385,10 @@ class ToolsWorkflowService:
 
         # Qué variar
         ctk.CTkLabel(vent, text=tr("Qué cambiar entre variantes:"), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(12, 3))
-        var_aspecto = ctk.StringVar(value="Variar todo aleatoriamente")
-        opciones = [
+        var_aspecto = ctk.StringVar(value=tr("Variar todo aleatoriamente"))
+        # El combo muestra la traducción; el lookup en mapeo_aspecto
+        # des-traduce con tr_es() (claves ES).
+        opciones = [tr(o) for o in (
             "Variar todo aleatoriamente",
             "Solo iluminación",
             "Solo encuadre/cámara",
@@ -394,7 +396,7 @@ class ToolsWorkflowService:
             "Solo atmósfera/mood",
             "Solo estilo artístico",
             "🎯 Personalizado (ver abajo)",
-        ]
+        )]
         cb_aspecto = ctk.CTkComboBox(vent, values=opciones, variable=var_aspecto, width=320, height=28)
         cb_aspecto.pack(anchor="w", padx=20)
 
@@ -447,7 +449,7 @@ class ToolsWorkflowService:
             cron_state["activo"] = True
             cron_state["actuales"] = 0
             cron_state["generados"] = []
-            aspecto = var_aspecto.get()
+            aspecto = tr_es(var_aspecto.get())
             personalizado = ent_personalizado.get().strip()
             modo = self.app.modo_var.get()
             estilos = self.app.footer.estilos_texto()
@@ -506,9 +508,10 @@ class ToolsWorkflowService:
                         if cron_state["cerrada"]:
                             return
                         self.app.dialogs.actualizar_salida(resp)
-                        progreso = f"⏲ Variante {num}/{cantidad} generada · próxima en {int(intervalo)}min"
+                        progreso = tr("⏲ Variante {0}/{1} generada · próxima en {2}min").format(
+                            num, cantidad, int(intervalo))
                         if num >= cantidad:
-                            progreso = f"✅ Cron completado: {cantidad} variantes generadas"
+                            progreso = tr("✅ Cron completado: {0} variantes generadas").format(cantidad)
                         _safe_configure(lbl_progreso, text=progreso,
                                         text_color="#2ecc71" if num >= cantidad else "#3498db")
                         self.app.dialogs.set_estado(tr('⏲ Variante {0}/{1} lista').format((num), (cantidad)), "#3498db")
@@ -700,7 +703,7 @@ class ToolsWorkflowService:
                 row = ctk.CTkFrame(pasos_box, fg_color=c["fg_frame"],
                                     corner_radius=4)
                 row.pack(fill="x", pady=1)
-                ctk.CTkLabel(row, text=f"  {idx_p + 1}. {label}",
+                ctk.CTkLabel(row, text=f"  {idx_p + 1}. {tr(label)}",
                              font=ctk.CTkFont(size=10),
                              text_color=c["hdr_text"],
                              anchor="w").pack(side="left", fill="x",
@@ -741,13 +744,15 @@ class ToolsWorkflowService:
         # Selector de acción a añadir
         f_add = ctk.CTkFrame(form, fg_color="transparent")
         f_add.pack(fill="x", padx=10, pady=2)
-        var_accion = ctk.StringVar(value=list(acciones_disponibles.keys())[0])
-        cb_acc = ctk.CTkComboBox(f_add, values=list(acciones_disponibles.keys()),
+        # El combo muestra la traducción; el paso se guarda con la clave ES
+        # (las macros persistidas y ACCIONES_MACRO están keyed en ES).
+        var_accion = ctk.StringVar(value=tr(list(acciones_disponibles.keys())[0]))
+        cb_acc = ctk.CTkComboBox(f_add, values=[tr(k) for k in acciones_disponibles],
                                   variable=var_accion, width=400, height=24)
         cb_acc.pack(side="left", padx=(0, 5))
 
         def _add_paso():
-            label = var_accion.get()
+            label = tr_es(var_accion.get())
             pasos_state["lista"].append(label)
             _refrescar_pasos()
 
@@ -985,7 +990,7 @@ class ToolsWorkflowService:
                 return
             label = pasos[idx]
             accion_id = acciones_disponibles.get(label, "")
-            self.app.dialogs.set_estado(tr('⚡ Paso {0}/{1}: {2}').format((idx+1), (len(pasos)), (label)), "#3498db")
+            self.app.dialogs.set_estado(tr('⚡ Paso {0}/{1}: {2}').format((idx+1), (len(pasos)), tr(label)), "#3498db")
             try:
                 if accion_id == "generar":
                     self.app.cmd_prompt()
@@ -1165,7 +1170,7 @@ class ToolsWorkflowService:
                 if parsed.get("total"):
                     v, mx = parsed["total"]
                     if mx:
-                        score_txt = f" (partía de {int(v / mx * 100)}/100)"
+                        score_txt = tr(" (partía de {0}/100)").format(int(v / mx * 100))
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(
                     tr('⚡ Optimizado en 1 pasada{0}').format(score_txt), "#2ecc71"))

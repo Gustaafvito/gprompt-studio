@@ -236,10 +236,10 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     if modo_seleccionado not in _FILTRO_LABELS:
         modo_seleccionado = "todos"
 
-    filtro_var = ctk.StringVar(value=_FILTRO_LABELS[modo_seleccionado])
+    filtro_var = ctk.StringVar(value=tr(_FILTRO_LABELS[modo_seleccionado]))
     seg = ctk.CTkSegmentedButton(
         fila2,
-        values=list(_FILTRO_LABELS.values()),
+        values=[tr(v) for v in _FILTRO_LABELS.values()],
         variable=filtro_var,
         command=lambda _v: on_filtro(),
     )
@@ -252,7 +252,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     def _modo_actual() -> str:
         label = filtro_var.get()
         for k, v in _FILTRO_LABELS.items():
-            if v == label:
+            if tr(v) == label:
                 return k
         return "todos"
 
@@ -321,15 +321,18 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
 
         total = len(resultados)
         if modo == "todos":
-            contador_var.set(f"{total} de {len(guia)}" if f else f"{len(guia)} estilos")
+            contador_var.set(tr("{0} de {1}").format(total, len(guia)) if f
+                             else tr("{0} estilos").format(len(guia)))
         else:
-            etiqueta = _FILTRO_LABELS[modo]
+            etiqueta = tr(_FILTRO_LABELS[modo])
             contador_var.set(
-                f"{total} de {total_modo} en {etiqueta}" if f else f"{total_modo} en {etiqueta}"
+                tr("{0} de {1} en {2}").format(total, total_modo, etiqueta) if f
+                else tr("{0} en {1}").format(total_modo, etiqueta)
             )
 
         if total == 0:
-            msg = "Sin resultados." if f else f"No hay estilos en la guía para {_FILTRO_LABELS[modo]}."
+            msg = (tr("Sin resultados.") if f
+                   else tr("No hay estilos en la guía para {0}.").format(tr(_FILTRO_LABELS[modo])))
             ctk.CTkLabel(scroll, text=msg, text_color=text_muted, font=ctk.CTkFont(size=14)).pack(pady=40)
             return
 

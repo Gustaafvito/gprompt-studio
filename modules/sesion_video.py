@@ -286,9 +286,10 @@ class SesionVideoService:
             import os as _os
             try:
                 tam_mb = _os.path.getsize(video_path) / (1024 * 1024)
-                video_info = f"🎥 Vídeo guardado: {_os.path.basename(video_path)}  ·  {tam_mb:.1f} MB"
+                video_info = tr("🎥 Vídeo guardado: {0}  ·  {1:.1f} MB").format(
+                    _os.path.basename(video_path), tam_mb)
             except Exception:
-                video_info = f"🎥 Vídeo guardado: {_os.path.basename(video_path)}"
+                video_info = tr("🎥 Vídeo guardado: {0}").format(_os.path.basename(video_path))
             video_banner = ctk.CTkFrame(v, fg_color="#1a3a5a", corner_radius=6)
             video_banner.pack(fill="x", padx=15, pady=(0, 8))
             ctk.CTkLabel(video_banner, text=video_info, font=ctk.CTkFont(size=11, weight="bold"),

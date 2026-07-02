@@ -645,9 +645,9 @@ class JsonPromptService:
         vent.geometry("840x680")
         vent.transient(self.app)
 
-        titulo = "📤 JSON profesional exportado"
+        titulo = tr("📤 JSON profesional exportado")
         if not json_valido:
-            titulo += "  ⚠️ JSON con errores de sintaxis"
+            titulo += tr("  ⚠️ JSON con errores de sintaxis")
         ctk.CTkLabel(vent, text=titulo,
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(

@@ -257,15 +257,15 @@ class PreviewPollinationsService:
                                                               "kontext", "sdxl",
                                                               "anime"):
                                             mdl_actual = "turbo"
-                                        last_err = "Sin Pollen — fallback a legacy"
+                                        last_err = tr("Sin Pollen — fallback a legacy")
                                     else:
-                                        last_err = "Pollinations: cuenta de pago requerida"
+                                        last_err = tr("Pollinations: cuenta de pago requerida")
                                     continue
                                 if sc == 429:
-                                    last_err = "Rate limit, reintentando..."
+                                    last_err = tr("Rate limit, reintentando...")
                                     continue
                                 if sc >= 500:
-                                    last_err = f"{sc} Pollinations caído"
+                                    last_err = tr("{0} Pollinations caído").format(sc)
                                     continue
                                 if sc != 200:
                                     last_err = f"HTTP {sc}"
@@ -362,10 +362,10 @@ class PreviewPollinationsService:
                 "auto", "flux", "kontext", "gptimage",
                 "zimage", "klein", "nova-canvas",
             ]
-            _hint_modo = "🔑 con API key · flux es gratis"
+            _hint_modo = tr("🔑 con API key · flux es gratis")
         else:
             _modelos_disponibles = ["auto", "turbo", "kontext", "sdxl", "anime"]
-            _hint_modo = "anónimo · con rate limit"
+            _hint_modo = tr("anónimo · con rate limit")
         modelo_pollinations_var = ctk.StringVar(value="auto")
         bar_modelo = ctk.CTkFrame(vent, fg_color="transparent")
         bar_modelo.pack(pady=(0, 4))
@@ -402,7 +402,7 @@ class PreviewPollinationsService:
 
             label_txt = (
                 labels[i] if labels and i < len(labels) and labels[i]
-                else f"Variación #{i+1}"
+                else tr("Variación #{0}").format(i + 1)
             )
             ctk.CTkLabel(cell, text=label_txt,
                          font=ctk.CTkFont(size=10, weight="bold"),
