@@ -8,7 +8,7 @@ Aquí tienes TRES opciones para usar la app o compartirla:
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.0.exe  (~90 MB)
+Archivo: GPromptStudio-Setup-1.0.0.exe  (~94 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -26,8 +26,9 @@ CÓMO USAR:
   4. Lanza desde el menú Inicio o desde el escritorio.
 
 CÓMO COMPARTIR:
-  Sube este archivo (~90 MB) a Google Drive / WeTransfer / Mega.
-  El receptor solo necesita el .exe del instalador, nada más.
+  Sube este archivo (~94 MB) a Google Drive / WeTransfer / Mega
+  (no cabe por email). El receptor solo necesita el .exe del
+  instalador, nada más.
 
 
 OPCIÓN 2: PORTABLE (sin instalación)
@@ -52,7 +53,7 @@ CÓMO COMPARTIR:
 OPCIÓN 3: ONEFILE (un solo .exe portable)
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Portable-Onefile.exe  (~128 MB)
+Archivo: GPromptStudio-Portable-Onefile.exe  (~134 MB)
 
 QUÉ HACE:
   - TODO en un único .exe. Sin instalación ni carpetas.
@@ -106,9 +107,24 @@ PRIMER ARRANQUE
   Tienes botones "🌐 Obtener key" que abren la web de cada proveedor
   donde puedes generar tu clave gratuita o de pago.
 
+  💡 PARA EMPEZAR GRATIS: Gemini (Google) y Groq regalan API key
+  gratuita con límites generosos — con una de las dos la app ya
+  funciona al completo. Sin tarjeta.
+
   IDIOMA: la interfaz es bilingüe español/inglés. Se detecta el
   idioma de Windows en el primer arranque; puedes cambiarlo en
   menú UI → 🌐 Idioma (se aplica al reiniciar la app).
+
+
+TRUCOS PARA EMPEZAR
+═══════════════════════════════════════════════════════════════════
+
+  ⌨ Ctrl+K  → Paleta de comandos: escribe lo que buscas ("negative",
+              "avatar", "backup"...) y ejecuta cualquier herramienta
+              sin bucear por los menús. El mejor atajo de la app.
+  ⌨ Ctrl+?  → Lista completa de atajos de teclado.
+  ⌨ Ctrl+T  → Tutorial interactivo paso a paso.
+  🏠 Menú UI → Dashboard: reto del día, tips y acceso rápido a todo.
 
 
 REQUISITOS DEL SISTEMA
