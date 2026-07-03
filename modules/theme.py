@@ -149,10 +149,13 @@ def apply_theme_colors(app):
         app.combo_llm.configure(fg_color=combo_bg, border_color=combo_border, button_color=combo_btn, text_color=hdr_text)
     if hasattr(app, '_btn_key'):
         app._btn_key.configure(fg_color=key_bg, hover_color=key_hover)
-    # Botones de iconos del header
-    if hasattr(app, '_header_btns'):
-        for btn in app._header_btns:
-            btn.configure(fg_color=btn_bg, hover_color=btn_hover)
+    # Menús del header: relleno con el color semántico de cada grupo
+    # (no el neutro btn_bg — machacaría el estilo de ui_builders).
+    if hasattr(app, '_header_menus'):
+        from modules import paleta as P
+        for btn, _label, color_grupo, _items in app._header_menus:
+            btn.configure(**P.estilo_boton(color_grupo, primario=True),
+                          text_color="#ffffff")
 
     # Modo bar
     if hasattr(app, '_modo_frame'):

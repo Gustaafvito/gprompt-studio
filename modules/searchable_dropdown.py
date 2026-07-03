@@ -92,6 +92,11 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
             return original_open()
 
         try:
+            from config import get_theme_colors
+            is_light = ctk.get_appearance_mode().lower() == "light"
+            c = get_theme_colors(is_light)
+            valor_actual = combo.get()
+
             top = tkinter.Toplevel(combo)
             state["popup"] = top
             top.wm_overrideredirect(True)
@@ -104,15 +109,17 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
             y = combo.winfo_rooty() + combo.winfo_height()
             ancho = max(combo.winfo_width(), 320)
             top.geometry(f"{ancho}x{max_height}+{x}+{y}")
-            top.configure(bg="#2b2b2b")
+            top.configure(bg=c["combo_border"])
 
-            cont = ctk.CTkFrame(top, corner_radius=6)
-            cont.pack(fill="both", expand=True)
+            cont = ctk.CTkFrame(top, corner_radius=6, fg_color=c["panel_bg"],
+                                border_width=1, border_color=c["combo_border"])
+            cont.pack(fill="both", expand=True, padx=1, pady=1)
 
             buscar_var = tkinter.StringVar()
             entry = ctk.CTkEntry(cont, textvariable=buscar_var,
                                  placeholder_text=placeholder or tr("🔍 Buscar modelo…"),
-                                 height=30)
+                                 height=30, fg_color=c["combo_bg"], border_color=c["combo_border"],
+                                 text_color=c["panel_text"])
             entry.pack(fill="x", padx=6, pady=6)
 
             lista = ctk.CTkScrollableFrame(cont, fg_color="transparent")
@@ -139,15 +146,18 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                         colapsada = v in state["collapsed"]
                         fam_colapsada = colapsada
                         flecha = "▸" if colapsada else "▾"
-                        # Cabecera = CTkLabel (mismo aspecto que el original, color
-                        # del tema) pero clicable para plegar/desplegar la familia.
+                        # Cabecera = CTkLabel (color acento, discreta) pero
+                        # clicable para plegar/desplegar la familia.
                         hdr = ctk.CTkLabel(
                             lista, text=f"{flecha} {tr(v)}", anchor="w",
                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
+                            text_color=c["accent_text"],
                             cursor="hand2",
                         )
-                        hdr.pack(fill="x", padx=4, pady=(6, 0))
+                        hdr.pack(fill="x", padx=4, pady=(6, 1))
                         hdr.bind("<Button-1>", lambda e, fam=v: _toggle_fam(fam))
+                        sep = ctk.CTkFrame(lista, fg_color=c["combo_border"], height=1)
+                        sep.pack(fill="x", padx=4, pady=(0, 2))
                         continue
                     if filtro and filtro not in v.lower():
                         continue
@@ -156,13 +166,20 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                     hay = True
                     # Truncar SOLO el texto mostrado (el valor real va en command).
                     texto = v if len(v) <= 42 else v[:41] + "…"
+                    es_actual = v == valor_actual
                     ctk.CTkButton(
-                        lista, text=texto, anchor="w", height=26,
-                        fg_color="transparent",
+                        lista, text=f"✓ {texto}" if es_actual else texto,
+                        anchor="w", height=26, corner_radius=4,
+                        fg_color=c["btn_hover"] if es_actual else "transparent",
+                        hover_color=c["btn_hover"],
+                        text_color=P.TXT_ACENTO if es_actual else c["panel_text"],
+                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA,
+                                          weight="bold" if es_actual else "normal"),
                         command=lambda val=v: _elegir(val),
                     ).pack(fill="x", padx=2, pady=1)
                 if not hay and filtro:
                     ctk.CTkLabel(lista, text=tr("(sin coincidencias)"),
+                                 text_color=c["muted_text"],
                                  anchor="w").pack(fill="x", padx=6, pady=6)
 
             buscar_var.trace_add("write", _repintar)

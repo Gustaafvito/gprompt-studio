@@ -476,10 +476,9 @@ class UIBuildersService:
 
         for label_grupo, color_borde, items in grupos_menus:
             btn = ctk.CTkButton(frame_menus, text=label_grupo, width=120, height=28,
-                                fg_color=btn_bg, hover_color=btn_hover,
-                                border_color=color_borde, border_width=2,
+                                **P.estilo_boton(color_borde, primario=True),
                                 corner_radius=6, font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
-                                text_color=color_borde,
+                                text_color="#ffffff",
                                 command=_make_toggle(label_grupo, items, color_borde),
                                 anchor="w")
             btn.pack(side="left", padx=2)
@@ -1165,7 +1164,7 @@ class UIBuildersService:
                                                 text_color=c["hdr_text"], command=self.app._cargar_plantilla)
         self.app.combo_plantilla.pack(side="left", padx=5)
         ctk.CTkButton(self.app.frame_plantilla_brief, text=tr("💾 Guardar actual"), width=120, height=28,
-                      fg_color="#5b2c8e", hover_color="#3d1a6a", text_color="#ffffff",
+                      **P.estilo_boton(P.BTN_ACENTO),
                       command=self.app._cmd_guardar_plantilla).pack(side="left", padx=(10, 4))
         ctk.CTkButton(self.app.frame_plantilla_brief, text=tr("🗑 Borrar"), width=80, height=28,
                       fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER, text_color="#ffffff",
@@ -1209,7 +1208,7 @@ class UIBuildersService:
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
         self.app.btn_cargar_img = ctk.CTkButton(self.app.frame_imgref_inner, text=tr("📂 Cargar"), width=80, height=28,
-                                             text_color="#ffffff",
+                                             **P.estilo_boton(P.BTN_SECUNDARIO),
                                              command=self.app._cargar_imagen)
         self.app.btn_cargar_img.pack(side="left", padx=3)
         ctk.CTkButton(self.app.frame_imgref_inner, text="🗑", width=30, height=28,
@@ -1264,8 +1263,7 @@ class UIBuildersService:
         self.app.entry_busqueda.bind("<KeyRelease>", self.app.footer._filtrar_estilos)
 
         btn_sugerir = ctk.CTkButton(header_estilos, text=tr("🎨 Sugerir estilos"), width=130, height=24,
-                                       fg_color="#3a1a5a", hover_color="#2a0f3a",
-                                       text_color="#ffffff",
+                                       **P.estilo_boton(P.BTN_ACENTO),
                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                        command=self.app._cmd_sugerir_estilos)
         btn_sugerir.pack(side="left", padx=(8, 0))
@@ -1348,7 +1346,7 @@ class UIBuildersService:
         btn_sug_tags = ctk.CTkButton(
             hdr, text=tr("✨ Sugerir"), width=80, height=20,
             font=ctk.CTkFont(size=P.FUENTE_HINT),
-            fg_color="#1a5a8a", hover_color="#154a72",
+            **P.estilo_boton(P.BTN_ACENTO),
             command=self.app.creative.cmd_sugerir_tags,
         )
         btn_sug_tags.pack(side="right", padx=2)
@@ -1405,13 +1403,10 @@ class UIBuildersService:
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left")
         ctk.CTkButton(hdr, text=tr("🗑 Limpiar"), width=80, height=24,
-                      fg_color="#dc2626" if is_light else "#444",
-                      hover_color="#b91c1c" if is_light else "#222",
-                      text_color="#ffffff",
+                      fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
                       command=self.app.footer._limpiar_negatives).pack(side="right", padx=4)
         btn_sug_neg = ctk.CTkButton(hdr, text=tr("🛡 Sugerir"), width=80, height=24,
-                      fg_color="#1a5a8a", hover_color="#154a72",
-                      text_color="#ffffff",
+                      **P.estilo_boton(P.BTN_ACENTO),
                       command=self.app.creative.cmd_sugerir_negative_tab)
         btn_sug_neg.pack(side="right", padx=2)
         CTkToolTip(btn_sug_neg, message=tr("LLM genera el negative óptimo e inserta en el campo"), delay=0.4)
@@ -1435,8 +1430,8 @@ class UIBuildersService:
 
         for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
             ctk.CTkButton(frame_paquetes, text=tr(paq_nombre), height=22, width=100,
-                          fg_color="#1e3a5f", hover_color="#162d49",
-                          text_color="#ffffff", font=ctk.CTkFont(size=P.FUENTE_HINT),
+                          **P.estilo_boton(P.BTN_SECUNDARIO),
+                          font=ctk.CTkFont(size=P.FUENTE_HINT),
                           command=lambda p=paq_presets: _aplicar_paquete(p)).pack(
                           side="left", padx=2)
 
@@ -1936,13 +1931,13 @@ class UIBuildersService:
         _render_grupos(row2, grupos_r2)
 
         btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
-                                   fg_color=P.BTN_PELIGRO, hover_color="#5a1414",
+                                   fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self.app.cmd_reset)
         btn_reset.pack(side="right", padx=2)
         CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
         btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
-                                       fg_color="#1e3a5f", hover_color="#162d49",
+                                       **P.estilo_boton(P.BTN_SECUNDARIO),
                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._repetir_ultima_config)
         btn_repeat.pack(side="right", padx=2)
         CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
