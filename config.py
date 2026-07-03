@@ -59,7 +59,7 @@ def __getattr__(name):
 # ── Versión ───────────────────────────────────────────────────────
 VERSION = "1.0.0"
 PUBLIC_VERSION = "1.0.0"
-APP_TITLE = f"🧠 G-Prompt Studio v{PUBLIC_VERSION}"
+APP_TITLE = f"G-Prompt Studio v{PUBLIC_VERSION}"
 
 # ── Persistencia ──────────────────────────────────────────────────
 # Única carpeta para todo: datos, keys, logs y backups.

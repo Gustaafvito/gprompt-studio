@@ -502,9 +502,18 @@ class ArquitectoApp(
                                  corner_radius=12)
             frame.pack(fill="both", expand=True, padx=2, pady=2)
 
-            # Logo
-            ctk.CTkLabel(frame, text="🧠",
-                         font=ctk.CTkFont(size=48)).pack(pady=(20, 0))
+            # Logo — la G del icono real; fallback al emoji si no está el asset
+            try:
+                import os
+
+                from PIL import Image
+                _ruta_logo = os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "assets", "icon.png")
+                _img_logo = ctk.CTkImage(Image.open(_ruta_logo), size=(64, 64))
+                ctk.CTkLabel(frame, image=_img_logo, text="").pack(pady=(20, 0))
+            except Exception:
+                ctk.CTkLabel(frame, text="🧠",
+                             font=ctk.CTkFont(size=48)).pack(pady=(20, 0))
 
             # Título
             ctk.CTkLabel(frame, text=tr("G-Prompt Studio"),
@@ -2153,7 +2162,7 @@ class ArquitectoApp(
         c = get_theme_colors(is_lt)
 
         wizard = GPromptWindow(self)
-        wizard.title(tr("🧠 G-Prompt Studio — Configuración Inicial"))
+        wizard.title(tr("G-Prompt Studio — Configuración Inicial"))
         wizard.geometry("620x720")
         wizard.transient(self)
         wizard.grab_set()
@@ -2162,7 +2171,7 @@ class ArquitectoApp(
 
         ctk.CTkLabel(
             wizard,
-            text=tr("🧠 ¡Bienvenido a G-Prompt Studio!"),
+            text=tr("✨ ¡Bienvenido a G-Prompt Studio!"),
             font=ctk.CTkFont(size=20, weight="bold"),
         ).pack(pady=(18, 4))
         ctk.CTkLabel(
