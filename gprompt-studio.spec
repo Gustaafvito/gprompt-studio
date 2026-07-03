@@ -28,6 +28,8 @@ datas = [
     # Tema visual personalizado (sin esto el .exe caía al tema azul
     # por defecto de CTk — detectado en sesión 19 round 9).
     ('theme.json',    '.'),
+    # Icono de la app (main.py lo aplica con iconbitmap en runtime)
+    ('assets',        'assets'),
     # Documentación de USUARIO únicamente. Los docs de desarrollo
     # (ESTRUCTURA.md, HANDOFF.md, BUILD.md, AGREGAR_MODELO.md) NO se
     # empaquetan: son material interno del proyecto.
@@ -144,8 +146,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # Si tienes un icono .ico, pónlo aquí:
-    # icon='assets/icon.ico',
+    icon='assets/icon.ico',
 )
 
 coll = COLLECT(

@@ -178,6 +178,17 @@ def main():
         # real disparaba after() pendientes contra widgets muertos
         # ("invalid command name"). La app arranca rápido y no lo necesita.
         app = ArquitectoApp()
+        # Icono de la app (ventana + barra de tareas). El mismo patrón de
+        # ruta que theme.json: junto a main.py tanto en dev como en el .exe
+        # (assets/ va en datas del spec). CTk marca iconbitmap como llamado
+        # y ya no lo pisa con su icono por defecto.
+        try:
+            ruta_icono = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "assets", "icon.ico")
+            if os.path.exists(ruta_icono):
+                app.iconbitmap(ruta_icono)
+        except Exception as e:
+            logger.debug(f"[silent] icono no aplicado: {e}")
         logger.info("App inicializada correctamente.")
         try:
             app.mainloop()

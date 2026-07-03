@@ -26,6 +26,8 @@ datas = [
     *collect_data_files('PIL'),
     # Tema visual personalizado (sin esto el .exe caía al tema azul)
     ('theme.json',    '.'),
+    # Icono de la app (main.py lo aplica con iconbitmap en runtime)
+    ('assets',        'assets'),
     # Solo docs de USUARIO (los docs de desarrollo no se empaquetan)
     ('README.md',     '.'),
     ('GUIA_ESTILOS.md', '.'),
@@ -133,5 +135,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # icon='assets/icon.ico',
+    icon='assets/icon.ico',
 )
