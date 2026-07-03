@@ -1880,7 +1880,23 @@ class UIBuildersService:
                 btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
                 btn_row.pack(side="top", anchor="w")
                 for text, w, fg, cmd, tooltip in grupo:
-                    kw = {"fg_color": fg, "hover_color": self.app.dialogs._darker(fg)} if fg else {}
+                    # Estilo sobrio: relleno neutro + borde fino y hover del
+                    # color semántico del grupo (la semántica se conserva sin
+                    # el arcoíris de rellenos saturados). El botón principal
+                    # "✨ Generar" mantiene el relleno verde para destacar.
+                    if text == "✨ Generar":
+                        kw = {"fg_color": fg,
+                              "hover_color": self.app.dialogs._darker(fg)}
+                    elif fg:
+                        kw = {
+                            "fg_color": ("#eef1f5", "#1e2430"),
+                            "text_color": ("#0f172a", "#e5e7eb"),
+                            "hover_color": self.app.dialogs._darker(fg),
+                            "border_width": 1,
+                            "border_color": fg,
+                        }
+                    else:
+                        kw = {}
                     btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)

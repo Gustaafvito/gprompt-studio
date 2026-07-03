@@ -51,8 +51,30 @@ TXT_ERROR = "#e74c3c"     # error
 TXT_AVISO = "#e67e22"     # advertencia
 TXT_INFO = "#3498db"      # progreso / info
 TXT_ACENTO = "#fbbf24"    # destacado ámbar
-TXT_MUTED = "#888888"     # ayuda / secundario (tema oscuro)
-TXT_MUTED_OSCURO = "#666666"  # ayuda con más contraste (sirve en claro)
+
+# TXT_MUTED y TXT_MUTED_OSCURO son DINÁMICOS según el tema activo (ver
+# __getattr__ abajo): en claro devuelven grises con contraste suficiente
+# (#888 sobre blanco no llega a AA); en oscuro, los grises clásicos.
+# Se resuelven al construir cada ventana, como el resto de colores.
+_DINAMICOS_POR_TEMA = {
+    # nombre: (tema claro, tema oscuro)
+    "TXT_MUTED": ("#6b7280", "#888888"),
+    "TXT_MUTED_OSCURO": ("#4b5563", "#666666"),
+}
+
+
+def __getattr__(nombre):  # PEP 562 — atributos de módulo dinámicos
+    par = _DINAMICOS_POR_TEMA.get(nombre)
+    if par is None:
+        raise AttributeError(f"module 'paleta' has no attribute {nombre!r}")
+    claro, oscuro = par
+    try:
+        import customtkinter as ctk
+        if ctk.get_appearance_mode().lower() == "light":
+            return claro
+    except Exception:
+        pass
+    return oscuro
 
 # ── Escala tipográfica (tamaños CTkFont) ───────────────────────────────
 # 5 niveles. Tamaños ≥18 (splash, logos, dashboards) quedan fuera de la

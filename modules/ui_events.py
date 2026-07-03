@@ -136,35 +136,29 @@ class UiEventsService:
             self._on_modelo_imagen_cambio()
             self._set_tabs_visibles(_TABS_CON_TAGS)
 
+        # Botones narrativos por modo: al reactivarlos se restaura el estilo
+        # sobrio de la barra (relleno neutro + borde rosa del grupo), no el
+        # relleno saturado antiguo.
+        _ROSA_NARR = "#be185d"
+
+        def _btn_modo(attr, texto, activo):
+            btn = getattr(self.app, attr, None)
+            if btn is None:
+                return
+            if activo:
+                btn.configure(state="normal",
+                              fg_color=("#eef1f5", "#1e2430"),
+                              border_color=_ROSA_NARR,
+                              text=texto)
+            else:
+                btn.configure(state="disabled", fg_color="#3a3a3a",
+                              border_color="#3a3a3a", text=texto)
+
         try:
-            if hasattr(self.app, 'btn_story'):
-                if modo == "imagen":
-                    self.app.btn_story.configure(state="normal", fg_color="#be185d",
-                                              text=tr("🎞 Story"))
-                else:
-                    self.app.btn_story.configure(state="disabled", fg_color="#3a3a3a",
-                                              text=tr("🎞 Story"))
-            if hasattr(self.app, 'btn_storyboard_img'):
-                if modo == "imagen":
-                    self.app.btn_storyboard_img.configure(state="normal", fg_color="#be185d",
-                                              text=tr("🖼 Storyboard"))
-                else:
-                    self.app.btn_storyboard_img.configure(state="disabled", fg_color="#3a3a3a",
-                                              text=tr("🖼 Storyboard"))
-            if hasattr(self.app, 'btn_board'):
-                if modo == "video":
-                    self.app.btn_board.configure(state="normal", fg_color="#be185d",
-                                              text=tr("📽 Board"))
-                else:
-                    self.app.btn_board.configure(state="disabled", fg_color="#3a3a3a",
-                                              text=tr("📽 Board"))
-            if hasattr(self.app, 'btn_corto'):
-                if modo == "video":
-                    self.app.btn_corto.configure(state="normal", fg_color="#be185d",
-                                              text=tr("🎬 Corto"))
-                else:
-                    self.app.btn_corto.configure(state="disabled", fg_color="#3a3a3a",
-                                              text=tr("🎬 Corto"))
+            _btn_modo('btn_story', tr("🎞 Story"), modo == "imagen")
+            _btn_modo('btn_storyboard_img', tr("🖼 Storyboard"), modo == "imagen")
+            _btn_modo('btn_board', tr("📽 Board"), modo == "video")
+            _btn_modo('btn_corto', tr("🎬 Corto"), modo == "video")
         except Exception as _e:
             logger.debug(f"[silent on_modo_cambio btns] {_e}")
 
