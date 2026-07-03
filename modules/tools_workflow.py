@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import customtkinter as ctk
 
 from config import get_theme_colors as _get_tc
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from workers import limpiar_marcadores, log_future_exc
 
@@ -238,14 +239,14 @@ class ToolsWorkflowService:
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error aplicando setup: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error aplicando setup: {0}').format(e), P.TXT_ERROR)
 
     def _cmd_guardar_setup(self):
         """Abre diálogo para nombrar y guardar el setup actual."""
         from tkinter import simpledialog
         setup = self._capturar_setup_actual()
         if not setup:
-            self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), P.TXT_AVISO)
             return
         nombre = simpledialog.askstring(tr("💾 Guardar setup"),
                                           tr("Nombre para este setup:\n(modelo, plataforma, ratio, estilos, negatives…)"),
@@ -266,7 +267,7 @@ class ToolsWorkflowService:
         setups[nombre] = setup
         prefs["setups"] = setups
         self.app.store.guardar_preferencias(prefs)
-        self.app.dialogs.set_estado(tr("💾 Setup '{0}' guardado").format(nombre), "#2ecc71")
+        self.app.dialogs.set_estado(tr("💾 Setup '{0}' guardado").format(nombre), P.TXT_OK)
         try: self.app._sesion_log(f"💾 Guardó setup: {nombre}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
@@ -278,7 +279,7 @@ class ToolsWorkflowService:
         prefs = self.app.store.cargar_preferencias()
         setups = prefs.get("setups", {}) or {}
         if not setups:
-            self.app.dialogs.set_estado(tr("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay setups guardados todavía. Pulsa '💾 Setup' para guardar el actual."), P.TXT_AVISO)
             return
         v = GPromptWindow(self.app)
         v.title(tr("📋 Cargar setup"))
@@ -292,7 +293,7 @@ class ToolsWorkflowService:
             for w in scroll.winfo_children(): w.destroy()
             setups_act = self.app.store.cargar_preferencias().get("setups", {}) or {}
             if not setups_act:
-                ctk.CTkLabel(scroll, text=tr("(sin setups)"), text_color="#666").pack(pady=20)
+                ctk.CTkLabel(scroll, text=tr("(sin setups)"), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
             for nombre, setup in sorted(setups_act.items()):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=8)
@@ -313,7 +314,7 @@ class ToolsWorkflowService:
                 if estilos: resumen += f" · 🎨 {len(estilos)} estilos"
                 if negatives: resumen += f" · 🚫 {len(negatives)} negs"
                 ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=10),
-                             text_color="#888", anchor="w").pack(fill="x", padx=10)
+                             text_color=P.TXT_MUTED, anchor="w").pack(fill="x", padx=10)
                 if fecha:
                     ctk.CTkLabel(card, text=tr('  guardado: {0}').format(fecha), font=ctk.CTkFont(size=9),
                                  text_color="#555", anchor="w").pack(fill="x", padx=10)
@@ -323,7 +324,7 @@ class ToolsWorkflowService:
 
                 def _aplicar(s=setup, n=nombre):
                     self._aplicar_setup(s)
-                    self.app.dialogs.set_estado(tr("📋 Setup '{0}' aplicado").format(n), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("📋 Setup '{0}' aplicado").format(n), P.TXT_OK)
                     v.destroy()
 
                 def _borrar(n=nombre):
@@ -337,9 +338,9 @@ class ToolsWorkflowService:
                         _refrescar_lista()
 
                 ctk.CTkButton(btn_row, text=tr("Aplicar"), width=90, height=26,
-                              fg_color="#1e5f3a", hover_color="#16492d", command=_aplicar).pack(side="left", padx=2)
+                              fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER, command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("🗑 Borrar"), width=90, height=26,
-                              fg_color="#6a1a1a", hover_color="#4a0f0f", command=_borrar).pack(side="left", padx=2)
+                              fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER, command=_borrar).pack(side="left", padx=2)
 
         _refrescar_lista()
         ctk.CTkButton(v, text=tr("Cerrar"), width=110, command=v.destroy,
@@ -351,7 +352,7 @@ class ToolsWorkflowService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base primero."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea base primero."), P.TXT_AVISO)
             return
 
         vent = GPromptWindow(self.app)
@@ -408,7 +409,7 @@ class ToolsWorkflowService:
                                           width=460, height=28)
         ent_personalizado.pack(anchor="w", padx=20)
         ctk.CTkLabel(vent, text=tr("Si rellenas esto, se usa SIEMPRE (independientemente del selector de arriba)."),
-                     font=ctk.CTkFont(size=9, slant="italic"), text_color="#666666").pack(anchor="w", padx=20, pady=(2, 0))
+                     font=ctk.CTkFont(size=9, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(anchor="w", padx=20, pady=(2, 0))
 
         lbl_progreso = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
         lbl_progreso.pack(pady=15)
@@ -443,7 +444,7 @@ class ToolsWorkflowService:
                 if cantidad < 1 or cantidad > 50: raise ValueError("cantidad fuera de rango")
                 if intervalo < 0.1 or intervalo > 120: raise ValueError("intervalo fuera de rango")
             except Exception:
-                self.app.dialogs.set_estado(tr("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Cantidad (1-50) e intervalo (0.1-120 min)"), P.TXT_AVISO)
                 return
 
             cron_state["activo"] = True
@@ -513,13 +514,13 @@ class ToolsWorkflowService:
                         if num >= cantidad:
                             progreso = tr("✅ Cron completado: {0} variantes generadas").format(cantidad)
                         _safe_configure(lbl_progreso, text=progreso,
-                                        text_color="#2ecc71" if num >= cantidad else "#3498db")
-                        self.app.dialogs.set_estado(tr('⏲ Variante {0}/{1} lista').format((num), (cantidad)), "#3498db")
+                                        text_color=P.TXT_OK if num >= cantidad else "#3498db")
+                        self.app.dialogs.set_estado(tr('⏲ Variante {0}/{1} lista').format((num), (cantidad)), P.TXT_INFO)
                     self.app.after(0, _aplicar)
                 except Exception as e:
                     self.app.after(0, lambda e=e: _safe_configure(lbl_progreso,
                                                           text=tr('❌ Error variante {0}: {1}').format((num), (e)),
-                                                          text_color="#e74c3c"))
+                                                          text_color=P.TXT_ERROR))
 
             def _siguiente():
                 if cron_state["cerrada"] or not cron_state["activo"]:
@@ -528,7 +529,7 @@ class ToolsWorkflowService:
                 num = cron_state["actuales"]
                 _safe_configure(lbl_progreso,
                                 text=tr('⏲ Generando variante {0}/{1}...').format((num), (cantidad)),
-                                text_color="#f39c12")
+                                text_color=P.TXT_ACENTO)
 
                 self.app._executor.submit(_generar_variante, num).add_done_callback(log_future_exc)
 
@@ -540,7 +541,7 @@ class ToolsWorkflowService:
                     cron_state["after_id"] = None
 
             _siguiente()
-            self.app.dialogs.set_estado(tr('⏲ Cron iniciado: {0} variantes cada {1}min').format((cantidad), (intervalo)), "#2ecc71")
+            self.app.dialogs.set_estado(tr('⏲ Cron iniciado: {0} variantes cada {1}min').format((cantidad), (intervalo)), P.TXT_OK)
 
         def _detener():
             cron_state["activo"] = False
@@ -550,19 +551,19 @@ class ToolsWorkflowService:
                 cron_state["after_id"] = None
             _safe_configure(lbl_progreso,
                             text=tr('⏹ Cron detenido en variante {0}/{1}').format((cron_state['actuales']), (ent_cantidad.get())),
-                            text_color="#e67e22")
+                            text_color=P.TXT_AVISO)
 
         def _ver_todas():
             if cron_state["generados"]:
                 self.app._abrir_comparador(cron_state["generados"])
             else:
-                self.app.dialogs.set_estado(tr("⚠️ Aún no hay variantes generadas"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Aún no hay variantes generadas"), P.TXT_AVISO)
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
         btn_row.pack(pady=10)
-        ctk.CTkButton(btn_row, text=tr("▶ Iniciar cron"), width=130, height=32, fg_color="#1a7a3c",
+        ctk.CTkButton(btn_row, text=tr("▶ Iniciar cron"), width=130, height=32, fg_color=P.BTN_EXITO,
                       command=_ejecutar_cron).pack(side="left", padx=4)
-        ctk.CTkButton(btn_row, text=tr("⏹ Detener"), width=100, height=32, fg_color="#5a1a1a",
+        ctk.CTkButton(btn_row, text=tr("⏹ Detener"), width=100, height=32, fg_color=P.BTN_PELIGRO,
                       command=_detener).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("👁 Ver todas"), width=110, height=32, fg_color="#1a4a7a",
                       command=_ver_todas).pack(side="left", padx=4)
@@ -590,7 +591,7 @@ class ToolsWorkflowService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         if not hasattr(self.app, '_versiones_prompt') or not self.app._versiones_prompt:
-            return self.app.dialogs.set_estado(tr("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay versiones aún. Genera/refina prompts para crear versiones."), P.TXT_AVISO)
 
         vent = GPromptWindow(self.app)
         vent.title(tr("📜 Historial de versiones del prompt"))
@@ -641,8 +642,8 @@ class ToolsWorkflowService:
             def _restaurar(t=ver["texto"]):
                 self.app.dialogs.actualizar_salida(t)
                 vent.destroy()
-                self.app.dialogs.set_estado(tr('⏪ Versión restaurada'), "#2ecc71")
-            ctk.CTkButton(btn_row, text=tr("⏪ Restaurar esta"), width=130, height=22, fg_color="#1a7a3c",
+                self.app.dialogs.set_estado(tr('⏪ Versión restaurada'), P.TXT_OK)
+            ctk.CTkButton(btn_row, text=tr("⏪ Restaurar esta"), width=130, height=22, fg_color=P.BTN_EXITO,
                           font=ctk.CTkFont(size=10), command=_restaurar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
                           font=ctk.CTkFont(size=10),
@@ -737,7 +738,7 @@ class ToolsWorkflowService:
                               state="normal" if idx_p < len(pasos_state["lista"]) - 1 else "disabled",
                               command=_bajar).pack(side="left", padx=1)
                 ctk.CTkButton(row, text="✕", width=24, height=20,
-                              fg_color="#5a1a1a", hover_color="#3a0f0f",
+                              fg_color=P.BTN_PELIGRO, hover_color="#3a0f0f",
                               font=ctk.CTkFont(size=10, weight="bold"),
                               command=_quitar).pack(side="left", padx=1)
 
@@ -765,12 +766,12 @@ class ToolsWorkflowService:
             pasos_state["lista"] = []
             _refrescar_pasos()
             lbl_form_titulo.configure(text=tr("➕ Nueva macro"))
-            btn_crear.configure(text=tr("✅ Crear macro"), fg_color="#1a7a3c")
+            btn_crear.configure(text=tr("✅ Crear macro"), fg_color=P.BTN_EXITO)
             btn_cancelar.pack_forget()
 
         btn_cancelar = ctk.CTkButton(f_add, text=tr("❌ Cancelar edición"),
                                       width=160, height=24,
-                                      fg_color="#5a1a1a",
+                                      fg_color=P.BTN_PELIGRO,
                                       font=ctk.CTkFont(size=10),
                                       command=_cancelar_edicion)
         # btn_cancelar.pack(...)  ← se empaca solo cuando edit_state["idx"] != None
@@ -783,7 +784,7 @@ class ToolsWorkflowService:
             actual = prefs.get("macros", [])
             if not actual:
                 ctk.CTkLabel(scroll, text=tr("Aún no tienes macros. Crea la primera arriba."),
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
+                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
             for i, m in enumerate(actual):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
@@ -834,7 +835,7 @@ class ToolsWorkflowService:
                             _cancelar_edicion()
                         refrescar()
 
-                ctk.CTkButton(btn_row, text=tr("▶ Ejecutar"), width=100, height=22, fg_color="#1a7a3c",
+                ctk.CTkButton(btn_row, text=tr("▶ Ejecutar"), width=100, height=22, fg_color=P.BTN_EXITO,
                               font=ctk.CTkFont(size=10), command=_ejecutar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=90, height=22, fg_color="#1a4a7a",
                               font=ctk.CTkFont(size=10), command=_editar).pack(side="left", padx=2)
@@ -842,13 +843,13 @@ class ToolsWorkflowService:
                               hover_color="#46295f", font=ctk.CTkFont(size=10),
                               command=lambda mm=m: self._exportar_macros_a_archivo(mm)
                               ).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color="#5a1a1a",
+                ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color=P.BTN_PELIGRO,
                               font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
 
         def crear_o_guardar():
             nombre = ent_nombre_m.get().strip()
             if not nombre or not pasos_state["lista"]:
-                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y añade al menos un paso."), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y añade al menos un paso."), P.TXT_AVISO)
                 return
             actual = prefs.get("macros", [])
             nueva = {"nombre": nombre, "pasos": list(pasos_state["lista"])}
@@ -857,11 +858,11 @@ class ToolsWorkflowService:
                 idx = edit_state["idx"]
                 if 0 <= idx < len(actual):
                     actual[idx] = nueva
-                self.app.dialogs.set_estado(tr("💾 Macro '{0}' actualizada").format(nombre), "#2ecc71")
+                self.app.dialogs.set_estado(tr("💾 Macro '{0}' actualizada").format(nombre), P.TXT_OK)
             else:
                 # Modo crear: añadir nueva al final
                 actual.append(nueva)
-                self.app.dialogs.set_estado(tr("✅ Macro '{0}' creada").format(nombre), "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Macro '{0}' creada").format(nombre), P.TXT_OK)
             prefs["macros"] = actual
             self.app.store.guardar_preferencias(prefs)
             _cancelar_edicion()
@@ -888,7 +889,7 @@ class ToolsWorkflowService:
         botones = ctk.CTkFrame(form, fg_color="transparent")
         botones.pack(pady=(4, 8))
         btn_crear = ctk.CTkButton(botones, text=tr("✅ Crear macro"), width=160, height=28,
-                                   fg_color="#1a7a3c",
+                                   fg_color=P.BTN_EXITO,
                                    font=ctk.CTkFont(size=10, weight="bold"),
                                    command=crear_o_guardar)
         btn_crear.pack(side="left", padx=4)
@@ -926,7 +927,7 @@ class ToolsWorkflowService:
             macros = [macros]
         macros = [m for m in (macros or []) if isinstance(m, dict)]
         if not macros:
-            return self.app.dialogs.set_estado(tr("⚠️ No hay macros para exportar."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay macros para exportar."), P.TXT_AVISO)
         base = macros[0].get("nombre", "macro") if len(macros) == 1 else "macros_gprompt"
         base = re.sub(r"[^\w\-]+", "_", base).strip("_") or "macros"
         ruta = filedialog.asksaveasfilename(
@@ -941,7 +942,7 @@ class ToolsWorkflowService:
             self.app.dialogs.set_estado(
                 tr('📤 {0} macro(s) exportada(s)').format(len(macros)), "#2ecc71")
         except Exception as e:
-            self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e), P.TXT_ERROR)
 
     def _importar_macros_de_archivo(self) -> int:
         """Importa macros desde un .json y las fusiona (omite duplicados por
@@ -956,7 +957,7 @@ class ToolsWorkflowService:
             with open(ruta, encoding="utf-8") as f:
                 data = _json.load(f)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('❌ JSON inválido: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ JSON inválido: {0}').format(e), P.TXT_ERROR)
             return -1
         macros_imp = parsear_macros_importadas(data)
         if not macros_imp:
@@ -981,16 +982,16 @@ class ToolsWorkflowService:
         pasos = macro.get("pasos", [])
         if not pasos: return
 
-        self.app.dialogs.set_estado(tr("⚡ Ejecutando macro '{0}' ({1} pasos)...").format((macro.get('nombre', '?')), (len(pasos))), "#f39c12")
+        self.app.dialogs.set_estado(tr("⚡ Ejecutando macro '{0}' ({1} pasos)...").format((macro.get('nombre', '?')), (len(pasos))), P.TXT_ACENTO)
 
         def _ejecutar_paso(idx):
             if idx >= len(pasos):
-                self.app.dialogs.set_estado(tr("✅ Macro '{0}' completada").format(macro.get('nombre', '?')), "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Macro '{0}' completada").format(macro.get('nombre', '?')), P.TXT_OK)
                 self.app.dialogs._sonar_completado()
                 return
             label = pasos[idx]
             accion_id = acciones_disponibles.get(label, "")
-            self.app.dialogs.set_estado(tr('⚡ Paso {0}/{1}: {2}').format((idx+1), (len(pasos)), tr(label)), "#3498db")
+            self.app.dialogs.set_estado(tr('⚡ Paso {0}/{1}: {2}').format((idx+1), (len(pasos)), tr(label)), P.TXT_INFO)
             try:
                 if accion_id == "generar":
                     self.app.cmd_prompt()
@@ -1043,7 +1044,7 @@ class ToolsWorkflowService:
                     self.app.after(18000, lambda: _ejecutar_paso(idx + 1))
                     return
             except Exception as e:
-                self.app.dialogs.set_estado(tr('⚠️ Paso falló: {0}').format(e), "#e74c3c")
+                self.app.dialogs.set_estado(tr('⚠️ Paso falló: {0}').format(e), P.TXT_ERROR)
             self.app.after(6000, lambda: _ejecutar_paso(idx + 1))
 
         _ejecutar_paso(0)
@@ -1052,7 +1053,7 @@ class ToolsWorkflowService:
         """Scoring automático sin abrir ventana - aplica el mejor prompt directamente."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para scoring."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para scoring."), P.TXT_AVISO)
 
         # Guardar versión antes de modificar (por seguridad)
         try:
@@ -1080,9 +1081,9 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.3, max_tokens=2000)
                 resp = limpiar_marcadores(resp)
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
-                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)"), "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("📊 Scoring aplicado: prompt mejorado (versión anterior guardada)"), P.TXT_OK))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error en scoring: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error en scoring: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1195,9 +1196,9 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=200)
                 resp = limpiar_marcadores(resp).strip()
                 self.app.after(0, lambda: self.app.txt_idea.insert("1.0", resp + "\n\n"))
-                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("💡 Idea generada (macro)"), "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("💡 Idea generada (macro)"), P.TXT_OK))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1205,7 +1206,7 @@ class ToolsWorkflowService:
         """Genera 1 variación directamente sin popup - para macros."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
         peticion = (
             f"Crea una variación de este prompt manteniendo la esencia pero cambiando estilo/enfoque:\n\n"
@@ -1218,9 +1219,9 @@ class ToolsWorkflowService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.7, max_tokens=1500)
                 resp = limpiar_marcadores(resp)
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(resp))
-                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🔄 Variación generada (macro)"), "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🔄 Variación generada (macro)"), P.TXT_OK))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1258,7 +1259,7 @@ class ToolsWorkflowService:
         activo = prefs.get("proyecto_activo", "")
         lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or '(ninguno)'),
                                     font=ctk.CTkFont(size=12, weight="bold"),
-                                    text_color="#2ecc71" if activo else c["muted_text"])
+                                    text_color=P.TXT_OK if activo else c["muted_text"])
         lbl_activo.pack(pady=5)
 
         # Form crear proyecto
@@ -1283,7 +1284,7 @@ class ToolsWorkflowService:
             ent_proy.delete(0, "end")
             refrescar()
 
-        ctk.CTkButton(f_crear, text=tr("➕ Crear"), width=80, height=28, fg_color="#1a7a3c",
+        ctk.CTkButton(f_crear, text=tr("➕ Crear"), width=80, height=28, fg_color=P.BTN_EXITO,
                       command=_crear_proy).pack(side="left", padx=4)
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -1297,7 +1298,7 @@ class ToolsWorkflowService:
             activo_a = prefs_act.get("proyecto_activo", "")
             if not proys:
                 ctk.CTkLabel(scroll, text=tr("Aún no tienes proyectos. Crea el primero arriba."),
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
+                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             # Opción "Sin proyecto"
@@ -1314,7 +1315,7 @@ class ToolsWorkflowService:
                 refrescar()
                 self.app.dialogs.set_estado(tr("📌 Sin proyecto activo"))
 
-            ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color="#1a4a5a",
+            ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color=P.BTN_SECUNDARIO,
                           font=ctk.CTkFont(size=10), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
 
             for nombre_p in sorted(proys.keys()):
@@ -1331,7 +1332,7 @@ class ToolsWorkflowService:
                 badge_setup = "  💾" if tiene_setup else ""
                 ctk.CTkLabel(hdr, text=f"🏷 {nombre_p}{badge_setup}{'  ← ACTIVO' if es_activo else ''}",
                              font=ctk.CTkFont(size=11, weight="bold" if es_activo else "normal"),
-                             text_color="#2ecc71" if es_activo else c["hdr_text"]).pack(side="left")
+                             text_color=P.TXT_OK if es_activo else c["hdr_text"]).pack(side="left")
 
                 # Resumen del setup si existe
                 if tiene_setup:
@@ -1343,7 +1344,7 @@ class ToolsWorkflowService:
                     if n_est: resumen += f" · 🎨 {n_est}"
                     if n_neg: resumen += f" · 🚫 {n_neg}"
                     ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=9),
-                                 text_color="#888", anchor="w").pack(fill="x", padx=14, pady=(0, 2))
+                                 text_color=P.TXT_MUTED, anchor="w").pack(fill="x", padx=14, pady=(0, 2))
 
                 # Botones de acción
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -1353,15 +1354,15 @@ class ToolsWorkflowService:
                     p2 = self.app.store.cargar_preferencias()
                     p2["proyecto_activo"] = n
                     self.app.store.guardar_preferencias(p2)
-                    lbl_activo.configure(text=tr('📌 Proyecto activo: {0}').format(n), text_color="#2ecc71")
+                    lbl_activo.configure(text=tr('📌 Proyecto activo: {0}').format(n), text_color=P.TXT_OK)
                     refrescar()
-                    self.app.dialogs.set_estado(tr("🏷 Proyecto '{0}' activado").format(n), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🏷 Proyecto '{0}' activado").format(n), P.TXT_OK)
 
                 def _guardar_setup_proy(n=nombre_p):
                     """Guarda el setup actual en este proyecto."""
                     setup = self._capturar_setup_actual()
                     if not setup:
-                        self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ No se pudo capturar la configuración"), P.TXT_AVISO)
                         return
                     p2 = self.app.store.cargar_preferencias()
                     proys2 = p2.get("proyectos", {}) or {}
@@ -1371,7 +1372,7 @@ class ToolsWorkflowService:
                     proys2[n]["_setup_fecha"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                     p2["proyectos"] = proys2
                     self.app.store.guardar_preferencias(p2)
-                    self.app.dialogs.set_estado(tr("💾 Setup guardado en '{0}'").format(n), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("💾 Setup guardado en '{0}'").format(n), P.TXT_OK)
                     refrescar()
 
                 def _aplicar_setup_proy(n=nombre_p):
@@ -1381,10 +1382,10 @@ class ToolsWorkflowService:
                     proy = proys2.get(n) or {}
                     setup = proy.get("setup") if isinstance(proy, dict) else None
                     if not setup:
-                        self.app.dialogs.set_estado(tr("⚠️ El proyecto '{0}' no tiene setup guardado").format(n), "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ El proyecto '{0}' no tiene setup guardado").format(n), P.TXT_AVISO)
                         return
                     self._aplicar_setup(setup)
-                    self.app.dialogs.set_estado(tr("🔄 Setup de '{0}' aplicado").format(n), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🔄 Setup de '{0}' aplicado").format(n), P.TXT_OK)
                     vent.destroy()
 
                 def _borrar_setup_proy(n=nombre_p):
@@ -1410,17 +1411,17 @@ class ToolsWorkflowService:
                     refrescar()
 
                 if not es_activo:
-                    ctk.CTkButton(btn_row, text=tr("✅ Activar"), width=70, height=24, fg_color="#1a7a3c",
+                    ctk.CTkButton(btn_row, text=tr("✅ Activar"), width=70, height=24, fg_color=P.BTN_EXITO,
                                   font=ctk.CTkFont(size=10), command=_activar).pack(side="left", padx=2)
                 if tiene_setup:
-                    ctk.CTkButton(btn_row, text=tr("🔄 Aplicar setup"), width=110, height=24, fg_color="#1e5f3a",
-                                  hover_color="#16492d",
+                    ctk.CTkButton(btn_row, text=tr("🔄 Aplicar setup"), width=110, height=24, fg_color=P.BTN_EXITO,
+                                  hover_color=P.BTN_EXITO_HOVER,
                                   font=ctk.CTkFont(size=10), command=_aplicar_setup_proy).pack(side="left", padx=2)
                     ctk.CTkButton(btn_row, text=tr("🗑 setup"), width=70, height=24, fg_color="#5a4a1a",
                                   font=ctk.CTkFont(size=10), command=_borrar_setup_proy).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, fg_color="#1a4a5a",
+                ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, fg_color=P.BTN_SECUNDARIO,
                               font=ctk.CTkFont(size=10), command=_guardar_setup_proy).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text="🗑", width=28, height=24, fg_color="#5a1a1a",
+                ctk.CTkButton(btn_row, text="🗑", width=28, height=24, fg_color=P.BTN_PELIGRO,
                               font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
 
         refrescar()
@@ -1432,7 +1433,7 @@ class ToolsWorkflowService:
         """Añade tags al final del POSITIVE del resultado actual."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
         pos = self.app.extraer_positive() or texto
         neg = self.app.extraer_negative()
 
@@ -1444,4 +1445,4 @@ class ToolsWorkflowService:
         if neg:
             nuevo += f"\nNEGATIVE PROMPT: {neg}"
         self.app.dialogs.actualizar_salida(nuevo)
-        self.app.dialogs.set_estado(tr('✨ Tags añadidos: {0}...').format(tags_a_anadir[:50]), "#2ecc71")
+        self.app.dialogs.set_estado(tr('✨ Tags añadidos: {0}...').format(tags_a_anadir[:50]), P.TXT_OK)

@@ -27,6 +27,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr, tr_es
 from workers import limpiar_marcadores, log_future_exc
@@ -137,18 +138,18 @@ class ModoClienteService:
             try:
                 img = Image.open(ruta)
                 cliente_state["imagen"] = img
-                lbl_estado_img.configure(text=tr('⏳ Analizando imagen...'), text_color="#f39c12")
+                lbl_estado_img.configure(text=tr('⏳ Analizando imagen...'), text_color=P.TXT_ACENTO)
 
                 def _analizar():
                     try:
                         desc, motor = self.app.vision.describir(img, "imagen", lambda m: None)
                         cliente_state["descripcion"] = desc
-                        lbl_estado_img.configure(text=tr('✅ Imagen analizada (vision: {0})').format(motor), text_color="#2ecc71")
+                        lbl_estado_img.configure(text=tr('✅ Imagen analizada (vision: {0})').format(motor), text_color=P.TXT_OK)
                     except Exception as e:
-                        lbl_estado_img.configure(text=tr('❌ Error al analizar: {0}').format(e), text_color="#e74c3c")
+                        lbl_estado_img.configure(text=tr('❌ Error al analizar: {0}').format(e), text_color=P.TXT_ERROR)
                 self.app._executor.submit(_analizar).add_done_callback(log_future_exc)
             except Exception as e:
-                lbl_estado_img.configure(text=tr('❌ Error: {0}').format(e), text_color="#e74c3c")
+                lbl_estado_img.configure(text=tr('❌ Error: {0}').format(e), text_color=P.TXT_ERROR)
 
         def _quitar_imagen():
             cliente_state["imagen"] = None
@@ -157,9 +158,9 @@ class ModoClienteService:
 
         f_btns_img = ctk.CTkFrame(frame_img, fg_color="transparent")
         f_btns_img.pack(fill="x", padx=10, pady=(2, 8))
-        ctk.CTkButton(f_btns_img, text=tr("📂 Cargar imagen"), width=140, height=26, fg_color="#1a4a5a",
+        ctk.CTkButton(f_btns_img, text=tr("📂 Cargar imagen"), width=140, height=26, fg_color=P.BTN_SECUNDARIO,
                       command=_cargar_imagen_cliente).pack(side="left", padx=2)
-        ctk.CTkButton(f_btns_img, text=tr("✕ Quitar"), width=80, height=26, fg_color="#5a1a1a",
+        ctk.CTkButton(f_btns_img, text=tr("✕ Quitar"), width=80, height=26, fg_color=P.BTN_PELIGRO,
                       command=_quitar_imagen).pack(side="left", padx=2)
 
         # Campos del brief
@@ -200,7 +201,7 @@ class ModoClienteService:
         def _generar_propuestas():
             brief_dict = {k: v.get().strip() for k, v in campos.items()}
             if not any(brief_dict.values()):
-                self.app.dialogs.set_estado(tr("⚠️ Rellena al menos un campo del brief."), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena al menos un campo del brief."), P.TXT_AVISO)
                 return
 
             # Persistir último brief
@@ -224,13 +225,13 @@ class ModoClienteService:
             self._generar_propuestas_cliente(brief)
 
         ctk.CTkButton(vent, text=tr("✨ Generar 5 propuestas"), width=220, height=34,
-                      fg_color="#1a7a3c",
+                      fg_color=P.BTN_EXITO,
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_generar_propuestas).pack(pady=15)
 
     def _generar_propuestas_cliente(self, brief):
         """Genera 5 propuestas basadas en un brief."""
-        self.app.dialogs.set_estado(tr("💼 Generando 5 propuestas profesionales..."), "#f39c12")
+        self.app.dialogs.set_estado(tr("💼 Generando 5 propuestas profesionales..."), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         specs = self.app.get_current_model_specs()
@@ -315,7 +316,7 @@ class ModoClienteService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -392,7 +393,7 @@ class ModoClienteService:
             desc_row = ctk.CTkFrame(card, fg_color="transparent")
             desc_row.pack(fill="x", padx=12, pady=(0, 4))
             ctk.CTkLabel(desc_row, text=preview, font=ctk.CTkFont(size=10),
-                         text_color="#888888", wraplength=820, anchor="w"
+                         text_color=P.TXT_MUTED, wraplength=820, anchor="w"
                          ).pack(anchor="w")
 
             if negativo:
@@ -407,13 +408,13 @@ class ModoClienteService:
             def _usar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 self.app.dialogs.actualizar_salida(completo)
-                self.app.dialogs.set_estado(tr("✅ Propuesta '{0}' aplicada al prompt").format(nom), "#2ecc71")
+                self.app.dialogs.set_estado(tr("✅ Propuesta '{0}' aplicada al prompt").format(nom), P.TXT_OK)
                 vent.destroy()
 
             def _copiar(p=positivo, n=negativo, nom=titulo):
                 completo = f"POSITIVE PROMPT: {p}\n" + (f"NEGATIVE PROMPT: {n}" if n else "")
                 pyperclip.copy(completo)
-                self.app.dialogs.set_estado(tr("📋 Propuesta '{0}' copiada al portapapeles").format(nom), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Propuesta '{0}' copiada al portapapeles").format(nom), P.TXT_OK)
 
             def _guardar_prop(nom=titulo, p=positivo, neg=negativo):
                 """Guarda como FAVORITO con marca de origen. Antes intentaba
@@ -438,21 +439,21 @@ class ModoClienteService:
                         "nombre":     nom,
                         "contenido":  completo,
                     })
-                    self.app.dialogs.set_estado(tr("💾 Propuesta '{0}' guardada en Favoritos").format(nom), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("💾 Propuesta '{0}' guardada en Favoritos").format(nom), P.TXT_OK)
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('❌ No se pudo guardar: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('❌ No se pudo guardar: {0}').format(e), P.TXT_ERROR)
 
-            ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color="#1a7a3c",
+            ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color=P.BTN_EXITO,
                           font=ctk.CTkFont(size=10, weight="bold"), command=_usar
                           ).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, fg_color="#1a4a5a",
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, fg_color=P.BTN_SECUNDARIO,
                           font=ctk.CTkFont(size=10), command=_copiar
                           ).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("💾 Guardar"), width=100, height=30, fg_color="#4a1a6a",
                           font=ctk.CTkFont(size=10), command=_guardar_prop
                           ).pack(side="left", padx=2)
             ctk.CTkLabel(btn_row, text=tr('   {0} chars').format(len(positivo)),
-                         font=ctk.CTkFont(size=9), text_color="#666666").pack(side="left", padx=(4, 0))
+                         font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=(4, 0))
 
         ctk.CTkButton(vent, text=tr("Cerrar"), width=140, height=30, fg_color="#475569",
                       command=vent.destroy).pack(pady=(0, 8))
@@ -490,7 +491,7 @@ class ModoClienteService:
             ctk.CTkLabel(hdr_ref, text=tr("🖼 Imagen de referencia ya cargada"),
                           font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
             ctk.CTkLabel(hdr_ref, text=tr("Se usará automáticamente"),
-                          font=ctk.CTkFont(size=9), text_color="#2ecc71").pack(side="left", padx=(6, 0))
+                          font=ctk.CTkFont(size=9), text_color=P.TXT_OK).pack(side="left", padx=(6, 0))
             preview_lbl = ctk.CTkLabel(frame_ref, text="")
             preview_lbl.pack(padx=10, pady=(0, 4))
 
@@ -537,7 +538,7 @@ class ModoClienteService:
 
                     btn_x = ctk.CTkButton(
                         cont, text="✕", width=18, height=18,
-                        fg_color="#7a1a1a", hover_color="#5a0f0f",
+                        fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
                         font=ctk.CTkFont(size=9, weight="bold"),
                         corner_radius=9, border_width=0,
                         command=_quitar,
@@ -592,7 +593,7 @@ class ModoClienteService:
 
         btn_row = ctk.CTkFrame(frame_arch, fg_color="transparent")
         btn_row.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkButton(btn_row, text=tr("➕ Añadir imágenes"), width=140, height=26, fg_color="#1a4a5a",
+        ctk.CTkButton(btn_row, text=tr("➕ Añadir imágenes"), width=140, height=26, fg_color=P.BTN_SECUNDARIO,
                       command=_anadir_mas).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=100, height=26,
                       command=_limpiar).pack(side="left", padx=2)
@@ -639,9 +640,9 @@ class ModoClienteService:
                 )
             total_imgs = len(todas_imagenes)
             if total_imgs < 2:
-                return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más)."), "#e67e22")
+                return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 2 imágenes (usa la cargada o añade más)."), P.TXT_AVISO)
 
-            self.app.dialogs.set_estado(tr('🎭 Analizando {0} imágenes...').format(total_imgs), "#f39c12")
+            self.app.dialogs.set_estado(tr('🎭 Analizando {0} imágenes...').format(total_imgs), P.TXT_ACENTO)
             self.app.dialogs.toggle_botones(False)
             lbl_prog.pack(anchor="w")
             progress_bar.pack(fill="x", pady=(2, 0))
@@ -699,7 +700,7 @@ class ModoClienteService:
                                 template = m.group(1).strip()
                                 self.app.dialogs.actualizar_salida(template)
                                 vent2.destroy()
-                                self.app.dialogs.set_estado(tr("🎭 Template aplicado"), "#2ecc71")
+                                self.app.dialogs.set_estado(tr("🎭 Template aplicado"), P.TXT_OK)
 
                         def _guardar_estilo():
                             import re as _re
@@ -733,22 +734,22 @@ class ModoClienteService:
                             })
                             prefs_g["estilos_moodboard"] = estilos_g
                             self.app.store.guardar_preferencias(prefs_g)
-                            self.app.dialogs.set_estado(tr("💾 Estilo '{0}' guardado en biblioteca").format(nombre), "#2ecc71")
+                            self.app.dialogs.set_estado(tr("💾 Estilo '{0}' guardado en biblioteca").format(nombre), P.TXT_OK)
 
                         ctk.CTkButton(btn_row2, text=tr("✅ Aplicar template"), width=140, height=28,
-                                      fg_color="#1a7a3c", command=_aplicar_template).pack(side="left", padx=4)
+                                      fg_color=P.BTN_EXITO, command=_aplicar_template).pack(side="left", padx=4)
                         ctk.CTkButton(btn_row2, text=tr("💾 Guardar estilo"), width=140, height=28, fg_color="#4a1a6a",
                                       command=_guardar_estilo).pack(side="left", padx=4)
                         ctk.CTkButton(btn_row2, text=tr("📋 Copiar análisis"), width=140, height=28,
                                       command=lambda: pyperclip.copy(resp)).pack(side="left", padx=4)
 
                         self.app.dialogs.toggle_botones(True)
-                        self.app.dialogs.set_estado(tr("🎭 Estilo común detectado"), "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🎭 Estilo común detectado"), P.TXT_OK)
                     self.app.after(0, _mostrar)
                 except Exception as e:
                     self.app.after(0, lambda: lbl_prog.pack_forget())
                     self.app.after(0, lambda: progress_bar.pack_forget())
-                    self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                    self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
             self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
@@ -824,11 +825,11 @@ class ModoClienteService:
                     tpl = e.get("template", "").strip()
                     if not tpl:
                         self.app.dialogs.set_estado(tr("⚠️ Este estilo no tiene template aplicable"),
-                                        "#e67e22")
+                                        P.TXT_AVISO)
                         return
                     self.app.dialogs.actualizar_salida(tpl)
                     self.app.dialogs.set_estado(tr("🎭 Estilo '{0}' aplicado").format(e.get('nombre','')),
-                                    "#2ecc71")
+                                    P.TXT_OK)
 
                 def _ver(e=est):
                     ver = GPromptWindow(win)
@@ -860,7 +861,7 @@ class ModoClienteService:
                 btn_row.pack(fill="x", padx=10, pady=(4, 8))
                 ctk.CTkButton(btn_row, text=tr("✅ Aplicar template"),
                               width=160, height=26,
-                              fg_color="#1a7a3c" if tiene_template else c["fg_dark"],
+                              fg_color=P.BTN_EXITO if tiene_template else c["fg_dark"],
                               state="normal" if tiene_template else "disabled",
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="left", padx=2)
@@ -869,7 +870,7 @@ class ModoClienteService:
                               font=ctk.CTkFont(size=10),
                               command=_ver).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=40, height=26,
-                              fg_color="#7a1a1a", hover_color="#5a0f0f",
+                              fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
                               command=_borrar).pack(side="right", padx=2)
 
         _refrescar()

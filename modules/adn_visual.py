@@ -20,6 +20,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import ADN_A_PLATAFORMA, get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import log_future_exc
@@ -75,7 +76,7 @@ class AdnVisualService:
             busqueda_pending["after_id"] = vent.after(200, _refrescar)
         entry_buscar.bind("<KeyRelease>", _on_buscar)
         ctk.CTkButton(search_row, text="✕", width=32, height=28,
-                      fg_color="#444", hover_color="#222",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
                       ).pack(side="left", padx=(6, 0))
 
@@ -176,7 +177,7 @@ class AdnVisualService:
                                 self.app.txt_idea.insert("1.0", txt_libre)
                             ver.destroy()
                             self.app.dialogs.set_estado(tr("🧬 '{0}' cargado en idea (texto libre)").format(nombre_l),
-                                            "#2ecc71")
+                                            P.TXT_OK)
                             return
                         # ADN estructurado: construir prompt aprovechando campos
                         partes = []
@@ -200,7 +201,7 @@ class AdnVisualService:
                             self.app.txt_idea.insert("1.0", prompt)
                         ver.destroy()
                         self.app.dialogs.set_estado(tr("🧬 '{0}' cargado en idea ({1} campos)").format((nombre_l), (len(partes))),
-                                        "#2ecc71")
+                                        P.TXT_OK)
 
                     btn_frame2 = ctk.CTkFrame(ver, fg_color="transparent")
                     btn_frame2.pack(pady=(0, 10))
@@ -222,12 +223,12 @@ class AdnVisualService:
                         prefs_b["adns_guardados"] = lst
                         self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.app.dialogs.set_estado(tr("🧬 '{0}' eliminado").format(nombre_l), "#e67e22")
+                    self.app.dialogs.set_estado(tr("🧬 '{0}' eliminado").format(nombre_l), P.TXT_AVISO)
 
                 ctk.CTkButton(btn_frame, text=tr("👁 Ver"), width=70, height=25,
                               command=_cargar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_frame, text="🗑", width=40, height=25,
-                              fg_color="#c0392b", hover_color="#e74c3c",
+                              fg_color="#c0392b", hover_color=P.TXT_ERROR,
                               command=_borrar).pack(side="right", padx=2)
 
         _refrescar()
@@ -260,7 +261,7 @@ class AdnVisualService:
     def _cmd_adn_visual(self):
         """Extrae ADN visual JSON estructurado de la imagen cargada."""
         if not hasattr(self.app, 'imagen_cargada') or not self.app.imagen_cargada:
-            return self.app.dialogs.set_estado(tr("⚠️ Carga una imagen primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Carga una imagen primero."), P.TXT_AVISO)
 
         self.app.dialogs.set_estado(tr("🧬 Extrayendo ADN visual..."), "#9b59b6")
         self.app.dialogs.toggle_botones(False)
@@ -334,7 +335,7 @@ class AdnVisualService:
                             bloqueos[key]["label"].configure(text=estado, text_color=color)
 
                         btn_lock = ctk.CTkButton(hdr, text="🔓", width=30, height=22,
-                                                 fg_color="#27ae60", hover_color="#2ecc71",
+                                                 fg_color="#27ae60", hover_color=P.TXT_OK,
                                                  command=_toggle_bloqueo)
                         btn_lock.pack(side="left", padx=(0, 5))
                         bloqueos[cat_key]["btn"] = btn_lock
@@ -369,7 +370,7 @@ class AdnVisualService:
                     def _copiar_json():
                         json_str = json.dumps(adn, indent=2, ensure_ascii=False)
                         pyperclip.copy(json_str)
-                        self.app.dialogs.set_estado(tr("🧬 JSON copiado"), "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🧬 JSON copiado"), P.TXT_OK)
 
                     def _aplicar_partes_a_idea(partes, mensaje_ok):
                         """Helper compartido: junta partes y las añade al
@@ -383,7 +384,7 @@ class AdnVisualService:
                         self.app.txt_idea.delete("1.0", "end")
                         self.app.txt_idea.insert("1.0", nuevo)
                         vent.destroy()
-                        self.app.dialogs.set_estado(mensaje_ok, "#2ecc71")
+                        self.app.dialogs.set_estado(mensaje_ok, P.TXT_OK)
                         return True
 
                     def _usar_en_prompt():
@@ -486,7 +487,7 @@ class AdnVisualService:
                             msg_ok = "🧬 ADN en idea - pulsa Generar"
 
                         if not _aplicar_partes_a_idea(partes, msg_ok):
-                            self.app.dialogs.set_estado(tr("⚠️ ADN vacío, no hay datos para convertir"), "#e67e22")
+                            self.app.dialogs.set_estado(tr("⚠️ ADN vacío, no hay datos para convertir"), P.TXT_AVISO)
 
                     def _guardar_adn():
                         from tkinter import simpledialog
@@ -523,12 +524,12 @@ class AdnVisualService:
                         })
                         prefs["adns_guardados"] = adns
                         self.app.store.guardar_preferencias(prefs)
-                        self.app.dialogs.set_estado(tr("🧬 ADN '{0}' guardado").format(nombre), "#2ecc71")
+                        self.app.dialogs.set_estado(tr("🧬 ADN '{0}' guardado").format(nombre), P.TXT_OK)
 
                     ctk.CTkButton(btn_frame, text=tr("📋 Copiar JSON"), width=110, height=30,
                                   command=_copiar_json).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text=tr("🎯 Usar en prompt"), width=130, height=30,
-                                  fg_color="#1a7a3c", command=_usar_en_prompt).pack(side="left", padx=4)
+                                  fg_color=P.BTN_EXITO, command=_usar_en_prompt).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text=tr("💾 Guardar ADN"), width=110, height=30,
                                   command=_guardar_adn).pack(side="left", padx=4)
                     ctk.CTkButton(btn_frame, text=tr("📚 Mi biblioteca"), width=130, height=30,
@@ -648,7 +649,7 @@ class AdnVisualService:
 
                         if not _aplicar_partes_a_idea(partes, msg):
                             self.app.dialogs.set_estado(tr('❌ Conversión {0} falló completamente').format(plataforma),
-                                            "#e74c3c")
+                                            P.TXT_ERROR)
                         elif fallos:
                             # Sobrescribir color si hubo fallos parciales
                             self.app.dialogs.set_estado(msg, color_ok)
@@ -662,12 +663,12 @@ class AdnVisualService:
                                   command=vent.destroy).pack(pady=(5, 12))
 
                     self.app.dialogs.toggle_botones(True)
-                    self.app.dialogs.set_estado(tr('🧬 ADN extraído ({0})').format(motor), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🧬 ADN extraído ({0})').format(motor), P.TXT_OK)
 
                 self.app.after(0, _mostrar)
 
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error ADN: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error ADN: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)

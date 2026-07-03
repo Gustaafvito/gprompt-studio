@@ -24,6 +24,7 @@ except ImportError:
         def __init__(self, *args, **kwargs): pass
 from typing import TYPE_CHECKING
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 
 if TYPE_CHECKING:
@@ -129,7 +130,7 @@ class DataMgmtService:
                 if borrador.get("modo"):
                     self.app.modo_var.set(borrador["modo"])
                     self.app.events._on_modo_cambio()
-                self.app.dialogs.set_estado(tr("📝 Borrador restaurado"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📝 Borrador restaurado"), P.TXT_OK)
             else:
                 # Limpiar borrador descartado
                 prefs["borrador"] = None
@@ -204,7 +205,7 @@ class DataMgmtService:
             pv.set(activo)
             if pn in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pn, ("#333", "#555"))[0]
-                self.app.preset_btns[pn].configure(fg_color="#2ecc71" if activo else fg, text=f"✓ {pn}" if activo else pn)
+                self.app.preset_btns[pn].configure(fg_color=P.TXT_OK if activo else fg, text=f"✓ {pn}" if activo else pn)
         self.app.combo_personaje.set(p.get("personaje", tr("— Sin personaje —")))
         self.app.combo_lora.set(p.get("lora", tr("— Sin LoRA —")))
         self.app.duracion_var.set(p.get("duracion", "10s"))
@@ -238,9 +239,9 @@ class DataMgmtService:
         ctk_thumb = ctk.CTkImage(light_image=thumb, dark_image=thumb, size=(34, 34))
         self.app.lbl_img_preview.configure(image=ctk_thumb, text="")
         self.app.lbl_img_preview._ctk_image = ctk_thumb
-        self.app.lbl_img_nombre.configure(text=tr('{0}  ({1}×{2})').format((nombre[:20]), (gem.width), (gem.height)), text_color="#2ecc71")
-        self.app.btn_cargar_img.configure(text=tr("✅ OK"), fg_color="#1a7a3c")
-        self.app.dialogs.set_estado(tr('✅ Imagen: {0}').format(nombre), "#2ecc71")
+        self.app.lbl_img_nombre.configure(text=tr('{0}  ({1}×{2})').format((nombre[:20]), (gem.width), (gem.height)), text_color=P.TXT_OK)
+        self.app.btn_cargar_img.configure(text=tr("✅ OK"), fg_color=P.BTN_EXITO)
+        self.app.dialogs.set_estado(tr('✅ Imagen: {0}').format(nombre), P.TXT_OK)
         self.app.sesion._sesion_log(f"📂 Cargó imagen: {nombre} ({gem.width}×{gem.height})")
 
         # Guardar en historial de imágenes
@@ -250,7 +251,7 @@ class DataMgmtService:
         self.app.imagen_cargada = None
         self.app._ultimo_anclaje_visual = None
         self.app.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
-        self.app.lbl_img_nombre.configure(text=tr("Sin imagen"), text_color="#666666")
+        self.app.lbl_img_nombre.configure(text=tr("Sin imagen"), text_color=P.TXT_MUTED_OSCURO)
         self.app.btn_cargar_img.configure(text=tr("📂 Cargar"), fg_color=["#3B8ED0", "#1F6AA5"])
         self.app.dialogs.set_estado(tr("Imagen eliminada."))
 
@@ -328,7 +329,7 @@ class DataMgmtService:
             fin = self.app.txt_idea.index(f"1.0+{match.end(2)}c")  # final de palabra (no incluye espacio)
             self.app.txt_idea.delete(inicio, fin)
             self.app.txt_idea.insert(inicio, expansion)
-            self.app.dialogs.set_estado(tr('✨ Snippet expandido: ;{0}').format(palabra), "#2ecc71")
+            self.app.dialogs.set_estado(tr('✨ Snippet expandido: ;{0}').format(palabra), P.TXT_OK)
             try: self.app.sesion._sesion_log(f"✨ Expandió snippet: ;{palabra}")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -346,9 +347,9 @@ class DataMgmtService:
         ctk.CTkLabel(v, text=tr("⚡ Auto-expansión rápida (en la idea)"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr("Escribe ';palabra' + Espacio en la idea y se expande automáticamente."),
-                     font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 4))
         ctk.CTkLabel(v, text=tr("Los custom sobrescriben a los default si comparten trigger."),
-                     font=ctk.CTkFont(size=9, slant="italic"), text_color="#666").pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=9, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
 
         # Form añadir/editar
         form = ctk.CTkFrame(v, fg_color=c["fg_dark"])
@@ -366,14 +367,14 @@ class DataMgmtService:
             t = ent_trigger.get().strip().lower().lstrip(";")
             e = ent_expansion.get().strip()
             if not t or not e:
-                self.app.dialogs.set_estado(tr("⚠️ Trigger y expansión son obligatorios"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Trigger y expansión son obligatorios"), P.TXT_AVISO)
                 return
             # FIX: antes la validación rechazaba "mi-trigger" (con guion).
             # Acepto letras, dígitos, guion bajo y guion medio.
             import re as _re
             if not _re.fullmatch(r'[a-z0-9_\-]+', t):
                 self.app.dialogs.set_estado(tr("⚠️ Trigger solo puede tener letras, números, _ o -"),
-                                "#e67e22")
+                                P.TXT_AVISO)
                 return
             prefs = self.app.store.cargar_preferencias()
             custom = prefs.get("snippets_expand", {}) or {}
@@ -383,7 +384,7 @@ class DataMgmtService:
             ent_trigger.delete(0, "end"); ent_expansion.delete(0, "end")
             refrescar()
 
-        ctk.CTkButton(form, text="➕", width=40, height=28, fg_color="#1a7a3c",
+        ctk.CTkButton(form, text="➕", width=40, height=28, fg_color=P.BTN_EXITO,
                       command=_add).pack(side="left", padx=8, pady=8)
 
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
@@ -402,7 +403,7 @@ class DataMgmtService:
             if custom:
                 ctk.CTkLabel(scroll, text=tr('📝 Tus snippets ({0})').format(len(custom)),
                              font=ctk.CTkFont(size=12, weight="bold"),
-                             text_color="#2ecc71").pack(anchor="w", pady=(4, 4))
+                             text_color=P.TXT_OK).pack(anchor="w", pady=(4, 4))
                 for trigger in sorted(custom_keys):
                     expansion = custom[trigger]
                     es_override = trigger in self.app.SNIPPETS_DEFAULT
@@ -431,7 +432,7 @@ class DataMgmtService:
             # Botón Copiar — disponible en TODOS los snippets (custom y predefinidos)
             def _copiar(e=expansion, t=trigger):
                 pyperclip.copy(e)
-                self.app.dialogs.set_estado(tr('📋 Snippet ;{0} copiado al portapapeles').format(t), "#2ecc71")
+                self.app.dialogs.set_estado(tr('📋 Snippet ;{0} copiado al portapapeles').format(t), P.TXT_OK)
             ctk.CTkButton(row, text="📋", width=30, height=24, fg_color=c["fg_frame"],
                           hover_color=c["fg_dark_hover"], command=_copiar).pack(side="right", padx=2, pady=4)
 
@@ -446,9 +447,9 @@ class DataMgmtService:
                     cust.pop(t, None)
                     self._snippets_guardar_custom(cust)
                     refrescar()
-                ctk.CTkButton(row, text="✏️", width=30, height=24, fg_color="#1a4a5a",
+                ctk.CTkButton(row, text="✏️", width=30, height=24, fg_color=P.BTN_SECUNDARIO,
                               command=_editar).pack(side="right", padx=2, pady=4)
-                ctk.CTkButton(row, text="🗑", width=30, height=24, fg_color="#5a1a1a",
+                ctk.CTkButton(row, text="🗑", width=30, height=24, fg_color=P.BTN_PELIGRO,
                               command=_borrar).pack(side="right", padx=2, pady=4)
 
         refrescar()
@@ -460,7 +461,7 @@ class DataMgmtService:
         try:
             texto = self.app.txt_salida.get("1.0", "end").strip()
             if not texto:
-                self.app.dialogs.set_estado(tr("⚠️ No hay prompt para duplicar"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No hay prompt para duplicar"), P.TXT_AVISO)
                 return "break"
             idea = self.app.txt_idea.get("1.0", "end").strip()
             modelo = ""
@@ -483,12 +484,12 @@ class DataMgmtService:
             }
             self.app.store.historial.insert(0, entry)
             self.app.store._guardar("historial")
-            self.app.dialogs.set_estado(tr("📋 Duplicado al historial · Ctrl+D"), "#2ecc71")
+            self.app.dialogs.set_estado(tr("📋 Duplicado al historial · Ctrl+D"), P.TXT_OK)
             try: self.app.sesion._sesion_log("📋 Ctrl+D: duplicó prompt al historial")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error al duplicar: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error al duplicar: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def guardar_en_historial(self, texto):
@@ -527,7 +528,7 @@ class DataMgmtService:
         """Aplica la última configuración usada en el último prompt generado."""
         cfg = getattr(self.app, "_ultima_config", None)
         if not cfg:
-            self.app.dialogs.set_estado(tr("⚠️ Aún no hay última configuración guardada. Genera un prompt primero."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Aún no hay última configuración guardada. Genera un prompt primero."), P.TXT_AVISO)
             return
 
         try:
@@ -561,14 +562,14 @@ class DataMgmtService:
                 for n, v in self.app.estilo_checks.items():
                     v.set(n in cfg["estilos"])
 
-            self.app.dialogs.set_estado(tr("🔁 Última configuración aplicada"), "#2ecc71")
+            self.app.dialogs.set_estado(tr("🔁 Última configuración aplicada"), P.TXT_OK)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ No se pudo aplicar todo: {0}').format(e), "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ No se pudo aplicar todo: {0}').format(e), P.TXT_AVISO)
 
     def _guardar_favorito(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar."), P.TXT_AVISO)
             return
         self.app.store.agregar_favorito({
             "fecha":      datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -588,7 +589,7 @@ class DataMgmtService:
     def _guardar_estrella(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar como estrella."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay prompt para guardar como estrella."), P.TXT_AVISO)
             return
         nota = simpledialog.askstring(tr("🌟 Prompt Estrella"), tr("Nota breve (ej: 'pescador inuit brutal', 'huevo cristal top'):"), parent=self.app)
         if not nota: nota = ""
@@ -609,12 +610,12 @@ class DataMgmtService:
             "estilos":    self.app.footer.estilos_texto(),
             "contenido":  texto,
         })
-        self.app.dialogs.set_estado(tr('🌟 Prompt estrella guardado{0}.').format(': ' + nota if nota else ''), "#f39c12")
+        self.app.dialogs.set_estado(tr('🌟 Prompt estrella guardado{0}.').format(': ' + nota if nota else ''), P.TXT_ACENTO)
 
     def _exportar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto:
-            self.app.dialogs.set_estado(tr("⚠️ No hay contenido para exportar."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay contenido para exportar."), P.TXT_AVISO)
             return
         ruta = filedialog.asksaveasfilename(
             defaultextension=".txt", filetypes=[(tr("Texto"), "*.txt")],
@@ -664,7 +665,7 @@ class DataMgmtService:
 
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(header + texto)
-            self.app.dialogs.set_estado(tr('💾 Exportado: {0}').format(Path(ruta).name), "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 Exportado: {0}').format(Path(ruta).name), P.TXT_OK)
 
     def _abrir_snippets(self) -> None:
         """Gestor de snippets con buscador + edit inline."""
@@ -687,7 +688,7 @@ class DataMgmtService:
                      text=tr("💡 Diferencia con Fórmulas: aquí son fragmentos cortos para "
                           "complementar; las Fórmulas guardan un POSITIVE completo."),
                      font=ctk.CTkFont(size=9, slant="italic"),
-                     text_color="#888").pack(pady=(0, 6))
+                     text_color=P.TXT_MUTED).pack(pady=(0, 6))
 
         # Buscador
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -705,7 +706,7 @@ class DataMgmtService:
             busqueda_pending["after_id"] = vent.after(200, refrescar)
         entry_buscar.bind("<KeyRelease>", _on_buscar)
         ctk.CTkButton(search_row, text="✕", width=32, height=28,
-                      fg_color="#444", hover_color="#222",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=lambda: (entry_buscar.delete(0, "end"), refrescar())
                       ).pack(side="left", padx=(6, 0))
 
@@ -731,7 +732,7 @@ class DataMgmtService:
 
         btn_toggle = ctk.CTkButton(head_form_row, text=tr("➕ Nuevo snippet"),
                                    width=160, height=28,
-                                   fg_color="#1a7a3c", hover_color="#15642f")
+                                   fg_color=P.BTN_EXITO, hover_color="#15642f")
         btn_toggle.pack(side="left")
 
         def _toggle_form():
@@ -771,7 +772,7 @@ class DataMgmtService:
                        else tr("Aún no tienes snippets. Pulsa '➕ Nuevo snippet'."))
                 ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11),
-                             text_color="#666666").pack(pady=20)
+                             text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             for i, s in visibles:
@@ -811,14 +812,14 @@ class DataMgmtService:
                     refrescar()
 
                 ctk.CTkButton(btn_row, text=tr("➕ Añadir"), width=80, height=22,
-                              fg_color="#1a7a3c",
+                              fg_color=P.BTN_EXITO,
                               font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=22,
                               font=ctk.CTkFont(size=10),
                               command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
-                              fg_color="#5a1a1a",
+                              fg_color=P.BTN_PELIGRO,
                               font=ctk.CTkFont(size=10),
                               command=_borrar).pack(side="right", padx=2)
 
@@ -826,7 +827,7 @@ class DataMgmtService:
             nombre = ent_nombre.get().strip()
             tags = ent_tags.get().strip()
             if not nombre or not tags:
-                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y tags."), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Rellena nombre y tags."), P.TXT_AVISO)
                 return
             prefs_c = self.app.store.cargar_preferencias()
             actual = prefs_c.get("snippets", [])
@@ -845,7 +846,7 @@ class DataMgmtService:
             refrescar()
 
         btn_crear = ctk.CTkButton(form, text=tr("✅ Crear snippet"), width=140, height=26,
-                                  fg_color="#1a7a3c",
+                                  fg_color=P.BTN_EXITO,
                                   font=ctk.CTkFont(size=10, weight="bold"),
                                   command=crear)
         btn_crear.pack(pady=(0, 8))
@@ -876,14 +877,14 @@ class DataMgmtService:
                      text=tr("💡 Diferencia con Snippets: aquí guardas el prompt entero; "
                           "los Snippets son frases cortas para sumar a un prompt existente."),
                      font=ctk.CTkFont(size=9, slant="italic"),
-                     text_color="#888").pack(pady=(0, 4))
+                     text_color=P.TXT_MUTED).pack(pady=(0, 4))
 
         # Botón "Guardar el POSITIVE actual como fórmula"
         def _guardar_actual():
             from tkinter import simpledialog
             pos = self.app.extraer_positive()
             if not pos:
-                self.app.dialogs.set_estado(tr("⚠️ No hay POSITIVE para guardar como fórmula."), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No hay POSITIVE para guardar como fórmula."), P.TXT_AVISO)
                 return
             nombre = simpledialog.askstring(tr("📐 Nueva fórmula"), tr("Nombre para esta fórmula:"), parent=vent)
             if not nombre: return
@@ -897,10 +898,10 @@ class DataMgmtService:
             prefs["formulas"] = actual
             self.app.store.guardar_preferencias(prefs)
             refrescar()
-            self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' guardada").format(nombre), "#2ecc71")
+            self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' guardada").format(nombre), P.TXT_OK)
 
         ctk.CTkButton(vent, text=tr("💾 Guardar POSITIVE actual como fórmula"), width=300, height=28,
-                      fg_color="#1a7a3c", hover_color="#145e2d",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       font=ctk.CTkFont(size=11), command=_guardar_actual).pack(pady=5)
 
         # Buscador
@@ -919,7 +920,7 @@ class DataMgmtService:
             busqueda_pending["after_id"] = vent.after(200, refrescar)
         entry_buscar.bind("<KeyRelease>", _on_buscar)
         ctk.CTkButton(search_row, text="✕", width=32, height=28,
-                      fg_color="#444", hover_color="#222",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=lambda: (entry_buscar.delete(0, "end"), refrescar())
                       ).pack(side="left", padx=(6, 0))
 
@@ -950,7 +951,7 @@ class DataMgmtService:
                        else tr("No hay fórmulas. Genera un prompt y guárdalo aquí."))
                 ctk.CTkLabel(scroll, text=msg,
                              font=ctk.CTkFont(size=11),
-                             text_color="#666666").pack(pady=20)
+                             text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             for i, f in visibles:
@@ -977,7 +978,7 @@ class DataMgmtService:
                         txt += f"\nNEGATIVE PROMPT: {form.get('negative')}"
                     self.app.dialogs.actualizar_salida(txt)
                     vent.destroy()
-                    self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' cargada").format(form.get('nombre')), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("📐 Fórmula '{0}' cargada").format(form.get('nombre')), P.TXT_OK)
 
                 def _renombrar(idx_l=i, form_l=f):
                     from tkinter import simpledialog
@@ -1011,14 +1012,14 @@ class DataMgmtService:
                     refrescar()
 
                 ctk.CTkButton(btn_row, text=tr("✅ Cargar"), width=80, height=22,
-                              fg_color="#1a7a3c",
+                              fg_color=P.BTN_EXITO,
                               font=ctk.CTkFont(size=10),
                               command=_cargar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Renombrar"), width=100, height=22,
                               font=ctk.CTkFont(size=10),
                               command=_renombrar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
-                              fg_color="#5a1a1a",
+                              fg_color=P.BTN_PELIGRO,
                               font=ctk.CTkFont(size=10),
                               command=_borrar).pack(side="right", padx=2)
 
@@ -1278,11 +1279,11 @@ class DataMgmtService:
                 def _usar(e=ej):
                     self.app.dialogs.actualizar_salida(e["prompt"])
                     vent.destroy()
-                    self.app.dialogs.set_estado(tr('📚 Ejemplo cargado: {0}').format(e['titulo']), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📚 Ejemplo cargado: {0}').format(e['titulo']), P.TXT_OK)
 
                 def _copiar(e=ej):
                     pyperclip.copy(e["prompt"])
-                    self.app.dialogs.set_estado(tr('📋 Ejemplo copiado: {0}').format(e['titulo']), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📋 Ejemplo copiado: {0}').format(e['titulo']), P.TXT_OK)
 
                 def _favorito(e=ej):
                     """Guarda el ejemplo en favoritos del usuario."""
@@ -1309,11 +1310,11 @@ class DataMgmtService:
                         logging.getLogger("gprompt").warning(
                             f"No se pudo guardar favorito: {err}"
                         )
-                        self.app.dialogs.set_estado(tr("⚠️ Error al guardar favorito"), "#e67e22")
+                        self.app.dialogs.set_estado(tr("⚠️ Error al guardar favorito"), P.TXT_AVISO)
 
                 ctk.CTkButton(
                     btn_row, text=tr("✅ Usar"), width=68, height=22,
-                    fg_color="#1a7a3c", hover_color="#145e2d",
+                    fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                     font=ctk.CTkFont(size=10), command=_usar
                 ).pack(side="left", padx=2)
                 ctk.CTkButton(
@@ -1543,7 +1544,7 @@ class DataMgmtService:
             if es_prompt_completo:
                 # Cargar en txt_salida
                 self.app.dialogs.actualizar_salida(texto_clip)
-                self.app.dialogs.set_estado(tr("📥 Prompt pegado en Resultado (detectado por marcadores)"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📥 Prompt pegado en Resultado (detectado por marcadores)"), P.TXT_OK)
                 try: self.app.sesion._sesion_log("📥 Pegó prompt completo desde portapapeles")
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
@@ -1558,7 +1559,7 @@ class DataMgmtService:
         import random
         items = (self.app.store.historial or []) + (self.app.store.favoritos or []) + (self.app.store.estrellas or [])
         if not items:
-            self.app.dialogs.set_estado(tr("⚠️ Aún no hay prompts en historial."), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Aún no hay prompts en historial."), P.TXT_AVISO)
             return "break"
         item = random.choice(items)
         if isinstance(item, dict):
@@ -1571,7 +1572,7 @@ class DataMgmtService:
         idea = m.group(1).strip() if m else txt[:300]
         self.app.txt_idea.delete("1.0", "end")
         self.app.txt_idea.insert("1.0", idea[:300])
-        self.app.dialogs.set_estado(tr("🎲 Idea cargada desde historial"), "#3498db")
+        self.app.dialogs.set_estado(tr("🎲 Idea cargada desde historial"), P.TXT_INFO)
         return "break"
 
     def _pegar_imagen_clipboard(self, event=None):
@@ -1581,7 +1582,7 @@ class DataMgmtService:
             img = ImageGrab.grabclipboard()
             if img and hasattr(img, 'size'):
                 self._cargar_imagen_desde_pil(img.convert("RGB"), "clipboard_paste")
-                self.app.dialogs.set_estado(tr("📋 Imagen pegada desde el portapapeles"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Imagen pegada desde el portapapeles"), P.TXT_OK)
                 return "break"
         except Exception as _e:
             logger.debug(f"[silent] {_e}")

@@ -17,6 +17,7 @@ import tkinter as tk
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
@@ -37,7 +38,7 @@ class RefinamientoService:
         """Menú con 5 opciones de refinamiento específico."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         # Master del menú debe ser un widget Tk, NO el Service.
@@ -75,7 +76,7 @@ class RefinamientoService:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto: return
 
-        self.app.dialogs.set_estado(tr('🔁 Refinando: {0}...').format(instruccion_extra[:40]), "#f39c12")
+        self.app.dialogs.set_estado(tr('🔁 Refinando: {0}...').format(instruccion_extra[:40]), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         es_tag_based = not self.app.is_natural_mode()
@@ -99,13 +100,13 @@ class RefinamientoService:
                 resp = limpiar_marcadores(resp)
                 def _aplicar():
                     self.app.guardar_en_historial(resp)
-                    self.app.dialogs.set_estado(tr('🔍 Refinamiento listo ({0}...) — revisa el diff.').format(instruccion_extra[:30]), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🔍 Refinamiento listo ({0}...) — revisa el diff.').format(instruccion_extra[:30]), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                     self._mostrar_diff_refinamiento(texto_previo, resp)
                 self.app.after(0, _aplicar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -117,7 +118,7 @@ class RefinamientoService:
         """
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or len(texto) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para iterar."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para iterar."), P.TXT_AVISO)
 
         n = self.app._pedir_n_modal(
             tr("🔂 Iterar — número de variantes"),
@@ -156,8 +157,8 @@ class RefinamientoService:
         ]
         for label, descripcion in opciones:
             btn = ctk.CTkButton(sel, text=tr(label), width=300, height=32,
-                                fg_color="#2563eb" if is_lt else "#1a3a5a",
-                                hover_color="#1d4ed8" if is_lt else "#2a4a6a",
+                                fg_color=P.BTN_PRIMARIO if is_lt else "#1a3a5a",
+                                hover_color=P.BTN_PRIMARIO_HOVER if is_lt else "#2a4a6a",
                                 font=ctk.CTkFont(size=11),
                                 command=lambda d=descripcion, n_=n: (
                                     sel.destroy(),
@@ -167,7 +168,7 @@ class RefinamientoService:
     def _iterar_elemento(self, elemento: str, n: int = 5) -> None:
         """Genera N variantes cambiando un elemento específico."""
         texto = self.app.txt_salida.get("1.0", "end").strip()
-        self.app.dialogs.set_estado(tr('🔂 Generando {0} variantes ({1})...').format(n, elemento), "#f39c12")
+        self.app.dialogs.set_estado(tr('🔂 Generando {0} variantes ({1})...').format(n, elemento), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         # ¿El prompt original tiene NEGATIVE PROMPT? Le pedimos al LLM
@@ -206,18 +207,18 @@ class RefinamientoService:
                               if v.strip() and len(v.strip()) > 30]
 
                 if len(variantes) < 2:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 variante, intenta de nuevo"), "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 variante, intenta de nuevo"), P.TXT_AVISO))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
                 def _mostrar():
                     self.app._abrir_comparador(variantes[:n])
-                    self.app.dialogs.set_estado(tr("🔂 {0} variantes de '{1}' listas").format((len(variantes)), (elemento)), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("🔂 {0} variantes de '{1}' listas").format((len(variantes)), (elemento)), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -225,7 +226,7 @@ class RefinamientoService:
     def cmd_refinar(self) -> None:
         texto = self.app.txt_salida.get("1.0", "end").strip()
         if not texto or not (("PROMPT:" in limpiar_marcadores(texto)) or ("ESTILO:" in limpiar_marcadores(texto))):
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para refinarlo."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero para refinarlo."), P.TXT_AVISO)
 
         self.app._ocultar_ideas()
         idea, pers, lora, modo = self.app.txt_idea.get("1.0", "end").strip(), self.app.footer.personaje_activo(), self.app.footer.lora_activo(), self.app.modo_var.get()
@@ -262,7 +263,7 @@ class RefinamientoService:
         limite_chars = specs.get("max_chars") or specs.get("max_chars_letra") or 2000 if specs else 2000
         peticion += f"\n\n⛔ REGLA ESTRICTA DE LONGITUD: El POSITIVE PROMPT final no debe superar los {limite_chars} caracteres. Si el prompt original ya está cerca del límite, COMPACTA en vez de expandir: usa tags más densos, elimina redundancias, prioriza calidad sobre cantidad."
 
-        self.app.dialogs.set_estado(tr("🔁 Refinando con meticulosidad máxima..."), "#f39c12")
+        self.app.dialogs.set_estado(tr("🔁 Refinando con meticulosidad máxima..."), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
         self.app._executor.submit(
             self.app.workers.worker_ia, peticion,
@@ -287,7 +288,7 @@ class RefinamientoService:
 
         if texto_previo.strip() == texto_nuevo.strip():
             self.app.dialogs.actualizar_salida(texto_nuevo)
-            self.app.dialogs.set_estado(tr("ℹ️ El refinamiento no produjo cambios."), "#3498db")
+            self.app.dialogs.set_estado(tr("ℹ️ El refinamiento no produjo cambios."), P.TXT_INFO)
             return
 
         def _on_apply():
@@ -306,13 +307,13 @@ class RefinamientoService:
             except Exception as e:
                 logger.debug(f"[silent] versionado pre-refinamiento: {e}")
             self.app.dialogs.actualizar_salida(texto_nuevo)
-            self.app.dialogs.set_estado(tr("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer."), "#2ecc71")
+            self.app.dialogs.set_estado(tr("✅ Refinamiento aplicado · usa 📑 Versiones para deshacer."), P.TXT_OK)
             try: self.app._sesion_log("🔁 Aplicó refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         def _on_cancel():
-            self.app.dialogs.set_estado(tr("❌ Refinamiento descartado — prompt original intacto."), "#e67e22")
+            self.app.dialogs.set_estado(tr("❌ Refinamiento descartado — prompt original intacto."), P.TXT_AVISO)
             try: self.app._sesion_log("🔁 Canceló refinamiento (diff)")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
@@ -327,7 +328,7 @@ class RefinamientoService:
                         except Exception as e:
                             logger.debug(f"[silent] {e}")
                         self.app.dialogs.actualizar_salida(_t)
-                        self.app.dialogs.set_estado(tr("↩️ Refinamiento previo deshecho — restaurada versión anterior."), "#f39c12")
+                        self.app.dialogs.set_estado(tr("↩️ Refinamiento previo deshecho — restaurada versión anterior."), P.TXT_ACENTO)
                         try: self.app._sesion_log("↩️ Deshizo refinamiento previo")
                         except Exception as e:
                             logger.debug(f"[silent] {e}")

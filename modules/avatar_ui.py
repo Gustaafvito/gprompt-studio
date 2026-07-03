@@ -25,6 +25,7 @@ except ImportError:
     class CTkToolTip:
         def __init__(self, *args, **kwargs): pass
 
+from modules import paleta as P
 from modules.avatar_config import (
     LORA_TYPES,
 )
@@ -244,7 +245,7 @@ class AvatarFrame(ctk.CTkFrame):
         self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
         self.boton_auto = ctk.CTkButton(
             fila_auto, text=tr("🎲 Generar ficha"), width=130,
-            fg_color="#7c3aed", hover_color="#6d28d9",
+            fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
             command=self._on_ficha_auto)
         self.boton_auto.grid(row=0, column=1)
 
@@ -252,7 +253,7 @@ class AvatarFrame(ctk.CTkFrame):
         if cfg.get("tiene_imagen_ref") and self.vision_call:
             self.boton_imagen = ctk.CTkButton(
                 fila_auto, text=tr("📷 Desde imagen"), width=120,
-                fg_color="#0e7490", hover_color="#155e75",
+                fg_color=P.BTN_SECUNDARIO, hover_color=P.BTN_SECUNDARIO_HOVER,
                 command=self._on_ficha_desde_imagen)
             self.boton_imagen.grid(row=0, column=2, padx=(6, 0))
         else:
@@ -328,7 +329,7 @@ class AvatarFrame(ctk.CTkFrame):
         n_eq = len(cfg.get("balanced_angles") or cfg["angles"])
         boton_eq = ctk.CTkButton(
             barra, text=tr("⚖ Equilibrado ({0})").format(n_eq),
-            width=126, height=24, fg_color="#0e7490", hover_color="#155e75",
+            width=126, height=24, fg_color=P.BTN_SECUNDARIO, hover_color=P.BTN_SECUNDARIO_HOVER,
             command=self._aplicar_equilibrado)
         boton_eq.pack(side="left", padx=4)
         CTkToolTip(boton_eq, message=tr(

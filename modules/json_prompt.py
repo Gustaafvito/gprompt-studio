@@ -36,6 +36,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
@@ -218,7 +219,7 @@ class JsonPromptService:
         # Status label
         lbl_status = ctk.CTkLabel(vent, text="",
                                     font=ctk.CTkFont(size=10),
-                                    text_color="#fbbf24")
+                                    text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 4))
 
         # Botones de acción
@@ -232,10 +233,10 @@ class JsonPromptService:
                     txt_json.delete("1.0", "end")
                     txt_json.insert("1.0", contenido)
                     lbl_status.configure(text=tr('📋 Pegado ({0} chars)').format(len(contenido)),
-                                          text_color="#2ecc71")
+                                          text_color=P.TXT_OK)
             except Exception as e:
                 lbl_status.configure(text=tr('❌ No se pudo pegar: {0}').format(e),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
 
         def _cargar_desde_archivo():
             ruta = filedialog.askopenfilename(
@@ -251,16 +252,16 @@ class JsonPromptService:
                 txt_json.delete("1.0", "end")
                 txt_json.insert("1.0", contenido)
                 lbl_status.configure(text=tr('📂 Cargado: {0}').format(ruta),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
             except Exception as e:
                 lbl_status.configure(text=tr('❌ Error abriendo archivo: {0}').format(e),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
 
         def _importar():
             texto = txt_json.get("1.0", "end").strip()
             if not texto:
                 lbl_status.configure(text=tr("⚠️ Pega un JSON primero"),
-                                      text_color="#e67e22")
+                                      text_color=P.TXT_AVISO)
                 return
             # Intenta reparar el JSON probando varias estrategias.
             data, info = _intentar_reparar_json(texto)
@@ -268,12 +269,12 @@ class JsonPromptService:
                 # info contiene el último mensaje de error
                 lbl_status.configure(
                     text=tr('❌ JSON inválido tras intentar todas las reparaciones: {0}').format(info),
-                    text_color="#e74c3c",
+                    text_color=P.TXT_ERROR,
                 )
                 return
             if not isinstance(data, dict):
                 lbl_status.configure(text=tr("❌ El JSON debe ser un objeto {} en raíz"),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
                 return
             estrategias = info  # lista de strategies aplicadas
             if estrategias:
@@ -293,7 +294,7 @@ class JsonPromptService:
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                        command=_cargar_desde_archivo).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("✅ Importar"), width=140, height=32,
-                       fg_color="#1a7a3c", hover_color="#15633a",
+                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_importar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=110, height=32,
@@ -425,7 +426,7 @@ class JsonPromptService:
                 vent,
                 text=tr('🧹 JSON reparado automáticamente — {0}').format(estr_txt),
                 font=ctk.CTkFont(size=10),
-                text_color="#fbbf24",
+                text_color=P.TXT_ACENTO,
                 wraplength=720, justify="center",
             ).pack(pady=(0, 6), padx=15)
 
@@ -443,7 +444,7 @@ class JsonPromptService:
             partes.append(tr("⏱ Duración: {0}s (mostrada como nota)").format(resumen['duration']))
         ctk.CTkLabel(vent, text="  ·  ".join(partes) if partes else tr("Nada aplicado."),
                      font=ctk.CTkFont(size=11),
-                     text_color="#2ecc71" if partes else "#e67e22",
+                     text_color=P.TXT_OK if partes else "#e67e22",
                      wraplength=720, justify="center").pack(pady=(0, 10), padx=15)
 
         # Metadatos extras (camera, lighting, vfx_notes, audio, etc.)
@@ -501,9 +502,9 @@ class JsonPromptService:
             extras_dict = {k: data.get(k) for k in extras}
             try:
                 pyperclip.copy(json.dumps(extras_dict, indent=2, ensure_ascii=False))
-                self.app.dialogs.set_estado(tr("📋 Metadatos extras copiados al portapapeles"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Metadatos extras copiados al portapapeles"), P.TXT_OK)
             except Exception as e:
-                self.app.dialogs.set_estado(tr('❌ No se pudo copiar: {0}').format(e), "#e74c3c")
+                self.app.dialogs.set_estado(tr('❌ No se pudo copiar: {0}').format(e), P.TXT_ERROR)
 
         if extras:
             ctk.CTkButton(btn_row, text=tr("📋 Copiar metadatos extras"), width=210, height=32,
@@ -544,7 +545,7 @@ class JsonPromptService:
             logger.debug(f"[silent] {e}")
 
         self.app.dialogs.set_estado(tr("📤 Enriqueciendo prompt a JSON profesional vía LLM..."),
-                         "#f39c12")
+                         P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         # Construir petición al LLM para producir el JSON
@@ -630,7 +631,7 @@ class JsonPromptService:
             except Exception as e:
                 logger.exception("exportar json")
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e),
-                                                       "#e74c3c"))
+                                                       P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -667,7 +668,7 @@ class JsonPromptService:
         # (sin disabled para que pueda ajustar campos)
 
         lbl_status = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=10),
-                                    text_color="#fbbf24")
+                                    text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 2))
 
         # Botones
@@ -679,10 +680,10 @@ class JsonPromptService:
             try:
                 pyperclip.copy(contenido)
                 lbl_status.configure(text=tr("✅ JSON copiado al portapapeles"),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
             except Exception as e:
                 lbl_status.configure(text=tr('❌ No se pudo copiar: {0}').format(e),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
 
         def _guardar_archivo():
             contenido = txt.get("1.0", "end").strip()
@@ -698,23 +699,23 @@ class JsonPromptService:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(contenido)
                 lbl_status.configure(text=tr('💾 Guardado: {0}').format(ruta),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
             except Exception as e:
                 lbl_status.configure(text=tr('❌ Error guardando: {0}').format(e),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
 
         def _validar():
             contenido = txt.get("1.0", "end").strip()
             try:
                 json.loads(contenido)
                 lbl_status.configure(text=tr("✅ JSON válido (parsea correctamente)"),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
             except json.JSONDecodeError as e:
                 lbl_status.configure(text=tr('❌ Error de sintaxis: {0}').format(e),
-                                      text_color="#e74c3c")
+                                      text_color=P.TXT_ERROR)
 
         ctk.CTkButton(btn_row, text=tr("📋 Copiar JSON"), width=140, height=32,
-                       fg_color="#1a7a3c", hover_color="#15633a",
+                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_copiar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("💾 Guardar .json"), width=140, height=32,

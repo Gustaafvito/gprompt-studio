@@ -17,6 +17,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import log_future_exc
@@ -384,7 +385,7 @@ class PreviewPollinationsService:
         combo_modelo_pol.pack(side="left")
         ctk.CTkLabel(bar_modelo,
                      text=f"({_hint_modo})",
-                     font=ctk.CTkFont(size=9), text_color="#666"
+                     font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO
                      ).pack(side="left", padx=(6, 0))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -411,7 +412,7 @@ class PreviewPollinationsService:
 
             img_lbl = ctk.CTkLabel(cell, text=tr("⏳ Preparando..."),
                                     width=thumb_size, height=thumb_size,
-                                    fg_color="#0a0e14", text_color="#888",
+                                    fg_color="#0a0e14", text_color=P.TXT_MUTED,
                                     wraplength=thumb_size - 20)
             img_lbl.pack(pady=2)
 
@@ -422,7 +423,7 @@ class PreviewPollinationsService:
             btn_row_cell.pack(pady=(2, 4))  # siempre visible
             btn_regen = ctk.CTkButton(btn_row_cell, text=tr("♻ Regenerar"),
                                        width=120, height=22,
-                                       fg_color="#7c3aed", hover_color="#5b21b6",
+                                       fg_color=P.BTN_ACENTO, hover_color="#5b21b6",
                                        font=ctk.CTkFont(size=10, weight="bold"))
             btn_regen.pack()
 
@@ -482,22 +483,22 @@ class PreviewPollinationsService:
                     # tener que esperar a un fallo.
                 except Exception as _e:
                     logger.debug(f"[silent] grid thumb: {_e}")
-                    lbl.configure(text=f"❌ {_e}", text_color="#e74c3c")
+                    lbl.configure(text=f"❌ {_e}", text_color=P.TXT_ERROR)
 
             def _on_err(msg, lbl=img_lbl, btn_frame=btn_row_cell):
-                lbl.configure(text=f"❌ {msg}", text_color="#e74c3c",
+                lbl.configure(text=f"❌ {msg}", text_color=P.TXT_ERROR,
                               wraplength=thumb_size - 20)
                 # Botón ♻ ya está siempre visible (round 5).
 
             def _on_progress(msg, lbl=img_lbl, btn_frame=btn_row_cell):
-                lbl.configure(text=msg, text_color="#888",
+                lbl.configure(text=msg, text_color=P.TXT_MUTED,
                               wraplength=thumb_size - 20)
                 # Botón ♻ se mantiene visible durante la generación —
                 # útil si el usuario cambia de modelo y quiere ♻ ya.
 
             def _regenerar(prompt_text=var, _img=_on_img, _err=_on_err,
                             _prog=_on_progress, lbl=img_lbl, btn_frame=btn_row_cell):
-                lbl.configure(text=tr("⏳ Preparando..."), text_color="#888")
+                lbl.configure(text=tr("⏳ Preparando..."), text_color=P.TXT_MUTED)
                 try: btn_frame.pack_forget()
                 except Exception: pass
                 self.generar(
@@ -520,7 +521,7 @@ class PreviewPollinationsService:
         pie.pack(pady=(0, 10))
         ctk.CTkLabel(pie,
                      text=tr("Cache en ~/.arquitecto_prompts/preview_cache/"),
-                     font=ctk.CTkFont(size=9), text_color="#666"
+                     font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO
                      ).pack(side="left", padx=8)
         ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
@@ -541,30 +542,30 @@ class PreviewPollinationsService:
         if desde_cache:
             ctk.CTkLabel(vent_previa, text=tr("📥 Servido desde caché — instantáneo, sin llamada a la API"),
                          font=ctk.CTkFont(size=10, slant="italic"),
-                         text_color="#2ecc71").pack(pady=(0, 4))
+                         text_color=P.TXT_OK).pack(pady=(0, 4))
 
         # URL Pollinations (truncada para no romper layout)
         url_corta = url_imagen if len(url_imagen) <= 80 else url_imagen[:77] + "..."
         ctk.CTkLabel(vent_previa,
                      text=tr('🔗 URL: {0}').format(url_corta),
                      font=ctk.CTkFont(family="Consolas", size=9),
-                     text_color="#888",
+                     text_color=P.TXT_MUTED,
                      wraplength=520, justify="left"
                      ).pack(pady=(2, 8), padx=15)
 
         btn_row = ctk.CTkFrame(vent_previa, fg_color="transparent")
         btn_row.pack(pady=5)
         ctk.CTkButton(btn_row, text=tr("💾 Guardar boceto"), width=140, height=30,
-                      fg_color="#2ecc71", hover_color="#27ae60",
+                      fg_color=P.TXT_OK, hover_color="#27ae60",
                       command=lambda: self.guardar_boceto(image_pil)
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("🔗 Copiar URL"), width=120, height=30,
-                      fg_color="#3498db", hover_color="#2876b8",
+                      fg_color=P.TXT_INFO, hover_color="#2876b8",
                       command=lambda: (pyperclip.copy(url_imagen),
-                                       self.app.dialogs.set_estado(tr("📋 URL copiada"), "#2ecc71"))
+                                       self.app.dialogs.set_estado(tr("📋 URL copiada"), P.TXT_OK))
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("🌐 Abrir en navegador"), width=160, height=30,
-                      fg_color="#7c3aed", hover_color="#5d2ab5",
+                      fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
                       command=lambda: webbrowser.open(url_imagen)
                       ).pack(side="left", padx=4)
 
@@ -574,6 +575,6 @@ class PreviewPollinationsService:
             try:
                 if image_pil.mode in ("RGBA", "P"): image_pil = image_pil.convert("RGB")
                 image_pil.save(ruta)
-                self.app.dialogs.set_estado(tr('✅ Boceto guardado en: {0}').format(ruta), "#2ecc71")
+                self.app.dialogs.set_estado(tr('✅ Boceto guardado en: {0}').format(ruta), P.TXT_OK)
             except Exception as e:
                 messagebox.showerror(tr("Error"), tr('No se pudo guardar la imagen:\n{0}').format(e))

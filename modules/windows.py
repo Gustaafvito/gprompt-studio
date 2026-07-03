@@ -10,6 +10,7 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import contar_tokens_aprox, log_future_exc
@@ -63,8 +64,8 @@ def abrir_personajes(app):
     lbl_count.pack(side="left", padx=10)
 
     btn_toggle_form = ctk.CTkButton(head, text=tr("+ Nuevo personaje"), width=160,
-                                    height=28, fg_color="#1a7a3c",
-                                    hover_color="#145e2d")
+                                    height=28, fg_color=P.BTN_EXITO,
+                                    hover_color=P.BTN_EXITO_HOVER)
     btn_toggle_form.pack(side="right")
 
     ctk.CTkLabel(ventana,
@@ -88,7 +89,7 @@ def abrir_personajes(app):
     entry_buscar.bind("<KeyRelease>", _on_buscar)
 
     ctk.CTkButton(frame_busqueda, text="✕", width=32, height=30,
-                  fg_color="#444", hover_color="#222",
+                  fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                   command=lambda: (entry_buscar.delete(0, "end"), refrescar())
                   ).pack(side="left", padx=(6, 0))
 
@@ -154,10 +155,10 @@ def abrir_personajes(app):
         entry_nombre.delete(0, "end")
         entry_desc.delete(0, "end")
         refrescar()
-        app.set_estado(tr("🧑 Personaje '{0}' guardado.").format(nombre), "#2ecc71")
+        app.set_estado(tr("🧑 Personaje '{0}' guardado.").format(nombre), P.TXT_OK)
 
     btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
-                                fg_color="#1a7a3c", hover_color="#145e2d",
+                                fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                 command=guardar)
     btn_guardar.pack(side="left", padx=8)
 
@@ -212,7 +213,7 @@ def abrir_personajes(app):
             def usar(n=p["nombre"]):
                 app.combo_personaje.set(n)
                 ventana.destroy()
-                app.set_estado(tr('🧑 Personaje activo: {0}').format(n), "#2ecc71")
+                app.set_estado(tr('🧑 Personaje activo: {0}').format(n), P.TXT_OK)
 
             def editar(i=idx, p_=p):
                 # Cargar en form y mostrar form si está oculto
@@ -229,7 +230,7 @@ def abrir_personajes(app):
             def copiar(p_=p):
                 import pyperclip
                 pyperclip.copy(p_["descripcion"])
-                app.set_estado(tr("📋 Descripción de '{0}' copiada").format(p_['nombre']), "#3498db")
+                app.set_estado(tr("📋 Descripción de '{0}' copiada").format(p_['nombre']), P.TXT_INFO)
 
             def borrar(i=idx, n=p["nombre"]):
                 if messagebox.askyesno(tr("Confirmar"), tr("¿Borrar '{0}'?").format(n), parent=ventana):
@@ -304,7 +305,7 @@ def abrir_loras(app):
     entry_buscar.bind("<KeyRelease>", _on_buscar)
 
     ctk.CTkButton(frame_busqueda, text="✕", width=32, height=30,
-                  fg_color="#444", hover_color="#222",
+                  fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                   command=lambda: (entry_buscar.delete(0, "end"), refrescar())
                   ).pack(side="left", padx=(6, 8))
 
@@ -359,7 +360,7 @@ def abrir_loras(app):
             "(pelo, ojos, undercut, etc). La app los inyectará automáticamente "
             "en el prompt — no necesitas crear un Personaje aparte.")
         ),
-        font=ctk.CTkFont(size=9), text_color="#888",
+        font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED,
         wraplength=780, justify="left",
     ).pack(anchor="w", pady=(0, 4))
     txt_rasgos = ctk.CTkTextbox(rasgos_row, height=60,
@@ -539,7 +540,7 @@ def abrir_loras(app):
             def copiar(l_=l):
                 import pyperclip
                 pyperclip.copy(l_["trigger"])
-                app.set_estado(tr("📋 Trigger '{0}' copiado").format(l_['trigger']), "#3498db")
+                app.set_estado(tr("📋 Trigger '{0}' copiado").format(l_['trigger']), P.TXT_INFO)
 
             def borrar(i=idx, n=l["nombre"]):
                 if messagebox.askyesno(tr("Confirmar"),
@@ -550,8 +551,8 @@ def abrir_loras(app):
                     refrescar()
 
             ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=70, height=26,
-                          fg_color="#7c3aed" if _is_light() else "#3a1a5a",
-                          hover_color="#6d28d9" if _is_light() else "#2a0f4a",
+                          fg_color=P.BTN_ACENTO if _is_light() else "#3a1a5a",
+                          hover_color=P.BTN_ACENTO_HOVER if _is_light() else "#2a0f4a",
                           command=usar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=26,
                           command=editar).pack(side="left", padx=2)
@@ -712,7 +713,7 @@ def abrir_batch_variables(app):
     frame_btns = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_btns.pack(fill="x", padx=15, pady=(0, 12))
     ctk.CTkButton(frame_btns, text=tr("⚡ Generar variaciones"), height=32, width=160,
-                  fg_color="#1a8a3c", hover_color="#166d30",
+                  fg_color=P.BTN_EXITO, hover_color="#166d30",
                   font=ctk.CTkFont(size=11, weight="bold"),
                   command=_generar).pack(side="left", padx=4)
     ctk.CTkButton(frame_btns, text=tr("📋 Copiar todo"), height=32, width=120,
@@ -771,7 +772,7 @@ def abrir_batch(app):
             frame_bn.pack(fill="x", padx=12, pady=(0, 8))
             ctk.CTkLabel(frame_bn, text=tr("Número de prompts:"), font=ctk.CTkFont(weight="bold")).pack(side="left")
             lbl_bn = ctk.CTkLabel(frame_bn, text=str(batch_n_var.get()),
-                                   font=ctk.CTkFont(size=14, weight="bold"), text_color="#3498db", width=28)
+                                   font=ctk.CTkFont(size=14, weight="bold"), text_color=P.TXT_INFO, width=28)
             ctk.CTkSlider(frame_bn, from_=2, to=10, number_of_steps=8, variable=batch_n_var,
                           command=lambda v: lbl_bn.configure(text=f"{int(v)}")).pack(
                 side="left", padx=10, fill="x", expand=True)
@@ -886,7 +887,7 @@ def abrir_batch(app):
         row1.pack(fill="x", pady=(0, 2))
         ctk.CTkLabel(row1, text=tr("📋 Copiar completo:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="#f39c12").pack(side="left", padx=(0, 6))
+                     text_color=P.TXT_ACENTO).pack(side="left", padx=(0, 6))
 
         is_lt = _is_light()
         colores = (
@@ -903,7 +904,7 @@ def abrir_batch(app):
                 import pyperclip
                 pyperclip.copy(p)
                 lbl_batch_estado.configure(
-                    text=tr('✅ Prompt #{0} completo copiado').format(n), text_color="#2ecc71")
+                    text=tr('✅ Prompt #{0} completo copiado').format(n), text_color=P.TXT_OK)
             ctk.CTkButton(row1, text=f"#{i+1}", width=40, height=24,
                           fg_color=color, hover_color="#d1d5db" if is_lt else "#333333",
                           font=ctk.CTkFont(size=11, weight="bold"),
@@ -914,7 +915,7 @@ def abrir_batch(app):
         row2.pack(fill="x", pady=(0, 2))
         ctk.CTkLabel(row2, text=tr("🟢 Solo POSITIVE:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="#2ecc71").pack(side="left", padx=(0, 6))
+                     text_color=P.TXT_OK).pack(side="left", padx=(0, 6))
 
         for i, prompt in enumerate(prompts):
             pos, neg = _extraer_pos_neg(prompt)
@@ -923,13 +924,13 @@ def abrir_batch(app):
                 if p:
                     pyperclip.copy(p)
                     lbl_batch_estado.configure(
-                        text=tr('✅ POSITIVE #{0} copiado').format(n), text_color="#2ecc71")
+                        text=tr('✅ POSITIVE #{0} copiado').format(n), text_color=P.TXT_OK)
                 else:
                     lbl_batch_estado.configure(
-                        text=tr('⚠️ Prompt #{0} sin POSITIVE detectado').format(n), text_color="#e67e22")
+                        text=tr('⚠️ Prompt #{0} sin POSITIVE detectado').format(n), text_color=P.TXT_AVISO)
             ctk.CTkButton(row2, text=f"#{i+1}", width=40, height=24,
-                          fg_color="#15803d" if is_lt else "#1a5a2a",
-                          hover_color="#166534" if is_lt else "#0f3a1a",
+                          fg_color=P.BTN_EXITO if is_lt else "#1a5a2a",
+                          hover_color=P.BTN_EXITO_HOVER if is_lt else "#0f3a1a",
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=copiar_pos).pack(side="left", padx=2)
 
@@ -938,7 +939,7 @@ def abrir_batch(app):
         row3.pack(fill="x")
         ctk.CTkLabel(row3, text=tr("🔴 Solo NEGATIVE:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="#e74c3c").pack(side="left", padx=(0, 6))
+                     text_color=P.TXT_ERROR).pack(side="left", padx=(0, 6))
 
         for i, prompt in enumerate(prompts):
             pos, neg = _extraer_pos_neg(prompt)
@@ -947,10 +948,10 @@ def abrir_batch(app):
                 if n_text:
                     pyperclip.copy(n_text)
                     lbl_batch_estado.configure(
-                        text=tr('✅ NEGATIVE #{0} copiado').format(n), text_color="#2ecc71")
+                        text=tr('✅ NEGATIVE #{0} copiado').format(n), text_color=P.TXT_OK)
                 else:
                     lbl_batch_estado.configure(
-                        text=tr('ℹ️ Prompt #{0} sin NEGATIVE (modo natural)').format(n), text_color="#3498db")
+                        text=tr('ℹ️ Prompt #{0} sin NEGATIVE (modo natural)').format(n), text_color=P.TXT_INFO)
             ctk.CTkButton(row3, text=f"#{i+1}", width=40, height=24,
                           fg_color="#dc2626" if is_lt else "#5a1a1a",
                           hover_color="#b91c1c" if is_lt else "#3a0f0f",
@@ -999,7 +1000,7 @@ def abrir_batch(app):
         if _batch_cancelado.is_set() or not _ventana_existe():
             return
         _set_batch(texto)
-        lbl_batch_estado.configure(text=tr('✅ Batch completado — ~{0} tokens').format(contar_tokens_aprox(texto)), text_color="#2ecc71")
+        lbl_batch_estado.configure(text=tr('✅ Batch completado — ~{0} tokens').format(contar_tokens_aprox(texto)), text_color=P.TXT_OK)
         btn_gen.configure(state="normal")
         btn_exp.configure(state="normal")
         prompts = _parsear_batch(texto)
@@ -1010,7 +1011,7 @@ def abrir_batch(app):
         if _batch_cancelado.is_set() or not _ventana_existe():
             return
         _set_batch(f"❌ Error: {error_msg}")
-        lbl_batch_estado.configure(text=tr("❌ Error en batch"), text_color="#e74c3c")
+        lbl_batch_estado.configure(text=tr("❌ Error en batch"), text_color=P.TXT_ERROR)
         btn_gen.configure(state="normal")
 
     def _set_batch(texto):
@@ -1032,7 +1033,7 @@ def abrir_batch(app):
                 return
             idea = entry_bidea[0].get("1.0", "end").strip()
             if not idea:
-                lbl_batch_estado.configure(text=tr("⚠️ Escribe una idea base."), text_color="#e67e22")
+                lbl_batch_estado.configure(text=tr("⚠️ Escribe una idea base."), text_color=P.TXT_AVISO)
                 return
             n = int(batch_n_var.get())
             if app.switch_traduccion_var.get() and app.detectar_idioma(idea):
@@ -1045,7 +1046,7 @@ def abrir_batch(app):
                 return
             lista_raw = entry_blista[0].get("1.0", "end").strip()
             if not lista_raw:
-                lbl_batch_estado.configure(text=tr("⚠️ Escribe al menos una idea."), text_color="#e67e22")
+                lbl_batch_estado.configure(text=tr("⚠️ Escribe al menos una idea."), text_color=P.TXT_AVISO)
                 return
             ideas = [l.strip() for l in lista_raw.splitlines() if l.strip()][:10]
             if app.switch_traduccion_var.get():
@@ -1054,7 +1055,7 @@ def abrir_batch(app):
             peticion = (f"MODO E: Genera un prompt para CADA idea ({len(ideas)} ideas). "
                         f"Estilos: {estilos}.{modelo_info}\n\n{lista_fmt}")
 
-        lbl_batch_estado.configure(text=tr("⏳ Generando batch..."), text_color="#f39c12")
+        lbl_batch_estado.configure(text=tr("⏳ Generando batch..."), text_color=P.TXT_ACENTO)
         btn_gen.configure(state="disabled")
         btn_exp.configure(state="disabled")
         _set_batch("⏳ Procesando batch...")
@@ -1071,7 +1072,7 @@ def abrir_batch(app):
         if ruta:
             with open(ruta, "w", encoding="utf-8") as f:
                 f.write(texto)
-            lbl_batch_estado.configure(text=tr('💾 Exportado: {0}').format(Path(ruta).name), text_color="#2ecc71")
+            lbl_batch_estado.configure(text=tr('💾 Exportado: {0}').format(Path(ruta).name), text_color=P.TXT_OK)
 
     import pyperclip
     is_lt = _is_light()
@@ -1079,8 +1080,8 @@ def abrir_batch(app):
                              fg_color=cc["btn_use"], hover_color=cc["btn_use_hov"], command=generar)
     btn_gen.pack(side="left", padx=4)
     btn_exp = ctk.CTkButton(frame_bfoot, text=tr("💾 Exportar .txt"), width=140, height=36,
-                             fg_color="#15803d" if is_lt else "#1a3a2a",
-                             hover_color="#166534" if is_lt else "#0f2a1a",
+                             fg_color=P.BTN_EXITO if is_lt else "#1a3a2a",
+                             hover_color=P.BTN_EXITO_HOVER if is_lt else "#0f2a1a",
                              state="disabled", command=exportar)
     btn_exp.pack(side="left", padx=4)
     ctk.CTkButton(frame_bfoot, text=tr("📋 Copiar todo"), width=130, height=36,
@@ -1382,15 +1383,15 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         def cargar(c=contenido):
             app.actualizar_salida(c)
             ventana.destroy()
-            app.set_estado(tr("📋 Prompt cargado."), "#3498db")
+            app.set_estado(tr("📋 Prompt cargado."), P.TXT_INFO)
 
         def copiar(c=contenido):
             try:
                 import pyperclip
                 pyperclip.copy(c)
-                app.set_estado(tr('📋 {0} caracteres copiados').format(len(c)), "#2ecc71")
+                app.set_estado(tr('📋 {0} caracteres copiados').format(len(c)), P.TXT_OK)
             except Exception as _e:
-                app.set_estado(tr('❌ No se pudo copiar: {0}').format(_e), "#e74c3c")
+                app.set_estado(tr('❌ No se pudo copiar: {0}').format(_e), P.TXT_ERROR)
 
         ctk.CTkButton(btn_row, text=tr("Cargar"), width=80, height=26,
                       fg_color=cc["btn_bg"], hover_color=cc["btn_bg_hov"],

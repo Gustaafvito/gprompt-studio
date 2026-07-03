@@ -45,6 +45,7 @@ from config import (
     get_image_model_specs,
     get_model_specs,
 )
+from modules import paleta as P
 
 logger = logging.getLogger("gprompt")
 
@@ -224,8 +225,8 @@ class UiEventsService:
         self.app._packear_negative_y_imgref()
 
         natural = self.app.is_natural_mode()
-        if natural: self.app.dialogs.set_estado(tr('🌐 {0} — prompts descriptivos').format(self.app.plataforma_var.get()), "#3498db")
-        else: self.app.dialogs.set_estado(tr('🎯 {0} — tags + pesos + negatives').format(self.app.plataforma_var.get()), "#3498db")
+        if natural: self.app.dialogs.set_estado(tr('🌐 {0} — prompts descriptivos').format(self.app.plataforma_var.get()), P.TXT_INFO)
+        else: self.app.dialogs.set_estado(tr('🎯 {0} — tags + pesos + negatives').format(self.app.plataforma_var.get()), P.TXT_INFO)
         self.app.reiniciar_memoria()
 
     def _actualizar_motores_video(self) -> None:
@@ -276,7 +277,7 @@ class UiEventsService:
             nota_txt = specs.get('nota') or 's/n'
             self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}", text_color="#8bb4d4")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
-            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), "#3498db")
+            self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), P.TXT_INFO)
 
             try:
                 tip_rico = (
@@ -491,7 +492,7 @@ class UiEventsService:
 
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():
-            self.app.dialogs.set_estado(tr("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios"), "#f39c12")
+            self.app.dialogs.set_estado(tr("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios"), P.TXT_ACENTO)
         else:
             self.app.dialogs.set_estado(tr("Modo Brief desactivado — prompts artísticos libres"))
         self.app.reiniciar_memoria()

@@ -41,6 +41,7 @@ from config import (
     get_model_specs,
 )
 from config import get_theme_colors as _get_tc
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from workers import limpiar_marcadores, log_future_exc
@@ -78,7 +79,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero"), P.TXT_AVISO)
             return
         try:
             self.app._sesion_log("🧪 A/B Testing: abrió configuración 2x2")
@@ -96,7 +97,7 @@ class AbTestingService:
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 4))
         ctk.CTkLabel(cfg,
                      text=tr("Marca 1 o 2 dimensiones a variar.\nSe generarán 4 prompts variando solo esas."),
-                     font=ctk.CTkFont(size=10), text_color="#888",
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED,
                      justify="center").pack(pady=(0, 10))
 
         # Checkboxes para cada dimensión
@@ -106,7 +107,7 @@ class AbTestingService:
 
         # Contador y función para actualizar estado
         lbl_contador = ctk.CTkLabel(cfg, text=tr("Seleccionadas: 0 (máx 2)"),
-                                    font=ctk.CTkFont(size=10), text_color="#888")
+                                    font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED)
         lbl_contador.pack(pady=(0, 5))
 
         # Refs a los checkboxes para deshabilitar visualmente los no
@@ -117,7 +118,7 @@ class AbTestingService:
             total = sum(1 for v in dim_vars.values() if v.get())
             lbl_contador.configure(
                 text=tr('Seleccionadas: {0} (máx 2)').format(total),
-                text_color="#2ecc71" if 1 <= total <= 2 else "#e67e22",
+                text_color=P.TXT_OK if 1 <= total <= 2 else "#e67e22",
             )
             # Deshabilitar visualmente los no seleccionados si ya hay 2
             for nombre, var in dim_vars.items():
@@ -141,7 +142,7 @@ class AbTestingService:
             dim_checks[nombre] = cb
             ctk.CTkLabel(row, text=tr('  ej: {0}').format(valores[0]),
                          font=ctk.CTkFont(size=9, slant="italic"),
-                         text_color="#666").pack(side="left", padx=4)
+                         text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=4)
 
         def _generar():
             sel = [n for n, v in dim_vars.items() if v.get()]
@@ -157,7 +158,7 @@ class AbTestingService:
         btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
         btn_row.pack(fill="x", padx=20, pady=(5, 15))
         ctk.CTkButton(btn_row, text=tr("🧪 Generar 4 variantes"), width=200, height=36,
-                      fg_color="#1a8a3c", hover_color="#127a30",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_generar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=36,
@@ -190,7 +191,7 @@ class AbTestingService:
         fmt = "lenguaje natural descriptivo" if is_natural else "tags con pesos (tag:1.2)"
         neg_str = "Genera POSITIVE y NEGATIVE." if has_neg else "No generes NEGATIVE."
 
-        self.app.dialogs.set_estado(tr("🧪 Generando 4 variantes con IA..."), "#3498db")
+        self.app.dialogs.set_estado(tr("🧪 Generando 4 variantes con IA..."), P.TXT_INFO)
         self.app.dialogs.toggle_botones(False)
 
         def _generar():
@@ -242,7 +243,7 @@ class AbTestingService:
         ctk.CTkLabel(v, text=tr('🧪 4 variantes de: {0}{1}').format((idea_base[:60]), ('…' if len(idea_base) > 60 else '')),
                      font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr('Variando: {0}').format(' + '.join(dimensiones)),
-                     font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 10))
 
         grid = ctk.CTkFrame(v, fg_color="transparent")
         grid.pack(fill="both", expand=True, padx=10, pady=5)
@@ -256,22 +257,22 @@ class AbTestingService:
             ctk.CTkLabel(cell, text=tr('📌 Variante {0}').format(idx + 1), font=ctk.CTkFont(size=11, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(8, 0))
             ctk.CTkLabel(cell, text=etiqueta, font=ctk.CTkFont(size=9, slant="italic"),
-                         text_color="#888", wraplength=440, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
+                         text_color=P.TXT_MUTED, wraplength=440, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
             txt = ctk.CTkTextbox(cell, wrap="word", height=180, font=ctk.CTkFont(family="Consolas", size=10))
             txt.pack(fill="both", expand=True, padx=10, pady=(0, 5))
             txt.insert("1.0", prompt)
 
             def _usar(p=prompt):
                 self.app.dialogs.actualizar_salida(p)
-                self.app.dialogs.set_estado(tr("🧪 Variante aplicada al editor"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("🧪 Variante aplicada al editor"), P.TXT_OK)
                 # No cerramos la ventana para poder ver las otras opciones
 
-            btn = ctk.CTkButton(cell, text=tr("✅ Usar este"), height=28, fg_color="#1a8a3c", hover_color="#127a30",
+            btn = ctk.CTkButton(cell, text=tr("✅ Usar este"), height=28, fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                           command=_usar)
             btn.pack(fill="x", padx=10, pady=(0, 8))
 
         ctk.CTkButton(v, text=tr("Cerrar"), width=110, command=v.destroy, fg_color=c["fg_dark"]).pack(pady=(5, 12))
-        self.app.dialogs.set_estado(tr("🧪 Elige la variante que más te guste"), "#3498db")
+        self.app.dialogs.set_estado(tr("🧪 Elige la variante que más te guste"), P.TXT_INFO)
         self.app.dialogs.toggle_botones(True)
 
     def _cmd_comparar_modelos(self):
@@ -280,7 +281,7 @@ class AbTestingService:
         c = _get_tc(is_lt)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero para comparar modelos."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe una idea primero para comparar modelos."), P.TXT_AVISO)
         try:
             self.app._sesion_log("🆚 Comparar: abrió comparador de modelos")
         except Exception as e:
@@ -328,7 +329,7 @@ class AbTestingService:
         n_var = ctk.IntVar(value=3)
         n_lbl = ctk.CTkLabel(n_frame, text=tr("3 modelos"),
                               font=ctk.CTkFont(size=11, weight="bold"),
-                              text_color="#2ecc71", width=90)
+                              text_color=P.TXT_OK, width=90)
         n_lbl.pack(side="right")
 
         frame_combos = ctk.CTkFrame(sel_vent, fg_color="transparent")
@@ -376,17 +377,17 @@ class AbTestingService:
             seleccionados = [combos[i].get() for i in range(n)]
             # Validar que sean diferentes
             if len(set(seleccionados)) < n:
-                self.app.dialogs.set_estado(tr('⚠️ Elige {0} modelos diferentes.').format(n), "#e67e22")
+                self.app.dialogs.set_estado(tr('⚠️ Elige {0} modelos diferentes.').format(n), P.TXT_AVISO)
                 return
             sel_vent.destroy()
             self._abrir_ventana_comparacion(idea, modo, seleccionados)
 
         ctk.CTkButton(btn_frame, text=tr("🆚 Comparar"), width=140, height=34,
-                      fg_color="#1a7a3c", hover_color="#145e2d",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=_comparar).pack(side="left", padx=4)
         ctk.CTkButton(btn_frame, text=tr("Cancelar"), width=100, height=34,
-                      fg_color="#444444", hover_color="#222222",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=sel_vent.destroy).pack(side="left", padx=4)
 
     def _abrir_ventana_comparacion(self, idea, modo, modelos_compare):
@@ -410,7 +411,7 @@ class AbTestingService:
         scroll.pack(fill="both", expand=True, padx=12, pady=(0, 5))
 
         lbl_status = ctk.CTkLabel(vent, text=tr('🔄 Generando para {0} modelos...').format(n_modelos),
-                                   font=ctk.CTkFont(size=11), text_color="#f39c12")
+                                   font=ctk.CTkFont(size=11), text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 4))
 
         # Botón "Cerrar comparativa" — la ventana ya no se cierra al pulsar
@@ -446,7 +447,7 @@ class AbTestingService:
 
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=8, pady=(0, 6))
-            btn_usar = ctk.CTkButton(btn_row, text=tr("✅ Usar este"), width=100, height=22, fg_color="#1a7a3c",
+            btn_usar = ctk.CTkButton(btn_row, text=tr("✅ Usar este"), width=100, height=22, fg_color=P.BTN_EXITO,
                                        state="disabled", font=ctk.CTkFont(size=10))
             btn_usar.pack(side="left", padx=2)
             btn_copiar = ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
@@ -580,7 +581,7 @@ class AbTestingService:
                                         if _m_key == m2:
                                             _info["card"].configure(border_color="#fbbf24",
                                                                      border_width=3)
-                                            _info["hdr"].configure(fg_color="#fbbf24")
+                                            _info["hdr"].configure(fg_color=P.TXT_ACENTO)
                                         else:
                                             _info["card"].configure(border_width=0)
                                             _info["hdr"].configure(fg_color=_info["hdr_color"])
@@ -601,7 +602,7 @@ class AbTestingService:
                                 state="normal",
                                 command=lambda r=r, m=m: (
                                     pyperclip.copy(r),
-                                    self.app.dialogs.set_estado(tr('📋 Copiado prompt de {0}').format(m), "#2ecc71")))
+                                    self.app.dialogs.set_estado(tr('📋 Copiado prompt de {0}').format(m), P.TXT_OK)))
                         except Exception as _e:
                             logger.debug(f"[silent] {_e}")
                     self.app.after(0, _mostrar)

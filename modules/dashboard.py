@@ -16,6 +16,7 @@ import logging
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 
@@ -293,7 +294,7 @@ class DashboardService:
                     self.app.dialogs.set_estado(tr("✅ Cargado desde búsqueda"), accent_green)
                     v.destroy()
                 ctk.CTkButton(row, text=tr("Cargar"), width=60, height=22,
-                              fg_color=accent_blue, hover_color="#1d4ed8",
+                              fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                               font=ctk.CTkFont(size=9),
                               command=_cargar).pack(side="right", padx=6, pady=2)
 
@@ -316,7 +317,7 @@ class DashboardService:
         search_entry.bind("<Return>", _buscar_inline)
 
         ctk.CTkButton(search_inner, text=tr("Buscar"), width=80, height=32,
-                      fg_color=accent_blue, hover_color="#1d4ed8",
+                      fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                       font=ctk.CTkFont(size=11, weight="bold"),
                       command=_buscar_inline).pack(side="left")
 
@@ -583,7 +584,7 @@ class DashboardService:
                     self.app.dialogs.set_estado(tr("⚠️ No se pudo restaurar el borrador"), accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=tr("📝 Restaurar borrador no guardado"),
-                          height=32, fg_color=accent_blue, hover_color="#1d4ed8",
+                          height=32, fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                           font=ctk.CTkFont(size=11, weight="bold"),
                           text_color="#ffffff",
                           command=_restaurar).pack(fill="x", pady=2)
@@ -596,7 +597,7 @@ class DashboardService:
                 self.app.dialogs.set_estado(tr("📋 Último prompt cargado"), accent_green)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=tr('📋 Cargar último: {0}…').format(preview_corto),
-                          height=32, fg_color=accent_blue, hover_color="#1d4ed8",
+                          height=32, fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                           font=ctk.CTkFont(size=10),
                           text_color="#ffffff", anchor="w",
                           command=_cargar_ultimo).pack(fill="x", pady=2)
@@ -618,7 +619,7 @@ class DashboardService:
                     self.app.dialogs.set_estado(tr("⚠️ Error aplicando plantilla"), accent_red)
                 v.destroy()
             ctk.CTkButton(cont_inner, text=tr('📐 Aplicar plantilla: {0}').format(nombre_pl),
-                          height=28, fg_color=accent_purple, hover_color="#6d28d9",
+                          height=28, fg_color=accent_purple, hover_color=P.BTN_ACENTO_HOVER,
                           font=ctk.CTkFont(size=10, weight="bold"),
                           text_color="#ffffff",
                           command=_aplicar_plantilla).pack(fill="x", pady=(4, 2))
@@ -660,7 +661,7 @@ class DashboardService:
                     self.app.dialogs.set_estado(tr("🌟 Prompt estrella cargado"), accent_green)
                     v.destroy()
                 ctk.CTkButton(hdr_e, text=tr("Cargar"), width=60, height=20,
-                              fg_color=accent_blue, hover_color="#1d4ed8",
+                              fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                               font=ctk.CTkFont(size=9), command=_cargar_estrella).pack(side="right")
                 ctk.CTkLabel(row, text=preview_e,
                              font=ctk.CTkFont(size=9), wraplength=460,
@@ -710,7 +711,7 @@ class DashboardService:
                 except Exception:
                     self.app.dialogs.set_estado(tr("Configura tu key en 🔑 (header)"), accent_amber)
             ctk.CTkButton(estado_row, text=tr("🔑 Configurar"), width=100, height=22,
-                          fg_color=accent_purple, hover_color="#6d28d9",
+                          fg_color=accent_purple, hover_color=P.BTN_ACENTO_HOVER,
                           font=ctk.CTkFont(size=9), command=_abrir_keys).pack(side="right")
 
         # FEATURE 22 — Bloque de Avisos
@@ -1208,7 +1209,7 @@ class DashboardService:
             v.destroy()
 
         ctk.CTkButton(reto_frame, text=tr("🎯 Aceptar reto"),
-                      height=28, fg_color=accent_blue, hover_color="#1d4ed8",
+                      height=28, fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                       font=ctk.CTkFont(size=10, weight="bold"),
                       text_color="#ffffff",
                       command=_aceptar_reto).pack(fill="x", padx=12, pady=(0, 10))
@@ -1403,7 +1404,7 @@ class DashboardService:
             except Exception as ex:
                 self.app.dialogs.set_estado(tr('⚠️ Error backup: {0}').format(ex), accent_red)
         ctk.CTkButton(mant_frame, text=tr("💾 Hacer backup ahora"),
-                      height=28, fg_color=accent_blue, hover_color="#1d4ed8",
+                      height=28, fg_color=accent_blue, hover_color=P.BTN_PRIMARIO_HOVER,
                       font=ctk.CTkFont(size=9, weight="bold"),
                       text_color="#ffffff",
                       command=_backup_ahora).pack(fill="x", padx=12, pady=(2, 8))

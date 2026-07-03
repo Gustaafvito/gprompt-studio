@@ -17,6 +17,8 @@ import os
 
 import customtkinter as ctk
 
+from modules import paleta as P
+
 logger = logging.getLogger(__name__)
 
 
@@ -266,7 +268,7 @@ class UIBuildersService:
         # clicable que abre un menú con: ver / desactivar.
         self.app._btn_adn = ctk.CTkButton(
             frame_llm, text=tr("🧬 ADN"), width=70, height=28,
-            fg_color="#1a7a3c", hover_color="#145e2d",
+            fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
             font=ctk.CTkFont(size=11, weight="bold"),
             command=self.app._cmd_indicador_adn,
         )
@@ -934,9 +936,9 @@ class UIBuildersService:
         if ratio in ratios_dispo:
             self.app.ratio_var.set(ratio)
             self.app.combo_ratio.set(ratio)
-            self.app.dialogs.set_estado(tr('📐 Ratio {0} aplicado').format(ratio), "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Ratio {0} aplicado').format(ratio), P.TXT_INFO)
         else:
-            self.app.dialogs.set_estado(tr('⚠️ Ratio {0} no disponible para este modelo').format(ratio), "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ Ratio {0} no disponible para este modelo').format(ratio), P.TXT_AVISO)
 
     def _build_destino_panel(self):
         """Panel Destino — ahora oculto, los combos están integrados en cada panel de modo."""
@@ -971,13 +973,13 @@ class UIBuildersService:
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), "#3498db")
+            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), P.TXT_INFO)
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":
             self.app.brief_var.set(True)
             self.app.events.on_brief_cambio()
-            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), "#f39c12")
+            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), P.TXT_ACENTO)
 
         self.app.reiniciar_memoria()
 
@@ -1149,7 +1151,7 @@ class UIBuildersService:
                       fg_color="#5b2c8e", hover_color="#3d1a6a", text_color="#ffffff",
                       command=self.app._cmd_guardar_plantilla).pack(side="left", padx=(10, 4))
         ctk.CTkButton(self.app.frame_plantilla_brief, text=tr("🗑 Borrar"), width=80, height=28,
-                      fg_color="#6a1a1a", hover_color="#4a0f0f", text_color="#ffffff",
+                      fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER, text_color="#ffffff",
                       command=self.app._cmd_borrar_plantilla).pack(side="left", padx=2)
 
         def _toggle_brief_visual():
@@ -1194,8 +1196,8 @@ class UIBuildersService:
                                              command=self.app._cargar_imagen)
         self.app.btn_cargar_img.pack(side="left", padx=3)
         ctk.CTkButton(self.app.frame_imgref_inner, text="🗑", width=30, height=28,
-                      fg_color="#6a1a1a" if is_light else "#444",
-                      hover_color="#4a0f0f" if is_light else "#333",
+                      fg_color=P.BTN_PELIGRO if is_light else "#444",
+                      hover_color=P.BTN_PELIGRO_HOVER if is_light else "#333",
                       text_color="#ffffff",
                       command=self.app._limpiar_imagen).pack(side="left", padx=2)
         self.app.lbl_img_preview = ctk.CTkLabel(self.app.frame_imgref_inner, text="", width=34, height=34)
@@ -1411,7 +1413,7 @@ class UIBuildersService:
                     self.app.preset_vars[n].set(True)
                     fg_off = PRESET_COLORES.get(n, ("#333", "#555"))[0]
                     if n in self.app.preset_btns:
-                        self.app.preset_btns[n].configure(fg_color="#2ecc71", text=f"✓ {n}")
+                        self.app.preset_btns[n].configure(fg_color=P.TXT_OK, text=f"✓ {n}")
             self.app.footer._rebuild_negative_text()
 
         for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
@@ -1439,7 +1441,7 @@ class UIBuildersService:
                 def _toggle(n=nombre_p, fg_off=fg):
                     self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
                     activo = self.app.preset_vars[n].get()
-                    self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {tr(n)}" if activo else tr(n))
+                    self.app.preset_btns[n].configure(fg_color=P.TXT_OK if activo else fg_off, text=f"✓ {tr(n)}" if activo else tr(n))
                     self.app.footer._rebuild_negative_text()
 
                 btn = ctk.CTkButton(row_f, text=tr(nombre_p), height=22, width=90,
@@ -1465,7 +1467,7 @@ class UIBuildersService:
         """Toggle helper for negative presets."""
         self.app.preset_vars[n].set(not self.app.preset_vars[n].get())
         activo = self.app.preset_vars[n].get()
-        self.app.preset_btns[n].configure(fg_color="#2ecc71" if activo else fg_off, text=f"✓ {n}" if activo else n)
+        self.app.preset_btns[n].configure(fg_color=P.TXT_OK if activo else fg_off, text=f"✓ {n}" if activo else n)
         self.app.footer._rebuild_negative_text()
 
     def _build_imagen_ref(self):
@@ -1488,7 +1490,7 @@ class UIBuildersService:
         hdr.pack(fill="x", padx=2, pady=(0, 2))
         ctk.CTkLabel(hdr, text=tr("Describe tu idea"), font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
         # Label de autocompletar
-        self.app.lbl_autocomplete = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"), fg_color="transparent", text_color="#2563eb" if is_light else "#5a8aaa")
+        self.app.lbl_autocomplete = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"), fg_color="transparent", text_color=P.BTN_PRIMARIO if is_light else "#5a8aaa")
         self.app.lbl_autocomplete.pack(side="left", padx=(10, 0))
         # ── MEJORA 1: contador en vivo de chars y tokens estimados ──
         self.app.lbl_idea_counter = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9), fg_color="transparent", text_color=c["muted_text"])
@@ -1496,7 +1498,7 @@ class UIBuildersService:
         # ── MEJORA 2: aviso de idioma detectado ──
         self.app.lbl_idioma_aviso = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"),
                                               fg_color="transparent",
-                                              text_color="#f39c12", cursor="hand2")
+                                              text_color=P.TXT_ACENTO, cursor="hand2")
         self.app.lbl_idioma_aviso.pack(side="left", padx=(10, 0))
         # Click en el aviso de idioma → toggle auto-trad
         self.app.lbl_idioma_aviso.bind("<Button-1>", lambda e: self._toggle_auto_trad_desde_aviso())
@@ -1505,7 +1507,7 @@ class UIBuildersService:
         # LLM podría interpretar mal. Click → modal con sugerencias.
         self.app.lbl_claridad_aviso = ctk.CTkLabel(
             hdr, text="", font=ctk.CTkFont(size=9, slant="italic"),
-            fg_color="transparent", text_color="#7c3aed", cursor="hand2",
+            fg_color="transparent", text_color=P.BTN_ACENTO, cursor="hand2",
         )
         self.app.lbl_claridad_aviso.pack(side="left", padx=(10, 0))
         self.app.lbl_claridad_aviso.bind(
@@ -1541,7 +1543,7 @@ class UIBuildersService:
         # Barra visual de chars
         self.app.chars_bar_frame = ctk.CTkFrame(self.app.frame_entrada, fg_color="#d1d5db" if is_light else "#0a0a14", height=4, corner_radius=2)
         self.app.chars_bar_frame.pack(fill="x", pady=(2, 0))
-        self.app.chars_bar = ctk.CTkFrame(self.app.chars_bar_frame, fg_color="#2ecc71", height=4, corner_radius=2)
+        self.app.chars_bar = ctk.CTkFrame(self.app.chars_bar_frame, fg_color=P.TXT_OK, height=4, corner_radius=2)
         self.app.chars_bar.place(x=0, y=0, relwidth=0, relheight=1)
 
     def _on_idea_keyrelease(self, event=None):
@@ -1672,7 +1674,7 @@ class UIBuildersService:
                     card,
                     text=f"🔤 '{h['word']}'",
                     font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color="#7c3aed",
+                    text_color=P.BTN_ACENTO,
                 ).pack(anchor="w", padx=10, pady=(6, 2))
                 ctk.CTkLabel(
                     card,
@@ -1738,7 +1740,7 @@ class UIBuildersService:
                         logger.debug(f"[silent] {e}")
                 self._actualizar_barra_chars()  # refresca aviso
                 estado = "activado" if self.app.switch_traduccion_var.get() else "desactivado"
-                self.app.dialogs.set_estado(tr('🌐 Auto-trad {0}').format(estado), "#3498db")
+                self.app.dialogs.set_estado(tr('🌐 Auto-trad {0}').format(estado), P.TXT_INFO)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def _build_acciones(self):
@@ -1901,7 +1903,7 @@ class UIBuildersService:
         _render_grupos(row2, grupos_r2)
 
         btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
-                                   fg_color="#7f1d1d", hover_color="#5a1414",
+                                   fg_color=P.BTN_PELIGRO, hover_color="#5a1414",
                                    font=ctk.CTkFont(size=11), command=self.app.cmd_reset)
         btn_reset.pack(side="right", padx=2)
         CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
@@ -1914,13 +1916,13 @@ class UIBuildersService:
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
         btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
-                                        fg_color="#1e5f3a", hover_color="#16492d",
+                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_cargar_setup)
         btn_load_setup.pack(side="right", padx=2)
         CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
 
         btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
-                                        fg_color="#1e5f3a", hover_color="#16492d",
+                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                         font=ctk.CTkFont(size=10), command=self.app._cmd_guardar_setup)
         btn_save_setup.pack(side="right", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
@@ -1960,7 +1962,7 @@ class UIBuildersService:
         self.app.lbl_flux_warning = ctk.CTkLabel(frame, text="",
                                               font=ctk.CTkFont(size=11, weight="bold"),
                                               text_color="#1a1a1a",
-                                              fg_color="#f39c12",
+                                              fg_color=P.TXT_ACENTO,
                                               corner_radius=6,
                                               anchor="w", justify="left",
                                               height=24)

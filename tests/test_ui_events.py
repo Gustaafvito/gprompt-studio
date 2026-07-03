@@ -91,7 +91,8 @@ class TestOnBriefCambio:
         h._on_brief_cambio()
         msg, color = h.app.set_estado.call_args[0]
         assert "Brief ACTIVO" in msg or "brief" in msg.lower()
-        assert color == "#f39c12"
+        from modules import paleta as P
+        assert color == P.TXT_ACENTO
         h.app.reiniciar_memoria.assert_called_once()
 
     def test_brief_off_muestra_mensaje_default(self):

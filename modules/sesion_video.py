@@ -26,6 +26,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors as _get_tc
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 
@@ -101,7 +102,7 @@ class SesionVideoService:
         except Exception as e:
             self.app._sesion_video_writer = None
             self.app._sesion_video_running = False
-            self.app.dialogs.set_estado(tr('⚠️ Error iniciando vídeo: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error iniciando vídeo: {0}').format(e), P.TXT_ERROR)
             return False
 
     def _sesion_video_worker(self) -> None:
@@ -163,7 +164,7 @@ class SesionVideoService:
                     else:
                         next_t = time.time()
         except Exception as e:
-            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Vídeo se detuvo: {0}').format(e), "#e74c3c"))
+            self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('⚠️ Vídeo se detuvo: {0}').format(e), P.TXT_ERROR))
 
     def _sesion_video_detener(self) -> None:
         """Detiene grabación y cierra el archivo. Devuelve la ruta del MP4 o None."""
@@ -199,7 +200,7 @@ class SesionVideoService:
                     sel.grab_set()
 
                     ctk.CTkLabel(sel, text=tr("¿Qué quieres grabar en vídeo?"), font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
-                    ctk.CTkLabel(sel, text=tr("(La grabación de texto siempre está activa)"), font=ctk.CTkFont(size=10), text_color="#888").pack(pady=(0, 15))
+                    ctk.CTkLabel(sel, text=tr("(La grabación de texto siempre está activa)"), font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 15))
 
                     def _iniciar(tipo):
                         self.app._sesion_tipo_video = tipo
@@ -210,7 +211,7 @@ class SesionVideoService:
                                   command=lambda: _iniciar("app")).pack(pady=5)
                     ctk.CTkButton(sel, text=tr("🖥️ Toda la pantalla"), width=250, height=35, fg_color="#1a4a7a",
                                   command=lambda: _iniciar("pantalla")).pack(pady=5)
-                    ctk.CTkButton(sel, text=tr("❌ Sin vídeo (solo texto)"), width=250, height=30, fg_color="#5a1a1a",
+                    ctk.CTkButton(sel, text=tr("❌ Sin vídeo (solo texto)"), width=250, height=30, fg_color=P.BTN_PELIGRO,
                                   command=lambda: _iniciar("nada")).pack(pady=5)
                     return
                 else:
@@ -241,19 +242,19 @@ class SesionVideoService:
         self._sesion_log("🔴 GRABACIÓN INICIADA")
 
         if tipo_video == "nada":
-            self.app.dialogs.set_estado(tr("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar"), "#e74c3c")
+            self.app.dialogs.set_estado(tr("🔴 Grabando sesión (sin vídeo)... Click 🎬 para parar"), P.TXT_ERROR)
         elif tipo_video == "app":
             if self._sesion_video_iniciar(solo_app=True):
                 self._sesion_log("🎥 Grabación de vídeo (solo app, 5 FPS)")
-                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar"), "#e74c3c")
+                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 app... Click 🎬 para parar"), P.TXT_ERROR)
             else:
-                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), "#e67e22")
+                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), P.TXT_AVISO)
         elif tipo_video == "pantalla":
             if self._sesion_video_iniciar(solo_app=False):
                 self._sesion_log("🎥 Grabación de vídeo (pantalla completa, 5 FPS)")
-                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar"), "#e74c3c")
+                self.app.dialogs.set_estado(tr("🔴 Grabando sesión + 🎥 pantalla... Click 🎬 para parar"), P.TXT_ERROR)
             else:
-                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), "#e67e22")
+                self.app.dialogs.set_estado(tr("🔴 Grabando solo texto. Click 🎬 para parar"), P.TXT_AVISO)
 
     def _cmd_sesion_exportar(self, video_path=None):
         """Abre ventana con el log de la sesión y opciones de exportación.
@@ -262,7 +263,7 @@ class SesionVideoService:
         c = _get_tc(is_lt)
         self._sesion_init()
         if not self.app._sesion_eventos:
-            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), P.TXT_AVISO)
             return
 
         v = GPromptWindow(self.app)
@@ -279,7 +280,7 @@ class SesionVideoService:
             secs = int(delta.total_seconds() % 60)
             dur = f"  ·  duración: {mins}m {secs}s"
         ctk.CTkLabel(v, text=tr('{0} eventos{1}').format((len(self.app._sesion_eventos)), (dur)),
-                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 4))
 
         # ── Banner con info del vídeo si se grabó ──
         if video_path:
@@ -307,7 +308,7 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", folder])
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('⚠️ No se pudo abrir: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ No se pudo abrir: {0}').format(e), P.TXT_ERROR)
 
             def _abrir_video():
                 try:
@@ -320,13 +321,13 @@ class SesionVideoService:
                     else:
                         subprocess.run(["xdg-open", video_path])
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
 
             ctk.CTkButton(video_banner, text=tr("📁 Abrir carpeta"), width=120, height=24,
                           fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
                           command=_abrir_carpeta).pack(side="right", padx=4, pady=6)
             ctk.CTkButton(video_banner, text=tr("▶ Reproducir"), width=110, height=24,
-                          fg_color="#1e5f3a", hover_color="#16492d",
+                          fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                           command=_abrir_video).pack(side="right", padx=4, pady=6)
 
         # Construir texto
@@ -362,9 +363,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_md)
-                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), P.TXT_OK)
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
 
         def _exp_txt():
             ruta = filedialog.asksaveasfilename(
@@ -375,9 +376,9 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(texto_txt)
-                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Exportado: {0}').format(ruta), P.TXT_OK)
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
 
         def _limpiar():
             if messagebox.askyesno(tr("Limpiar registro"), tr("¿Borrar todos los eventos grabados?"), parent=v):
@@ -387,14 +388,14 @@ class SesionVideoService:
                 self.app.dialogs.set_estado(tr("🗑 Registro de sesión limpiado"))
 
         ctk.CTkButton(btn_row, text=tr("📄 Exportar .md"), width=130, command=_exp_md,
-                      fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("📄 Exportar .txt"), width=130, command=_exp_txt,
-                      fg_color="#1e5f3a", hover_color="#16492d").pack(side="left", padx=2)
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("📚 Modo Tutorial"), width=140,
                       command=lambda: self._cmd_sesion_modo_tutorial(),
                       fg_color="#5b2c8e", hover_color="#3d1a6a").pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=110, command=_limpiar,
-                      fg_color="#6a1a1a", hover_color="#4a0f0f").pack(side="left", padx=2)
+                      fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, command=v.destroy,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"]).pack(side="right", padx=2)
 
@@ -403,7 +404,7 @@ class SesionVideoService:
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = _get_tc(is_lt)
         if not self.app._sesion_eventos:
-            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ No hay eventos grabados"), P.TXT_AVISO)
             return
 
         # Agrupar eventos en pasos lógicos según los tipos
@@ -417,7 +418,7 @@ class SesionVideoService:
         ctk.CTkLabel(v, text=tr("📚 Guion de tutorial"),
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr('{0} pasos · {1} acciones').format((len(pasos)), (len(self.app._sesion_eventos))),
-                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 10))
 
         # Construir el guion
         lines = ["# 📚 Tutorial: " + datetime.datetime.now().strftime("%d/%m/%Y"),
@@ -458,19 +459,19 @@ class SesionVideoService:
             if ruta:
                 try:
                     with open(ruta, "w", encoding="utf-8") as fp: fp.write(guion)
-                    self.app.dialogs.set_estado(tr('📄 Tutorial exportado: {0}').format(ruta), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📄 Tutorial exportado: {0}').format(ruta), P.TXT_OK)
                 except Exception as e:
-                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+                    self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
 
         def _copiar():
             try:
                 pyperclip.copy(guion)
-                self.app.dialogs.set_estado(tr("📋 Guion copiado al portapapeles"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Guion copiado al portapapeles"), P.TXT_OK)
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
         ctk.CTkButton(btn_row, text=tr("📄 Exportar .md"), width=130,
-                      fg_color="#1e5f3a", hover_color="#16492d",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       command=_exportar_md).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("📋 Copiar todo"), width=130,
                       fg_color="#1e3a5f", hover_color="#162d49",

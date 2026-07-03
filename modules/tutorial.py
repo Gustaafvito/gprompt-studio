@@ -10,6 +10,7 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 
@@ -172,7 +173,7 @@ def abrir_tutorial(app):
     btn_sig = ctk.CTkButton(nav, text=tr("Siguiente ➡"), width=100, height=32)
     btn_sig.pack(side="left", padx=4)
     btn_close = ctk.CTkButton(nav, text=tr("Cerrar"), width=80, height=32,
-                              fg_color="#444", hover_color="#555",
+                              fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                               command=win.destroy)
     btn_close.pack(side="left", padx=4)
 

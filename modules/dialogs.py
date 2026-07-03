@@ -7,6 +7,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 
@@ -49,7 +50,7 @@ class DialogsService:
                 ubicacion_api_key,
             )
         except ImportError:
-            self.set_estado(tr("⚠️ api_clients.py no disponible"), "#e74c3c")
+            self.set_estado(tr("⚠️ api_clients.py no disponible"), P.TXT_ERROR)
             return
 
         v = GPromptWindow(self.app)
@@ -59,9 +60,9 @@ class DialogsService:
         ctk.CTkLabel(v, text=tr("🔑 Configura tus motores de IA"),
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(14, 4))
         ctk.CTkLabel(v, text=tr("Tu app puede usar varios proveedores. Cada uno tiene su API key."),
-                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 4))
         ctk.CTkLabel(v, text=tr("🏆 = gratis (con límites)   💎 = de pago"),
-                     font=ctk.CTkFont(size=10, slant="italic"), text_color="#666").pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=10, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(0, 8))
@@ -87,13 +88,13 @@ class DialogsService:
             if refs.get("lbl_estado"):
                 refs["lbl_estado"].configure(
                     text=tr("✅ configurado") if current else tr("⚠️ sin configurar"),
-                    text_color="#2ecc71" if current else "#e67e22",
+                    text_color=P.TXT_OK if current else "#e67e22",
                 )
             # Origen
             if refs.get("lbl_origen"):
                 refs["lbl_origen"].configure(
                     text=ICONO_ORIGEN.get(origen, ""),
-                    text_color="#3498db" if origen else "#666",
+                    text_color=P.TXT_INFO if origen else "#666",
                 )
             # Botón borrar habilitado solo si hay key
             if refs.get("btn_borrar"):
@@ -128,7 +129,7 @@ class DialogsService:
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
                 font=ctk.CTkFont(size=9, slant="italic"),
-                text_color="#3498db" if origen_init else "#666",
+                text_color=P.TXT_INFO if origen_init else "#666",
                 anchor="w",
             )
             lbl_origen.pack(fill="x", padx=12, pady=(0, 4))
@@ -176,13 +177,13 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), P.TXT_AVISO)
                     except Exception as ex:
-                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), P.TXT_ERROR)
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
-                fg_color="#7a1a1a", hover_color="#5a1010",
+                fg_color=P.BTN_PELIGRO, hover_color="#5a1010",
                 font=ctk.CTkFont(size=11),
                 command=_crear_borrar_btn(),
                 state="normal" if current_key_init else "disabled",
@@ -206,7 +207,7 @@ class DialogsService:
         ctk.CTkLabel(
             scroll, text=tr("🖼 Proveedores de IMAGEN (no LLM)"),
             font=ctk.CTkFont(size=12, weight="bold"),
-            text_color="#7c3aed",
+            text_color=P.BTN_ACENTO,
         ).pack(anchor="w", padx=4, pady=(4, 2))
         ctk.CTkLabel(
             scroll,
@@ -245,7 +246,7 @@ class DialogsService:
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
                 font=ctk.CTkFont(size=9, slant="italic"),
-                text_color="#3498db" if origen_init else "#666",
+                text_color=P.TXT_INFO if origen_init else "#666",
                 anchor="w",
             )
             lbl_origen.pack(fill="x", padx=12, pady=(0, 4))
@@ -292,13 +293,13 @@ class DialogsService:
                         borrar_api_key(p)
                         e.delete(0, "end")
                         _refrescar_card(p)
-                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), "#e67e22")
+                        self.set_estado(tr('🗑 Key de {0} borrada').format(info_l['label']), P.TXT_AVISO)
                     except Exception as ex:
-                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), "#e74c3c")
+                        self.set_estado(tr('❌ Error borrando key: {0}').format(ex), P.TXT_ERROR)
                 return _borrar
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
-                fg_color="#7a1a1a", hover_color="#5a1010",
+                fg_color=P.BTN_PELIGRO, hover_color="#5a1010",
                 font=ctk.CTkFont(size=11),
                 command=_crear_borrar_btn_img(),
                 state="normal" if current_key_init else "disabled",
@@ -326,7 +327,7 @@ class DialogsService:
                         guardar_api_key(pid, nueva_key)
                     cambios += 1
             if cambios:
-                self.set_estado(tr('🔑 {0} API keys actualizadas').format(cambios), "#2ecc71")
+                self.set_estado(tr('🔑 {0} API keys actualizadas').format(cambios), P.TXT_OK)
                 # Refrescar el desplegable del cerebro para que los iconos ✅/🔒
                 # reflejen las keys recién guardadas
                 try:
@@ -344,7 +345,7 @@ class DialogsService:
             v.destroy()
 
         ctk.CTkButton(btn_row, text=tr("💾 Guardar todas"), width=140,
-                      fg_color="#1e5f3a", hover_color="#16492d",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       command=_guardar_todas).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -449,7 +450,7 @@ class DialogsService:
         prefs["tema"] = nuevo.lower()
         self.app.store.guardar_preferencias(prefs)
         self.app.after(100, self.app._apply_theme_colors)
-        self.set_estado(tr('🌗 Tema: {0}').format(nuevo), "#2ecc71")
+        self.set_estado(tr('🌗 Tema: {0}').format(nuevo), P.TXT_OK)
 
     def _cmd_toggle_idioma(self) -> None:
         """Cambia el idioma de la UI (Español ↔ English). Se aplica al REINICIAR
@@ -466,7 +467,7 @@ class DialogsService:
         except Exception as _e:
             logger.debug(f"[silent toggle idioma] {_e}")
         nombre = "English" if nuevo == "en" else "Español"
-        self.set_estado(tr('🌐 Idioma: {0} — reinicia para aplicar').format(nombre), "#2ecc71")
+        self.set_estado(tr('🌐 Idioma: {0} — reinicia para aplicar').format(nombre), P.TXT_OK)
         # Persistir la preferencia ANTES de un posible reinicio (el trace de
         # idioma_var ya la guarda; forzamos con MERGE para no perder el resto).
         try:
@@ -585,7 +586,7 @@ class DialogsService:
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
             except Exception as e:
-                self.set_estado(tr('⚠ No se pudo abrir el enlace: {0}').format(e), "#e74c3c")
+                self.set_estado(tr('⚠ No se pudo abrir el enlace: {0}').format(e), P.TXT_ERROR)
 
         # Pack en orden inverso para que aparezcan IG/TikTok/YT/GitHub de
         # izquierda a derecha (pack side="right" apila al revés)
@@ -682,12 +683,12 @@ class DialogsService:
                 pos = self.app.extraer_positive()
                 if pos:
                     pyperclip.copy(pos)
-                    self.set_estado(tr("🟢 POSITIVE copiado (doble-click)"), "#2ecc71")
+                    self.set_estado(tr("🟢 POSITIVE copiado (doble-click)"), P.TXT_OK)
             elif "NEGATIVE PROMPT:" in linea or "NEGATIVE:" in linea:
                 neg = self.app.extraer_negative()
                 if neg:
                     pyperclip.copy(neg)
-                    self.set_estado(tr(" NEGATIVE copiado (doble-click)"), "#e74c3c")
+                    self.set_estado(tr(" NEGATIVE copiado (doble-click)"), P.TXT_ERROR)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
     def toggle_botones(self, estado=True):

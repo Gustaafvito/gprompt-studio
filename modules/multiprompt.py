@@ -34,6 +34,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_image_model_specs, get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
@@ -104,7 +105,7 @@ class MultiPromptService:
         """
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Escribe un concepto base."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe un concepto base."), P.TXT_AVISO)
 
         n = self.app._pedir_n_modal(
             tr("🎭 Mood — número de prompts"),
@@ -120,7 +121,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('🎨 Generando moodboard de {0} prompts...').format(n), "#f39c12")
+        self.app.dialogs.set_estado(tr('🎨 Generando moodboard de {0} prompts...').format(n), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
@@ -150,18 +151,18 @@ class MultiPromptService:
                 resp = limpiar_marcadores(resp)
                 bloques = self.app._parsear_bloques_numerados(resp, n_esperado=n)
                 if len(bloques) < 2:
-                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 bloque, intenta de nuevo"), "#e67e22"))
+                    self.app.after(0, lambda: self.app.dialogs.set_estado(tr("⚠️ Solo se generó 1 bloque, intenta de nuevo"), P.TXT_AVISO))
                     self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
                     return
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n])
-                    self.app.dialogs.set_estado(tr('🎨 Moodboard listo ({0} prompts)').format(len(bloques)), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🎨 Moodboard listo ({0} prompts)').format(len(bloques)), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -261,7 +262,7 @@ class MultiPromptService:
 
         # Hint de validación
         lbl_hint = ctk.CTkLabel(v, text="", font=ctk.CTkFont(size=10),
-                                  text_color="#fbbf24")
+                                  text_color=P.TXT_ACENTO)
         lbl_hint.pack(pady=(2, 2))
 
         resultado = {"v": None}
@@ -279,7 +280,7 @@ class MultiPromptService:
             if len(marcados) != n:
                 lbl_hint.configure(
                     text=tr('⚠️ Marca exactamente {0} tipos (ahora {1}) o activa el modo automático.').format((n), (len(marcados))),
-                    text_color="#e67e22",
+                    text_color=P.TXT_AVISO,
                 )
                 return
             resultado["v"] = {"n": n, "tipos": marcados, "auto": False}
@@ -299,7 +300,7 @@ class MultiPromptService:
         btn_row = ctk.CTkFrame(v, fg_color="transparent")
         btn_row.pack(side="bottom", pady=10)
         ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=130, height=34,
-                       fg_color="#1a7a3c", hover_color="#15633a",
+                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                        font=ctk.CTkFont(size=12, weight="bold"),
                        command=_generar).pack(side="left", padx=6)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=110, height=34,
@@ -325,10 +326,10 @@ class MultiPromptService:
         (LLM elige).
         """
         if self.app.modo_var.get() != "imagen":
-            return self.app.dialogs.set_estado(tr("⚠️ Story Sequence solo está disponible en modo IMAGEN."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Story Sequence solo está disponible en modo IMAGEN."), P.TXT_AVISO)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena base."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena base."), P.TXT_AVISO)
 
         cfg = self._pedir_story_config(default_n=3)
         if cfg is None:
@@ -342,7 +343,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('🎬 Generando secuencia cinematográfica ({0} shots)...').format(n), "#f39c12")
+        self.app.dialogs.set_estado(tr('🎬 Generando secuencia cinematográfica ({0} shots)...').format(n), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         if auto:
@@ -392,12 +393,12 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n], labels=labels_comp)
-                    self.app.dialogs.set_estado(tr('🎬 Secuencia de {0} shots lista').format(len(bloques)), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('🎬 Secuencia de {0} shots lista').format(len(bloques)), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -409,10 +410,10 @@ class MultiPromptService:
         de la microhistoria según el N elegido.
         """
         if self.app.modo_var.get() != "video":
-            return self.app.dialogs.set_estado(tr("⚠️ Storyboard solo está disponible en modo VÍDEO."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Storyboard solo está disponible en modo VÍDEO."), P.TXT_AVISO)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), P.TXT_AVISO)
 
         n = self.app._pedir_n_modal(
             tr("📽 Board — número de frames"),
@@ -428,7 +429,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('📽 Generando storyboard de {0} shots...').format(n), "#f39c12")
+        self.app.dialogs.set_estado(tr('📽 Generando storyboard de {0} shots...').format(n), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         formato_lineas = "\n---\n".join(
@@ -480,7 +481,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -494,13 +495,13 @@ class MultiPromptService:
         txt_salida y cierra el comparador.
         """
         if not frames:
-            return self.app.dialogs.set_estado(tr("⚠️ No hay frames para encadenar."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay frames para encadenar."), P.TXT_AVISO)
 
         try: self.app._sesion_log(f"🎬 Board→Vídeo: encadenando {len(frames)} frames")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('🎬 Encadenando {0} frames como prompt de vídeo...').format(len(frames)), "#f39c12")
+        self.app.dialogs.set_estado(tr('🎬 Encadenando {0} frames como prompt de vídeo...').format(len(frames)), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         # Construir bloque con cada frame numerado
@@ -557,7 +558,7 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("encadenar board→vídeo")
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error encadenando: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error encadenando: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -645,7 +646,7 @@ class MultiPromptService:
         def _copiar():
             try:
                 pyperclip.copy(txt.get("1.0", "end").strip())
-                self.app.dialogs.set_estado(tr("📋 Guion copiado"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 Guion copiado"), P.TXT_OK)
             except Exception as _e:
                 logger.debug(f"[silent copiar] {_e}")
 
@@ -659,13 +660,13 @@ class MultiPromptService:
             try:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(txt.get("1.0", "end").strip())
-                self.app.dialogs.set_estado(tr("💾 Guion exportado"), "#2ecc71")
+                self.app.dialogs.set_estado(tr("💾 Guion exportado"), P.TXT_OK)
             except Exception as _e:
                 logger.debug(f"[silent export] {_e}")
 
         ctk.CTkButton(fila, text=tr("📋 Copiar todo"), command=_copiar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(fila, text=tr("💾 Exportar .txt"), command=_exportar,
-                      fg_color="#7c3aed", hover_color="#6d28d9").pack(side="left")
+                      fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER).pack(side="left")
 
     def _cmd_storyboard_imagen(self):
         """Storyboard cinematográfico para modelos de IMAGEN.
@@ -686,7 +687,7 @@ class MultiPromptService:
             )
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Escribe la escena/historia base."), P.TXT_AVISO)
 
         # Detectar formato del modelo actual (natural vs tag-based)
         modelo = self.app.footer.modelo_imagen_valido()
@@ -711,7 +712,7 @@ class MultiPromptService:
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('🖼 Generando storyboard de {0} paneles ({1})...').format(n, formato_etiqueta), "#f39c12")
+        self.app.dialogs.set_estado(tr('🖼 Generando storyboard de {0} paneles ({1})...').format(n, formato_etiqueta), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         if is_natural:
@@ -799,7 +800,7 @@ class MultiPromptService:
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -812,13 +813,13 @@ class MultiPromptService:
         panel explícita, etc.).
         """
         if not paneles:
-            return self.app.dialogs.set_estado(tr("⚠️ No hay paneles para fusionar."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ No hay paneles para fusionar."), P.TXT_AVISO)
 
         try: self.app._sesion_log(f"📋 Storyboard→1 prompt: fusionando {len(paneles)} paneles")
         except Exception as e:
             logger.debug(f"[silent] {e}")
 
-        self.app.dialogs.set_estado(tr('📋 Fusionando {0} paneles en 1 prompt...').format(len(paneles)), "#f39c12")
+        self.app.dialogs.set_estado(tr('📋 Fusionando {0} paneles en 1 prompt...').format(len(paneles)), P.TXT_ACENTO)
         self.app.dialogs.toggle_botones(False)
 
         paneles_str = "\n\n".join(
@@ -869,7 +870,7 @@ class MultiPromptService:
                 self.app.after(0, _aplicar)
             except Exception as e:
                 logger.exception("fusionar storyboard imagen")
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error fusionando: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error fusionando: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -888,7 +889,7 @@ class MultiPromptService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero como base."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero como base."), P.TXT_AVISO)
 
         try: self.app._sesion_log("🌀 Walk árbol abierto")
         except Exception as e:
@@ -970,7 +971,7 @@ class MultiPromptService:
         btn_row2.pack(fill="x", padx=12, pady=(2, 12))
 
         lbl_status = ctk.CTkLabel(panel, text="", font=ctk.CTkFont(size=10),
-                                    text_color="#fbbf24")
+                                    text_color=P.TXT_ACENTO)
         lbl_status.pack(padx=12, pady=(0, 4))
 
         # ─── Layout del árbol ──────────────────────────────────
@@ -1080,10 +1081,10 @@ class MultiPromptService:
             nid_padre = sel["id"]
             padre = nodos[nid_padre]
             if padre["depth"] >= 6:
-                lbl_status.configure(text=tr("⚠️ Máxima profundidad alcanzada (6)"), text_color="#e67e22")
+                lbl_status.configure(text=tr("⚠️ Máxima profundidad alcanzada (6)"), text_color=P.TXT_AVISO)
                 return
 
-            lbl_status.configure(text=tr("🌿 Generando 3 derivaciones..."), text_color="#fbbf24")
+            lbl_status.configure(text=tr("🌿 Generando 3 derivaciones..."), text_color=P.TXT_ACENTO)
             btn_ramificar.configure(state="disabled")
             btn_usar.configure(state="disabled")
 
@@ -1139,7 +1140,7 @@ class MultiPromptService:
                         _redibujar()
                         _refresh_panel()
                         lbl_status.configure(text=tr('✅ 3 derivaciones añadidas como hijos de {0}').format(padre['label']),
-                                              text_color="#2ecc71")
+                                              text_color=P.TXT_OK)
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
                     self.app.after(0, _aplicar)
@@ -1147,7 +1148,7 @@ class MultiPromptService:
                     logger.exception("walk ramificar")
                     err = e
                     def _err():
-                        lbl_status.configure(text=tr('❌ Error: {0}').format(err), text_color="#e74c3c")
+                        lbl_status.configure(text=tr('❌ Error: {0}').format(err), text_color=P.TXT_ERROR)
                         btn_ramificar.configure(state="normal")
                         btn_usar.configure(state="normal")
                     self.app.after(0, _err)
@@ -1160,13 +1161,13 @@ class MultiPromptService:
             self.app.dialogs.actualizar_salida(n["texto"])
             ruta = _ruta_de(sel["id"])
             ruta_str = " → ".join(x["label"] for x in ruta)
-            self.app.dialogs.set_estado(tr('📋 Walk: aplicado nodo {0} (ruta: {1})').format((n['label']), (ruta_str)), "#2ecc71")
+            self.app.dialogs.set_estado(tr('📋 Walk: aplicado nodo {0} (ruta: {1})').format((n['label']), (ruta_str)), P.TXT_OK)
             try: self.app._sesion_log(f"🌀 Walk: aplicó nodo {n['label']} (depth {n['depth']})")
             except Exception as e:
                 logger.debug(f"[silent] {e}")
             lbl_status.configure(
                 text=tr('📋 Aplicado al editor: {0} · ventana sigue abierta para seguir explorando').format(n['label']),
-                text_color="#2ecc71",
+                text_color=P.TXT_OK,
             )
 
         # ─── Acción: copiar ruta — abre modal con preview ───────
@@ -1196,19 +1197,19 @@ class MultiPromptService:
             txt_ruta.configure(state="disabled")
 
             estado_lbl = ctk.CTkLabel(v, text="", font=ctk.CTkFont(size=10),
-                                        text_color="#fbbf24")
+                                        text_color=P.TXT_ACENTO)
             estado_lbl.pack(pady=(0, 4))
 
             def _copiar_clipboard():
                 try:
                     pyperclip.copy(texto_copia)
                     estado_lbl.configure(text=tr("✅ Copiado al portapapeles"),
-                                          text_color="#2ecc71")
+                                          text_color=P.TXT_OK)
                     lbl_status.configure(text=tr('📂 Ruta copiada ({0} nodos)').format(len(ruta)),
-                                          text_color="#2ecc71")
+                                          text_color=P.TXT_OK)
                 except Exception as e:
                     estado_lbl.configure(text=tr('❌ No se pudo copiar: {0}').format(e),
-                                          text_color="#e74c3c")
+                                          text_color=P.TXT_ERROR)
 
             def _guardar_en_versiones():
                 """Apila cada nodo de la ruta en _versiones_prompt para
@@ -1236,18 +1237,18 @@ class MultiPromptService:
                             self.app._versiones_prompt = self.app._versiones_prompt[-30:]
                     estado_lbl.configure(
                         text=tr('✅ {0} nodo(s) guardados en Versiones prompt — accesibles desde 📑 Versiones').format(nuevos),
-                        text_color="#2ecc71",
+                        text_color=P.TXT_OK,
                     )
                     lbl_status.configure(
                         text=tr('💾 Ruta guardada ({0} nodos) en 📑 Versiones prompt').format(nuevos),
-                        text_color="#2ecc71",
+                        text_color=P.TXT_OK,
                     )
                     try: self.app._sesion_log(f"🌀 Walk: guardó ruta {cadena_corta} en Versiones ({nuevos} nodos)")
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 except Exception as e:
                     estado_lbl.configure(text=tr('❌ Error guardando: {0}').format(e),
-                                          text_color="#e74c3c")
+                                          text_color=P.TXT_ERROR)
 
             btn_bar = ctk.CTkFrame(v, fg_color="transparent")
             btn_bar.pack(pady=(0, 12))
@@ -1256,7 +1257,7 @@ class MultiPromptService:
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_guardar_en_versiones).pack(side="left", padx=5)
             ctk.CTkButton(btn_bar, text=tr("📋 Copiar al portapapeles"), width=200, height=32,
-                          fg_color="#1a7a3c", hover_color="#15633a",
+                          fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                           font=ctk.CTkFont(size=11, weight="bold"),
                           command=_copiar_clipboard).pack(side="left", padx=5)
             ctk.CTkButton(btn_bar, text=tr("Cerrar"), width=100, height=32,
@@ -1268,7 +1269,7 @@ class MultiPromptService:
         def _borrar_subarbol():
             nid = sel["id"]
             if nid == 0:
-                lbl_status.configure(text=tr("⚠️ No puedes borrar la raíz"), text_color="#e67e22")
+                lbl_status.configure(text=tr("⚠️ No puedes borrar la raíz"), text_color=P.TXT_AVISO)
                 return
             from tkinter import messagebox
             n = nodos[nid]
@@ -1318,16 +1319,16 @@ class MultiPromptService:
             _redibujar()
             _refresh_panel()
             lbl_status.configure(text=tr('🗑 Subárbol borrado ({0} nodos)').format(len(a_borrar)),
-                                  text_color="#2ecc71")
+                                  text_color=P.TXT_OK)
 
         btn_ramificar = ctk.CTkButton(btn_row1, text=tr("🌿 Ramificar (3 hijos)"),
-                                        fg_color="#7c3aed", hover_color="#5b21b6",
+                                        fg_color=P.BTN_ACENTO, hover_color="#5b21b6",
                                         font=ctk.CTkFont(size=11, weight="bold"),
                                         command=_ramificar)
         btn_ramificar.pack(side="left", padx=2, fill="x", expand=True)
 
         btn_usar = ctk.CTkButton(btn_row1, text=tr("📋 Usar este"),
-                                  fg_color="#1a7a3c", hover_color="#15633a",
+                                  fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                   font=ctk.CTkFont(size=11, weight="bold"),
                                   command=_usar_nodo)
         btn_usar.pack(side="left", padx=2, fill="x", expand=True)

@@ -23,6 +23,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import get_theme_colors
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
 from modules.tutorial import abrir_tutorial
@@ -90,7 +91,7 @@ class AtajosAyudaService:
             self.app.modo_var.set(modo_destino)
             self.app.events.on_modo_cambio()
             etiqueta = tr({"imagen": "🎨 IMAGEN", "video": "🎬 VÍDEO", "audio": "🎵 AUDIO"}[modo_destino])
-            self.app.dialogs.set_estado(tr('{0} (Alt+{1})').format((etiqueta), (1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3)), "#3498db")
+            self.app.dialogs.set_estado(tr('{0} (Alt+{1})').format((etiqueta), (1 if modo_destino == 'imagen' else 2 if modo_destino == 'video' else 3)), P.TXT_INFO)
         except Exception as e:
             logger.debug(f"[silent] {e}")
         return "break"
@@ -102,7 +103,7 @@ class AtajosAyudaService:
         elif hasattr(self.app, "cmd_exportar"):
             self.app.cmd_exportar()
         else:
-            self.app.dialogs.set_estado(tr("⚠️ Función de exportar no disponible"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Función de exportar no disponible"), P.TXT_AVISO)
         return "break"
 
     def _atajo_guardar_estrella(self) -> str:
@@ -111,9 +112,9 @@ class AtajosAyudaService:
             if hasattr(self.app, "_guardar_estrella"):
                 self.app._guardar_estrella()
             else:
-                self.app.dialogs.set_estado(tr("⚠️ Función no disponible"), "#e74c3c")
+                self.app.dialogs.set_estado(tr("⚠️ Función no disponible"), P.TXT_ERROR)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _cmd_buscar_global(self) -> str:
@@ -121,7 +122,7 @@ class AtajosAyudaService:
         try:
             self._abrir_busqueda_global()
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _atajo_buscar_global(self) -> str:
@@ -129,25 +130,25 @@ class AtajosAyudaService:
         try:
             self._cmd_buscar_global()
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error búsqueda: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error búsqueda: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _atajo_traducir_idea(self) -> str:
         """Ctrl+Shift+T - Traduce el campo idea al inglés."""
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea:
-            self.app.dialogs.set_estado(tr("⚠️ Escribe algo en la idea primero"), "#e67e22")
+            self.app.dialogs.set_estado(tr("⚠️ Escribe algo en la idea primero"), P.TXT_AVISO)
             return "break"
         try:
             texto_traducido = self.app.deepseek.traducir(idea)
             if texto_traducido and texto_traducido != idea:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", texto_traducido)
-                self.app.dialogs.set_estado(tr("🌐 Idea traducida al inglés"), "#3498db")
+                self.app.dialogs.set_estado(tr("🌐 Idea traducida al inglés"), P.TXT_INFO)
             else:
-                self.app.dialogs.set_estado(tr("⚠️ No se pudo traducir"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ No se pudo traducir"), P.TXT_AVISO)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _toggle_fullscreen(self) -> str:
@@ -176,7 +177,7 @@ class AtajosAyudaService:
             # Delegamos al método del UIBuildersService que ya construye el modal
             self.app.ui._mostrar_sugerencias_claridad()
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error claridad: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error claridad: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _cerrar_popup_activo(self) -> str:
@@ -198,7 +199,7 @@ class AtajosAyudaService:
         try:
             abrir_loras(self.app)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('⚠️ Error al abrir LoRAs: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('⚠️ Error al abrir LoRAs: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _cmd_mostrar_atajos(self) -> str:
@@ -295,7 +296,7 @@ class AtajosAyudaService:
         def _copiar_tecla(tecla):
             try:
                 pyperclip.copy(tecla)
-                self.app.dialogs.set_estado(tr("📋 '{0}' copiado").format(tecla), "#2ecc71")
+                self.app.dialogs.set_estado(tr("📋 '{0}' copiado").format(tecla), P.TXT_OK)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 
@@ -324,7 +325,7 @@ class AtajosAyudaService:
                     lbl_tecla = ctk.CTkLabel(
                         row, text=tecla,
                         font=ctk.CTkFont(size=10, weight="bold"),
-                        width=160, anchor="w", text_color="#3498db",
+                        width=160, anchor="w", text_color=P.TXT_INFO,
                         cursor="hand2",
                     )
                     lbl_tecla.pack(side="left")

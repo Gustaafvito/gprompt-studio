@@ -23,6 +23,7 @@ from config import (
     es_separador,
     get_theme_colors,
 )
+from modules import paleta as P
 from modules.i18n import tr
 from modules.style_guide import tooltip_para
 from workers import detectar_idioma_es
@@ -209,7 +210,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("sel.first", "sel.last")
                     pyperclip.copy(sel)
                     self.app.txt_idea.delete("sel.first", "sel.last")
-                    self.app.dialogs.set_estado(tr("✂️ Cortado al portapapeles"), "#3498db")
+                    self.app.dialogs.set_estado(tr("✂️ Cortado al portapapeles"), P.TXT_INFO)
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -222,7 +223,7 @@ class UiFooterService:
                     sel = self.app.txt_idea.get("1.0", "end").strip()
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.dialogs.set_estado(tr("📋 Copiado al portapapeles"), "#3498db")
+                    self.app.dialogs.set_estado(tr("📋 Copiado al portapapeles"), P.TXT_INFO)
             except Exception as e:
                 logger.debug(f"[silent] {e}")
 
@@ -385,7 +386,7 @@ class UiFooterService:
         self.app.ui._actualizar_contador_estilos()
         sel = self.estilos_seleccionados()
         if sel:
-            self.app.dialogs.set_estado(tr('🎨 Estilos: {0}').format(' + '.join(sel)), "#2ecc71")
+            self.app.dialogs.set_estado(tr('🎨 Estilos: {0}').format(' + '.join(sel)), P.TXT_OK)
         else:
             self.app.dialogs.set_estado(tr("🎨 Estilos: General (ninguno seleccionado)"))
 
@@ -464,7 +465,7 @@ class UiFooterService:
                 pvar.set(deberia_estar)
                 if pname in self.app.preset_btns:
                     fg = PRESET_COLORES.get(pname, ("#333", "#555"))[0]
-                    self.app.preset_btns[pname].configure(fg_color="#2ecc71" if deberia_estar else fg, text=f"✓ {pname}" if deberia_estar else pname)
+                    self.app.preset_btns[pname].configure(fg_color=P.TXT_OK if deberia_estar else fg, text=f"✓ {pname}" if deberia_estar else pname)
                 cambio = True
 
         if cambio:
@@ -714,7 +715,7 @@ class UiFooterService:
                 vent,
                 text=tr('🔹 Primario (combo): {0}').format(nombre_primario),
                 font=ctk.CTkFont(size=10, weight="bold"),
-                text_color="#2ecc71",
+                text_color=P.TXT_OK,
             ).pack(pady=(0, 6))
 
         # Scrollable con checkboxes
@@ -787,10 +788,10 @@ class UiFooterService:
                 v.set(False)
 
         ctk.CTkButton(btns, text=tr("💾 Guardar"), width=110, height=30,
-                      fg_color="#1a7a3c",
+                      fg_color=P.BTN_EXITO,
                       command=_guardar).pack(side="left", padx=4)
         ctk.CTkButton(btns, text=tr("✕ Limpiar todo"), width=120, height=30,
-                      fg_color="#7a1a1a",
+                      fg_color=P.BTN_PELIGRO,
                       command=_limpiar).pack(side="left", padx=4)
         ctk.CTkButton(btns, text=tr("Cancelar"), width=100, height=30,
                       fg_color=c["fg_dark"],
@@ -978,7 +979,7 @@ class UiFooterService:
             if len(texto) > NEGATIVE_MAX * 0.8:
                 self.app.lbl_negative_warning.configure(
                     text=f"⚠️ Negative: {len(texto)}/{NEGATIVE_MAX} chars" + (" (recortado)" if len(texto) >= NEGATIVE_MAX else ""),
-                    text_color="#e74c3c" if len(texto) >= NEGATIVE_MAX else "#f39c12")
+                    text_color=P.TXT_ERROR if len(texto) >= NEGATIVE_MAX else "#f39c12")
                 self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
             else:
                 self.app.lbl_negative_warning.configure(text="")
@@ -996,7 +997,7 @@ class UiFooterService:
             if hasattr(self.app, 'lbl_negative_warning'):
                 self.app.lbl_negative_warning.configure(
                     text=tr('⚠️ Negative recortado a {0} chars (límite SeaArt)').format(NEGATIVE_MAX),
-                    text_color="#e74c3c")
+                    text_color=P.TXT_ERROR)
                 self.app.lbl_negative_warning.pack(fill="x", padx=2, pady=(2, 0))
         else:
             if hasattr(self.app, 'lbl_negative_warning'):

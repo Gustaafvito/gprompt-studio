@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import customtkinter as ctk
 import pyperclip
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
@@ -279,7 +280,7 @@ class ToolsAnalysisService:
         """LLM analiza tus ideas (no los prompts) y te da consejos sobre qué generas."""
         items = self.app.store.historial or []
         if len(items) < 5:
-            return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 5 prompts en historial."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 5 prompts en historial."), P.TXT_AVISO)
 
         # ── Selector N + comprobar caché ──
         vent_sel = GPromptWindow(self.app)
@@ -290,7 +291,7 @@ class ToolsAnalysisService:
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
                      text=tr('Tienes {0} prompts en historial.\n¿Cuántos analizar?').format(len(items)),
-                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
+                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(30, len(items)))
         n_max = min(100, len(items))
@@ -310,7 +311,7 @@ class ToolsAnalysisService:
         cache_n = cache_critica.get("n", 0)
         actual_hash = f"{len(items)}_{items[0].get('fecha','') if items and isinstance(items[0], dict) else ''}"
         lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
         lbl_cache_info.pack(pady=(0, 8))
         if cache_hash == actual_hash and cache_critica.get("resp"):
             lbl_cache_info.configure(text=tr('💾 Hay un análisis cacheado de {0} prompts (mismo historial)').format(cache_n))
@@ -325,13 +326,13 @@ class ToolsAnalysisService:
                 self._critica_ejecutar(items[:n])
 
         ctk.CTkButton(vent_sel, text=tr("▶ Analizar"), width=160, height=34,
-                      fg_color="#1a7a3c", command=_lanzar).pack(pady=4)
+                      fg_color=P.BTN_EXITO, command=_lanzar).pack(pady=4)
         ctk.CTkButton(vent_sel, text=tr("Cancelar"), width=100, height=28,
-                      fg_color="#444", hover_color="#555",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=vent_sel.destroy).pack(pady=2)
 
     def _critica_ejecutar(self, ultimos: list) -> None:
-        self.app.dialogs.set_estado(tr('🔍 Analizando {0} ideas y patrones...').format(len(ultimos)), "#f39c12")
+        self.app.dialogs.set_estado(tr('🔍 Analizando {0} ideas y patrones...').format(len(ultimos)), P.TXT_ACENTO)
 
         modelos_usados = Counter()
         plataformas_usadas = Counter()
@@ -408,7 +409,7 @@ class ToolsAnalysisService:
                     logger.debug(f"Cache crítica no se pudo guardar: {e}")
                 self.app.after(0, lambda: self._critica_mostrar(resp, len(ultimos), cacheado=False))
             except Exception as e:
-                self.app.after(0, lambda: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -424,7 +425,7 @@ class ToolsAnalysisService:
         if cacheado:
             sub += "  ·  " + tr("💾 caché")
         ctk.CTkLabel(vent, text=sub,
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
         txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
         txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
         txt.insert("1.0", resp)
@@ -434,16 +435,16 @@ class ToolsAnalysisService:
 
         def _copiar_todo():
             pyperclip.copy(resp)
-            self.app.dialogs.set_estado(tr("📋 Análisis copiado al portapapeles"), "#2ecc71")
+            self.app.dialogs.set_estado(tr("📋 Análisis copiado al portapapeles"), P.TXT_OK)
 
         def _copiar_seleccion():
             try:
                 sel = txt.get("sel.first", "sel.last")
                 if sel:
                     pyperclip.copy(sel)
-                    self.app.dialogs.set_estado(tr('📋 {0} caracteres copiados').format(len(sel)), "#2ecc71")
+                    self.app.dialogs.set_estado(tr('📋 {0} caracteres copiados').format(len(sel)), P.TXT_OK)
             except Exception:
-                self.app.dialogs.set_estado(tr("⚠️ Selecciona texto primero arrastrando con el ratón"), "#e67e22")
+                self.app.dialogs.set_estado(tr("⚠️ Selecciona texto primero arrastrando con el ratón"), P.TXT_AVISO)
 
         def _regenerar():
             # Borra caché y vuelve a llamar a la crítica desde cero
@@ -457,25 +458,25 @@ class ToolsAnalysisService:
             self._cmd_critica_historial()
 
         ctk.CTkButton(btn_row, text=tr("📋 Copiar todo"), width=140, height=30,
-                      fg_color="#1a7a3c", hover_color="#145e2d",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       command=_copiar_todo).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("📋 Copiar selección"), width=160, height=30,
                       command=_copiar_seleccion).pack(side="left", padx=4)
         if cacheado:
             ctk.CTkButton(btn_row, text=tr("🔄 Regenerar"), width=120, height=30,
-                          fg_color="#7c3aed", hover_color="#6d28d9",
+                          fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
                           command=_regenerar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cerrar"), width=90, height=30,
-                      fg_color="#444", hover_color="#555",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=vent.destroy).pack(side="left", padx=4)
 
-        self.app.dialogs.set_estado(tr("🔍 Análisis listo") + (tr(" (caché)") if cacheado else ""), "#2ecc71")
+        self.app.dialogs.set_estado(tr("🔍 Análisis listo") + (tr(" (caché)") if cacheado else ""), P.TXT_OK)
 
     def _cmd_automejora_periodica(self) -> None:
         """Revisa los últimos prompts y sugiere mejoras automáticas."""
         items = self.app.store.historial or []
         if len(items) < 3:
-            return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 3 prompts en historial."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Necesitas al menos 3 prompts en historial."), P.TXT_AVISO)
 
         # ── Selector "últimos N" ──
         vent_sel = GPromptWindow(self.app)
@@ -486,7 +487,7 @@ class ToolsAnalysisService:
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
                      text=tr('Tienes {0} prompts en el historial.\n¿Cuántos quieres analizar?').format(len(items)),
-                     font=ctk.CTkFont(size=11), text_color="#888").pack(pady=(0, 14))
+                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(10, len(items)))
         n_max = min(50, len(items))
@@ -505,7 +506,7 @@ class ToolsAnalysisService:
         cache_am = prefs_cache.get("_cache_automejora", {})
         actual_hash = f"{len(items)}_{items[0].get('fecha', '') if items and isinstance(items[0], dict) else ''}"
         lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
-                                      text_color="#2ecc71")
+                                      text_color=P.TXT_OK)
         lbl_cache_info.pack(pady=(0, 6))
         if cache_am.get("hash") == actual_hash and cache_am.get("resp"):
             lbl_cache_info.configure(
@@ -523,14 +524,14 @@ class ToolsAnalysisService:
                 self._auto_mejora_ejecutar(items[:n])
 
         ctk.CTkButton(vent_sel, text=tr("▶ Analizar"), width=160, height=34,
-                      fg_color="#1a7a3c", command=_lanzar).pack(pady=4)
+                      fg_color=P.BTN_EXITO, command=_lanzar).pack(pady=4)
         ctk.CTkButton(vent_sel, text=tr("Cancelar"), width=100, height=28,
-                      fg_color="#444", hover_color="#555",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=vent_sel.destroy).pack(pady=2)
 
     def _auto_mejora_ejecutar(self, ultimos: list) -> None:
         """Lanza la auto-mejora con un set concreto de prompts."""
-        self.app.dialogs.set_estado(tr('🚀 Auto-mejora: analizando {0} prompts...').format(len(ultimos)), "#f39c12")
+        self.app.dialogs.set_estado(tr('🚀 Auto-mejora: analizando {0} prompts...').format(len(ultimos)), P.TXT_ACENTO)
 
         prompts = []
         for i, it in enumerate(ultimos, 1):
@@ -578,7 +579,7 @@ class ToolsAnalysisService:
                     logger.debug(f"[silent] cache automejora: {e}")
                 self.app.after(0, lambda: self._auto_mejora_mostrar(ultimos, resultados, resp))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -610,7 +611,7 @@ class ToolsAnalysisService:
             # Fallback: si el LLM no devolvió JSON parseable, muestro texto plano
             ctk.CTkLabel(scroll,
                          text=tr("⚠️ El LLM no devolvió JSON parseable. Muestro la respuesta cruda:"),
-                         text_color="#e67e22").pack(pady=4)
+                         text_color=P.TXT_AVISO).pack(pady=4)
             txt = ctk.CTkTextbox(scroll, wrap="word", font=ctk.CTkFont(size=11), height=500)
             txt.pack(fill="both", expand=True, padx=4, pady=4)
             txt.insert("1.0", resp_raw)
@@ -645,7 +646,7 @@ class ToolsAnalysisService:
                                  justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
                 if mejorar:
                     ctk.CTkLabel(card, text=f"💡 {mejorar}",
-                                 text_color="#e67e22", anchor="w", wraplength=820,
+                                 text_color=P.TXT_AVISO, anchor="w", wraplength=820,
                                  justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
 
                 if mejorado:
@@ -669,13 +670,13 @@ class ToolsAnalysisService:
                             if hasattr(self.app, "txt_salida"):
                                 self.app.txt_salida.delete("1.0", "end")
                                 self.app.txt_salida.insert("1.0", texto)
-                                self.app.dialogs.set_estado(tr("✨ Versión mejorada aplicada en el área de salida"), "#2ecc71")
+                                self.app.dialogs.set_estado(tr("✨ Versión mejorada aplicada en el área de salida"), P.TXT_OK)
                         except Exception as e:
-                            self.app.dialogs.set_estado(tr('❌ No se pudo aplicar: {0}').format(e), "#e74c3c")
+                            self.app.dialogs.set_estado(tr('❌ No se pudo aplicar: {0}').format(e), P.TXT_ERROR)
 
                     def _copiar(texto=mejorado):
                         pyperclip.copy(texto)
-                        self.app.dialogs.set_estado(tr("📋 Versión mejorada copiada"), "#2ecc71")
+                        self.app.dialogs.set_estado(tr("📋 Versión mejorada copiada"), P.TXT_OK)
 
                     ctk.CTkButton(fila_btn, text=tr("✨ Aplicar versión"),
                                   width=160, height=28, fg_color=success,
@@ -697,10 +698,10 @@ class ToolsAnalysisService:
                 vent.destroy()
                 self._auto_mejora_ejecutar(originales)
             ctk.CTkButton(fila_final, text=tr("🔄 Regenerar"), width=120, height=30,
-                          fg_color="#7c3aed", hover_color="#6d28d9",
+                          fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
                           command=_regenerar).pack(side="left", padx=4)
         ctk.CTkButton(fila_final, text=tr("Cerrar"), width=120, height=30,
-                      fg_color="#444", hover_color="#555",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=vent.destroy).pack(side="left", padx=4)
 
         self.app.dialogs.set_estado(
@@ -957,12 +958,12 @@ class ToolsAnalysisService:
                         est_s,
                         len(str(cont).split()) if cont else 0,
                     ])
-            self.app.dialogs.set_estado(tr('📊 CSV exportado: {0}').format(path.split('/')[-1]), "#2ecc71")
+            self.app.dialogs.set_estado(tr('📊 CSV exportado: {0}').format(path.split('/')[-1]), P.TXT_OK)
 
         pie = ctk.CTkFrame(vent, fg_color="transparent")
         pie.pack(fill="x", padx=10, pady=8)
         ctk.CTkButton(pie, text=tr("📊 Exportar CSV completo"), width=200, height=32,
-                      fg_color="#1a7a3c", command=_exportar_csv).pack(side="left")
+                      fg_color=P.BTN_EXITO, command=_exportar_csv).pack(side="left")
         ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       command=vent.destroy).pack(side="right")
 
@@ -977,9 +978,9 @@ class ToolsAnalysisService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
-        self.app.dialogs.set_estado(tr("📝 Analizando y puntuando prompt..."), "#f39c12")
+        self.app.dialogs.set_estado(tr("📝 Analizando y puntuando prompt..."), P.TXT_ACENTO)
 
         # Specs del modelo activo → el scoring evalúa adecuación al modelo
         modelo_info = self._contexto_modelo_activo()
@@ -1078,7 +1079,7 @@ class ToolsAnalysisService:
                     if fuertes:
                         ctk.CTkLabel(detail_frame, text=tr("✅ Puntos fuertes"),
                                      font=ctk.CTkFont(size=12, weight="bold"),
-                                     text_color="#2ecc71", anchor="w").pack(anchor="w", pady=(2, 1))
+                                     text_color=P.TXT_OK, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=fuertes,
                                      font=ctk.CTkFont(size=11), wraplength=620,
                                      justify="left", anchor="w",
@@ -1087,7 +1088,7 @@ class ToolsAnalysisService:
                     if debiles:
                         ctk.CTkLabel(detail_frame, text=tr("⚠️ Puntos débiles"),
                                      font=ctk.CTkFont(size=12, weight="bold"),
-                                     text_color="#e74c3c", anchor="w").pack(anchor="w", pady=(2, 1))
+                                     text_color=P.TXT_ERROR, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=debiles,
                                      font=ctk.CTkFont(size=11), wraplength=620,
                                      justify="left", anchor="w",
@@ -1096,7 +1097,7 @@ class ToolsAnalysisService:
                     if sugerencia:
                         ctk.CTkLabel(detail_frame, text=tr("💡 Sugerencia"),
                                      font=ctk.CTkFont(size=12, weight="bold"),
-                                     text_color="#3498db", anchor="w").pack(anchor="w", pady=(2, 1))
+                                     text_color=P.TXT_INFO, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=sugerencia,
                                      font=ctk.CTkFont(size=11), wraplength=620,
                                      justify="left", anchor="w",
@@ -1116,14 +1117,14 @@ class ToolsAnalysisService:
 
                     def _copiar_analisis():
                         pyperclip.copy(resp)
-                        self.app.dialogs.set_estado(tr("📋 Análisis copiado al portapapeles"), "#2ecc71")
+                        self.app.dialogs.set_estado(tr("📋 Análisis copiado al portapapeles"), P.TXT_OK)
 
                     ctk.CTkButton(btn_frame, text=tr("📋 Copiar análisis"), width=140, height=30,
-                                  fg_color="#1a7a3c", hover_color="#145e2d",
+                                  fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                   command=_copiar_analisis).pack(side="left", padx=4)
 
                     def _generar_mejorado():
-                        self.app.dialogs.set_estado(tr("✨ Generando versión mejorada..."), "#f39c12")
+                        self.app.dialogs.set_estado(tr("✨ Generando versión mejorada..."), P.TXT_ACENTO)
                         # Inyecta los puntos débiles del scoring para que la
                         # mejora ataque lo detectado, no la mejora genérica.
                         peticion_mejora = construir_peticion_mejora(
@@ -1136,19 +1137,19 @@ class ToolsAnalysisService:
                                 def _aplicar():
                                     self.app.dialogs.actualizar_salida(texto_mejorado)
                                     vent.destroy()
-                                    self.app.dialogs.set_estado(tr("✨ Prompt mejorado aplicado"), "#2ecc71")
+                                    self.app.dialogs.set_estado(tr("✨ Prompt mejorado aplicado"), P.TXT_OK)
                                 self.app.after(0, _aplicar)
                             except Exception as e:
-                                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                         self.app._executor.submit(_worker_mejorar).add_done_callback(log_future_exc)
 
                     ctk.CTkButton(btn_frame, text=tr("✨ Mejorar prompt"), width=140, height=30,
-                                  fg_color="#7c3aed", command=_generar_mejorado).pack(side="left", padx=4)
+                                  fg_color=P.BTN_ACENTO, command=_generar_mejorado).pack(side="left", padx=4)
 
-                    self.app.dialogs.set_estado(tr("📝 Scoring listo"), "#2ecc71")
+                    self.app.dialogs.set_estado(tr("📝 Scoring listo"), P.TXT_OK)
                 self.app.after(0, _mostrar)
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1190,7 +1191,7 @@ class ToolsAnalysisService:
         """
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
         try: self.app._sesion_log("🎯 Abrió Optimizador en bucle")
         except Exception as e:
@@ -1257,7 +1258,7 @@ class ToolsAnalysisService:
         btn_row = ctk.CTkFrame(cfg, fg_color="transparent")
         btn_row.pack(side="bottom", pady=(0, 16))
         ctk.CTkButton(btn_row, text=tr("▶ Optimizar"), width=150, height=34,
-                      fg_color="#1a8a3c", hover_color="#127a30",
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                       font=ctk.CTkFont(size=12, weight="bold"),
                       command=lambda: _lanzar()).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=34,
@@ -1323,7 +1324,7 @@ class ToolsAnalysisService:
 
         btn_aplicar = ctk.CTkButton(btn_row, text=tr("✅ Aplicar mejor versión"),
                                     width=180, height=30,
-                                    fg_color="#1a8a3c", hover_color="#127a30",
+                                    fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
                                     state="disabled")
         btn_aplicar.pack(side="left", padx=4)
 
@@ -1399,7 +1400,7 @@ class ToolsAnalysisService:
                     btn_detener.configure(state="disabled")
                     if r.get("error"):
                         estado_lbl.configure(
-                            text=f"❌ {r['error']}", text_color="#e74c3c")
+                            text=f"❌ {r['error']}", text_color=P.TXT_ERROR)
                         return
                     mejor = r["mejor"]
                     resultado_box.delete("1.0", "end")
@@ -1422,7 +1423,7 @@ class ToolsAnalysisService:
                                 tr("Original"),
                                 tr("Optimizada ({0}/100)").format(int(mejor['score'])))
                         except Exception as e:
-                            self.app.dialogs.set_estado(tr('❌ Error abriendo diff: {0}').format(e), "#e74c3c")
+                            self.app.dialogs.set_estado(tr('❌ Error abriendo diff: {0}').format(e), P.TXT_ERROR)
                     if hubo_cambio:
                         btn_diff.configure(state="normal", command=_ver_diff)
 
@@ -1449,7 +1450,7 @@ class ToolsAnalysisService:
                 self.app.after(0, _finalizar)
             except Exception as e:
                 self.app.after(0, lambda e=e: estado_lbl.configure(
-                    text=tr('❌ Error: {0}').format(e), text_color="#e74c3c"))
+                    text=tr('❌ Error: {0}').format(e), text_color=P.TXT_ERROR))
                 self.app.after(0, lambda: btn_detener.configure(state="disabled"))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -1612,7 +1613,7 @@ class ToolsAnalysisService:
         if any(term in actual for term in nsfw_terms):
             if hasattr(self.app, 'nsfw_var'):
                 self.app.nsfw_var.set(True)
-            self.app.dialogs.set_estado(tr("⚠️ Contenido NSFW detectado — activado modo NSFW"), "#e74c3c")
+            self.app.dialogs.set_estado(tr("⚠️ Contenido NSFW detectado — activado modo NSFW"), P.TXT_ERROR)
 
     def _guardar_seed_favorito(self) -> None:
         """Guarda la configuración actual como seed favorito."""
@@ -1636,7 +1637,7 @@ class ToolsAnalysisService:
         seeds.append(seed)
         prefs["seeds_favoritos"] = seeds
         self.app.store.guardar_preferencias(prefs)
-        self.app.dialogs.set_estado(tr("💎 Seed '{0}' guardado").format(nombre), "#2ecc71")
+        self.app.dialogs.set_estado(tr("💎 Seed '{0}' guardado").format(nombre), P.TXT_OK)
 
     def _abrir_seeds_favoritos(self) -> None:
         """Ventana con seeds favoritos para aplicar. Refresca sin cerrar al borrar."""
@@ -1672,7 +1673,7 @@ class ToolsAnalysisService:
             busqueda_pending["after_id"] = vent.after(200, _refrescar)
         entry_buscar.bind("<KeyRelease>", _on_buscar)
         ctk.CTkButton(search_row, text="✕", width=32, height=28,
-                      fg_color="#444", hover_color="#222",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=lambda: (entry_buscar.delete(0, "end"), _refrescar())
                       ).pack(side="left", padx=(6, 0))
 
@@ -1752,10 +1753,10 @@ class ToolsAnalysisService:
                         prefs_b["seeds_favoritos"] = seeds_act
                         self.app.store.guardar_preferencias(prefs_b)
                     _refrescar()  # FIX: antes vent.destroy() cerraba la ventana
-                    self.app.dialogs.set_estado(tr("💎 Seed '{0}' eliminado").format(nombre), "#e67e22")
+                    self.app.dialogs.set_estado(tr("💎 Seed '{0}' eliminado").format(nombre), P.TXT_AVISO)
 
                 ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=90, height=26,
-                              fg_color="#1a7a3c", font=ctk.CTkFont(size=10),
+                              fg_color=P.BTN_EXITO, font=ctk.CTkFont(size=10),
                               command=_aplicar).pack(side="left", padx=3)
                 ctk.CTkButton(btn_frame, text=tr("🗑 Borrar"), width=80, height=26,
                               fg_color="#8b2020", font=ctk.CTkFont(size=10),
@@ -1826,11 +1827,11 @@ class ToolsAnalysisService:
 
         if aplicado:
             nombre = seed.get('nombre', '?')
-            self.app.dialogs.set_estado(tr("💎 Seed '{0}' aplicado").format(nombre), "#2ecc71")
+            self.app.dialogs.set_estado(tr("💎 Seed '{0}' aplicado").format(nombre), P.TXT_OK)
             if mensajes:
-                self.app.dialogs.set_estado(tr('⚠️ {0}').format(', '.join(mensajes)), "#e67e22")
+                self.app.dialogs.set_estado(tr('⚠️ {0}').format(', '.join(mensajes)), P.TXT_AVISO)
         else:
-            self.app.dialogs.set_estado(tr('⚠️ Seed no pudo aplicarse'), "#e67e22")
+            self.app.dialogs.set_estado(tr('⚠️ Seed no pudo aplicarse'), P.TXT_AVISO)
 
     def _autocompletar_tags(self, event=None) -> None:
         """Auto-completar tags mientras escribe."""
@@ -1861,7 +1862,7 @@ class ToolsAnalysisService:
 
         ctk.CTkLabel(vent, text=tr("🏷️ Atajos de tags (snippets)"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Atajos rápidos para insertar tags comunes"),
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
@@ -1874,7 +1875,7 @@ class ToolsAnalysisService:
                 ctk.CTkLabel(card, text=atajo.get("nombre", "?"), font=ctk.CTkFont(size=11, weight="bold"),
                              text_color="#aaccee").pack(anchor="w", padx=10, pady=(6, 2))
                 ctk.CTkLabel(card, text=atajo.get("tags", ""), font=ctk.CTkFont(size=9),
-                             text_color="#888888", wraplength=500).pack(anchor="w", padx=10, pady=(0, 4))
+                             text_color=P.TXT_MUTED, wraplength=500).pack(anchor="w", padx=10, pady=(0, 4))
                 def _aplicar(tags=atajo.get("tags", "")):
                     self.app._aplicar_atajo_tags(tags)
                     vent.destroy()
@@ -1885,7 +1886,7 @@ class ToolsAnalysisService:
                     refrescar()
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
                 btn_frame.pack(anchor="e", padx=8, pady=(0, 4))
-                ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=80, height=22, fg_color="#1a7a3c",
+                ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=80, height=22, fg_color=P.BTN_EXITO,
                               font=ctk.CTkFont(size=9), command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_frame, text="🗑", width=24, height=22, fg_color="#c0392b",
                               font=ctk.CTkFont(size=9), command=_borrar).pack(side="left", padx=2)
@@ -1910,7 +1911,7 @@ class ToolsAnalysisService:
                     self.app.store.guardar_preferencias(prefs)
                     refrescar()
                     vent_add.destroy()
-            ctk.CTkButton(vent_add, text=tr("Guardar"), width=120, height=28, fg_color="#1a7a3c",
+            ctk.CTkButton(vent_add, text=tr("Guardar"), width=120, height=28, fg_color=P.BTN_EXITO,
                           command=_guardar).pack(pady=15)
 
         def _copiar_ej():
@@ -1921,11 +1922,11 @@ class ToolsAnalysisService:
 
         btn_frame = ctk.CTkFrame(vent, fg_color="transparent")
         btn_frame.pack(pady=8)
-        ctk.CTkButton(btn_frame, text=tr("➕ Nuevo atajo"), width=140, height=28, fg_color="#1a7a3c",
+        ctk.CTkButton(btn_frame, text=tr("➕ Nuevo atajo"), width=140, height=28, fg_color=P.BTN_EXITO,
                       command=crear).pack(side="left", padx=4)
         ctk.CTkButton(btn_frame, text=tr("📋 Ejemplo: copiar"), width=160, height=28,
                       command=_copiar_ej).pack(side="left", padx=4)
-        ctk.CTkButton(btn_frame, text=tr("✅ Ejemplo: usar"), width=140, height=28, fg_color="#1a7a3c",
+        ctk.CTkButton(btn_frame, text=tr("✅ Ejemplo: usar"), width=140, height=28, fg_color=P.BTN_EXITO,
                       command=_usar_ej).pack(side="left", padx=4)
 
         refrescar()
@@ -1934,7 +1935,7 @@ class ToolsAnalysisService:
         """Crea y exporta un workflow completo de ComfyUI."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
         pos = self.app.extraer_positive() or actual
         neg = self.app.extraer_negative() or ""
@@ -2049,7 +2050,7 @@ class ToolsAnalysisService:
 
         def _copiar():
             pyperclip.copy(json_str)
-            self.app.dialogs.set_estado(tr("📋 JSON copiado al portapapeles"), "#2ecc71")
+            self.app.dialogs.set_estado(tr("📋 JSON copiado al portapapeles"), P.TXT_OK)
 
         def _guardar():
             from tkinter import filedialog
@@ -2062,30 +2063,30 @@ class ToolsAnalysisService:
             if ruta:
                 with open(ruta, "w", encoding="utf-8") as f:
                     f.write(json_str)
-                self.app.dialogs.set_estado(tr('💾 Guardado: {0}').format(ruta.split('/')[-1]), "#2ecc71")
+                self.app.dialogs.set_estado(tr('💾 Guardado: {0}').format(ruta.split('/')[-1]), P.TXT_OK)
 
-        ctk.CTkButton(frame_btn, text=tr("📋 Copiar JSON"), width=120, fg_color="#15803d",
-                      hover_color="#166534", command=_copiar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(frame_btn, text=tr("📋 Copiar JSON"), width=120, fg_color=P.BTN_EXITO,
+                      hover_color=P.BTN_EXITO_HOVER, command=_copiar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("💾 Guardar .json"), width=120, fg_color="#1e3a8a",
                       hover_color="#172554", command=_guardar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("❌ Cerrar"), width=80, fg_color="#991b1b",
-                      hover_color="#7f1d1d", command=vent.destroy).pack(side="right")
+                      hover_color=P.BTN_PELIGRO_HOVER, command=vent.destroy).pack(side="right")
 
     def _traducir_salida(self) -> None:
         """Traduce el prompt actual al español en una ventana aparte."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 10:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
-        self.app.dialogs.set_estado(tr("🌐 Traduciendo a español..."), "#f39c12")
+        self.app.dialogs.set_estado(tr("🌐 Traduciendo a español..."), P.TXT_ACENTO)
 
         def _worker():
             try:
                 traducido = self.app.deepseek.traducir_a_espanol(actual)
                 self.app.after(0, lambda: self._mostrar_ventana_traduccion(traducido))
-                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traducción lista"), "#2ecc71"))
+                self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traducción lista"), P.TXT_OK))
             except Exception as e:
-                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), "#e74c3c"))
+                self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -2125,10 +2126,10 @@ class ToolsAnalysisService:
         def _copiar():
             import pyperclip
             pyperclip.copy(texto)
-            self.app.dialogs.set_estado(tr("📋 Traducción copiada"), "#2ecc71")
+            self.app.dialogs.set_estado(tr("📋 Traducción copiada"), P.TXT_OK)
 
         ctk.CTkButton(frame_btn, text=tr("✅ Usar traducción"), width=130,
-                      fg_color="#2563eb", hover_color="#1d4ed8",
+                      fg_color=P.BTN_PRIMARIO, hover_color=P.BTN_PRIMARIO_HOVER,
                       command=_usar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("📋 Copiar"), width=100,
                       fg_color="#4b5563", hover_color="#374151",
@@ -2157,7 +2158,7 @@ class ToolsAnalysisService:
         if consejos:
             import random
             consejo = random.choice(consejos)
-            self.app.dialogs.set_estado(consejo, "#3498db")
+            self.app.dialogs.set_estado(consejo, P.TXT_INFO)
 
     def _validar_compatibilidad_modelo(self) -> None:
         """Valida la compatibilidad del modelo con la configuración actual."""
@@ -2172,9 +2173,9 @@ class ToolsAnalysisService:
         valido, msg = self._validar_compatibilidad_modelo()
         if hasattr(self.app, 'lbl_compat'):
             if valido:
-                self.app.lbl_compat.configure(text=tr("✅ Compatible"), text_color="#2ecc71")
+                self.app.lbl_compat.configure(text=tr("✅ Compatible"), text_color=P.TXT_OK)
             else:
-                self.app.lbl_compat.configure(text=f"⚠️ {msg}", text_color="#e67e22")
+                self.app.lbl_compat.configure(text=f"⚠️ {msg}", text_color=P.TXT_AVISO)
 
     def _cmd_modal_compatibilidad(self) -> None:
         """Abre modal de compatibilidad de modelos."""
@@ -2184,6 +2185,6 @@ class ToolsAnalysisService:
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🔍 Compatibilidad de modelos"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text=tr("Información de compatibilidad entre modelos y configuraciones"),
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 10))
         # Aquí iría la tabla de compatibilidad
         ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30, command=vent.destroy).pack(pady=15)

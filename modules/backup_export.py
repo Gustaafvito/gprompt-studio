@@ -11,6 +11,7 @@ import customtkinter as ctk
 import pyperclip
 
 from config import VERSION
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr, tr_es
 
@@ -71,9 +72,9 @@ class BackupExportService:
                      len(backup['loras']), len(backup['plantillas']),
                      len(backup['paletas']))
             messagebox.showinfo(tr("Backup completo"), mensaje, parent=self.app)
-            self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 Backup guardado ({0} entradas)').format(tot), P.TXT_OK)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('❌ Error en backup: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error en backup: {0}').format(e), P.TXT_ERROR)
             messagebox.showerror(tr("Error"), tr('No se pudo guardar el backup:\n{0}').format(e), parent=self.app)
 
     def _construir_backup(self) -> dict:
@@ -211,9 +212,9 @@ class BackupExportService:
                 tr('Backup restaurado ({0} entradas).\n\nTus datos anteriores se guardaron en:\n{1}\n\nSi te has equivocado, puedes restaurar ese archivo.').format(tot_backup, pre_path),
                 parent=self.app,
             )
-            self.app.dialogs.set_estado(tr('✅ Backup restaurado ({0} entradas)').format(tot_backup), "#2ecc71")
+            self.app.dialogs.set_estado(tr('✅ Backup restaurado ({0} entradas)').format(tot_backup), P.TXT_OK)
         except Exception as e:
-            self.app.dialogs.set_estado(tr('❌ Error al restaurar: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error al restaurar: {0}').format(e), P.TXT_ERROR)
             messagebox.showerror(tr("Error"), tr('No se pudo restaurar el backup:\n{0}').format(e), parent=self.app)
 
     def _cmd_exportar_csv(self) -> None:
@@ -241,7 +242,7 @@ class BackupExportService:
                      font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
         ctk.CTkLabel(sel, text=tr("¿Qué quieres exportar?"),
                      font=ctk.CTkFont(size=11),
-                     text_color="#888").pack(pady=(0, 12))
+                     text_color=P.TXT_MUTED).pack(pady=(0, 12))
 
         # Checkboxes
         chk_hist_var = ctk.BooleanVar(value=True)
@@ -272,9 +273,9 @@ class BackupExportService:
             self._exportar_csv_ejecutar(seleccion)
 
         ctk.CTkButton(sel, text=tr("▶ Exportar"), width=160, height=34,
-                      fg_color="#1a7a3c", command=_lanzar).pack(pady=(14, 4))
+                      fg_color=P.BTN_EXITO, command=_lanzar).pack(pady=(14, 4))
         ctk.CTkButton(sel, text=tr("Cancelar"), width=100, height=28,
-                      fg_color="#444", hover_color="#555",
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
                       command=sel.destroy).pack(pady=2)
 
     def _exportar_csv_ejecutar(self, colecciones: list) -> None:
@@ -340,7 +341,7 @@ class BackupExportService:
                             it.get("contenido", ""),
                         )])
                         n += 1
-            self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), "#2ecc71")
+            self.app.dialogs.set_estado(tr('💾 {0} filas exportadas a CSV').format(n), P.TXT_OK)
             messagebox.showinfo(
                 tr("Exportación completada"),
                 tr("Exportadas {0} filas desde {1} colección(es) a:\n{2}").format(
@@ -348,7 +349,7 @@ class BackupExportService:
                 parent=self.app,
             )
         except Exception as e:
-            self.app.dialogs.set_estado(tr('❌ Error al exportar: {0}').format(e), "#e74c3c")
+            self.app.dialogs.set_estado(tr('❌ Error al exportar: {0}').format(e), P.TXT_ERROR)
             messagebox.showerror(tr("Error"), tr('No se pudo exportar:\n{0}').format(e), parent=self.app)
 
     def _cmd_export_cli(self) -> None:
@@ -368,7 +369,7 @@ class BackupExportService:
         import re
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
-            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), "#e67e22")
+            return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
         ratio = self.app.ratio_var.get() or "1:1"
         pos = self.app.extraer_positive() or actual
@@ -480,7 +481,7 @@ class BackupExportService:
                      font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text=tr("Filtra por modo y pulsa 📋 en la plataforma deseada."),
-                     font=ctk.CTkFont(size=10), text_color="#888888").pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
 
         # Formatos: (nombre, contenido, color, modo)
         formatos = [
@@ -520,7 +521,7 @@ class BackupExportService:
         )
         seg.pack(side="left")
         lbl_count = ctk.CTkLabel(filtro_row, text="", font=ctk.CTkFont(size=10),
-                                  text_color="#888")
+                                  text_color=P.TXT_MUTED)
         lbl_count.pack(side="left", padx=10)
 
         # Área scrollable con las cards
@@ -536,7 +537,7 @@ class BackupExportService:
         def _make_copy(c, n, color):
             def _copiar():
                 pyperclip.copy(c)
-                self.app.dialogs.set_estado(tr('📋 {0} copiado').format(n), "#2ecc71")
+                self.app.dialogs.set_estado(tr('📋 {0} copiado').format(n), P.TXT_OK)
                 if hasattr(self.app, "show_toast"):
                     try:
                         self.app.show_toast(tr('📋 Copiado: {0}').format(n), color, 1800)
@@ -561,7 +562,7 @@ class BackupExportService:
 
             if not filtrados:
                 ctk.CTkLabel(scroll, text=tr("(sin formatos para este modo)"),
-                             text_color="#888").pack(pady=20)
+                             text_color=P.TXT_MUTED).pack(pady=20)
                 return
 
             for nombre, contenido, color, modo_fmt in filtrados:
@@ -575,7 +576,7 @@ class BackupExportService:
                              text_color=text_main).pack(side="left")
                 ctk.CTkLabel(hdr, text=tr('{0} chars').format(len(contenido)),
                              font=ctk.CTkFont(size=10),
-                             text_color="#888").pack(side="left", padx=10)
+                             text_color=P.TXT_MUTED).pack(side="left", padx=10)
                 ctk.CTkButton(hdr, text=tr("📋 Copiar"), width=100, height=26,
                               fg_color=color,
                               font=ctk.CTkFont(size=10, weight="bold"),
@@ -605,7 +606,7 @@ class BackupExportService:
             todo = "\n".join([f"===== {nom} =====\n{cont}\n" for nom, cont in filtrados])
             pyperclip.copy(todo)
             self.app.dialogs.set_estado(tr('📋 {0} formatos copiados al portapapeles').format(len(filtrados)),
-                            "#2ecc71")
+                            P.TXT_OK)
 
         ctk.CTkButton(vent, text=tr("📋 Copiar todos los del filtro actual"),
                       width=280, height=34, fg_color="#0f172a", hover_color="#1e293b",
@@ -664,7 +665,7 @@ class BackupExportService:
         f_filtros.pack(fill="x", padx=15, pady=(2, 6))
         ctk.CTkLabel(f_filtros, text=tr("Filtrar:"),
                      font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="#888").pack(side="left", padx=(0, 6))
+                     text_color=P.TXT_MUTED).pack(side="left", padx=(0, 6))
         for key, label in filtro_labels:
             ctk.CTkCheckBox(f_filtros, text=tr(label), variable=filtros[key],
                             font=ctk.CTkFont(size=10), width=20,
@@ -679,7 +680,7 @@ class BackupExportService:
             termino = ent.get().strip().lower()
             if not termino or len(termino) < 2:
                 ctk.CTkLabel(scroll, text=tr("Escribe al menos 2 caracteres para buscar."),
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
+                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             resultados = []
@@ -774,11 +775,11 @@ class BackupExportService:
                 else:
                     msg = tr("Sin resultados para '{0}'").format(termino)
                 ctk.CTkLabel(scroll, text=msg,
-                             font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=20)
+                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             ctk.CTkLabel(scroll, text=tr('📊 {0} resultado{1} encontrado{2}').format((len(resultados)), ('s' if len(resultados) != 1 else ''), ('s' if len(resultados) != 1 else '')),
-                         font=ctk.CTkFont(size=11, weight="bold"), text_color="#2ecc71").pack(anchor="w", pady=(0, 8))
+                         font=ctk.CTkFont(size=11, weight="bold"), text_color=P.TXT_OK).pack(anchor="w", pady=(0, 8))
 
             for tipo, nombre, contenido, accion in resultados[:50]:
                 card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
@@ -793,11 +794,11 @@ class BackupExportService:
                                  text_color="#cccccc").pack(side="left", padx=10)
 
                 ctk.CTkLabel(card, text=contenido, font=ctk.CTkFont(size=10),
-                             text_color="#888888", wraplength=680, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
+                             text_color=P.TXT_MUTED, wraplength=680, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
 
-                btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color="#1a7a3c",
+                btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color=P.BTN_EXITO,
                                       font=ctk.CTkFont(size=10),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), "#2ecc71")))
+                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), P.TXT_OK)))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.
