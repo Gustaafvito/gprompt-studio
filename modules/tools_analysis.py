@@ -464,7 +464,7 @@ class ToolsAnalysisService:
                       command=_copiar_seleccion).pack(side="left", padx=4)
         if cacheado:
             ctk.CTkButton(btn_row, text=tr("🔄 Regenerar"), width=120, height=30,
-                          fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
+                          **P.estilo_boton(P.BTN_ACENTO),
                           command=_regenerar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cerrar"), width=90, height=30,
                       fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
@@ -698,7 +698,7 @@ class ToolsAnalysisService:
                 vent.destroy()
                 self._auto_mejora_ejecutar(originales)
             ctk.CTkButton(fila_final, text=tr("🔄 Regenerar"), width=120, height=30,
-                          fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
+                          **P.estilo_boton(P.BTN_ACENTO),
                           command=_regenerar).pack(side="left", padx=4)
         ctk.CTkButton(fila_final, text=tr("Cerrar"), width=120, height=30,
                       fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
@@ -1144,7 +1144,7 @@ class ToolsAnalysisService:
                         self.app._executor.submit(_worker_mejorar).add_done_callback(log_future_exc)
 
                     ctk.CTkButton(btn_frame, text=tr("✨ Mejorar prompt"), width=140, height=30,
-                                  fg_color=P.BTN_ACENTO, command=_generar_mejorado).pack(side="left", padx=4)
+                                  **P.estilo_boton(P.BTN_ACENTO), command=_generar_mejorado).pack(side="left", padx=4)
 
                     self.app.dialogs.set_estado(tr("📝 Scoring listo"), P.TXT_OK)
                 self.app.after(0, _mostrar)

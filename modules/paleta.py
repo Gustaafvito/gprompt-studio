@@ -86,6 +86,37 @@ FUENTE_CUERPO = 11       # texto normal, botones
 FUENTE_PEQUENA = 10      # texto denso: listas, cards compactas
 FUENTE_HINT = 9          # ayudas, hints en cursiva (antes 7/8/9)
 
+# ── Estilo de botón sobrio (aprobado 2026-07-03) ───────────────────────
+# Relleno neutro + borde fino del color semántico + hover coloreado.
+# Se aplica a botones de utilidades (SECUNDARIO) y de acciones IA
+# (ACENTO). Los rellenos verde/rojo/azul se conservan: marcan la
+# jerarquía (confirmar / peligro / primario).
+FONDO_SOBRIO = ("#eef1f5", "#1e2430")
+
+
+def _oscurecer(hex_color: str, factor: float = 0.75) -> str:
+    """Variante más oscura de un color hex (para hovers)."""
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return f"#{int(r * factor):02x}{int(g * factor):02x}{int(b * factor):02x}"
+
+
+def estilo_boton(color: str, primario: bool = False) -> dict:
+    """kwargs de CTkButton para el estilo de la app.
+
+    primario=True → relleno del color (acción principal de la ventana).
+    primario=False → sobrio: neutro + borde y hover del color semántico.
+    """
+    if primario:
+        return {"fg_color": color, "hover_color": _oscurecer(color)}
+    return {
+        "fg_color": FONDO_SOBRIO,
+        "hover_color": _oscurecer(color),
+        "border_width": 1,
+        "border_color": color,
+    }
+
+
 # ── Escala de espaciado (padx/pady) — guía para código nuevo ───────────
 # Usar múltiplos de 4: 4 (compacto), 8 (normal), 12 (secciones),
 # 16 (márgenes de ventana), 20 (aire exterior). El código existente se

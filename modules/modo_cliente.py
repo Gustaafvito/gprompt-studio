@@ -158,7 +158,7 @@ class ModoClienteService:
 
         f_btns_img = ctk.CTkFrame(frame_img, fg_color="transparent")
         f_btns_img.pack(fill="x", padx=10, pady=(2, 8))
-        ctk.CTkButton(f_btns_img, text=tr("📂 Cargar imagen"), width=140, height=26, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(f_btns_img, text=tr("📂 Cargar imagen"), width=140, height=26, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=_cargar_imagen_cliente).pack(side="left", padx=2)
         ctk.CTkButton(f_btns_img, text=tr("✕ Quitar"), width=80, height=26, fg_color=P.BTN_PELIGRO,
                       command=_quitar_imagen).pack(side="left", padx=2)
@@ -446,7 +446,7 @@ class ModoClienteService:
             ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color=P.BTN_EXITO,
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"), command=_usar
                           ).pack(side="left", padx=2)
-            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, fg_color=P.BTN_SECUNDARIO,
+            ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, **P.estilo_boton(P.BTN_SECUNDARIO),
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_copiar
                           ).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("💾 Guardar"), width=100, height=30, fg_color="#4a1a6a",
@@ -593,7 +593,7 @@ class ModoClienteService:
 
         btn_row = ctk.CTkFrame(frame_arch, fg_color="transparent")
         btn_row.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkButton(btn_row, text=tr("➕ Añadir imágenes"), width=140, height=26, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(btn_row, text=tr("➕ Añadir imágenes"), width=140, height=26, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=_anadir_mas).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=100, height=26,
                       command=_limpiar).pack(side="left", padx=2)

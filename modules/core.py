@@ -150,7 +150,7 @@ class CoreMixin:
                     logger.debug(f"[silent] {_e}")
             # Botón flotante para salir
             self._focus_exit_btn = ctk.CTkButton(self, text=tr("✕ Salir de Focus"), width=140, height=28,
-                                                  fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
+                                                  **P.estilo_boton(P.BTN_ACENTO),
                                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                                   corner_radius=14,
                                                   command=self._cmd_modo_focus)
@@ -589,7 +589,7 @@ class CoreMixin:
                        lambda _e, cd=card: cd.configure(fg_color=card_bg))
 
             ctk.CTkButton(btn_frame, text=tr("✨ Similares"), width=85, height=26,
-                          fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
+                          **P.estilo_boton(P.BTN_ACENTO),
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_mas_como_esta).pack(side="left", padx=2)
             ctk.CTkButton(btn_frame, text="📋", width=32, height=26,

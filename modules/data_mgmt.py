@@ -447,7 +447,7 @@ class DataMgmtService:
                     cust.pop(t, None)
                     self._snippets_guardar_custom(cust)
                     refrescar()
-                ctk.CTkButton(row, text="✏️", width=30, height=24, fg_color=P.BTN_SECUNDARIO,
+                ctk.CTkButton(row, text="✏️", width=30, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                               command=_editar).pack(side="right", padx=2, pady=4)
                 ctk.CTkButton(row, text="🗑", width=30, height=24, fg_color=P.BTN_PELIGRO,
                               command=_borrar).pack(side="right", padx=2, pady=4)

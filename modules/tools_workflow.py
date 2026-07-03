@@ -1315,7 +1315,7 @@ class ToolsWorkflowService:
                 refrescar()
                 self.app.dialogs.set_estado(tr("📌 Sin proyecto activo"))
 
-            ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color=P.BTN_SECUNDARIO,
+            ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, **P.estilo_boton(P.BTN_SECUNDARIO),
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
 
             for nombre_p in sorted(proys.keys()):
@@ -1419,7 +1419,7 @@ class ToolsWorkflowService:
                                   font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_aplicar_setup_proy).pack(side="left", padx=2)
                     ctk.CTkButton(btn_row, text=tr("🗑 setup"), width=70, height=24, fg_color="#5a4a1a",
                                   font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_borrar_setup_proy).pack(side="left", padx=2)
-                ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, fg_color=P.BTN_SECUNDARIO,
+                ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                               font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_guardar_setup_proy).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=28, height=24, fg_color=P.BTN_PELIGRO,
                               font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_borrar).pack(side="right", padx=2)

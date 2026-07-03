@@ -666,7 +666,7 @@ class MultiPromptService:
 
         ctk.CTkButton(fila, text=tr("📋 Copiar todo"), command=_copiar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(fila, text=tr("💾 Exportar .txt"), command=_exportar,
-                      fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER).pack(side="left")
+                      **P.estilo_boton(P.BTN_ACENTO)).pack(side="left")
 
     def _cmd_storyboard_imagen(self):
         """Storyboard cinematográfico para modelos de IMAGEN.
@@ -1322,7 +1322,7 @@ class MultiPromptService:
                                   text_color=P.TXT_OK)
 
         btn_ramificar = ctk.CTkButton(btn_row1, text=tr("🌿 Ramificar (3 hijos)"),
-                                        fg_color=P.BTN_ACENTO, hover_color="#5b21b6",
+                                        **P.estilo_boton(P.BTN_ACENTO),
                                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                         command=_ramificar)
         btn_ramificar.pack(side="left", padx=2, fill="x", expand=True)

@@ -612,7 +612,7 @@ class ToolsCreativeService:
         accion_row.pack(side="bottom", pady=(8, 12))
         ctk.CTkButton(accion_row, text=tr('🚀 Probar los {0} en paralelo').format(len(sugerencias)),
                       width=240, height=34,
-                      fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
+                      **P.estilo_boton(P.BTN_ACENTO),
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=_probar_los_3).pack(side="left", padx=4)
         ctk.CTkButton(accion_row, text=tr("Cerrar"), width=100, height=34,
@@ -1319,7 +1319,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
-        ctk.CTkButton(vent, text=tr("🧬 Iniciar extracción"), width=200, height=34, fg_color=P.BTN_ACENTO,
+        ctk.CTkButton(vent, text=tr("🧬 Iniciar extracción"), width=200, height=34, **P.estilo_boton(P.BTN_ACENTO),
                       font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
                       ).pack(pady=8)
@@ -1689,15 +1689,15 @@ class ToolsCreativeService:
                     ).pack(anchor="w", padx=10, pady=(0, 5))
             _refrescar_presets()
 
-        ctk.CTkButton(preset_row, text=tr("✓ Básicos"), width=85, height=24, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(preset_row, text=tr("✓ Básicos"), width=85, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=lambda: _marcar(["Manos malas", "Baja calidad", "Texto / letras", "Marca de agua"])
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text=tr("👤 Retrato"), width=85, height=24, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(preset_row, text=tr("👤 Retrato"), width=85, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=lambda: _marcar(["Manos malas", "Cara mal", "Ojos raros", "Boca / dientes",
                                                 "Proporciones malas", "Piel plástica", "Baja calidad",
                                                 "Texto / letras", "Marca de agua"])
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text=tr("🏆 Calidad"), width=100, height=24, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(preset_row, text=tr("🏆 Calidad"), width=100, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=lambda: _marcar(["Baja calidad", "Pixelado", "Ruido", "Desenfoque",
                                                 "Tinte amarillo", "Texto / letras", "Marca de agua", "Logos / firmas"])
                       ).pack(side="left", padx=2)
@@ -1706,7 +1706,7 @@ class ToolsCreativeService:
                       ).pack(side="left", padx=2)
         ctk.CTkButton(preset_row, text=tr("💾 Guardar"), width=90, height=24, fg_color="#4a1a6a",
                       command=_guardar_preset).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text=tr("📂 Presets"), width=80, height=24, fg_color=P.BTN_SECUNDARIO,
+        ctk.CTkButton(preset_row, text=tr("📂 Presets"), width=80, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=_mostrar_presets).pack(side="left", padx=2)
 
         btn_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1868,7 +1868,7 @@ class ToolsCreativeService:
 
                         def _cp(h):
                             return lambda: pyperclip.copy(h)
-                        ctk.CTkButton(row, text=hex_c, width=90, height=20, fg_color=P.BTN_SECUNDARIO,
+                        ctk.CTkButton(row, text=hex_c, width=90, height=20, **P.estilo_boton(P.BTN_SECUNDARIO),
                                       font=ctk.CTkFont(size=P.FUENTE_HINT), command=_cp(hex_c)).pack(side="left", padx=1)
                         ctk.CTkLabel(row, text=tr('RGB({0},{1},{2})').format((r), (g), (b)), font=ctk.CTkFont(size=P.FUENTE_HINT),
                                      text_color=P.TXT_MUTED).pack(side="left", padx=(4, 0))
@@ -1929,7 +1929,7 @@ class ToolsCreativeService:
                                                     vent.destroy())).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text=tr("💾 Guardar paleta"), width=130, height=28, fg_color="#4a1a6a",
                                   command=_guardar_paleta).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text=tr("📚 Biblioteca"), width=110, height=28, fg_color=P.BTN_SECUNDARIO,
+                    ctk.CTkButton(btn_row, text=tr("📚 Biblioteca"), width=110, height=28, **P.estilo_boton(P.BTN_SECUNDARIO),
                                   command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
 
                     self.app.dialogs.set_estado(tr("🎨 Paleta extraída"), P.TXT_OK)

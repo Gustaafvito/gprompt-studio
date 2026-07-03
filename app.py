@@ -1635,7 +1635,7 @@ class ArquitectoApp(
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=_aplicar_final).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=90, height=32,
-                      fg_color=P.BTN_SECUNDARIO,
+                      **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=lambda: (_persistir_valores(),
                                        pyperclip.copy(preview_txt.get("1.0", "end").strip()),
                                        self.dialogs.set_estado(tr("📋 Copiado"), P.TXT_OK))
@@ -1736,7 +1736,7 @@ class ArquitectoApp(
                 try:
                     if len(seleccionadas) == 2:
                         btn.configure(
-                            state="normal", fg_color=P.BTN_ACENTO,
+                            state="normal", **P.estilo_boton(P.BTN_ACENTO),
                             text=tr("🆚 Comparar 2 lado-a-lado"),
                         )
                     else:

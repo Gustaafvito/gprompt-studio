@@ -551,8 +551,7 @@ def abrir_loras(app):
                     refrescar()
 
             ctk.CTkButton(btn_row, text=tr("✅ Usar"), width=70, height=26,
-                          fg_color=P.BTN_ACENTO if _is_light() else "#3a1a5a",
-                          hover_color=P.BTN_ACENTO_HOVER if _is_light() else "#2a0f4a",
+                          **P.estilo_boton(P.BTN_ACENTO),
                           command=usar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=26,
                           command=editar).pack(side="left", padx=2)

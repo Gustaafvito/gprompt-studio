@@ -423,7 +423,7 @@ class PreviewPollinationsService:
             btn_row_cell.pack(pady=(2, 4))  # siempre visible
             btn_regen = ctk.CTkButton(btn_row_cell, text=tr("♻ Regenerar"),
                                        width=120, height=22,
-                                       fg_color=P.BTN_ACENTO, hover_color="#5b21b6",
+                                       **P.estilo_boton(P.BTN_ACENTO),
                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"))
             btn_regen.pack()
 
@@ -565,7 +565,7 @@ class PreviewPollinationsService:
                                        self.app.dialogs.set_estado(tr("📋 URL copiada"), P.TXT_OK))
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("🌐 Abrir en navegador"), width=160, height=30,
-                      fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
+                      **P.estilo_boton(P.BTN_ACENTO),
                       command=lambda: webbrowser.open(url_imagen)
                       ).pack(side="left", padx=4)
 
