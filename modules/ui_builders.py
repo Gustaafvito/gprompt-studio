@@ -298,6 +298,7 @@ class UIBuildersService:
             (tr("📚 Aprender"), "#2e8a9e", [
                 (tr("ℹ️  Acerca de G-Prompt"), self.app.dialogs.cmd_acerca_de),
                 (tr("⌨️  Atajos teclado"), self.app.atajos.cmd_mostrar_atajos),
+                (tr("🎯  Paleta de comandos (Ctrl+K)"), self.app.atajos._abrir_palette),
                 (tr("📖  Guía de estilos"), lambda: abrir_guia_estilos(self.app, self.app.modo_var.get() if hasattr(self.app, "modo_var") else None)),
                 (tr("📖  Modo educativo"), self.app.analysis.cmd_modo_educativo),
                 (tr("📚  Tutorial completo"), self.app.atajos.abrir_tutorial),

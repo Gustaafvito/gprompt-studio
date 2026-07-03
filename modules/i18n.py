@@ -2655,6 +2655,7 @@ TRADUCCIONES = {
     # Command palette (Ctrl+K)
     'Escribe una acción…  (↑↓ navegar · Enter ejecutar · Esc cerrar)': 'Type an action…  (↑↓ navigate · Enter run · Esc close)',
     'Paleta de comandos (buscar cualquier acción)': 'Command palette (search any action)',
+    '🎯  Paleta de comandos (Ctrl+K)': '🎯  Command palette (Ctrl+K)',
     'Paleta de comandos': 'Command palette',
     '⚡ Acciones': '⚡ Actions',
     '⚡ Quick Generate': '⚡ Quick Generate',

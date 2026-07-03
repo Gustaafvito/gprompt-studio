@@ -129,8 +129,10 @@ class UiFooterService:
             btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
             btn_row.pack(side="top", anchor="w")
             for text, w, fg, cmd, tip in botones:
-                btn = ctk.CTkButton(btn_row, text=tr(text), width=w, fg_color=fg,
-                                     hover_color=self.app.dialogs._darker(fg),
+                # Mismo estilo sobrio que la barra central: neutro + borde
+                # y hover del color semántico del grupo.
+                btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
+                                     **P.estilo_boton(fg),
                                      command=cmd, **pill)
                 btn.pack(side="left", padx=2)
                 CTkToolTip(btn, delay=0.3, message=tr(tip), **tip_kwargs)
