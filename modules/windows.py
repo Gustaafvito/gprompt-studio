@@ -279,8 +279,7 @@ def abrir_loras(app):
     lbl_count.pack(side="left", padx=10)
 
     btn_toggle_form = ctk.CTkButton(head, text=tr("+ Nuevo LoRA"), width=140,
-                                    height=28, fg_color="#5b2c8e",
-                                    hover_color="#3d1a6a")
+                                    height=28, **P.estilo_boton(P.BTN_ACENTO))
     btn_toggle_form.pack(side="right")
 
     ctk.CTkLabel(ventana,
@@ -456,7 +455,7 @@ def abrir_loras(app):
         app.set_estado(tr("🔗 LoRA '{0}' guardado.").format(nombre), "#9b59b6")
 
     btn_guardar = ctk.CTkButton(frame_nuevo, text=tr("💾 Guardar"), width=90, height=30,
-                                fg_color="#5b2c8e", hover_color="#3d1a6a",
+                                **P.estilo_boton(P.BTN_ACENTO),
                                 command=guardar)
     btn_guardar.pack(side="left", padx=8)
 

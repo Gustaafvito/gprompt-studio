@@ -393,7 +393,7 @@ class SesionVideoService:
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("📚 Modo Tutorial"), width=140,
                       command=lambda: self._cmd_sesion_modo_tutorial(),
-                      fg_color="#5b2c8e", hover_color="#3d1a6a").pack(side="left", padx=2)
+                      **P.estilo_boton(P.BTN_ACENTO)).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("🗑 Limpiar"), width=110, command=_limpiar,
                       fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER).pack(side="left", padx=2)
         ctk.CTkButton(btn_row, text=tr("Cerrar"), width=110, command=v.destroy,

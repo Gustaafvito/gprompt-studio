@@ -1704,7 +1704,7 @@ class ToolsCreativeService:
         ctk.CTkButton(preset_row, text=tr("🧹 Limpiar"), width=75, height=24, fg_color="#5a3a1a",
                       command=lambda: [tup[0].set(False) for tup in check_vars.values()]
                       ).pack(side="left", padx=2)
-        ctk.CTkButton(preset_row, text=tr("💾 Guardar"), width=90, height=24, fg_color="#4a1a6a",
+        ctk.CTkButton(preset_row, text=tr("💾 Guardar"), width=90, height=24, **P.estilo_boton(P.BTN_ACENTO),
                       command=_guardar_preset).pack(side="left", padx=2)
         ctk.CTkButton(preset_row, text=tr("📂 Presets"), width=80, height=24, **P.estilo_boton(P.BTN_SECUNDARIO),
                       command=_mostrar_presets).pack(side="left", padx=2)
@@ -1927,7 +1927,7 @@ class ToolsCreativeService:
                     ctk.CTkButton(btn_row, text=tr("🎨 Añadir al prompt"), width=140, height=28, fg_color=P.BTN_EXITO,
                                   command=lambda: (self.app._aplicar_atajo_tags(f"color palette: {hex_str}"),
                                                     vent.destroy())).pack(side="left", padx=4)
-                    ctk.CTkButton(btn_row, text=tr("💾 Guardar paleta"), width=130, height=28, fg_color="#4a1a6a",
+                    ctk.CTkButton(btn_row, text=tr("💾 Guardar paleta"), width=130, height=28, **P.estilo_boton(P.BTN_ACENTO),
                                   command=_guardar_paleta).pack(side="left", padx=4)
                     ctk.CTkButton(btn_row, text=tr("📚 Biblioteca"), width=110, height=28, **P.estilo_boton(P.BTN_SECUNDARIO),
                                   command=lambda: self._abrir_biblioteca_paletas(vent)).pack(side="left", padx=4)
