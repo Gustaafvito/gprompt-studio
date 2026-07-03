@@ -2652,6 +2652,14 @@ TRADUCCIONES = {
     '📝 Refinar': '📝 Refine',
     'Mejora el prompt actual': 'Improves the current prompt',
     'Genera múltiples prompts': 'Generates multiple prompts',
+    # Command palette (Ctrl+K)
+    'Escribe una acción…  (↑↓ navegar · Enter ejecutar · Esc cerrar)': 'Type an action…  (↑↓ navigate · Enter run · Esc close)',
+    'Paleta de comandos (buscar cualquier acción)': 'Command palette (search any action)',
+    'Paleta de comandos': 'Command palette',
+    '⚡ Acciones': '⚡ Actions',
+    '⚡ Quick Generate': '⚡ Quick Generate',
+    '💡 Ideas creativas': '💡 Creative ideas',
+    '📦 Batch': '📦 Batch',
 }
 
 

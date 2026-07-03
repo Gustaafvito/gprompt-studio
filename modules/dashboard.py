@@ -1299,6 +1299,7 @@ class DashboardService:
             ("Ctrl+F", "Búsqueda global"),
             ("Ctrl+H", "Modo Focus"),
             ("Ctrl+I", "Ideas creativas"),
+            ("Ctrl+K", "Paleta de comandos"),
             ("Ctrl+L", "Abrir LoRAs"),
             ("Ctrl+P", "Grupo personajes"),
             ("Ctrl+R", "Idea aleatoria"),

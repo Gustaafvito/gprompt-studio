@@ -354,6 +354,22 @@ class UIBuildersService:
             ]),
         ]
 
+        # Registro para el command palette (Ctrl+K): todos los items de los
+        # menús + las acciones principales de la barra central.
+        self.app._paleta_comandos = [
+            (grupo, label, cmd)
+            for grupo, _color, items in grupos_menus
+            for label, cmd in items
+        ] + [
+            (tr("⚡ Acciones"), tr("✨ Generar prompt"), self.app.cmd_prompt),
+            (tr("⚡ Acciones"), tr("⚡ Quick Generate"),
+             getattr(self.app, "cmd_prompt_quick", self.app.cmd_prompt)),
+            (tr("⚡ Acciones"), tr("💡 Ideas creativas"), self.app.cmd_ideas),
+            (tr("⚡ Acciones"), tr("🔄 Variaciones"), self.app.cmd_variaciones),
+            (tr("⚡ Acciones"), tr("📦 Batch"), self.app.cmd_batch),
+            (tr("⚡ Acciones"), tr("🎨 Previsualizar"), self.app.cmd_previsualizar),
+        ]
+
         self.app._header_menus = []
         self.app._header_btns = []
         self.app._active_menu_popup = None
