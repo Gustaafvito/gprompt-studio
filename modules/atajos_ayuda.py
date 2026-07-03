@@ -217,10 +217,10 @@ class AtajosAyudaService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("⌨️ Atajos de teclado"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 5))
         ctk.CTkLabel(vent,
                      text=tr("Click sobre un atajo para copiarlo · busca por tecla o acción"),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 6))
 
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -232,7 +232,7 @@ class AtajosAyudaService:
         entry_buscar.pack(side="left", fill="x", expand=True)
         contador_var = ctk.StringVar(value="")
         ctk.CTkLabel(vent, textvariable=contador_var,
-                     font=ctk.CTkFont(size=9),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT),
                      text_color=c["muted_text"]).pack(anchor="w", padx=15)
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -316,7 +316,7 @@ class AtajosAyudaService:
                 frame_cat = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
                 frame_cat.pack(fill="x", pady=4)
                 ctk.CTkLabel(frame_cat, text=categoria,
-                             font=ctk.CTkFont(size=11, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                              text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(6, 4))
                 for tecla, accion in visibles:
                     row = ctk.CTkFrame(frame_cat, fg_color="transparent",
@@ -324,14 +324,14 @@ class AtajosAyudaService:
                     row.pack(fill="x", padx=10, pady=1)
                     lbl_tecla = ctk.CTkLabel(
                         row, text=tecla,
-                        font=ctk.CTkFont(size=10, weight="bold"),
+                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                         width=160, anchor="w", text_color=P.TXT_INFO,
                         cursor="hand2",
                     )
                     lbl_tecla.pack(side="left")
                     lbl_accion = ctk.CTkLabel(
                         row, text=accion,
-                        font=ctk.CTkFont(size=10),
+                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                         anchor="w", text_color=c["panel_text"],
                         cursor="hand2",
                     )

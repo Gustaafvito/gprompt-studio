@@ -55,7 +55,7 @@ class AdnVisualService:
         hdr = ctk.CTkFrame(vent, fg_color=c["fg_dark"])
         hdr.pack(fill="x", padx=10, pady=10)
         ctk.CTkLabel(hdr, text=tr("🧬 ADNs Guardados"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(side="left", padx=10)
         contador_var = ctk.StringVar(value=f"{len(adns)} guardado(s)")
         ctk.CTkLabel(hdr, textvariable=contador_var,
                      text_color=c["muted_text"]).pack(side="right", padx=10)
@@ -145,10 +145,10 @@ class AdnVisualService:
                              font=ctk.CTkFont(weight="bold")).pack(anchor="w")
                 ctk.CTkLabel(info_frame, text=f"{tipo} • {estetica}",
                              text_color=c["muted_text"],
-                             font=ctk.CTkFont(size=11)).pack(anchor="w")
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO)).pack(anchor="w")
                 ctk.CTkLabel(info_frame, text=f"{fecha} • {motor}",
                              text_color=c["muted_text"],
-                             font=ctk.CTkFont(size=10)).pack(anchor="w")
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(anchor="w")
 
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
                 btn_frame.pack(fill="x", padx=10, pady=(0, 8))
@@ -161,7 +161,7 @@ class AdnVisualService:
 
                     json_str = json.dumps(item_l.get("adn", {}), indent=2, ensure_ascii=False)
 
-                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(family="Consolas", size=11),
+                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_CUERPO),
                                          wrap="none")
                     txt.pack(fill="both", expand=True, padx=10, pady=10)
                     txt.insert("1.0", json_str)
@@ -283,9 +283,9 @@ class AdnVisualService:
                     vent.transient(self.app)
 
                     ctk.CTkLabel(vent, text=tr("🧬 ADN Visual de tu imagen"),
-                                 font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 5))
+                                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 5))
                     ctk.CTkLabel(vent, text=tr('Analizado con: {0}').format(motor),
-                                 font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
 
                     # Categorías bloqueables
                     categorias = [
@@ -341,7 +341,7 @@ class AdnVisualService:
                         bloqueos[cat_key]["btn"] = btn_lock
 
                         # Etiqueta de estado
-                        estado_lbl = ctk.CTkLabel(hdr, text=tr("🔓 DESBLOQUEADO"), text_color="#27ae60", font=ctk.CTkFont(size=9))
+                        estado_lbl = ctk.CTkLabel(hdr, text=tr("🔓 DESBLOQUEADO"), text_color="#27ae60", font=ctk.CTkFont(size=P.FUENTE_HINT))
                         estado_lbl.pack(side="left", padx=(2, 0))
                         bloqueos[cat_key]["label"] = estado_lbl
 
@@ -352,15 +352,15 @@ class AdnVisualService:
                             for k, v in datos.items():
                                 if v:
                                     txt = f"  {k}: {v}"
-                                    ctk.CTkLabel(cat_frame, text=txt, font=ctk.CTkFont(size=10),
+                                    ctk.CTkLabel(cat_frame, text=txt, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                                  text_color=c.get("fg_dark_text", "#ffffff"),
                                                  anchor="w").pack(anchor="w", padx=12, pady=1)
                         elif isinstance(datos, list) and datos:
                             for item in datos[:5]:
-                                ctk.CTkLabel(cat_frame, text=f"  • {item}", font=ctk.CTkFont(size=10),
+                                ctk.CTkLabel(cat_frame, text=f"  • {item}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                             text_color=c["text"], anchor="w").pack(anchor="w", padx=12, pady=1)
                         elif isinstance(datos, str) and datos:
-                            ctk.CTkLabel(cat_frame, text=f"  {datos}", font=ctk.CTkFont(size=10),
+                            ctk.CTkLabel(cat_frame, text=f"  {datos}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                         text_color=c["text"], anchor="w").pack(anchor="w", padx=12, pady=1)
 
                     # Botones de acción
@@ -541,7 +541,7 @@ class AdnVisualService:
                     plat_frame = ctk.CTkFrame(vent, fg_color="transparent")
                     plat_frame.pack(pady=(8, 0))
 
-                    lbl_plat = ctk.CTkLabel(plat_frame, text=tr("🎨 Convertir a:"), font=ctk.CTkFont(size=11))
+                    lbl_plat = ctk.CTkLabel(plat_frame, text=tr("🎨 Convertir a:"), font=ctk.CTkFont(size=P.FUENTE_CUERPO))
                     lbl_plat.pack(side="left", padx=(0, 5))
 
                     def _convertir_plataforma(plataforma):
@@ -656,7 +656,7 @@ class AdnVisualService:
 
                     for plat in ["midjourney", "stable_diffusion", "dalle", "flux"]:
                         ctk.CTkButton(plat_frame, text=plat.replace("_", " ").upper(), width=80, height=24,
-                                      font=ctk.CTkFont(size=9),
+                                      font=ctk.CTkFont(size=P.FUENTE_HINT),
                                       command=lambda p=plat: _convertir_plataforma(p)).pack(side="left", padx=2)
 
                     ctk.CTkButton(vent, text=tr("Cerrar"), width=100, height=28,

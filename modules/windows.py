@@ -59,7 +59,7 @@ def abrir_personajes(app):
     ctk.CTkLabel(head, text=tr("🧑 Personajes Guardados"),
                  font=ctk.CTkFont(size=18, weight="bold"),
                  text_color=cc["label_main"]).pack(side="left")
-    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
+    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=cc["empty_text"])
     lbl_count.pack(side="left", padx=10)
 
@@ -70,7 +70,7 @@ def abrir_personajes(app):
 
     ctk.CTkLabel(ventana,
                  text=tr("Los personajes se insertan automáticamente en el prompt al seleccionarlos."),
-                 font=ctk.CTkFont(size=10),
+                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                  text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
     # ── Buscador ──
@@ -199,11 +199,11 @@ def abrir_personajes(app):
             hdr.pack(fill="x", padx=5, pady=(5, 2))
             hdr.pack_propagate(False)
             ctk.CTkLabel(hdr, text=f"  🧑 {p['nombre']}",
-                         font=ctk.CTkFont(size=13, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=cc_loc["card_hdr_text"]).pack(side="left", padx=8)
             ctk.CTkLabel(card, text=p["descripcion"],
                          wraplength=680, justify="left",
-                         font=ctk.CTkFont(size=12),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION),
                          text_color=cc_loc["card_text"]
                          ).pack(padx=10, pady=(3, 5), anchor="w")
 
@@ -274,7 +274,7 @@ def abrir_loras(app):
     ctk.CTkLabel(head, text=tr("🔗 LoRAs Guardados"),
                  font=ctk.CTkFont(size=18, weight="bold"),
                  text_color=cc["label_main"]).pack(side="left")
-    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=11),
+    lbl_count = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=cc["empty_text"])
     lbl_count.pack(side="left", padx=10)
 
@@ -285,7 +285,7 @@ def abrir_loras(app):
 
     ctk.CTkLabel(ventana,
                  text=tr("Los LoRAs insertan su trigger word al inicio del prompt automáticamente."),
-                 font=ctk.CTkFont(size=10),
+                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                  text_color=cc["empty_text"]).pack(pady=(0, 6), padx=15, anchor="w")
 
     # ── Buscador + filtro de familia ──
@@ -351,7 +351,7 @@ def abrir_loras(app):
     ctk.CTkLabel(
         rasgos_row,
         text=tr("Rasgos visuales (opcional):"),
-        font=ctk.CTkFont(size=10, weight="bold"),
+        font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
     ).pack(anchor="w")
     ctk.CTkLabel(
         rasgos_row,
@@ -360,11 +360,11 @@ def abrir_loras(app):
             "(pelo, ojos, undercut, etc). La app los inyectará automáticamente "
             "en el prompt — no necesitas crear un Personaje aparte.")
         ),
-        font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED,
+        font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED,
         wraplength=780, justify="left",
     ).pack(anchor="w", pady=(0, 4))
     txt_rasgos = ctk.CTkTextbox(rasgos_row, height=60,
-                                font=ctk.CTkFont(size=11))
+                                font=ctk.CTkFont(size=P.FUENTE_CUERPO))
     txt_rasgos.pack(fill="x")
 
     form_visible = [False]
@@ -507,12 +507,12 @@ def abrir_loras(app):
             badge_familia = f"  [{familia}]" if familia else ""
             ctk.CTkLabel(hdr,
                          text=tr('  🔗 {0}{1}   →   trigger: "{2}"').format((l['nombre']), (badge_familia), (l['trigger'])),
-                         font=ctk.CTkFont(size=13, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=cc_loc["card_hdr_text"]).pack(side="left", padx=8)
             nota = l.get("descripcion", "")
             if nota:
                 ctk.CTkLabel(card, text=nota, wraplength=760, justify="left",
-                             font=ctk.CTkFont(size=11),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=cc_loc["card_text2"]
                              ).pack(padx=10, pady=(2, 3), anchor="w")
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -585,17 +585,17 @@ def abrir_batch_variables(app):
     ventana.grab_set()
 
     ctk.CTkLabel(ventana, text=tr("⚡ Batch de Variables"),
-                 font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(12, 2))
+                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 2))
     ctk.CTkLabel(ventana, text=tr("Usa {variable} en tu idea y aquí define múltiples valores"),
-                 font=ctk.CTkFont(size=10),
+                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                  text_color=cc["card_text2"]).pack(pady=(0, 8))
 
     # Plantilla editable
     frame_tmpl = ctk.CTkFrame(ventana)
     frame_tmpl.pack(fill="x", padx=15, pady=(0, 8))
     ctk.CTkLabel(frame_tmpl, text=tr("Plantilla (idea con {variables}):"),
-                 font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
-    txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=12))
+                 font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO)).pack(anchor="w", padx=8, pady=(6, 2))
+    txt_tmpl = ctk.CTkTextbox(frame_tmpl, height=55, font=ctk.CTkFont(size=P.FUENTE_SECCION))
     txt_tmpl.pack(fill="x", padx=8, pady=(0, 8))
     txt_tmpl.insert("1.0", plantilla or tr("una {animal} en {lugar} con iluminación {luz}"))
 
@@ -603,7 +603,7 @@ def abrir_batch_variables(app):
     frame_vars_outer = ctk.CTkFrame(ventana)
     frame_vars_outer.pack(fill="x", padx=15, pady=(0, 8))
     ctk.CTkLabel(frame_vars_outer, text=tr("Variables detectadas (valores separados por coma):"),
-                 font=ctk.CTkFont(weight="bold", size=11)).pack(anchor="w", padx=8, pady=(6, 2))
+                 font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO)).pack(anchor="w", padx=8, pady=(6, 2))
 
     entries_vars = {}  # var_name → CTkEntry
 
@@ -619,9 +619,9 @@ def abrir_batch_variables(app):
             row._es_var_row = True
             row.pack(fill="x", padx=8, pady=2)
             ctk.CTkLabel(row, text=f"{{{vname}}}",
-                         font=ctk.CTkFont(size=11, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          text_color="#3b82f6", width=100).pack(side="left", padx=(0, 8))
-            ent = ctk.CTkEntry(row, placeholder_text=tr("val1, val2, val3"), font=ctk.CTkFont(size=11))
+            ent = ctk.CTkEntry(row, placeholder_text=tr("val1, val2, val3"), font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             ent.pack(side="left", fill="x", expand=True)
             entries_vars[vname] = ent
         if not detectadas:
@@ -629,30 +629,30 @@ def abrir_batch_variables(app):
             row._es_var_row = True
             row.pack(fill="x", padx=8)
             ctk.CTkLabel(row, text=tr("No se detectaron {variables} en la plantilla."),
-                         font=ctk.CTkFont(size=10), text_color=cc["card_text2"]).pack(anchor="w")
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=cc["card_text2"]).pack(anchor="w")
 
     _refrescar_vars()
 
     ctk.CTkButton(frame_vars_outer, text=tr("🔄 Detectar variables"), height=26, width=160,
                   fg_color="#374151", hover_color="#4b5563",
-                  font=ctk.CTkFont(size=10),
+                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                   command=_refrescar_vars).pack(anchor="e", padx=8, pady=(4, 8))
 
     # Modo: lineal vs combinaciones
     modo_var = ctk.StringVar(value="lineal")
     frame_modo = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_modo.pack(fill="x", padx=15, pady=(0, 6))
-    ctk.CTkLabel(frame_modo, text=tr("Modo:"), font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", padx=(0, 8))
+    ctk.CTkLabel(frame_modo, text=tr("Modo:"), font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO)).pack(side="left", padx=(0, 8))
     ctk.CTkRadioButton(frame_modo, text=tr("Secuencial (valor a valor, mismo índice)"), variable=modo_var, value="lineal").pack(side="left", padx=6)
     ctk.CTkRadioButton(frame_modo, text=tr("Todas las combis (máx 20)"), variable=modo_var, value="product").pack(side="left", padx=6)
 
     # Resultado
     ctk.CTkLabel(ventana, text=tr("Variaciones generadas:"),
-                 font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=15, pady=(0, 2))
-    txt_resultado = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=11), wrap="word")
+                 font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=15, pady=(0, 2))
+    txt_resultado = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_CUERPO), wrap="word")
     txt_resultado.pack(fill="both", expand=True, padx=15, pady=(0, 4))
 
-    lbl_count = ctk.CTkLabel(ventana, text="", font=ctk.CTkFont(size=10), text_color=cc["card_text2"])
+    lbl_count = ctk.CTkLabel(ventana, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=cc["card_text2"])
     lbl_count.pack(pady=(0, 2))
 
     def _generar():
@@ -714,14 +714,14 @@ def abrir_batch_variables(app):
     frame_btns.pack(fill="x", padx=15, pady=(0, 12))
     ctk.CTkButton(frame_btns, text=tr("⚡ Generar variaciones"), height=32, width=160,
                   fg_color=P.BTN_EXITO, hover_color="#166d30",
-                  font=ctk.CTkFont(size=11, weight="bold"),
+                  font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                   command=_generar).pack(side="left", padx=4)
     ctk.CTkButton(frame_btns, text=tr("📋 Copiar todo"), height=32, width=120,
                   fg_color="#374151", hover_color="#4b5563",
-                  font=ctk.CTkFont(size=11), command=_copiar_todo).pack(side="left", padx=4)
+                  font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=_copiar_todo).pack(side="left", padx=4)
     ctk.CTkButton(frame_btns, text=tr("→ Enviar a resultado"), height=32, width=150,
                   fg_color="#1e3a8a", hover_color="#162d6e",
-                  font=ctk.CTkFont(size=11), command=_enviar_a_salida).pack(side="left", padx=4)
+                  font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=_enviar_a_salida).pack(side="left", padx=4)
 
     if vars_detectadas:
         ventana.after(200, _generar)
@@ -763,7 +763,7 @@ def abrir_batch(app):
         if batch_modo_var.get() == "auto":
             ctk.CTkLabel(frame_panel, text=tr("Idea base:"), font=ctk.CTkFont(weight="bold")).pack(
                 anchor="w", padx=12, pady=(8, 2))
-            entry_bidea[0] = ctk.CTkTextbox(frame_panel, height=55, font=ctk.CTkFont(size=13))
+            entry_bidea[0] = ctk.CTkTextbox(frame_panel, height=55, font=ctk.CTkFont(size=P.FUENTE_SECCION))
             entry_bidea[0].pack(fill="x", padx=12, pady=(0, 6))
             idea_actual = app.txt_idea.get("1.0", "end").strip()
             if idea_actual:
@@ -772,7 +772,7 @@ def abrir_batch(app):
             frame_bn.pack(fill="x", padx=12, pady=(0, 8))
             ctk.CTkLabel(frame_bn, text=tr("Número de prompts:"), font=ctk.CTkFont(weight="bold")).pack(side="left")
             lbl_bn = ctk.CTkLabel(frame_bn, text=str(batch_n_var.get()),
-                                   font=ctk.CTkFont(size=14, weight="bold"), text_color=P.TXT_INFO, width=28)
+                                   font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"), text_color=P.TXT_INFO, width=28)
             ctk.CTkSlider(frame_bn, from_=2, to=10, number_of_steps=8, variable=batch_n_var,
                           command=lambda v: lbl_bn.configure(text=f"{int(v)}")).pack(
                 side="left", padx=10, fill="x", expand=True)
@@ -780,7 +780,7 @@ def abrir_batch(app):
         else:
             ctk.CTkLabel(frame_panel, text=tr("Lista de ideas (una por línea, máx 10):"),
                          font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=12, pady=(8, 2))
-            entry_blista[0] = ctk.CTkTextbox(frame_panel, height=140, font=ctk.CTkFont(size=13))
+            entry_blista[0] = ctk.CTkTextbox(frame_panel, height=140, font=ctk.CTkFont(size=P.FUENTE_SECCION))
             entry_blista[0].pack(fill="x", padx=12, pady=(0, 8))
             entry_blista[0].insert("1.0", tr(
                 "chica anime en playa al atardecer\n"
@@ -793,11 +793,11 @@ def abrir_batch(app):
     frame_selector = ctk.CTkFrame(ventana, fg_color="transparent")
 
     ctk.CTkLabel(ventana, text=tr("Resultado batch:"),
-                 font=ctk.CTkFont(size=12), text_color=cc["card_text"]).pack(anchor="w", padx=15, pady=(4, 2))
-    txt_batch = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=12), wrap="word")
+                 font=ctk.CTkFont(size=P.FUENTE_SECCION), text_color=cc["card_text"]).pack(anchor="w", padx=15, pady=(4, 2))
+    txt_batch = ctk.CTkTextbox(ventana, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_SECCION), wrap="word")
     txt_batch.pack(fill="both", expand=True, padx=15, pady=(0, 4))
 
-    lbl_batch_estado = ctk.CTkLabel(ventana, text="", font=ctk.CTkFont(size=12), text_color=cc["card_text2"])
+    lbl_batch_estado = ctk.CTkLabel(ventana, text="", font=ctk.CTkFont(size=P.FUENTE_SECCION), text_color=cc["card_text2"])
     lbl_batch_estado.pack(pady=(0, 4))
 
     frame_bfoot = ctk.CTkFrame(ventana, fg_color="transparent")
@@ -886,7 +886,7 @@ def abrir_batch(app):
         row1 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row1.pack(fill="x", pady=(0, 2))
         ctk.CTkLabel(row1, text=tr("📋 Copiar completo:"),
-                     font=ctk.CTkFont(size=10, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                      text_color=P.TXT_ACENTO).pack(side="left", padx=(0, 6))
 
         is_lt = _is_light()
@@ -907,14 +907,14 @@ def abrir_batch(app):
                     text=tr('✅ Prompt #{0} completo copiado').format(n), text_color=P.TXT_OK)
             ctk.CTkButton(row1, text=f"#{i+1}", width=40, height=24,
                           fg_color=color, hover_color="#d1d5db" if is_lt else "#333333",
-                          font=ctk.CTkFont(size=11, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                           command=copiar_todo).pack(side="left", padx=2)
 
         # Fila de botones positive
         row2 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row2.pack(fill="x", pady=(0, 2))
         ctk.CTkLabel(row2, text=tr("🟢 Solo POSITIVE:"),
-                     font=ctk.CTkFont(size=10, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                      text_color=P.TXT_OK).pack(side="left", padx=(0, 6))
 
         for i, prompt in enumerate(prompts):
@@ -931,14 +931,14 @@ def abrir_batch(app):
             ctk.CTkButton(row2, text=f"#{i+1}", width=40, height=24,
                           fg_color=P.BTN_EXITO if is_lt else "#1a5a2a",
                           hover_color=P.BTN_EXITO_HOVER if is_lt else "#0f3a1a",
-                          font=ctk.CTkFont(size=11, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                           command=copiar_pos).pack(side="left", padx=2)
 
         # Fila de botones negative
         row3 = ctk.CTkFrame(frame_selector, fg_color="transparent")
         row3.pack(fill="x")
         ctk.CTkLabel(row3, text=tr("🔴 Solo NEGATIVE:"),
-                     font=ctk.CTkFont(size=10, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                      text_color=P.TXT_ERROR).pack(side="left", padx=(0, 6))
 
         for i, prompt in enumerate(prompts):
@@ -955,7 +955,7 @@ def abrir_batch(app):
             ctk.CTkButton(row3, text=f"#{i+1}", width=40, height=24,
                           fg_color="#dc2626" if is_lt else "#5a1a1a",
                           hover_color="#b91c1c" if is_lt else "#3a0f0f",
-                          font=ctk.CTkFont(size=11, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                           command=copiar_neg).pack(side="left", padx=2)
 
     def _ventana_existe():
@@ -1135,13 +1135,13 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
     ctk.CTkButton(frame_vtitulo, text=tr("🗑 Limpiar todo"), width=130, height=28,
                   fg_color=cc["btn_del"], hover_color=cc["btn_del_hov"], command=limpiar_todo).pack(side="right", padx=4)
 
-    lbl_contador = ctk.CTkLabel(frame_vtitulo, text="", font=ctk.CTkFont(size=11), text_color=cc["empty_text"])
+    lbl_contador = ctk.CTkLabel(frame_vtitulo, text="", font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=cc["empty_text"])
     lbl_contador.pack(side="right", padx=8)
 
     # Barra de búsqueda
     frame_busqueda = ctk.CTkFrame(ventana, fg_color="transparent")
     frame_busqueda.pack(fill="x", padx=15, pady=(0, 6))
-    ctk.CTkLabel(frame_busqueda, text="🔍", font=ctk.CTkFont(size=14)).pack(side="left", padx=(0, 6))
+    ctk.CTkLabel(frame_busqueda, text="🔍", font=ctk.CTkFont(size=P.FUENTE_TITULO)).pack(side="left", padx=(0, 6))
     entry_buscar = ctk.CTkEntry(frame_busqueda, placeholder_text=tr("Buscar por texto, estilo, fecha..."),
                                  width=400, height=32)
     entry_buscar.pack(side="left", fill="x", expand=True, padx=(0, 8))
@@ -1304,12 +1304,12 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
         estado = {"abierto": expanded}
-        flecha = ctk.CTkLabel(hdr, text="▼" if expanded else "▶", font=ctk.CTkFont(size=11),
+        flecha = ctk.CTkLabel(hdr, text="▼" if expanded else "▶", font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                               text_color=cc["card_hdr_text"], cursor="hand2")
         flecha.pack(side="left", padx=(10, 6))
-        ctk.CTkLabel(hdr, text=tr(nombre), font=ctk.CTkFont(size=12, weight="bold"),
+        ctk.CTkLabel(hdr, text=tr(nombre), font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                      text_color=cc["card_hdr_text"], cursor="hand2").pack(side="left")
-        ctk.CTkLabel(hdr, text=f"  ({len(entradas)})", font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(hdr, text=f"  ({len(entradas)})", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=cc["empty_text"], cursor="hand2").pack(side="left", padx=4)
 
         contenedor = ctk.CTkFrame(seccion, fg_color="transparent")
@@ -1358,7 +1358,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         ratio_t = f"  [{ratio_e}]" if ratio_e and ratio_e != tr("Libre") else ""
         ctk.CTkLabel(hdr,
                      text=f"  {fecha}  |  {modo_e.upper()}{nsfw_e}{ratio_t}{plat_e}{pers_e}{lora_e}  |  {estilos}",
-                     font=ctk.CTkFont(size=11),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=cc["card_hdr_text"]).pack(side="left", padx=8)
 
         # Nota (solo estrellas). Aparece encima del contenido si existe.
@@ -1366,7 +1366,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         if nota:
             ctk.CTkLabel(card,
                          text=f"🌟 {nota}",
-                         font=ctk.CTkFont(size=11, weight="bold", slant="italic"),
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold", slant="italic"),
                          text_color="#f59e0b" if _is_light() else "#fbbf24",
                          wraplength=740, justify="left", anchor="w"
                          ).pack(fill="x", padx=10, pady=(4, 0))
@@ -1374,7 +1374,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         contenido = entrada.get("contenido", "")
         preview = contenido[:200].replace("\n", " ") + ("..." if len(contenido) > 200 else "")
         ctk.CTkLabel(card, text=preview, wraplength=740, justify="left",
-                     font=ctk.CTkFont(size=12), text_color=cc["card_text"]
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION), text_color=cc["card_text"]
                      ).pack(padx=10, pady=(3, 5), anchor="w")
 
         btn_row = ctk.CTkFrame(card, fg_color="transparent")

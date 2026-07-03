@@ -110,7 +110,7 @@ def abrir_tutorial(app):
     idx_frame.pack(side="left", fill="y", padx=(0, 10))
 
     ctk.CTkLabel(idx_frame, text=tr("📋 Pasos"),
-                 font=ctk.CTkFont(size=14, weight="bold"),
+                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                  text_color=text_main).pack(anchor="w", padx=10, pady=(8, 4))
 
     # Progress general
@@ -118,7 +118,7 @@ def abrir_tutorial(app):
     progreso_global.pack(fill="x", padx=10, pady=(0, 4))
     progreso_global.set(len(completados) / total if total else 0)
     lbl_progreso = ctk.CTkLabel(idx_frame, text=tr('{0}/{1} completados').format((len(completados)), (total)),
-                                font=ctk.CTkFont(size=10), text_color=text_muted)
+                                font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=text_muted)
     lbl_progreso.pack(anchor="w", padx=10, pady=(0, 8))
 
     btns_idx: list[ctk.CTkButton] = []
@@ -130,7 +130,7 @@ def abrir_tutorial(app):
     # Cabecera con barra de progreso del paso actual
     head = ctk.CTkFrame(main, fg_color="transparent")
     head.pack(fill="x")
-    lbl_paso = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=12),
+    lbl_paso = ctk.CTkLabel(head, text="", font=ctk.CTkFont(size=P.FUENTE_SECCION),
                             text_color=text_muted)
     lbl_paso.pack(side="left")
     bar_paso = ctk.CTkProgressBar(head, width=200, height=6, progress_color=accent)
@@ -140,12 +140,12 @@ def abrir_tutorial(app):
     card = ctk.CTkFrame(main, fg_color=bg_card, corner_radius=8)
     card.pack(fill="both", expand=True, pady=(8, 0))
 
-    lbl_titulo = ctk.CTkLabel(card, text="", font=ctk.CTkFont(size=16, weight="bold"),
+    lbl_titulo = ctk.CTkLabel(card, text="", font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                               text_color=text_main, anchor="w", wraplength=600,
                               justify="left")
     lbl_titulo.pack(anchor="w", padx=14, pady=(12, 4))
 
-    txt_desc = ctk.CTkTextbox(card, wrap="word", font=ctk.CTkFont(size=11),
+    txt_desc = ctk.CTkTextbox(card, wrap="word", font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                               fg_color=bg_card, text_color=text_muted,
                               border_width=0, height=300)
     txt_desc.pack(fill="both", expand=True, padx=14, pady=(0, 8))
@@ -441,7 +441,7 @@ def abrir_tutorial(app):
             idx_frame, text=t, height=28, anchor="w",
             fg_color=bg_idx_inactive, text_color=text_main,
             hover_color=bg_idx_active,
-            font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             command=lambda p=paso["id"]: ir_a(p - 1),
         )
         btn.pack(fill="x", padx=6, pady=1)

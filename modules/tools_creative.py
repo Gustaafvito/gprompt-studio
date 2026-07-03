@@ -190,10 +190,10 @@ class ToolsCreativeService:
         cfg.grab_set()
 
         ctk.CTkLabel(cfg, text=tr("⚡ Pulse — Configuración"),
-                     font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 4))
         ctk.CTkLabel(cfg,
                      text=tr("Cada nivel = un prompt con distinta temperatura.\nMenor T = más consistente, mayor T = más creativo."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
                      justify="center").pack(pady=(0, 12))
 
         modo_var = ctk.StringVar(value=ultima.get("modo", "3"))
@@ -213,18 +213,18 @@ class ToolsCreativeService:
                               ("custom", "🎚 Personalizado (sliders abajo)")]:
             ctk.CTkRadioButton(cfg, text=tr(label), variable=modo_var, value=valor,
                                command=_toggle_custom,
-                               font=ctk.CTkFont(size=11)
+                               font=ctk.CTkFont(size=P.FUENTE_CUERPO)
                                ).pack(anchor="w", padx=30, pady=4)
 
         # Sliders custom (3 sliders)
         ctk.CTkLabel(custom_frame, text=tr("Temperaturas custom (3 niveles):"),
-                     font=ctk.CTkFont(size=10, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
         temps_init = ultima.get("custom_temps", [0.3, 0.6, 0.9])
         for i in range(3):
             row = ctk.CTkFrame(custom_frame, fg_color="transparent")
             row.pack(fill="x", padx=10, pady=2)
             lbl_val = ctk.CTkLabel(row, text=tr('T{0}: {1:.2f}').format((i+1), (temps_init[i])),
-                                    width=70, font=ctk.CTkFont(family="Consolas", size=10))
+                                    width=70, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA))
             lbl_val.pack(side="left", padx=(0, 6))
             sl = ctk.CTkSlider(row, from_=0.1, to=1.5, number_of_steps=28)
             sl.set(temps_init[i])
@@ -258,7 +258,7 @@ class ToolsCreativeService:
         btn_row.pack(side="bottom", pady=(0, 15))
         ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=140, height=34,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=_ejecutar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=34,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -552,9 +552,9 @@ class ToolsCreativeService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🤖 Top 3 modelos para tu idea"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(vent, text=tr('Idea: {0}{1}').format((idea[:80]), ('…' if len(idea) > 80 else '')),
-                     font=ctk.CTkFont(size=10, slant="italic"),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 10))
 
         # Colores y rankings
@@ -584,11 +584,11 @@ class ToolsCreativeService:
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(8, 2))
             ctk.CTkLabel(hdr, text=f"  {medalla} {nombre_mod}",
-                         font=ctk.CTkFont(size=13, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=bg_medalla).pack(side="left")
 
             ctk.CTkLabel(card, text=f"  💡 {razon}",
-                         font=ctk.CTkFont(size=10),
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                          text_color=c["muted_text"],
                          wraplength=620, justify="left",
                          anchor="w").pack(fill="x", padx=10, pady=(0, 6))
@@ -598,7 +598,7 @@ class ToolsCreativeService:
             ctk.CTkButton(btn_row, text=tr('✅ Usar este modelo'),
                           width=180, height=28,
                           fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                          font=ctk.CTkFont(size=11, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                           command=lambda n=nombre_mod: _aplicar_modelo(n)
                           ).pack(side="left", padx=2)
 
@@ -613,7 +613,7 @@ class ToolsCreativeService:
         ctk.CTkButton(accion_row, text=tr('🚀 Probar los {0} en paralelo').format(len(sugerencias)),
                       width=240, height=34,
                       fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
-                      font=ctk.CTkFont(size=11, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=_probar_los_3).pack(side="left", padx=4)
         ctk.CTkButton(accion_row, text=tr("Cerrar"), width=100, height=34,
                       fg_color=c["fg_dark"],
@@ -779,9 +779,9 @@ class ToolsCreativeService:
         vent.geometry("600x500")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr("👥 Definir grupo de personajes"), font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text=tr("👥 Definir grupo de personajes"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Define hasta 3 personajes que aparecerán juntos en la escena"),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         personajes_data = []
         # Cargar personajes existentes
@@ -791,7 +791,7 @@ class ToolsCreativeService:
             f = ctk.CTkFrame(vent, fg_color=c["fg_frame"], corner_radius=6)
             f.pack(fill="x", padx=15, pady=4)
 
-            ctk.CTkLabel(f, text=tr('Personaje #{0}:').format(i+1), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
+            ctk.CTkLabel(f, text=tr('Personaje #{0}:').format(i+1), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
 
             row = ctk.CTkFrame(f, fg_color="transparent")
             row.pack(fill="x", padx=10, pady=2)
@@ -809,10 +809,10 @@ class ToolsCreativeService:
         # Antes el placeholder se colaba en la idea generada si el usuario
         # no lo borraba manualmente.
         ctk.CTkLabel(vent, text=tr("Relación / contexto entre ellos:"),
-                     font=ctk.CTkFont(size=11, weight="bold")
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
                      ).pack(anchor="w", padx=15, pady=(10, 2))
         txt_relacion = ctk.CTkTextbox(vent, height=60,
-                                       font=ctk.CTkFont(size=11))
+                                       font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         txt_relacion.pack(fill="x", padx=15, pady=(0, 8))
 
         _placeholder_relacion = tr("ej: están negociando un contrato, primero plano de uno, los otros al fondo desenfocados")
@@ -882,7 +882,7 @@ class ToolsCreativeService:
 
         ctk.CTkButton(vent, text=tr("✅ Aplicar a la idea"), width=200, height=32,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=_generar_grupo).pack(pady=10)
 
     def _cmd_analisis_inverso(self):
@@ -935,10 +935,10 @@ class ToolsCreativeService:
                     vent.title(tr("🔍 Análisis inverso"))
                     vent.geometry("700x600")
                     vent.transient(self.app)
-                    ctk.CTkLabel(vent, text=tr("🔍 Análisis inverso: imagen vs prompt"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
-                    ctk.CTkLabel(vent, text=tr('Visión: {0}').format(motor), font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                    ctk.CTkLabel(vent, text=tr("🔍 Análisis inverso: imagen vs prompt"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
+                    ctk.CTkLabel(vent, text=tr('Visión: {0}').format(motor), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
+                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", resp)
                     txt.configure(state="disabled")
@@ -1178,15 +1178,15 @@ class ToolsCreativeService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🧬 Extracción de ADN visual"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 2))
         ctk.CTkLabel(vent, text=tr("Analizando imagen de referencia para extraer rasgos inmutables"),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 6))
 
         # Preview de la imagen cargada
         prev_frame = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=8)
         prev_frame.pack(fill="x", padx=15, pady=(0, 6))
         ctk.CTkLabel(prev_frame, text=tr("🖼 Imagen de referencia"),
-                     font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
         img_preview = ctk.CTkLabel(prev_frame, text="")
         img_preview.pack(padx=10, pady=(0, 4))
         try:
@@ -1198,7 +1198,7 @@ class ToolsCreativeService:
             logger.debug(f"[silent] {_e}")
         # Estado / progreso
         lbl_estado = ctk.CTkLabel(vent, text=tr("⏳ Iniciando extracción..."),
-                                   font=ctk.CTkFont(size=11), text_color=P.TXT_ACENTO)
+                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_ACENTO)
         lbl_estado.pack(anchor="w", padx=15, pady=(0, 4))
         prog_bar = ctk.CTkProgressBar(vent, height=8)
         prog_bar.pack(fill="x", padx=15, pady=(0, 8))
@@ -1243,12 +1243,12 @@ class ToolsCreativeService:
                     vent2.geometry("700x500")
                     vent2.transient(self.app)
                     ctk.CTkLabel(vent2, text=tr("🧬 ADN visual — Rasgos inmutables"),
-                                 font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
                     estado_activo = "🟢 ACTIVO" if self.app._anclaje_visual else "⚪ Inactivo"
                     ctk.CTkLabel(vent2, text=tr('Vision: {0}  ·  Estado: {1}').format((motor), (estado_activo)),
-                                  font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
 
-                    txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word", height=320)
+                    txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word", height=320)
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", adn)
 
@@ -1320,7 +1320,7 @@ class ToolsCreativeService:
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         ctk.CTkButton(vent, text=tr("🧬 Iniciar extracción"), width=200, height=34, fg_color=P.BTN_ACENTO,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       text_color="#ffffff", command=lambda: self.app._executor.submit(_trabajar).add_done_callback(log_future_exc)
                       ).pack(pady=8)
 
@@ -1341,9 +1341,9 @@ class ToolsCreativeService:
         sel.title(tr("🧬 Variar con ADN"))
         sel.geometry("520x520")
         sel.transient(self.app)
-        ctk.CTkLabel(sel, text=tr("🧬 Variar con ADN visual"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel, text=tr("🧬 Variar con ADN visual"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel, text=tr("El sujeto mantendrá sus rasgos exactos. Solo cambia el contexto:"),
-                     font=ctk.CTkFont(size=11), text_color=c["muted_text"]).pack(pady=(0, 12))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=c["muted_text"]).pack(pady=(0, 12))
 
         # Cantidad
         f = ctk.CTkFrame(sel, fg_color="transparent")
@@ -1352,7 +1352,7 @@ class ToolsCreativeService:
         ent_n = ctk.CTkEntry(f, width=60); ent_n.insert(0, "5"); ent_n.pack(side="left")
 
         # Qué variar (10 opciones)
-        ctk.CTkLabel(sel, text=tr("Qué cambiar (ADN se mantiene):"), font=ctk.CTkFont(size=11, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(sel, text=tr("Qué cambiar (ADN se mantiene):"), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(pady=(15, 3))
         opciones = [
             "Localización / fondo",
             "Ropa diferente (cambiar prendas)",
@@ -1479,8 +1479,8 @@ class ToolsCreativeService:
                     vent.title(tr("🔍 Análisis de consistencia"))
                     vent.geometry("700x550")
                     vent.transient(self.app)
-                    ctk.CTkLabel(vent, text=tr("🔍 Consistencia entre prompts"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
-                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
+                    ctk.CTkLabel(vent, text=tr("🔍 Consistencia entre prompts"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 5))
+                    txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word")
                     txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                     txt.insert("1.0", resp)
                     txt.configure(state="disabled")
@@ -1510,15 +1510,15 @@ class ToolsCreativeService:
         vent.geometry("700x720")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr("🧰 Constructor de NEGATIVE"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
-        lbl_activos = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=9), text_color=P.TXT_OK)
+        ctk.CTkLabel(vent, text=tr("🧰 Constructor de NEGATIVE"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 2))
+        lbl_activos = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_OK)
         lbl_activos.pack(pady=(0, 4))
 
         # Búsqueda
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
         search_row.pack(fill="x", padx=15, pady=(0, 4))
         search_entry = ctk.CTkEntry(search_row, placeholder_text=tr("🔍 Busca un elemento..."),
-                                      height=28, font=ctk.CTkFont(size=11))
+                                      height=28, font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         search_entry.pack(fill="x")
 
         tabs = ctk.CTkTabview(vent, height=460)
@@ -1542,7 +1542,7 @@ class ToolsCreativeService:
         def _crear_checkbox(tab_frame, nombre, tags):
             v = ctk.BooleanVar()
             cb = ctk.CTkCheckBox(tab_frame, text=tr(nombre), variable=v,
-                                 font=ctk.CTkFont(size=10),
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                  onvalue=True, offvalue=False)
             cb.pack(anchor="w", padx=16, pady=1)
             check_vars[nombre] = (v, tags, cb)
@@ -1637,7 +1637,7 @@ class ToolsCreativeService:
             win.geometry("440x400")
             win.transient(vent)
             ctk.CTkLabel(win, text=tr("💾 Presets guardados"),
-                         font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(10, 4))
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(pady=(10, 4))
             scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
             scroll.pack(fill="both", expand=True, padx=15, pady=5)
 
@@ -1655,7 +1655,7 @@ class ToolsCreativeService:
                     hdr.pack(fill="x", padx=10, pady=(5, 0))
                     ctk.CTkLabel(hdr,
                                  text=tr('📁 {0} ({1} items)').format((preset['nombre']), (len(preset['items']))),
-                                 font=ctk.CTkFont(size=11, weight="bold")
+                                 font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
                                  ).pack(side="left")
 
                     def _aplicar(p=preset):
@@ -1684,7 +1684,7 @@ class ToolsCreativeService:
                         row,
                         text=f"{', '.join(tr(i) for i in preset['items'][:8])}"
                              f"{'…' if len(preset['items']) > 8 else ''}",
-                        font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED,
+                        font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED,
                         wraplength=380,
                     ).pack(anchor="w", padx=10, pady=(0, 5))
             _refrescar_presets()
@@ -1814,9 +1814,9 @@ class ToolsCreativeService:
                     vent.geometry("580x600")
                     vent.transient(self.app)
                     ctk.CTkLabel(vent, text=tr("🎨 Paleta extraída de la imagen"),
-                                 font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 4))
+                                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 4))
                     ctk.CTkLabel(vent, text=tr("Haz clic en un color para copiarlo. Añade al prompt para aplicar la paleta."),
-                                 font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED).pack(pady=(0, 8))
+                                 font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED).pack(pady=(0, 8))
 
                     # Colores principales
                     sw_frame = ctk.CTkFrame(vent, fg_color="transparent")
@@ -1844,7 +1844,7 @@ class ToolsCreativeService:
                         col_f.bind("<Enter>", lambda e, f=col_f, o=hex_c: _on_enter(e, f, o))
                         col_f.bind("<Leave>", lambda e, f=col_f, o=hex_c: _on_leave(e, f, o))
 
-                        lbl = ctk.CTkLabel(col_f, text=hex_c, font=ctk.CTkFont(size=7),
+                        lbl = ctk.CTkLabel(col_f, text=hex_c, font=ctk.CTkFont(size=P.FUENTE_HINT),
                                             text_color="white" if (r+g+b)/3 < 128 else "black",
                                             fg_color="transparent")
                         lbl.place(relx=0.5, rely=1.0, anchor="s", y=-2)
@@ -1852,7 +1852,7 @@ class ToolsCreativeService:
                     # Tabla de valores
                     val_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
                     val_frame.pack(fill="x", padx=15, pady=4)
-                    ctk.CTkLabel(val_frame, text=tr("Valores detallados"), font=ctk.CTkFont(size=11, weight="bold")
+                    ctk.CTkLabel(val_frame, text=tr("Valores detallados"), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
                                  ).pack(anchor="w", padx=10, pady=(6, 2))
                     for i, (r, g, b) in enumerate(colores_raw[:5]):
                         hex_c = rgb_to_hex(r, g, b)
@@ -1861,21 +1861,21 @@ class ToolsCreativeService:
                         sw_small = ctk.CTkFrame(row, fg_color=hex_c, width=24, height=24, corner_radius=4)
                         sw_small.pack(side="left", padx=(0, 6))
                         sw_small.pack_propagate(False)
-                        ctk.CTkLabel(row, text=f"#{i+1}", font=ctk.CTkFont(size=9, weight="bold"),
+                        ctk.CTkLabel(row, text=f"#{i+1}", font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                                      width=30).pack(side="left")
-                        ctk.CTkLabel(row, text=hex_c, font=ctk.CTkFont(family="Consolas", size=10),
+                        ctk.CTkLabel(row, text=hex_c, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                                      text_color="#aaccee").pack(side="left", padx=(0, 4))
 
                         def _cp(h):
                             return lambda: pyperclip.copy(h)
                         ctk.CTkButton(row, text=hex_c, width=90, height=20, fg_color=P.BTN_SECUNDARIO,
-                                      font=ctk.CTkFont(size=9), command=_cp(hex_c)).pack(side="left", padx=1)
-                        ctk.CTkLabel(row, text=tr('RGB({0},{1},{2})').format((r), (g), (b)), font=ctk.CTkFont(size=9),
+                                      font=ctk.CTkFont(size=P.FUENTE_HINT), command=_cp(hex_c)).pack(side="left", padx=1)
+                        ctk.CTkLabel(row, text=tr('RGB({0},{1},{2})').format((r), (g), (b)), font=ctk.CTkFont(size=P.FUENTE_HINT),
                                      text_color=P.TXT_MUTED).pack(side="left", padx=(4, 0))
-                        ctk.CTkLabel(row, text=rgb_to_hsl(r, g, b), font=ctk.CTkFont(size=8),
+                        ctk.CTkLabel(row, text=rgb_to_hsl(r, g, b), font=ctk.CTkFont(size=P.FUENTE_HINT),
                                      text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=(4, 0))
                         comp = complementary(r, g, b)
-                        ctk.CTkLabel(row, text=tr('Comp: {0}').format(comp), font=ctk.CTkFont(size=8),
+                        ctk.CTkLabel(row, text=tr('Comp: {0}').format(comp), font=ctk.CTkFont(size=P.FUENTE_HINT),
                                      text_color="#f59e0b").pack(side="left", padx=(4, 0))
 
                     # Complementarios del primer color
@@ -1884,7 +1884,7 @@ class ToolsCreativeService:
                     comp_frame = ctk.CTkFrame(vent, fg_color="#111820", corner_radius=8)
                     comp_frame.pack(fill="x", padx=15, pady=4)
                     ctk.CTkLabel(comp_frame, text=tr("Colores complementarios y análogos"),
-                                 font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
+                                 font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=10, pady=(6, 2))
                     analogs_row = ctk.CTkFrame(comp_frame, fg_color="transparent")
                     analogs_row.pack(padx=10, pady=(0, 6))
                     comp_c = complementary(r0, g0, b0)
@@ -1892,7 +1892,7 @@ class ToolsCreativeService:
                         f2 = ctk.CTkFrame(analogs_row, fg_color=col, width=50, height=40, corner_radius=6)
                         f2.pack(side="left", padx=3)
                         f2.pack_propagate(False)
-                        ctk.CTkLabel(f2, text=lab, font=ctk.CTkFont(size=8),
+                        ctk.CTkLabel(f2, text=lab, font=ctk.CTkFont(size=P.FUENTE_HINT),
                                      text_color="white" if sum(int(col[i*2+1:i*2+3], 16) for i in range(3))/3 < 128 else "black",
                                      fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
                         f2.bind("<Button-1>", lambda e, h=col: (pyperclip.copy(h), self.app.dialogs.set_estado(tr('📋 {0} copiado').format(h), P.TXT_OK)))
@@ -1952,11 +1952,11 @@ class ToolsCreativeService:
         win.transient(parent_window or self.app)
 
         ctk.CTkLabel(win, text=tr("📚 Biblioteca de paletas"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
 
         # Cabecera con contador
         cont_var = ctk.StringVar(value="")
-        ctk.CTkLabel(win, textvariable=cont_var, font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(win, textvariable=cont_var, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=text_muted).pack(pady=(0, 6))
 
         scroll = ctk.CTkScrollableFrame(win,
@@ -1983,11 +1983,11 @@ class ToolsCreativeService:
                 hdr = ctk.CTkFrame(card, fg_color="transparent")
                 hdr.pack(fill="x", padx=12, pady=(8, 4))
                 ctk.CTkLabel(hdr, text=p.get("nombre", f"Paleta {idx+1}"),
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=text_main).pack(side="left")
                 if p.get("timestamp"):
                     ctk.CTkLabel(hdr, text=p["timestamp"][:10],
-                                 font=ctk.CTkFont(size=9),
+                                 font=ctk.CTkFont(size=P.FUENTE_HINT),
                                  text_color=text_muted).pack(side="left", padx=10)
 
                 def _aplicar(pal=p):
@@ -2037,7 +2037,7 @@ class ToolsCreativeService:
                         text_c = "white" if (r+g+b)/3 < 128 else "black"
                     except Exception:
                         text_c = "white"
-                    ctk.CTkLabel(f, text=hex_c, font=ctk.CTkFont(size=8),
+                    ctk.CTkLabel(f, text=hex_c, font=ctk.CTkFont(size=P.FUENTE_HINT),
                                  text_color=text_c, fg_color="transparent"
                                  ).place(relx=0.5, rely=0.5, anchor="center")
                     # Click para copiar el color individual

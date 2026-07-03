@@ -345,21 +345,21 @@ class DataMgmtService:
         v.transient(self.app)
 
         ctk.CTkLabel(v, text=tr("⚡ Auto-expansión rápida (en la idea)"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr("Escribe ';palabra' + Espacio en la idea y se expande automáticamente."),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 4))
         ctk.CTkLabel(v, text=tr("Los custom sobrescriben a los default si comparten trigger."),
-                     font=ctk.CTkFont(size=9, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
 
         # Form añadir/editar
         form = ctk.CTkFrame(v, fg_color=c["fg_dark"])
         form.pack(fill="x", padx=12, pady=4)
         ctk.CTkLabel(form, text=tr("Trigger (sin ;):"),
-                     font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4), pady=8)
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(side="left", padx=(10, 4), pady=8)
         ent_trigger = ctk.CTkEntry(form, width=110, placeholder_text=tr("ej: cine"))
         ent_trigger.pack(side="left", padx=4)
         ctk.CTkLabel(form, text=tr("Expansión:"),
-                     font=ctk.CTkFont(size=10)).pack(side="left", padx=(10, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(side="left", padx=(10, 4))
         ent_expansion = ctk.CTkEntry(form, width=320, placeholder_text=tr("ej: cinematic lighting, film grain"))
         ent_expansion.pack(side="left", padx=4)
 
@@ -402,7 +402,7 @@ class DataMgmtService:
             # Sección custom
             if custom:
                 ctk.CTkLabel(scroll, text=tr('📝 Tus snippets ({0})').format(len(custom)),
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=P.TXT_OK).pack(anchor="w", pady=(4, 4))
                 for trigger in sorted(custom_keys):
                     expansion = custom[trigger]
@@ -411,7 +411,7 @@ class DataMgmtService:
 
             # Sección defaults (los que NO han sido sobrescritos)
             ctk.CTkLabel(scroll, text=tr('📦 Predefinidos ({0})').format(len(self.app.SNIPPETS_DEFAULT) - len(custom_keys & set(self.app.SNIPPETS_DEFAULT.keys()))),
-                         font=ctk.CTkFont(size=12, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", pady=(12, 4))
             for trigger in sorted(self.app.SNIPPETS_DEFAULT.keys()):
                 if trigger in custom_keys: continue  # ya se mostró arriba
@@ -423,10 +423,10 @@ class DataMgmtService:
             row.pack(fill="x", pady=2)
             badge = "  ⚡" if override else ""
             ctk.CTkLabel(row, text=f"  ;{trigger}{badge}",
-                         font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+                         font=ctk.CTkFont(family="Consolas", size=P.FUENTE_CUERPO, weight="bold"),
                          text_color=c["hdr_text"], width=120, anchor="w").pack(side="left", padx=8, pady=6)
             preview = expansion[:60] + ("…" if len(expansion) > 60 else "")
-            ctk.CTkLabel(row, text=preview, font=ctk.CTkFont(size=10),
+            ctk.CTkLabel(row, text=preview, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                          text_color=c["muted_text"], anchor="w").pack(side="left", fill="x", expand=True)
 
             # Botón Copiar — disponible en TODOS los snippets (custom y predefinidos)
@@ -678,16 +678,16 @@ class DataMgmtService:
         vent.geometry("680x600")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🏷️ Tags reutilizables (al prompt)"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text=tr("Frases cortas (tags, fórmulas de calidad, look…) que añades "
                           "al final del POSITIVE con un click."),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 2))
         ctk.CTkLabel(vent,
                      text=tr("💡 Diferencia con Fórmulas: aquí son fragmentos cortos para "
                           "complementar; las Fórmulas guardan un POSITIVE completo."),
-                     font=ctk.CTkFont(size=9, slant="italic"),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                      text_color=P.TXT_MUTED).pack(pady=(0, 6))
 
         # Buscador
@@ -713,7 +713,7 @@ class DataMgmtService:
         # Form añadir/editar (colapsado por defecto)
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         ctk.CTkLabel(form, text=tr("➕ Nuevo / editar snippet"),
-                     font=ctk.CTkFont(size=11, weight="bold")
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
                      ).pack(anchor="w", padx=10, pady=(8, 2))
         ent_nombre = ctk.CTkEntry(form,
                                   placeholder_text=tr("Nombre (ej: 'Mi look cinematográfico')"),
@@ -771,7 +771,7 @@ class DataMgmtService:
                 msg = (tr("Sin resultados para '{0}'").format(termino) if termino
                        else tr("Aún no tienes snippets. Pulsa '➕ Nuevo snippet'."))
                 ctk.CTkLabel(scroll, text=msg,
-                             font=ctk.CTkFont(size=11),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
@@ -779,11 +779,11 @@ class DataMgmtService:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=2)
                 ctk.CTkLabel(card, text=f"  🏷️ {s.get('nombre', '?')}",
-                             font=ctk.CTkFont(size=11, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                              text_color=c["hdr_text"]
                              ).pack(anchor="w", padx=8, pady=(4, 0))
                 ctk.CTkLabel(card, text=f"  {s.get('tags', '')[:200]}",
-                             font=ctk.CTkFont(size=10),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"],
                              wraplength=560, justify="left", anchor="w"
                              ).pack(fill="x", padx=8, pady=(0, 2))
@@ -813,14 +813,14 @@ class DataMgmtService:
 
                 ctk.CTkButton(btn_row, text=tr("➕ Añadir"), width=80, height=22,
                               fg_color=P.BTN_EXITO,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=80, height=22,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
                               fg_color=P.BTN_PELIGRO,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_borrar).pack(side="right", padx=2)
 
         def crear():
@@ -847,7 +847,7 @@ class DataMgmtService:
 
         btn_crear = ctk.CTkButton(form, text=tr("✅ Crear snippet"), width=140, height=26,
                                   fg_color=P.BTN_EXITO,
-                                  font=ctk.CTkFont(size=10, weight="bold"),
+                                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                   command=crear)
         btn_crear.pack(pady=(0, 8))
 
@@ -867,16 +867,16 @@ class DataMgmtService:
         vent.geometry("680x550")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("📐 Fórmulas guardadas"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text=tr("Prompts COMPLETOS (positive + negative) guardados como receta "
                           "reutilizable. Carga uno y aplícalo entero al área de salida."),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 2))
         ctk.CTkLabel(vent,
                      text=tr("💡 Diferencia con Snippets: aquí guardas el prompt entero; "
                           "los Snippets son frases cortas para sumar a un prompt existente."),
-                     font=ctk.CTkFont(size=9, slant="italic"),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                      text_color=P.TXT_MUTED).pack(pady=(0, 4))
 
         # Botón "Guardar el POSITIVE actual como fórmula"
@@ -902,7 +902,7 @@ class DataMgmtService:
 
         ctk.CTkButton(vent, text=tr("💾 Guardar POSITIVE actual como fórmula"), width=300, height=28,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=11), command=_guardar_actual).pack(pady=5)
+                      font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=_guardar_actual).pack(pady=5)
 
         # Buscador
         search_row = ctk.CTkFrame(vent, fg_color="transparent")
@@ -950,7 +950,7 @@ class DataMgmtService:
                 msg = (tr("Sin resultados para '{0}'").format(termino) if termino
                        else tr("No hay fórmulas. Genera un prompt y guárdalo aquí."))
                 ctk.CTkLabel(scroll, text=msg,
-                             font=ctk.CTkFont(size=11),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
@@ -959,13 +959,13 @@ class DataMgmtService:
                 card.pack(fill="x", pady=3)
                 ctk.CTkLabel(card,
                              text=f"  📐 {f.get('nombre', '?')}  ·  {f.get('fecha', '')}",
-                             font=ctk.CTkFont(size=11, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                              text_color=c["hdr_text"]
                              ).pack(anchor="w", padx=8, pady=(4, 0))
                 preview = f.get("positive", "")[:200]
                 ctk.CTkLabel(card,
                              text=tr('  POS: {0}{1}').format((preview), ('…' if len(f.get('positive','')) > 200 else '')),
-                             font=ctk.CTkFont(size=10),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"],
                              wraplength=560, justify="left", anchor="w"
                              ).pack(fill="x", padx=8, pady=(0, 2))
@@ -1013,14 +1013,14 @@ class DataMgmtService:
 
                 ctk.CTkButton(btn_row, text=tr("✅ Cargar"), width=80, height=22,
                               fg_color=P.BTN_EXITO,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_cargar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Renombrar"), width=100, height=22,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_renombrar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22,
                               fg_color=P.BTN_PELIGRO,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_borrar).pack(side="right", padx=2)
 
         refrescar()
@@ -1046,11 +1046,11 @@ class DataMgmtService:
         # ── Encabezado ───────────────────────────────────────────────
         ctk.CTkLabel(
             vent, text=tr("📚 Prompts de ejemplo probados"),
-            font=ctk.CTkFont(size=16, weight="bold")
+            font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")
         ).pack(pady=(10, 2))
         lbl_subtitulo = ctk.CTkLabel(
             vent, text=tr("Filtra, busca y carga uno en el resultado"),
-            font=ctk.CTkFont(size=10), text_color=c["muted_text"]
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]
         )
         lbl_subtitulo.pack(pady=(0, 6))
 
@@ -1065,12 +1065,12 @@ class DataMgmtService:
         fila_busqueda = ctk.CTkFrame(vent, fg_color="transparent")
         fila_busqueda.pack(fill="x", padx=15, pady=(2, 4))
         ctk.CTkLabel(
-            fila_busqueda, text="🔍", font=ctk.CTkFont(size=14)
+            fila_busqueda, text="🔍", font=ctk.CTkFont(size=P.FUENTE_TITULO)
         ).pack(side="left", padx=(0, 4))
         entry_busqueda = ctk.CTkEntry(
             fila_busqueda, textvariable=busqueda_var,
             placeholder_text=tr("Buscar por título, modelo, tags o estilos…"),
-            height=26, font=ctk.CTkFont(size=11)
+            height=26, font=ctk.CTkFont(size=P.FUENTE_CUERPO)
         )
         entry_busqueda.pack(side="left", fill="x", expand=True)
 
@@ -1078,7 +1078,7 @@ class DataMgmtService:
         fila_modos = ctk.CTkFrame(vent, fg_color="transparent")
         fila_modos.pack(fill="x", padx=15, pady=(2, 2))
         ctk.CTkLabel(
-            fila_modos, text=tr("Modo:"), font=ctk.CTkFont(size=10, weight="bold"),
+            fila_modos, text=tr("Modo:"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
             text_color=c["muted_text"], width=55, anchor="w"
         ).pack(side="left")
         btns_modo = []  # para poder cambiar su color visualmente
@@ -1094,7 +1094,7 @@ class DataMgmtService:
             b = ctk.CTkButton(
                 fila_modos, text=tr(txt), width=78, height=24,
                 fg_color=c["fg_frame"] if val == modo_actual else c["fg_dark"],
-                hover_color="#2a2a3a", font=ctk.CTkFont(size=10),
+                hover_color="#2a2a3a", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                 command=lambda v=val: _set_modo(v)
             )
             b.pack(side="left", padx=2)
@@ -1110,24 +1110,24 @@ class DataMgmtService:
         })
 
         ctk.CTkLabel(
-            fila_combos, text=tr("Plataforma:"), font=ctk.CTkFont(size=10, weight="bold"),
+            fila_combos, text=tr("Plataforma:"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
             text_color=c["muted_text"], width=80, anchor="w"
         ).pack(side="left")
         combo_plat = ctk.CTkComboBox(
             fila_combos, values=plataformas_presentes, variable=filtro_plat_var,
-            width=200, height=24, font=ctk.CTkFont(size=10),
+            width=200, height=24, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             command=lambda _: refrescar()
         )
         combo_plat.pack(side="left", padx=(0, 12))
 
         ctk.CTkLabel(
-            fila_combos, text=tr("Dificultad:"), font=ctk.CTkFont(size=10, weight="bold"),
+            fila_combos, text=tr("Dificultad:"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
             text_color=c["muted_text"], width=72, anchor="w"
         ).pack(side="left")
         combo_dif = ctk.CTkComboBox(
             fila_combos, values=["todas", "principiante", "medio", "avanzado"],
             variable=filtro_dif_var, width=130, height=24,
-            font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             command=lambda _: refrescar()
         )
         combo_dif.pack(side="left")
@@ -1142,12 +1142,12 @@ class DataMgmtService:
         ctk.CTkButton(
             fila_combos, text=tr("✖ Limpiar"), width=80, height=24,
             fg_color=c["fg_dark"], hover_color="#2a2a3a",
-            font=ctk.CTkFont(size=10), command=_limpiar
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_limpiar
         ).pack(side="right")
 
         # ── Contador "Mostrando X de Y" ──────────────────────────────
         lbl_contador = ctk.CTkLabel(
-            vent, text="", font=ctk.CTkFont(size=10),
+            vent, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             text_color=c["muted_text"], anchor="w"
         )
         lbl_contador.pack(fill="x", padx=15, pady=(6, 2))
@@ -1204,7 +1204,7 @@ class DataMgmtService:
             if not ejemplos:
                 ctk.CTkLabel(
                     scroll, text=tr("🔎  Ningún ejemplo coincide con los filtros."),
-                    font=ctk.CTkFont(size=12), text_color=c["muted_text"]
+                    font=ctk.CTkFont(size=P.FUENTE_SECCION), text_color=c["muted_text"]
                 ).pack(pady=30)
                 return
 
@@ -1221,7 +1221,7 @@ class DataMgmtService:
                 ctk.CTkLabel(
                     hdr,
                     text=f"  {modo_emoji} {ej.get('titulo', tr('(sin título)'))}  ·  {ej.get('modelo', '')}",
-                    font=ctk.CTkFont(size=11, weight="bold"),
+                    font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                     text_color=c["hdr_text"]
                 ).pack(side="left")
 
@@ -1234,7 +1234,7 @@ class DataMgmtService:
                     bg, fg = DIF_COLORS[dif]
                     ctk.CTkLabel(
                         fila_badges, text=f" {dif.upper()} ",
-                        font=ctk.CTkFont(size=9, weight="bold"),
+                        font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                         fg_color=bg, text_color=fg, corner_radius=4
                     ).pack(side="left", padx=(0, 4))
 
@@ -1242,7 +1242,7 @@ class DataMgmtService:
                 if plat:
                     ctk.CTkLabel(
                         fila_badges, text=f" {plat} ",
-                        font=ctk.CTkFont(size=9),
+                        font=ctk.CTkFont(size=P.FUENTE_HINT),
                         fg_color=c["fg_dark"], text_color=c["muted_text"],
                         corner_radius=4
                     ).pack(side="left", padx=(0, 4))
@@ -1251,7 +1251,7 @@ class DataMgmtService:
                 if estilos:
                     ctk.CTkLabel(
                         fila_badges, text=f"{', '.join(estilos)}",
-                        font=ctk.CTkFont(size=9, slant="italic"),
+                        font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                         text_color=c["muted_text"]
                     ).pack(side="left", padx=(4, 0))
 
@@ -1260,7 +1260,7 @@ class DataMgmtService:
                 if tags:
                     ctk.CTkLabel(
                         card, text="🏷  " + " · ".join(tags),
-                        font=ctk.CTkFont(size=9), text_color=c["muted_text"],
+                        font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c["muted_text"],
                         anchor="w"
                     ).pack(fill="x", padx=10, pady=(0, 2))
 
@@ -1268,7 +1268,7 @@ class DataMgmtService:
                 preview = ej["prompt"][:150] + "..." if len(ej["prompt"]) > 150 else ej["prompt"]
                 ctk.CTkLabel(
                     card, text=preview,
-                    font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
                     wraplength=760, justify="left", anchor="w"
                 ).pack(fill="x", padx=10, pady=(2, 4))
 
@@ -1315,17 +1315,17 @@ class DataMgmtService:
                 ctk.CTkButton(
                     btn_row, text=tr("✅ Usar"), width=68, height=22,
                     fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                    font=ctk.CTkFont(size=10), command=_usar
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_usar
                 ).pack(side="left", padx=2)
                 ctk.CTkButton(
                     btn_row, text=tr("📋 Copiar"), width=68, height=22,
                     fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
-                    font=ctk.CTkFont(size=10), command=_copiar
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_copiar
                 ).pack(side="left", padx=2)
                 ctk.CTkButton(
                     btn_row, text=tr("⭐ Favorito"), width=78, height=22,
                     fg_color="#b8860b", hover_color="#8b6508",
-                    font=ctk.CTkFont(size=10), command=_favorito
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_favorito
                 ).pack(side="left", padx=2)
 
         # Debounce 200ms para no repintar con cada tecla cuando la

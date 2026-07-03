@@ -141,10 +141,10 @@ class RefinamientoService:
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
         ctk.CTkLabel(sel, text=tr("🔂 Modo Iteración"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel,
                      text=tr('Genera {0} variantes cambiando SOLO un elemento:').format(n),
-                     font=ctk.CTkFont(size=11),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color="#6b7280" if is_lt else "#888888"
                      ).pack(pady=(0, 12))
 
@@ -159,7 +159,7 @@ class RefinamientoService:
             btn = ctk.CTkButton(sel, text=tr(label), width=300, height=32,
                                 fg_color=P.BTN_PRIMARIO if is_lt else "#1a3a5a",
                                 hover_color=P.BTN_PRIMARIO_HOVER if is_lt else "#2a4a6a",
-                                font=ctk.CTkFont(size=11),
+                                font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                 command=lambda d=descripcion, n_=n: (
                                     sel.destroy(),
                                     self._iterar_elemento(d, n_)))

@@ -58,11 +58,11 @@ class DialogsService:
         v.geometry("780x720")
 
         ctk.CTkLabel(v, text=tr("🔑 Configura tus motores de IA"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(14, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(14, 4))
         ctk.CTkLabel(v, text=tr("Tu app puede usar varios proveedores. Cada uno tiene su API key."),
-                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED).pack(pady=(0, 4))
         ctk.CTkLabel(v, text=tr("🏆 = gratis (con límites)   💎 = de pago"),
-                     font=ctk.CTkFont(size=10, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(0, 8))
@@ -114,21 +114,21 @@ class DialogsService:
             estado_actual = tr("✅ configurado") if current_key_init else tr("⚠️ sin configurar")
             color_estado = "#2ecc71" if current_key_init else "#e67e22"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
-                         font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
-                                        font=ctk.CTkFont(size=10),
+                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                         text_color=color_estado)
             lbl_estado.pack(side="right")
 
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
-                         font=ctk.CTkFont(size=10, slant="italic"), text_color="#aaaaaa",
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color="#aaaaaa",
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
 
             # Indicador de origen: keyring / keys.json cifrado / .env
             lbl_origen = ctk.CTkLabel(
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
-                font=ctk.CTkFont(size=9, slant="italic"),
+                font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                 text_color=P.TXT_INFO if origen_init else "#666",
                 anchor="w",
             )
@@ -160,7 +160,7 @@ class DialogsService:
                 return _abrir
             ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_crear_obtener_btn()).pack(side="left", padx=2)
 
             # Botón borrar individual
@@ -184,7 +184,7 @@ class DialogsService:
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
                 fg_color=P.BTN_PELIGRO, hover_color="#5a1010",
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                 command=_crear_borrar_btn(),
                 state="normal" if current_key_init else "disabled",
             )
@@ -206,7 +206,7 @@ class DialogsService:
         sep.pack(fill="x", pady=(12, 4))
         ctk.CTkLabel(
             scroll, text=tr("🖼 Proveedores de IMAGEN (no LLM)"),
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
             text_color=P.BTN_ACENTO,
         ).pack(anchor="w", padx=4, pady=(4, 2))
         ctk.CTkLabel(
@@ -216,7 +216,7 @@ class DialogsService:
                 "🖼 Preview. SON OPCIONALES — sin key, la app funciona "
                 "en modo anónimo (más lento, con rate limit).")
             ),
-            font=ctk.CTkFont(size=10, slant="italic"),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
             text_color="#aaaaaa",
             wraplength=720, justify="left",
         ).pack(anchor="w", padx=4, pady=(0, 8))
@@ -232,20 +232,20 @@ class DialogsService:
             estado_actual = tr("✅ configurado") if current_key_init else tr("⚪ opcional (modo anónimo)")
             color_estado = "#2ecc71" if current_key_init else "#9ca3af"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
-                         font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
-                                        font=ctk.CTkFont(size=10),
+                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                         text_color=color_estado)
             lbl_estado.pack(side="right")
 
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
-                         font=ctk.CTkFont(size=10, slant="italic"), text_color="#aaaaaa",
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color="#aaaaaa",
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
 
             lbl_origen = ctk.CTkLabel(
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
-                font=ctk.CTkFont(size=9, slant="italic"),
+                font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                 text_color=P.TXT_INFO if origen_init else "#666",
                 anchor="w",
             )
@@ -277,7 +277,7 @@ class DialogsService:
                 return _abrir
             ctk.CTkButton(fila, text=tr("🌐 Obtener key"), width=100, height=28,
                           fg_color="#1e3a5f", hover_color="#162d49",
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_crear_obtener_btn_img()).pack(side="left", padx=2)
 
             def _crear_borrar_btn_img(p=pid, e=ent, info_l=info):
@@ -300,7 +300,7 @@ class DialogsService:
             btn_borrar = ctk.CTkButton(
                 fila, text="🗑", width=36, height=28,
                 fg_color=P.BTN_PELIGRO, hover_color="#5a1010",
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                 command=_crear_borrar_btn_img(),
                 state="normal" if current_key_init else "disabled",
             )
@@ -400,7 +400,7 @@ class DialogsService:
         ctk.CTkLabel(v, text=APP_TITLE, font=ctk.CTkFont(size=20, weight="bold"),
                      text_color=c["hdr_text"]).pack(pady=(20, 4))
         ctk.CTkLabel(v, text=tr('Versión {0}').format(PUBLIC_VERSION),
-                     font=ctk.CTkFont(size=11, slant="italic"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 16))
 
         # Descripción
@@ -411,14 +411,14 @@ class DialogsService:
             "import/export JSON pro (Veo/Sora/Kling), dashboard,\n"
             "atajos de teclado y mucho más."
         )
-        ctk.CTkLabel(v, text=descripcion, font=ctk.CTkFont(size=11),
+        ctk.CTkLabel(v, text=descripcion, font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=c["panel_text"], justify="center",
                      wraplength=460).pack(pady=(0, 24))
 
         # Autor — AUTHOR es un dict; mostrar solo el nombre (no el dict entero)
         _autor = AUTHOR.get("nombre", "") if isinstance(AUTHOR, dict) else AUTHOR
         ctk.CTkLabel(v, text=tr('Creado por {0}').format(_autor),
-                     font=ctk.CTkFont(size=11, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                      text_color=c["panel_text"]).pack(pady=(8, 6))
 
         # Enlaces
@@ -432,7 +432,7 @@ class DialogsService:
         for label, url in enlaces:
             ctk.CTkButton(links_frame, text=label, width=140, height=30,
                           fg_color=c["fg_dark"],
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=5)
 
         # Botón cerrar
@@ -543,7 +543,7 @@ class DialogsService:
         ctk.CTkLabel(
             author_frame,
             text=tr('G-Prompt Studio v{0} — Creado con ❤️ por {1}').format((PUBLIC_VERSION), (AUTHOR['nombre'])),
-            font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             text_color="#6b7280" if is_light else "#9ca3af"
         ).pack(side="left", padx=(2, 0))
 
@@ -595,7 +595,7 @@ class DialogsService:
                 author_frame, text=txt, width=98, height=22,
                 fg_color=btn_bg, hover_color=btn_hover,
                 text_color=col,
-                font=ctk.CTkFont(size=10, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                 corner_radius=4,
                 border_width=1 if is_light else 0,
                 border_color="#d1d5db" if is_light else "#374151",

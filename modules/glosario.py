@@ -11,6 +11,7 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 
@@ -148,7 +149,7 @@ def abrir_glosario(app):
         fila_top.pack(fill="x", padx=12, pady=(8, 0))
         ctk.CTkLabel(
             fila_top, text=entrada["titulo"],
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
             text_color=text_main, anchor="w",
         ).pack(side="left")
 
@@ -159,7 +160,7 @@ def abrir_glosario(app):
                 fila_top, text=tr("▶ Probar"), width=80, height=24,
                 fg_color=accent,
                 hover_color=("#1d4ed8" if is_lt else "#3b82f6"),
-                font=ctk.CTkFont(size=10),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                 command=lambda a=accion: _ejecutar_accion(a),
             ).pack(side="right")
 
@@ -167,7 +168,7 @@ def abrir_glosario(app):
             card, text=entrada["descripcion"],
             text_color=text_muted, anchor="w",
             wraplength=800, justify="left",
-            font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
         ).pack(fill="x", padx=12, pady=(2, 10))
 
     import re as _re
@@ -202,14 +203,14 @@ def abrir_glosario(app):
 
         if n == 0:
             ctk.CTkLabel(scroll, text=tr("Sin resultados."), text_color=text_muted,
-                         font=ctk.CTkFont(size=14)).pack(pady=40)
+                         font=ctk.CTkFont(size=P.FUENTE_TITULO)).pack(pady=40)
             return
 
         if cat_sel_real:
             # Vista categoría única → solo esa categoría
             ctk.CTkLabel(
                 scroll, text=cat_sel_real,
-                font=ctk.CTkFont(size=15, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                 text_color=accent, anchor="w",
             ).pack(fill="x", padx=4, pady=(14, 4))
             for entrada in sorted(filtradas, key=lambda e: _clave_orden(e["titulo"])):
@@ -225,7 +226,7 @@ def abrir_glosario(app):
                     continue
                 ctk.CTkLabel(
                     scroll, text=cat,
-                    font=ctk.CTkFont(size=15, weight="bold"),
+                    font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                     text_color=accent, anchor="w",
                 ).pack(fill="x", padx=4, pady=(14, 4))
                 for entrada in sorted(por_cat[cat], key=lambda e: _clave_orden(e["titulo"])):

@@ -285,7 +285,7 @@ class ToolsWorkflowService:
         v.title(tr("📋 Cargar setup"))
         v.geometry("560x520")
         v.transient(self.app)
-        ctk.CTkLabel(v, text=tr("📋 Setups guardados"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(v, text=tr("📋 Setups guardados"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 8))
         scroll = ctk.CTkScrollableFrame(v, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=(0, 10))
 
@@ -299,7 +299,7 @@ class ToolsWorkflowService:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=8)
                 card.pack(fill="x", pady=4)
                 # Header del card
-                ctk.CTkLabel(card, text=f"📋 {nombre}", font=ctk.CTkFont(size=12, weight="bold"),
+                ctk.CTkLabel(card, text=f"📋 {nombre}", font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              anchor="w").pack(fill="x", padx=10, pady=(8, 2))
                 # Resumen
                 modelo = setup.get("modelo", "—")
@@ -313,10 +313,10 @@ class ToolsWorkflowService:
                 if ratio: resumen += f" · {ratio}"
                 if estilos: resumen += f" · 🎨 {len(estilos)} estilos"
                 if negatives: resumen += f" · 🚫 {len(negatives)} negs"
-                ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=10),
+                ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=P.TXT_MUTED, anchor="w").pack(fill="x", padx=10)
                 if fecha:
-                    ctk.CTkLabel(card, text=tr('  guardado: {0}').format(fecha), font=ctk.CTkFont(size=9),
+                    ctk.CTkLabel(card, text=tr('  guardado: {0}').format(fecha), font=ctk.CTkFont(size=P.FUENTE_HINT),
                                  text_color="#555", anchor="w").pack(fill="x", padx=10)
                 # Botones
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -360,12 +360,12 @@ class ToolsWorkflowService:
         vent.geometry("520x620")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr("⏲ Cron — Variantes programadas"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 3))
+        ctk.CTkLabel(vent, text=tr("⏲ Cron — Variantes programadas"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(vent, text=tr("Genera N VARIANTES distintas espaciadas en el tiempo.\nCada una añade variación (encuadre, iluminación, paleta...) automáticamente."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"], justify="center").pack(pady=(0, 12))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"], justify="center").pack(pady=(0, 12))
 
         ctk.CTkLabel(vent, text=tr('Idea base:\n{0}{1}').format((idea[:120]), ('...' if len(idea) > 120 else '')),
-                     font=ctk.CTkFont(size=10), text_color=c["hdr_text"], wraplength=460,
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["hdr_text"], wraplength=460,
                      fg_color=c["fg_dark"], corner_radius=6).pack(fill="x", padx=15, pady=(0, 12))
 
         # Cantidad
@@ -385,7 +385,7 @@ class ToolsWorkflowService:
         ent_intervalo.pack(side="left")
 
         # Qué variar
-        ctk.CTkLabel(vent, text=tr("Qué cambiar entre variantes:"), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(12, 3))
+        ctk.CTkLabel(vent, text=tr("Qué cambiar entre variantes:"), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=20, pady=(12, 3))
         var_aspecto = ctk.StringVar(value=tr("Variar todo aleatoriamente"))
         # El combo muestra la traducción; el lookup en mapeo_aspecto
         # des-traduce con tr_es() (claves ES).
@@ -403,15 +403,15 @@ class ToolsWorkflowService:
 
         # Campo personalizado
         ctk.CTkLabel(vent, text=tr("Instrucción personalizada (opcional):"),
-                     font=ctk.CTkFont(size=10, weight="bold"), text_color=c["muted_text"]).pack(anchor="w", padx=20, pady=(8, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"), text_color=c["muted_text"]).pack(anchor="w", padx=20, pady=(8, 2))
         ent_personalizado = ctk.CTkEntry(vent,
                                           placeholder_text=tr('ej: "cambia el animal en cada variante" o "varía el color del coche"'),
                                           width=460, height=28)
         ent_personalizado.pack(anchor="w", padx=20)
         ctk.CTkLabel(vent, text=tr("Si rellenas esto, se usa SIEMPRE (independientemente del selector de arriba)."),
-                     font=ctk.CTkFont(size=9, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(anchor="w", padx=20, pady=(2, 0))
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED_OSCURO).pack(anchor="w", padx=20, pady=(2, 0))
 
-        lbl_progreso = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=11), text_color=c["muted_text"])
+        lbl_progreso = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=c["muted_text"])
         lbl_progreso.pack(pady=15)
 
         cron_state = {"activo": False, "actuales": 0, "generados": [],
@@ -599,9 +599,9 @@ class ToolsWorkflowService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr('📜 {0} versiones en esta sesión').format(len(self.app._versiones_prompt)),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Click en una versión para restaurarla"),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=5)
@@ -629,11 +629,11 @@ class ToolsWorkflowService:
             hdr.pack_propagate(False)
             ctk.CTkLabel(hdr,
                          text=tr('  📜 Versión #{0}  ·  {1}{2}').format((num), (ver.get('fecha', '')), (origen_txt)),
-                         font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(side="left", padx=4)
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), text_color=c["hdr_text"]).pack(side="left", padx=4)
 
             preview = ver["texto"][:200]
             ctk.CTkLabel(card, text=preview + ("..." if len(ver["texto"]) > 200 else ""),
-                         font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
                          wraplength=640, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
 
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -644,9 +644,9 @@ class ToolsWorkflowService:
                 vent.destroy()
                 self.app.dialogs.set_estado(tr('⏪ Versión restaurada'), P.TXT_OK)
             ctk.CTkButton(btn_row, text=tr("⏪ Restaurar esta"), width=130, height=22, fg_color=P.BTN_EXITO,
-                          font=ctk.CTkFont(size=10), command=_restaurar).pack(side="left", padx=2)
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_restaurar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=lambda t=ver["texto"]: pyperclip.copy(t)).pack(side="left", padx=2)
 
     def _abrir_macros(self):
@@ -662,9 +662,9 @@ class ToolsWorkflowService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("⚡ Macros — Secuencias de acciones automatizadas"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Combina acciones (ej: Generar → Refinar cinematográfico → Guardar estrella)"),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         # Acciones disponibles para construir macros (solo automáticas).
         # Definidas a nivel de módulo (ACCIONES_MACRO) para poder testear que
@@ -679,7 +679,7 @@ class ToolsWorkflowService:
         form = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         form.pack(fill="x", padx=10, pady=5)
         lbl_form_titulo = ctk.CTkLabel(form, text=tr("➕ Nueva macro"),
-                                        font=ctk.CTkFont(size=11, weight="bold"))
+                                        font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"))
         lbl_form_titulo.pack(anchor="w", padx=10, pady=(8, 2))
 
         ent_nombre_m = ctk.CTkEntry(form,
@@ -697,7 +697,7 @@ class ToolsWorkflowService:
                 w.destroy()
             if not pasos_state["lista"]:
                 ctk.CTkLabel(pasos_box, text=tr("(añade pasos abajo)"),
-                             font=ctk.CTkFont(size=10, slant="italic"),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
                              text_color=c["muted_text"]).pack(anchor="w")
                 return
             for idx_p, label in enumerate(pasos_state["lista"]):
@@ -705,7 +705,7 @@ class ToolsWorkflowService:
                                     corner_radius=4)
                 row.pack(fill="x", pady=1)
                 ctk.CTkLabel(row, text=f"  {idx_p + 1}. {tr(label)}",
-                             font=ctk.CTkFont(size=10),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["hdr_text"],
                              anchor="w").pack(side="left", fill="x",
                                               expand=True, padx=4, pady=2)
@@ -729,17 +729,17 @@ class ToolsWorkflowService:
 
                 ctk.CTkButton(row, text="↑", width=24, height=20,
                               fg_color=c["fg_dark"],
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               state="normal" if idx_p > 0 else "disabled",
                               command=_subir).pack(side="left", padx=1)
                 ctk.CTkButton(row, text="↓", width=24, height=20,
                               fg_color=c["fg_dark"],
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               state="normal" if idx_p < len(pasos_state["lista"]) - 1 else "disabled",
                               command=_bajar).pack(side="left", padx=1)
                 ctk.CTkButton(row, text="✕", width=24, height=20,
                               fg_color=P.BTN_PELIGRO, hover_color="#3a0f0f",
-                              font=ctk.CTkFont(size=10, weight="bold"),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                               command=_quitar).pack(side="left", padx=1)
 
         # Selector de acción a añadir
@@ -772,7 +772,7 @@ class ToolsWorkflowService:
         btn_cancelar = ctk.CTkButton(f_add, text=tr("❌ Cancelar edición"),
                                       width=160, height=24,
                                       fg_color=P.BTN_PELIGRO,
-                                      font=ctk.CTkFont(size=10),
+                                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                       command=_cancelar_edicion)
         # btn_cancelar.pack(...)  ← se empaca solo cuando edit_state["idx"] != None
 
@@ -784,15 +784,15 @@ class ToolsWorkflowService:
             actual = prefs.get("macros", [])
             if not actual:
                 ctk.CTkLabel(scroll, text=tr("Aún no tienes macros. Crea la primera arriba."),
-                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
             for i, m in enumerate(actual):
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=3)
                 ctk.CTkLabel(card, text=f"  ⚡ {m.get('nombre', '?')}",
-                             font=ctk.CTkFont(size=11, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
                 pasos_str = " → ".join(m.get("pasos", []))
-                ctk.CTkLabel(card, text=f"  {pasos_str}", font=ctk.CTkFont(size=10),
+                ctk.CTkLabel(card, text=f"  {pasos_str}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"], wraplength=620, justify="left", anchor="w").pack(fill="x", padx=8, pady=(0, 2))
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
                 btn_row.pack(fill="x", padx=5, pady=(0, 4))
@@ -836,15 +836,15 @@ class ToolsWorkflowService:
                         refrescar()
 
                 ctk.CTkButton(btn_row, text=tr("▶ Ejecutar"), width=100, height=22, fg_color=P.BTN_EXITO,
-                              font=ctk.CTkFont(size=10), command=_ejecutar).pack(side="left", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_ejecutar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("✏️ Editar"), width=90, height=22, fg_color="#1a4a7a",
-                              font=ctk.CTkFont(size=10), command=_editar).pack(side="left", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_editar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="📤", width=30, height=22, fg_color="#5a3a7a",
-                              hover_color="#46295f", font=ctk.CTkFont(size=10),
+                              hover_color="#46295f", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=lambda mm=m: self._exportar_macros_a_archivo(mm)
                               ).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=30, height=22, fg_color=P.BTN_PELIGRO,
-                              font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_borrar).pack(side="right", padx=2)
 
         def crear_o_guardar():
             nombre = ent_nombre_m.get().strip()
@@ -890,12 +890,12 @@ class ToolsWorkflowService:
         botones.pack(pady=(4, 8))
         btn_crear = ctk.CTkButton(botones, text=tr("✅ Crear macro"), width=160, height=28,
                                    fg_color=P.BTN_EXITO,
-                                   font=ctk.CTkFont(size=10, weight="bold"),
+                                   font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                    command=crear_o_guardar)
         btn_crear.pack(side="left", padx=4)
         ctk.CTkButton(botones, text=tr("📥 Cargar ejemplos"), width=150, height=28,
                       fg_color="#1a4a7a", hover_color="#143a5f",
-                      font=ctk.CTkFont(size=10, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=cargar_ejemplos).pack(side="left", padx=4)
 
         def importar():
@@ -910,10 +910,10 @@ class ToolsWorkflowService:
         botones2.pack(pady=(0, 8))
         ctk.CTkButton(botones2, text=tr("📥 Importar (.json)"), width=150, height=26,
                       fg_color="#5a3a7a", hover_color="#46295f",
-                      font=ctk.CTkFont(size=10), command=importar).pack(side="left", padx=4)
+                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=importar).pack(side="left", padx=4)
         ctk.CTkButton(botones2, text=tr("📤 Exportar todas"), width=150, height=26,
                       fg_color="#5a3a7a", hover_color="#46295f",
-                      font=ctk.CTkFont(size=10),
+                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                       command=lambda: self._exportar_macros_a_archivo(
                           prefs.get("macros", []))).pack(side="left", padx=4)
 
@@ -1251,14 +1251,14 @@ class ToolsWorkflowService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🏷 Sistema de proyectos"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Organiza tus prompts en proyectos. Cada proyecto puede tener su propio setup."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         # Indicador del proyecto activo
         activo = prefs.get("proyecto_activo", "")
         lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or '(ninguno)'),
-                                    font=ctk.CTkFont(size=12, weight="bold"),
+                                    font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                     text_color=P.TXT_OK if activo else c["muted_text"])
         lbl_activo.pack(pady=5)
 
@@ -1298,13 +1298,13 @@ class ToolsWorkflowService:
             activo_a = prefs_act.get("proyecto_activo", "")
             if not proys:
                 ctk.CTkLabel(scroll, text=tr("Aún no tienes proyectos. Crea el primero arriba."),
-                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             # Opción "Sin proyecto"
             card = ctk.CTkFrame(scroll, fg_color=c["fg_dark"] if not activo_a else c["fg_frame"], corner_radius=6)
             card.pack(fill="x", pady=2)
-            ctk.CTkLabel(card, text=tr("📌 (Sin proyecto activo)"), font=ctk.CTkFont(size=11, weight="bold"),
+            ctk.CTkLabel(card, text=tr("📌 (Sin proyecto activo)"), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          text_color=c["muted_text"]).pack(side="left", padx=10, pady=6)
 
             def _activar_ninguno():
@@ -1316,7 +1316,7 @@ class ToolsWorkflowService:
                 self.app.dialogs.set_estado(tr("📌 Sin proyecto activo"))
 
             ctk.CTkButton(card, text=tr("✅ Activar"), width=80, height=22, fg_color=P.BTN_SECUNDARIO,
-                          font=ctk.CTkFont(size=10), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_activar_ninguno).pack(side="right", padx=8, pady=4)
 
             for nombre_p in sorted(proys.keys()):
                 proy_data = proys.get(nombre_p) or {}
@@ -1331,7 +1331,7 @@ class ToolsWorkflowService:
                 hdr.pack(fill="x", padx=10, pady=(6, 2))
                 badge_setup = "  💾" if tiene_setup else ""
                 ctk.CTkLabel(hdr, text=f"🏷 {nombre_p}{badge_setup}{'  ← ACTIVO' if es_activo else ''}",
-                             font=ctk.CTkFont(size=11, weight="bold" if es_activo else "normal"),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold" if es_activo else "normal"),
                              text_color=P.TXT_OK if es_activo else c["hdr_text"]).pack(side="left")
 
                 # Resumen del setup si existe
@@ -1343,7 +1343,7 @@ class ToolsWorkflowService:
                     n_neg = len(s.get("negatives") or [])
                     if n_est: resumen += f" · 🎨 {n_est}"
                     if n_neg: resumen += f" · 🚫 {n_neg}"
-                    ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=9),
+                    ctk.CTkLabel(card, text=resumen, font=ctk.CTkFont(size=P.FUENTE_HINT),
                                  text_color=P.TXT_MUTED, anchor="w").pack(fill="x", padx=14, pady=(0, 2))
 
                 # Botones de acción
@@ -1412,17 +1412,17 @@ class ToolsWorkflowService:
 
                 if not es_activo:
                     ctk.CTkButton(btn_row, text=tr("✅ Activar"), width=70, height=24, fg_color=P.BTN_EXITO,
-                                  font=ctk.CTkFont(size=10), command=_activar).pack(side="left", padx=2)
+                                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_activar).pack(side="left", padx=2)
                 if tiene_setup:
                     ctk.CTkButton(btn_row, text=tr("🔄 Aplicar setup"), width=110, height=24, fg_color=P.BTN_EXITO,
                                   hover_color=P.BTN_EXITO_HOVER,
-                                  font=ctk.CTkFont(size=10), command=_aplicar_setup_proy).pack(side="left", padx=2)
+                                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_aplicar_setup_proy).pack(side="left", padx=2)
                     ctk.CTkButton(btn_row, text=tr("🗑 setup"), width=70, height=24, fg_color="#5a4a1a",
-                                  font=ctk.CTkFont(size=10), command=_borrar_setup_proy).pack(side="left", padx=2)
+                                  font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_borrar_setup_proy).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("💾 Guardar setup actual"), width=160, height=24, fg_color=P.BTN_SECUNDARIO,
-                              font=ctk.CTkFont(size=10), command=_guardar_setup_proy).pack(side="left", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_guardar_setup_proy).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=28, height=24, fg_color=P.BTN_PELIGRO,
-                              font=ctk.CTkFont(size=10), command=_borrar).pack(side="right", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_borrar).pack(side="right", padx=2)
 
         refrescar()
 

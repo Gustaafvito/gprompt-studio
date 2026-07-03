@@ -239,9 +239,9 @@ class BackupExportService:
         sel.transient(self.app)
 
         ctk.CTkLabel(sel, text=tr("📊 Exportar a CSV"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 6))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(20, 6))
         ctk.CTkLabel(sel, text=tr("¿Qué quieres exportar?"),
-                     font=ctk.CTkFont(size=11),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=P.TXT_MUTED).pack(pady=(0, 12))
 
         # Checkboxes
@@ -478,10 +478,10 @@ class BackupExportService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("📤 Export en múltiples formatos"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent,
                      text=tr("Filtra por modo y pulsa 📋 en la plataforma deseada."),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 8))
 
         # Formatos: (nombre, contenido, color, modo)
         formatos = [
@@ -520,7 +520,7 @@ class BackupExportService:
             command=lambda _v: _render(),
         )
         seg.pack(side="left")
-        lbl_count = ctk.CTkLabel(filtro_row, text="", font=ctk.CTkFont(size=10),
+        lbl_count = ctk.CTkLabel(filtro_row, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                   text_color=P.TXT_MUTED)
         lbl_count.pack(side="left", padx=10)
 
@@ -572,19 +572,19 @@ class BackupExportService:
                 hdr = ctk.CTkFrame(card, fg_color="transparent")
                 hdr.pack(fill="x", padx=12, pady=(8, 4))
                 ctk.CTkLabel(hdr, text=nombre,
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=text_main).pack(side="left")
                 ctk.CTkLabel(hdr, text=tr('{0} chars').format(len(contenido)),
-                             font=ctk.CTkFont(size=10),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=P.TXT_MUTED).pack(side="left", padx=10)
                 ctk.CTkButton(hdr, text=tr("📋 Copiar"), width=100, height=26,
                               fg_color=color,
-                              font=ctk.CTkFont(size=10, weight="bold"),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                               command=_make_copy(contenido, nombre, color)
                               ).pack(side="right")
 
                 txt = ctk.CTkTextbox(card,
-                                     font=ctk.CTkFont(family="Consolas", size=10),
+                                     font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                                      wrap="word", height=110,
                                      fg_color=("#f9fafb" if is_lt else "#0f172a"),
                                      text_color=text_main)
@@ -627,13 +627,13 @@ class BackupExportService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🔎 Búsqueda en todas las colecciones"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
 
         f_search = ctk.CTkFrame(vent, fg_color="transparent")
         f_search.pack(fill="x", padx=15, pady=(0, 4))
         ent = ctk.CTkEntry(f_search,
                             placeholder_text=tr("Escribe lo que buscas (ej: 'cyberpunk', 'fox', 'masterpiece')..."),
-                            width=600, height=32, font=ctk.CTkFont(size=12))
+                            width=600, height=32, font=ctk.CTkFont(size=P.FUENTE_SECCION))
         ent.pack(side="left", fill="x", expand=True)
         ent.focus_set()
 
@@ -664,11 +664,11 @@ class BackupExportService:
         f_filtros = ctk.CTkFrame(vent, fg_color="transparent")
         f_filtros.pack(fill="x", padx=15, pady=(2, 6))
         ctk.CTkLabel(f_filtros, text=tr("Filtrar:"),
-                     font=ctk.CTkFont(size=10, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                      text_color=P.TXT_MUTED).pack(side="left", padx=(0, 6))
         for key, label in filtro_labels:
             ctk.CTkCheckBox(f_filtros, text=tr(label), variable=filtros[key],
-                            font=ctk.CTkFont(size=10), width=20,
+                            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), width=20,
                             command=lambda: _disparar_busqueda()
                             ).pack(side="left", padx=4)
 
@@ -680,7 +680,7 @@ class BackupExportService:
             termino = ent.get().strip().lower()
             if not termino or len(termino) < 2:
                 ctk.CTkLabel(scroll, text=tr("Escribe al menos 2 caracteres para buscar."),
-                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             resultados = []
@@ -775,11 +775,11 @@ class BackupExportService:
                 else:
                     msg = tr("Sin resultados para '{0}'").format(termino)
                 ctk.CTkLabel(scroll, text=msg,
-                             font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED_OSCURO).pack(pady=20)
                 return
 
             ctk.CTkLabel(scroll, text=tr('📊 {0} resultado{1} encontrado{2}').format((len(resultados)), ('s' if len(resultados) != 1 else ''), ('s' if len(resultados) != 1 else '')),
-                         font=ctk.CTkFont(size=11, weight="bold"), text_color=P.TXT_OK).pack(anchor="w", pady=(0, 8))
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), text_color=P.TXT_OK).pack(anchor="w", pady=(0, 8))
 
             for tipo, nombre, contenido, accion in resultados[:50]:
                 card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=6)
@@ -787,17 +787,17 @@ class BackupExportService:
                 hdr = ctk.CTkFrame(card, fg_color="#1a2a3a", corner_radius=4, height=22)
                 hdr.pack(fill="x", padx=4, pady=(3, 0))
                 hdr.pack_propagate(False)
-                ctk.CTkLabel(hdr, text=f"  {tipo}", font=ctk.CTkFont(size=10, weight="bold"),
+                ctk.CTkLabel(hdr, text=f"  {tipo}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                              text_color="#aaccee").pack(side="left", padx=4)
                 if nombre:
-                    ctk.CTkLabel(hdr, text=nombre[:50], font=ctk.CTkFont(size=10),
+                    ctk.CTkLabel(hdr, text=nombre[:50], font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                  text_color="#cccccc").pack(side="left", padx=10)
 
-                ctk.CTkLabel(card, text=contenido, font=ctk.CTkFont(size=10),
+                ctk.CTkLabel(card, text=contenido, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=P.TXT_MUTED, wraplength=680, justify="left", anchor="w").pack(fill="x", padx=8, pady=(2, 4))
 
                 btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color=P.BTN_EXITO,
-                                      font=ctk.CTkFont(size=10),
+                                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                       command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), P.TXT_OK)))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 

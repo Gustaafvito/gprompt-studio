@@ -55,8 +55,21 @@ TXT_MUTED = "#888888"     # ayuda / secundario (tema oscuro)
 TXT_MUTED_OSCURO = "#666666"  # ayuda con más contraste (sirve en claro)
 
 # ── Escala tipográfica (tamaños CTkFont) ───────────────────────────────
-# Adoptar en código nuevo; el existente se migra de forma incremental.
-FUENTE_TITULO = 18       # título de ventana
-FUENTE_SECCION = 13      # cabecera de sección/card
+# 5 niveles. Tamaños ≥18 (splash, logos, dashboards) quedan fuera de la
+# escala a propósito. El candado de tests/test_paleta.py impide volver a
+# usar literales 7-16 dentro de CTkFont en los módulos de UI.
+FUENTE_TITULO = 16       # título de ventana (antes 14/15/16 mezclados)
+FUENTE_SECCION = 13      # cabecera de sección/card (antes 12/13)
 FUENTE_CUERPO = 11       # texto normal, botones
-FUENTE_HINT = 9          # ayudas, hints en cursiva
+FUENTE_PEQUENA = 10      # texto denso: listas, cards compactas
+FUENTE_HINT = 9          # ayudas, hints en cursiva (antes 7/8/9)
+
+# ── Escala de espaciado (padx/pady) — guía para código nuevo ───────────
+# Usar múltiplos de 4: 4 (compacto), 8 (normal), 12 (secciones),
+# 16 (márgenes de ventana), 20 (aire exterior). El código existente se
+# migra por ventana, con revisión visual (no por codemod ciego).
+ESPACIO_XS = 4
+ESPACIO_S = 8
+ESPACIO_M = 12
+ESPACIO_L = 16
+ESPACIO_XL = 20

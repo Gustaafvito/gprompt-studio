@@ -10,6 +10,7 @@ from pathlib import Path
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 
@@ -272,13 +273,13 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
         fila_top = ctk.CTkFrame(card, fg_color="transparent")
         fila_top.pack(fill="x", padx=10, pady=(6, 0))
         ctk.CTkLabel(
-            fila_top, text=tr(nombre), font=ctk.CTkFont(size=12, weight="bold"),
+            fila_top, text=tr(nombre), font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
             text_color=text_main, anchor="w",
         ).pack(side="left")
         if badge_text:
             ctk.CTkLabel(
                 fila_top, text=badge_text, text_color=text_muted,
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO),
             ).pack(side="right")
 
         if d["descripcion"]:
@@ -289,7 +290,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
         if d["ejemplo"]:
             ctk.CTkLabel(
                 card, text=f"📷 {d['ejemplo']}", text_color=accent,
-                font=ctk.CTkFont(size=10, slant="italic"),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
                 anchor="w", wraplength=820, justify="left",
             ).pack(fill="x", padx=10, pady=(0, 6))
 
@@ -333,7 +334,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
         if total == 0:
             msg = (tr("Sin resultados.") if f
                    else tr("No hay estilos en la guía para {0}.").format(tr(_FILTRO_LABELS[modo])))
-            ctk.CTkLabel(scroll, text=msg, text_color=text_muted, font=ctk.CTkFont(size=14)).pack(pady=40)
+            ctk.CTkLabel(scroll, text=msg, text_color=text_muted, font=ctk.CTkFont(size=P.FUENTE_TITULO)).pack(pady=40)
             return
 
         # Página visible
@@ -347,7 +348,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
 
         for grupo in por_grupo:
             ctk.CTkLabel(
-                scroll, text=grupo, font=ctk.CTkFont(size=15, weight="bold"),
+                scroll, text=grupo, font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                 text_color=accent, anchor="w",
             ).pack(fill="x", padx=4, pady=(14, 4))
             for nombre, d in por_grupo[grupo]:

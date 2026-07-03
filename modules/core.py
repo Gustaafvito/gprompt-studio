@@ -151,7 +151,7 @@ class CoreMixin:
             # Botón flotante para salir
             self._focus_exit_btn = ctk.CTkButton(self, text=tr("✕ Salir de Focus"), width=140, height=28,
                                                   fg_color=P.BTN_ACENTO, hover_color=P.BTN_ACENTO_HOVER,
-                                                  font=ctk.CTkFont(size=11, weight="bold"),
+                                                  font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                                   corner_radius=14,
                                                   command=self._cmd_modo_focus)
             self._focus_exit_btn.place(relx=0.5, rely=0.01, anchor="n")
@@ -508,20 +508,20 @@ class CoreMixin:
         hdr.pack(fill="x", pady=(0, 4), padx=4)
         hdr.pack_propagate(False)
         ctk.CTkLabel(hdr, text=tr("💡 Ideas — click en una para aplicarla"),
-                     font=ctk.CTkFont(size=11, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                      text_color=P.TXT_ACENTO).pack(side="left", padx=8)
 
         # Botón "🔁 Más" — regenera otras 3 ideas distintas
         ctk.CTkButton(hdr, text=tr("🔁 Más"), width=70, height=22,
                       fg_color="#2a6a4a", hover_color="#1f5037",
-                      font=ctk.CTkFont(size=10, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=self.cmd_ideas).pack(side="right", padx=4)
 
         btn_cerrar = ctk.CTkButton(hdr, text="✕", width=24, height=22,
                                      fg_color="transparent",
                                      hover_color="#dc2626" if is_lt else "#3a1a1a",
                                      text_color="#6b7280" if is_lt else "#888888",
-                                     font=ctk.CTkFont(size=11),
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                      command=self._ocultar_ideas)
         btn_cerrar.pack(side="right", padx=4)
 
@@ -534,7 +534,7 @@ class CoreMixin:
             card.pack(fill="x", pady=2, padx=4)
 
             lbl = ctk.CTkLabel(card, text=f"#{i+1}: {idea_texto}",
-                                font=ctk.CTkFont(size=11),
+                                font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                 anchor="w", justify="left", wraplength=900,
                                 text_color="#1f2937" if is_lt else "#e5e7eb",
                                 cursor="hand2")
@@ -590,17 +590,17 @@ class CoreMixin:
 
             ctk.CTkButton(btn_frame, text=tr("✨ Similares"), width=85, height=26,
                           fg_color=P.BTN_ACENTO, hover_color="#5d2ab5",
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_mas_como_esta).pack(side="left", padx=2)
             ctk.CTkButton(btn_frame, text="📋", width=32, height=26,
                           fg_color=P.BTN_PRIMARIO if is_lt else "#1e3a8a",
                           hover_color=P.BTN_PRIMARIO_HOVER if is_lt else "#162d49",
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_copiar).pack(side="left", padx=2)
             ctk.CTkButton(btn_frame, text=tr("🚀 Generar"), width=85, height=26,
                           fg_color=P.BTN_EXITO,
                           hover_color=P.BTN_EXITO_HOVER if is_lt else "#0d5026",
-                          font=ctk.CTkFont(size=10, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                           command=_generar).pack(side="left", padx=2)
 
         self._ideas_frame = ideas_frame
@@ -642,11 +642,11 @@ class CoreMixin:
         vent.transient(self)
 
         ctk.CTkLabel(vent, text=tr('🔀 {0} variaciones generadas').format(len(variaciones)),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 3))
         n_total = len(variaciones)
         ctk.CTkLabel(vent,
                      text=tr('Compara las {0} versiones · Pulsa ✅ Aplicar al resultado en la que más te guste').format(n_total),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -673,7 +673,7 @@ class CoreMixin:
             hdr = ctk.CTkFrame(card, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(8, 2))
             ctk.CTkLabel(hdr, text=tr('  Variación #{0}').format(i+1),
-                         font=ctk.CTkFont(size=12, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=accent).pack(side="left")
 
             # Stats: longitud y si tiene POSITIVE/NEGATIVE
@@ -683,12 +683,12 @@ class CoreMixin:
             if neg_text:
                 stats += f" · NEG: {len(neg_text)} chars"
             ctk.CTkLabel(hdr, text=stats,
-                         font=ctk.CTkFont(size=9, slant="italic"),
+                         font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                          text_color=c["muted_text"]).pack(side="left", padx=(10, 0))
 
             # Preview del contenido (textbox con scroll propio)
             preview = ctk.CTkTextbox(card,
-                                      font=ctk.CTkFont(family="Consolas", size=10),
+                                      font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                                       wrap="word", height=120)
             preview.pack(fill="x", padx=10, pady=(2, 6))
             preview.insert("1.0", var)
@@ -739,20 +739,20 @@ class CoreMixin:
             ctk.CTkButton(btn_row, text=tr("✅ Aplicar al resultado"),
                           width=170, height=28,
                           fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                          font=ctk.CTkFont(size=11, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                           command=_aplicar).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 Todo"), width=80, height=28,
                           fg_color=accent, hover_color=self._darker(accent),
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_copiar_todo).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 POS"), width=80, height=28,
                           fg_color=P.BTN_EXITO, hover_color="#0f5f29",
-                          font=ctk.CTkFont(size=10),
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=_copiar_pos).pack(side="left", padx=2)
             if debe_mostrar_neg:
                 ctk.CTkButton(btn_row, text=tr("📋 NEG"), width=80, height=28,
                               fg_color="#dc2626", hover_color="#b91c1c",
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_copiar_neg).pack(side="left", padx=2)
 
         # Cerrar
@@ -928,10 +928,10 @@ class CoreMixin:
         sel.grab_set()
 
         ctk.CTkLabel(sel, text=titulo,
-                     font=ctk.CTkFont(size=14, weight="bold")
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")
                      ).pack(pady=(15, 4))
         ctk.CTkLabel(sel, text=descripcion,
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED,
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED,
                      justify="center", wraplength=400
                      ).pack(pady=(0, 10))
 
@@ -952,7 +952,7 @@ class CoreMixin:
         slider.set(default)
         slider.pack(pady=(0, 4))
         ctk.CTkLabel(sel, text=tr('Rango: {0}–{1}').format((n_min), (n_max)),
-                     font=ctk.CTkFont(size=9),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT),
                      text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 8))
 
         resultado = {"n": None}
@@ -973,7 +973,7 @@ class CoreMixin:
         btn_row.pack(pady=(0, 12))
         ctk.CTkButton(btn_row, text=tr("▶ Generar"), width=140, height=32,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=_aceptar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=32,
                       fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,

@@ -94,10 +94,10 @@ class AbTestingService:
         cfg.grab_set()
 
         ctk.CTkLabel(cfg, text=tr("🧪 A/B Testing 2x2"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(15, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 4))
         ctk.CTkLabel(cfg,
                      text=tr("Marca 1 o 2 dimensiones a variar.\nSe generarán 4 prompts variando solo esas."),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED,
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED,
                      justify="center").pack(pady=(0, 10))
 
         # Checkboxes para cada dimensión
@@ -107,7 +107,7 @@ class AbTestingService:
 
         # Contador y función para actualizar estado
         lbl_contador = ctk.CTkLabel(cfg, text=tr("Seleccionadas: 0 (máx 2)"),
-                                    font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED)
+                                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED)
         lbl_contador.pack(pady=(0, 5))
 
         # Refs a los checkboxes para deshabilitar visualmente los no
@@ -137,11 +137,11 @@ class AbTestingService:
             row = ctk.CTkFrame(scroll, fg_color=c["fg_dark"], corner_radius=6)
             row.pack(fill="x", pady=2)
             cb = ctk.CTkCheckBox(row, text=f"  {tr(nombre)}", variable=var,
-                                  font=ctk.CTkFont(size=11))
+                                  font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             cb.pack(side="left", padx=10, pady=6)
             dim_checks[nombre] = cb
             ctk.CTkLabel(row, text=tr('  ej: {0}').format(valores[0]),
-                         font=ctk.CTkFont(size=9, slant="italic"),
+                         font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                          text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=4)
 
         def _generar():
@@ -159,7 +159,7 @@ class AbTestingService:
         btn_row.pack(fill="x", padx=20, pady=(5, 15))
         ctk.CTkButton(btn_row, text=tr("🧪 Generar 4 variantes"), width=200, height=36,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=11, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=_generar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=36,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -241,9 +241,9 @@ class AbTestingService:
         v.transient(self.app)
 
         ctk.CTkLabel(v, text=tr('🧪 4 variantes de: {0}{1}').format((idea_base[:60]), ('…' if len(idea_base) > 60 else '')),
-                     font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr('Variando: {0}').format(' + '.join(dimensiones)),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 10))
 
         grid = ctk.CTkFrame(v, fg_color="transparent")
         grid.pack(fill="both", expand=True, padx=10, pady=5)
@@ -254,11 +254,11 @@ class AbTestingService:
         for idx, ((etiqueta, prompt), (r, col)) in enumerate(zip(prompts_generados, positions)):
             cell = ctk.CTkFrame(grid, fg_color=c["fg_dark"], corner_radius=8)
             cell.grid(row=r, column=col, padx=5, pady=5, sticky="nsew")
-            ctk.CTkLabel(cell, text=tr('📌 Variante {0}').format(idx + 1), font=ctk.CTkFont(size=11, weight="bold"),
+            ctk.CTkLabel(cell, text=tr('📌 Variante {0}').format(idx + 1), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          text_color=c["hdr_text"]).pack(anchor="w", padx=10, pady=(8, 0))
-            ctk.CTkLabel(cell, text=etiqueta, font=ctk.CTkFont(size=9, slant="italic"),
+            ctk.CTkLabel(cell, text=etiqueta, font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                          text_color=P.TXT_MUTED, wraplength=440, justify="left", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
-            txt = ctk.CTkTextbox(cell, wrap="word", height=180, font=ctk.CTkFont(family="Consolas", size=10))
+            txt = ctk.CTkTextbox(cell, wrap="word", height=180, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA))
             txt.pack(fill="both", expand=True, padx=10, pady=(0, 5))
             txt.insert("1.0", prompt)
 
@@ -315,20 +315,20 @@ class AbTestingService:
         sel_vent.transient(self.app)
 
         ctk.CTkLabel(sel_vent, text=tr("🆚 Comparador de modelos"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(15, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(15, 3))
         ctk.CTkLabel(sel_vent, text=tr('Idea: {0}{1}').format((idea[:60]), ('...' if len(idea) > 60 else '')),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
                      wraplength=470).pack(pady=(0, 5))
 
         # Selector de N modelos (2-5)
         n_frame = ctk.CTkFrame(sel_vent, fg_color="transparent")
         n_frame.pack(fill="x", padx=20, pady=(8, 4))
         ctk.CTkLabel(n_frame, text=tr("¿Cuántos modelos comparar?"),
-                     font=ctk.CTkFont(size=11, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                      anchor="w").pack(side="left", padx=(0, 8))
         n_var = ctk.IntVar(value=3)
         n_lbl = ctk.CTkLabel(n_frame, text=tr("3 modelos"),
-                              font=ctk.CTkFont(size=11, weight="bold"),
+                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                               text_color=P.TXT_OK, width=90)
         n_lbl.pack(side="right")
 
@@ -341,10 +341,10 @@ class AbTestingService:
             f = ctk.CTkFrame(frame_combos, fg_color="transparent")
             f.pack(fill="x", pady=3)
             ctk.CTkLabel(f, text=f"#{i+1}:",
-                         font=ctk.CTkFont(size=11, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          width=40, anchor="w").pack(side="left", padx=(0, 8))
             cb = ctk.CTkComboBox(f, values=modelos_disponibles, width=380,
-                                  height=28, font=ctk.CTkFont(size=11))
+                                  height=28, font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             cb.set(sugeridos[i] if i < len(sugeridos) else modelos_disponibles[0])
             cb.pack(side="left")
             combos.append(cb)
@@ -384,7 +384,7 @@ class AbTestingService:
 
         ctk.CTkButton(btn_frame, text=tr("🆚 Comparar"), width=140, height=34,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=_comparar).pack(side="left", padx=4)
         ctk.CTkButton(btn_frame, text=tr("Cancelar"), width=100, height=34,
                       fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
@@ -403,15 +403,15 @@ class AbTestingService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr('🆚 Comparativa de {0} modelos').format(n_modelos),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr('Idea: {0}{1}').format((idea[:80]), ('...' if len(idea) > 80 else '')),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"], wraplength=780).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"], wraplength=780).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=12, pady=(0, 5))
 
         lbl_status = ctk.CTkLabel(vent, text=tr('🔄 Generando para {0} modelos...').format(n_modelos),
-                                   font=ctk.CTkFont(size=11), text_color=P.TXT_ACENTO)
+                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 4))
 
         # Botón "Cerrar comparativa" — la ventana ya no se cierra al pulsar
@@ -419,7 +419,7 @@ class AbTestingService:
         # necesita un botón explícito para cerrar cuando termine.
         ctk.CTkButton(vent, text=tr("Cerrar comparativa"), width=180, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
-                      font=ctk.CTkFont(size=11, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=vent.destroy).pack(pady=(0, 8))
 
         cards = {}
@@ -438,9 +438,9 @@ class AbTestingService:
             chars_max = specs.get("max_chars", "?")
             has_neg = "✅ Neg" if specs.get("has_negative", False) else tr("❌ Sin neg")
             ctk.CTkLabel(hdr, text=tr('  #{0}  {1}  ·  {2} chars  ·  {3}').format((i+1), (m), (chars_max), (has_neg)),
-                         font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=8)
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(side="left", padx=8)
 
-            txt = ctk.CTkTextbox(card, font=ctk.CTkFont(family="Consolas", size=10), height=130, wrap="word")
+            txt = ctk.CTkTextbox(card, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA), height=130, wrap="word")
             txt.pack(fill="x", padx=8, pady=(0, 4))
             txt.insert("1.0", "⏳ Generando...")
             txt.configure(state="disabled")
@@ -448,12 +448,12 @@ class AbTestingService:
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
             btn_row.pack(fill="x", padx=8, pady=(0, 6))
             btn_usar = ctk.CTkButton(btn_row, text=tr("✅ Usar este"), width=100, height=22, fg_color=P.BTN_EXITO,
-                                       state="disabled", font=ctk.CTkFont(size=10))
+                                       state="disabled", font=ctk.CTkFont(size=P.FUENTE_PEQUENA))
             btn_usar.pack(side="left", padx=2)
             btn_copiar = ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=80, height=22, fg_color=c["fg_dark"],
-                                          state="disabled", font=ctk.CTkFont(size=10))
+                                          state="disabled", font=ctk.CTkFont(size=P.FUENTE_PEQUENA))
             btn_copiar.pack(side="left", padx=2)
-            lbl_chars = ctk.CTkLabel(btn_row, text="", font=ctk.CTkFont(size=9), text_color=c["muted_text"])
+            lbl_chars = ctk.CTkLabel(btn_row, text="", font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c["muted_text"])
             lbl_chars.pack(side="right", padx=4)
             cards[m] = {"txt": txt, "btn_usar": btn_usar, "btn_copiar": btn_copiar,
                         "lbl_chars": lbl_chars, "card": card, "hdr": hdr,

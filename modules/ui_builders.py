@@ -153,7 +153,7 @@ class UIBuildersService:
         # Cerebro (selector multi-LLM) — lado izquierdo
         frame_llm = ctk.CTkFrame(inner, fg_color="transparent")
         frame_llm.pack(side="left", padx=20)
-        self.app._lbl_cerebro = ctk.CTkLabel(frame_llm, text=tr("Cerebro:"), font=ctk.CTkFont(size=11), fg_color="transparent", text_color=hdr_label)
+        self.app._lbl_cerebro = ctk.CTkLabel(frame_llm, text=tr("Cerebro:"), font=ctk.CTkFont(size=P.FUENTE_CUERPO), fg_color="transparent", text_color=hdr_label)
         self.app._lbl_cerebro.pack(side="left", padx=(0, 4))
         # Importar dinámicamente la lista de providers
         try:
@@ -199,7 +199,7 @@ class UIBuildersService:
             self.app._llm_label_to_id = {}
         self.app.combo_llm = ctk.CTkComboBox(frame_llm, values=lista_llms, variable=self.app.llm_var, width=240, height=28,
                                           fg_color=combo_bg, border_color=combo_border, button_color=combo_btn,
-                                          text_color=hdr_text, font=ctk.CTkFont(size=11),
+                                          text_color=hdr_text, font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                           command=self.app._on_llm_cambio)
         self.app.combo_llm.pack(side="left")
         # Botón 🔑 para configurar API keys
@@ -208,7 +208,7 @@ class UIBuildersService:
         # actualiza self.app._actualizar_indicador_proveedor() (en app.py).
         self.app._btn_key = ctk.CTkButton(frame_llm, text="🔑", width=30, height=28,
                       fg_color=key_bg, hover_color=key_hover,
-                      font=ctk.CTkFont(size=12),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION),
                       command=self.app.dialogs._cmd_configurar_api_keys)
         self.app._btn_key.pack(side="left", padx=(4, 0))
         # Tooltip si CTkToolTip está instalado
@@ -250,7 +250,7 @@ class UIBuildersService:
         self.app.combo_modelo_llm = ctk.CTkComboBox(
             frame_llm, values=[""], width=185, height=28,
             fg_color=combo_bg, border_color=combo_border, button_color=combo_btn,
-            text_color=hdr_text, font=ctk.CTkFont(size=10),
+            text_color=hdr_text, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             command=_on_modelo_llm_cambio)
         self.app.combo_modelo_llm.pack(side="left", padx=(4, 0))
         self.app.combo_modelo_llm.bind(
@@ -269,7 +269,7 @@ class UIBuildersService:
         self.app._btn_adn = ctk.CTkButton(
             frame_llm, text=tr("🧬 ADN"), width=70, height=28,
             fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             command=self.app._cmd_indicador_adn,
         )
         # No empaquetar todavía: solo se muestra si hay ADN activo
@@ -279,7 +279,7 @@ class UIBuildersService:
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         # Botones gestión (derecha) — MENÚS DESPLEGABLES por grupo
-        menu_style = {"height": 28, "font": ctk.CTkFont(size=11, weight="bold"), "corner_radius": 6,
+        menu_style = {"height": 28, "font": ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), "corner_radius": 6,
                       "fg_color": btn_bg, "button_color": btn_bg, "button_hover_color": btn_hover,
                       "text_color": hdr_text}
 
@@ -440,7 +440,7 @@ class UIBuildersService:
                 for item_label, item_cmd in il:
                     btn_item = ctk.CTkButton(bg_frame, text=item_label, width=220, height=30,
                                               fg_color="transparent", hover_color="#e5e7eb" if is_lt else "#374151",
-                                              text_color="#111827" if is_lt else "#e5e7eb", font=ctk.CTkFont(size=11),
+                                              text_color="#111827" if is_lt else "#e5e7eb", font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                               anchor="w", corner_radius=4,
                                               command=lambda c=item_cmd: (c(), _close_menu()))
                     btn_item.pack(fill="x", padx=4, pady=2)
@@ -461,7 +461,7 @@ class UIBuildersService:
             btn = ctk.CTkButton(frame_menus, text=label_grupo, width=120, height=28,
                                 fg_color=btn_bg, hover_color=btn_hover,
                                 border_color=color_borde, border_width=2,
-                                corner_radius=6, font=ctk.CTkFont(size=11, weight="bold"),
+                                corner_radius=6, font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                 text_color=color_borde,
                                 command=_make_toggle(label_grupo, items, color_borde),
                                 anchor="w")
@@ -552,22 +552,22 @@ class UIBuildersService:
 
         seg = ctk.CTkSegmentedButton(inner, values=[tr("Imagen"), tr("Vídeo"), tr("Audio")],
                                       command=self._on_segmento_modo, height=28,
-                                      font=ctk.CTkFont(size=11))
+                                      font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         seg.set(tr("Imagen"))
         seg.pack(side="left", padx=(0, 12))
         self.app._seg_modo = seg
 
-        self.app._lbl_plataforma = ctk.CTkLabel(inner, text=tr("Plataforma:"), font=ctk.CTkFont(size=11), fg_color="transparent", text_color=modo_label)
+        self.app._lbl_plataforma = ctk.CTkLabel(inner, text=tr("Plataforma:"), font=ctk.CTkFont(size=P.FUENTE_CUERPO), fg_color="transparent", text_color=modo_label)
         self.app._lbl_plataforma.pack(side="left", padx=(0, 4))
         self.app.combo_plataforma = ctk.CTkComboBox(inner, values=PLATAFORMAS_IMAGEN_LISTA, variable=self.app.plataforma_var,
-                                                 width=180, height=28, font=ctk.CTkFont(size=11),
+                                                 width=180, height=28, font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                                  command=self.app.events.on_plataforma_cambio)
         self.app.combo_plataforma.pack(side="left", padx=(0, 10))
 
         # Dimensiones tipo "iOS pill" — pelota más pequeña que el body para
         # que se vea claramente la diferencia entre encendido/apagado.
         sw_style = {
-            "font": ctk.CTkFont(size=11, weight="bold"),
+            "font": ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             "height": 20, "width": 42, "corner_radius": 10,
             "button_length": 8,
             "button_color": "#374151" if is_light else "#e5e7eb",
@@ -727,7 +727,7 @@ class UIBuildersService:
         self.app.combo_estilo_video = ctk.CTkComboBox(
             self.app.frame_video, values=[tr(v) for v in ESTILOS_VISUAL_VIDEO],
             width=140,
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO),
             command=lambda disp: self.app.estilo_video_var.set(
                 self.app._estilo_vid_disp2key.get(disp, disp)))
         self.app.combo_estilo_video.set("Auto")
@@ -753,7 +753,7 @@ class UIBuildersService:
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
         self.app.combo_destino_vid = ctk.CTkComboBox(self.app.frame_video, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
-                                                   font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
+                                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_vid.pack(side="left", padx=5)
 
     def _build_audio_panel(self):
@@ -782,7 +782,7 @@ class UIBuildersService:
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(15, 5))
         self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
-                                                   font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
+                                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_aud.pack(side="left", padx=5)
 
         self.app.switch_instrumental_var = ctk.BooleanVar(value=False)
@@ -802,7 +802,7 @@ class UIBuildersService:
                                                    border_color=c["fg_dark_border"],
                                                    border_width=1,
                                                    text_color=c["fg_dark_text"],
-                                                   font=ctk.CTkFont(size=11, weight="bold"),
+                                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                                    height=20, width=42, corner_radius=10,
                                                    button_length=8,
                                                    button_color="#374151" if is_light else "#e5e7eb",
@@ -814,21 +814,21 @@ class UIBuildersService:
         row2.pack(fill="x", padx=10, pady=(0, 5))
 
         self.app.emocion_var = ctk.StringVar(value=tr("— Emoción —"))
-        ctk.CTkLabel(row2, text=tr("Emoción:"), font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Emoción:"), font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(5, 3))
         self.app.combo_emocion = ctk.CTkComboBox(row2, values=[tr("— Emoción —")] + [tr(e) for e in EMOCIONES_AUDIO], variable=self.app.emocion_var, width=130, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_emocion.pack(side="left", padx=(0, 10))
 
         self.app.voz_var = ctk.StringVar(value=tr("— Voz —"))
-        ctk.CTkLabel(row2, text=tr("Voz:"), font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Voz:"), font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
         self.app.combo_voz = ctk.CTkComboBox(row2, values=[tr("— Voz —")] + [tr(v) for v in VOCES_AUDIO], variable=self.app.voz_var, width=155, command=self.app.events.on_audio_filtro_cambio)
         self.app.combo_voz.pack(side="left", padx=(0, 10))
 
         self.app.idioma_audio_var = ctk.StringVar(value=tr("— Idioma —"))
-        ctk.CTkLabel(row2, text=tr("Idioma:"), font=ctk.CTkFont(weight="bold", size=11),
+        ctk.CTkLabel(row2, text=tr("Idioma:"), font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=lbl_color).pack(side="left", padx=(0, 3))
         self.app.combo_idioma_audio = ctk.CTkComboBox(row2, values=[tr("— Idioma —")] + [tr(i) for i in IDIOMAS_AUDIO], variable=self.app.idioma_audio_var, width=160, command=self.app.events.on_audio_filtro_cambio)
@@ -849,10 +849,10 @@ class UIBuildersService:
         # Modelo
         f1 = ctk.CTkFrame(inner, fg_color="transparent")
         f1.pack(side="left", padx=(0, 8))
-        ctk.CTkLabel(f1, text=tr("Modelo"), font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f1, text=tr("Modelo"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_modelo_imagen = ctk.CTkComboBox(f1, values=MODELOS_IMAGEN_FLAT, width=220, height=28,
-                                                    font=ctk.CTkFont(size=11), command=self.app.events.on_modelo_imagen_cambio)
+                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self.app.events.on_modelo_imagen_cambio)
         self.app.combo_modelo_imagen.set("Z Image Turbo")
         self.app.combo_modelo_imagen.pack()
         # Desplegable con buscador + scroll (la lista de modelos crece mucho).
@@ -869,7 +869,7 @@ class UIBuildersService:
         self.app.frame_familia_estilo = ctk.CTkFrame(inner, fg_color="transparent")
         # No se hace pack() inicial — _on_modelo_imagen_cambio decide.
         ctk.CTkLabel(self.app.frame_familia_estilo, text=tr("Estilo"),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         # i18n: el combo MUESTRA el estilo traducido pero la var guarda SIEMPRE
         # la clave ES (la inyección busca el hint por esa clave). Mapeo
@@ -879,7 +879,7 @@ class UIBuildersService:
             self.app.frame_familia_estilo,
             values=["Auto"],   # placeholder — _on_modelo_imagen_cambio lo repuebla
             width=140, height=28,
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO),
             command=lambda disp: self.app.familia_estilo_var.set(
                 self.app._estilo_img_disp2key.get(disp, disp)),
         )
@@ -893,12 +893,12 @@ class UIBuildersService:
         # Ratio
         f2 = ctk.CTkFrame(inner, fg_color="transparent")
         f2.pack(side="left", padx=8)
-        ctk.CTkLabel(f2, text=tr("Ratio"), font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f2, text=tr("Ratio"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         f2_inner = ctk.CTkFrame(f2, fg_color="transparent")
         f2_inner.pack()
         self.app.combo_ratio = ctk.CTkComboBox(f2_inner, values=[tr(r) for r in RATIOS_IMAGEN], variable=self.app.ratio_var, width=80, height=28,
-                                            font=ctk.CTkFont(size=11), command=lambda v: self.app.ratio_var.set(v))
+                                            font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=lambda v: self.app.ratio_var.set(v))
         self.app.combo_ratio.set("1:1")
         self.app.combo_ratio.pack(side="left")
 
@@ -915,7 +915,7 @@ class UIBuildersService:
             btn = ctk.CTkButton(f2_inner, text=icono, width=24, height=28,
                                   fg_color=ratio_btn_bg, hover_color=ratio_btn_hover,
                                   text_color=c["panel_text"],
-                                  font=ctk.CTkFont(size=11),
+                                  font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                   command=lambda r=ratio_val: self._aplicar_ratio_rapido(r))
             btn.pack(side="left", padx=1)
             CTkToolTip(btn, delay=0.3, message=f"{ratio_val} — {tip}")
@@ -924,10 +924,10 @@ class UIBuildersService:
         # Destino — al final de la fila
         f0 = ctk.CTkFrame(inner, fg_color="transparent")
         f0.pack(side="left", padx=(8, 0))
-        ctk.CTkLabel(f0, text=tr("Destino"), font=ctk.CTkFont(size=10),
+        ctk.CTkLabel(f0, text=tr("Destino"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      fg_color="transparent", text_color=lbl_color).pack(anchor="w")
         self.app.combo_destino_img = ctk.CTkComboBox(f0, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140, height=28,
-                                                   font=ctk.CTkFont(size=11), command=self._on_destino_cambio)
+                                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_img.pack()
 
     def _aplicar_ratio_rapido(self, ratio):
@@ -1045,7 +1045,7 @@ class UIBuildersService:
         self.app.lbl_neg_disabled = ctk.CTkLabel(
             tab_neg, text=tr("🚫 El modelo o plataforma actual NO utiliza Negative Prompts."),
             fg_color="transparent",
-            text_color=c["muted_text"], font=ctk.CTkFont(size=12, slant="italic"))
+            text_color=c["muted_text"], font=ctk.CTkFont(size=P.FUENTE_SECCION, slant="italic"))
 
         # Tab 4: Tags picker — lazy: se construye la primera vez que el usuario
         # abre la pestaña para no bloquear el startup con 83 botones + tooltips.
@@ -1067,7 +1067,7 @@ class UIBuildersService:
         self.app.frame_pers_lora.pack(fill="x", pady=(2, 1))
 
         ctk.CTkLabel(self.app.frame_pers_lora, text=tr("🧑 Personaje:"),
-                     font=ctk.CTkFont(weight="bold", size=11),
+                     font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
         self.app.combo_personaje = ctk.CTkComboBox(self.app.frame_pers_lora, values=[tr("— Sin personaje —")], width=160,
@@ -1077,7 +1077,7 @@ class UIBuildersService:
         self.app.combo_personaje.pack(side="left", padx=5)
 
         ctk.CTkLabel(self.app.frame_pers_lora, text=tr("🔗 LoRA:"),
-                     font=ctk.CTkFont(weight="bold", size=11),
+                     font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(15, 5))
         self.app.combo_lora = ctk.CTkComboBox(self.app.frame_pers_lora, values=[tr("— Sin LoRA —")], width=160,
@@ -1096,7 +1096,7 @@ class UIBuildersService:
         ctk.CTkButton(
             self.app.frame_pers_lora, text="🔗+", width=36, height=26,
             fg_color="#5b2c8e", hover_color="#3d1a6a",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             command=self.app.footer._abrir_multi_lora_modal,
         ).pack(side="left", padx=(2, 0))
 
@@ -1104,7 +1104,7 @@ class UIBuildersService:
         # POSITIVE (convención SeaArt). Persistido en preferencias.
         chk_lora_inicio = ctk.CTkCheckBox(
             self.app.frame_pers_lora, text=tr("⬆ al inicio"), width=20,
-            variable=self.app.lora_inicio_var, font=ctk.CTkFont(size=10),
+            variable=self.app.lora_inicio_var, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             checkbox_width=16, checkbox_height=16)
         chk_lora_inicio.pack(side="left", padx=(6, 0))
         CTkToolTip(chk_lora_inicio, message=tr(
@@ -1114,7 +1114,7 @@ class UIBuildersService:
         # Label trigger visible (Mejora bonus LoRAs)
         lora_color = "#7c3aed" if is_light else "#9b59b6"
         self.app.lbl_lora_trigger = ctk.CTkLabel(self.app.frame_pers_lora, text="",
-                                               font=ctk.CTkFont(family="Consolas", size=9),
+                                               font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                                                fg_color="transparent",
                                                text_color=lora_color)
         self.app.lbl_lora_trigger.pack(side="left", padx=(6, 0))
@@ -1127,7 +1127,7 @@ class UIBuildersService:
         # No empaquetado inicial — _actualizar_fuentes_activas lo pack si hay algo.
         ctk.CTkLabel(
             self.app.frame_fuentes_activas, text=tr("🎯 Fuentes activas:"),
-            font=ctk.CTkFont(weight="bold", size=10),
+            font=ctk.CTkFont(weight="bold", size=P.FUENTE_PEQUENA),
             fg_color="transparent", text_color=c["panel_text"],
         ).pack(side="left", padx=(8, 6))
         # Sub-frame donde se renderizan los chips dinámicamente
@@ -1140,7 +1140,7 @@ class UIBuildersService:
         self.app.frame_plantilla_brief.pack(fill="x", pady=1)
 
         ctk.CTkLabel(self.app.frame_plantilla_brief, text=tr("📐 Plantilla:"),
-                     font=ctk.CTkFont(weight="bold", size=11),
+                     font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
         self.app.combo_plantilla = ctk.CTkComboBox(self.app.frame_plantilla_brief, values=[tr("— Sin plantilla —")], width=180,
@@ -1174,7 +1174,7 @@ class UIBuildersService:
             border_color=sw_bord_off,
             text_color=sw_text_off,
             border_width=1,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             height=20, width=42, corner_radius=10,
             button_length=8,
             button_color="#374151" if is_light else "#e5e7eb",
@@ -1188,7 +1188,7 @@ class UIBuildersService:
         self.app.frame_imgref_inner.pack(fill="x", pady=(1, 2))
 
         ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("🖼 Imagen ref:"),
-                     font=ctk.CTkFont(weight="bold", size=11),
+                     font=ctk.CTkFont(weight="bold", size=P.FUENTE_CUERPO),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left", padx=(5, 5))
         self.app.btn_cargar_img = ctk.CTkButton(self.app.frame_imgref_inner, text=tr("📂 Cargar"), width=80, height=28,
@@ -1203,7 +1203,7 @@ class UIBuildersService:
         self.app.lbl_img_preview = ctk.CTkLabel(self.app.frame_imgref_inner, text="", width=34, height=34)
         self.app.lbl_img_preview.pack(side="left", padx=4)
         self.app.lbl_img_nombre = ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("Sin imagen"),
-                                            font=ctk.CTkFont(size=10),
+                                            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                             fg_color="transparent",
                                             text_color=c["muted_text"])
         self.app.lbl_img_nombre.pack(side="left", padx=2)
@@ -1214,7 +1214,7 @@ class UIBuildersService:
                      fg_color="transparent",
                      text_color=sep_color).pack(side="left", padx=4)
         ctk.CTkLabel(self.app.frame_imgref_inner, text=tr("Recientes:"),
-                     font=ctk.CTkFont(size=9),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT),
                      fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left", padx=2)
         self.app._img_history_frame = ctk.CTkFrame(self.app.frame_imgref_inner, fg_color=tab_bg)
@@ -1242,21 +1242,21 @@ class UIBuildersService:
         self.app._frame_estilos_header.pack(fill="x", padx=5, pady=(0, 2))
         header_estilos = self.app._frame_estilos_header  # alias para legibilidad
 
-        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text=tr("🔍 Buscar estilo..."), width=180, height=24, font=ctk.CTkFont(size=11))
+        self.app.entry_busqueda = ctk.CTkEntry(header_estilos, placeholder_text=tr("🔍 Buscar estilo..."), width=180, height=24, font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         self.app.entry_busqueda.pack(side="left")
         self.app.entry_busqueda.bind("<KeyRelease>", self.app.footer._filtrar_estilos)
 
         btn_sugerir = ctk.CTkButton(header_estilos, text=tr("🎨 Sugerir estilos"), width=130, height=24,
                                        fg_color="#3a1a5a", hover_color="#2a0f3a",
                                        text_color="#ffffff",
-                                       font=ctk.CTkFont(size=10),
+                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                        command=self.app._cmd_sugerir_estilos)
         btn_sugerir.pack(side="left", padx=(8, 0))
         CTkToolTip(btn_sugerir, delay=0.4, message=tr("LLM analiza tu idea y marca 3-6 estilos apropiados automáticamente"))
 
         # Contador y botón limpiar
         self.app.lbl_estilos_count = ctk.CTkLabel(header_estilos, text="",
-                                               font=ctk.CTkFont(size=10),
+                                               font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                                fg_color="transparent",
                                                text_color=c["muted_text"])
         self.app.lbl_estilos_count.pack(side="left", padx=(10, 0))
@@ -1265,7 +1265,7 @@ class UIBuildersService:
                                           fg_color="transparent",
                                           hover_color="#fee2e2" if is_light else "#3a1a1a",
                                           text_color=c["muted_text"],
-                                          font=ctk.CTkFont(size=11),
+                                          font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                           command=self._limpiar_estilos)
         btn_limpiar_est.pack(side="right", padx=(0, 5))
         CTkToolTip(btn_limpiar_est, delay=0.3, message=tr("Limpiar todos los estilos seleccionados"))
@@ -1283,7 +1283,7 @@ class UIBuildersService:
         # Usar verde más oscuro en light para que se lea sobre fondo claro
         verde = "#059669" if is_light else "#2ecc71"
         self.app.lbl_estilos_sel = ctk.CTkLabel(parent, text="",
-                                             font=ctk.CTkFont(size=11, weight="bold"),
+                                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                              fg_color="transparent",
                                              text_color=verde,
                                              anchor="w", justify="left")
@@ -1326,11 +1326,11 @@ class UIBuildersService:
         hdr = ctk.CTkFrame(parent, fg_color=tab_bg)
         hdr.pack(fill="x", padx=4, pady=(2, 0))
         ctk.CTkLabel(hdr, text=tr("Clic para añadir al final de la idea"),
-                     font=ctk.CTkFont(size=9), fg_color="transparent",
+                     font=ctk.CTkFont(size=P.FUENTE_HINT), fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left")
         btn_sug_tags = ctk.CTkButton(
             hdr, text=tr("✨ Sugerir"), width=80, height=20,
-            font=ctk.CTkFont(size=9),
+            font=ctk.CTkFont(size=P.FUENTE_HINT),
             fg_color="#1a5a8a", hover_color="#154a72",
             command=self.app.creative.cmd_sugerir_tags,
         )
@@ -1340,14 +1340,14 @@ class UIBuildersService:
         scroll = ctk.CTkScrollableFrame(parent, fg_color=tab_bg, scrollbar_button_color=c["combo_border"])
         scroll.pack(fill="both", expand=True, padx=2, pady=(2, 0))
 
-        btn_tag_s = {"height": 20, "corner_radius": 4, "font": ctk.CTkFont(size=9),
+        btn_tag_s = {"height": 20, "corner_radius": 4, "font": ctk.CTkFont(size=P.FUENTE_HINT),
                      "fg_color": c.get("fg_dark", "#1e2533"),
                      "hover_color": c.get("combo_border", "#374151"),
                      "text_color": c["panel_text"]}
 
         for cat_name, tags in TAG_PICKER_CATEGORIES.items():
             ctk.CTkLabel(scroll, text=tr(cat_name),
-                         font=ctk.CTkFont(size=9, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                          fg_color="transparent",
                          text_color=c["muted_text"], anchor="w").pack(
                          fill="x", padx=2, pady=(5, 1))
@@ -1384,7 +1384,7 @@ class UIBuildersService:
         self.app._frame_neg_header.pack(fill="x", pady=(0, 2))
         hdr = self.app._frame_neg_header  # alias
         ctk.CTkLabel(hdr, text=tr("➕ Negative extra (se añade al base):"),
-                     font=ctk.CTkFont(weight="bold", size=12),
+                     font=ctk.CTkFont(weight="bold", size=P.FUENTE_SECCION),
                      fg_color="transparent",
                      text_color=c["panel_text"]).pack(side="left")
         ctk.CTkButton(hdr, text=tr("🗑 Limpiar"), width=80, height=24,
@@ -1403,7 +1403,7 @@ class UIBuildersService:
         frame_paquetes = ctk.CTkFrame(parent, fg_color=tab_bg)
         frame_paquetes.pack(fill="x", pady=(0, 3))
         ctk.CTkLabel(frame_paquetes, text=tr("Paquetes:"),
-                     font=ctk.CTkFont(size=9, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                      fg_color="transparent",
                      text_color=c["muted_text"]).pack(side="left", padx=(2, 4))
 
@@ -1419,7 +1419,7 @@ class UIBuildersService:
         for paq_nombre, paq_presets in NEGATIVE_PAQUETES.items():
             ctk.CTkButton(frame_paquetes, text=tr(paq_nombre), height=22, width=100,
                           fg_color="#1e3a5f", hover_color="#162d49",
-                          text_color="#ffffff", font=ctk.CTkFont(size=9),
+                          text_color="#ffffff", font=ctk.CTkFont(size=P.FUENTE_HINT),
                           command=lambda p=paq_presets: _aplicar_paquete(p)).pack(
                           side="left", padx=2)
 
@@ -1446,17 +1446,17 @@ class UIBuildersService:
 
                 btn = ctk.CTkButton(row_f, text=tr(nombre_p), height=22, width=90,
                                     fg_color=fg, hover_color=hv, text_color="#ffffff",
-                                    font=ctk.CTkFont(size=10), command=_toggle)
+                                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_toggle)
                 btn.pack(side="left", padx=2)
                 self.app.preset_btns[nombre_p] = btn
 
-        self.app.txt_negative = ctk.CTkTextbox(parent, height=36, font=ctk.CTkFont(size=12))
+        self.app.txt_negative = ctk.CTkTextbox(parent, height=36, font=ctk.CTkFont(size=P.FUENTE_SECCION))
         self.app.txt_negative.pack(fill="x")
         self.app.txt_negative.bind("<KeyRelease>", self.app.footer._validar_negative_length)
         self.app.txt_negative.bind("<FocusOut>", lambda e: self.app.reiniciar_memoria())
 
         # Warning de límite negative
-        self.app.lbl_negative_warning = ctk.CTkLabel(parent, text="", font=ctk.CTkFont(size=10, weight="bold"),
+        self.app.lbl_negative_warning = ctk.CTkLabel(parent, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                                    fg_color="transparent",
                                                    text_color=c["danger_text"], anchor="w")
 
@@ -1488,15 +1488,15 @@ class UIBuildersService:
         # Header con label + botón limpiar
         hdr = ctk.CTkFrame(self.app.frame_entrada, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
-        ctk.CTkLabel(hdr, text=tr("Describe tu idea"), font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text=tr("Describe tu idea"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
         # Label de autocompletar
-        self.app.lbl_autocomplete = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"), fg_color="transparent", text_color=P.BTN_PRIMARIO if is_light else "#5a8aaa")
+        self.app.lbl_autocomplete = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), fg_color="transparent", text_color=P.BTN_PRIMARIO if is_light else "#5a8aaa")
         self.app.lbl_autocomplete.pack(side="left", padx=(10, 0))
         # ── MEJORA 1: contador en vivo de chars y tokens estimados ──
-        self.app.lbl_idea_counter = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9), fg_color="transparent", text_color=c["muted_text"])
+        self.app.lbl_idea_counter = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=P.FUENTE_HINT), fg_color="transparent", text_color=c["muted_text"])
         self.app.lbl_idea_counter.pack(side="left", padx=(10, 0))
         # ── MEJORA 2: aviso de idioma detectado ──
-        self.app.lbl_idioma_aviso = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=9, slant="italic"),
+        self.app.lbl_idioma_aviso = ctk.CTkLabel(hdr, text="", font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                                               fg_color="transparent",
                                               text_color=P.TXT_ACENTO, cursor="hand2")
         self.app.lbl_idioma_aviso.pack(side="left", padx=(10, 0))
@@ -1506,7 +1506,7 @@ class UIBuildersService:
         # Detecta términos ambiguos (pulso, muñeca, vela, pluma...) que el
         # LLM podría interpretar mal. Click → modal con sugerencias.
         self.app.lbl_claridad_aviso = ctk.CTkLabel(
-            hdr, text="", font=ctk.CTkFont(size=9, slant="italic"),
+            hdr, text="", font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
             fg_color="transparent", text_color=P.BTN_ACENTO, cursor="hand2",
         )
         self.app.lbl_claridad_aviso.pack(side="left", padx=(10, 0))
@@ -1514,13 +1514,13 @@ class UIBuildersService:
             "<Button-1>", lambda e: self._mostrar_sugerencias_claridad()
         )
         btn_clear = ctk.CTkButton(hdr, text="🗑", width=22, height=18, fg_color="transparent",
-                                    hover_color="#dc2626" if is_light else "#3a1a1a", font=ctk.CTkFont(size=10),
+                                    hover_color="#dc2626" if is_light else "#3a1a1a", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                     text_color=c["muted_text"],
                                     command=lambda: self.app.txt_idea.delete("1.0", "end"))
         btn_clear.pack(side="right")
         CTkToolTip(btn_clear, delay=0.3, message=tr("Limpiar campo idea"))
 
-        self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=13),
+        self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=P.FUENTE_SECCION),
                                         border_width=2, border_color=c["combo_border"] if "combo_border" in c else "#9ca3af", corner_radius=8)
         self.app.txt_idea.pack(fill="x")
         # Tooltip explicando la expansión rápida (;trigger + Espacio)
@@ -1649,7 +1649,7 @@ class UIBuildersService:
             ctk.CTkLabel(
                 vent,
                 text=tr("💡 Palabras polisémicas detectadas en tu idea"),
-                font=ctk.CTkFont(size=13, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
             ).pack(pady=(12, 4), padx=12)
             ctk.CTkLabel(
                 vent,
@@ -1658,7 +1658,7 @@ class UIBuildersService:
                     "Reformula tu idea con la versión específica para "
                     "evitar resultados inesperados.")
                 ),
-                font=ctk.CTkFont(size=10),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                 text_color=c["muted_text"],
                 wraplength=480,
                 justify="left",
@@ -1673,20 +1673,20 @@ class UIBuildersService:
                 ctk.CTkLabel(
                     card,
                     text=f"🔤 '{h['word']}'",
-                    font=ctk.CTkFont(size=12, weight="bold"),
+                    font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                     text_color=P.BTN_ACENTO,
                 ).pack(anchor="w", padx=10, pady=(6, 2))
                 ctk.CTkLabel(
                     card,
                     text=tr("Interpretaciones posibles: ") + " / ".join(h["meanings"]),
-                    font=ctk.CTkFont(size=10),
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                     text_color=c["muted_text"],
                     wraplength=460, justify="left",
                 ).pack(anchor="w", padx=10, pady=(0, 4))
                 ctk.CTkLabel(
                     card,
                     text=h["hint"],
-                    font=ctk.CTkFont(size=10, slant="italic"),
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
                     wraplength=460, justify="left",
                 ).pack(anchor="w", padx=10, pady=(0, 8))
             ctk.CTkButton(
@@ -1756,7 +1756,7 @@ class UIBuildersService:
         row1 = ctk.CTkFrame(outer, fg_color="transparent")
         row1.pack(fill="x", pady=(0, 3))
 
-        btn_s = {"height": 32, "corner_radius": 6, "font": ctk.CTkFont(size=11)}
+        btn_s = {"height": 32, "corner_radius": 6, "font": ctk.CTkFont(size=P.FUENTE_CUERPO)}
 
         def _sep(parent):
             """Mini separador vertical entre grupos de botones."""
@@ -1858,7 +1858,7 @@ class UIBuildersService:
                 grp_frame.pack(side="left", padx=0)
                 # Label del título — pequeño, en color del grupo
                 ctk.CTkLabel(grp_frame, text=tr(titulo),
-                              font=ctk.CTkFont(size=8, weight="bold"),
+                              font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                               text_color=color_tit, anchor="w").pack(
                               anchor="w", padx=4, pady=(0, 1))
                 btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
@@ -1884,7 +1884,7 @@ class UIBuildersService:
         _render_grupos(row1, grupos_r1)
 
         # ═══ BADGE DE COSTE (al final de fila 1) ═══
-        self.app.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=10, weight="bold"),
+        self.app.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                        text_color="#22c55e", fg_color="transparent")
         self.app.lbl_coste.pack(side="left", padx=(4, 0))
 
@@ -1904,26 +1904,26 @@ class UIBuildersService:
 
         btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
                                    fg_color=P.BTN_PELIGRO, hover_color="#5a1414",
-                                   font=ctk.CTkFont(size=11), command=self.app.cmd_reset)
+                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self.app.cmd_reset)
         btn_reset.pack(side="right", padx=2)
         CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
         btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
                                        fg_color="#1e3a5f", hover_color="#162d49",
-                                       font=ctk.CTkFont(size=10), command=self.app._repetir_ultima_config)
+                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._repetir_ultima_config)
         btn_repeat.pack(side="right", padx=2)
         CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
         btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
                                         fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=10), command=self.app._cmd_cargar_setup)
+                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_cargar_setup)
         btn_load_setup.pack(side="right", padx=2)
         CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
 
         btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
                                         fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=10), command=self.app._cmd_guardar_setup)
+                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_guardar_setup)
         btn_save_setup.pack(side="right", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
                    message=tr("Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt"))
@@ -1940,7 +1940,7 @@ class UIBuildersService:
         self.app.lbl_estado = ctk.CTkLabel(
             self.app.frame_estado,
             text=tr('Listo · Ctrl+Enter: Prompt · Ctrl+1/2: Copiar'),
-            font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"])
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), fg_color="transparent", text_color=c["muted_text"])
         self.app.lbl_estado.pack(side="left", fill="x", expand=True)
 
         self.app.progress = ctk.CTkProgressBar(self.app.frame_estado, width=160, height=10,
@@ -1954,13 +1954,13 @@ class UIBuildersService:
         frame.pack(pady=2, padx=16, fill="both", expand=True)
         hdr = ctk.CTkFrame(frame, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
-        ctk.CTkLabel(hdr, text=tr("Resultado"), font=ctk.CTkFont(size=10), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
-        ctk.CTkLabel(hdr, text=tr("editable"), font=ctk.CTkFont(size=9), fg_color="transparent", text_color=c["panel_label"]).pack(side="left", padx=4)
+        ctk.CTkLabel(hdr, text=tr("Resultado"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text=tr("editable"), font=ctk.CTkFont(size=P.FUENTE_HINT), fg_color="transparent", text_color=c["panel_label"]).pack(side="left", padx=4)
 
         # ── Validador Flux/SD3.5: aviso ARRIBA del textbox con fondo destacado ──
         # (Va antes del textbox para no quedar tapado por la barra de botones inferior)
         self.app.lbl_flux_warning = ctk.CTkLabel(frame, text="",
-                                              font=ctk.CTkFont(size=11, weight="bold"),
+                                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                               text_color="#1a1a1a",
                                               fg_color=P.TXT_ACENTO,
                                               corner_radius=6,
@@ -1975,7 +1975,7 @@ class UIBuildersService:
         # border + corner_radius para que tenga el mismo marco que txt_idea
         # (especialmente visible en modo light).
         border_col = c["combo_border"] if "combo_border" in c else "#9ca3af"
-        self.app.txt_salida = ctk.CTkTextbox(frame, font=ctk.CTkFont(family="Consolas", size=12),
+        self.app.txt_salida = ctk.CTkTextbox(frame, font=ctk.CTkFont(family="Consolas", size=P.FUENTE_SECCION),
                                           wrap="word", height=240,
                                           border_width=2, border_color=border_col,
                                           corner_radius=8)
@@ -2006,7 +2006,7 @@ class UIBuildersService:
         self.app.txt_salida.bind("<Button-3>", self.app.footer._mostrar_menu_contextual)
 
         # ── MEJORA 9 (inline): franja de compatibilidad rápida con plataformas top ──
-        self.app.lbl_compat_inline = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=9),
+        self.app.lbl_compat_inline = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                                                fg_color="transparent",
                                                text_color=c["muted_text"], anchor="w", justify="left",
                                                cursor="hand2")

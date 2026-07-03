@@ -202,23 +202,23 @@ class JsonPromptService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("📥 Importar prompt JSON profesional"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(
             vent,
             text=tr("Pega un JSON tipo Veo / Sora / Kling. Se extraerá el prompt principal,\n"
                  "negative, ratio/duración y se mostrarán los metadatos extra (camera/lighting/vfx)."),
-            font=ctk.CTkFont(size=10), text_color=c["muted_text"], justify="center",
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"], justify="center",
         ).pack(pady=(0, 8))
 
         # Textbox para pegar JSON
         txt_json = ctk.CTkTextbox(vent, wrap="word",
-                                    font=ctk.CTkFont(family="Consolas", size=10),
+                                    font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                                     height=320)
         txt_json.pack(fill="both", expand=True, padx=15, pady=(0, 6))
 
         # Status label
         lbl_status = ctk.CTkLabel(vent, text="",
-                                    font=ctk.CTkFont(size=10),
+                                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                     text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 4))
 
@@ -295,7 +295,7 @@ class JsonPromptService:
                        command=_cargar_desde_archivo).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("✅ Importar"), width=140, height=32,
                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                       font=ctk.CTkFont(size=12, weight="bold"),
+                       font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                        command=_importar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=110, height=32,
                        fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -416,7 +416,7 @@ class JsonPromptService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("📥 Importación completada"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
 
         # Aviso si se aplicó autolimpieza
         if resumen.get("limpieza_aplicada"):
@@ -425,7 +425,7 @@ class JsonPromptService:
             ctk.CTkLabel(
                 vent,
                 text=tr('🧹 JSON reparado automáticamente — {0}').format(estr_txt),
-                font=ctk.CTkFont(size=10),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                 text_color=P.TXT_ACENTO,
                 wraplength=720, justify="center",
             ).pack(pady=(0, 6), padx=15)
@@ -443,7 +443,7 @@ class JsonPromptService:
         if resumen.get("duration"):
             partes.append(tr("⏱ Duración: {0}s (mostrada como nota)").format(resumen['duration']))
         ctk.CTkLabel(vent, text="  ·  ".join(partes) if partes else tr("Nada aplicado."),
-                     font=ctk.CTkFont(size=11),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=P.TXT_OK if partes else "#e67e22",
                      wraplength=720, justify="center").pack(pady=(0, 10), padx=15)
 
@@ -453,14 +453,14 @@ class JsonPromptService:
             ctk.CTkLabel(
                 vent,
                 text=tr('🧩 Metadatos avanzados detectados ({0}):').format(len(extras)),
-                font=ctk.CTkFont(size=11, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             ).pack(anchor="w", padx=15, pady=(8, 4))
             ctk.CTkLabel(
                 vent,
                 text=tr("No se aplican automáticamente — algunos motores (Veo/Sora/Kling) "
                      "los usan vía API JSON. Puedes verlos a continuación e incorporarlos "
                      "manualmente al prompt si tu motor no soporta JSON estructurado."),
-                font=ctk.CTkFont(size=9),
+                font=ctk.CTkFont(size=P.FUENTE_HINT),
                 text_color=c["muted_text"],
                 wraplength=720, justify="left",
             ).pack(anchor="w", padx=15, pady=(0, 6))
@@ -474,7 +474,7 @@ class JsonPromptService:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=6)
                 card.pack(fill="x", pady=4, padx=4)
                 ctk.CTkLabel(card, text=f"  {k}",
-                              font=ctk.CTkFont(size=11, weight="bold"),
+                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                               text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(6, 2))
                 # Convertir el valor a texto legible (JSON pretty)
                 try:
@@ -485,13 +485,13 @@ class JsonPromptService:
                 if len(val_text) > 600:
                     val_text = val_text[:600] + "\n…"
                 ctk.CTkLabel(card, text=val_text,
-                              font=ctk.CTkFont(family="Consolas", size=9),
+                              font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                               text_color=c["muted_text"], wraplength=680,
                               justify="left", anchor="w").pack(anchor="w",
                               padx=12, pady=(0, 6))
         else:
             ctk.CTkLabel(vent, text=tr("(Sin metadatos avanzados detectados)"),
-                         font=ctk.CTkFont(size=10),
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                          text_color=c["muted_text"]).pack(pady=10)
 
         # Botones
@@ -650,24 +650,24 @@ class JsonPromptService:
         if not json_valido:
             titulo += tr("  ⚠️ JSON con errores de sintaxis")
         ctk.CTkLabel(vent, text=titulo,
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(
             vent,
             text=tr("Listo para enviar a Veo / Sora / Kling u otros motores con JSON API.")
                  if json_valido
                  else tr("El LLM no devolvió JSON 100% válido — revisa antes de usar."),
-            font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             text_color=c["muted_text"] if json_valido else "#fbbf24",
         ).pack(pady=(0, 8))
 
         txt = ctk.CTkTextbox(vent, wrap="none",
-                              font=ctk.CTkFont(family="Consolas", size=10))
+                              font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA))
         txt.pack(fill="both", expand=True, padx=15, pady=(0, 8))
         txt.insert("1.0", json_texto)
         # Permitir edición por si el usuario quiere corregir
         # (sin disabled para que pueda ajustar campos)
 
-        lbl_status = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=10),
+        lbl_status = ctk.CTkLabel(vent, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                     text_color=P.TXT_ACENTO)
         lbl_status.pack(pady=(0, 2))
 
@@ -716,7 +716,7 @@ class JsonPromptService:
 
         ctk.CTkButton(btn_row, text=tr("📋 Copiar JSON"), width=140, height=32,
                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                       font=ctk.CTkFont(size=12, weight="bold"),
+                       font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                        command=_copiar).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("💾 Guardar .json"), width=140, height=32,
                        fg_color="#1a4a7a", hover_color="#15396a",

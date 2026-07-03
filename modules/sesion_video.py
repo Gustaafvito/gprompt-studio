@@ -199,8 +199,8 @@ class SesionVideoService:
                     sel.transient(self.app)
                     sel.grab_set()
 
-                    ctk.CTkLabel(sel, text=tr("¿Qué quieres grabar en vídeo?"), font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(15, 10))
-                    ctk.CTkLabel(sel, text=tr("(La grabación de texto siempre está activa)"), font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 15))
+                    ctk.CTkLabel(sel, text=tr("¿Qué quieres grabar en vídeo?"), font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(pady=(15, 10))
+                    ctk.CTkLabel(sel, text=tr("(La grabación de texto siempre está activa)"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 15))
 
                     def _iniciar(tipo):
                         self.app._sesion_tipo_video = tipo
@@ -272,7 +272,7 @@ class SesionVideoService:
         v.transient(self.app)
 
         ctk.CTkLabel(v, text=tr("🎬 Registro de sesión"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         dur = ""
         if self.app._sesion_inicio:
             delta = datetime.datetime.now() - self.app._sesion_inicio
@@ -280,7 +280,7 @@ class SesionVideoService:
             secs = int(delta.total_seconds() % 60)
             dur = f"  ·  duración: {mins}m {secs}s"
         ctk.CTkLabel(v, text=tr('{0} eventos{1}').format((len(self.app._sesion_eventos)), (dur)),
-                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED).pack(pady=(0, 4))
 
         # ── Banner con info del vídeo si se grabó ──
         if video_path:
@@ -293,7 +293,7 @@ class SesionVideoService:
                 video_info = tr("🎥 Vídeo guardado: {0}").format(_os.path.basename(video_path))
             video_banner = ctk.CTkFrame(v, fg_color="#1a3a5a", corner_radius=6)
             video_banner.pack(fill="x", padx=15, pady=(0, 8))
-            ctk.CTkLabel(video_banner, text=video_info, font=ctk.CTkFont(size=11, weight="bold"),
+            ctk.CTkLabel(video_banner, text=video_info, font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          text_color=c["hdr_text"]).pack(side="left", padx=12, pady=8)
 
             def _abrir_carpeta():
@@ -347,7 +347,7 @@ class SesionVideoService:
         texto_txt = "\n".join(lines_txt)
 
         # Preview
-        txt = ctk.CTkTextbox(v, wrap="none", font=ctk.CTkFont(family="Consolas", size=11))
+        txt = ctk.CTkTextbox(v, wrap="none", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_CUERPO))
         txt.pack(fill="both", expand=True, padx=15, pady=5)
         txt.insert("1.0", texto_txt)
 
@@ -416,9 +416,9 @@ class SesionVideoService:
         v.transient(self.app)
 
         ctk.CTkLabel(v, text=tr("📚 Guion de tutorial"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         ctk.CTkLabel(v, text=tr('{0} pasos · {1} acciones').format((len(pasos)), (len(self.app._sesion_eventos))),
-                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED).pack(pady=(0, 10))
 
         # Construir el guion
         lines = ["# 📚 Tutorial: " + datetime.datetime.now().strftime("%d/%m/%Y"),
@@ -443,7 +443,7 @@ class SesionVideoService:
 
         guion = "\n".join(lines)
 
-        txt = ctk.CTkTextbox(v, wrap="word", font=ctk.CTkFont(size=11))
+        txt = ctk.CTkTextbox(v, wrap="word", font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         txt.pack(fill="both", expand=True, padx=15, pady=5)
         txt.insert("1.0", guion)
 

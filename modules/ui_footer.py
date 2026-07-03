@@ -76,7 +76,7 @@ class UiFooterService:
         outer = ctk.CTkFrame(self.app, fg_color="transparent")
         outer.pack(side="bottom", fill="x", padx=16, pady=(1, 2))
 
-        self.app.lbl_tokens = ctk.CTkLabel(outer, text="", font=ctk.CTkFont(family="Consolas", size=10),
+        self.app.lbl_tokens = ctk.CTkLabel(outer, text="", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                                         fg_color="transparent",
                                         text_color=c["muted_text"])
         self.app.lbl_tokens.pack(fill="x", pady=(0, 2))
@@ -84,7 +84,7 @@ class UiFooterService:
         frame = ctk.CTkFrame(outer, fg_color="transparent")
         frame.pack(fill="x")
 
-        pill = {"height": 28, "corner_radius": 6, "font": ctk.CTkFont(size=10)}
+        pill = {"height": 28, "corner_radius": 6, "font": ctk.CTkFont(size=P.FUENTE_PEQUENA)}
 
         # ═══ FILA INFERIOR — grupos con título visible ═══
         # Estructura: (titulo_grupo, color_titulo, [(label, w, fg, cmd, tip), …])
@@ -123,7 +123,7 @@ class UiFooterService:
             grp_frame = ctk.CTkFrame(frame, fg_color="transparent")
             grp_frame.pack(side="left", padx=(0, 6))
             ctk.CTkLabel(grp_frame, text=tr(titulo),
-                          font=ctk.CTkFont(size=8, weight="bold"),
+                          font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                           text_color=color_tit, anchor="w").pack(
                           anchor="w", padx=4, pady=(0, 1))
             btn_row = ctk.CTkFrame(grp_frame, fg_color="transparent")
@@ -332,7 +332,7 @@ class UiFooterService:
             # solo el texto visible se traduce → en modo EN no se cuela español.
             cb = ctk.CTkCheckBox(sub_frame, text=tr(nombre), variable=var,
                                  command=self._on_estilo_cambio,
-                                 font=ctk.CTkFont(size=10),
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                  checkbox_width=16, checkbox_height=16,
                                  text_color=c["chk_text"],
                                  hover_color=c["accent_text"],
@@ -603,7 +603,7 @@ class UiFooterService:
                 self.app.frame_fuentes_chips, text=label + "  ✕",
                 width=0, height=22,
                 fg_color=color, hover_color=color,
-                font=ctk.CTkFont(size=10, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                 corner_radius=10,
                 command=lambda t=tipo: self._limpiar_fuente(t),
             )
@@ -696,12 +696,12 @@ class UiFooterService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🔗 Multi-LoRA"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 2))
         ctk.CTkLabel(vent,
                      text=(tr("Marca los LoRAs adicionales a usar junto con el "
                            "primario.\nEl combo principal sigue siendo el LoRA "
                            "primario; estos se añaden encima.")),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"], justify="center").pack(pady=(0, 8))
 
         # Cabecera con LoRA primario (informativo)
@@ -714,7 +714,7 @@ class UiFooterService:
             ctk.CTkLabel(
                 vent,
                 text=tr('🔹 Primario (combo): {0}').format(nombre_primario),
-                font=ctk.CTkFont(size=10, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                 text_color=P.TXT_OK,
             ).pack(pady=(0, 6))
 
@@ -744,14 +744,14 @@ class UiFooterService:
                 row.pack(fill="x", pady=2)
                 cb = ctk.CTkCheckBox(
                     row, text=nombre, variable=var,
-                    font=ctk.CTkFont(size=11, weight="bold"),
+                    font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                 )
                 cb.pack(side="left", padx=8, pady=4)
                 meta = f'→ "{trigger}"'
                 if familia:
                     meta += f"  [{familia}]"
                 ctk.CTkLabel(row, text=meta,
-                             font=ctk.CTkFont(family="Consolas", size=9),
+                             font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                              text_color="#9b59b6").pack(side="left", padx=4)
                 chk_vars[nombre] = var
 

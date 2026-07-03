@@ -100,7 +100,7 @@ class AvatarFrame(ctk.CTkFrame):
         fila_tipo = ctk.CTkFrame(self, fg_color="transparent")
         fila_tipo.grid(row=1, column=0, columnspan=2, pady=(0, 4), sticky="n")
         ctk.CTkLabel(fila_tipo, text=tr("Tipo de LoRA:"),
-                     font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left", padx=(0, 8))
         # El segmented muestra la traducción; el mapa recupera el tipo ES
         # ("Personaje"...) que es la clave de LORA_TYPES.
         self._tipo_disp2key = {
@@ -111,7 +111,7 @@ class AvatarFrame(ctk.CTkFrame):
             fila_tipo,
             values=list(self._tipo_disp2key),
             command=self._on_tipo_change,
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=P.FUENTE_SECCION),
         )
         self._seg_tipo.set(tr("🧑 Personaje"))
         self._seg_tipo.pack(side="left")
@@ -125,35 +125,35 @@ class AvatarFrame(ctk.CTkFrame):
             plats = list(self.plataformas_destino.keys())
 
             ctk.CTkLabel(fila_modelo, text="🌐",
-                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION)).pack(side="left", padx=(0, 2))
             self.menu_plataforma = ctk.CTkOptionMenu(
                 fila_modelo, values=plats, width=145,
                 command=self._on_plataforma_change,
-                font=ctk.CTkFont(size=11))
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             self.menu_plataforma.set(plat_ini)
             self.menu_plataforma.pack(side="left", padx=(0, 10))
 
             ctk.CTkLabel(fila_modelo, text="📁",
-                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION)).pack(side="left", padx=(0, 2))
             # El combo muestra el grupo traducido; los lookups des-traducen
             # con tr_es() (los nombres de grupo son claves ES de los datos).
             grupos_ini = [tr(g) for g, _ in self.plataformas_destino.get(plat_ini, [])]
             self.menu_grupo = ctk.CTkOptionMenu(
                 fila_modelo, values=grupos_ini or [""],
                 width=210, command=self._on_grupo_change,
-                font=ctk.CTkFont(size=11))
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             self.menu_grupo.set(tr(grupo_ini) if tr(grupo_ini) in grupos_ini
                                 else (grupos_ini[0] if grupos_ini else ""))
             self.menu_grupo.pack(side="left", padx=(0, 10))
 
             ctk.CTkLabel(fila_modelo, text="🎯",
-                         font=ctk.CTkFont(size=12)).pack(side="left", padx=(0, 2))
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION)).pack(side="left", padx=(0, 2))
             modelos_ini = self._get_modelos_grupo(plat_ini, self.menu_grupo.get())
             inicial_m = (self.modelo_destino if self.modelo_destino in modelos_ini
                          else (modelos_ini[0] if modelos_ini else ""))
             self.menu_modelo = ctk.CTkOptionMenu(
                 fila_modelo, values=modelos_ini or [""], width=220,
-                font=ctk.CTkFont(size=11))
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             self.menu_modelo.set(inicial_m)
             self.menu_modelo.pack(side="left")
 
@@ -162,7 +162,7 @@ class AvatarFrame(ctk.CTkFrame):
             fila_modelo.grid(row=1, column=0, columnspan=2, pady=(32, 0), sticky="n")
             ctk.CTkLabel(
                 fila_modelo, text=tr("🎯 Modelo destino:"),
-                font=ctk.CTkFont(size=11, weight="bold"),
+                font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
             ).pack(side="left", padx=(0, 6))
             inicial = (self.modelo_destino
                        if self.modelo_destino in self.modelos_destino
@@ -174,7 +174,7 @@ class AvatarFrame(ctk.CTkFrame):
             ctk.CTkLabel(
                 fila_modelo,
                 text=tr("(negative y límite de chars según sus specs)"),
-                font=ctk.CTkFont(size=10), text_color="#9ca3af",
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color="#9ca3af",
             ).pack(side="left")
         else:
             self.menu_modelo = None
@@ -261,7 +261,7 @@ class AvatarFrame(ctk.CTkFrame):
 
         self.label_imagen_ref = ctk.CTkLabel(
             form, text="", anchor="w", compound="left",
-            font=ctk.CTkFont(size=10), text_color="#9ca3af")
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color="#9ca3af")
         self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
                                    padx=8, pady=(0, 4)); fila += 1
 

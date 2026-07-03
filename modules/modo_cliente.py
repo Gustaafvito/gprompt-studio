@@ -59,9 +59,9 @@ class ModoClienteService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("💼 Modo Cliente — Brief profesional"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Define un brief y genera 5 propuestas profesionales coherentes"),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
 
         # ── Plantillas predefinidas ──
         PLANTILLAS_BRIEF = {
@@ -105,7 +105,7 @@ class ModoClienteService:
         plantilla_row = ctk.CTkFrame(vent, fg_color="transparent")
         plantilla_row.pack(fill="x", padx=20, pady=(0, 8))
         ctk.CTkLabel(plantilla_row, text=tr("Plantilla:"),
-                     font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(side="left", padx=(0, 6))
         plantilla_var = ctk.StringVar(value=tr("— Personalizada —"))
         combo_plantilla = ctk.CTkComboBox(
             plantilla_row, width=280, variable=plantilla_var,
@@ -117,13 +117,13 @@ class ModoClienteService:
         frame_img = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
         frame_img.pack(fill="x", padx=20, pady=(0, 8))
         ctk.CTkLabel(frame_img, text=tr("📎 Imagen de referencia (opcional):"),
-                     font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=10, pady=(8, 2))
         ctk.CTkLabel(frame_img, text=tr("Logo del cliente, moodboard, ejemplo de estilo deseado..."),
-                     font=ctk.CTkFont(size=9), text_color=c["muted_text"]).pack(anchor="w", padx=10)
+                     font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c["muted_text"]).pack(anchor="w", padx=10)
 
         cliente_state = {"imagen": None, "descripcion": ""}
         lbl_estado_img = ctk.CTkLabel(frame_img, text=tr("(sin imagen cargada)"),
-                                        font=ctk.CTkFont(size=10), text_color=c["muted_text"])
+                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"])
         lbl_estado_img.pack(anchor="w", padx=10, pady=2)
 
         def _cargar_imagen_cliente():
@@ -172,7 +172,7 @@ class ModoClienteService:
             ("Público objetivo", "ej: Mujeres 25-40 urbanas, Profesionales tech, Familia..."),
             ("Restricciones / keywords", "ej: Sin texto, paleta verde-marrón, formato vertical..."),
         ]:
-            ctk.CTkLabel(vent, text=tr(label), font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=20, pady=(4, 2))
+            ctk.CTkLabel(vent, text=tr(label), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(anchor="w", padx=20, pady=(4, 2))
             ent = ctk.CTkEntry(vent, placeholder_text=tr(placeholder), width=560, height=28)
             ent.pack(padx=20)
             campos[label] = ent
@@ -226,7 +226,7 @@ class ModoClienteService:
 
         ctk.CTkButton(vent, text=tr("✨ Generar 5 propuestas"), width=220, height=34,
                       fg_color=P.BTN_EXITO,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=_generar_propuestas).pack(pady=15)
 
     def _generar_propuestas_cliente(self, brief):
@@ -360,9 +360,9 @@ class ModoClienteService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr('💼 {0} Propuestas para tu brief').format(len(propuestas_norm)),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 2))
         ctk.CTkLabel(vent, text=tr('Brief: {0}{1}').format((brief[:120]), ('...' if len(brief) > 120 else '')),
-                     font=ctk.CTkFont(size=9), text_color=c["muted_text"], wraplength=840
+                     font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c["muted_text"], wraplength=840
                      ).pack(pady=(0, 8))
 
         cards_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -387,19 +387,19 @@ class ModoClienteService:
             hdr.pack(fill="x", padx=12, pady=(8, 4))
             emoji = emojis[idx] if idx < len(emojis) else "•"
             ctk.CTkLabel(hdr, text=f"{emoji}  {titulo}",
-                         font=ctk.CTkFont(size=13, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=col_colors[idx % len(col_colors)]).pack(side="left")
 
             desc_row = ctk.CTkFrame(card, fg_color="transparent")
             desc_row.pack(fill="x", padx=12, pady=(0, 4))
-            ctk.CTkLabel(desc_row, text=preview, font=ctk.CTkFont(size=10),
+            ctk.CTkLabel(desc_row, text=preview, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                          text_color=P.TXT_MUTED, wraplength=820, anchor="w"
                          ).pack(anchor="w")
 
             if negativo:
                 neg_preview = negativo[:100].replace("\n", " ")
                 ctk.CTkLabel(desc_row, text=tr('🔴 NEG: {0}…').format(neg_preview),
-                             font=ctk.CTkFont(size=9), text_color="#ef4444",
+                             font=ctk.CTkFont(size=P.FUENTE_HINT), text_color="#ef4444",
                              anchor="w").pack(anchor="w", pady=(2, 0))
 
             btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -444,16 +444,16 @@ class ModoClienteService:
                     self.app.dialogs.set_estado(tr('❌ No se pudo guardar: {0}').format(e), P.TXT_ERROR)
 
             ctk.CTkButton(btn_row, text=tr("✅ Usar propuesta"), width=150, height=30, fg_color=P.BTN_EXITO,
-                          font=ctk.CTkFont(size=10, weight="bold"), command=_usar
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"), command=_usar
                           ).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("📋 Copiar"), width=100, height=30, fg_color=P.BTN_SECUNDARIO,
-                          font=ctk.CTkFont(size=10), command=_copiar
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_copiar
                           ).pack(side="left", padx=2)
             ctk.CTkButton(btn_row, text=tr("💾 Guardar"), width=100, height=30, fg_color="#4a1a6a",
-                          font=ctk.CTkFont(size=10), command=_guardar_prop
+                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=_guardar_prop
                           ).pack(side="left", padx=2)
             ctk.CTkLabel(btn_row, text=tr('   {0} chars').format(len(positivo)),
-                         font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=(4, 0))
+                         font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED_OSCURO).pack(side="left", padx=(4, 0))
 
         ctk.CTkButton(vent, text=tr("Cerrar"), width=140, height=30, fg_color="#475569",
                       command=vent.destroy).pack(pady=(0, 8))
@@ -478,9 +478,9 @@ class ModoClienteService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🎭 Moodboard — Detecta el estilo común de tus imágenes"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Añade imágenes con estilo similar (mínimo 2). Usa la imagen ya cargada como referencia."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 6))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 6))
 
         # ── Imagen ya cargada ──
         if self.app.imagen_cargada:
@@ -489,9 +489,9 @@ class ModoClienteService:
             hdr_ref = ctk.CTkFrame(frame_ref, fg_color="transparent")
             hdr_ref.pack(fill="x", padx=10, pady=(6, 2))
             ctk.CTkLabel(hdr_ref, text=tr("🖼 Imagen de referencia ya cargada"),
-                          font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(side="left")
             ctk.CTkLabel(hdr_ref, text=tr("Se usará automáticamente"),
-                          font=ctk.CTkFont(size=9), text_color=P.TXT_OK).pack(side="left", padx=(6, 0))
+                          font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_OK).pack(side="left", padx=(6, 0))
             preview_lbl = ctk.CTkLabel(frame_ref, text="")
             preview_lbl.pack(padx=10, pady=(0, 4))
 
@@ -502,7 +502,7 @@ class ModoClienteService:
         archivos_state = {"rutas": list(archivos_seleccionados)}
 
         lbl_count = ctk.CTkLabel(frame_arch, text=tr("0 imágenes seleccionadas"),
-                                 font=ctk.CTkFont(size=10), text_color=c["muted_text"])
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"])
         lbl_count.pack(anchor="w", padx=10, pady=(6, 2))
 
         thumbs_area = ctk.CTkFrame(frame_arch, fg_color="transparent")
@@ -539,7 +539,7 @@ class ModoClienteService:
                     btn_x = ctk.CTkButton(
                         cont, text="✕", width=18, height=18,
                         fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
-                        font=ctk.CTkFont(size=9, weight="bold"),
+                        font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
                         corner_radius=9, border_width=0,
                         command=_quitar,
                     )
@@ -549,7 +549,7 @@ class ModoClienteService:
             if n > 8:
                 ctk.CTkLabel(thumbs_area,
                              text=tr('+{0} más').format(n - 8),
-                             font=ctk.CTkFont(size=10),
+                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"]).pack(side="left", padx=4)
         def _anadir_mas():
             nuevas = filedialog.askopenfilenames(
@@ -601,7 +601,7 @@ class ModoClienteService:
         # ── Barra de progreso ──
         progress_frame = ctk.CTkFrame(vent, fg_color="transparent")
         progress_frame.pack(fill="x", padx=15, pady=(0, 4))
-        lbl_prog = ctk.CTkLabel(progress_frame, text="", font=ctk.CTkFont(size=10),
+        lbl_prog = ctk.CTkLabel(progress_frame, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                  text_color=c["muted_text"])
         lbl_prog.pack(anchor="w")
         progress_bar = ctk.CTkProgressBar(progress_frame, height=8)
@@ -683,9 +683,9 @@ class ModoClienteService:
                         vent2.geometry("720x650")
                         vent2.transient(self.app)
                         ctk.CTkLabel(vent2, text=tr('🎭 Estilo detectado en {0} imágenes').format(len(descripciones)),
-                                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 8))
+                                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 8))
 
-                        txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=11), wrap="word")
+                        txt = ctk.CTkTextbox(vent2, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word")
                         txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
                         txt.insert("1.0", resp)
                         txt.configure(state="disabled")
@@ -759,13 +759,13 @@ class ModoClienteService:
         ctk.CTkButton(botones_finales, text=tr("🎭 Analizar estilo común"),
                       width=240, height=38,
                       fg_color="#a64aa6", hover_color="#7a2a7a",
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       text_color="#ffffff",
                       command=_ejecutar_moodboard).pack(side="left", padx=4)
         ctk.CTkButton(botones_finales, text=tr("📚 Mis estilos"),
                       width=140, height=38,
                       fg_color="#4a1a6a", hover_color="#3a1050",
-                      font=ctk.CTkFont(size=11, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       text_color="#ffffff",
                       command=lambda: self._abrir_biblioteca_estilos_moodboard(vent)
                       ).pack(side="left", padx=4)
@@ -781,10 +781,10 @@ class ModoClienteService:
         win.transient(parent_window or self.app)
 
         ctk.CTkLabel(win, text=tr("📚 Estilos detectados con moodboard"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(12, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(12, 4))
         cont_var = ctk.StringVar(value="")
         ctk.CTkLabel(win, textvariable=cont_var,
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 6))
 
         scroll = ctk.CTkScrollableFrame(win, fg_color="transparent")
@@ -810,13 +810,13 @@ class ModoClienteService:
                 hdr = ctk.CTkFrame(card, fg_color="transparent")
                 hdr.pack(fill="x", padx=10, pady=(6, 2))
                 ctk.CTkLabel(hdr, text=est.get("nombre", f"Estilo {idx+1}"),
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=c["hdr_text"]).pack(side="left")
                 meta = f"  · {est.get('fecha','')}"
                 if est.get("n_imagenes"):
                     meta += f"  · {est['n_imagenes']} img"
                 ctk.CTkLabel(hdr, text=meta,
-                             font=ctk.CTkFont(size=9),
+                             font=ctk.CTkFont(size=P.FUENTE_HINT),
                              text_color=c["muted_text"]).pack(side="left")
 
                 tiene_template = bool(est.get("template", "").strip())
@@ -836,7 +836,7 @@ class ModoClienteService:
                     ver.title(f"🎭 {e.get('nombre','Estilo')}")
                     ver.geometry("680x500")
                     ver.transient(win)
-                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(size=11), wrap="word")
+                    txt = ctk.CTkTextbox(ver, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word")
                     txt.pack(fill="both", expand=True, padx=10, pady=10)
                     txt.insert("1.0", e.get("descripcion", ""))
                     txt.configure(state="disabled")
@@ -863,11 +863,11 @@ class ModoClienteService:
                               width=160, height=26,
                               fg_color=P.BTN_EXITO if tiene_template else c["fg_dark"],
                               state="normal" if tiene_template else "disabled",
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text=tr("👁 Ver análisis"),
                               width=120, height=26,
-                              font=ctk.CTkFont(size=10),
+                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_ver).pack(side="left", padx=2)
                 ctk.CTkButton(btn_row, text="🗑", width=40, height=26,
                               fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,

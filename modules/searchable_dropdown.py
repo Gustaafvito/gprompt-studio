@@ -22,6 +22,7 @@ import tkinter
 
 import customtkinter as ctk
 
+from modules import paleta as P
 from modules.i18n import tr
 
 
@@ -142,7 +143,7 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                         # del tema) pero clicable para plegar/desplegar la familia.
                         hdr = ctk.CTkLabel(
                             lista, text=f"{flecha} {tr(v)}", anchor="w",
-                            font=ctk.CTkFont(size=10, weight="bold"),
+                            font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                             cursor="hand2",
                         )
                         hdr.pack(fill="x", padx=4, pady=(6, 0))

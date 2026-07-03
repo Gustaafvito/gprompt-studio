@@ -342,7 +342,7 @@ class PreviewPollinationsService:
 
         ctk.CTkLabel(vent,
                      text=tr('👁 Grid Pollinations ({0} previews)  ·  click en una imagen para verla en grande').format(n),
-                     font=ctk.CTkFont(size=12, weight="bold")
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")
                      ).pack(pady=(8, 4))
 
         # Toggle de modelo Pollinations. Lista dinámica según endpoint:
@@ -371,21 +371,21 @@ class PreviewPollinationsService:
         bar_modelo = ctk.CTkFrame(vent, fg_color="transparent")
         bar_modelo.pack(pady=(0, 4))
         ctk.CTkLabel(bar_modelo, text=tr("Modelo:"),
-                     font=ctk.CTkFont(size=10)
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA)
                      ).pack(side="left", padx=(0, 4))
         combo_modelo_pol = ctk.CTkComboBox(
             bar_modelo,
             values=_modelos_disponibles,
             variable=modelo_pollinations_var,
             width=130, height=24,
-            font=ctk.CTkFont(size=10),
-            dropdown_font=ctk.CTkFont(size=10),
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+            dropdown_font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
             state="readonly",
         )
         combo_modelo_pol.pack(side="left")
         ctk.CTkLabel(bar_modelo,
                      text=f"({_hint_modo})",
-                     font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO
+                     font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED_OSCURO
                      ).pack(side="left", padx=(6, 0))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
@@ -406,7 +406,7 @@ class PreviewPollinationsService:
                 else tr("Variación #{0}").format(i + 1)
             )
             ctk.CTkLabel(cell, text=label_txt,
-                         font=ctk.CTkFont(size=10, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                          wraplength=thumb_size - 10
                          ).pack(pady=(4, 2))
 
@@ -424,7 +424,7 @@ class PreviewPollinationsService:
             btn_regen = ctk.CTkButton(btn_row_cell, text=tr("♻ Regenerar"),
                                        width=120, height=22,
                                        fg_color=P.BTN_ACENTO, hover_color="#5b21b6",
-                                       font=ctk.CTkFont(size=10, weight="bold"))
+                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"))
             btn_regen.pack()
 
             def _on_img(image, lbl=img_lbl, prompt_text=var, btn_frame=btn_row_cell):
@@ -521,11 +521,11 @@ class PreviewPollinationsService:
         pie.pack(pady=(0, 10))
         ctk.CTkLabel(pie,
                      text=tr("Cache en ~/.arquitecto_prompts/preview_cache/"),
-                     font=ctk.CTkFont(size=9), text_color=P.TXT_MUTED_OSCURO
+                     font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED_OSCURO
                      ).pack(side="left", padx=8)
         ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
                       fg_color="#6b7280", hover_color="#4b5563",
-                      font=ctk.CTkFont(size=10, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
 
     def mostrar_window(self, image_pil, img_ctk, url_imagen, desde_cache=False):
@@ -541,14 +541,14 @@ class PreviewPollinationsService:
 
         if desde_cache:
             ctk.CTkLabel(vent_previa, text=tr("📥 Servido desde caché — instantáneo, sin llamada a la API"),
-                         font=ctk.CTkFont(size=10, slant="italic"),
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"),
                          text_color=P.TXT_OK).pack(pady=(0, 4))
 
         # URL Pollinations (truncada para no romper layout)
         url_corta = url_imagen if len(url_imagen) <= 80 else url_imagen[:77] + "..."
         ctk.CTkLabel(vent_previa,
                      text=tr('🔗 URL: {0}').format(url_corta),
-                     font=ctk.CTkFont(family="Consolas", size=9),
+                     font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                      text_color=P.TXT_MUTED,
                      wraplength=520, justify="left"
                      ).pack(pady=(2, 8), padx=15)

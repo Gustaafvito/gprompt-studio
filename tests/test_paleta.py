@@ -33,6 +33,29 @@ def test_paleta_consistente():
         assert bg.startswith("#") and hover.startswith("#") and bg != hover
 
 
+RE_FONT = re.compile(r"CTkFont\([^)]*?size\s*=\s*(\d+)", re.DOTALL)
+
+
+def test_sin_tamanos_literales_en_fuentes():
+    """Tamaños 7-16 dentro de CTkFont van por la escala P.FUENTE_*.
+
+    Los ≥18 (splash, logos, displays del dashboard) quedan libres.
+    """
+    fugas = []
+    for py in list(ROOT.glob("*.py")) + list((ROOT / "modules").glob("*.py")):
+        if py.name in EXCLUIR:
+            continue
+        src = py.read_text(encoding="utf-8")
+        for m in RE_FONT.finditer(src):
+            n = int(m.group(1))
+            if 7 <= n <= 16:
+                linea = src[:m.start()].count("\n") + 1
+                fugas.append(f"{py.name}:{linea} size={n}")
+    assert not fugas, (
+        f"{len(fugas)} tamaños de fuente literales (usa P.FUENTE_*): "
+        + "; ".join(fugas[:10]))
+
+
 def test_sin_hex_semanticos_hardcodeados():
     fugas = []
     for py in list(ROOT.glob("*.py")) + list((ROOT / "modules").glob("*.py")):

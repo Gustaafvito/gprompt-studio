@@ -288,10 +288,10 @@ class ToolsAnalysisService:
         vent_sel.geometry("440x290")
         vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text=tr("📝 Crítica de historial"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
                      text=tr('Tienes {0} prompts en historial.\n¿Cuántos analizar?').format(len(items)),
-                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 14))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED).pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(30, len(items)))
         n_max = min(100, len(items))
@@ -300,7 +300,7 @@ class ToolsAnalysisService:
                                variable=n_var)
         slider.pack(fill="x", padx=30, pady=(0, 4))
         lbl_n = ctk.CTkLabel(vent_sel, text=tr('Últimos {0} prompts').format(n_var.get()),
-                             font=ctk.CTkFont(size=12, weight="bold"))
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"))
         lbl_n.pack(pady=(0, 8))
         slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
 
@@ -310,7 +310,7 @@ class ToolsAnalysisService:
         cache_hash = cache_critica.get("hash_historial")
         cache_n = cache_critica.get("n", 0)
         actual_hash = f"{len(items)}_{items[0].get('fecha','') if items and isinstance(items[0], dict) else ''}"
-        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
+        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                       text_color=P.TXT_OK)
         lbl_cache_info.pack(pady=(0, 8))
         if cache_hash == actual_hash and cache_critica.get("resp"):
@@ -420,13 +420,13 @@ class ToolsAnalysisService:
         vent.geometry("750x650")
         vent.transient(self.app)
         ctk.CTkLabel(vent, text=tr("🔍 Análisis de tus patrones creativos"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         sub = tr("Análisis de tus últimas {0} ideas — patrones, temas y sugerencias").format(n)
         if cacheado:
             sub += "  ·  " + tr("💾 caché")
         ctk.CTkLabel(vent, text=sub,
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
-        txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=11), wrap="word")
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 8))
+        txt = ctk.CTkTextbox(vent, font=ctk.CTkFont(size=P.FUENTE_CUERPO), wrap="word")
         txt.pack(fill="both", expand=True, padx=15, pady=(0, 5))
         txt.insert("1.0", resp)
 
@@ -484,10 +484,10 @@ class ToolsAnalysisService:
         vent_sel.geometry("440x300")
         vent_sel.transient(self.app)
         ctk.CTkLabel(vent_sel, text=tr("🚀 Auto-mejora"),
-                     font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(20, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(20, 4))
         ctk.CTkLabel(vent_sel,
                      text=tr('Tienes {0} prompts en el historial.\n¿Cuántos quieres analizar?').format(len(items)),
-                     font=ctk.CTkFont(size=11), text_color=P.TXT_MUTED).pack(pady=(0, 14))
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), text_color=P.TXT_MUTED).pack(pady=(0, 14))
 
         n_var = ctk.IntVar(value=min(10, len(items)))
         n_max = min(50, len(items))
@@ -496,7 +496,7 @@ class ToolsAnalysisService:
                                variable=n_var)
         slider.pack(fill="x", padx=30, pady=(0, 4))
         lbl_n = ctk.CTkLabel(vent_sel, text=tr('Últimos {0} prompts').format(n_var.get()),
-                             font=ctk.CTkFont(size=12, weight="bold"))
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"))
         lbl_n.pack(pady=(0, 14))
         slider.configure(command=lambda v: lbl_n.configure(text=tr('Últimos {0} prompts').format(int(v))))
 
@@ -505,7 +505,7 @@ class ToolsAnalysisService:
         prefs_cache = self.app.store.cargar_preferencias() or {}
         cache_am = prefs_cache.get("_cache_automejora", {})
         actual_hash = f"{len(items)}_{items[0].get('fecha', '') if items and isinstance(items[0], dict) else ''}"
-        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=10),
+        lbl_cache_info = ctk.CTkLabel(vent_sel, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                       text_color=P.TXT_OK)
         lbl_cache_info.pack(pady=(0, 6))
         if cache_am.get("hash") == actual_hash and cache_am.get("resp"):
@@ -599,9 +599,9 @@ class ToolsAnalysisService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("🚀 Sugerencias de mejora"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr('Análisis de {0} prompts').format(len(originales)),
-                     font=ctk.CTkFont(size=10), text_color=text_muted).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=text_muted).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent,
                                         fg_color=("#f3f4f6" if is_lt else "#0d1117"))
@@ -612,7 +612,7 @@ class ToolsAnalysisService:
             ctk.CTkLabel(scroll,
                          text=tr("⚠️ El LLM no devolvió JSON parseable. Muestro la respuesta cruda:"),
                          text_color=P.TXT_AVISO).pack(pady=4)
-            txt = ctk.CTkTextbox(scroll, wrap="word", font=ctk.CTkFont(size=11), height=500)
+            txt = ctk.CTkTextbox(scroll, wrap="word", font=ctk.CTkFont(size=P.FUENTE_CUERPO), height=500)
             txt.pack(fill="both", expand=True, padx=4, pady=4)
             txt.insert("1.0", resp_raw)
         else:
@@ -630,7 +630,7 @@ class ToolsAnalysisService:
                 card.pack(fill="x", pady=4, padx=2)
 
                 ctk.CTkLabel(card, text=tr('Prompt #{0}').format(n),
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=accent, anchor="w").pack(anchor="w", padx=12, pady=(8, 2))
 
                 # Original (truncado)
@@ -638,24 +638,24 @@ class ToolsAnalysisService:
                     orig_short = orig_text[:200] + ("..." if len(orig_text) > 200 else "")
                     ctk.CTkLabel(card, text=f"📝 {orig_short}",
                                  text_color=text_muted, anchor="w", wraplength=820,
-                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12, pady=(0, 4))
+                                 justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(fill="x", padx=12, pady=(0, 4))
 
                 if bien:
                     ctk.CTkLabel(card, text=f"✅ {bien}",
                                  text_color=success, anchor="w", wraplength=820,
-                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
+                                 justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(fill="x", padx=12)
                 if mejorar:
                     ctk.CTkLabel(card, text=f"💡 {mejorar}",
                                  text_color=P.TXT_AVISO, anchor="w", wraplength=820,
-                                 justify="left", font=ctk.CTkFont(size=10)).pack(fill="x", padx=12)
+                                 justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(fill="x", padx=12)
 
                 if mejorado:
                     ctk.CTkLabel(card, text=tr("✨ Versión mejorada:"),
                                  text_color=text_main, anchor="w",
-                                 font=ctk.CTkFont(size=10, weight="bold")).pack(fill="x", padx=12, pady=(6, 0))
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold")).pack(fill="x", padx=12, pady=(6, 0))
                     txt_mejor = ctk.CTkTextbox(card, wrap="word",
                                                height=80,
-                                               font=ctk.CTkFont(size=10),
+                                               font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                                fg_color=("#f9fafb" if is_lt else "#0f172a"),
                                                text_color=text_main)
                     txt_mejor.pack(fill="x", padx=12, pady=(2, 6))
@@ -769,7 +769,7 @@ class ToolsAnalysisService:
             return out
 
         def _seccion(parent, titulo):
-            ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=13, weight="bold"),
+            ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=c_accent).pack(pady=(15, 8), anchor="w", padx=5)
 
         def _barra(parent, texto, count, max_val, color="#58a6ff"):
@@ -777,14 +777,14 @@ class ToolsAnalysisService:
             bar_frame.pack(fill="x", pady=2, padx=2)
             pct = int(count / max_val * 100) if max_val else 0
             ctk.CTkLabel(bar_frame, text=f"  {texto}",
-                         font=ctk.CTkFont(size=10), text_color=c_text,
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c_text,
                          anchor="w").pack(side="left", padx=5, pady=5)
             barra = ctk.CTkProgressBar(bar_frame, width=150, height=6,
                                        progress_color=color)
             barra.pack(side="left", padx=(5, 5), pady=5)
             barra.set(pct / 100)
             ctk.CTkLabel(bar_frame, text=tr('{0}x ({1}%)').format((count), (pct)),
-                         font=ctk.CTkFont(size=9), text_color=c_muted).pack(side="right", padx=(0, 8))
+                         font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c_muted).pack(side="right", padx=(0, 8))
 
         def _render():
             for w in scroll.winfo_children():
@@ -800,7 +800,7 @@ class ToolsAnalysisService:
                 sub = tr("📅 {0} · {1} prompts ({2})").format(rango_txt, len(hist), rango)
             else:
                 sub = tr("📅 Sin prompts en el rango ({0})").format(rango)
-            ctk.CTkLabel(scroll, text=sub, font=ctk.CTkFont(size=10),
+            ctk.CTkLabel(scroll, text=sub, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                          text_color=c_muted).pack(pady=(0, 8))
 
             # ── Stats generales (no dependen del rango) ──
@@ -825,7 +825,7 @@ class ToolsAnalysisService:
                 card.grid(row=row, column=col, padx=5, pady=4, sticky="nsew")
                 ctk.CTkLabel(card, text=str(val), font=ctk.CTkFont(size=20, weight="bold"),
                              text_color=color).pack(pady=(8, 2))
-                ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=9),
+                ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=P.FUENTE_HINT),
                              text_color=c_muted).pack(pady=(0, 8))
             for c in range(3):
                 grid.grid_columnconfigure(c, weight=1)
@@ -894,7 +894,7 @@ class ToolsAnalysisService:
                 info.pack(fill="x", pady=5, padx=2)
                 ctk.CTkLabel(info,
                              text=tr('📊 Media: ~{0}  ·  Mín: {1}  ·  Máx: {2}').format((media), (min(largos)), (max(largos))),
-                             font=ctk.CTkFont(size=11),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=c_accent).pack(padx=10, pady=10)
 
             # ── Actividad por mes ──
@@ -927,7 +927,7 @@ class ToolsAnalysisService:
                 else:
                     ctk.CTkLabel(scroll,
                                  text=tr("  Sin datos de uso de seeds en este rango"),
-                                 font=ctk.CTkFont(size=10),
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                                  text_color=c_muted).pack(anchor="w", padx=10)
 
         # ── Pie: Exportar CSV (usa hist_full siempre) ──
@@ -1018,7 +1018,7 @@ class ToolsAnalysisService:
                     vent.configure(fg_color=c.get("panel_bg"))
 
                     ctk.CTkLabel(vent, text=tr("📝 Análisis de calidad del prompt"),
-                                 font=ctk.CTkFont(size=15, weight="bold"),
+                                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                                  text_color=c.get("panel_text")).pack(pady=(12, 4))
 
                     # ── Bloque TOTAL grande ─────────────────────────
@@ -1040,7 +1040,7 @@ class ToolsAnalysisService:
                                      font=ctk.CTkFont(size=36, weight="bold"),
                                      text_color=total_color).pack(pady=(10, 0))
                         ctk.CTkLabel(total_frame, text=etiqueta,
-                                     font=ctk.CTkFont(size=13, weight="bold"),
+                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                      text_color=total_color).pack(pady=(0, 10))
 
                     # ── Categorías con barras de color ──────────────
@@ -1055,7 +1055,7 @@ class ToolsAnalysisService:
                             color = _color_para_score(val, maxv)
                             # Nombre categoría
                             ctk.CTkLabel(row, text=nombre, anchor="w",
-                                         font=ctk.CTkFont(size=11, weight="bold"),
+                                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                          text_color=c.get("panel_text"),
                                          width=180).pack(side="left", padx=(2, 8))
                             # Barra de progreso
@@ -1068,7 +1068,7 @@ class ToolsAnalysisService:
                                 logger.debug(f"[silent] {_e}")
                             # Score numérico coloreado
                             ctk.CTkLabel(row, text=f"{val}/{maxv}",
-                                         font=ctk.CTkFont(size=11, weight="bold"),
+                                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                          text_color=color, width=60).pack(side="left", padx=4)
 
                     # ── Texto detallado (puntos fuertes/débiles/sugerencia) ──
@@ -1078,34 +1078,34 @@ class ToolsAnalysisService:
 
                     if fuertes:
                         ctk.CTkLabel(detail_frame, text=tr("✅ Puntos fuertes"),
-                                     font=ctk.CTkFont(size=12, weight="bold"),
+                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                      text_color=P.TXT_OK, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=fuertes,
-                                     font=ctk.CTkFont(size=11), wraplength=620,
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), wraplength=620,
                                      justify="left", anchor="w",
                                      text_color=c.get("panel_text")).pack(anchor="w", padx=12, pady=(0, 6))
 
                     if debiles:
                         ctk.CTkLabel(detail_frame, text=tr("⚠️ Puntos débiles"),
-                                     font=ctk.CTkFont(size=12, weight="bold"),
+                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                      text_color=P.TXT_ERROR, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=debiles,
-                                     font=ctk.CTkFont(size=11), wraplength=620,
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), wraplength=620,
                                      justify="left", anchor="w",
                                      text_color=c.get("panel_text")).pack(anchor="w", padx=12, pady=(0, 6))
 
                     if sugerencia:
                         ctk.CTkLabel(detail_frame, text=tr("💡 Sugerencia"),
-                                     font=ctk.CTkFont(size=12, weight="bold"),
+                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                      text_color=P.TXT_INFO, anchor="w").pack(anchor="w", pady=(2, 1))
                         ctk.CTkLabel(detail_frame, text=sugerencia,
-                                     font=ctk.CTkFont(size=11), wraplength=620,
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), wraplength=620,
                                      justify="left", anchor="w",
                                      text_color=c.get("panel_text")).pack(anchor="w", padx=12, pady=(0, 6))
 
                     # Si no hubo parseo (formato raro), mostrar todo el texto
                     if not (scores_cat or fuertes or debiles or sugerencia):
-                        txt = ctk.CTkTextbox(detail_frame, font=ctk.CTkFont(size=11),
+                        txt = ctk.CTkTextbox(detail_frame, font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                               wrap="word", height=160)
                         txt.pack(fill="both", expand=True, padx=4, pady=4)
                         txt.insert("1.0", resp)
@@ -1215,16 +1215,16 @@ class ToolsAnalysisService:
         cfg.grab_set()
 
         ctk.CTkLabel(cfg, text=tr("🎯 Optimizador en bucle"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(16, 4))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(16, 4))
         ctk.CTkLabel(cfg,
                      text=tr("Puntúa el prompt, lo mejora atacando sus puntos débiles,\n"
                           "y repite hasta alcanzar el objetivo. Conserva la mejor versión."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"],
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
                      justify="center").pack(pady=(0, 14))
 
         objetivo_var = ctk.IntVar(value=85)
         lbl_obj = ctk.CTkLabel(cfg, text=tr("Score objetivo: 85/100"),
-                               font=ctk.CTkFont(size=12, weight="bold"))
+                               font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"))
         lbl_obj.pack()
         sl_obj = ctk.CTkSlider(cfg, from_=60, to=95, number_of_steps=7,
                                variable=objetivo_var,
@@ -1234,7 +1234,7 @@ class ToolsAnalysisService:
 
         iter_var = ctk.IntVar(value=3)
         lbl_iter = ctk.CTkLabel(cfg, text=tr("Iteraciones máx: 3"),
-                                font=ctk.CTkFont(size=12, weight="bold"))
+                                font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"))
         lbl_iter.pack()
         sl_iter = ctk.CTkSlider(cfg, from_=1, to=5, number_of_steps=4,
                                 variable=iter_var,
@@ -1243,7 +1243,7 @@ class ToolsAnalysisService:
         sl_iter.pack(fill="x", padx=40, pady=(2, 8))
 
         lbl_coste = ctk.CTkLabel(cfg, text="",
-                                 font=ctk.CTkFont(size=9, slant="italic"),
+                                 font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                                  text_color=c["muted_text"])
         lbl_coste.pack(pady=(0, 10))
 
@@ -1259,7 +1259,7 @@ class ToolsAnalysisService:
         btn_row.pack(side="bottom", pady=(0, 16))
         ctk.CTkButton(btn_row, text=tr("▶ Optimizar"), width=150, height=34,
                       fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                      font=ctk.CTkFont(size=12, weight="bold"),
+                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                       command=lambda: _lanzar()).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("Cancelar"), width=100, height=34,
                       fg_color=c["fg_dark"], hover_color=c["fg_dark_hover"],
@@ -1294,17 +1294,17 @@ class ToolsAnalysisService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr('🎯 Optimizando hacia {0}/100 (máx {1} iteraciones)').format((objetivo), (max_iter)),
-                     font=ctk.CTkFont(size=13, weight="bold")).pack(pady=(12, 6))
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(pady=(12, 6))
 
         progreso_frame = ctk.CTkScrollableFrame(vent, fg_color="transparent", height=160)
         progreso_frame.pack(fill="x", padx=16, pady=(0, 6))
 
-        resultado_box = ctk.CTkTextbox(vent, wrap="word", font=ctk.CTkFont(size=11))
+        resultado_box = ctk.CTkTextbox(vent, wrap="word", font=ctk.CTkFont(size=P.FUENTE_CUERPO))
         resultado_box.pack(fill="both", expand=True, padx=16, pady=(0, 6))
         resultado_box.insert("1.0", texto_inicial)
 
         estado_lbl = ctk.CTkLabel(vent, text=tr("⏳ Puntuando prompt inicial…"),
-                                  font=ctk.CTkFont(size=11),
+                                  font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                   text_color=c["muted_text"])
         estado_lbl.pack(pady=(0, 4))
 
@@ -1342,7 +1342,7 @@ class ToolsAnalysisService:
             row = ctk.CTkFrame(progreso_frame, fg_color="transparent")
             row.pack(fill="x", pady=1)
             ctk.CTkLabel(row, text=f"{etiqueta}:", width=110, anchor="w",
-                         font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(4, 6))
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")).pack(side="left", padx=(4, 6))
             try:
                 bar = ctk.CTkProgressBar(row, width=300, height=12, progress_color=color)
                 bar.set(min(score / 100.0, 1.0))
@@ -1350,7 +1350,7 @@ class ToolsAnalysisService:
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
             ctk.CTkLabel(row, text=f"{int(score)}/100",
-                         font=ctk.CTkFont(size=11, weight="bold"),
+                         font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                          text_color=color, width=60).pack(side="left", padx=4)
             # El textbox muestra siempre la última versión generada
             resultado_box.delete("1.0", "end")
@@ -1493,21 +1493,21 @@ class ToolsAnalysisService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("💰 Coste estimado de esta sesión"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(14, 2))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(14, 2))
         ctk.CTkLabel(vent,
                      text=tr("Tokens reales reportados por cada API × precio del modelo usado."),
-                     font=ctk.CTkFont(size=10), text_color=c["muted_text"]).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
 
         cuerpo = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         cuerpo.pack(fill="both", expand=True, padx=16, pady=(0, 6))
 
         lbl_total = ctk.CTkLabel(vent, text="",
-                                 font=ctk.CTkFont(size=14, weight="bold"))
+                                 font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"))
         lbl_total.pack(pady=(0, 2))
 
         ctk.CTkLabel(vent,
                      text=tr("Estimación orientativa (precios junio 2026, por modelo usado)."),
-                     font=ctk.CTkFont(size=9, slant="italic"),
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
                      text_color=c["muted_text"]).pack(pady=(0, 4))
 
         def _render():
@@ -1517,7 +1517,7 @@ class ToolsAnalysisService:
             if not datos:
                 ctk.CTkLabel(cuerpo,
                              text=tr("Aún no hay llamadas LLM en esta sesión."),
-                             font=ctk.CTkFont(size=11),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=c["muted_text"]).pack(pady=20)
                 lbl_total.configure(text=tr("Total estimado: 0.0000 $"))
             else:
@@ -1528,7 +1528,7 @@ class ToolsAnalysisService:
                                      (tr("Tokens entrada"), 110), (tr("Tokens salida"), 110),
                                      (tr("Coste"), 80)):
                     ctk.CTkLabel(head, text=texto, width=ancho, anchor="w",
-                                 font=ctk.CTkFont(size=10, weight="bold"),
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                  text_color=c["muted_text"]).pack(side="left", padx=2)
                 # Filas
                 for pid in sorted(datos.keys()):
@@ -1544,7 +1544,7 @@ class ToolsAnalysisService:
                                          (f"{d['tokens_salida']:,}", 110),
                                          (coste_txt, 80)):
                         ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
-                                     font=ctk.CTkFont(size=11),
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                      text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
                 lbl_total.configure(text=tr('Total estimado: {0:.4f} $').format(usage_tracker.total_usd()))
 
@@ -1555,7 +1555,7 @@ class ToolsAnalysisService:
                 historico = {}
             if isinstance(historico, dict) and historico:
                 ctk.CTkLabel(cuerpo, text=tr("📅 Histórico (últimos 14 días)"),
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=c["panel_text"]).pack(anchor="w", pady=(14, 4))
                 head_h = ctk.CTkFrame(cuerpo, fg_color="transparent")
                 head_h.pack(fill="x", pady=(0, 4))
@@ -1563,7 +1563,7 @@ class ToolsAnalysisService:
                                      (tr("Tokens entrada"), 110), (tr("Tokens salida"), 110),
                                      (tr("Coste/día"), 80)):
                     ctk.CTkLabel(head_h, text=texto, width=ancho, anchor="w",
-                                 font=ctk.CTkFont(size=10, weight="bold"),
+                                 font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                  text_color=c["muted_text"]).pack(side="left", padx=2)
                 total_periodo = 0.0
                 for fecha in sorted(historico.keys(), reverse=True)[:14]:
@@ -1581,11 +1581,11 @@ class ToolsAnalysisService:
                                          (f"{t_in:,}", 110), (f"{t_out:,}", 110),
                                          (f"{coste:.4f} $", 80)):
                         ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
-                                     font=ctk.CTkFont(size=11),
+                                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                      text_color=c["muted_text"]).pack(side="left", padx=2, pady=2)
                 ctk.CTkLabel(cuerpo,
                              text=tr('Total del periodo mostrado: {0:.4f} $').format(total_periodo),
-                             font=ctk.CTkFont(size=11, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                              text_color=c["panel_text"]).pack(anchor="w", pady=(4, 2))
 
         _render()
@@ -1652,9 +1652,9 @@ class ToolsAnalysisService:
         vent.transient(self.app)
 
         ctk.CTkLabel(vent, text=tr("💎 Seeds favoritos"),
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text=tr("Guarda tu configuración y recupérala rápido"),
-                     font=ctk.CTkFont(size=10),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                      text_color=c["muted_text"]).pack(pady=(0, 4))
 
         # Buscador
@@ -1712,7 +1712,7 @@ class ToolsAnalysisService:
                 card = ctk.CTkFrame(scroll, fg_color=c["fg_frame"], corner_radius=8)
                 card.pack(fill="x", pady=4, padx=2)
                 ctk.CTkLabel(card, text=f"💎 {seed.get('nombre', '?')}",
-                             font=ctk.CTkFont(size=12, weight="bold"),
+                             font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                              text_color=c["hdr_text"]).pack(anchor="w", padx=12, pady=(8, 2))
 
                 modelo = seed.get('modelo_img') or seed.get('modelo_vid') or '?'
@@ -1727,10 +1727,10 @@ class ToolsAnalysisService:
                 info = f"📱 {modelo}"
                 if ratio: info += f" | 📐 {ratio}"
                 if plataforma: info += f" | 🌐 {plataforma}"
-                ctk.CTkLabel(card, text=info, font=ctk.CTkFont(size=10),
+                ctk.CTkLabel(card, text=info, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"]).pack(anchor="w", padx=12)
                 ctk.CTkLabel(card, text=f"🎨 {estilos_txt}",
-                             font=ctk.CTkFont(size=9),
+                             font=ctk.CTkFont(size=P.FUENTE_HINT),
                              text_color=c["muted_text"]
                              ).pack(anchor="w", padx=12, pady=(2, 6))
 
@@ -1756,10 +1756,10 @@ class ToolsAnalysisService:
                     self.app.dialogs.set_estado(tr("💎 Seed '{0}' eliminado").format(nombre), P.TXT_AVISO)
 
                 ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=90, height=26,
-                              fg_color=P.BTN_EXITO, font=ctk.CTkFont(size=10),
+                              fg_color=P.BTN_EXITO, font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_aplicar).pack(side="left", padx=3)
                 ctk.CTkButton(btn_frame, text=tr("🗑 Borrar"), width=80, height=26,
-                              fg_color="#8b2020", font=ctk.CTkFont(size=10),
+                              fg_color="#8b2020", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                               command=_borrar).pack(side="left", padx=3)
 
         _refrescar()
@@ -1860,9 +1860,9 @@ class ToolsAnalysisService:
         vent.geometry("600x450")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr("🏷️ Atajos de tags (snippets)"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 3))
+        ctk.CTkLabel(vent, text=tr("🏷️ Atajos de tags (snippets)"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Atajos rápidos para insertar tags comunes"),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 8))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 8))
 
         scroll = ctk.CTkScrollableFrame(vent, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=15, pady=5)
@@ -1872,9 +1872,9 @@ class ToolsAnalysisService:
             for i, atajo in enumerate(atajos):
                 card = ctk.CTkFrame(scroll, fg_color="#111820", corner_radius=8)
                 card.pack(fill="x", pady=3)
-                ctk.CTkLabel(card, text=atajo.get("nombre", "?"), font=ctk.CTkFont(size=11, weight="bold"),
+                ctk.CTkLabel(card, text=atajo.get("nombre", "?"), font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                              text_color="#aaccee").pack(anchor="w", padx=10, pady=(6, 2))
-                ctk.CTkLabel(card, text=atajo.get("tags", ""), font=ctk.CTkFont(size=9),
+                ctk.CTkLabel(card, text=atajo.get("tags", ""), font=ctk.CTkFont(size=P.FUENTE_HINT),
                              text_color=P.TXT_MUTED, wraplength=500).pack(anchor="w", padx=10, pady=(0, 4))
                 def _aplicar(tags=atajo.get("tags", "")):
                     self.app._aplicar_atajo_tags(tags)
@@ -1887,9 +1887,9 @@ class ToolsAnalysisService:
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
                 btn_frame.pack(anchor="e", padx=8, pady=(0, 4))
                 ctk.CTkButton(btn_frame, text=tr("✅ Aplicar"), width=80, height=22, fg_color=P.BTN_EXITO,
-                              font=ctk.CTkFont(size=9), command=_aplicar).pack(side="left", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_HINT), command=_aplicar).pack(side="left", padx=2)
                 ctk.CTkButton(btn_frame, text="🗑", width=24, height=22, fg_color="#c0392b",
-                              font=ctk.CTkFont(size=9), command=_borrar).pack(side="left", padx=2)
+                              font=ctk.CTkFont(size=P.FUENTE_HINT), command=_borrar).pack(side="left", padx=2)
 
         def crear():
             vent_add = GPromptWindow(vent)
@@ -2029,16 +2029,16 @@ class ToolsAnalysisService:
 
         hdr = ctk.CTkFrame(marco, fg_color="transparent")
         hdr.pack(fill="x", pady=(0, 8))
-        ctk.CTkLabel(hdr, text=tr("🔧 Workflow ComfyUI"), font=ctk.CTkFont(size=14, weight="bold"),
+        ctk.CTkLabel(hdr, text=tr("🔧 Workflow ComfyUI"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                      text_color=c["hdr_text"]).pack(side="left")
-        ctk.CTkLabel(hdr, text=tr('Modelo: {0}').format(modelo), font=ctk.CTkFont(size=11),
+        ctk.CTkLabel(hdr, text=tr('Modelo: {0}').format(modelo), font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=c.get("muted_text", "#888")).pack(side="right")
 
         info = ctk.CTkLabel(marco, text=tr("📋 Copia este JSON y pégalo en ComfyUI (Edit → Paste) o guarda como .json"),
-                            font=ctk.CTkFont(size=10), text_color=c.get("muted_text", "#888"))
+                            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c.get("muted_text", "#888"))
         info.pack(anchor="w", pady=(0, 6))
 
-        txt = ctk.CTkTextbox(marco, wrap="none", font=ctk.CTkFont(family="Consolas", size=10),
+        txt = ctk.CTkTextbox(marco, wrap="none", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                              fg_color=c.get("entry_bg", "#1a1a2e" if not is_lt else "#ffffff"),
                              text_color=c.get("entry_text", "#e5e7eb" if not is_lt else "#111827"),
                              border_color=c.get("entry_border", "#3a3a5a"))
@@ -2105,10 +2105,10 @@ class ToolsAnalysisService:
         marco.pack(fill="both", expand=True, padx=12, pady=12)
 
         ctk.CTkLabel(marco, text=tr("🇪🇸 Traducción al español"),
-                     font=ctk.CTkFont(size=14, weight="bold"),
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
                      text_color=c["hdr_text"]).pack(anchor="w", pady=(0, 6))
 
-        txt = ctk.CTkTextbox(marco, wrap="word", font=ctk.CTkFont(size=12),
+        txt = ctk.CTkTextbox(marco, wrap="word", font=ctk.CTkFont(size=P.FUENTE_SECCION),
                              fg_color=c.get("entry_bg", "#ffffff" if is_lt else "#1a1a2e"),
                              text_color=c.get("entry_text", "#111827" if is_lt else "#e5e7eb"),
                              border_color=c.get("entry_border", "#9ca3af" if is_lt else "#2a2a3e"))
@@ -2183,8 +2183,8 @@ class ToolsAnalysisService:
         vent.title(tr("🔍 Compatibilidad de modelos"))
         vent.geometry("600x400")
         vent.transient(self.app)
-        ctk.CTkLabel(vent, text=tr("🔍 Compatibilidad de modelos"), font=ctk.CTkFont(size=15, weight="bold")).pack(pady=(10, 5))
+        ctk.CTkLabel(vent, text=tr("🔍 Compatibilidad de modelos"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 5))
         ctk.CTkLabel(vent, text=tr("Información de compatibilidad entre modelos y configuraciones"),
-                     font=ctk.CTkFont(size=10), text_color=P.TXT_MUTED).pack(pady=(0, 10))
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 10))
         # Aquí iría la tabla de compatibilidad
         ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30, command=vent.destroy).pack(pady=15)
