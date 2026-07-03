@@ -50,6 +50,15 @@ lavado de cara completo de la UI + i18n + distribuible.
    construir los menús — herramientas nuevas aparecen solas). También en
    menú Aprender.
 6. LEEME-PRIMERO versionado en `docs/` (el build lo copia al distribuible).
+7. (2026-07-03 noche) Barrido final de estilos: purpuras hardcodeados
+   rezagados a paleta; menús del header con RELLENO semántico (ojo:
+   theme.py reaplica ese relleno — no volver al neutro btn_bg);
+   dropdown buscable de modelos con tema + modelo actual resaltado.
+8. **Icono propio**: `assets/icon.ico` + `icon.png` (G blanca + chispa
+   ámbar sobre violeta, generado en SeaArt con Z-Image-Base). Cableado
+   en main.py (iconbitmap), ambos specs (icon= y assets/ en datas) e
+   installer.iss (SetupIconFile). La tanda 3 del prompt (cerebro de
+   circuitos + burbuja) quedó como candidata para splash/Acerca de.
 
 ## Roadmap UI pendiente
 
