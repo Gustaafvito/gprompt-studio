@@ -238,6 +238,15 @@ class PromptsInyeccionService:
         if specs.get("limitaciones"):
             extra += f"• Limitaciones: {specs['limitaciones']}\n"
 
+        # Refuerzo IDIOMA (espejo del modo vídeo): los best_for/prompt_formula
+        # por familia están en español y arrastran al LLM a responder en
+        # español. El PROMPT/NEGATIVE final SIEMPRE va en inglés.
+        extra += (
+            "• ⚠️ IDIOMA DEL PROMPT: escribe el PROMPT y el NEGATIVE PROMPT "
+            "finales SIEMPRE en INGLÉS, aunque estas instrucciones o los "
+            "ejemplos estén en español.\n"
+        )
+
         extra = self._inyectar_template(modelo, extra)
         extra += REGLAS_APROVECHAR_BUDGET
         return system_prompt + extra
@@ -252,6 +261,9 @@ class PromptsInyeccionService:
         # Formato especial Nano Banana (Gemini): 6 bloques checklist + edit
         if specs.get("formato_bloques") == "nano_banana":
             return self._inyectar_formato_nano_banana(modelo, specs, extra)
+        # Formato especial Qwen Edit (ComfyUI): doble prompt T2I + img2img
+        if specs.get("formato_bloques") == "qwen_edit":
+            return self._inyectar_formato_qwen_edit(modelo, specs, extra)
 
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
@@ -773,6 +785,36 @@ class PromptsInyeccionService:
                     f"Composition/Mood) a esta categoría.\n"
                     f"  • NO mezcles con otras categorías.\n"
                 )
+        return extra
+
+    def _inyectar_formato_qwen_edit(self, modelo: str, specs: dict, extra: str) -> str:
+        """Formato DOBLE para Qwen Image Edit local (workflow ComfyUI del usuario).
+
+        El workflow tiene dos etapas: (1) T2I genera una imagen base desde una
+        descripción de escena; (2) img2img edita esa base con una instrucción.
+        Por eso el LLM debe devolver CUATRO bloques: PROMPT/NEGATIVE T2I y
+        PROMPT/NEGATIVE IMG2IMG. Todo en inglés, lenguaje natural, CFG 4.
+        """
+        neg = specs.get("negative_sugerido", "")
+        extra += (
+            "• TIPO: Qwen Image Edit en ComfyUI, workflow de DOS ETAPAS. "
+            "Lenguaje NATURAL fluido en inglés (NO tags por comas, NO pesos).\n"
+            "• Etapa 1 (T2I): describe la ESCENA COMPLETA para generarla desde "
+            "cero (sujeto + entorno + luz + estilo + cámara).\n"
+            "• Etapa 2 (IMG2IMG): instrucción de EDICIÓN sobre esa base, "
+            "empezando por lo que se MANTIENE y luego lo que CAMBIA "
+            "('same woman but change the background to...'). Coherencia de luz.\n"
+        )
+        extra += (
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO (los 4 bloques, en inglés) ⚠️\n"
+            "\n"
+            "PROMPT T2I: [descripción de escena completa para generar la base]\n"
+            f"NEGATIVE T2I: [tags a evitar; base sugerida: {neg}]\n"
+            "\n"
+            "PROMPT IMG2IMG: [instrucción de edición: 'same [sujeto] but change "
+            "[X] to [Y]...', mantén identidad y ajusta la iluminación]\n"
+            f"NEGATIVE IMG2IMG: [tags a evitar; base sugerida: {neg}]\n"
+        )
         return extra
 
     def _inyectar_formato_nano_banana(self, modelo: str, specs: dict, extra: str) -> str:

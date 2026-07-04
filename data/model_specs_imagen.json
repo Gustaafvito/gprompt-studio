@@ -2007,7 +2007,7 @@
   },
   "qwen_image_edit_2509_fp8_e4m3fn": {
     "nota": 4.3,
-    "has_negative": false,
+    "has_negative": true,
     "is_natural": true,
     "ratios": [
       "1:1",
@@ -2018,16 +2018,19 @@
     ],
     "max_chars": 2000,
     "modos_gen": [
-      "Estándar"
+      "Text-to-Image",
+      "Image-to-Image"
     ],
-    "best_for": "Qwen Image Edit (Septiembre 2025). Modelo de edición tipo InstructPix2Pix. Recibe imagen + instrucción de edición en lenguaje natural.",
-    "best_for_en": "Qwen Image Edit (September 2025). InstructPix2Pix-style editing model. Takes image + natural-language editing instruction.",
-    "prompt_formula": "Instrucción de edición en lenguaje natural. 'change X to Y', 'add Z', 'make it more...'.",
-    "prompt_ejemplo": "Change the dress color to red, add soft sunset lighting, make the background more blurred",
+    "best_for": "Qwen Image Edit en ComfyUI: workflow de DOS etapas. Etapa 1 (T2I) genera una imagen base desde una descripcion de escena; etapa 2 (img2img) la edita con una instruccion. Lenguaje natural, CFG 4, 25 pasos, euler. Acepta negative.",
+    "best_for_en": "Qwen Image Edit in ComfyUI: TWO-stage workflow. Stage 1 (T2I) generates a base image from a scene description; stage 2 (img2img) edits it with an instruction. Natural language, CFG 4, 25 steps, euler. Accepts negative.",
+    "prompt_formula": "Doble salida: PROMPT/NEGATIVE T2I (escena completa para generar) + PROMPT/NEGATIVE IMG2IMG (instruccion de edicion: same X but change Y...).",
+    "prompt_ejemplo": "T2I: a beautiful woman in a modern coffee shop, warm window light, photorealistic. | IMG2IMG: same woman but change the background to a tropical beach at sunset, warm matching light.",
     "sampler_recomendado": "Euler",
     "pasos": 25,
     "cfg": 4,
-    "limitaciones": "Solo edición de imagen. Necesita imagen base. No genera desde cero."
+    "limitaciones": "La etapa img2img necesita la imagen base de la etapa T2I (o una imagen cargada). Manten identidad y coherencia de luz entre ambas.",
+    "formato_bloques": "qwen_edit",
+    "negative_sugerido": "blurry, low quality, deformed, ugly, cartoon, anime, 3D, text, watermark, signature, oversaturated, flat lighting, smooth skin, plastic texture"
   },
   "svd": {
     "nota": 4.0,

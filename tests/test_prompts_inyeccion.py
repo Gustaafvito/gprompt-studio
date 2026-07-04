@@ -680,6 +680,30 @@ class TestConstruirModeloInfo:
         assert info1 != info2
         assert "SDXL" in info2
 
+    def test_prompt_imagen_fuerza_ingles(self):
+        # Candado: los hints por familia van en español y arrastraban al LLM
+        # a responder en español (pasó con Qwen local). El prompt/negative
+        # finales deben forzarse a inglés, igual que en vídeo.
+        h = _host(
+            modo_var=_var("imagen"),
+            combo_modelo_imagen=_var("qwen_image_edit_2509_fp8_e4m3fn"),
+        )
+        out = h._inyectar_specs_imagen("SYS")
+        assert "SIEMPRE en INGLÉS" in out
+
+    def test_qwen_edit_formato_doble_t2i_img2img(self):
+        # Workflow ComfyUI del usuario: Qwen debe dar 4 bloques (T2I +
+        # img2img, cada uno con su negative).
+        h = _host(
+            modo_var=_var("imagen"),
+            combo_modelo_imagen=_var("qwen_image_edit_2509_fp8_e4m3fn"),
+        )
+        out = h._inyectar_specs_imagen("SYS")
+        assert "PROMPT T2I:" in out
+        assert "NEGATIVE T2I:" in out
+        assert "PROMPT IMG2IMG:" in out
+        assert "NEGATIVE IMG2IMG:" in out
+
     def test_modo_audio_incluye_emocion(self):
         h = _host(
             modo_var=_var("audio"),
