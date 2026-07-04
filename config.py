@@ -629,40 +629,67 @@ def _agrupar_por_familia(nombres, detector, labels, prefijo):
         grupos.append((label, sorted(por_fam[fam], key=str.lower)))
     return grupos
 
+
+# Negatives base por familia (guía de prompts del usuario, probados en local
+# jul-2026). Se inyectan como sugerencia al LLM cuando la familia usa negative.
+_NEG_FLUX_QWEN_ZIMAGE = (
+    "blurry, low quality, deformed, ugly, cartoon, anime, 3D, text, watermark, "
+    "signature, oversaturated, flat lighting, smooth skin, plastic texture"
+)
+_NEG_SDXL = (
+    "worst quality, low quality, blurry, jpeg artifacts, overexposed, cartoon, "
+    "anime, deformed hands, ugly face, dark shadows, bad anatomy, text, watermark, "
+    "smooth skin, cloned face, multiple people"
+)
+
 _COMFY_SPECS_FAMILIA = {
     "flux": {
-        "is_natural": True, "has_negative": False,
-        "sampler_recomendado": "Euler / Simple (~20-28 pasos; FLUX usa guidance ~2.5-4, no CFG). El 9B va con CFG ~1-1.5",
-        "best_for": "Prosa natural fluida (50-150 palabras, hasta 400 en el 9B): sujeto → escena → iluminación → cámara. Encoder Qwen (entiende multilingüe). Sin pesos ni negative. CFG bajo.",
-        "best_for_en": "Flowing natural-language prose (50-150 words, up to 400 on the 9B): subject → scene → lighting → camera. Qwen text encoder (multilingual). No weights or negatives. Low CFG.",
+        # Flux 2 Klein (local): a diferencia de Flux.1 (guidance destilada, CFG~1),
+        # Flux 2 reintroduce CFG real (~3.5) y SÍ responde a negative prompt.
+        # Confirmado por testing local del usuario (jul-2026).
+        "is_natural": True, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~20 pasos, CFG ~3.5; Flux 2 Klein acepta negative)",
+        "best_for": "Prosa natural fluida y detallada (casi un párrafo): sujeto → escena → iluminación → cámara. Encoder Qwen (multilingüe). CFG ~3.5, ~20 pasos, euler/simple. Flux 2 Klein SÍ usa negative.",
+        "best_for_en": "Flowing, detailed natural-language prose (almost a paragraph): subject → scene → lighting → camera. Qwen text encoder (multilingual). CFG ~3.5, ~20 steps, euler/simple. Flux 2 Klein DOES use negative.",
         "prompt_formula": "Frases completas en prosa, NO tags por comas. Empieza por el sujeto, sigue con el entorno, describe la iluminación exacta y cierra con los detalles de cámara/lente.",
         "prompt_ejemplo": "A weathered fisherman mending nets on a wooden dock at golden hour, warm rim light catching the salt in his beard, calm harbor water behind, shot on 50mm with shallow depth of field.",
     },
     "z_image": {
-        # Alineado con la spec curada de Z-Image-Base (SeaArt): formato
-        # híbrido z_image (tag preamble + bloques narrativos) y CON negative.
-        # Las variantes turbo (destiladas, CFG~1) pierden negative y formato
-        # vía el override de COMFY_TURBO_TOKENS en comfy_image_specs.
+        # LOCAL (ComfyUI): testing del usuario dice LENGUAJE NATURAL PURO, sin
+        # el preámbulo de tags de calidad (a diferencia del "híbrido" que
+        # SeaArt anuncia para su Z-Image-Base cloud, que sí conserva su spec
+        # curada). Con negative. Turbo (destilada, CFG~2) pierde negative vía
+        # el override de COMFY_TURBO_TOKENS.
         "is_natural": True, "has_negative": True,
-        "formato_bloques": "z_image",
-        "sampler_recomendado": "Euler (~28-50 pasos, CFG 3-5; la Turbo es destilada: ~8 pasos, CFG 1, sin negative)",
-        "best_for": "Lenguaje natural detallado y específico (no tags): define ropa, pose, fondo y luz. Términos de fotografía para retratos ('85mm, shallow DoF'). Calidad > longitud, sin instrucciones contradictorias.",
-        "best_for_en": "Detailed, specific natural language (not tags): define outfit, pose, background and lighting. Photography terms for portraits ('85mm, shallow DoF'). Quality over length, no contradictory instructions.",
-        "prompt_formula": "Descripción concreta y enfocada incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple — Base ~25 pasos CFG 4.0 · Turbo ~8 pasos CFG 2.0 (sin negative)",
+        "best_for": "Lenguaje natural detallado y específico (NO tags de calidad tipo 'masterpiece'): define ropa, pose, fondo y luz. Términos de fotografía para retratos ('85mm, shallow DoF'). Base: 25 pasos CFG 4. Turbo: 8 pasos CFG 2.",
+        "best_for_en": "Detailed, specific natural language (NO quality tags like 'masterpiece'): define outfit, pose, background and lighting. Photography terms for portraits ('85mm, shallow DoF'). Base: 25 steps CFG 4. Turbo: 8 steps CFG 2.",
+        "prompt_formula": "Descripción concreta y enfocada en prosa incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
         "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field, natural skin texture.",
     },
     "qwen": {
-        "is_natural": True, "has_negative": False,
-        "best_for": "Edición por instrucciones: frase clara de objetivo + referencia a 'image 1/2/3' (hasta 3 imágenes). Conciso y específico. KSampler típico: 8 pasos, CFG 1, Euler.",
-        "best_for_en": "Instruction-based editing: clear goal sentence + reference to 'image 1/2/3' (up to 3 images). Concise and specific. Typical KSampler: 8 steps, CFG 1, Euler.",
-        "prompt_formula": "Instrucción única y clara de qué cambiar; referencia 'image 1/2/3' cuando uses varias; di qué transferir y qué mantener. Breve y preciso.",
-        "prompt_ejemplo": "Place the character from image 1 into the scene of image 2, keep the lighting of image 2, photorealistic, seamless blend.",
+        # A CFG 4 (base, no la LoRA Lightning) responde a negative — confirmado
+        # por el testing del usuario.
+        "is_natural": True, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~25 pasos, CFG 4.0; con la LoRA Lightning: 8 pasos CFG 1)",
+        "best_for": "Lenguaje natural fluido (foto o edición): frase clara de objetivo + referencia a 'image 1/2/3' (hasta 3 imágenes). CFG 4, 25 pasos, euler. Acepta negative. Con LoRA Lightning: 8 pasos CFG 1.",
+        "best_for_en": "Fluid natural language (photo or editing): clear goal sentence + reference to 'image 1/2/3' (up to 3 images). CFG 4, 25 steps, euler. Accepts negative. With Lightning LoRA: 8 steps CFG 1.",
+        "prompt_formula": "Frase fluida descriptiva; para edición di qué cambiar y qué mantener, con referencia 'image 1/2/3' cuando uses varias. Evita meter tags al inicio.",
+        "prompt_ejemplo": "A young woman wearing a floral summer dress walks through an outdoor market bathed in golden sunset light, market stalls with fresh produce behind her, soft warm backlighting, professional photography, sharp focus, photorealistic.",
     },
     "ideogram": {
-        "is_natural": True, "has_negative": False,
-        "best_for": "Tipografía y texto legible dentro de la imagen. Lenguaje natural; pon el texto deseado entre comillas.",
-        "best_for_en": "Typography and legible in-image text. Natural language; put the desired text in quotes.",
-        "prompt_formula": "Describe la escena en lenguaje natural e indica el texto exacto entre comillas, con estilo de tipografía y ubicación.",
+        # Formato medio (tags + frase) y con negative según el testing del
+        # usuario; is_natural se mantiene True porque Ideogram rinde mejor con
+        # lenguaje descriptivo (clave para su fuerte: tipografía/texto).
+        "is_natural": True, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~25 pasos, CFG 4.0)",
+        "best_for": "Tipografía y texto legible en imagen + escenas descriptivas. Frase media (ni tags sueltos ni párrafos larguísimos); pon el texto deseado entre comillas. CFG 4, 25 pasos. Acepta negative.",
+        "best_for_en": "Typography and legible in-image text + descriptive scenes. Medium-length phrasing (not loose tags nor very long paragraphs); put the desired text in quotes. CFG 4, 25 steps. Accepts negative.",
+        "prompt_formula": "Frase media descriptiva; indica el texto exacto entre comillas, con estilo de tipografía y ubicación. Ni tags sueltos ni párrafo largo.",
         "prompt_ejemplo": "A vintage coffee shop poster with the headline \"MORNING RITUAL\" in bold serif lettering, warm muted palette, centered composition.",
     },
     "pony": {
@@ -680,15 +707,17 @@ _COMFY_SPECS_FAMILIA = {
     },
     "sd15": {
         "is_natural": False, "has_negative": True,
+        "negative_sugerido": _NEG_SDXL,
         "sampler_recomendado": "DPM++ 2M Karras (~25 pasos, CFG 7)",
-        "best_for": "SD 1.5 (512px nativo), tags + negative. DPM++ 2M Karras ~25 pasos, CFG 7.",
-        "best_for_en": "SD 1.5 (512px native), tags + negative. DPM++ 2M Karras ~25 steps, CFG 7.",
+        "best_for": "SD 1.5 (512px nativo), tags de calidad + descripción + negative. DPM++ 2M Karras ~25 pasos, CFG 7.",
+        "best_for_en": "SD 1.5 (512px native), quality tags + description + negative. DPM++ 2M Karras ~25 steps, CFG 7.",
     },
     "sdxl": {
         "is_natural": False, "has_negative": True,
-        "sampler_recomendado": "DPM++ 2M Karras (~30 pasos, CFG 5-7)",
-        "best_for": "SDXL de propósito general / fotorrealismo, tags + negative. DPM++ 2M Karras ~30 pasos, CFG 5-7.",
-        "best_for_en": "General-purpose / photoreal SDXL, tags + negative. DPM++ 2M Karras ~30 steps, CFG 5-7.",
+        "negative_sugerido": _NEG_SDXL,
+        "sampler_recomendado": "euler o dpmpp_2m / karras (~20 pasos, CFG 6.5)",
+        "best_for": "SDXL de propósito general / fotorrealismo: tags de calidad ('masterpiece, best quality') + descripción + negative. euler/karras o dpmpp_2m/karras, ~20 pasos, CFG 6.5.",
+        "best_for_en": "General-purpose / photoreal SDXL: quality tags ('masterpiece, best quality') + description + negative. euler/karras or dpmpp_2m/karras, ~20 steps, CFG 6.5.",
     },
 }
 

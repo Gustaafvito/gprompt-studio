@@ -186,16 +186,34 @@ class TestDetectarFamiliaComfy:
 
 class TestComfyImageSpecs:
 
-    def test_flux_es_natural_sin_negative(self):
+    def test_flux2_es_natural_con_negative(self):
+        # Flux 2 Klein (local): CFG real ~3.5, SÍ usa negative (testing usuario).
         s = config.comfy_image_specs("flux-2-klein-base-4b-fp8")
         assert s["is_natural"] is True
-        assert s["has_negative"] is False
+        assert s["has_negative"] is True
+        assert s.get("negative_sugerido")
+
+    def test_qwen_e_ideogram_con_negative(self):
+        # A CFG 4 responden a negative (testing usuario).
+        for m in ("qwen_image_edit_2509_fp8_e4m3fn", "ideogram4_fp8_transformer"):
+            s = config.comfy_image_specs(m)
+            assert s["has_negative"] is True, m
+            assert s.get("negative_sugerido"), m
+
+    def test_zimage_local_es_natural_puro_sin_formato_hibrido(self):
+        # LOCAL: lenguaje natural puro, sin el formato híbrido con tag-preamble
+        # (el híbrido queda solo en la spec curada de SeaArt Z-Image-Base).
+        s = config.comfy_image_specs("z_image_bf16")
+        assert s["is_natural"] is True
+        assert s["has_negative"] is True
+        assert "formato_bloques" not in s
 
     def test_sdxl_es_tagbased_con_negative(self):
         s = config.comfy_image_specs("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
         assert s["is_natural"] is False
         assert s["has_negative"] is True
-        assert "DPM++" in s["sampler_recomendado"]
+        assert "dpmpp_2m" in s["sampler_recomendado"]
+        assert s.get("negative_sugerido")
 
     def test_zimage_turbo_fuerza_sin_negative(self):
         base = config.comfy_image_specs("z_image_bf16")

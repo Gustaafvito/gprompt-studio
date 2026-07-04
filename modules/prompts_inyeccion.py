@@ -257,6 +257,8 @@ class PromptsInyeccionService:
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
             extra = self._inyectar_estilo_flux(modelo, extra)
             if specs["has_negative"]:
+                if specs.get("negative_sugerido"):
+                    extra += f"• Negative base recomendado para esta familia (adáptalo/amplíalo según la idea): {specs['negative_sugerido']}\n"
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\nNEGATIVE PROMPT: [tags a evitar]\n"
             else:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPROMPT: [descripción fluida]\n(No generes NEGATIVE PROMPT — este modelo no lo soporta)\n"
@@ -275,6 +277,8 @@ class PromptsInyeccionService:
             if es_comfyui_turbo:
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPOSITIVE PROMPT: [tags en inglés SIN pesos]\n(No generes NEGATIVE PROMPT)\n"
             elif specs["has_negative"]:
+                if specs.get("negative_sugerido"):
+                    extra += f"• Negative base recomendado para esta familia (adáptalo/amplíalo según la idea): {specs['negative_sugerido']}\n"
                 extra += "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\nPOSITIVE PROMPT: [tags en inglés]\nNEGATIVE PROMPT: [tags negativos]\n"
             else:
                 extra += "• ⛔ Este modelo NO SOPORTA NEGATIVE PROMPT. Solo genera POSITIVE PROMPT.\n"
