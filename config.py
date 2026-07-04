@@ -443,8 +443,10 @@ def guardar_comfyui_path(ruta: str, store) -> bool:
 # Tokens (case-insensitive) para clasificar un checkpoint por su nombre de
 # fichero. Se prueban contra el stem en minúscula. AUDIO y VÍDEO tienen
 # prioridad; si no encaja ninguno, se asume IMAGEN.
+# NOTA: ACE-Step va en _COMFY_EXCLUIR_TOKENS (se elimina del escaneo, el
+# usuario no lo usa desde la herramienta), no en esta lista.
 _COMFY_TOKENS_AUDIO = (
-    "acestep", "ace_step", "ace-step", "musicgen", "stable_audio",
+    "musicgen", "stable_audio",
     "stableaudio", "audioldm", "mmaudio",
 )
 _COMFY_TOKENS_VIDEO = (
@@ -464,9 +466,11 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 
 # Ficheros que NO sirven en un generador de prompts y se excluyen del escaneo:
 # refinadores (2ª pasada, sin prompt propio), SVD (image-to-video puro que
-# ignora el texto), piezas sueltas de un pipeline (transformer_only) y modelos
-# de inpainting (necesitan máscara + imagen, no generan desde texto).
-_COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting", "inpaint")
+# ignora el texto), piezas sueltas de un pipeline (transformer_only), modelos
+# de inpainting (necesitan máscara + imagen) y ACE-Step (audio; el usuario no
+# lo usa desde la herramienta).
+_COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
+                         "inpaint", "acestep", "ace_step", "ace-step")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -598,8 +602,6 @@ _COMFY_DESC_LOCAL = {
     "wan22i2vhighnoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa high noise", "Wan 2.2 i2v 14B — high-noise stage"),
     "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
     "ltx2322bdev": ("LTX 2.3 22B: vídeo con audio nativo", "LTX 2.3 22B: video with native audio"),
-    "acestepv15base": ("ACE-Step 1.5 base: text-to-music", "ACE-Step 1.5 base: text-to-music"),
-    "acestepv15xlsftbf16": ("ACE-Step 1.5 XL SFT: text-to-music", "ACE-Step 1.5 XL SFT: text-to-music"),
 }
 
 
@@ -671,8 +673,11 @@ _COMFY_SPECS_FAMILIA = {
     },
     "qwen": {
         # A CFG 4 (base, no la LoRA Lightning) responde a negative — confirmado
-        # por el testing del usuario.
+        # por el testing del usuario. Formato DOBLE (workflow del usuario):
+        # una etapa T2I (genera base) + una img2img (edita esa base).
         "is_natural": True, "has_negative": True,
+        "formato_bloques": "qwen_edit",
+        "max_chars": 1800,  # margen para los 4 bloques (T2I + img2img)
         "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
         "sampler_recomendado": "euler / simple (~25 pasos, CFG 4.0; con la LoRA Lightning: 8 pasos CFG 1)",
         "best_for": "Lenguaje natural fluido (foto o edición): frase clara de objetivo + referencia a 'image 1/2/3' (hasta 3 imágenes). CFG 4, 25 pasos, euler. Acepta negative. Con LoRA Lightning: 8 pasos CFG 1.",
@@ -854,27 +859,16 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
 }
 
 
-# ── Familia de AUDIO ComfyUI (ACE-Step local) → specs sintéticas ────
+# ── Familias de AUDIO ComfyUI local → specs sintéticas ────────────
 # Espejo de comfy_image_specs para el modo audio. _inyectar_specs_audio
 # indexa: nota, best_for, duracion_max_min, usa_tags_estructurales,
 # has_instrumental_toggle, prompt_ejemplo_estilo, limitaciones.
-_COMFY_FAMILIAS_AUDIO = (
-    ("acestep", ("acestep", "ace_step", "ace-step")),
-)
+# NOTA: ACE-Step NO está aquí — el fine-tune del usuario genera imagen (ver
+# familia 'ace' de imagen). Vacío por ahora; se rellena si aparece un modelo
+# de audio local real (MusicGen, Stable Audio…).
+_COMFY_FAMILIAS_AUDIO = ()
 
-_COMFY_SPECS_FAMILIA_AUDIO = {
-    "acestep": {
-        "nota": 4.0,
-        "duracion_max_min": 4,
-        "usa_tags_estructurales": True,
-        "has_instrumental_toggle": True,
-        "best_for": "ACE-Step local (ComfyUI): text-to-music open source. Campo de estilo = tags separados por comas (género, instrumentación, mood, tempo/bpm, tipo de voz). Letra con tags [verse]/[chorus]/[bridge]. Multilingüe. Clips de hasta ~4 min.",
-        "best_for_en": "Local ACE-Step (ComfyUI): open-source text-to-music. Style field = comma-separated tags (genre, instrumentation, mood, tempo/bpm, voice type). Lyrics with [verse]/[chorus]/[bridge] tags. Multilingual. Up to ~4 min clips.",
-        "prompt_ejemplo_estilo": "synthwave, retro electronic, dreamy female vocals, 105 bpm, analog synth pads, nostalgic mood",
-        "limitaciones": "Calidad vocal por debajo de Suno/Udio; mezclas muy densas pueden ensuciarse. Para instrumental deja la letra vacía o usa [inst].",
-        "vigente": True,
-    },
-}
+_COMFY_SPECS_FAMILIA_AUDIO = {}
 
 
 def comfy_audio_specs(nombre: str) -> dict | None:

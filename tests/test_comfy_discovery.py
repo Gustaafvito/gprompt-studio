@@ -33,8 +33,18 @@ class TestClasificarModeloComfy:
         assert config.clasificar_modelo_comfy("svd") == "video"
 
     def test_audio(self):
-        assert config.clasificar_modelo_comfy("acestep_v1.5_base") == "audio"
-        assert config.clasificar_modelo_comfy("acestep_v1.5_xl_sft_bf16") == "audio"
+        # MusicGen/Stable Audio siguen siendo audio; ACE-Step va excluido del
+        # escaneo (ver test_ace_excluido), no clasifica en la app.
+        assert config.clasificar_modelo_comfy("musicgen_medium") == "audio"
+        assert config.clasificar_modelo_comfy("stable_audio_open") == "audio"
+
+    def test_ace_excluido(self, tmp_path):
+        # ACE-Step (audio, el usuario no lo usa desde la herramienta) se
+        # excluye del escaneo: ni imagen ni audio.
+        root = _crear_install_comfy(tmp_path)
+        hallados = config._escanear_comfy_root(root)
+        todos = hallados["imagen"] + hallados["video"] + hallados["audio"]
+        assert not any("acestep" in m for m in todos)
 
     def test_vacio_y_none(self):
         assert config.clasificar_modelo_comfy("") == "imagen"
@@ -97,11 +107,13 @@ class TestEscanearComfyRoot:
                   "z_image_turbo_bf16", "qwen_image_edit_2509_fp8_e4m3fn"):
             assert m in hallados["imagen"]
 
-    def test_clasifica_video_y_audio(self, tmp_path):
+    def test_clasifica_video_sin_audio_ni_ace(self, tmp_path):
         root = _crear_install_comfy(tmp_path)
         hallados = config._escanear_comfy_root(root)
         assert "ltx-2.3-22b-dev-fp8" in hallados["video"]
-        assert "acestep_v1.5_base" in hallados["audio"]
+        # ACE-Step excluido: no aparece en ninguna categoría.
+        assert not hallados["audio"]
+        assert not any("acestep" in m for m in hallados["imagen"])
 
     def test_excluye_ficheros_sin_prompt(self, tmp_path):
         # refiner (2ª pasada), SVD (ignora el texto), transformer_only (pieza
