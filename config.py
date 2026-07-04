@@ -1608,10 +1608,12 @@ PLATAFORMAS_VIDEO = {
     "SeaArt Video":     "sd",
     "ComfyUI / Fooocus": "sd",
     "Kling AI":         "natural",
-    "Pika / Luma":      "natural",
-    "Runway Gen":       "natural",
-    "Pixverse.ai":      "natural",
     "Sora / Veo":       "natural",
+    # APAGADAS 2026-07-04 (sin modelos dados de alta; el usuario las
+    # reactivará con panel real cuando toque):
+    # "Pika / Luma":      "natural",
+    # "Runway Gen":       "natural",
+    # "Pixverse.ai":      "natural",
 }
 
 PLATAFORMAS_AUDIO = {
@@ -1646,10 +1648,8 @@ MOTORES_VIDEO = {
     "SeaArt Video": MODELOS_VIDEO_FLAT,
     "ComfyUI / Fooocus": MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni"],
-    "Pika / Luma": [],
-    "Runway Gen": [],
-    "Pixverse.ai": [],
     "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
+    # Apagadas (ver PLATAFORMAS_VIDEO): "Pika / Luma", "Runway Gen", "Pixverse.ai"
 }
 
 MOTORES_AUDIO = {

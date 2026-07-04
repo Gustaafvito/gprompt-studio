@@ -101,6 +101,10 @@ def _validate_and_fix_prefs() -> bool:
         _migracion_plataformas = {
             "ComfyUI / A1111 / Forge": "ComfyUI / Fooocus",
             "Dola": "SeaArt / Tensor.Art",
+            # Plataformas de vídeo apagadas el 2026-07-04 (sin modelos):
+            "Pika / Luma": "SeaArt Video",
+            "Runway Gen": "SeaArt Video",
+            "Pixverse.ai": "SeaArt Video",
         }
 
         def _migrar(nodo):
