@@ -112,6 +112,7 @@ from config import (
 )
 from modules.avatar_ui import abrir_avatar_window
 from modules.i18n import get_idioma, tr
+from modules.panel_lateral import toggle_panel
 from modules.style_guide import abrir_guia_estilos
 from modules.windows import abrir_lista, abrir_loras, abrir_personajes
 
@@ -342,6 +343,7 @@ class UIBuildersService:
                 (tr("🏠  Dashboard"), self.app.dashboard.cmd_abrir),
                 (tr("🌐  Idioma (EN/ES)"), self.app.dialogs.cmd_toggle_idioma),
                 (tr("🎯  Modo Focus"), self.app.creative.cmd_modo_focus),
+                (tr("🗂  Panel lateral (Ctrl+B)"), lambda: toggle_panel(self.app)),
             ]),
             (tr("⚙️ Workflow"), "#c9b32e", [
                 (tr("🆚  A/B Testing"), self.app.ab.cmd_ab_testing),

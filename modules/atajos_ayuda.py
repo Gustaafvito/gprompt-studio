@@ -61,6 +61,7 @@ class AtajosAyudaService:
             widget.bind("<Control-Shift-P>",      lambda e: (self.app.cmd_previsualizar(), "break")[1])
             widget.bind("<Control-e>",            lambda e: (self._cmd_exportar_rapido(), "break")[1])
             widget.bind("<Control-f>",            lambda e: self._atajo_buscar_global())
+            widget.bind("<Control-b>",            lambda e: (self._toggle_panel_lateral(), "break")[1])
             widget.bind("<Control-k>",            lambda e: (self._abrir_palette(), "break")[1])
             widget.bind("<Control-l>",            lambda e: (self._cmd_abrir_loras(), "break")[1])
             widget.bind("<Control-p>",            lambda e: (self.app._cmd_grupo_personajes(), "break")[1])
@@ -132,6 +133,15 @@ class AtajosAyudaService:
             self._cmd_buscar_global()
         except Exception as e:
             self.app.dialogs.set_estado(tr('⚠️ Error búsqueda: {0}').format(e), P.TXT_ERROR)
+        return "break"
+
+    def _toggle_panel_lateral(self) -> str:
+        """Ctrl+B — panel lateral (historial/favoritos/estrellas)."""
+        try:
+            from modules.panel_lateral import toggle_panel
+            toggle_panel(self.app)
+        except Exception as e:
+            self.app.dialogs.set_estado(tr('⚠️ Error: {0}').format(e), P.TXT_ERROR)
         return "break"
 
     def _abrir_palette(self) -> str:
@@ -279,6 +289,7 @@ class AtajosAyudaService:
                 ("Ctrl+T", tr("Abrir tutorial")),
             ]),
             (tr("🛠 Herramientas"), [
+                ("Ctrl+B", tr("Panel lateral (historial/favoritos/estrellas)")),
                 ("Ctrl+E", tr("Exportar rápido")),
                 ("Ctrl+F", tr("Búsqueda global")),
                 ("Ctrl+K", tr("Paleta de comandos (buscar cualquier acción)")),
