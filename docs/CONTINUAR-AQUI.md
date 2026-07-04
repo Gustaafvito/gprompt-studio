@@ -64,11 +64,23 @@ lavado de cara completo de la UI + i18n + distribuible.
 
 1. **Espaciados por ventana**: usar `P.ESPACIO_XS/S/M/L/XL` (4/8/12/16/20)
    al tocar cada ventana, con revisión visual. NO codemod ciego.
-2. **Panel lateral** (proyecto grande): historial/favoritos/búsqueda como
-   panel acoplado o tabs en vez de Toplevels sueltos.
-3. Revisar OneDrive del usuario: el cliente está APAGADO — su escritorio
+2. ✅ HECHO (27d4110): **Panel lateral** `modules/panel_lateral.py` —
+   drawer al borde derecho con historial/favoritos/estrellas, buscador,
+   Cargar/Copiar/Borrar. Ctrl+B / menú UI / Ctrl+K. OJO: NO usar bind_all
+   en un CTkFrame (CustomTkinter lo prohíbe → crash silencioso al abrir);
+   se enlaza al entry. Las ventanas de Datos siguen para gestión a fondo.
+3. Contraste de hints #666 en tema claro (menor).
+4. Revisar OneDrive del usuario: el cliente está APAGADO — su escritorio
    no tiene copia en la nube (el repo sí, en GitHub). Decidir si reactivar
    (solo 0,6 GB libres) o dejarlo consciente.
+
+**Bug crítico resuelto 2026-07-04 (c3f2227):** las specs sintéticas de
+checkpoints ComfyUI locales no traían `ratios` → KeyError al seleccionar
+uno (p.ej. 512-inpainting-ema quedó guardado en prefs) → crash al arrancar.
+Ahora comfy_image_specs expone `ratios` + UI defensiva + candado en tests.
+Lección: al hacer modelos nuevos seleccionables, sus specs deben tener
+TODAS las claves que la UI lee directamente (ratios, y en su ruta nota/
+max_chars aunque esas ya iban con .get()).
 
 ## Hecho 2026-07-04 (sesión catálogo local + limpieza plataformas)
 
