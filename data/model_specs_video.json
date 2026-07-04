@@ -430,35 +430,6 @@
     "vigente": true,
     "best_for_en": "Speed and VLOGs (free for a limited time). Image/Text/Video-ref with @ references + character library. 8-15s. Up to 4K. Prompts up to 5000 characters."
   },
-  "Seedance 1.0 Fast": {
-    "nota": null,
-    "has_negative": false,
-    "has_audio": false,
-    "audio_desc": "",
-    "duraciones": [
-      "5s",
-      "10s"
-    ],
-    "ratios": [
-      "1:1",
-      "3:4",
-      "4:3",
-      "9:16",
-      "16:9",
-      "21:9"
-    ],
-    "max_chars": 5000,
-    "modos_gen": [
-      "Fast"
-    ],
-    "max_imagenes": 1,
-    "best_for": "Seedance 1.0 Fast (Dreamina/ByteDance, vía Dola): generación rápida de vídeo desde texto o imagen de referencia. Lenguaje natural cinematográfico: sujeto + acción + cámara + estilo. 5-10s.",
-    "best_for_en": "Seedance 1.0 Fast (Dreamina/ByteDance, via Dola): fast text- or image-to-video generation. Cinematic natural language: subject + action + camera + style. 5-10s.",
-    "prompt_formula": "Lenguaje natural: [Sujeto] + [Acción] + [Movimiento de cámara] + [Iluminación/estilo]. Conciso para iteración rápida.",
-    "prompt_ejemplo": "A red sports car drifting around a wet mountain corner at night, low tracking shot following the car, neon city lights reflecting on the asphalt, cinematic.",
-    "limitaciones": "Versión Fast de Seedance 1.0: prioriza velocidad. Duración 5s o 10s.",
-    "vigente": true
-  },
   "Seedance 2.0 Mini": {
     "nota": null,
     "has_negative": false,
@@ -2094,14 +2065,20 @@
     "vigente": true,
     "best_for_en": "Advanced cinematic OPTICS AND LENS. Consistency of fluids, reflections, textures (fire, glass, mirrors, water). Photorealistic lighting. Better natural-language understanding (less rigid than earlier versions)."
   },
-  "Gemini Omni": {
+  "Gemini Omni Flash": {
     "nota": 4.9,
     "has_negative": false,
     "has_audio": true,
-    "audio_desc": "Audio realista (música ambiental, SFX, voz sincronizada)",
+    "audio_desc": "Audio nativo: ambiente, música, SFX y momentos de escena sincronizados",
     "duraciones": [
-      "~10s",
-      "~20s"
+      "3s",
+      "4s",
+      "5s",
+      "6s",
+      "7s",
+      "8s",
+      "9s",
+      "10s"
     ],
     "ratios": [
       "1:1",
@@ -2109,37 +2086,34 @@
       "9:16",
       "16:9"
     ],
-    "max_chars": 2000,
+    "max_chars": 5000,
     "modos_gen": [
-      "Text-to-Video",
-      "Image-to-Video",
-      "Video-to-Video",
-      "Omni Motion"
+      "Referencia al vídeo",
+      "Vídeo desde imagen",
+      "Vídeo desde texto"
     ],
-    "best_for": "DIRECTOR CREATIVO CON INTELIGENCIA FÍSICA. Modelo de MUNDO que entiende causa-efecto, dinámicas de fluidos, gravedad, materiales. Edición conversacional iterativa. Cámara cinematográfica avanzada. Renderiza texto animado. Referencia multimodal (imagen+vídeo+audio+texto).",
-    "prompt_formula": "5 BLOQUES CLAVE: {Sujeto/Acción} + {Entorno} + {Física/Dinámica} + {Cámara} + {Estilo/Iluminación}. Narrativa técnica, no lista de keywords. Enfoca en causa-efecto.",
-    "prompt_ejemplo": "Close-up of a coffee cup dripping in slow motion on a rustic wooden table in a dim café. The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam. Cinematic golden hour side lighting with lens flare. Dolly push-in, grounded cinematic feel.",
+    "best_for": "Modelo multimodal de vídeo de Google en SeaArt: crea y EDITA vídeo desde texto, imágenes (hasta 10 refs), audio o clips. Edición conversacional paso a paso (cambiar fondo, objeto, cámara, estilo) manteniendo la escena coherente. Transferencia de estilo (anime, acuarela, claymation, pixel art…) conservando movimiento. Conocimiento de mundo/física de Gemini. Audio nativo sincronizado.",
+    "prompt_formula": "Omni Video Formula — 8 bloques: {Input: qué referencia usas} + {Subject} + {Action} + {Camera} + {Style} + {Lighting} + {Audio} + {Edit Goal: qué cambiar y qué mantener, solo al editar}. Prosa narrativa, no tags.",
+    "prompt_ejemplo": "Use the uploaded anime character image as the main reference. The character stands under neon signs on a rainy night, slowly looks toward the camera, hair moving gently in the wind, cinematic close-up, soft city ambience, glowing reflections on the street, emotional anime style.",
     "prompt_ejemplo_estructura": {
-      "sujeto": "a coffee cup dripping in slow motion",
-      "entorno": "a rustic wooden table in a dim café",
-      "fisica": "The liquid splashes recreating hyperrealistic fluid dynamics and emits illuminated steam",
-      "camara": "Close-up, slow motion, dolly push-in",
-      "estilo": "Cinematic, golden hour side lighting, lens flare, grounded feel"
+      "input": "Use the uploaded anime character image as the main reference",
+      "sujeto": "the anime character under neon signs on a rainy night",
+      "accion": "slowly looks toward the camera, hair moving gently in the wind",
+      "camara": "cinematic close-up",
+      "estilo": "emotional anime style, glowing reflections on the street",
+      "audio": "soft city ambience"
     },
     "prompt_tips": [
-      "5 BLOQUES OBLIGATORIOS: Sujeto + Entorno + Física + Cámara + Estilo. Todos deben estar presentes.",
-      "NARRATIVA TÉCNICA: Escribe como si narraras una escena de película, no como lista de tags.",
-      "FÍSICA/DINÁMICA ES CLAVE: Omni entiende causa-efecto. Describe qué pasa 'cuando' ocurre una acción.",
-      "FLUIDOS Y MATERIALES: 'El líquido salpica creando gotas', 'el humo se dispersa', 'la tela ondea con viento'.",
-      "EVITA SOBRESPECIFICAR: No listes cada objeto. Describe atmósfera y Omni infiere los detalles.",
-      "CÁMARA: wide-angle, medium shot, close-up, dolly zoom, push-in, punch in, oners (toma continua).",
-      "ILUMINACIÓN: Fuente + efecto + temperatura. 'Warm golden light from the left', 'ethereal backlight'.",
-      "EDICIÓN ITERATIVA: Pide cambios específicos sin reescribir todo: 'Change the butterfly to a bee'.",
-      "OMNI MOTION: Para movimiento fluido, describe keyframes de acción: 'starting from X, transitioning to Y'.",
-      "CONOCIMIENTO DEL MUNDO: No explains contexto histórico/científico. Omni lo sabe. Solo describe tu visión.",
-      "TEXT EN VÍDEO: Especifica tipo de letra, posición, animación, exposición.",
-      "REFERENCIAS MULTIMODAL: Combina imagen de referencia + prompt para control de estilo.",
-      "NO USES MIDJOURNEY STYLE: No '(word:1.5)'. Escribe en prosa narrativa técnica."
+      "8 BLOQUES: Input + Subject + Action + Camera + Style + Lighting + Audio + Edit Goal.",
+      "INPUT PRIMERO: di qué referencia usas ('Use the uploaded image as the main reference').",
+      "EDICIÓN CONVERSACIONAL: tras generar, pide cambios concretos sin reescribir todo ('Change the camera angle to an over-the-shoulder shot').",
+      "EDIT GOAL: al editar, di qué cambia Y qué se mantiene ('Keep the face consistent, change the background into a glowing temple').",
+      "MULTI-REFERENCIA: asigna rol a cada entrada ('first image = character, second = background style, audio file = mood').",
+      "TRANSFERENCIA DE ESTILO: 'Keep the same motion and composition, but transform into hand-drawn anime style'.",
+      "FÍSICA/MUNDO: Omni entiende causa-efecto; describe qué pasa cuando ocurre la acción.",
+      "AUDIO: dirige el sonido ('soft wind, faint magical chimes, subtle cinematic ambience').",
+      "CÁMARA: medium shot → push-in, over-the-shoulder, tracking, dolly zoom.",
+      "NO USES pesos ni tags estilo Midjourney: prosa narrativa técnica."
     ],
     "estructura_camara": [
       "close-up",
@@ -2175,9 +2149,16 @@
       "shadow casting",
       "reflection"
     ],
-    "limitaciones": "Acceso vía Google AI Studio. Requiere suscripción. Sin negative prompt nativo.",
+    "limitaciones": "Sin negative prompt nativo. Clips de 3-10s.",
     "vigente": true,
-    "best_for_en": "CREATIVE DIRECTOR WITH PHYSICAL INTELLIGENCE. WORLD model that understands cause-effect, fluid dynamics, gravity, materials. Iterative conversational editing. Advanced cinematic camera. Renders animated text. Multimodal reference (image+video+audio+text)."
+    "best_for_en": "Google's multimodal video model on SeaArt: creates and EDITS video from text, images (up to 10 refs), audio or clips. Step-by-step conversational editing (change background, object, camera, style) keeping the scene coherent. Style transformation (anime, watercolor, claymation, pixel art…) preserving motion. Gemini world/physics knowledge. Native synced audio.",
+    "max_imagenes": 4,
+    "max_imagenes_referencia": 10,
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ]
   },
   "Vidu Drama Reference": {
     "nota": null,

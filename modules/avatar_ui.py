@@ -694,15 +694,24 @@ def abrir_avatar_window(app) -> None:
     try:
         from config import (
             GRUPOS_DALLE_IMAGEN,
+            GRUPOS_IMAGEN_COMFYUI,
             GRUPOS_IMAGEN_VIGENTES,
+            GRUPOS_MAGNIFIC_IMAGEN,
             get_image_model_specs,
         )
         from modules.avatar_generator import adaptar_dataset_a_modelo
 
+        # Mismas plataformas que el modo Imagen, con sus familias como grupos.
+        # GRUPOS_IMAGEN_COMFYUI se puebla en runtime vía autodiscovery
+        # (grupos "── ComfyUI · Familia ──"); si está vacío (sin ruta
+        # ComfyUI configurada) la plataforma se omite del selector.
         plataformas_destino = {
-            "SeaArt": GRUPOS_IMAGEN_VIGENTES,
+            "SeaArt / Tensor.Art": GRUPOS_IMAGEN_VIGENTES,
+            "ComfyUI / Fooocus": GRUPOS_IMAGEN_COMFYUI,
             "ChatGPT / GPT Image": GRUPOS_DALLE_IMAGEN,
+            "Magnific": GRUPOS_MAGNIFIC_IMAGEN,
         }
+        plataformas_destino = {p: g for p, g in plataformas_destino.items() if g}
         modelo_activo = app.footer.modelo_imagen_valido() or ""
 
         def adaptador(resultado, modelo):

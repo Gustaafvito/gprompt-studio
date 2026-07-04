@@ -243,7 +243,7 @@ GRUPOS_VIDEO = [
         "Happy Horse", "Happy Horse 1.1",
     ])),
     ("── Otros Motores ──", sorted([
-        "Sora2 Video", "Veo 3.1", "Gemini Omni",
+        "Sora2 Video", "Veo 3.1", "Gemini Omni Flash",
     ])),
 ]
 # Familias en orden alfabético (case-insensitive), ignorando los ── decorativos.
@@ -337,6 +337,7 @@ GRUPOS_IMAGEN = [
     ])),
     ("── Nano Banana ──", sorted([
         "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2",
+        "Nano Banana 2 Lite",
     ])),
     ("── Reve ──", sorted([
         "Reve 2.0",
@@ -461,6 +462,11 @@ COMFY_TURBO_TOKENS = (
 _COMFY_SUBDIRS = ("checkpoints", "diffusion_models", "unet")
 _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 
+# Ficheros que NO sirven en un generador de prompts y se excluyen del escaneo:
+# refinadores (2ª pasada, sin prompt propio), SVD (image-to-video puro que
+# ignora el texto) y piezas sueltas de un pipeline (transformer_only).
+_COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd")
+
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
 # "mochimix" clasificarían mal como vídeo): solo casan si NO están pegados a
@@ -503,6 +509,9 @@ def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
             continue
         for f in carpeta.rglob("*"):
             if f.is_file() and f.suffix.lower() in _COMFY_EXTS:
+                stem_l = f.stem.lower()
+                if any(_token_en_nombre(t, stem_l) for t in _COMFY_EXCLUIR_TOKENS):
+                    continue
                 hallados[clasificar_modelo_comfy(f.stem)].add(f.stem)
     return {k: sorted(v, key=str.lower) for k, v in hallados.items()}
 
@@ -542,8 +551,83 @@ _COMFY_FAMILIAS = (
     ("pony",        ("pony",)),
     ("illustrious", ("illustrious", "noobai", "noob")),
     ("sd15",        ("512-", "_512", "sd15", "sd_1.5", "sd-1.5", "v1-5", "1.5-pruned")),
-    ("sdxl",        ("sdxl", "sd_xl", "sd-xl", "juggernaut", "realvis", "dreamshaper", "ragnarok", "xl")),
+    ("sdxl",        ("sdxl", "sd_xl", "sd-xl", "juggernaut", "realvis", "dreamshaper", "ragnarok", "stockphoto", "xl")),
 )
+
+# Nombres legibles de familia para las cabeceras del desplegable
+# (autodiscovery agrupa por familia; '' = sin familia reconocida).
+_COMFY_FAMILIA_LABELS = {
+    "flux": "Flux", "z_image": "Z-Image", "qwen": "Qwen",
+    "ideogram": "Ideogram", "pony": "Pony", "illustrious": "Illustrious",
+    "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)", "": "Otros",
+}
+_COMFY_FAMILIA_LABELS_VIDEO = {
+    "ltx": "LTX", "wan": "Wan", "svd": "SVD", "hunyuan": "Hunyuan",
+    "cogvideo": "CogVideo", "mochi": "Mochi", "": "Otros",
+}
+
+
+def _norm_nombre_comfy(s: str) -> str:
+    """Normaliza para deduplicar manifest vs autodiscovery: el manifest suele
+    tener nombres embellecidos ('Juggernaut-XL v9 ...', 'z_image_bf16 (Base)')
+    del mismo fichero que el escaneo halla como stem crudo."""
+    s = re.sub(r"\([^)]*\)", "", s or "")
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+# Descripciones por checkpoint local (INVENTARIO_MODELOS.md del usuario,
+# jul-2026). Clave = nombre normalizado con _norm_nombre_comfy; valor =
+# (descripción ES, descripción EN). Se anteponen al best_for de la familia
+# para que el hint bajo el combo describa el modelo concreto, como en SeaArt.
+_COMFY_DESC_LOCAL = {
+    "realisticstockphotov20": ("Foto stock ultra realista", "Ultra-realistic stock photo"),
+    "realvisxlv50fp16": ("Fotorrealismo extremo", "Extreme photorealism"),
+    "juggernautxlv9rundiffusionphotov2": ("Retratos realistas", "Realistic portraits"),
+    "juggernautxlragnarokby": ("Retratos artísticos", "Artistic portraits"),
+    "juggernautxlv8rundiffusion": ("Versátil, todoterreno", "Versatile all-rounder"),
+    "animapencilxlv500": ("Ilustración / dibujo", "Illustration / drawing"),
+    "sdxlbase1009vae": ("SDXL base oficial", "Official SDXL base"),
+    "512inpaintingema": ("Inpainting SD 1.5: rellenar/reparar zonas", "SD 1.5 inpainting: fill/repair regions"),
+    "flux2klein9bfp8": ("Flux 2 Klein 9B", "Flux 2 Klein 9B"),
+    "flux2klein9bkvfp8": ("Flux 2 Klein 9B (variante KV)", "Flux 2 Klein 9B (KV variant)"),
+    "flux2kleinbase4bfp8": ("Flux 2 Klein 4B, ligero y rápido", "Flux 2 Klein 4B, light and fast"),
+    "zimagebf16": ("Z-Image Base 6B (S3-DiT)", "Z-Image Base 6B (S3-DiT)"),
+    "zimageturbobf16": ("Z-Image Turbo, destilado y rápido", "Z-Image Turbo, distilled and fast"),
+    "ideogram4fp8transformer": ("Ideogram 4: texto/tipografía en imagen", "Ideogram 4: in-image text/typography"),
+    "qwenimageedit2509fp8e4m3fn": ("Qwen Image Edit: edición por instrucciones", "Qwen Image Edit: instruction-based editing"),
+    "wan22i2vhighnoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa high noise", "Wan 2.2 i2v 14B — high-noise stage"),
+    "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
+    "ltx2322bdev": ("LTX 2.3 22B: vídeo con audio nativo", "LTX 2.3 22B: video with native audio"),
+    "acestepv15base": ("ACE-Step 1.5 base: text-to-music", "ACE-Step 1.5 base: text-to-music"),
+    "acestepv15xlsftbf16": ("ACE-Step 1.5 XL SFT: text-to-music", "ACE-Step 1.5 XL SFT: text-to-music"),
+}
+
+
+def _aplicar_desc_local(nombre: str, specs: dict) -> dict:
+    """Antepone la descripción curada del checkpoint local (si existe) al
+    best_for genérico de su familia. Muta y devuelve `specs`."""
+    d = _COMFY_DESC_LOCAL.get(_norm_nombre_comfy(nombre))
+    if d:
+        specs["best_for"] = f"{d[0]} · {specs.get('best_for', '')}".strip(" ·")
+        if specs.get("best_for_en"):
+            specs["best_for_en"] = f"{d[1]} · {specs['best_for_en']}".strip(" ·")
+    return specs
+
+
+def _agrupar_por_familia(nombres, detector, labels, prefijo):
+    """Agrupa checkpoints por familia detectada → [(cabecera, [modelos])].
+
+    Cabeceras "── {prefijo} · {Familia} ──" ordenadas alfabéticamente;
+    modelos ordenados case-insensitive dentro de cada grupo.
+    """
+    por_fam = {}
+    for n in nombres:
+        por_fam.setdefault(detector(n), []).append(n)
+    grupos = []
+    for fam in sorted(por_fam, key=lambda f: labels.get(f, "Otros").lower()):
+        label = f"── {prefijo} · {labels.get(fam, 'Otros')} ──"
+        grupos.append((label, sorted(por_fam[fam], key=str.lower)))
+    return grupos
 
 _COMFY_SPECS_FAMILIA = {
     "flux": {
@@ -555,8 +639,13 @@ _COMFY_SPECS_FAMILIA = {
         "prompt_ejemplo": "A weathered fisherman mending nets on a wooden dock at golden hour, warm rim light catching the salt in his beard, calm harbor water behind, shot on 50mm with shallow depth of field.",
     },
     "z_image": {
-        "is_natural": True, "has_negative": False,
-        "sampler_recomendado": "Euler (~20-30 pasos; la Turbo es destilada: sin negative ni samplers complejos)",
+        # Alineado con la spec curada de Z-Image-Base (SeaArt): formato
+        # híbrido z_image (tag preamble + bloques narrativos) y CON negative.
+        # Las variantes turbo (destiladas, CFG~1) pierden negative y formato
+        # vía el override de COMFY_TURBO_TOKENS en comfy_image_specs.
+        "is_natural": True, "has_negative": True,
+        "formato_bloques": "z_image",
+        "sampler_recomendado": "Euler (~28-50 pasos, CFG 3-5; la Turbo es destilada: ~8 pasos, CFG 1, sin negative)",
         "best_for": "Lenguaje natural detallado y específico (no tags): define ropa, pose, fondo y luz. Términos de fotografía para retratos ('85mm, shallow DoF'). Calidad > longitud, sin instrucciones contradictorias.",
         "best_for_en": "Detailed, specific natural language (not tags): define outfit, pose, background and lighting. Photography terms for portraits ('85mm, shallow DoF'). Quality over length, no contradictory instructions.",
         "prompt_formula": "Descripción concreta y enfocada incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
@@ -626,9 +715,12 @@ def comfy_image_specs(nombre: str) -> dict | None:
     specs = dict(_COMFY_SPECS_FAMILIA[fam])
     if any(t in (nombre or "").lower() for t in COMFY_TURBO_TOKENS):
         specs["has_negative"] = False
+        # Los formatos especiales (z_image híbrido con negative dinámico)
+        # no aplican a variantes destiladas: prompt directo natural.
+        specs.pop("formato_bloques", None)
     specs.setdefault("max_chars", 1500 if specs["is_natural"] else 500)
     specs["_comfy_familia"] = fam
-    return specs
+    return _aplicar_desc_local(nombre, specs)
 
 
 # ── Familias de VÍDEO ComfyUI por nombre → specs sintéticas ────────
@@ -729,6 +821,40 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
 }
 
 
+# ── Familia de AUDIO ComfyUI (ACE-Step local) → specs sintéticas ────
+# Espejo de comfy_image_specs para el modo audio. _inyectar_specs_audio
+# indexa: nota, best_for, duracion_max_min, usa_tags_estructurales,
+# has_instrumental_toggle, prompt_ejemplo_estilo, limitaciones.
+_COMFY_FAMILIAS_AUDIO = (
+    ("acestep", ("acestep", "ace_step", "ace-step")),
+)
+
+_COMFY_SPECS_FAMILIA_AUDIO = {
+    "acestep": {
+        "nota": 4.0,
+        "duracion_max_min": 4,
+        "usa_tags_estructurales": True,
+        "has_instrumental_toggle": True,
+        "best_for": "ACE-Step local (ComfyUI): text-to-music open source. Campo de estilo = tags separados por comas (género, instrumentación, mood, tempo/bpm, tipo de voz). Letra con tags [verse]/[chorus]/[bridge]. Multilingüe. Clips de hasta ~4 min.",
+        "best_for_en": "Local ACE-Step (ComfyUI): open-source text-to-music. Style field = comma-separated tags (genre, instrumentation, mood, tempo/bpm, voice type). Lyrics with [verse]/[chorus]/[bridge] tags. Multilingual. Up to ~4 min clips.",
+        "prompt_ejemplo_estilo": "synthwave, retro electronic, dreamy female vocals, 105 bpm, analog synth pads, nostalgic mood",
+        "limitaciones": "Calidad vocal por debajo de Suno/Udio; mezclas muy densas pueden ensuciarse. Para instrumental deja la letra vacía o usa [inst].",
+        "vigente": True,
+    },
+}
+
+
+def comfy_audio_specs(nombre: str) -> dict | None:
+    """Specs sintéticas para un modelo de AUDIO ComfyUI local, o None."""
+    n = (nombre or "").lower()
+    for clave, tokens in _COMFY_FAMILIAS_AUDIO:
+        if any(_token_en_nombre(t, n) for t in tokens):
+            specs = dict(_COMFY_SPECS_FAMILIA_AUDIO[clave])
+            specs["_comfy_familia"] = clave
+            return _aplicar_desc_local(nombre, specs)
+    return None
+
+
 def detectar_familia_comfy_video(nombre: str) -> str:
     """Familia de vídeo ComfyUI ('ltx'|'wan'|'svd'…) por nombre, o '' si no."""
     n = (nombre or "").lower()
@@ -749,7 +875,7 @@ def comfy_video_specs(nombre: str) -> dict | None:
         return None
     specs = dict(_COMFY_SPECS_FAMILIA_VIDEO[fam])
     specs["_comfy_familia"] = fam
-    return specs
+    return _aplicar_desc_local(nombre, specs)
 
 
 def _cargar_preferencias_seguras() -> dict:
@@ -858,17 +984,40 @@ def aplicar_autodiscovery_comfy() -> int:
         return 0
 
     hallados = _escanear_comfy_root(Path(comfy_ruta))
+    # Dedupe contra el manifest curado (mis_modelos_comfy.json): si el usuario
+    # ya listó ese fichero con nombre bonito, el manifest manda.
+    _en_manifest_img = {_norm_nombre_comfy(m) for _, ms in GRUPOS_IMAGEN_COMFYUI for m in ms}
+    _en_manifest_vid = {_norm_nombre_comfy(m) for _, ms in GRUPOS_VIDEO_COMFYUI for m in ms}
+    hallados["imagen"] = [m for m in hallados["imagen"]
+                          if _norm_nombre_comfy(m) not in _en_manifest_img]
+    hallados["video"] = [m for m in hallados["video"]
+                         if _norm_nombre_comfy(m) not in _en_manifest_vid]
     total = 0
     if hallados["imagen"]:
-        GRUPOS_IMAGEN_COMFYUI.append(("── ComfyUI Local ──", hallados["imagen"]))
-        MODELOS_IMAGEN_COMFYUI_FLAT.append("── ComfyUI Local ──")
-        MODELOS_IMAGEN_COMFYUI_FLAT.extend(hallados["imagen"])
+        for label, ms in _agrupar_por_familia(hallados["imagen"], detectar_familia_comfy,
+                                              _COMFY_FAMILIA_LABELS, "ComfyUI"):
+            GRUPOS_IMAGEN_COMFYUI.append((label, ms))
+            MODELOS_IMAGEN_COMFYUI_FLAT.append(label)
+            MODELOS_IMAGEN_COMFYUI_FLAT.extend(ms)
         total += len(hallados["imagen"])
     if hallados["video"]:
-        GRUPOS_VIDEO_COMFYUI.append(("── ComfyUI Video ──", hallados["video"]))
-        MODELOS_VIDEO_COMFYUI_FLAT.append("── ComfyUI Video ──")
-        MODELOS_VIDEO_COMFYUI_FLAT.extend(hallados["video"])
+        for label, ms in _agrupar_por_familia(hallados["video"], detectar_familia_comfy_video,
+                                              _COMFY_FAMILIA_LABELS_VIDEO, "ComfyUI Video"):
+            GRUPOS_VIDEO_COMFYUI.append((label, ms))
+            MODELOS_VIDEO_COMFYUI_FLAT.append(label)
+            MODELOS_VIDEO_COMFYUI_FLAT.extend(ms)
         total += len(hallados["video"])
+    if hallados["audio"]:
+        # Audio local (ACE-Step, etc.): entra directo en las listas del modo
+        # audio — el filtro de vigencia ya corrió en el import y solo aplica
+        # al catálogo curado. Las specs salen de comfy_audio_specs (fallback
+        # en get_audio_model_specs); sin familia reconocida → inyección
+        # genérica, sin crash.
+        ms = sorted(hallados["audio"], key=str.lower)
+        GRUPOS_AUDIO_VIGENTES.append(("── ComfyUI Audio ──", ms))
+        MODELOS_AUDIO_FLAT.append("── ComfyUI Audio ──")
+        MODELOS_AUDIO_FLAT.extend(ms)
+        total += len(ms)
     if total:
         logger.info(f"Auto-discovery ComfyUI: {total} modelos añadidos desde {comfy_ruta}")
     return total
@@ -1034,28 +1183,19 @@ GRUPOS_DALLE_IMAGEN = [
 ]
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
 
-# Dola (dola.com) — chat con IA (afiliado Dreamina/ByteDance). Generación de
-# imagen en lenguaje natural con estilos propios + hasta 10 imgs de referencia.
-GRUPOS_DOLA_IMAGEN = [
-    ("── Dola ──", ["Dola"]),
-]
-MODELOS_DOLA_IMAGEN_FLAT = _lista_plana(GRUPOS_DOLA_IMAGEN)
-
 # Mapeo plataforma -> lista de modelos (para imagen)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
     "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
-    "ComfyUI / A1111 / Forge":      MODELOS_IMAGEN_COMFYUI_FLAT,
+    "ComfyUI / Fooocus":            MODELOS_IMAGEN_COMFYUI_FLAT,
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
-    "Dola":                          MODELOS_DOLA_IMAGEN_FLAT,
 }
 
 # Mapeo plataforma -> lista de modelos (para vídeo)
 MODELOS_POR_PLATAFORMA_VIDEO = {
     "SeaArt Video":                MODELOS_VIDEO_FLAT,
-    "ComfyUI / A1111 / Forge":    MODELOS_VIDEO_COMFYUI_FLAT,
+    "ComfyUI / Fooocus":          MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI":                    [m for m in MODELOS_VIDEO_FLAT if "Kling" in m or m.startswith("──")],
-    "Dola":                        ["Seedance 1.0 Fast", "Seedance 2.0 Fast"],
 }
 
 # ── Ratios ────────────────────────────────────────────────────────
@@ -1459,21 +1599,19 @@ def detectar_familia_video(modelo_nombre: str) -> str | None:
 # ══════════════════════════════════════════════════════════════════
 PLATAFORMAS_IMAGEN = {
     "SeaArt / Tensor.Art":        "sd",
-    "ComfyUI / A1111 / Forge":    "sd",
+    "ComfyUI / Fooocus":          "sd",
     "ChatGPT / GPT Image":         "natural",
     "Magnific":                    "natural",
-    "Dola":                        "natural",
 }
 
 PLATAFORMAS_VIDEO = {
     "SeaArt Video":     "sd",
-    "ComfyUI / A1111 / Forge": "sd",
+    "ComfyUI / Fooocus": "sd",
     "Kling AI":         "natural",
     "Pika / Luma":      "natural",
     "Runway Gen":       "natural",
     "Pixverse.ai":      "natural",
     "Sora / Veo":       "natural",
-    "Dola":             "natural",
 }
 
 PLATAFORMAS_AUDIO = {
@@ -1506,13 +1644,12 @@ DESTINOS = ["— Personal —"] + sorted([
 # ── Motores por plataforma ────────────────────────────
 MOTORES_VIDEO = {
     "SeaArt Video": MODELOS_VIDEO_FLAT,
-    "ComfyUI / A1111 / Forge": MODELOS_VIDEO_COMFYUI_FLAT,
+    "ComfyUI / Fooocus": MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni"],
     "Pika / Luma": [],
     "Runway Gen": [],
     "Pixverse.ai": [],
-    "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni"],
-    "Dola": ["Seedance 1.0 Fast", "Seedance 2.0 Fast"],
+    "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
 }
 
 MOTORES_AUDIO = {
@@ -1527,13 +1664,12 @@ MOTOR_DEFAULT = {
     "Suno": "Suno v5.5",
     "Udio": "Udio v4",
     "SeaArt Audio": "Minimax Music 2.6",
-    "Dola": "Seedance 2.0 Fast",
 }
 
 # ── Límites de Tokens por Plataforma ─────────────────
 TOKEN_LIMITS = {
     "SeaArt / Tensor.Art": 200,
-    "ComfyUI / A1111 / Forge": 75,
+    "ComfyUI / Fooocus": 75,
     "Midjourney": 60,
     "ChatGPT / GPT Image": 75,
     "Adobe Firefly": 75,
@@ -1549,7 +1685,6 @@ TOKEN_LIMITS = {
     "Runway Gen": 75,
     "Pixverse.ai": 75,
     "Sora / Veo": 75,
-    "Dola": 75,
     "Suno": 500,
     "SeaArt Audio": 400,
 }
@@ -1632,7 +1767,9 @@ def get_image_model_specs(modelo_name):
     return _get_dataset("MODEL_SPECS_IMAGEN").get(modelo_name) or comfy_image_specs(modelo_name)
 
 def get_audio_model_specs(modelo_name):
-    return _get_dataset("MODEL_SPECS_AUDIO").get(modelo_name, None)
+    # El JSON curado manda; fallback sintético para modelos de audio locales
+    # de ComfyUI (ACE-Step) que no están en el catálogo.
+    return _get_dataset("MODEL_SPECS_AUDIO").get(modelo_name) or comfy_audio_specs(modelo_name)
 
 def get_prompt_template(modelo_name):
     """Busca el template de prompt que aplica a este modelo."""

@@ -94,6 +94,34 @@ def _validate_and_fix_prefs() -> bool:
             _atomic_write(prefs_path, prefs_data)
             return True
 
+        # Migración de plataformas retiradas/renombradas (2026-07-04):
+        # "ComfyUI / A1111 / Forge" → "ComfyUI / Fooocus"; "Dola" eliminada.
+        # Recorre cualquier valor string bajo claves que contengan "plataforma"
+        # (prefs de sesión + setups guardados).
+        _migracion_plataformas = {
+            "ComfyUI / A1111 / Forge": "ComfyUI / Fooocus",
+            "Dola": "SeaArt / Tensor.Art",
+        }
+
+        def _migrar(nodo):
+            cambiado = False
+            if isinstance(nodo, dict):
+                for k, v in nodo.items():
+                    if (isinstance(v, str) and "plataforma" in str(k).lower()
+                            and v in _migracion_plataformas):
+                        nodo[k] = _migracion_plataformas[v]
+                        cambiado = True
+                    elif isinstance(v, (dict, list)):
+                        cambiado = _migrar(v) or cambiado
+            elif isinstance(nodo, list):
+                for item in nodo:
+                    cambiado = _migrar(item) or cambiado
+            return cambiado
+
+        if _migrar(prefs_data):
+            logger.info("Preferencias: plataformas antiguas migradas (A1111/Forge → Fooocus, Dola retirada)")
+            _atomic_write(prefs_path, prefs_data)
+
         return True
 
     except json.JSONDecodeError as e:

@@ -100,9 +100,21 @@ class TestEscanearComfyRoot:
     def test_clasifica_video_y_audio(self, tmp_path):
         root = _crear_install_comfy(tmp_path)
         hallados = config._escanear_comfy_root(root)
-        assert "svd" in hallados["video"]
         assert "ltx-2.3-22b-dev-fp8" in hallados["video"]
         assert "acestep_v1.5_base" in hallados["audio"]
+
+    def test_excluye_ficheros_sin_prompt(self, tmp_path):
+        # refiner (2ª pasada), SVD (ignora el texto) y transformer_only
+        # (pieza de pipeline) no sirven en un generador de prompts.
+        root = _crear_install_comfy(tmp_path)
+        ckpt = root / "models" / "checkpoints"
+        (ckpt / "sd_xl_refiner_1.0_0.9vae.safetensors").write_text("x")
+        (ckpt / "ltx-2.3-22b-dev_transformer_only_mxfp8.safetensors").write_text("x")
+        hallados = config._escanear_comfy_root(root)
+        todos = hallados["imagen"] + hallados["video"] + hallados["audio"]
+        assert "svd" not in todos
+        assert "sd_xl_refiner_1.0_0.9vae" not in todos
+        assert "ltx-2.3-22b-dev_transformer_only_mxfp8" not in todos
 
     def test_subcarpeta_se_escanea_y_deduplica(self, tmp_path):
         # FLUX2/flux-2-klein-9b-fp8 duplica el de diffusion_models → 1 sola vez.
@@ -114,6 +126,18 @@ class TestEscanearComfyRoot:
         root = _crear_install_comfy(tmp_path)
         hallados = config._escanear_comfy_root(root)
         assert hallados["imagen"] == sorted(hallados["imagen"], key=str.lower)
+
+    def test_descripcion_local_en_specs(self):
+        # Los checkpoints del inventario anteponen su descripción curada
+        # al best_for genérico de la familia (ES y EN).
+        s = config.comfy_image_specs("RealVisXL_V5.0_fp16")
+        assert s["best_for"].startswith("Fotorrealismo extremo")
+        assert s["best_for_en"].startswith("Extreme photorealism")
+        v = config.comfy_video_specs("wan2.2_i2v_high_noise_14B_fp8_scaled")
+        assert v["best_for"].startswith("Wan 2.2 i2v 14B")
+        # Un checkpoint desconocido mantiene el best_for de familia intacto.
+        s2 = config.comfy_image_specs("juggernautXL_inventado_v99")
+        assert not s2["best_for"].startswith("Retratos")
 
 
 class TestEscanearModelosComfyui:

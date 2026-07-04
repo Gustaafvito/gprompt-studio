@@ -15,7 +15,7 @@ from config import (
     get_model_specs,
 )
 
-_PLAT_CON_MODELOS = frozenset(("SeaArt / Tensor.Art", "ComfyUI / A1111 / Forge"))
+_PLAT_CON_MODELOS = frozenset(("SeaArt / Tensor.Art", "ComfyUI / Fooocus"))
 
 # Nombres "de catálogo" históricos (referencia; todos quedan cubiertos por los
 # tokens de COMFY_TURBO_TOKENS, definidos en config como fuente única).
@@ -37,8 +37,11 @@ def is_natural_mode(modo: str, plataforma: str, modelo_imagen: str) -> bool:
 
 
 def es_comfyui_turbo(plataforma: str, modelo: str) -> bool:
-    """Detecta ComfyUI/A1111/Forge con un modelo Turbo (sin negative ni pesos)."""
-    es_comfyui = any(x in plataforma for x in ("ComfyUI", "A1111", "Forge"))
+    """Detecta plataforma local (ComfyUI/Fooocus) con un modelo Turbo (sin negative ni pesos).
+
+    Los tokens A1111/Forge se mantienen por compatibilidad con nombres
+    de plataforma antiguos guardados en setups/historial."""
+    es_comfyui = any(x in plataforma for x in ("ComfyUI", "Fooocus", "A1111", "Forge"))
     if not es_comfyui:
         return False
     modelo_l = (modelo or "").lower()

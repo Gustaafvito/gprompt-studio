@@ -70,6 +70,27 @@ lavado de cara completo de la UI + i18n + distribuible.
    no tiene copia en la nube (el repo sí, en GitHub). Decidir si reactivar
    (solo 0,6 GB libres) o dejarlo consciente.
 
+## Hecho 2026-07-04 (sesión catálogo local + limpieza plataformas)
+
+- **ComfyUI local**: autodiscovery agrupa por familia ("── ComfyUI · SDXL
+  (Fooocus) ──" etc.), dedupe contra el manifest (vaciado, backup .bak),
+  audio local ACE-Step en modo Audio, descripciones por checkpoint del
+  inventario del usuario (`_COMFY_DESC_LOCAL`), exclusiones de ficheros
+  sin prompt (refiner/svd/transformer_only, con candado).
+- z_image local alineado con la spec curada (formato híbrido + negative;
+  turbo destilado sin ambos).
+- **Avatar dataset**: selector con las 4 plataformas de imagen reales
+  (SeaArt/ComfyUI-Fooocus/ChatGPT/Magnific) con familias como grupos.
+- **Dola ELIMINADA** de toda la app (decisión usuario) + Seedance 1.0 Fast.
+- Plataforma renombrada: "ComfyUI / A1111 / Forge" → **"ComfyUI / Fooocus"**
+  (migración automática de prefs/setups en main._validate_and_fix_prefs).
+- Altas con panel real: **Gemini Omni Flash** (vídeo, renombrado desde
+  Gemini Omni; 3-10s, 5000 chars, 10 refs, audio nativo, fórmula 8 bloques)
+  y **Nano Banana 2 Lite** (imagen 4.8, 14 imgs sujeto, 10 ratios).
+- PENDIENTE del usuario: lista real de plataformas de VÍDEO (Pika/Luma,
+  Runway, Pixverse están vacías; ¿Magnific vídeo?) — limpiar/altas cuando
+  pase capturas.
+
 ## Pendientes que necesitan al usuario
 
 - Capturas de paneles SeaArt para dar de alta motores de vídeo externos:

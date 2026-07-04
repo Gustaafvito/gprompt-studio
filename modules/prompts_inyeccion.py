@@ -775,7 +775,8 @@ class PromptsInyeccionService:
         """Reglas específicas familia Nano Banana (Gemini) en SeaArt.
 
         Aplica a: Nano Banana (Gemini 2.5 Flash), Nano Banana Pro Image
-        (Gemini 3 Pro), Nano Banana 2 (Gemini 3.1 Flash).
+        (Gemini 3 Pro), Nano Banana 2 (Gemini 3.1 Flash) y Nano Banana 2
+        Lite (variante rápida/barata para iterar).
 
         Estructura derivada del consenso SeaArt (marketing NB2) + Google
         Gemini docs: 6 bloques checklist en inglés + bloque condicional

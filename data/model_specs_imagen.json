@@ -1706,6 +1706,41 @@
     "vigente": true,
     "best_for_en": "Gemini 3.1 Flash Image engine. Pro-level fidelity with Flash-speed iteration. Strong world knowledge + advanced editing (inpainting, outpainting, style transfer). Upscale up to 4K. Excellent price-performance. Accepts very long prompts (~5200 chars measured)."
   },
+  "Nano Banana 2 Lite": {
+    "nota": 4.8,
+    "has_negative": false,
+    "is_natural": true,
+    "formato_bloques": "nano_banana",
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "21:9",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 5000,
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "1024×1024"
+    ],
+    "max_imagenes": 8,
+    "max_imagenes_referencia": 14,
+    "best_for": "Versión Lite de la familia Nano Banana (Gemini): rápida y barata, pensada para iterar en volumen (variaciones, A/B, assets sociales, previews). Text-to-image + edición img2img por lenguaje natural con refinamiento conversacional multi-turno. Buena consistencia de personaje/objeto entre ediciones. Hasta 14 imágenes de sujeto.",
+    "best_for_en": "Lite version of the Nano Banana family (Gemini): fast and cheap, built for high-volume iteration (variations, A/B tests, social assets, previews). Text-to-image + natural-language img2img editing with multi-turn conversational refinement. Strong character/object consistency across edits. Up to 14 subject images.",
+    "prompt_formula": "Lite Workflow Formula: {Goal: qué quieres crear} + {Subject} + {Reference: qué debe mantenerse de la imagen subida} + {Change: qué generar o editar} + {Style} + {Output Use: dónde se usará}. Para editar: describe el cambio, no toda la imagen.",
+    "prompt_ejemplo": "Use the uploaded portrait as reference. Keep the same face, hairstyle, and expression. Change the outfit into a cyberpunk jacket, add neon city lights in the background, improve the lighting, and keep the character identity consistent.",
+    "limitaciones": "Menos detalle y control fino que Nano Banana 2 / Pro (es el modelo de iteración, no el de acabado). Texto pequeño y denso puede necesitar refinado; ediciones complejas pueden introducir pequeñas inconsistencias. Sin negative/sampler/CFG.",
+    "vigente": true
+  },
   "Pipi-iL-CG6.5": {
     "nota": 4.7,
     "has_negative": true,
@@ -4744,30 +4779,6 @@
     "limitaciones": "Orientado a personajes. Sin hires.fix puede perder detalles.",
     "vigente": true,
     "best_for_en": "MiaoMiao Harem V2.0. 1.7M uses. Anime/harem style with a 2026 concept. CKXL05 architecture. Excellent hands/feet, LoRA compatible, simple prompts."
-  },
-  "Dola": {
-    "nota": null,
-    "has_negative": false,
-    "is_natural": true,
-    "vigente": true,
-    "ratios": [
-      "1:1",
-      "2:3",
-      "3:4",
-      "4:3",
-      "9:16",
-      "16:9"
-    ],
-    "max_chars": 1500,
-    "modos_gen": [
-      "Default"
-    ],
-    "max_imagenes": 10,
-    "best_for": "Dola (dola.com): generación de imagen en lenguaje natural vía chat con IA. Estilos propios (Retratos, Paisaje, Anime, 3D, Ciberpunk, Pintura al óleo, Acuarela, Píxel…) y hasta 10 imágenes de referencia. Describe la imagen con frases naturales.",
-    "best_for_en": "Dola (dola.com): natural-language image generation via AI chat. Built-in styles (Portraits, Landscape, Anime, 3D, Cyberpunk, Oil painting, Watercolor, Pixel…) and up to 10 reference images. Describe the image in natural sentences.",
-    "prompt_formula": "Lenguaje natural descriptivo: sujeto + escena + estilo + iluminación + composición. Puedes apoyarte en imágenes de referencia (hasta 10).",
-    "prompt_ejemplo": "A serene mountain lake at sunrise, mist over the water, golden light, a lone wooden cabin on the shore, photorealistic, wide landscape composition.",
-    "limitaciones": "Plataforma de lenguaje natural (sin pesos ni negative). El estilo se elige en su propio selector."
   },
   "WildCardX-REAL": {
     "nota": 5.0,

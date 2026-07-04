@@ -47,8 +47,8 @@ class TestIsNaturalMode:
         assert is_natural_mode("video", "PlataformaFake", "") is True
 
     # ── modo imagen — plataformas sin modelos (natural / sd) ───────
-    def test_imagen_dola_es_natural(self):
-        assert is_natural_mode("imagen", "Dola", "") is True
+    def test_imagen_magnific_es_natural(self):
+        assert is_natural_mode("imagen", "Magnific", "") is True
 
     def test_imagen_chatgpt_es_natural(self):
         assert is_natural_mode("imagen", "ChatGPT / GPT Image", "") is True
@@ -75,11 +75,11 @@ class TestIsNaturalMode:
 
     def test_imagen_plat_con_modelos_modelo_vacio(self):
         # ComfyUI con modelo vacío → cae al default de la plataforma ("sd")
-        assert is_natural_mode("imagen", "ComfyUI / A1111 / Forge", "") is False
+        assert is_natural_mode("imagen", "ComfyUI / Fooocus", "") is False
 
     def test_imagen_plat_con_modelos_separador(self):
         # Si modelo es un separador ("── ...") se trata como sin modelo
-        assert is_natural_mode("imagen", "ComfyUI / A1111 / Forge", "── FLUX ──") is False
+        assert is_natural_mode("imagen", "ComfyUI / Fooocus", "── FLUX ──") is False
 
     def test_imagen_plat_con_modelos_spec_none_cae_a_plataforma(self):
         # Modelo inexistente → specs=None → cae al default de la plataforma
@@ -102,16 +102,16 @@ class TestIsNaturalMode:
 class TestEsComfyuiTurbo:
 
     def test_comfyui_con_flux_schnell(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "FLUX.1 Schnell") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "FLUX.1 Schnell") is True
 
     def test_comfyui_con_z_image_turbo(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "Z Image Turbo") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "Z Image Turbo") is True
 
     def test_comfyui_con_sdxl_turbo(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "SDXL Turbo") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "SDXL Turbo") is True
 
     def test_comfyui_con_realities_edge(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "Realities Edge XL Turbo V7") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "Realities Edge XL Turbo V7") is True
 
     def test_a1111_con_modelo_turbo(self):
         # "A1111" también está en la detección
@@ -126,13 +126,13 @@ class TestEsComfyuiTurbo:
 
     def test_comfyui_con_modelo_normal_es_false(self):
         # ComfyUI pero sin modelo Turbo
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "CyberRealistic Flux") is False
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "CyberRealistic Flux") is False
 
     def test_plataforma_vacia_es_false(self):
         assert es_comfyui_turbo("", "FLUX.1 Schnell") is False
 
     def test_modelo_vacio_es_false(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "") is False
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "") is False
 
     def test_ambos_vacios_es_false(self):
         assert es_comfyui_turbo("", "") is False
@@ -140,27 +140,27 @@ class TestEsComfyuiTurbo:
     # Nombres de fichero reales del auto-discovery local (lo que rompía antes:
     # no coincidían con los strings exactos del catálogo).
     def test_filename_z_image_turbo_bf16(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "z_image_turbo_bf16 (Turbo)") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "z_image_turbo_bf16 (Turbo)") is True
 
     def test_filename_flux_schnell(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "flux1-schnell") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "flux1-schnell") is True
 
     def test_filename_sdxl_turbo(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "sd_xl_turbo_1.0_fp16") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "sd_xl_turbo_1.0_fp16") is True
 
     def test_filename_lightning(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "dreamshaperXL_lightning") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "dreamshaperXL_lightning") is True
 
     def test_filename_lcm(self):
         assert es_comfyui_turbo("Forge", "dreamshaper_v7_lcm") is True
 
     def test_filename_hyper_sd(self):
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "Hyper-SDXL-1step") is True
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "Hyper-SDXL-1step") is True
 
     def test_filename_modelo_normal_full_steps_es_false(self):
         # Checkpoint normal de muchos pasos → SÍ soporta negative/pesos.
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "juggernautXL_v9") is False
-        assert es_comfyui_turbo("ComfyUI / A1111 / Forge", "realvisxlV50_fp16") is False
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "juggernautXL_v9") is False
+        assert es_comfyui_turbo("ComfyUI / Fooocus", "realvisxlV50_fp16") is False
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -206,8 +206,8 @@ class TestDebeMostrarNegatives:
 
     # ── modo imagen ────────────────────────────────────────────────
     def test_imagen_plataforma_natural_sin_modelos(self):
-        # Dola → "natural" → False
-        assert debe_mostrar_negatives("imagen", "Dola", "", "") is False
+        # Magnific → "natural" → False
+        assert debe_mostrar_negatives("imagen", "Magnific", "", "") is False
 
     def test_imagen_plataforma_sd_sin_modelos(self):
         # SeaArt / Tensor.Art con modelo vacío → cae a default "sd" → True
@@ -216,13 +216,13 @@ class TestDebeMostrarNegatives:
     def test_imagen_comfyui_turbo_siempre_false(self):
         # ComfyUI + FLUX.1 Schnell → es_comfyui_turbo → False
         result = debe_mostrar_negatives(
-            "imagen", "ComfyUI / A1111 / Forge", "FLUX.1 Schnell", ""
+            "imagen", "ComfyUI / Fooocus", "FLUX.1 Schnell", ""
         )
         assert result is False
 
     def test_imagen_comfyui_turbo_z_image_false(self):
         result = debe_mostrar_negatives(
-            "imagen", "ComfyUI / A1111 / Forge", "Z Image Turbo", ""
+            "imagen", "ComfyUI / Fooocus", "Z Image Turbo", ""
         )
         assert result is False
 
