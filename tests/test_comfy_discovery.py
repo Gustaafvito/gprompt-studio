@@ -104,8 +104,9 @@ class TestEscanearComfyRoot:
         assert "acestep_v1.5_base" in hallados["audio"]
 
     def test_excluye_ficheros_sin_prompt(self, tmp_path):
-        # refiner (2ª pasada), SVD (ignora el texto) y transformer_only
-        # (pieza de pipeline) no sirven en un generador de prompts.
+        # refiner (2ª pasada), SVD (ignora el texto), transformer_only (pieza
+        # de pipeline) e inpainting (necesita máscara+imagen, no genera desde
+        # texto) no sirven en un generador de prompts.
         root = _crear_install_comfy(tmp_path)
         ckpt = root / "models" / "checkpoints"
         (ckpt / "sd_xl_refiner_1.0_0.9vae.safetensors").write_text("x")
@@ -115,6 +116,8 @@ class TestEscanearComfyRoot:
         assert "svd" not in todos
         assert "sd_xl_refiner_1.0_0.9vae" not in todos
         assert "ltx-2.3-22b-dev_transformer_only_mxfp8" not in todos
+        # 512-inpainting-ema está en el fixture y debe quedar excluido.
+        assert "512-inpainting-ema" not in todos
 
     def test_subcarpeta_se_escanea_y_deduplica(self, tmp_path):
         # FLUX2/flux-2-klein-9b-fp8 duplica el de diffusion_models → 1 sola vez.

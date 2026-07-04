@@ -464,8 +464,9 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 
 # Ficheros que NO sirven en un generador de prompts y se excluyen del escaneo:
 # refinadores (2ª pasada, sin prompt propio), SVD (image-to-video puro que
-# ignora el texto) y piezas sueltas de un pipeline (transformer_only).
-_COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd")
+# ignora el texto), piezas sueltas de un pipeline (transformer_only) y modelos
+# de inpainting (necesitan máscara + imagen, no generan desde texto).
+_COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting", "inpaint")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -587,7 +588,6 @@ _COMFY_DESC_LOCAL = {
     "juggernautxlv8rundiffusion": ("Versátil, todoterreno", "Versatile all-rounder"),
     "animapencilxlv500": ("Ilustración / dibujo", "Illustration / drawing"),
     "sdxlbase1009vae": ("SDXL base oficial", "Official SDXL base"),
-    "512inpaintingema": ("Inpainting SD 1.5: rellenar/reparar zonas", "SD 1.5 inpainting: fill/repair regions"),
     "flux2klein9bfp8": ("Flux 2 Klein 9B", "Flux 2 Klein 9B"),
     "flux2klein9bkvfp8": ("Flux 2 Klein 9B (variante KV)", "Flux 2 Klein 9B (KV variant)"),
     "flux2kleinbase4bfp8": ("Flux 2 Klein 4B, ligero y rápido", "Flux 2 Klein 4B, light and fast"),
