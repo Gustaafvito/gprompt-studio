@@ -384,8 +384,9 @@ class UiEventsService:
 
         specs = get_image_model_specs(modelo_name)
         if specs:
-            self.app.combo_ratio.configure(values=specs["ratios"])
-            if self.app.ratio_var.get() not in specs["ratios"]: self.app.ratio_var.set(specs["ratios"][0])
+            ratios = specs.get("ratios") or [r for r in RATIOS_IMAGEN if r != "Libre"]
+            self.app.combo_ratio.configure(values=ratios)
+            if self.app.ratio_var.get() not in ratios: self.app.ratio_var.set(ratios[0])
 
             try:
                 tip_rico = (

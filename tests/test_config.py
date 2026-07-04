@@ -91,6 +91,24 @@ class TestCatalogoSpecsCompleto:
                     fallos.append(f"{plat} -> {m}")
         assert not fallos, f"modelos de vídeo sin spec: {fallos}"
 
+    def test_imagen_specs_tienen_ratios(self):
+        """La UI (_on_modelo_imagen_cambio) lee specs['ratios'] al seleccionar
+        un modelo. Todo spec resoluble — curado o sintético local — DEBE
+        traer 'ratios' no vacío o la app crashea al arrancar/cambiar de
+        modelo (bug 2026-07-04: checkpoints ComfyUI sin ratios)."""
+        import config
+        from config import get_image_model_specs
+        config.aplicar_autodiscovery_comfy()
+        fallos = []
+        for flat in config.MODELOS_POR_PLATAFORMA_IMAGEN.values():
+            for m in flat:
+                if m.startswith("──"):
+                    continue
+                s = get_image_model_specs(m)
+                if s is not None and not s.get("ratios"):
+                    fallos.append(m)
+        assert not fallos, f"modelos de imagen sin 'ratios' en specs: {fallos}"
+
 
 class TestStyleGuideBilingue:
     """La guía de estilos tiene versión EN con las MISMAS claves (nombres)."""

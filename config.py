@@ -719,6 +719,10 @@ def comfy_image_specs(nombre: str) -> dict | None:
         # no aplican a variantes destiladas: prompt directo natural.
         specs.pop("formato_bloques", None)
     specs.setdefault("max_chars", 1500 if specs["is_natural"] else 500)
+    # La UI (combo de ratio) lee specs["ratios"] directamente: los modelos
+    # locales aceptan cualquier resolución, así que exponemos los estándar
+    # (sin "Libre", que es una opción de UI no del modelo).
+    specs.setdefault("ratios", [r for r in RATIOS_IMAGEN if r != "Libre"])
     specs["_comfy_familia"] = fam
     return _aplicar_desc_local(nombre, specs)
 
