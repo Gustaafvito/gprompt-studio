@@ -1932,86 +1932,106 @@ class ToolsAnalysisService:
         refrescar()
 
     def _copiar_comfyui_json(self) -> None:
-        """Crea y exporta un workflow completo de ComfyUI."""
+        """Crea y exporta un workflow ComfyUI adaptado al modelo activo.
+
+        Usa comfy_workflow_params (config): CFG/pasos/sampler/scheduler por
+        familia + arquitectura de carga correcta (CheckpointLoaderSimple para
+        SDXL/SD1.5/Pony/Illustrious; UNETLoader + CLIPLoader + VAELoader para
+        diffusion_models Flux/Qwen/Z-Image/Ideogram)."""
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual:
             return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
 
+        import json
+
         pos = self.app.extraer_positive() or actual
         neg = self.app.extraer_negative() or ""
         modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else ""
+        lora = self._lora_activo_para_workflow()
+        workflow = self._construir_workflow_comfy(pos, neg, modelo, lora)
+        json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
+        self._mostrar_ventana_comfyui(json_str, modelo)
 
-        import json
+    def _lora_activo_para_workflow(self) -> str:
+        """Nombre del LoRA primario seleccionado, o '' si no hay ninguno."""
+        try:
+            nombre = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
+            if nombre and nombre != tr("— Sin LoRA —"):
+                return nombre
+        except Exception:
+            pass
+        return ""
+
+    @staticmethod
+    def _construir_workflow_comfy(pos: str, neg: str, modelo: str, lora: str = "") -> dict:
+        """Construye el dict de workflow ComfyUI (puro, sin UI). Ver
+        _copiar_comfyui_json para el criterio de loaders/params por familia.
+
+        `lora`: si se pasa, inserta un nodo LoraLoader entre el cargador de
+        modelo y el sampler (nombre = lora + '.safetensors' como mejor apuesta;
+        el usuario ajusta el dropdown si el fichero real difiere)."""
+        from config import comfy_workflow_params
+
+        p = comfy_workflow_params(modelo)
+        fichero = (modelo + ".safetensors") if modelo else "model.safetensors"
 
         workflow = {
             "version": "1.0",
             "prompt_from": "G-Prompt Studio",
             "model_used": modelo,
-            "nodes": {}
+            "familia": p.get("_comfy_familia") or "?",
+            "nodes": {},
         }
+        nodes = workflow["nodes"]
+        id_clip_pos, id_clip_neg = "10", "11"
+        id_sampler, id_vaedec, id_save, id_latent = "20", "30", "40", "50"
 
-        id_check = "1"
-        id_clip_pos = "2"
-        id_clip_neg = "3"
-        id_sampler = "4"
-        id_vae = "5"
-        id_save = "6"
+        # ── Cargadores según arquitectura ──────────────────────────
+        if p["arch"] == "unet":
+            id_unet, id_clip, id_vaeload = "1", "2", "3"
+            nodes[id_unet] = {"class_type": "UNETLoader",
+                              "inputs": {"unet_name": fichero, "weight_dtype": "default"}}
+            nodes[id_clip] = {"class_type": "CLIPLoader",
+                              "inputs": {"clip_name": p.get("clip", ""),
+                                         "type": p.get("clip_type", "stable_diffusion")}}
+            nodes[id_vaeload] = {"class_type": "VAELoader",
+                                 "inputs": {"vae_name": p.get("vae", "")}}
+            model_ref, clip_ref, vae_ref = [id_unet, 0], [id_clip, 0], [id_vaeload, 0]
+        else:
+            id_check = "1"
+            nodes[id_check] = {"class_type": "CheckpointLoaderSimple",
+                               "inputs": {"ckpt_name": fichero}}
+            model_ref, clip_ref, vae_ref = [id_check, 0], [id_check, 1], [id_check, 2]
 
-        workflow["nodes"][id_check] = {
-            "class_type": "CheckpointLoaderSimple",
-            "inputs": {
-                "ckpt_name": modelo + ".safetensors" if modelo else "model.safetensors"
-            }
-        }
+        # ── LoRA (opcional): LoraLoader entre el cargador y el resto ─
+        if lora:
+            id_lora = "4"
+            nodes[id_lora] = {"class_type": "LoraLoader",
+                              "inputs": {"lora_name": lora + ".safetensors",
+                                         "strength_model": 1.0, "strength_clip": 1.0,
+                                         "model": model_ref, "clip": clip_ref}}
+            model_ref, clip_ref = [id_lora, 0], [id_lora, 1]
 
-        workflow["nodes"][id_clip_pos] = {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "text": pos,
-                "clip": [id_check, 1]
-            }
-        }
-
-        workflow["nodes"][id_clip_neg] = {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "text": neg if neg else "low quality, worst quality, bad anatomy, blurry",
-                "clip": [id_check, 1]
-            }
-        }
-
-        workflow["nodes"][id_sampler] = {
-            "class_type": "KSampler",
-            "inputs": {
-                "model": [id_check, 0],
-                "positive": [id_clip_pos, 0],
-                "negative": [id_clip_neg, 0],
-                "seed": 0,
-                "steps": 25,
-                "cfg": 7.0,
-                "sampler_name": "euler",
-                "scheduler": "normal"
-            }
-        }
-
-        workflow["nodes"][id_vae] = {
-            "class_type": "VAEDecode",
-            "inputs": {
-                "samples": [id_sampler, 0],
-                "vae": [id_check, 2]
-            }
-        }
-
-        workflow["nodes"][id_save] = {
-            "class_type": "SaveImage",
-            "inputs": {
-                "images": [id_vae, 0],
-                "filename_prefix": "G-Prompt-Studio"
-            }
-        }
-
-        json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
-        self._mostrar_ventana_comfyui(json_str, modelo)
+        # ── Prompt + muestreo + decodificado + guardado ────────────
+        nodes[id_latent] = {"class_type": "EmptyLatentImage",
+                            "inputs": {"width": 1024, "height": 1024, "batch_size": 1}}
+        nodes[id_clip_pos] = {"class_type": "CLIPTextEncode",
+                              "inputs": {"text": pos, "clip": clip_ref}}
+        nodes[id_clip_neg] = {"class_type": "CLIPTextEncode",
+                              "inputs": {"text": neg, "clip": clip_ref}}
+        nodes[id_sampler] = {"class_type": "KSampler",
+                             "inputs": {"model": model_ref,
+                                        "positive": [id_clip_pos, 0],
+                                        "negative": [id_clip_neg, 0],
+                                        "latent_image": [id_latent, 0],
+                                        "seed": 0, "steps": p["steps"], "cfg": p["cfg"],
+                                        "sampler_name": p["sampler"], "scheduler": p["scheduler"],
+                                        "denoise": 1.0}}
+        nodes[id_vaedec] = {"class_type": "VAEDecode",
+                            "inputs": {"samples": [id_sampler, 0], "vae": vae_ref}}
+        nodes[id_save] = {"class_type": "SaveImage",
+                          "inputs": {"images": [id_vaedec, 0], "filename_prefix": "G-Prompt-Studio"}}
+        return workflow
 
     def _mostrar_ventana_comfyui(self, json_str: str, modelo: str) -> None:
         """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar."""

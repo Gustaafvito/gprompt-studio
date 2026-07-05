@@ -761,6 +761,46 @@ def comfy_image_specs(nombre: str) -> dict | None:
     return _aplicar_desc_local(nombre, specs)
 
 
+# ── Parámetros de WORKFLOW ComfyUI por familia ────────────────────
+# Alimentan al exportador "🔧 Comfy" (KSampler + arquitectura de carga):
+#   arch = "checkpoint" (CheckpointLoaderSimple: SDXL/SD1.5/Pony/Illustrious)
+#          "unet"       (UNETLoader + CLIPLoader + VAELoader: diffusion_models)
+# cfg/steps/sampler/scheduler = valores validados por el usuario (jul-2026).
+# Para arch=unet, clip/vae son los ficheros típicos del inventario del usuario;
+# si no se conocen, quedan "" y ComfyUI los deja en blanco para que el usuario
+# los elija en el dropdown (no rompe el paste).
+_COMFY_WORKFLOW = {
+    "flux":        {"arch": "unet", "cfg": 3.5, "steps": 20, "sampler": "euler", "scheduler": "simple",
+                    "clip": "qwen_3_8b_fp8mixed.safetensors", "vae": "flux2-vae.safetensors", "clip_type": "flux"},
+    "z_image":     {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "", "vae": "", "clip_type": "stable_diffusion"},
+    "qwen":        {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "vae": "qwen_image_vae.safetensors", "clip_type": "qwen_image"},
+    "ideogram":    {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "", "vae": "ideogram4_vae.safetensors", "clip_type": "stable_diffusion"},
+    "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
+    "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
+    "pony":        {"arch": "checkpoint", "cfg": 6.5, "steps": 25, "sampler": "euler_ancestral", "scheduler": "normal"},
+    "illustrious": {"arch": "checkpoint", "cfg": 5.5, "steps": 28, "sampler": "euler_ancestral", "scheduler": "normal"},
+}
+_COMFY_WORKFLOW_DEFAULT = {"arch": "checkpoint", "cfg": 6.5, "steps": 25,
+                           "sampler": "euler", "scheduler": "normal"}
+
+
+def comfy_workflow_params(nombre: str) -> dict:
+    """Parámetros para construir el workflow ComfyUI de `nombre` (por familia).
+
+    Aplica overrides Turbo/destilado (menos pasos, CFG bajo). Siempre devuelve
+    un dict completo (arch/cfg/steps/sampler/scheduler + clip/vae si unet)."""
+    fam = detectar_familia_comfy(nombre)
+    params = dict(_COMFY_WORKFLOW.get(fam, _COMFY_WORKFLOW_DEFAULT))
+    if any(t in (nombre or "").lower() for t in COMFY_TURBO_TOKENS):
+        params["steps"] = min(params.get("steps", 8), 8)
+        params["cfg"] = 2.0
+    params["_comfy_familia"] = fam
+    return params
+
+
 # ── Familias de VÍDEO ComfyUI por nombre → specs sintéticas ────────
 # Espejo de comfy_image_specs para el lado vídeo. El motor de inyección de
 # vídeo (_inyectar_specs_video) indexa: max_chars, prompt_formula,

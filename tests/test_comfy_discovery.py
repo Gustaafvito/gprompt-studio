@@ -370,3 +370,99 @@ class TestGetModelSpecsVideoFallback:
 
     def test_desconocido_no_video_devuelve_none(self):
         assert config.get_model_specs("xyz_inexistente_999") is None
+
+
+class TestComfyWorkflowParams:
+    """Parámetros del exportador 'Workflow ComfyUI' por familia."""
+
+    def test_flux_es_unet(self):
+        p = config.comfy_workflow_params("flux-2-klein-9b-fp8")
+        assert p["arch"] == "unet"
+        assert p["cfg"] == 3.5 and p["steps"] == 20
+        assert p["scheduler"] == "simple"
+
+    def test_sdxl_es_checkpoint(self):
+        p = config.comfy_workflow_params("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        assert p["arch"] == "checkpoint"
+        assert p["cfg"] == 6.5
+        assert p["scheduler"] == "karras"
+
+    def test_qwen_unet_con_clip_y_vae(self):
+        p = config.comfy_workflow_params("qwen_image_edit_2509_fp8_e4m3fn")
+        assert p["arch"] == "unet"
+        assert p["clip"] and p["vae"]
+
+    def test_turbo_reduce_pasos_y_cfg(self):
+        p = config.comfy_workflow_params("z_image_turbo_bf16")
+        assert p["steps"] <= 8
+        assert p["cfg"] == 2.0
+
+    def test_desconocido_usa_default_checkpoint(self):
+        p = config.comfy_workflow_params("modelo_raro_xyz")
+        assert p["arch"] == "checkpoint"
+        assert "cfg" in p and "sampler" in p
+
+
+class TestConstruirWorkflowComfy:
+    """El JSON del workflow usa el loader correcto por arquitectura."""
+
+    @staticmethod
+    def _build(modelo):
+        from modules.tools_analysis import ToolsAnalysisService
+        return ToolsAnalysisService._construir_workflow_comfy("a cat", "blurry", modelo)
+
+    def test_sdxl_usa_checkpoint_loader(self):
+        wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        clases = {n["class_type"] for n in wf["nodes"].values()}
+        assert "CheckpointLoaderSimple" in clases
+        assert "UNETLoader" not in clases
+
+    def test_flux_usa_unet_loader(self):
+        wf = self._build("flux-2-klein-9b-fp8")
+        clases = {n["class_type"] for n in wf["nodes"].values()}
+        assert "UNETLoader" in clases
+        assert "CLIPLoader" in clases and "VAELoader" in clases
+        assert "CheckpointLoaderSimple" not in clases
+
+    def test_ksampler_usa_cfg_de_familia(self):
+        wf = self._build("flux-2-klein-9b-fp8")
+        ks = next(n for n in wf["nodes"].values() if n["class_type"] == "KSampler")
+        assert ks["inputs"]["cfg"] == 3.5
+        assert ks["inputs"]["scheduler"] == "simple"
+
+    def test_prompt_va_en_clip_encode(self):
+        wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        textos = [n["inputs"]["text"] for n in wf["nodes"].values()
+                  if n["class_type"] == "CLIPTextEncode"]
+        assert "a cat" in textos and "blurry" in textos
+
+
+class TestWorkflowConLora:
+    """El workflow inserta un LoraLoader cuando hay LoRA activo."""
+
+    @staticmethod
+    def _build(modelo, lora=""):
+        from modules.tools_analysis import ToolsAnalysisService
+        return ToolsAnalysisService._construir_workflow_comfy("a cat", "blurry", modelo, lora)
+
+    def test_sin_lora_no_hay_loraloader(self):
+        wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        clases = {n["class_type"] for n in wf["nodes"].values()}
+        assert "LoraLoader" not in clases
+
+    def test_con_lora_checkpoint_encadena(self):
+        wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2", "MiLora")
+        lora = next(n for n in wf["nodes"].values() if n["class_type"] == "LoraLoader")
+        assert lora["inputs"]["lora_name"] == "MiLora.safetensors"
+        # El KSampler recibe el modelo DESDE el LoraLoader, no del checkpoint.
+        ks = next(n for n in wf["nodes"].values() if n["class_type"] == "KSampler")
+        id_lora = next(k for k, n in wf["nodes"].items() if n["class_type"] == "LoraLoader")
+        assert ks["inputs"]["model"] == [id_lora, 0]
+
+    def test_con_lora_unet_encadena_desde_unetloader(self):
+        wf = self._build("flux-2-klein-9b-fp8", "FluxLora")
+        clases = {n["class_type"] for n in wf["nodes"].values()}
+        assert "LoraLoader" in clases and "UNETLoader" in clases
+        lora = next(n for n in wf["nodes"].values() if n["class_type"] == "LoraLoader")
+        id_unet = next(k for k, n in wf["nodes"].items() if n["class_type"] == "UNETLoader")
+        assert lora["inputs"]["model"] == [id_unet, 0]
