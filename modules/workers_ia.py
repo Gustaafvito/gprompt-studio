@@ -66,23 +66,21 @@ class WorkersIaService:
         """
         if es_ideas or not texto:
             return texto
-        # Multi-LoRA: el safety-net opera sobre el trigger PRIMARIO. Los
-        # extras del modal son responsabilidad del LLM al haber visto la
-        # instrucción imperativa en construir_modelo_info y la plantilla.
+        # Multi-LoRA: garantizar TODOS los triggers activos (primario + extras
+        # del modal), no solo el primario — si el LLM se deja alguno, el
+        # safety-net lo recupera. triggers_loras_activos() los da sin duplicar.
         try:
-            lora_nombre = (self.app.combo_lora.get()
-                           if hasattr(self.app, "combo_lora") else "")
+            triggers = self.app.footer.triggers_loras_activos() or []
         except Exception:
-            return texto
-        if not lora_nombre or lora_nombre == tr("— Sin LoRA —"):
-            return texto
-        try:
-            trigger = self.app.store.trigger_lora(lora_nombre)
-        except Exception:
-            return texto
-        if not trigger or not trigger.strip():
-            return texto
-        trigger = trigger.strip()
+            triggers = []
+        for trigger in triggers:
+            if trigger and trigger.strip():
+                texto = self._garantizar_un_trigger(texto, trigger.strip())
+        return texto
+
+    def _garantizar_un_trigger(self, texto, trigger):
+        """Garantiza que UN trigger concreto aparece una sola vez en su sitio
+        (bloque [LoRA Activation & Style] si existe, o tras POSITIVE PROMPT)."""
         # Para triggers multi-término (ej: "Nyra, Amber Eyes, Undercut"), el
         # safety-net usa solo el primer término como clave de búsqueda, ya que
         # la regex de palabra-completa no funciona con cadenas que incluyen comas.

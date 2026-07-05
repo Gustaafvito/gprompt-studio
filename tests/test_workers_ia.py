@@ -438,17 +438,19 @@ class TestGarantizarLoraTrigger:
     """Safety-net que asegura que el trigger del LoRA aparece en el output
     aunque el LLM ignore la instrucción del system prompt (sesión 15)."""
 
-    def _stub_app(self, lora_nombre="Mi LoRA", trigger="mistyle"):
+    def _stub_app(self, lora_nombre="Mi LoRA", trigger="mistyle", triggers=None):
+        # triggers: lista explícita para casos multi-LoRA; por defecto usa el
+        # único `trigger` (o vacío si no hay LoRA).
+        if triggers is None:
+            triggers = [trigger] if lora_nombre != "— Sin LoRA —" and trigger else []
         return SimpleNamespace(
             combo_lora=_var(lora_nombre),
             store=SimpleNamespace(trigger_lora=lambda _n: trigger),
+            footer=SimpleNamespace(triggers_loras_activos=lambda: list(triggers)),
         )
 
     def test_sin_lora_no_modifica_texto(self):
-        app = SimpleNamespace(
-            combo_lora=_var("— Sin LoRA —"),
-            store=SimpleNamespace(trigger_lora=lambda _n: ""),
-        )
+        app = self._stub_app(lora_nombre="— Sin LoRA —", trigger="")
         s = WorkersIaService(app)
         texto = "POSITIVE PROMPT: castle on a cliff"
         assert s._garantizar_lora_trigger(texto) == texto
@@ -474,6 +476,26 @@ class TestGarantizarLoraTrigger:
         texto = "POSITIVE PROMPT: LMNLHRR, dark forest"
         out = s._garantizar_lora_trigger(texto)
         assert out.lower().count("lmnlhrr") == 1
+
+    def test_multi_lora_garantiza_todos_los_triggers(self):
+        # Bug reportado: 3 LoRAs activos, solo salía 1 trigger. El safety-net
+        # debe garantizar TODOS (primario + extras del modal).
+        s = WorkersIaService(self._stub_app(
+            triggers=["lmnlhrr", "c1n3m4t1c", "gothvibe"]))
+        # El LLM solo incluyó 2 de los 3 (se dejó gothvibe).
+        texto = "POSITIVE PROMPT: lmnlhrr style, a scene, c1n3m4t1c style, dark"
+        out = s._garantizar_lora_trigger(texto)
+        assert "lmnlhrr" in out.lower()
+        assert "c1n3m4t1c" in out.lower()
+        assert "gothvibe" in out.lower()  # el que faltaba, recuperado
+
+    def test_multi_lora_no_duplica_los_ya_presentes(self):
+        s = WorkersIaService(self._stub_app(
+            triggers=["lmnlhrr", "c1n3m4t1c"]))
+        texto = "POSITIVE PROMPT: lmnlhrr style, c1n3m4t1c style, a scene"
+        out = s._garantizar_lora_trigger(texto)
+        assert out.lower().count("lmnlhrr") == 1
+        assert out.lower().count("c1n3m4t1c") == 1
 
     def test_es_ideas_no_aplica(self):
         """Las ideas son sugerencias creativas, no prompts → no insertar."""
@@ -519,6 +541,7 @@ class TestLoraTriggerConBloqueDedicado:
         return SimpleNamespace(
             combo_lora=_var("Estilo terror liminal"),
             store=SimpleNamespace(trigger_lora=lambda _n: trigger),
+            footer=SimpleNamespace(triggers_loras_activos=lambda: [trigger]),
         )
 
     def test_inserta_dentro_del_bloque_lora_activation(self):
