@@ -313,16 +313,26 @@ class TestEnsamblarDataset:
         # Cara: añade términos de recorte (full body, legs...) al negative.
         cara = ensamblar_dataset("t", DESC, ["face_front"], "", "bg")[0]["negative"]
         assert "full body" in cara and "boots" in cara
-        # Cuerpo entero: añade el ANTI-ZOOM (niega close-up/bust) para empujar
-        # al modelo a alejarse, NO el recorte de piernas.
+        # Cuerpo entero: ANTI-ZOOM (niega close-up/bust) para alejarse + recorte
+        # de pies (fuerza que se vean los pies, no que corte a los tobillos).
         full = ensamblar_dataset("t", DESC, ["full_front"], "", "bg")[0]["negative"]
         assert AVATAR_NEGATIVE_PROMPT in full
         assert "close-up" in full and "headshot" in full
-        assert "legs" not in full  # no negamos piernas en cuerpo entero
+        assert "feet cut off" in full and "cropped at the ankles" in full
         # Busto: añade recorte de piernas pero permite torso.
         busto = ensamblar_dataset("t", DESC, ["bust_front"], "", "bg")[0]["negative"]
         assert "legs" in busto and "full body" in busto
         assert "close-up" not in busto  # el busto SÍ es un primer plano
+
+    def test_cuerpo_entero_fuerza_pies_pero_cowboy_no(self):
+        # Cuerpo entero → fuerza pies. Cowboy (medio muslo arriba) NO, ahí
+        # recortar por debajo de la cadera es correcto.
+        full = ensamblar_dataset("t", DESC, ["full_front"], "", "bg")[0]["negative"]
+        cowboy = ensamblar_dataset("t", DESC, ["cowboy_front"], "", "bg")[0]["negative"]
+        assert "feet cut off" in full
+        assert "feet cut off" not in cowboy
+        # ...pero ambos llevan el anti-zoom.
+        assert "close-up" in full and "close-up" in cowboy
 
     def test_antizoom_en_todas_las_tomas_de_cuerpo(self):
         # full, cowboy, sentada y acción deben llevar el anti-zoom.

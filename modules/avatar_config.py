@@ -79,28 +79,28 @@ AVATAR_ANGLES = {
     # --- CUERPO ENTERO ---
     "full_front": {
         "label": "Cuerpo entero — frontal",
-        "prompt": "full body shot, standing upright, facing camera directly, entire body visible from head to feet",
+        "prompt": "full body shot, standing upright, facing camera directly, entire body visible from head to feet, both feet flat on the floor including shoes, complete figure framed with headroom above and floor below, no cropping",
         "framing": "full body, front view",
         "filename": "09_full_front",
         "group": "cuerpo",
     },
     "full_34_left": {
         "label": "Cuerpo entero — 3/4 izquierda",
-        "prompt": "full body shot, standing, body turned three-quarter to the left, entire body visible",
+        "prompt": "full body shot, standing, body turned three-quarter to the left, entire body visible from head to feet, both feet and shoes on the floor, complete figure with floor below, no cropping",
         "framing": "full body, three-quarter left",
         "filename": "10_full_34_left",
         "group": "cuerpo",
     },
     "full_34_right": {
         "label": "Cuerpo entero — 3/4 derecha",
-        "prompt": "full body shot, standing, body turned three-quarter to the right, entire body visible",
+        "prompt": "full body shot, standing, body turned three-quarter to the right, entire body visible from head to feet, both feet and shoes on the floor, complete figure with floor below, no cropping",
         "framing": "full body, three-quarter right",
         "filename": "11_full_34_right",
         "group": "cuerpo",
     },
     "full_back": {
         "label": "Cuerpo entero — espalda",
-        "prompt": "full body shot from behind, back view, entire body visible, head facing away from camera",
+        "prompt": "full body shot from behind, back view, entire body visible from head to feet, both feet and shoes on the floor, complete figure with floor below, head facing away from camera, no cropping",
         "framing": "full body, back view",
         "filename": "12_full_back",
         "group": "cuerpo",
@@ -367,6 +367,15 @@ AVATAR_NEGATIVE_ANTIZOOM_CUERPO = (
     "close-up, close-up portrait, headshot, head and shoulders, bust shot, "
     "portrait, face fills the frame, cropped at the chest, cropped at the waist, "
     "zoomed in, upper body only"
+)
+
+# EXTRA solo para tomas de CUERPO ENTERO (no cowboy, que es de medio muslo
+# arriba): fuerza que se vean los pies. Muchos modelos recortan a la altura de
+# tobillos/rodillas aunque el positivo pida "head to feet"; meter el recorte de
+# piernas/pies en el negative es el lever que empuja a encuadrar la figura entera.
+AVATAR_NEGATIVE_PIES = (
+    "cropped legs, cropped at the ankles, cropped at the knees, cropped at the shins, "
+    "feet out of frame, feet cut off, cut off feet, feet not visible, partial body"
 )
 
 # Negative EXTRA solo para el MODO EDICIÓN (img2img) en tomas de ángulo.

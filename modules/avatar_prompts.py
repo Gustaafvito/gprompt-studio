@@ -20,6 +20,7 @@ from modules.avatar_config import (
     AVATAR_NEGATIVE_CROP_BUSTO,
     AVATAR_NEGATIVE_CROP_CARA,
     AVATAR_NEGATIVE_EDIT_ROTACION,
+    AVATAR_NEGATIVE_PIES,
     AVATAR_NEGATIVE_PROMPT,
 )
 
@@ -132,7 +133,13 @@ def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
         return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_CARA
     if prompt.startswith("upper body"):
         return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_CROP_BUSTO
-    return AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_ANTIZOOM_CUERPO
+    base = AVATAR_NEGATIVE_PROMPT + ", " + AVATAR_NEGATIVE_ANTIZOOM_CUERPO
+    # Tomas de CUERPO ENTERO ("full body"): añadir el recorte de piernas/pies al
+    # negative para forzar que se vean los pies. NO en cowboy (mid-thigh up) ni
+    # sentada/acción, donde recortar por debajo es correcto.
+    if "full body" in prompt.lower():
+        base += ", " + AVATAR_NEGATIVE_PIES
+    return base
 
 # ---------------------------------------------------------------------------
 # FASE 1 — SYSTEM PROMPT: descripción canónica del personaje
