@@ -4867,5 +4867,40 @@
     "prompt_formula": "Tags SD ordenados: calidad + sujeto + escena + iluminación. Pesos (tag:1.2) opcionales. Negative para limpiar artefactos.",
     "prompt_ejemplo": "masterpiece, best quality, a man in a dark cathedral, dramatic lighting, cinematic, highly detailed",
     "limitaciones": "2000 chars pos/neg. clip skip 1."
+  },
+  "Krea-2": {
+    "nota": 4.5,
+    "has_negative": true,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "4:5"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Estándar",
+      "Calidad"
+    ],
+    "magia_sugerencia": [
+      "Automático",
+      "Abrir",
+      "Cerrar"
+    ],
+    "resoluciones": [
+      "1024×1536"
+    ],
+    "max_imagenes": 4,
+    "sampler_recomendado": "DPM++ 2M Karras · 20 pasos · CFG 7.0",
+    "best_for": "Krea-2 (turbo, en SeaArt): modelo estético fotorrealista. Lenguaje natural descriptivo: sujeto + escena + iluminación + estilo/cámara. DPM++ 2M Karras, 20 pasos, CFG 7. Soporta negative. Modos Estándar/Calidad.",
+    "best_for_en": "Krea-2 (turbo, on SeaArt): photoreal aesthetic model. Descriptive natural language: subject + scene + lighting + style/camera. DPM++ 2M Karras, 20 steps, CFG 7. Supports negative. Standard/Quality modes.",
+    "prompt_formula": "Descripción fluida y estética: sujeto + entorno + iluminación + look fotográfico (lente, grano, color grading). Sin tags sueltos por comas.",
+    "prompt_ejemplo": "A candid portrait of a woman by a rain-streaked window at dusk, soft warm interior light, shallow depth of field, 50mm, natural skin texture, cinematic color grading.",
+    "vigente": true
   }
 }

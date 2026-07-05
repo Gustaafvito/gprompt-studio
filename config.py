@@ -316,6 +316,9 @@ GRUPOS_IMAGEN = [
     ("── Higgsfield ──", sorted([
         "Higgsfield Image",
     ])),
+    ("── Krea (en SeaArt) ──", sorted([
+        "Krea-2",
+    ])),
     ("── Kling Image (Kuaishou en SeaArt) ──", sorted([
         "Kling 3.0 Image",
         "Kling 3.0 Omni Image Editing",
@@ -601,6 +604,7 @@ _COMFY_DESC_LOCAL = {
     "wan22i2vhighnoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa high noise", "Wan 2.2 i2v 14B — high-noise stage"),
     "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
     "ltx2322bdev": ("LTX 2.3 22B: vídeo con audio nativo", "LTX 2.3 22B: video with native audio"),
+    "uberrealisticpornmergeponyxlponyxlhybridv1": ("Pony XL fotorrealista NSFW", "Photoreal NSFW Pony XL"),
 }
 
 
@@ -686,10 +690,13 @@ _COMFY_SPECS_FAMILIA = {
     },
     "pony": {
         "is_natural": False, "has_negative": True,
-        "trigger_words": "score_9, score_8_up, score_7_up",
-        "sampler_recomendado": "Euler a (~25 pasos, CFG 6-7)",
-        "best_for": "Anime/furry estilo Pony con tags Danbooru. Trigger obligatorio score_9, score_8_up, score_7_up. CFG 6-7.",
-        "best_for_en": "Pony-style anime/furry with Danbooru tags. Required trigger score_9, score_8_up, score_7_up. CFG 6-7.",
+        "trigger_words": "score_9, score_8_up, score_7_up, score_6_up, score_5_up",
+        "negative_sugerido": ("score_4, score_3, score_2, score_1, worst quality, "
+                              "low quality, blurry, deformed, bad anatomy, extra "
+                              "limbs, cartoon, monochrome, text, watermark"),
+        "sampler_recomendado": "euler / karras (~25 pasos, CFG 5.0)",
+        "best_for": "SDXL Pony con tags Danbooru. Trigger obligatorio al inicio: score_9, score_8_up, score_7_up, score_6_up, score_5_up. euler/karras, 25 pasos, CFG 5.0. Para NSFW activa el toggle 🔞.",
+        "best_for_en": "SDXL Pony with Danbooru tags. Required trigger at start: score_9, score_8_up, score_7_up, score_6_up, score_5_up. euler/karras, 25 steps, CFG 5.0. For NSFW enable the 🔞 toggle.",
     },
     "illustrious": {
         "is_natural": False, "has_negative": True,
@@ -765,7 +772,7 @@ _COMFY_WORKFLOW = {
                     "clip": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "vae": "qwen_image_vae.safetensors", "clip_type": "qwen_image"},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
-    "pony":        {"arch": "checkpoint", "cfg": 6.5, "steps": 25, "sampler": "euler_ancestral", "scheduler": "normal"},
+    "pony":        {"arch": "checkpoint", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "karras"},
     "illustrious": {"arch": "checkpoint", "cfg": 5.5, "steps": 28, "sampler": "euler_ancestral", "scheduler": "normal"},
 }
 _COMFY_WORKFLOW_DEFAULT = {"arch": "checkpoint", "cfg": 6.5, "steps": 25,
