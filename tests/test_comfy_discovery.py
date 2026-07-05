@@ -18,13 +18,20 @@ class TestClasificarModeloComfy:
         assert config.clasificar_modelo_comfy("RealVisXL_V5.0_fp16") == "imagen"
         assert config.clasificar_modelo_comfy("juggernautXL_ragnarokBy") == "imagen"
 
-    def test_imagen_flux_zimage_qwen_ideogram(self):
+    def test_imagen_flux_zimage_qwen(self):
         assert config.clasificar_modelo_comfy("flux-2-klein-9b-fp8") == "imagen"
         assert config.clasificar_modelo_comfy("z_image_bf16") == "imagen"
         assert config.clasificar_modelo_comfy("z_image_turbo_bf16") == "imagen"
         assert config.clasificar_modelo_comfy("qwen_image_edit_2509_fp8_e4m3fn") == "imagen"
-        assert config.clasificar_modelo_comfy("ideogram4_fp8_transformer") == "imagen"
         assert config.clasificar_modelo_comfy("512-inpainting-ema") == "imagen"
+
+    def test_ideogram_excluido(self, tmp_path):
+        # Ideogram local no tiene soporte real en ComfyUI (solo API) → excluido
+        # del escaneo. El Ideogram 4 de SeaArt cloud no se ve afectado.
+        root = _crear_install_comfy(tmp_path)
+        hallados = config._escanear_comfy_root(root)
+        todos = hallados["imagen"] + hallados["video"] + hallados["audio"]
+        assert not any("ideogram" in m for m in todos)
 
     def test_video(self):
         assert config.clasificar_modelo_comfy("wan2.2_i2v_high_noise_14B_fp8_scaled") == "video"
@@ -180,7 +187,6 @@ class TestDetectarFamiliaComfy:
             "z_image_bf16": "z_image",
             "z_image_turbo_bf16": "z_image",
             "qwen_image_edit_2509_fp8_e4m3fn": "qwen",
-            "ideogram4_fp8_transformer": "ideogram",
             "Juggernaut-XL_v9_RunDiffusionPhoto_v2": "sdxl",
             "RealVisXL_V5.0_fp16": "sdxl",
             "juggernautXL_ragnarokBy": "sdxl",
@@ -208,12 +214,11 @@ class TestComfyImageSpecs:
         assert s["has_negative"] is True
         assert s.get("negative_sugerido")
 
-    def test_qwen_e_ideogram_con_negative(self):
-        # A CFG 4 responden a negative (testing usuario).
-        for m in ("qwen_image_edit_2509_fp8_e4m3fn", "ideogram4_fp8_transformer"):
-            s = config.comfy_image_specs(m)
-            assert s["has_negative"] is True, m
-            assert s.get("negative_sugerido"), m
+    def test_qwen_con_negative(self):
+        # A CFG 4 responde a negative (testing usuario).
+        s = config.comfy_image_specs("qwen_image_edit_2509_fp8_e4m3fn")
+        assert s["has_negative"] is True
+        assert s.get("negative_sugerido")
 
     def test_zimage_local_es_natural_puro_sin_formato_hibrido(self):
         # LOCAL: lenguaje natural puro, sin el formato híbrido con tag-preamble
@@ -404,41 +409,54 @@ class TestComfyWorkflowParams:
 
 
 class TestConstruirWorkflowComfy:
-    """El JSON del workflow usa el loader correcto por arquitectura."""
+    """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
+    loader correcto por arquitectura."""
 
     @staticmethod
-    def _build(modelo):
+    def _build(modelo, lora=""):
         from modules.tools_analysis import ToolsAnalysisService
-        return ToolsAnalysisService._construir_workflow_comfy("a cat", "blurry", modelo)
+        return ToolsAnalysisService._construir_workflow_comfy("a cat", "blurry", modelo, lora)
+
+    @staticmethod
+    def _tipos(wf):
+        return {n["type"] for n in wf["nodes"]}
+
+    def test_formato_ui_valido(self):
+        # Estructura que ComfyUI acepta al hacer Load/Paste en el canvas.
+        wf = self._build("flux-2-klein-9b-fp8")
+        for k in ("last_node_id", "last_link_id", "nodes", "links", "version"):
+            assert k in wf
+        assert isinstance(wf["nodes"], list) and isinstance(wf["links"], list)
+        # Todo link referencia nodos existentes.
+        ids = {n["id"] for n in wf["nodes"]}
+        for lk in wf["links"]:
+            assert lk[1] in ids and lk[3] in ids
 
     def test_sdxl_usa_checkpoint_loader(self):
-        wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
-        clases = {n["class_type"] for n in wf["nodes"].values()}
-        assert "CheckpointLoaderSimple" in clases
-        assert "UNETLoader" not in clases
+        t = self._tipos(self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2"))
+        assert "CheckpointLoaderSimple" in t and "UNETLoader" not in t
 
     def test_flux_usa_unet_loader(self):
-        wf = self._build("flux-2-klein-9b-fp8")
-        clases = {n["class_type"] for n in wf["nodes"].values()}
-        assert "UNETLoader" in clases
-        assert "CLIPLoader" in clases and "VAELoader" in clases
-        assert "CheckpointLoaderSimple" not in clases
+        t = self._tipos(self._build("flux-2-klein-9b-fp8"))
+        assert {"UNETLoader", "CLIPLoader", "VAELoader"} <= t
+        assert "CheckpointLoaderSimple" not in t
 
     def test_ksampler_usa_cfg_de_familia(self):
         wf = self._build("flux-2-klein-9b-fp8")
-        ks = next(n for n in wf["nodes"].values() if n["class_type"] == "KSampler")
-        assert ks["inputs"]["cfg"] == 3.5
-        assert ks["inputs"]["scheduler"] == "simple"
+        ks = next(n for n in wf["nodes"] if n["type"] == "KSampler")
+        # widgets_values: [seed, control, steps, cfg, sampler, scheduler, denoise]
+        assert ks["widgets_values"][3] == 3.5
+        assert ks["widgets_values"][5] == "simple"
 
     def test_prompt_va_en_clip_encode(self):
         wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
-        textos = [n["inputs"]["text"] for n in wf["nodes"].values()
-                  if n["class_type"] == "CLIPTextEncode"]
+        textos = [n["widgets_values"][0] for n in wf["nodes"]
+                  if n["type"] == "CLIPTextEncode"]
         assert "a cat" in textos and "blurry" in textos
 
 
 class TestWorkflowConLora:
-    """El workflow inserta un LoraLoader cuando hay LoRA activo."""
+    """El workflow inserta un LoraLoader (formato UI) cuando hay LoRA activo."""
 
     @staticmethod
     def _build(modelo, lora=""):
@@ -447,22 +465,23 @@ class TestWorkflowConLora:
 
     def test_sin_lora_no_hay_loraloader(self):
         wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2")
-        clases = {n["class_type"] for n in wf["nodes"].values()}
-        assert "LoraLoader" not in clases
+        assert "LoraLoader" not in {n["type"] for n in wf["nodes"]}
 
     def test_con_lora_checkpoint_encadena(self):
         wf = self._build("Juggernaut-XL_v9_RunDiffusionPhoto_v2", "MiLora")
-        lora = next(n for n in wf["nodes"].values() if n["class_type"] == "LoraLoader")
-        assert lora["inputs"]["lora_name"] == "MiLora.safetensors"
-        # El KSampler recibe el modelo DESDE el LoraLoader, no del checkpoint.
-        ks = next(n for n in wf["nodes"].values() if n["class_type"] == "KSampler")
-        id_lora = next(k for k, n in wf["nodes"].items() if n["class_type"] == "LoraLoader")
-        assert ks["inputs"]["model"] == [id_lora, 0]
+        lora = next(n for n in wf["nodes"] if n["type"] == "LoraLoader")
+        assert lora["widgets_values"][0] == "MiLora.safetensors"
+        # Existe un link Checkpoint(MODEL) -> LoraLoader.model
+        chk = next(n for n in wf["nodes"] if n["type"] == "CheckpointLoaderSimple")
+        assert any(lk[1] == chk["id"] and lk[3] == lora["id"] for lk in wf["links"])
+        # Y un link LoraLoader(MODEL) -> KSampler.model
+        ks = next(n for n in wf["nodes"] if n["type"] == "KSampler")
+        assert any(lk[1] == lora["id"] and lk[3] == ks["id"] for lk in wf["links"])
 
     def test_con_lora_unet_encadena_desde_unetloader(self):
         wf = self._build("flux-2-klein-9b-fp8", "FluxLora")
-        clases = {n["class_type"] for n in wf["nodes"].values()}
-        assert "LoraLoader" in clases and "UNETLoader" in clases
-        lora = next(n for n in wf["nodes"].values() if n["class_type"] == "LoraLoader")
-        id_unet = next(k for k, n in wf["nodes"].items() if n["class_type"] == "UNETLoader")
-        assert lora["inputs"]["model"] == [id_unet, 0]
+        t = {n["type"] for n in wf["nodes"]}
+        assert "LoraLoader" in t and "UNETLoader" in t
+        unet = next(n for n in wf["nodes"] if n["type"] == "UNETLoader")
+        lora = next(n for n in wf["nodes"] if n["type"] == "LoraLoader")
+        assert any(lk[1] == unet["id"] and lk[3] == lora["id"] for lk in wf["links"])

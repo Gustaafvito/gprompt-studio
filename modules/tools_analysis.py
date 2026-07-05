@@ -1962,76 +1962,133 @@ class ToolsAnalysisService:
             pass
         return ""
 
-    @staticmethod
-    def _construir_workflow_comfy(pos: str, neg: str, modelo: str, lora: str = "") -> dict:
-        """Construye el dict de workflow ComfyUI (puro, sin UI). Ver
-        _copiar_comfyui_json para el criterio de loaders/params por familia.
+    # Definición de slots (inputs/outputs) por tipo de nodo, para serializar
+    # al formato UI de ComfyUI (el que acepta Load/Paste en el canvas).
+    _COMFY_NODE_SLOTS = {
+        "CheckpointLoaderSimple": ([], [("MODEL", "MODEL"), ("CLIP", "CLIP"), ("VAE", "VAE")]),
+        "UNETLoader":   ([], [("MODEL", "MODEL")]),
+        "CLIPLoader":   ([], [("CLIP", "CLIP")]),
+        "VAELoader":    ([], [("VAE", "VAE")]),
+        "LoraLoader":   ([("model", "MODEL"), ("clip", "CLIP")], [("MODEL", "MODEL"), ("CLIP", "CLIP")]),
+        "CLIPTextEncode": ([("clip", "CLIP")], [("CONDITIONING", "CONDITIONING")]),
+        "EmptyLatentImage": ([], [("LATENT", "LATENT")]),
+        "KSampler":     ([("model", "MODEL"), ("positive", "CONDITIONING"),
+                          ("negative", "CONDITIONING"), ("latent_image", "LATENT")],
+                         [("LATENT", "LATENT")]),
+        "VAEDecode":    ([("samples", "LATENT"), ("vae", "VAE")], [("IMAGE", "IMAGE")]),
+        "SaveImage":    ([("images", "IMAGE")], []),
+    }
 
-        `lora`: si se pasa, inserta un nodo LoraLoader entre el cargador de
-        modelo y el sampler (nombre = lora + '.safetensors' como mejor apuesta;
-        el usuario ajusta el dropdown si el fichero real difiere)."""
+    @classmethod
+    def _construir_workflow_comfy(cls, pos: str, neg: str, modelo: str, lora: str = "") -> dict:
+        """Construye un workflow ComfyUI en FORMATO UI (nodes[] + links[]), el
+        que ComfyUI acepta al hacer Load/Paste en el canvas (el formato API por
+        id no lo acepta). Params y loaders por familia — ver comfy_workflow_params.
+
+        `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler.
+        """
         from config import comfy_workflow_params
 
         p = comfy_workflow_params(modelo)
         fichero = (modelo + ".safetensors") if modelo else "model.safetensors"
 
-        workflow = {
-            "version": "1.0",
-            "prompt_from": "G-Prompt Studio",
-            "model_used": modelo,
-            "familia": p.get("_comfy_familia") or "?",
-            "nodes": {},
-        }
-        nodes = workflow["nodes"]
-        id_clip_pos, id_clip_neg = "10", "11"
-        id_sampler, id_vaedec, id_save, id_latent = "20", "30", "40", "50"
+        # ── Nodos abstractos: (tipo, widgets, conns{input: (idx_nodo, slot)}) ──
+        # idx_nodo referencia la posición en esta lista.
+        A = []  # noqa: N806 — lista de nodos abstractos
 
-        # ── Cargadores según arquitectura ──────────────────────────
+        def add(tipo, widgets, conns=None):
+            A.append({"type": tipo, "widgets": widgets, "conns": conns or {}})
+            return len(A) - 1
+
         if p["arch"] == "unet":
-            id_unet, id_clip, id_vaeload = "1", "2", "3"
-            nodes[id_unet] = {"class_type": "UNETLoader",
-                              "inputs": {"unet_name": fichero, "weight_dtype": "default"}}
-            nodes[id_clip] = {"class_type": "CLIPLoader",
-                              "inputs": {"clip_name": p.get("clip", ""),
-                                         "type": p.get("clip_type", "stable_diffusion")}}
-            nodes[id_vaeload] = {"class_type": "VAELoader",
-                                 "inputs": {"vae_name": p.get("vae", "")}}
-            model_ref, clip_ref, vae_ref = [id_unet, 0], [id_clip, 0], [id_vaeload, 0]
+            i_model = add("UNETLoader", [fichero, "default"])
+            i_clip = add("CLIPLoader", [p.get("clip", ""), p.get("clip_type", "stable_diffusion")])
+            i_vae = add("VAELoader", [p.get("vae", "")])
+            model_src, clip_src, vae_src = (i_model, 0), (i_clip, 0), (i_vae, 0)
         else:
-            id_check = "1"
-            nodes[id_check] = {"class_type": "CheckpointLoaderSimple",
-                               "inputs": {"ckpt_name": fichero}}
-            model_ref, clip_ref, vae_ref = [id_check, 0], [id_check, 1], [id_check, 2]
+            i_check = add("CheckpointLoaderSimple", [fichero])
+            model_src, clip_src, vae_src = (i_check, 0), (i_check, 1), (i_check, 2)
 
-        # ── LoRA (opcional): LoraLoader entre el cargador y el resto ─
         if lora:
-            id_lora = "4"
-            nodes[id_lora] = {"class_type": "LoraLoader",
-                              "inputs": {"lora_name": lora + ".safetensors",
-                                         "strength_model": 1.0, "strength_clip": 1.0,
-                                         "model": model_ref, "clip": clip_ref}}
-            model_ref, clip_ref = [id_lora, 0], [id_lora, 1]
+            i_lora = add("LoraLoader", [lora + ".safetensors", 1.0, 1.0],
+                         {"model": model_src, "clip": clip_src})
+            model_src, clip_src = (i_lora, 0), (i_lora, 1)
 
-        # ── Prompt + muestreo + decodificado + guardado ────────────
-        nodes[id_latent] = {"class_type": "EmptyLatentImage",
-                            "inputs": {"width": 1024, "height": 1024, "batch_size": 1}}
-        nodes[id_clip_pos] = {"class_type": "CLIPTextEncode",
-                              "inputs": {"text": pos, "clip": clip_ref}}
-        nodes[id_clip_neg] = {"class_type": "CLIPTextEncode",
-                              "inputs": {"text": neg, "clip": clip_ref}}
-        nodes[id_sampler] = {"class_type": "KSampler",
-                             "inputs": {"model": model_ref,
-                                        "positive": [id_clip_pos, 0],
-                                        "negative": [id_clip_neg, 0],
-                                        "latent_image": [id_latent, 0],
-                                        "seed": 0, "steps": p["steps"], "cfg": p["cfg"],
-                                        "sampler_name": p["sampler"], "scheduler": p["scheduler"],
-                                        "denoise": 1.0}}
-        nodes[id_vaedec] = {"class_type": "VAEDecode",
-                            "inputs": {"samples": [id_sampler, 0], "vae": vae_ref}}
-        nodes[id_save] = {"class_type": "SaveImage",
-                          "inputs": {"images": [id_vaedec, 0], "filename_prefix": "G-Prompt-Studio"}}
-        return workflow
+        i_latent = add("EmptyLatentImage", [1024, 1024, 1])
+        i_pos = add("CLIPTextEncode", [pos], {"clip": clip_src})
+        i_neg = add("CLIPTextEncode", [neg], {"clip": clip_src})
+        i_ks = add("KSampler",
+                   [0, "randomize", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
+                   {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
+                    "latent_image": (i_latent, 0)})
+        i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
+        add("SaveImage", ["G-Prompt-Studio"], {"images": (i_dec, 0)})
+
+        return cls._serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?")
+
+    @classmethod
+    def _serializar_workflow_ui(cls, abstractos: list, modelo: str, familia: str) -> dict:
+        """Convierte la lista de nodos abstractos al formato UI de ComfyUI:
+        nodes[] con pos/size/inputs/outputs/widgets_values + links[]."""
+        slots = cls._COMFY_NODE_SLOTS
+        # id real = índice + 1 (ComfyUI usa enteros >= 1)
+        nodes_ui, links = [], []
+        # outputs[idx][slot] -> lista de link_ids (se rellena al crear links)
+        out_links = {i: {} for i in range(len(abstractos))}
+        link_id = 0
+
+        # 1) Primer pase: crear links a partir de las conexiones de cada input.
+        #    Guardamos, por nodo, el link_id de cada input (para inputs[].link).
+        in_link = {i: {} for i in range(len(abstractos))}
+        for idx, nodo in enumerate(abstractos):
+            in_defs = slots[nodo["type"]][0]
+            for nombre_in, _tipo in in_defs:
+                if nombre_in in nodo["conns"]:
+                    src_idx, src_slot = nodo["conns"][nombre_in]
+                    link_id += 1
+                    tipo_link = slots[abstractos[src_idx]["type"]][1][src_slot][1]
+                    links.append([link_id, src_idx + 1, src_slot, idx + 1,
+                                  in_defs.index((nombre_in, _tipo)), tipo_link])
+                    in_link[idx][nombre_in] = link_id
+                    out_links[src_idx].setdefault(src_slot, []).append(link_id)
+
+        # 2) Segundo pase: construir cada nodo UI con posición en columnas.
+        col_x, row_y = {}, {}
+        for idx, nodo in enumerate(abstractos):
+            in_defs, out_defs = slots[nodo["type"]]
+            # Columna = profundidad topológica simple (0 si no tiene inputs).
+            col = 0
+            for nombre_in in nodo["conns"]:
+                src_idx = nodo["conns"][nombre_in][0]
+                col = max(col, col_x.get(src_idx, 0) + 1)
+            col_x[idx] = col
+            y = row_y.get(col, 0)
+            row_y[col] = y + 220
+
+            inputs_ui = [{"name": n, "type": t,
+                          "link": in_link[idx].get(n)} for n, t in in_defs]
+            outputs_ui = [{"name": n, "type": t,
+                           "links": out_links[idx].get(s) or []}
+                          for s, (n, t) in enumerate(out_defs)]
+            nodes_ui.append({
+                "id": idx + 1, "type": nodo["type"],
+                "pos": [col * 360 + 40, y + 40], "size": [300, 200],
+                "flags": {}, "order": idx, "mode": 0,
+                "inputs": inputs_ui, "outputs": outputs_ui,
+                "properties": {"Node name for S&R": nodo["type"]},
+                "widgets_values": nodo["widgets"],
+            })
+
+        return {
+            "last_node_id": len(abstractos),
+            "last_link_id": link_id,
+            "nodes": nodes_ui,
+            "links": links,
+            "groups": [],
+            "config": {},
+            "extra": {"generado_por": "G-Prompt Studio", "modelo": modelo, "familia": familia},
+            "version": 0.4,
+        }
 
     def _mostrar_ventana_comfyui(self, json_str: str, modelo: str) -> None:
         """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar."""
@@ -2057,6 +2114,24 @@ class ToolsAnalysisService:
         info = ctk.CTkLabel(marco, text=tr("📋 Copia este JSON y pégalo en ComfyUI (Edit → Paste) o guarda como .json"),
                             font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c.get("muted_text", "#888"))
         info.pack(anchor="w", pady=(0, 6))
+
+        # Chuleta del modelo actual (CLIP/VAE/ajustes) — para rellenar los
+        # nodos que ComfyUI deje en blanco si el fichero no coincide exacto.
+        try:
+            from config import comfy_workflow_params
+            wp = comfy_workflow_params(modelo)
+            if wp["arch"] == "unet":
+                chuleta_txt = tr("🧩 CLIP: {0}   ·   VAE: {1}   ·   {2}/{3} · CFG {4} · {5} pasos").format(
+                    wp.get("clip") or tr("(elígelo en ComfyUI)"),
+                    wp.get("vae") or tr("(elígelo en ComfyUI)"),
+                    wp["sampler"], wp["scheduler"], wp["cfg"], wp["steps"])
+            else:
+                chuleta_txt = tr("🧩 CLIP y VAE integrados en el checkpoint   ·   {0}/{1} · CFG {2} · {3} pasos").format(
+                    wp["sampler"], wp["scheduler"], wp["cfg"], wp["steps"])
+            ctk.CTkLabel(marco, text=chuleta_txt, font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
+                         text_color=P.TXT_ACENTO, anchor="w").pack(anchor="w", pady=(0, 6))
+        except Exception as _e:
+            logger.debug(f"[silent chuleta] {_e}")
 
         txt = ctk.CTkTextbox(marco, wrap="none", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
                              fg_color=c.get("entry_bg", "#1a1a2e" if not is_lt else "#ffffff"),
@@ -2089,7 +2164,74 @@ class ToolsAnalysisService:
                       hover_color=P.BTN_EXITO_HOVER, command=_copiar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("💾 Guardar .json"), width=120, fg_color="#1e3a8a",
                       hover_color="#172554", command=_guardar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(frame_btn, text=tr("🧩 Chuleta modelos"), width=150,
+                      **P.estilo_boton(P.BTN_ACENTO),
+                      command=self._mostrar_chuleta_comfy).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("❌ Cerrar"), width=80, fg_color="#991b1b",
+                      hover_color=P.BTN_PELIGRO_HOVER, command=vent.destroy).pack(side="right")
+
+    def _mostrar_chuleta_comfy(self) -> None:
+        """Ventana con la chuleta ComfyUI: cada modelo con su CLIP, VAE y
+        ajustes de muestreo. Copiable / guardable como .txt."""
+        from config import comfy_cheatsheet, get_theme_colors
+
+        filas = comfy_cheatsheet()
+        if not filas:
+            return self.app.dialogs.set_estado(
+                tr("⚠️ No hay modelos ComfyUI detectados (configura la ruta en Ajustes)."), P.TXT_AVISO)
+
+        lineas = [tr("CHULETA ComfyUI — modelo · CLIP · VAE · ajustes"), "=" * 60, ""]
+        fam_actual = None
+        for f in filas:
+            if f["familia"] != fam_actual:
+                fam_actual = f["familia"]
+                lineas.append(f"\n── {fam_actual.upper()} ──")
+            lineas.append(f"• {f['modelo']}")
+            lineas.append(f"    CLIP: {f['clip']}")
+            lineas.append(f"    VAE:  {f['vae']}")
+            lineas.append(f"    {f['ajustes']}")
+        texto = "\n".join(lineas)
+
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+        vent = GPromptWindow(self.app)
+        vent.title(tr("🧩 Chuleta ComfyUI"))
+        vent.geometry("640x560")
+        vent.transient(self.app)
+        marco = ctk.CTkFrame(vent, fg_color=c.get("tab_bg", "#f3f4f6" if is_lt else "#0f1318"))
+        marco.pack(fill="both", expand=True, padx=10, pady=10)
+        ctk.CTkLabel(marco, text=tr("🧩 Chuleta ComfyUI"),
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold"),
+                     text_color=c["hdr_text"]).pack(anchor="w", pady=(0, 6))
+        txt = ctk.CTkTextbox(marco, wrap="none",
+                             font=ctk.CTkFont(family="Consolas", size=P.FUENTE_PEQUENA),
+                             fg_color=c.get("entry_bg", "#1a1a2e" if not is_lt else "#ffffff"),
+                             text_color=c.get("entry_text", "#e5e7eb" if not is_lt else "#111827"))
+        txt.insert("1.0", texto)
+        txt.pack(fill="both", expand=True, pady=(0, 10))
+        fila = ctk.CTkFrame(marco, fg_color="transparent")
+        fila.pack(fill="x")
+
+        def _copiar():
+            pyperclip.copy(texto)
+            self.app.dialogs.set_estado(tr("📋 Chuleta copiada al portapapeles"), P.TXT_OK)
+
+        def _guardar():
+            from tkinter import filedialog
+            ruta = filedialog.asksaveasfilename(
+                title=tr("Guardar chuleta"), defaultextension=".txt",
+                filetypes=[("TXT", "*.txt"), (tr("Todos"), "*.*")],
+                initialfile="chuleta_comfyui.txt")
+            if ruta:
+                with open(ruta, "w", encoding="utf-8") as fh:
+                    fh.write(texto)
+                self.app.dialogs.set_estado(tr('💾 Guardado: {0}').format(ruta.split('/')[-1]), P.TXT_OK)
+
+        ctk.CTkButton(fila, text=tr("📋 Copiar"), width=110, fg_color=P.BTN_EXITO,
+                      hover_color=P.BTN_EXITO_HOVER, command=_copiar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(fila, text=tr("💾 Guardar .txt"), width=120, fg_color="#1e3a8a",
+                      hover_color="#172554", command=_guardar).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(fila, text=tr("❌ Cerrar"), width=80, fg_color="#991b1b",
                       hover_color=P.BTN_PELIGRO_HOVER, command=vent.destroy).pack(side="right")
 
     def _traducir_salida(self) -> None:

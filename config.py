@@ -467,10 +467,11 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 # Ficheros que NO sirven en un generador de prompts y se excluyen del escaneo:
 # refinadores (2ª pasada, sin prompt propio), SVD (image-to-video puro que
 # ignora el texto), piezas sueltas de un pipeline (transformer_only), modelos
-# de inpainting (necesitan máscara + imagen) y ACE-Step (audio; el usuario no
-# lo usa desde la herramienta).
+# de inpainting (necesitan máscara + imagen), ACE-Step (audio) e Ideogram
+# (sin soporte real en ComfyUI local, solo vía API — el Ideogram 4 de SeaArt
+# cloud sí se mantiene, esto solo excluye los ficheros locales).
 _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
-                         "inpaint", "acestep", "ace_step", "ace-step")
+                         "inpaint", "acestep", "ace_step", "ace-step", "ideogram")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -552,7 +553,6 @@ _COMFY_FAMILIAS = (
     ("flux",        ("flux",)),
     ("z_image",     ("z_image", "zimage", "z-image")),
     ("qwen",        ("qwen",)),
-    ("ideogram",    ("ideogram",)),
     ("pony",        ("pony",)),
     ("illustrious", ("illustrious", "noobai", "noob")),
     ("sd15",        ("512-", "_512", "sd15", "sd_1.5", "sd-1.5", "v1-5", "1.5-pruned")),
@@ -563,7 +563,7 @@ _COMFY_FAMILIAS = (
 # (autodiscovery agrupa por familia; '' = sin familia reconocida).
 _COMFY_FAMILIA_LABELS = {
     "flux": "Flux", "z_image": "Z-Image", "qwen": "Qwen",
-    "ideogram": "Ideogram", "pony": "Pony", "illustrious": "Illustrious",
+    "pony": "Pony", "illustrious": "Illustrious",
     "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)", "": "Otros",
 }
 _COMFY_FAMILIA_LABELS_VIDEO = {
@@ -597,7 +597,6 @@ _COMFY_DESC_LOCAL = {
     "flux2kleinbase4bfp8": ("Flux 2 Klein 4B, ligero y rápido", "Flux 2 Klein 4B, light and fast"),
     "zimagebf16": ("Z-Image Base 6B (S3-DiT)", "Z-Image Base 6B (S3-DiT)"),
     "zimageturbobf16": ("Z-Image Turbo, destilado y rápido", "Z-Image Turbo, distilled and fast"),
-    "ideogram4fp8transformer": ("Ideogram 4: texto/tipografía en imagen", "Ideogram 4: in-image text/typography"),
     "qwenimageedit2509fp8e4m3fn": ("Qwen Image Edit: edición por instrucciones", "Qwen Image Edit: instruction-based editing"),
     "wan22i2vhighnoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa high noise", "Wan 2.2 i2v 14B — high-noise stage"),
     "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
@@ -685,18 +684,6 @@ _COMFY_SPECS_FAMILIA = {
         "prompt_formula": "Frase fluida descriptiva; para edición di qué cambiar y qué mantener, con referencia 'image 1/2/3' cuando uses varias. Evita meter tags al inicio.",
         "prompt_ejemplo": "A young woman wearing a floral summer dress walks through an outdoor market bathed in golden sunset light, market stalls with fresh produce behind her, soft warm backlighting, professional photography, sharp focus, photorealistic.",
     },
-    "ideogram": {
-        # Formato medio (tags + frase) y con negative según el testing del
-        # usuario; is_natural se mantiene True porque Ideogram rinde mejor con
-        # lenguaje descriptivo (clave para su fuerte: tipografía/texto).
-        "is_natural": True, "has_negative": True,
-        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
-        "sampler_recomendado": "euler / simple (~25 pasos, CFG 4.0)",
-        "best_for": "Tipografía y texto legible en imagen + escenas descriptivas. Frase media (ni tags sueltos ni párrafos larguísimos); pon el texto deseado entre comillas. CFG 4, 25 pasos. Acepta negative.",
-        "best_for_en": "Typography and legible in-image text + descriptive scenes. Medium-length phrasing (not loose tags nor very long paragraphs); put the desired text in quotes. CFG 4, 25 steps. Accepts negative.",
-        "prompt_formula": "Frase media descriptiva; indica el texto exacto entre comillas, con estilo de tipografía y ubicación. Ni tags sueltos ni párrafo largo.",
-        "prompt_ejemplo": "A vintage coffee shop poster with the headline \"MORNING RITUAL\" in bold serif lettering, warm muted palette, centered composition.",
-    },
     "pony": {
         "is_natural": False, "has_negative": True,
         "trigger_words": "score_9, score_8_up, score_7_up",
@@ -776,8 +763,6 @@ _COMFY_WORKFLOW = {
                     "clip": "", "vae": "", "clip_type": "stable_diffusion"},
     "qwen":        {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
                     "clip": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "vae": "qwen_image_vae.safetensors", "clip_type": "qwen_image"},
-    "ideogram":    {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
-                    "clip": "", "vae": "ideogram4_vae.safetensors", "clip_type": "stable_diffusion"},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
     "pony":        {"arch": "checkpoint", "cfg": 6.5, "steps": 25, "sampler": "euler_ancestral", "scheduler": "normal"},
@@ -799,6 +784,31 @@ def comfy_workflow_params(nombre: str) -> dict:
         params["cfg"] = 2.0
     params["_comfy_familia"] = fam
     return params
+
+
+def comfy_cheatsheet() -> list[dict]:
+    """Filas de chuleta para los modelos de IMAGEN ComfyUI detectados:
+    modelo + CLIP + VAE + ajustes de muestreo. Los checkpoints (SDXL/SD1.5/
+    Pony/Illustrious) llevan CLIP y VAE integrados (no loaders aparte)."""
+    filas = []
+    for _grupo, modelos in GRUPOS_IMAGEN_COMFYUI:
+        for m in modelos:
+            if m.startswith("──"):
+                continue
+            p = comfy_workflow_params(m)
+            if p["arch"] == "checkpoint":
+                clip = vae = "(integrado en el checkpoint)"
+            else:
+                clip = p.get("clip") or "(elígelo en ComfyUI)"
+                vae = p.get("vae") or "(elígelo en ComfyUI)"
+            filas.append({
+                "familia": p.get("_comfy_familia") or "?",
+                "modelo": m + ".safetensors",
+                "clip": clip,
+                "vae": vae,
+                "ajustes": f"{p['sampler']} / {p['scheduler']} · CFG {p['cfg']} · {p['steps']} pasos",
+            })
+    return filas
 
 
 # ── Familias de VÍDEO ComfyUI por nombre → specs sintéticas ────────
