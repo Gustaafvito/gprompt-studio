@@ -1,13 +1,14 @@
-# CONTINUAR AQUÍ — Estado del proyecto (2026-07-03)
+# CONTINUAR AQUÍ — Estado del proyecto (2026-07-05)
 
-Archivo de traspaso entre conversaciones de Claude Code. Última sesión:
-lavado de cara completo de la UI + i18n + distribuible.
+Archivo de traspaso entre conversaciones de Claude Code. Últimas sesiones
+(04-05 jul): integración ComfyUI a fondo (export de workflow, chuleta,
+LoRA, modelos nuevos) + fix pies en dataset avatar.
 
 ## Estado actual
 
 - **Repo**: `C:\Proyectos\gprompt-studio` (GitHub privado
   `Gustaafvito/gprompt-studio`, rama `main`). Todo commiteado y pusheado.
-- **Tests**: 849/849 en verde · ruff limpio. Correr con `python -m pytest -q`.
+- **Tests**: 880/880 en verde · ruff limpio. Correr con `python -m pytest -q`.
 - **Distribuible**: `Desktop\GPromptStudio-Distribuible` (3 artefactos +
   LEEME). Regenerar TODO con `python build_release.py --yes` (tests +
   pip-audit + onedir + instalador + onefile + copia al escritorio).
@@ -99,11 +100,49 @@ max_chars aunque esas ya iban con .get()).
 - Altas con panel real: **Gemini Omni Flash** (vídeo, renombrado desde
   Gemini Omni; 3-10s, 5000 chars, 10 refs, audio nativo, fórmula 8 bloques)
   y **Nano Banana 2 Lite** (imagen 4.8, 14 imgs sujeto, 10 ratios).
-- PENDIENTE del usuario: lista real de plataformas de VÍDEO (Pika/Luma,
-  Runway, Pixverse están vacías; ¿Magnific vídeo?) — limpiar/altas cuando
-  pase capturas.
+- Plataformas de VÍDEO vacías APAGADAS (a6d9c40): Pika/Luma, Runway,
+  Pixverse comentadas (sin modelos). Selector vídeo = SeaArt Video /
+  ComfyUI-Fooocus / Kling AI / Sora-Veo. Migración de setups antiguos.
+
+## Hecho 2026-07-05 (sesión ComfyUI a fondo)
+
+Toda la integración ComfyUI quedó sólida. Familias locales del usuario:
+**Flux, Qwen, SDXL, Z-Image** (Ideogram/ACE/inpainting/refiner/svd EXCLUIDOS
+del escaneo vía `_COMFY_EXCLUIR_TOKENS`).
+
+- **Prompts por familia** (guía de testing del usuario, commits d995e8a):
+  Flux 2 Klein y Qwen SÍ usan negative (antes se les borraba); Z-Image
+  LOCAL = lenguaje natural PURO sin tags (la spec cloud de SeaArt sigue
+  híbrida — intacta); SDXL CFG 6.5; `negative_sugerido` por familia.
+  IDIOMA: el modo imagen fuerza inglés (los hints ES arrastraban al LLM).
+- **Qwen formato DOBLE** (formato_bloques `qwen_edit` en el JSON curado):
+  workflow 2 etapas del usuario → 4 bloques PROMPT/NEGATIVE T2I + PROMPT/
+  NEGATIVE IMG2IMG.
+- **Exportador 🔧 Comfy** (botón footer): reescrito a **FORMATO UI** de
+  ComfyUI (nodes[]+links[], `_serializar_workflow_ui`) — el formato API por
+  id NO lo acepta el canvas. Loader correcto por arch (Checkpoint vs
+  UNET+CLIP+VAE), CFG/pasos/sampler por familia (`config.comfy_workflow_params`),
+  LoraLoader encadenado si hay LoRA. **Chuleta** (config.comfy_cheatsheet):
+  línea del modelo actual + botón "🧩 Chuleta modelos" (tabla CLIP/VAE/ajustes).
+- **Multi-LoRA fix** (f698b5b): el safety-net garantiza TODOS los triggers
+  (era solo el primario) vía `footer.triggers_loras_activos()`.
+- **Modelos**: Krea-2 (SeaArt, grupo Krea); familia Pony afinada al
+  uberRealisticPornMerge PonyXL del usuario (CFG 5.0, euler/karras, score
+  tags 9..5_up).
+- **Avatar dataset** (e1d6264): tomas de CUERPO ENTERO fuerzan pies visibles
+  (positivo reforzado + `AVATAR_NEGATIVE_PIES`); cowboy/sentada NO (recorte
+  correcto). Selector con las 4 plataformas de imagen y familias como grupos.
 
 ## Pendientes que necesitan al usuario
+
+- **Krea-2**: confirmar formato (asumí natural), `max_chars` real (contador
+  bajo la caja) y nota — puestos por estimación.
+- **Z-Image local**: nombres exactos de CLIP y VAE para clavar la chuleta
+  y el workflow (ahora salen "(elígelo en ComfyUI)").
+- Validar VÍDEO ComfyUI (Wan 2.2, LTX 2.3) con la herramienta — nunca
+  probado.
+- Probar el dataset avatar con pies visibles y avisar si algún checkpoint
+  sigue recortando (subir agresividad si hace falta).
 
 - Capturas de paneles SeaArt para dar de alta motores de vídeo externos:
   Wan 2.7, Vidu Q3 Pro, Kling 3.0 turbo, Kling O1, Grok Imagine,
