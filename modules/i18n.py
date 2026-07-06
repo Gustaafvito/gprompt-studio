@@ -2296,6 +2296,8 @@ TRADUCCIONES = {
     '  (todo)': '  (all)',
     ' · {0} ya existían': ' · {0} already existed',
     ' · modo→{0}': ' · mode→{0}',
+    '({0} de {1})': '({0} of {1})',
+    '({0} de {1}{2})': '({0} of {1}{2})',
     ' ⚠️ (puede tener errores de sintaxis)': ' ⚠️ (may contain syntax errors)',
     '(sin título)': '(untitled)',
     'El LLM no devolvió JSON 100% válido — revisa antes de usar.': 'The LLM did not return 100% valid JSON — review before using.',

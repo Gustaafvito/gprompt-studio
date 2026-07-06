@@ -33,7 +33,7 @@ _PATTERN_SCORE_TOTAL = re.compile(r"TOTAL\s*:\s*(\d+)\s*/\s*(\d+)", re.IGNORECAS
 def color_para_score(valor: int, maximo: int) -> str:
     """Color hex según el porcentaje: verde ≥80%, amarillo ≥50%, rojo <50%."""
     if maximo <= 0:
-        return "#888888"
+        return P.TXT_MUTED
     pct = (valor / maximo) * 100
     if pct >= 80:
         return P.TXT_OK

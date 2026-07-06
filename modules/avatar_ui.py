@@ -174,7 +174,7 @@ class AvatarFrame(ctk.CTkFrame):
             ctk.CTkLabel(
                 fila_modelo,
                 text=tr("(negative y límite de chars según sus specs)"),
-                font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color="#9ca3af",
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED,
             ).pack(side="left")
         else:
             self.menu_modelo = None
@@ -261,7 +261,7 @@ class AvatarFrame(ctk.CTkFrame):
 
         self.label_imagen_ref = ctk.CTkLabel(
             form, text="", anchor="w", compound="left",
-            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color="#9ca3af")
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED)
         self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
                                    padx=8, pady=(0, 4)); fila += 1
 

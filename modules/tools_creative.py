@@ -822,7 +822,7 @@ class ToolsCreativeService:
         def _mostrar_placeholder():
             txt_relacion.delete("1.0", "end")
             txt_relacion.insert("1.0", _placeholder_relacion)
-            txt_relacion.configure(text_color="#6b7280")
+            txt_relacion.configure(text_color=P.TXT_MUTED)
             _relacion_state["placeholder_visible"] = True
 
         def _on_focus_in(_e=None):

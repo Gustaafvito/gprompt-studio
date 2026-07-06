@@ -180,8 +180,8 @@ def abrir_personajes(app):
             visibles = list(enumerate(personajes))
 
         lbl_count.configure(
-            text=f"({len(visibles)} de {len(personajes)})" if termino
-            else f"({len(personajes)})"
+            text=tr("({0} de {1})").format(len(visibles), len(personajes))
+            if termino else f"({len(personajes)})"
         )
 
         if not visibles:
@@ -483,7 +483,8 @@ def abrir_loras(app):
         visibles = [(i, l) for i, l in enumerate(loras) if _filtra(l)]
         sufijo_filtro = "" if fam_sel == tr("Todas") else tr(" · familia={0}").format(fam_sel)
         lbl_count.configure(
-            text=f"({len(visibles)} de {len(loras)}{sufijo_filtro})"
+            text=tr("({0} de {1}{2})").format(len(visibles), len(loras),
+                                              sufijo_filtro)
             if (termino or fam_sel != tr("Todas"))
             else f"({len(loras)})"
         )

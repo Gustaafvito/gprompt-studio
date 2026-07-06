@@ -1790,7 +1790,7 @@ class ArquitectoApp(
 
             if neg_text and tiene_neg:
                 ctk.CTkLabel(scroll, text=tr("🔴 NEGATIVE:"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"), text_color=P.TXT_ERROR).pack(anchor="w")
-                ctk.CTkLabel(scroll, text=neg_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color="#999999", anchor="w").pack(fill="x", pady=(0, 4))
+                ctk.CTkLabel(scroll, text=neg_text, wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED, anchor="w").pack(fill="x", pady=(0, 4))
 
             # Label para traducción (inicialmente vacío)
             lbl_trad = ctk.CTkLabel(scroll, text="", wraplength=col_width - 60, justify="left", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color="#8bb4d4", anchor="w")

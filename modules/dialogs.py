@@ -94,7 +94,7 @@ class DialogsService:
             if refs.get("lbl_origen"):
                 refs["lbl_origen"].configure(
                     text=ICONO_ORIGEN.get(origen, ""),
-                    text_color=P.TXT_INFO if origen else "#666",
+                    text_color=P.TXT_INFO if origen else P.TXT_MUTED_OSCURO,
                 )
             # Botón borrar habilitado solo si hay key
             if refs.get("btn_borrar"):
@@ -121,7 +121,7 @@ class DialogsService:
             lbl_estado.pack(side="right")
 
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
-                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color="#aaaaaa",
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color=P.TXT_MUTED,
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
 
             # Indicador de origen: keyring / keys.json cifrado / .env
@@ -129,7 +129,7 @@ class DialogsService:
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
                 font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
-                text_color=P.TXT_INFO if origen_init else "#666",
+                text_color=P.TXT_INFO if origen_init else P.TXT_MUTED_OSCURO,
                 anchor="w",
             )
             lbl_origen.pack(fill="x", padx=12, pady=(0, 4))
@@ -230,7 +230,7 @@ class DialogsService:
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
             estado_actual = tr("✅ configurado") if current_key_init else tr("⚪ opcional (modo anónimo)")
-            color_estado = P.TXT_OK if current_key_init else "#9ca3af"
+            color_estado = P.TXT_OK if current_key_init else P.TXT_MUTED
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
@@ -239,14 +239,14 @@ class DialogsService:
             lbl_estado.pack(side="right")
 
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
-                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color="#aaaaaa",
+                         font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color=P.TXT_MUTED,
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
 
             lbl_origen = ctk.CTkLabel(
                 card,
                 text=ICONO_ORIGEN.get(origen_init, ""),
                 font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"),
-                text_color=P.TXT_INFO if origen_init else "#666",
+                text_color=P.TXT_INFO if origen_init else P.TXT_MUTED_OSCURO,
                 anchor="w",
             )
             lbl_origen.pack(fill="x", padx=12, pady=(0, 4))

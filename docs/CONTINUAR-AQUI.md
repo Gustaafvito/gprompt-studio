@@ -154,6 +154,14 @@ del escaneo vía `_COMFY_EXCLUIR_TOKENS`).
   7. Código muerto `or "sin-key"` eliminado.
 - Sano confirmado: sin eval/exec/pickle/shell=True, persistencia atómica,
   keys DPAPI, logging rotado, requests con timeout, 882 tests verdes.
+- **Candado i18n reforzado**: el check de sinks ahora recorre BinOp (+) e
+  IfExp — cazó 2 fugas latentes ("(N de M)" en Personajes/LoRAs, ya tr()).
+- **Roadmap UI punto 3 HECHO**: hints con gris fijo → P.TXT_MUTED(_OSCURO)
+  dinámicos por tema (dialogs, avatar_ui, tools_creative, tools_analysis,
+  app). El del splash queda fijo a propósito (fondo siempre oscuro).
+  Validado visualmente por el usuario (2026-07-06).
+- Pillow 10.4.0→12.3.0 en el entorno local (6 CVEs; el lock ya lo pinaba
+  — estaba desincronizado). El .exe final quedó sin CVEs.
 
 ## Pendientes que necesitan al usuario
 

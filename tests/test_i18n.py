@@ -82,14 +82,25 @@ def test_ningun_sink_de_ui_con_espanol_sin_tr():
     # dialogs.py: avisos del cambio de idioma, bilingües ES+EN a propósito.
     permitidos = {"dialogs.py"}
 
-    def _literal(node):
+    def _literales(node):
+        """Fragmentos string alcanzables SIN pasar por una llamada (tr()).
+
+        Cubre también concatenaciones (BinOp +) y ternarios (IfExp): así
+        se coló '📥 JSON importado…' en la auditoría 2026-07-06 — era
+        f-string + ternario dentro del sink y el check solo miraba
+        Constant/JoinedStr directos.
+        """
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            return node.value
+            return [node.value]
         if isinstance(node, ast.JoinedStr):
             partes = [v.value for v in node.values
                       if isinstance(v, ast.Constant) and isinstance(v.value, str)]
-            return "".join(partes) if partes else None
-        return None
+            return ["".join(partes)] if partes else []
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            return _literales(node.left) + _literales(node.right)
+        if isinstance(node, ast.IfExp):
+            return _literales(node.body) + _literales(node.orelse)
+        return []
 
     fugas = []
     for py in list(ROOT.glob("*.py")) + list((ROOT / "modules").glob("*.py")):
@@ -111,9 +122,9 @@ def test_ningun_sink_de_ui_con_espanol_sin_tr():
             if fname in ui_methods and node.args:
                 candidatos.extend(node.args[:2])
             for c in candidatos:
-                txt = _literal(c)
-                if txt and _parece_espanol(txt):
-                    fugas.append(f"{py.name}:{node.lineno} {txt[:60]!r}")
+                for txt in _literales(c):
+                    if txt and _parece_espanol(txt):
+                        fugas.append(f"{py.name}:{node.lineno} {txt[:60]!r}")
     assert not fugas, (
         f"{len(fugas)} textos españoles llegan a la UI sin tr(): "
         + "; ".join(fugas[:8]))
