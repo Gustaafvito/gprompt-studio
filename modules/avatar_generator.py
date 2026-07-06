@@ -287,8 +287,24 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     # cada tipo tiene reglas distintas (p.ej. en Estilo la clave es variar sujetos).
     tipo = resultado.get("tipo_lora", "Personaje")
     consejo = CONSEJOS_LORA_POR_TIPO.get(tipo, CONSEJOS_LORA_POR_TIPO["Personaje"])
+    # Si hay imagen de referencia se exportan DOS carpetas de prompts
+    # (text-to-image + edición img2img). Explicamos la diferencia arriba
+    # del todo para que no despiste — son ALTERNATIVAS, no se pegan juntas.
+    cabecera = ""
+    if resultado.get("dataset_edicion"):
+        cabecera = tr(
+            "ℹ️ ESTE DATASET TRAE DOS CARPETAS DE PROMPTS (porque cargaste una\n"
+            "   imagen de referencia). Son ALTERNATIVAS — elige UNA vía por imagen:\n\n"
+            "   • prompts/  → TEXTO→IMAGEN. La identidad la describe el texto\n"
+            "     (tu trigger word). Es el dataset para ENTRENAR/generar un LoRA.\n"
+            "   • prompts_edicion/  → EDICIÓN img2img. La identidad la aporta tu\n"
+            "     'referencia.*': súbela como SUJETO en MAI / Nano Banana / Reve\n"
+            "     y pega estos prompts; solo cambia la cámara.\n\n"
+            "   (captions/ son los .txt emparejados para el entrenamiento LoRA.)\n\n"
+            "===================================================================\n\n"
+        )
     with open(os.path.join(base, "CONSEJOS_SEAART.txt"), "w", encoding="utf-8") as f:
-        f.write(consejo)
+        f.write(cabecera + consejo)
 
     return base
 
