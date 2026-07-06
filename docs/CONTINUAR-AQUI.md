@@ -163,6 +163,22 @@ del escaneo vía `_COMFY_EXCLUIR_TOKENS`).
 - Pillow 10.4.0→12.3.0 en el entorno local (6 CVEs; el lock ya lo pinaba
   — estaba desincronizado). El .exe final quedó sin CVEs.
 
+## Hecho 2026-07-06 (tarde): datasets LoRA ampliados a 50
+
+Los 4 catálogos de tomas (Personaje/Paisaje/Objeto/Estilo) pasan de 30 a
+**50 vistas** (petición del usuario: generar de sobra y elegir). Claves:
+- Personaje: nuevas tomas respetan los PREFIJOS de prompt que deciden el
+  negative en avatar_prompts ("close-up headshot"/"upper body"/"full body"
+  + pies visibles). De rodillas/cuclillas usan "whole figure" a propósito
+  (forzar pies ahí sería incorrecto).
+- Ratios: por cues o campo "ratio" explícito donde la inferencia fallaría
+  (ls_vertical 9:16, sty_bridge/cafe 3:2...). Verificado por script.
+- Objeto: 2 vistas agresivas nuevas (inclinado, explotada) con warn y
+  EXCLUIDAS del set ⚖ Equilibrado (queda en 45).
+- 82 traducciones EN nuevas (candado test_cobertura_avatar_config pasa).
+- Tests de conteo 30→50 actualizados; CONSEJOS_SEAART menciona "hasta 50:
+  genera de sobra y ELIGE".
+
 ## Pendientes que necesitan al usuario
 
 - **Krea-2**: confirmar formato (asumí natural), `max_chars` real (contador

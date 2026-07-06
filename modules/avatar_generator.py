@@ -319,7 +319,8 @@ _CONSEJOS_PERSONAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJE
 (fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
 
 • CANTIDAD: 25-40 imágenes en total. Más imágenes ≠ mejor (riesgo de
-  LoRA sobreentrenada).
+  LoRA sobreentrenada). Este generador da hasta 50 vistas: genera de
+  sobra y ELIGE las mejores (el botón ⚖ Equilibrado cura una selección).
 • DISTRIBUCIÓN por encuadre (ejemplo oficial para 30 imágenes):
   ~12 retratos, ~6 medios, ~8 cuerpo entero, 8-10 de pie.
   Máximo 3-6 imágenes por término/etiqueta.
@@ -341,7 +342,8 @@ _CONSEJOS_ESTILO = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE ESTILO
 ==================================================
 (fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)
 
-• CANTIDAD: 20-40 imágenes de SUJETOS VARIADOS (este generador ya da hasta 30).
+• CANTIDAD: 20-40 imágenes de SUJETOS VARIADOS (este generador da hasta 50:
+  genera de sobra y ELIGE las mejores).
 • CLAVE DEL ESTILO — VARÍA EL SUJETO: lo que enseña el estilo es la VARIEDAD
   de contenidos renderizados igual. Si todo son retratos, el LoRA aprenderá
   "retratos en este estilo", no el estilo en general. Mezcla personas,
@@ -364,7 +366,7 @@ _CONSEJOS_OBJETO = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE OBJETO / PRO
 • CANTIDAD: 20-40 vistas del MISMO objeto desde ángulos distintos.
 • CLAVE — MUCHAS VISTAS: frontal, laterales, 3/4, superior, inferior, posterior
   y primeros planos de detalle. Así el LoRA aprende la forma 3D COMPLETA y no
-  solo una cara (este generador ya da hasta 30 vistas).
+  solo una cara (este generador da hasta 50 vistas: genera de sobra y ELIGE).
 • FONDOS: varía el fondo y el contexto (estudio, superficie natural, lifestyle)
   — si repites fondo, el LoRA lo absorberá. Máx. 3-6 imágenes por fondo.
 • ILUMINACIÓN: varía la luz (suave, dramática, contraluz) para un LoRA robusto.
@@ -382,7 +384,7 @@ _CONSEJOS_PAISAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PAISAJE / L
 • CLAVE — VARÍA CONDICIONES: encuadre (panorámica, detalle, aéreo), luz
   (amanecer, mediodía, hora dorada, noche), clima (niebla, lluvia, nieve) y
   estación. Así el LoRA captura el LUGAR/BIOMA en todas sus condiciones
-  (este generador ya da hasta 30 encuadres).
+  (este generador da hasta 50 encuadres: genera de sobra y ELIGE).
 • SIN PERSONAS: un LoRA de paisaje no debe incluir gente (el negative ya la excluye).
 • RESOLUCIÓN: 1024x1024 (o formato panorámico) para SDXL / Flux / SD 3.5.
 • CAPTIONS: describe el encuadre, la luz y el clima, NO el bioma en sí.

@@ -51,7 +51,7 @@ def _llm_fake(system, user):
 
 class TestAvatarConfig:
     def test_angulos_canonicos(self):
-        assert len(AVATAR_ANGLES) == 30
+        assert len(AVATAR_ANGLES) == 50
         assert DEFAULT_ANGLE_SET == list(AVATAR_ANGLES.keys())
         # Todos los grupos referenciados existen en ANGLE_GROUPS
         grupos_usados = {d["group"] for d in AVATAR_ANGLES.values()}
@@ -260,7 +260,7 @@ class TestEnsamblarDataset:
         # en TODAS las tomas. La ropa solo se omite en los primeros planos.
         ds = ensamblar_dataset("ohwx_ana", DESC, DEFAULT_ANGLE_SET,
                                "photorealistic", "gray background")
-        assert len(ds) == 30
+        assert len(ds) == 50
         core = DESC.split(", wearing")[0]  # identidad sin ropa
         for item in ds:
             assert core in item["prompt"]
@@ -396,7 +396,7 @@ class TestRotacionFondos:
 class TestDatasetEdicion:
     def test_prompts_de_edicion(self):
         ds = ensamblar_dataset_edicion("ohwx_t", DEFAULT_ANGLE_SET, "gray bg")
-        assert len(ds) == 30
+        assert len(ds) == 50
 
     def test_prompt_frontal_conserva_identidad_y_cambia_camara(self):
         # Las tomas frontales (la pose ya coincide con la referencia) clavan
@@ -495,8 +495,8 @@ class TestPipeline:
             DEFAULT_ANGLE_SET, "photorealistic", "gray bg")
         assert r["trigger_word"] == "ohwx_ana"
         assert r["descripcion_canonica"] == DESC
-        assert r["total_prompts"] == 30
-        assert len(r["dataset"]) == 30
+        assert r["total_prompts"] == 50
+        assert len(r["dataset"]) == 50
 
     def test_adaptar_modelo_sin_negative_vacia_negatives(self):
         r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")

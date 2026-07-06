@@ -240,14 +240,160 @@ AVATAR_ANGLES = {
         "filename": "30_pose_hands_pockets",
         "group": "poses",
     },
+
+    # --- AMPLIACIÓN A 50 (2026-07-06): genera de sobra y ELIGE ---
+    # Mismas convenciones: los rostros empiezan por "close-up headshot", los
+    # bustos por "upper body" y los cuerpos enteros llevan "full body" +
+    # pies visibles (así heredan el negative correcto de avatar_prompts).
+    "face_up": {
+        "label": "Rostro — mirando arriba",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, lower body out of frame, front view, chin tilted up, eyes looking upward above the camera",
+        "framing": "close-up portrait, looking up",
+        "filename": "31_face_up",
+        "group": "rostro",
+    },
+    "face_down": {
+        "label": "Rostro — mirando abajo",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, lower body out of frame, front view, chin tilted down, eyes looking downward",
+        "framing": "close-up portrait, looking down",
+        "filename": "32_face_down",
+        "group": "rostro",
+    },
+    "face_tilt": {
+        "label": "Rostro — cabeza ladeada",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, lower body out of frame, front view, head tilted slightly to one side, relaxed natural look",
+        "framing": "close-up portrait, tilted head",
+        "filename": "33_face_tilt",
+        "group": "rostro",
+    },
+    "bust_profile_left": {
+        "label": "Busto — perfil izquierdo",
+        "prompt": "upper body shot, head to chest, cropped at the waist, legs not visible, full left side profile, body and head facing left",
+        "framing": "upper body, left profile",
+        "filename": "34_bust_profile_left",
+        "group": "busto",
+    },
+    "bust_profile_right": {
+        "label": "Busto — perfil derecho",
+        "prompt": "upper body shot, head to chest, cropped at the waist, legs not visible, full right side profile, body and head facing right",
+        "framing": "upper body, right profile",
+        "filename": "35_bust_profile_right",
+        "group": "busto",
+    },
+    "bust_back": {
+        "label": "Busto — espalda (peinado)",
+        "prompt": "upper body shot from behind, head to chest, cropped at the waist, back view showing the hairstyle and shoulders, head facing away from camera",
+        "framing": "upper body, back view",
+        "filename": "36_bust_back",
+        "group": "busto",
+    },
+    "full_profile_left": {
+        "label": "Cuerpo entero — perfil izquierdo",
+        "prompt": "full body shot, standing upright in full left side profile, entire body visible from head to feet, both feet and shoes on the floor, complete figure with floor below, no cropping",
+        "framing": "full body, left profile",
+        "filename": "37_full_profile_left",
+        "group": "cuerpo",
+    },
+    "full_profile_right": {
+        "label": "Cuerpo entero — perfil derecho",
+        "prompt": "full body shot, standing upright in full right side profile, entire body visible from head to feet, both feet and shoes on the floor, complete figure with floor below, no cropping",
+        "framing": "full body, right profile",
+        "filename": "38_full_profile_right",
+        "group": "cuerpo",
+    },
+    "full_34_back": {
+        "label": "Cuerpo entero — 3/4 espalda",
+        "prompt": "full body shot, body turned three-quarter away from camera showing the back and one shoulder, entire body visible from head to feet, both feet and shoes on the floor, no cropping",
+        "framing": "full body, three-quarter back",
+        "filename": "39_full_34_back",
+        "group": "cuerpo",
+    },
+    "expression_sad": {
+        "label": "Expresión — tristeza",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, sad melancholic expression, downcast eyes",
+        "framing": "close-up portrait, sad",
+        "filename": "40_expression_sad",
+        "group": "extras",
+    },
+    "expression_wink": {
+        "label": "Expresión — guiño",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, playful wink, one eye closed, light smile",
+        "framing": "close-up portrait, winking",
+        "filename": "41_expression_wink",
+        "group": "extras",
+    },
+    "expression_smirk": {
+        "label": "Expresión — sonrisa pícara",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, confident smirk, one raised eyebrow",
+        "framing": "close-up portrait, smirking",
+        "filename": "42_expression_smirk",
+        "group": "extras",
+    },
+    "expression_talking": {
+        "label": "Expresión — hablando",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, mid-speech expression, mouth slightly open as if talking, engaged look",
+        "framing": "close-up portrait, talking",
+        "filename": "43_expression_talking",
+        "group": "extras",
+    },
+    "expression_side_glance": {
+        "label": "Expresión — mirada de reojo",
+        "prompt": "close-up headshot, head and shoulders only, cropped at the chest, front view, eyes glancing to the side, subtle intriguing look",
+        "framing": "close-up portrait, side glance",
+        "filename": "44_expression_side_glance",
+        "group": "extras",
+    },
+    "pose_kneeling": {
+        "label": "Pose — de rodillas",
+        "prompt": "whole figure visible, kneeling on the ground with upright torso, hands resting on the thighs, neutral background",
+        "framing": "whole figure, kneeling",
+        "filename": "45_pose_kneeling",
+        "group": "poses",
+    },
+    "pose_crouching": {
+        "label": "Pose — en cuclillas",
+        "prompt": "whole figure visible, crouching low on the balls of the feet, arms resting on the knees, compact pose, neutral background",
+        "framing": "whole figure, crouching",
+        "filename": "46_pose_crouching",
+        "group": "poses",
+    },
+    "pose_jumping": {
+        "label": "Pose — saltando",
+        "prompt": "full body shot, jumping in mid-air, both feet off the ground and visible, dynamic joyful leap, entire body visible, no cropping",
+        "framing": "full body, jumping mid-air",
+        "filename": "47_pose_jumping",
+        "group": "poses",
+    },
+    "pose_running": {
+        "label": "Pose — corriendo",
+        "prompt": "full body shot, running stride mid-motion, dynamic movement, entire body visible from head to feet, no cropping",
+        "framing": "full body, running",
+        "filename": "48_pose_running",
+        "group": "poses",
+    },
+    "pose_arms_up": {
+        "label": "Pose — brazos en alto",
+        "prompt": "full body shot, standing with both arms raised above the head, stretching upward, entire body visible from head to feet, both feet on the floor, no cropping",
+        "framing": "full body, arms raised",
+        "filename": "49_pose_arms_up",
+        "group": "poses",
+    },
+    "pose_lean_wall": {
+        "label": "Pose — apoyada en pared",
+        "prompt": "full body shot, leaning casually against a plain wall, one leg crossed over the other, relaxed stance, entire body visible from head to feet, both feet visible, no cropping",
+        "framing": "full body, leaning against wall",
+        "filename": "50_pose_lean_wall",
+        "group": "poses",
+    },
 }
 
-# Set por defecto recomendado para un LoRA de personaje (30 vistas)
+# Set por defecto: TODAS las vistas (50). La idea es generar de sobra y
+# ELEGIR 25-40 según la guía SeaArt (el botón ⚖ Equilibrado cura 22).
 DEFAULT_ANGLE_SET = list(AVATAR_ANGLES.keys())
 
 # Selección EQUILIBRADA (botón "⚖ Equilibrado"): para personaje la guía SeaArt
 # pide ~60% planos de control (rostro/busto/cuerpo neutros, para memorizar ropa
-# y rasgos) y limitar expresiones extremas a 4-5. "Todos los 30" hace lo
+# y rasgos) y limitar expresiones extremas a 4-5. "Todos los 50" hace lo
 # contrario (sobran expresiones/poses), así que aquí curamos: 12 control + 4
 # expresiones + 4 poses + 2 ángulos de cámara = 22 (control = 55%).
 AVATAR_BALANCED_ANGLE_SET = [
@@ -610,6 +756,153 @@ LANDSCAPE_ANGLES = {
         "filename": "30_tilt_shift",
         "group": "tecnica",
     },
+
+    # --- AMPLIACIÓN A 50 (2026-07-06): genera de sobra y ELIGE ---
+    "ls_vertical": {
+        "label": "Formato vertical (9:16)",
+        "prompt": "vertical landscape composition, tall scene emphasizing height, strong foreground leading upward to the sky, no people",
+        "framing": "vertical composition",
+        "filename": "31_vertical",
+        "group": "composicion",
+        "ratio": "9:16",  # el único plano de paisaje pensado en vertical
+    },
+    "ls_symmetry": {
+        "label": "Simetría central",
+        "prompt": "perfectly symmetrical landscape composition, centered subject, mirrored balance left and right, no people",
+        "framing": "symmetrical composition",
+        "filename": "32_symmetry",
+        "group": "composicion",
+        "ratio": "3:2",
+    },
+    "ls_diagonal": {
+        "label": "Composición diagonal",
+        "prompt": "landscape with strong diagonal lines crossing the frame, slopes and ridgelines, dynamic tension, no people",
+        "framing": "diagonal composition",
+        "filename": "33_diagonal",
+        "group": "composicion",
+        "ratio": "3:2",
+    },
+    "ls_low_horizon": {
+        "label": "Horizonte bajo (cielo protagonista)",
+        "prompt": "landscape with very low horizon line, sky filling most of the frame, dramatic cloudscape above, no people",
+        "framing": "low horizon, sky dominant",
+        "filename": "34_low_horizon",
+        "group": "composicion",
+    },
+    "ls_high_horizon": {
+        "label": "Horizonte alto (suelo protagonista)",
+        "prompt": "landscape with high horizon line, terrain filling most of the frame, patterns and textures of the land, no people",
+        "framing": "high horizon, land dominant",
+        "filename": "35_high_horizon",
+        "group": "composicion",
+        "ratio": "3:2",  # el "textures" del prompt no debe volverlo 1:1
+    },
+    "ls_telephoto": {
+        "label": "Teleobjetivo (compresión)",
+        "prompt": "telephoto compressed landscape, distant layers stacked together, flattened perspective, tight crop of faraway scenery, no people",
+        "framing": "telephoto compression",
+        "filename": "36_telephoto",
+        "group": "composicion",
+        "ratio": "3:2",
+    },
+    "ls_autumn_leaves": {
+        "label": "Hojas de otoño (detalle)",
+        "prompt": "close-up of autumn foliage, colorful fallen leaves, warm oranges and reds, soft light, no people",
+        "framing": "autumn foliage close-up",
+        "filename": "37_autumn_leaves",
+        "group": "detalle",
+    },
+    "ls_ice_detail": {
+        "label": "Detalle de hielo",
+        "prompt": "close-up of ice formations, frozen textures, crystalline detail, cold blue tones, no people",
+        "framing": "ice close-up detail",
+        "filename": "38_ice_detail",
+        "group": "detalle",
+    },
+    "ls_sand_texture": {
+        "label": "Textura de arena / dunas",
+        "prompt": "close-up of sand patterns and ripples, wind-carved texture, warm tones, raking light, no people",
+        "framing": "sand texture close-up",
+        "filename": "39_sand_texture",
+        "group": "detalle",
+    },
+    "ls_moss_bark": {
+        "label": "Musgo y corteza",
+        "prompt": "close-up of moss and tree bark, rich green texture, forest floor detail, soft diffused light, no people",
+        "framing": "moss and bark close-up",
+        "filename": "40_moss_bark",
+        "group": "detalle",
+    },
+    "ls_god_rays": {
+        "label": "Rayos crepusculares (god rays)",
+        "prompt": "landscape with god rays, sunbeams breaking through clouds or trees, volumetric light shafts, no people",
+        "framing": "god rays, volumetric light",
+        "filename": "41_god_rays",
+        "group": "luz",
+    },
+    "ls_milky_way": {
+        "label": "Vía Láctea",
+        "prompt": "night landscape under the milky way, star-filled sky, galactic core visible, dark foreground silhouette, no people",
+        "framing": "milky way night sky",
+        "filename": "42_milky_way",
+        "group": "luz",
+    },
+    "ls_aurora": {
+        "label": "Aurora boreal",
+        "prompt": "landscape under the aurora borealis, green and violet lights dancing in the night sky, snowy foreground, no people",
+        "framing": "aurora borealis",
+        "filename": "43_aurora",
+        "group": "luz",
+    },
+    "ls_lightning": {
+        "label": "Tormenta eléctrica (rayos)",
+        "prompt": "stormy landscape with a lightning bolt striking in the distance, dramatic dark clouds, electric illumination, no people",
+        "framing": "lightning storm",
+        "filename": "44_lightning",
+        "group": "luz",
+    },
+    "ls_rainbow": {
+        "label": "Arcoíris",
+        "prompt": "landscape with a vivid rainbow after the rain, clearing storm clouds, fresh saturated colors, no people",
+        "framing": "rainbow after rain",
+        "filename": "45_rainbow",
+        "group": "clima",
+    },
+    "ls_frost": {
+        "label": "Escarcha matinal",
+        "prompt": "frosty morning landscape, frost covering grass and branches, crisp cold air, pale early light, no people",
+        "framing": "morning frost",
+        "filename": "46_frost",
+        "group": "clima",
+    },
+    "ls_dust_storm": {
+        "label": "Tormenta de polvo / arena",
+        "prompt": "arid landscape with an approaching dust storm, hazy wall of sand on the horizon, dramatic ochre tones, no people",
+        "framing": "dust storm, arid",
+        "filename": "47_dust_storm",
+        "group": "clima",
+    },
+    "ls_black_white": {
+        "label": "Blanco y negro",
+        "prompt": "black and white fine art landscape, dramatic tonal contrast, monochrome photography, rich texture, no people",
+        "framing": "black and white, monochrome",
+        "filename": "48_black_white",
+        "group": "tecnica",
+    },
+    "ls_drone_low": {
+        "label": "Dron a baja altura",
+        "prompt": "low altitude drone shot gliding over the terrain, oblique aerial perspective, sense of depth and scale, no people",
+        "framing": "low drone, oblique aerial",
+        "filename": "49_drone_low",
+        "group": "tecnica",
+    },
+    "ls_star_trails": {
+        "label": "Círculos de estrellas (startrails)",
+        "prompt": "long exposure star trails circling in the night sky above the landscape, concentric arcs of light, no people",
+        "framing": "star trails, long exposure",
+        "filename": "50_star_trails",
+        "group": "tecnica",
+    },
 }
 
 LANDSCAPE_ANGLE_GROUPS = {
@@ -881,6 +1174,150 @@ OBJECT_ANGLES = {
         "filename": "30_collection",
         "group": "contexto",
     },
+
+    # --- AMPLIACIÓN A 50 (2026-07-06): genera de sobra y ELIGE ---
+    "obj_34_back_left": {
+        "label": "3/4 trasera izquierda",
+        "prompt": "three-quarter back left angle product shot, showing the back and left side of the object, clean background, studio lighting",
+        "framing": "three-quarter back left",
+        "filename": "31_34_back_left",
+        "group": "vistas",
+    },
+    "obj_34_back_right": {
+        "label": "3/4 trasera derecha",
+        "prompt": "three-quarter back right angle product shot, showing the back and right side of the object, clean background, studio lighting",
+        "framing": "three-quarter back right",
+        "filename": "32_34_back_right",
+        "group": "vistas",
+    },
+    "obj_tilted": {
+        "label": "Inclinado (ángulo dinámico)",
+        "prompt": "product shot with the object tilted at a dynamic diagonal angle, floating tension, bold composition, clean background",
+        "framing": "tilted dynamic angle",
+        "filename": "33_tilted",
+        "group": "vistas",
+        "warn": "Ángulo muy marcado — recomendado máx. 1-2 en el dataset.",
+    },
+    "obj_exploded": {
+        "label": "Vista explotada (piezas)",
+        "prompt": "exploded view product shot, parts separated and floating in alignment, technical presentation, clean background",
+        "framing": "exploded view",
+        "filename": "34_exploded",
+        "group": "vistas",
+        "warn": "Vista técnica agresiva — recomendado máx. 1-2 en el dataset.",
+    },
+    "obj_interior_detail": {
+        "label": "Detalle interior",
+        "prompt": "close-up of the interior of the object, inner construction and lining visible, sharp focus, controlled light",
+        "framing": "interior detail",
+        "filename": "35_interior_detail",
+        "group": "detalle",
+    },
+    "obj_base_detail": {
+        "label": "Detalle de base / soporte",
+        "prompt": "close-up of the base or underside support of the object, feet stand or bottom finish detail, sharp focus",
+        "framing": "base and stand detail",
+        "filename": "36_base_detail",
+        "group": "detalle",
+    },
+    "obj_engraving": {
+        "label": "Detalle de grabado / relieve",
+        "prompt": "extreme close-up macro of engraving or embossed relief on the object surface, raking light revealing depth",
+        "framing": "engraving relief macro",
+        "filename": "37_engraving",
+        "group": "detalle",
+    },
+    "obj_top_detail": {
+        "label": "Detalle superior (tapa)",
+        "prompt": "close-up of the top part of the object, cap lid or upper edge detail, sharp focus, shallow depth of field",
+        "framing": "top part detail",
+        "filename": "38_top_detail",
+        "group": "detalle",
+    },
+    "obj_packaging": {
+        "label": "Con su packaging",
+        "prompt": "product shot next to its box or packaging, retail presentation, clean studio setting, no people",
+        "framing": "with packaging",
+        "filename": "39_packaging",
+        "group": "contexto",
+    },
+    "obj_on_shelf": {
+        "label": "En estantería",
+        "prompt": "product displayed on a shelf, retail or home context, neat arrangement, ambient light, no people",
+        "framing": "on a shelf",
+        "filename": "40_on_shelf",
+        "group": "contexto",
+    },
+    "obj_mirror_surface": {
+        "label": "Sobre superficie espejo",
+        "prompt": "product shot on a reflective mirror surface, clean symmetrical reflection below the object, studio lighting",
+        "framing": "mirror surface reflection",
+        "filename": "41_mirror_surface",
+        "group": "contexto",
+    },
+    "obj_water_splash": {
+        "label": "Salpicadura de agua",
+        "prompt": "dynamic product shot with a water splash frozen in motion around the object, high speed photography look, clean background",
+        "framing": "water splash, high speed",
+        "filename": "42_water_splash",
+        "group": "contexto",
+    },
+    "obj_smoke": {
+        "label": "Humo / niebla ambiental",
+        "prompt": "product shot surrounded by wisps of smoke or mist, atmospheric mood, dark background, dramatic light",
+        "framing": "smoke and mist mood",
+        "filename": "43_smoke",
+        "group": "contexto",
+    },
+    "obj_colored_backdrop": {
+        "label": "Fondo de color liso",
+        "prompt": "product shot on a bold solid color backdrop, complementary color contrast, modern commercial look, even lighting",
+        "framing": "solid color backdrop",
+        "filename": "44_colored_backdrop",
+        "group": "contexto",
+    },
+    "obj_gradient_backdrop": {
+        "label": "Fondo degradado",
+        "prompt": "product shot on a smooth gradient backdrop, soft color transition behind the object, clean commercial lighting",
+        "framing": "gradient backdrop",
+        "filename": "45_gradient_backdrop",
+        "group": "contexto",
+    },
+    "obj_window_light": {
+        "label": "Luz natural de ventana",
+        "prompt": "product shot lit by soft window light, gentle shadows, natural daylight mood, lifestyle setting, no people",
+        "framing": "window light, natural",
+        "filename": "46_window_light",
+        "group": "contexto",
+    },
+    "obj_spotlight": {
+        "label": "Foco puntual (spotlight)",
+        "prompt": "product shot under a single spotlight beam, pool of light on dark surroundings, theatrical presentation",
+        "framing": "single spotlight",
+        "filename": "47_spotlight",
+        "group": "contexto",
+    },
+    "obj_texture_backdrop": {
+        "label": "Fondo con textura (tela/papel)",
+        "prompt": "product shot on a textured backdrop such as linen fabric or craft paper, tactile warm setting, soft light",
+        "framing": "textured backdrop",
+        "filename": "48_texture_backdrop",
+        "group": "contexto",
+    },
+    "obj_wet_surface": {
+        "label": "Superficie mojada (gotas)",
+        "prompt": "product shot on a wet surface with water droplets, fresh glossy look, subtle reflections, controlled studio light",
+        "framing": "wet surface, droplets",
+        "filename": "49_wet_surface",
+        "group": "contexto",
+    },
+    "obj_neon": {
+        "label": "Neón / luz de color",
+        "prompt": "product shot with colored neon lighting, vibrant rim lights in contrasting hues, dark moody background",
+        "framing": "neon colored lighting",
+        "filename": "50_neon",
+        "group": "contexto",
+    },
 }
 
 OBJECT_ANGLE_GROUPS = {
@@ -893,7 +1330,8 @@ OBJECT_DEFAULT_ANGLE_SET = list(OBJECT_ANGLES.keys())
 # Objeto: el set equilibrado excluye las vistas más agresivas (inferior,
 # isométrica, contrapicado heroico) que sesgan el dataset si se abusa de ellas
 # (máx. 1-2 recomendado). Deja la flat-lay y el picado 45º como cenitales suaves.
-_OBJECT_VISTAS_AGRESIVAS = {"obj_bottom", "obj_isometric", "obj_hero_low"}
+_OBJECT_VISTAS_AGRESIVAS = {"obj_bottom", "obj_isometric", "obj_hero_low",
+                            "obj_tilted", "obj_exploded"}
 OBJECT_BALANCED_ANGLE_SET = [
     k for k in OBJECT_ANGLES if k not in _OBJECT_VISTAS_AGRESIVAS
 ]
@@ -1148,6 +1586,150 @@ STYLE_ANGLES = {
         "filename": "30_pattern",
         "group": "detalles",
     },
+
+    # --- AMPLIACIÓN A 50 (2026-07-06): más sujetos = más variedad de estilo ---
+    "sty_portrait_profile": {
+        "label": "Retrato — perfil",
+        "prompt": "portrait of a person in full side profile, head and shoulders, elegant contour, neutral setting",
+        "framing": "portrait, side profile",
+        "filename": "31_portrait_profile",
+        "group": "sujetos",
+    },
+    "sty_couple": {
+        "label": "Pareja",
+        "prompt": "two people together in a warm moment, medium shot, natural interaction, balanced composition",
+        "framing": "couple, medium shot",
+        "filename": "32_couple",
+        "group": "sujetos",
+    },
+    "sty_dancer": {
+        "label": "Bailarín/a en movimiento",
+        "prompt": "a dancer in mid-movement, flowing motion, expressive full body pose, minimal setting",
+        "framing": "dancer in motion",
+        "filename": "33_dancer",
+        "group": "sujetos",
+    },
+    "sty_musician": {
+        "label": "Músico con instrumento",
+        "prompt": "a musician playing an instrument, medium shot, focused expression, atmospheric setting",
+        "framing": "musician, medium shot",
+        "filename": "34_musician",
+        "group": "sujetos",
+    },
+    "sty_desert": {
+        "label": "Desierto",
+        "prompt": "desert scene with dunes or arid terrain, vast dry landscape, warm tones, no people",
+        "framing": "desert scene",
+        "filename": "35_desert",
+        "group": "naturaleza",
+    },
+    "sty_waterfall": {
+        "label": "Cascada",
+        "prompt": "waterfall scene, falling water and rocks, lush surroundings, mist in the air, no people",
+        "framing": "waterfall scene",
+        "filename": "36_waterfall",
+        "group": "naturaleza",
+    },
+    "sty_snow_scene": {
+        "label": "Paisaje nevado",
+        "prompt": "snowy winter scene, snow-covered terrain and trees, cold tones, quiet atmosphere, no people",
+        "framing": "snowy winter scene",
+        "filename": "37_snow_scene",
+        "group": "naturaleza",
+    },
+    "sty_starry_night": {
+        "label": "Cielo estrellado",
+        "prompt": "starry night sky scene over a dark landscape, stars and constellations, deep blues, no people",
+        "framing": "starry night scene",
+        "filename": "38_starry_night",
+        "group": "naturaleza",
+    },
+    "sty_underwater": {
+        "label": "Escena submarina",
+        "prompt": "underwater scene, light rays filtering through the water, marine life or coral, blue depths, no people",
+        "framing": "underwater scene",
+        "filename": "39_underwater",
+        "group": "naturaleza",
+    },
+    "sty_night_city": {
+        "label": "Ciudad nocturna",
+        "prompt": "city street at night, glowing lights and signs, reflections on wet pavement, no people",
+        "framing": "night city scene",
+        "filename": "40_night_city",
+        "group": "urbano_objetos",
+    },
+    "sty_bridge": {
+        "label": "Puente",
+        "prompt": "a large bridge structure spanning water or a valley, engineering lines, dramatic perspective, no people",
+        "framing": "bridge structure",
+        "filename": "41_bridge",
+        "group": "urbano_objetos",
+        "ratio": "3:2",  # estructura horizontal; sin cue de escena en el prompt
+    },
+    "sty_cafe_interior": {
+        "label": "Interior de cafetería",
+        "prompt": "cozy cafe interior, tables cups and warm lamps, inviting atmosphere, no people",
+        "framing": "cafe interior",
+        "filename": "42_cafe_interior",
+        "group": "urbano_objetos",
+        "ratio": "3:2",  # sala completa → horizontal
+    },
+    "sty_harbor": {
+        "label": "Puerto / barcas",
+        "prompt": "harbor scene with boats moored at the dock, water reflections, maritime atmosphere, no people",
+        "framing": "harbor scene",
+        "filename": "43_harbor",
+        "group": "urbano_objetos",
+    },
+    "sty_ruins": {
+        "label": "Ruinas antiguas",
+        "prompt": "ancient ruins overgrown with vegetation, crumbling columns and stone, mysterious atmosphere, no people",
+        "framing": "ancient ruins scene",
+        "filename": "44_ruins",
+        "group": "fantasia",
+    },
+    "sty_floating_islands": {
+        "label": "Islas flotantes",
+        "prompt": "fantasy floating islands in the sky, waterfalls falling into the clouds, epic scale, no people",
+        "framing": "floating islands, sky",
+        "filename": "45_floating_islands",
+        "group": "fantasia",
+    },
+    "sty_space": {
+        "label": "Espacio / planetas",
+        "prompt": "outer space scene with planets and nebulae, cosmic colors, vast scale, no people",
+        "framing": "outer space scene",
+        "filename": "46_space",
+        "group": "fantasia",
+    },
+    "sty_fabric": {
+        "label": "Tela / pliegues",
+        "prompt": "close-up of draped fabric with flowing folds, texture and light interplay, rich material detail",
+        "framing": "fabric folds close-up",
+        "filename": "47_fabric",
+        "group": "detalles",
+    },
+    "sty_glass": {
+        "label": "Cristal / transparencia",
+        "prompt": "close-up of glass objects, transparency and refraction, light passing through, delicate highlights",
+        "framing": "glass close-up",
+        "filename": "48_glass",
+        "group": "detalles",
+    },
+    "sty_rain_window": {
+        "label": "Lluvia en la ventana",
+        "prompt": "raindrops on a window pane, blurred lights behind the glass, melancholic mood, close-up detail",
+        "framing": "rain on window close-up",
+        "filename": "49_rain_window",
+        "group": "detalles",
+    },
+    "sty_fire_smoke": {
+        "label": "Fuego y humo",
+        "prompt": "flames and smoke composition, glowing embers, dramatic light and movement, no people",
+        "framing": "fire and smoke",
+        "filename": "50_fire_smoke",
+        "group": "variedad",
+    },
 }
 
 STYLE_ANGLE_GROUPS = {
@@ -1160,9 +1742,9 @@ STYLE_ANGLE_GROUPS = {
 }
 
 STYLE_DEFAULT_ANGLE_SET = list(STYLE_ANGLES.keys())
-# Estilo: los 30 ya reparten ~6 humanos / ~9 entornos / ~7 objetos / ~8
-# detalles-fantasía-abstracto (cerca de 25% cada categoría), que es lo que
-# enseña el ESTILO sin sesgar a un solo sujeto → equilibrado = completo.
+# Estilo: los 50 reparten humanos / entornos / objetos / detalles-fantasía
+# a ~25% cada categoría, que es lo que enseña el ESTILO sin sesgar a un
+# solo sujeto → equilibrado = completo (genera de sobra y elige).
 STYLE_BALANCED_ANGLE_SET = list(STYLE_ANGLES.keys())
 
 STYLE_FORM_FIELDS = [
