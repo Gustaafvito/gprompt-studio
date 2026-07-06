@@ -461,6 +461,19 @@ class TestDatasetEdicion:
                   encoding="utf-8") as f:
             assert "MODO EDICIÓN" in f.read()
 
+    def test_export_edicion_escribe_ratio(self, tmp_path):
+        # El modo edición debe traer el RATIO SUGERIDO igual que los
+        # prompts text-to-image (antes se perdía al escribir la carpeta).
+        r = generar_dataset_avatar(_llm_fake, {}, "t", ["full_front"], "", "bg")
+        r["dataset_edicion"] = ensamblar_dataset_edicion("t", ["full_front"], "bg")
+        base = exportar_dataset(r, str(tmp_path))
+        with open(os.path.join(base, "prompts_edicion", "09_full_front.txt"),
+                  encoding="utf-8") as f:
+            assert "RATIO SUGERIDO: 9:16" in f.read()
+        with open(os.path.join(base, "prompts_edicion_todos.txt"),
+                  encoding="utf-8") as f:
+            assert "[ratio 9:16]" in f.read()
+
     def test_export_sin_edicion_no_crea_carpeta(self, tmp_path):
         r = generar_dataset_avatar(_llm_fake, {}, "t", ["face_front"], "", "bg")
         base = exportar_dataset(r, str(tmp_path))

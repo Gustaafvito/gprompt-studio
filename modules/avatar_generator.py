@@ -270,13 +270,18 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         ]
         for item in resultado["dataset_edicion"]:
             nombre = item["filename"]
-            contenido = f"PROMPT (edición):\n{item['prompt']}\n"
+            ratio = item.get("ratio", "")
+            ratio_linea = f"RATIO SUGERIDO: {ratio}\n\n" if ratio else ""
+
+            contenido = f"{ratio_linea}PROMPT (edición):\n{item['prompt']}\n"
             if item["negative"]:
                 contenido += f"\nNEGATIVE PROMPT:\n{item['negative']}\n"
             with open(os.path.join(dir_edicion, f"{nombre}.txt"), "w",
                       encoding="utf-8") as f:
                 f.write(contenido)
-            lineas_ed.append(f"=== {nombre} | {item['label']} ===\n{item['prompt']}\n")
+            cab_ratio = f"  [ratio {ratio}]" if ratio else ""
+            lineas_ed.append(
+                f"=== {nombre} | {item['label']}{cab_ratio} ===\n{item['prompt']}\n")
         with open(os.path.join(base, "prompts_edicion_todos.txt"), "w",
                   encoding="utf-8") as f:
             f.write("\n".join(lineas_ed))
