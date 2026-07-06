@@ -102,10 +102,11 @@ class AvatarFrame(ctk.CTkFrame):
         ctk.CTkLabel(fila_tipo, text=tr("Tipo de LoRA:"),
                      font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left", padx=(0, 8))
         # El segmented muestra la traducción; el mapa recupera el tipo ES
-        # ("Personaje"...) que es la clave de LORA_TYPES.
+        # ("Personaje"...) que es la clave de LORA_TYPES. Se deriva de
+        # LORA_TYPES para que los tipos nuevos aparezcan solos.
         self._tipo_disp2key = {
-            tr(v): v.split(" ", 1)[1]
-            for v in ("🧑 Personaje", "🏔 Paisaje", "📦 Objeto", "🎨 Estilo")
+            tr(f"{cfg['icon']} {t}"): t
+            for t, cfg in LORA_TYPES.items()
         }
         self._seg_tipo = ctk.CTkSegmentedButton(
             fila_tipo,

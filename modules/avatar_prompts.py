@@ -507,6 +507,63 @@ EJEMPLO:
 {"trigger": "ohwx_estilo_grabado", "nombre_estilo": "grabado en madera xilografía", "artista_ref": "Hokusai", "tecnica": "Grabado / Litografía", "paleta": "negro y blanco con toques de rojo bermellón", "rasgos_estilo": "líneas paralelas de corte manual, texturas rugosas, alto contraste, siluetas planas", "epoca": "Edo japonés, 1800s"}"""
 
 
+# ---------------------------------------------------------------------------
+# TIPO NSFW (18+) — descripción canónica SIN ropa (el vestuario va por toma)
+# ---------------------------------------------------------------------------
+SYSTEM_PROMPT_NSFW_CANONICO = """Eres un experto en prompts para generación de imágenes con IA, especializado en CONSISTENCIA DE PERSONAJE para datasets de entrenamiento LoRA de contenido adulto (18+).
+
+Tu tarea: convertir la ficha que recibirás en UNA ÚNICA descripción canónica en INGLÉS del sujeto.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO la descripción, en una sola línea, sin comillas, sin preámbulo, sin explicaciones, sin markdown.
+2. Idioma de salida: inglés. La ficha llega en español.
+3. Longitud: entre 40 y 70 palabras. Compacta pero completa.
+4. La descripción DEBE empezar por "adult" e incluir la franja de edad de la ficha (p.ej. "adult woman in her late 20s"). El sujeto es SIEMPRE un adulto.
+5. NO incluyas ropa NI vestuario: cada toma del dataset define el suyo. Describe cara, pelo, ojos, piel, complexión y los detalles de coherencia del cuerpo (tatuajes, lunares...).
+6. NO describas pose, encuadre, fondo ni iluminación (van por toma).
+7. Rasgos CONCRETOS y verificables (color + forma + detalle), nada de adjetivos vagos."""
+
+
+def construir_user_prompt_nsfw(form_data: dict) -> str:
+    """Convierte el formulario NSFW en el mensaje de usuario para el LLM."""
+    etiquetas = {
+        "genero": "Género",
+        "edad": "Edad aparente",
+        "etnia_piel": "Tono de piel / etnia",
+        "pelo": "Pelo",
+        "ojos": "Ojos",
+        "rasgos": "Rasgos distintivos",
+        "complexion": "Complexión",
+        "cuerpo_detalle": "Cuerpo (detalles de coherencia)",
+    }
+    lineas = ["FICHA DEL PERSONAJE ADULTO (18+):"]
+    for key, etiqueta in etiquetas.items():
+        valor = (form_data.get(key) or "").strip()
+        if valor:
+            lineas.append(f"- {etiqueta}: {valor}")
+    lineas.append("\nGenera la descripción canónica (sin ropa; el vestuario va por toma).")
+    return "\n".join(lineas)
+
+
+SYSTEM_PROMPT_NSFW_FICHA = """Eres un diseñador de personajes para datasets de entrenamiento LoRA de contenido adulto (18+).
+
+Tu tarea: inventar UNA ficha de personaje ADULTO coherente y devolverla EXCLUSIVAMENTE como un objeto JSON válido.
+
+REGLAS ESTRICTAS:
+1. Salida: SOLO el JSON, sin texto antes ni después, sin markdown ni ```.
+2. Claves EXACTAS del JSON: trigger, genero, edad, etnia_piel, pelo, ojos, rasgos, complexion, cuerpo_detalle.
+3. Valores en ESPAÑOL, salvo "trigger": formato ohwx_nombre (minúsculas, sin espacios).
+4. Valores cerrados obligatorios:
+   - genero: uno de [Mujer, Hombre, Andrógino]
+   - edad: uno de [18-25, 25-35, 35-45, 45-60, 60+] — SIEMPRE adulto
+   - complexion: uno de [Delgada, Atlética, Media, Robusta, Curvy]
+5. "cuerpo_detalle": 1-2 marcas de coherencia visibles (tatuaje, lunar...) con su ubicación exacta.
+6. Descripciones físicas CONCRETAS y verificables, nada de adjetivos vagos. SIN ropa (el vestuario va por toma).
+
+EJEMPLO DE SALIDA VÁLIDA:
+{"trigger": "ohwx_vera", "genero": "Mujer", "edad": "25-35", "etnia_piel": "piel morena con subtono cálido", "pelo": "melena negra lisa hasta la cintura", "ojos": "ojos marrón oscuro grandes y rasgados", "rasgos": "lunar bajo el ojo izquierdo", "complexion": "Atlética", "cuerpo_detalle": "tatuaje pequeño de luna en la cadera derecha"}"""
+
+
 def construir_user_prompt_ficha_tipo(tipo: str, tema: str = "") -> str:
     """Devuelve el user prompt para ficha automática según el tipo de LoRA."""
     tema = (tema or "").strip()
@@ -514,6 +571,7 @@ def construir_user_prompt_ficha_tipo(tipo: str, tema: str = "") -> str:
         "Paisaje": "Inventa una ficha de paisaje",
         "Objeto": "Inventa una ficha de objeto / producto",
         "Estilo": "Inventa una ficha de estilo artístico",
+        "NSFW": "Inventa una ficha de personaje ADULTO (18+)",
     }.get(tipo, "Inventa una ficha")
     if tema:
         return f"{base} basado en: {tema}\n\nDevuelve SOLO el JSON."
@@ -526,6 +584,7 @@ def system_prompt_ficha_para_tipo(tipo: str) -> str:
         "Paisaje": SYSTEM_PROMPT_PAISAJE_FICHA,
         "Objeto": SYSTEM_PROMPT_OBJETO_FICHA,
         "Estilo": SYSTEM_PROMPT_ESTILO_FICHA,
+        "NSFW": SYSTEM_PROMPT_NSFW_FICHA,
     }.get(tipo, SYSTEM_PROMPT_AVATAR_FICHA)
 
 
@@ -536,6 +595,7 @@ def system_prompt_canonico_para_tipo(tipo: str) -> str:
         "Paisaje": SYSTEM_PROMPT_PAISAJE_CANONICO,
         "Objeto": SYSTEM_PROMPT_OBJETO_CANONICO,
         "Estilo": SYSTEM_PROMPT_ESTILO_CANONICO,
+        "NSFW": SYSTEM_PROMPT_NSFW_CANONICO,
     }.get(tipo, SYSTEM_PROMPT_AVATAR_CANONICO)
 
 
@@ -547,6 +607,8 @@ def construir_user_prompt_para_tipo(tipo: str, form_data: dict) -> str:
         return construir_user_prompt_objeto(form_data)
     if tipo == "Estilo":
         return construir_user_prompt_estilo(form_data)
+    if tipo == "NSFW":
+        return construir_user_prompt_nsfw(form_data)
     return construir_user_prompt_canonico(form_data)
 
 

@@ -1779,6 +1779,307 @@ STYLE_NEGATIVE_PROMPT = (
 
 
 # ===========================================================================
+# TIPO: NSFW (PERSONAJE ADULTO, 18+)
+# ===========================================================================
+# Dataset de identidad para LoRA de personaje ADULTO con contenido NSFW.
+# Diseño (2026-07-06, petición del usuario):
+# - SOLO sujeto en solitario (para un LoRA de identidad no hacen falta
+#   actos: se entrena la persona, no la escena). 3 niveles: lencería →
+#   sugerente (implied) → desnudo artístico.
+# - La descripción canónica NO lleva ropa (el vestuario varía por toma y
+#   lo pone cada prompt) y DEBE declarar "adult". El negative bloquea
+#   términos de menores en todas las imágenes.
+# - La luz va por toma (claroscuro, ventana...) → lighting global vacío,
+#   y el escenario también (cama, ducha) → sin selector de fondos.
+NSFW_ANGLES = {
+    # --- LENCERÍA / BOUDOIR ---
+    "nsfw_lenc_full_front": {
+        "label": "Lencería — cuerpo entero frontal",
+        "prompt": "full body shot, adult subject standing, wearing an elegant black lace lingerie set, facing camera, entire body visible from head to feet, both feet on the floor, no cropping, soft boudoir lighting",
+        "framing": "full body, black lingerie",
+        "filename": "01_lenc_full_front",
+        "group": "lenceria",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_lenc_full_back": {
+        "label": "Lencería — cuerpo entero espalda",
+        "prompt": "full body shot from behind, adult subject standing, back view, wearing an elegant black lace lingerie set, entire body visible from head to feet, no cropping, soft boudoir lighting",
+        "framing": "full body back view, lingerie",
+        "filename": "02_lenc_full_back",
+        "group": "lenceria",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_lenc_34": {
+        "label": "Lencería — 3/4",
+        "prompt": "full body shot, adult subject standing, body turned three-quarter view, wearing an elegant black lace lingerie set, entire body visible, no cropping, soft boudoir lighting",
+        "framing": "full body three-quarter, lingerie",
+        "filename": "03_lenc_34",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_bust": {
+        "label": "Lencería — busto",
+        "prompt": "upper body shot, adult subject, head to chest, cropped at the waist, wearing an elegant lace bralette, front view, soft flattering light",
+        "framing": "upper body, lace bralette",
+        "filename": "04_lenc_bust",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_seated_bed": {
+        "label": "Lencería — sentada al borde de la cama",
+        "prompt": "adult subject in elegant lingerie sitting on the edge of a bed, relaxed pose, whole figure visible, soft warm bedroom light",
+        "framing": "seated on bed edge, lingerie",
+        "filename": "05_lenc_seated_bed",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_lying_bed": {
+        "label": "Lencería — tumbada en la cama",
+        "prompt": "adult subject in elegant lingerie lying on a bed, reclined sensual pose, whole figure visible, soft warm bedroom light",
+        "framing": "lying on bed, lingerie",
+        "filename": "06_lenc_lying_bed",
+        "group": "lenceria",
+        "ratio": "3:2",  # figura reclinada → horizontal
+    },
+    "nsfw_lenc_white": {
+        "label": "Lencería blanca delicada",
+        "prompt": "adult subject standing in a delicate white lace lingerie set, soft innocent styling, whole figure visible, bright airy light",
+        "framing": "white lingerie set",
+        "filename": "07_lenc_white",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_red_satin": {
+        "label": "Lencería roja de satén",
+        "prompt": "adult subject standing in a red satin lingerie set, glossy fabric highlights, whole figure visible, warm dramatic light",
+        "framing": "red satin lingerie",
+        "filename": "08_lenc_red_satin",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_bodysuit": {
+        "label": "Body de encaje",
+        "prompt": "adult subject standing in a sheer lace bodysuit, elegant single-piece lingerie, whole figure visible, soft boudoir lighting",
+        "framing": "sheer lace bodysuit",
+        "filename": "09_lenc_bodysuit",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_stockings": {
+        "label": "Medias y liguero",
+        "prompt": "adult subject in lingerie with stockings and garter belt, seated pose showing the legs, whole figure visible, classic boudoir styling",
+        "framing": "stockings and garter belt",
+        "filename": "10_lenc_stockings",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_open_shirt": {
+        "label": "Camisa abierta (insinuante)",
+        "prompt": "adult subject wearing an unbuttoned oversized shirt over underwear, suggestive but covered, relaxed standing pose, soft morning light",
+        "framing": "open shirt, suggestive",
+        "filename": "11_lenc_open_shirt",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_towel": {
+        "label": "Toalla (recién duchada)",
+        "prompt": "adult subject wrapped in a white towel after a shower, damp hair, bare shoulders, fresh clean look, bathroom setting, soft light",
+        "framing": "wrapped in towel",
+        "filename": "12_lenc_towel",
+        "group": "lenceria",
+    },
+
+    # --- SUGERENTE (IMPLIED, sin desnudo explícito) ---
+    "nsfw_impl_sheet": {
+        "label": "Envuelta en sábana",
+        "prompt": "adult subject wrapped in a white bed sheet, bare shoulders and legs visible, implied nudity, elegant pose on a bed, soft window light",
+        "framing": "wrapped in bed sheet, implied",
+        "filename": "13_impl_sheet",
+        "group": "sugerente",
+    },
+    "nsfw_impl_back_bare": {
+        "label": "Espalda desnuda",
+        "prompt": "adult subject with bare back to the camera, back view from the waist up, no clothing on the upper body, looking away, elegant curve of the spine, soft light",
+        "framing": "bare back view, waist up",
+        "filename": "14_impl_back_bare",
+        "group": "sugerente",
+    },
+    "nsfw_impl_hands_cover": {
+        "label": "Cubierta con los brazos",
+        "prompt": "adult subject topless with arms crossed covering the chest, implied nudity, front view from the waist up, confident gaze, studio lighting",
+        "framing": "arms covering chest, implied",
+        "filename": "15_impl_hands_cover",
+        "group": "sugerente",
+    },
+    "nsfw_impl_silhouette": {
+        "label": "Silueta tras cortina (contraluz)",
+        "prompt": "adult subject nude silhouette backlit behind a sheer curtain, body outline visible but no explicit detail, artistic backlight, moody atmosphere",
+        "framing": "backlit silhouette, curtain",
+        "filename": "16_impl_silhouette",
+        "group": "sugerente",
+    },
+    "nsfw_impl_shower_glass": {
+        "label": "Tras el cristal de la ducha",
+        "prompt": "adult subject behind frosted shower glass, blurred body shape through steamy glass, implied nudity, water droplets on the glass, soft bathroom light",
+        "framing": "behind frosted shower glass",
+        "filename": "17_impl_shower_glass",
+        "group": "sugerente",
+    },
+    "nsfw_impl_over_shoulder": {
+        "label": "Mirada sobre hombro desnudo",
+        "prompt": "adult subject with bare shoulders looking back over the shoulder at the camera, upper back visible, intimate expression, close warm light",
+        "framing": "over bare shoulder look",
+        "filename": "18_impl_over_shoulder",
+        "group": "sugerente",
+    },
+    "nsfw_impl_side_curve": {
+        "label": "Perfil insinuado (curva lateral)",
+        "prompt": "adult subject nude in full side profile with arms and pose concealing explicit detail, implied nudity, elegant body curve, rim lighting on the skin",
+        "framing": "side profile curve, implied",
+        "filename": "19_impl_side_curve",
+        "group": "sugerente",
+    },
+    "nsfw_impl_bath": {
+        "label": "En la bañera (espuma)",
+        "prompt": "adult subject relaxing in a bathtub with foam covering the body, bare shoulders and knees visible, candles around, cozy intimate atmosphere",
+        "framing": "in bathtub with foam",
+        "filename": "20_impl_bath",
+        "group": "sugerente",
+        "ratio": "3:2",  # bañera horizontal
+    },
+
+    # --- DESNUDO ARTÍSTICO ---
+    "nsfw_nude_standing": {
+        "label": "Desnudo — de pie frontal",
+        "prompt": "full body artistic nude, adult subject standing, tasteful frontal pose, entire body visible from head to feet, both feet on the floor, no cropping, professional fine art photography lighting",
+        "framing": "full body nude, standing front",
+        "filename": "21_nude_standing",
+        "group": "artistico",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_nude_34": {
+        "label": "Desnudo — 3/4",
+        "prompt": "full body artistic nude, adult subject standing turned three-quarter view, elegant posture, entire body visible, no cropping, sculptural studio lighting",
+        "framing": "full body nude, three-quarter",
+        "filename": "22_nude_34",
+        "group": "artistico",
+    },
+    "nsfw_nude_back": {
+        "label": "Desnudo — espalda entera",
+        "prompt": "full body artistic nude from behind, adult subject standing, back view, entire body visible from head to feet, no cropping, soft directional light on the skin",
+        "framing": "full body nude, back view",
+        "filename": "23_nude_back",
+        "group": "artistico",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_nude_seated": {
+        "label": "Desnudo — sentado artístico",
+        "prompt": "artistic nude, adult subject seated on a stool, classic figure study pose, whole figure visible, dramatic side lighting, fine art photography",
+        "framing": "nude figure study, seated",
+        "filename": "24_nude_seated",
+        "group": "artistico",
+    },
+    "nsfw_nude_reclining": {
+        "label": "Desnudo — reclinado clásico",
+        "prompt": "artistic nude, adult subject reclining on draped fabric, classical odalisque pose, whole figure visible, painterly soft light, fine art composition",
+        "framing": "reclining nude, classical",
+        "filename": "25_nude_reclining",
+        "group": "artistico",
+        "ratio": "3:2",  # reclinado clásico → horizontal
+    },
+    "nsfw_nude_kneeling_bed": {
+        "label": "Desnudo — de rodillas en la cama",
+        "prompt": "artistic nude, adult subject kneeling on a bed, upright torso, sensual but tasteful pose, whole figure visible, warm intimate bedroom light",
+        "framing": "nude kneeling on bed",
+        "filename": "26_nude_kneeling_bed",
+        "group": "artistico",
+    },
+    "nsfw_nude_chiaroscuro": {
+        "label": "Desnudo — claroscuro",
+        "prompt": "artistic nude, adult subject, dramatic chiaroscuro lighting, deep shadows sculpting the body, dark background, low-key fine art photography",
+        "framing": "nude chiaroscuro, low key",
+        "filename": "27_nude_chiaroscuro",
+        "group": "artistico",
+    },
+    "nsfw_nude_window": {
+        "label": "Desnudo — luz de ventana",
+        "prompt": "artistic nude, adult subject standing by a large window, soft natural daylight wrapping the body, contemplative mood, whole figure visible",
+        "framing": "nude by window light",
+        "filename": "28_nude_window",
+        "group": "artistico",
+    },
+    "nsfw_nude_torso": {
+        "label": "Desnudo — torso (detalle)",
+        "prompt": "artistic nude close-up of the torso, adult subject, from shoulders to hips, sculptural skin detail, soft directional light, fine art crop",
+        "framing": "nude torso close-up",
+        "filename": "29_nude_torso",
+        "group": "artistico",
+        "neg_extra": "full body, full-length shot, wide shot, face, head",
+    },
+    "nsfw_nude_wet": {
+        "label": "Desnudo — piel mojada",
+        "prompt": "artistic nude, adult subject with wet skin and damp hair under falling water, glistening water droplets on the body, shower setting, moody light",
+        "framing": "nude wet skin, shower",
+        "filename": "30_nude_wet",
+        "group": "artistico",
+    },
+}
+
+NSFW_ANGLE_GROUPS = {
+    "lenceria": "Lencería / Boudoir",
+    "sugerente": "Sugerente (implied)",
+    "artistico": "Desnudo artístico",
+}
+
+NSFW_DEFAULT_ANGLE_SET = list(NSFW_ANGLES.keys())
+# Equilibrado NSFW: identidad primero — lencería completa (la ropa varía,
+# la cara/cuerpo se aprenden) + implied suaves + 4 desnudos artísticos de
+# control. Los más explícitos se dejan a elección manual.
+NSFW_BALANCED_ANGLE_SET = [
+    "nsfw_lenc_full_front", "nsfw_lenc_full_back", "nsfw_lenc_34",
+    "nsfw_lenc_bust", "nsfw_lenc_seated_bed", "nsfw_lenc_lying_bed",
+    "nsfw_lenc_white", "nsfw_lenc_red_satin", "nsfw_lenc_bodysuit",
+    "nsfw_lenc_stockings", "nsfw_lenc_open_shirt", "nsfw_lenc_towel",
+    "nsfw_impl_sheet", "nsfw_impl_back_bare", "nsfw_impl_hands_cover",
+    "nsfw_impl_silhouette", "nsfw_impl_over_shoulder", "nsfw_impl_bath",
+    "nsfw_nude_standing", "nsfw_nude_back", "nsfw_nude_seated",
+    "nsfw_nude_window",
+]
+
+# Ficha: como la de Personaje pero SIN ropa fija (el vestuario va por toma)
+# y con un campo de detalles del cuerpo para la coherencia entre imágenes.
+NSFW_FORM_FIELDS = [
+    {"key": "genero", "label": "Género", "type": "option",
+     "options": ["Mujer", "Hombre", "Andrógino", "Otro (describir en rasgos)"]},
+    {"key": "edad", "label": "Edad aparente", "type": "option",
+     "options": ["18-25", "25-35", "35-45", "45-60", "60+"]},
+    {"key": "etnia_piel", "label": "Tono de piel / etnia", "type": "entry",
+     "placeholder": "ej: piel clara mediterránea, piel morena..."},
+    {"key": "pelo", "label": "Pelo (color, largo, estilo)", "type": "entry",
+     "placeholder": "ej: melena castaña ondulada hasta los hombros"},
+    {"key": "ojos", "label": "Ojos (color, forma)", "type": "entry",
+     "placeholder": "ej: ojos verdes grandes y almendrados"},
+    {"key": "rasgos", "label": "Rasgos distintivos", "type": "entry",
+     "placeholder": "ej: pecas, cicatriz en ceja, hoyuelos, gafas..."},
+    {"key": "complexion", "label": "Complexión", "type": "option",
+     "options": ["Delgada", "Atlética", "Media", "Robusta", "Curvy"]},
+    {"key": "cuerpo_detalle", "label": "Cuerpo (detalles de coherencia)", "type": "entry",
+     "placeholder": "ej: tatuaje en la cadera, lunar en el hombro, pecho medio..."},
+]
+
+NSFW_STYLES = {
+    "Fotorrealista": "photorealistic, professional boudoir photography, sharp focus, detailed skin texture, 85mm lens",
+    "Anime": "anime style, clean lineart, cel shading, high quality anime illustration",
+    "Ilustración digital": "digital illustration, painterly style, detailed character art",
+    "Render 3D": "3D render, octane render, subsurface scattering, high poly character model",
+}
+
+# Negative fijo: el de Personaje (sin las cláusulas de ropa, que aquí varía
+# por toma) + BLOQUEO DURO de menores en todas las imágenes + anti-extra
+# de anatomía típica NSFW.
+NSFW_NEGATIVE_PROMPT = (
+    "child, teen, teenager, underage, minor, childlike features, young face, "
+    "multiple people, two persons, deformed face, asymmetric eyes, extra fingers, "
+    "extra limbs, missing limbs, bad anatomy, bad hands, deformed body, "
+    "blurry, lowres, jpeg artifacts, watermark, text, logo, signature, "
+    "cropped head, out of frame, different hairstyle, inconsistent face, "
+    "busy background, cluttered background"
+)
+
+
+# ===========================================================================
 # ENRUTAMIENTO POR TIPO DE LoRA
 # ===========================================================================
 LORA_TYPES = {
@@ -1857,5 +2158,27 @@ LORA_TYPES = {
         "placeholder_trigger": "ej: ohwx_estilo_moebius",
         "tiene_ficha_auto": True,
         "tiene_imagen_ref": False,
+    },
+    "NSFW": {
+        "icon": "🔞",
+        "angles": NSFW_ANGLES,
+        "angle_groups": NSFW_ANGLE_GROUPS,
+        "default_angles": NSFW_DEFAULT_ANGLE_SET,
+        "balanced_angles": NSFW_BALANCED_ANGLE_SET,
+        "form_fields": NSFW_FORM_FIELDS,
+        "styles": NSFW_STYLES,
+        # Sin selector de fondos: el escenario (cama, ducha, estudio) va
+        # embebido en cada toma y un fondo global chocaría con él.
+        "backgrounds": None,
+        "backgrounds_rotacion": None,
+        "negative": NSFW_NEGATIVE_PROMPT,
+        # La luz también va por toma (claroscuro, ventana, contraluz).
+        "lighting": "",
+        "label_form": "Ficha del personaje (adulto 18+)",
+        "label_angles": "Tomas del dataset",
+        "label_trigger": "Trigger word (LoRA)",
+        "placeholder_trigger": "ej: ohwx_ana_nsfw",
+        "tiene_ficha_auto": True,
+        "tiene_imagen_ref": True,
     },
 }

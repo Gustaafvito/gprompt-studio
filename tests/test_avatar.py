@@ -629,3 +629,62 @@ class TestPipeline:
         base_p = exportar_dataset(self._resultado_minimo(), str(tmp_path / "pers"))
         with open(os.path.join(base_p, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
             assert "LoRA DE PERSONAJE" in f.read()
+
+
+class TestTipoNSFW:
+    """Candados del tipo NSFW (18+): catálogo, salvaguardas y enrutamiento."""
+
+    def test_catalogo_nsfw(self):
+        from modules.avatar_config import (
+            LORA_TYPES,
+            NSFW_ANGLE_GROUPS,
+            NSFW_ANGLES,
+            NSFW_BALANCED_ANGLE_SET,
+        )
+        assert len(NSFW_ANGLES) == 30
+        assert "NSFW" in LORA_TYPES
+        grupos_usados = {d["group"] for d in NSFW_ANGLES.values()}
+        assert grupos_usados <= set(NSFW_ANGLE_GROUPS)
+        # El equilibrado es subconjunto del catálogo
+        assert set(NSFW_BALANCED_ANGLE_SET) <= set(NSFW_ANGLES)
+
+    def test_salvaguardas_adulto(self):
+        """CANDADO de seguridad: no quitar el bloqueo de menores.
+
+        Todos los prompts declaran sujeto adulto y el negative bloquea
+        rasgos de menor en TODAS las imágenes del dataset."""
+        from modules.avatar_config import NSFW_ANGLES, NSFW_NEGATIVE_PROMPT
+        for term in ("child", "teen", "underage", "minor"):
+            assert term in NSFW_NEGATIVE_PROMPT
+        for key, ang in NSFW_ANGLES.items():
+            assert "adult" in ang["prompt"], f"{key} sin 'adult' en el prompt"
+
+    def test_canonico_nsfw_sin_ropa_y_adulto(self):
+        from modules.avatar_prompts import (
+            SYSTEM_PROMPT_NSFW_CANONICO,
+            construir_user_prompt_nsfw,
+            system_prompt_canonico_para_tipo,
+        )
+        assert system_prompt_canonico_para_tipo("NSFW") is SYSTEM_PROMPT_NSFW_CANONICO
+        assert "adult" in SYSTEM_PROMPT_NSFW_CANONICO
+        assert "NO incluyas ropa" in SYSTEM_PROMPT_NSFW_CANONICO
+        up = construir_user_prompt_nsfw({"genero": "Mujer", "edad": "25-35",
+                                         "cuerpo_detalle": "tatuaje cadera"})
+        assert "18+" in up and "tatuaje cadera" in up
+
+    def test_pipeline_generico_nsfw(self, tmp_path):
+        from modules.avatar_generator import exportar_dataset, generar_dataset_lora
+        r = generar_dataset_lora(
+            tipo="NSFW", llm_call=_llm_fake, form_data={"genero": "Mujer"},
+            trigger_word="ohwx_t", angulos_seleccionados=["nsfw_lenc_full_front"],
+            estilo_sufijo="photorealistic", fondo=None)
+        assert r["tipo_lora"] == "NSFW"
+        assert r["total_prompts"] == 1
+        item = r["dataset"][0]
+        assert "underage" in item["negative"]
+        # neg_extra del ángulo (anti-recorte de pies) llega al negative
+        assert "cut off feet" in item["negative"]
+        # El consejo exportado es el NSFW (aviso 18+)
+        base = exportar_dataset(r, str(tmp_path))
+        with open(os.path.join(base, "CONSEJOS_SEAART.txt"), encoding="utf-8") as f:
+            assert "NSFW (18+)" in f.read()

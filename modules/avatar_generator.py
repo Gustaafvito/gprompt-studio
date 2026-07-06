@@ -402,11 +402,39 @@ Cada prompt trae un "RATIO SUGERIDO". Úsalo al generar en SeaArt:
 Usar el ratio coherente con el plano mejora el encuadre y evita recortes raros.
 """
 
+_CONSEJOS_NSFW = """DATASET PARA LoRA DE PERSONAJE NSFW (18+)
+=========================================
+(base: guía oficial SeaART de LoRA de personaje + reglas de contenido adulto)
+
+⚠️ SOLO CONTENIDO ADULTO (18+):
+• El sujeto es SIEMPRE un adulto; el negative de cada imagen ya bloquea
+  rasgos de menor. NO lo quites.
+• Si el personaje se parece a una persona REAL, necesitas su consentimiento.
+• Revisa las normas de tu plataforma: en SeaArt el contenido NSFW requiere
+  activar el modo NSFW de la cuenta y el LoRA quedará marcado como tal.
+  Otras plataformas (Civitai, Tensor.Art) tienen reglas propias.
+
+• CANTIDAD: 25-40 imágenes. Este generador da 30 tomas en 3 niveles
+  (lencería → sugerente → desnudo artístico): genera de sobra y ELIGE.
+• IDENTIDAD: la cara y el cuerpo se aprenden igual que en un LoRA normal —
+  el ⚖ Equilibrado prioriza lencería + implied (más control de identidad)
+  y deja los desnudos más explícitos a tu elección.
+• VESTUARIO: aquí NO va en la descripción canónica (varía por toma). Los
+  detalles de coherencia (tatuajes, lunares) hacen el papel de la "ropa".
+• MEZCLA RECOMENDADA: si quieres un avatar que también funcione vestido,
+  entrena con este dataset + el de Personaje (mismo trigger) o usa dos
+  LoRAs separados (ohwx_ana + ohwx_ana_nsfw) y actívalos según la escena.
+• RESOLUCIÓN: 1024x1024 para SDXL / Flux / SD 3.5 (512x512 para SD 1.5).
+• CAPTIONS: describe vestuario, pose y luz — NO la identidad (esa va en el
+  trigger). BLIP para fotorrealismo; Deepbooru para anime.
+"""
+
 CONSEJOS_LORA_POR_TIPO = {
     "Personaje": _CONSEJOS_PERSONAJE + _CONSEJOS_RATIOS,
     "Estilo": _CONSEJOS_ESTILO + _CONSEJOS_RATIOS,
     "Objeto": _CONSEJOS_OBJETO + _CONSEJOS_RATIOS,
     "Paisaje": _CONSEJOS_PAISAJE + _CONSEJOS_RATIOS,
+    "NSFW": _CONSEJOS_NSFW + _CONSEJOS_RATIOS,
 }
 
 # Retrocompat: algunos sitios importaban el texto único.

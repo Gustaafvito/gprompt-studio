@@ -179,6 +179,26 @@ Los 4 catálogos de tomas (Personaje/Paisaje/Objeto/Estilo) pasan de 30 a
 - Tests de conteo 30→50 actualizados; CONSEJOS_SEAART menciona "hasta 50:
   genera de sobra y ELIGE".
 
+## Hecho 2026-07-06 (noche): tipo de LoRA NSFW (18+)
+
+5º tipo "🔞 NSFW" en LORA_TYPES (petición usuario). Diseño:
+- 30 tomas SOLO de sujeto adulto en 3 niveles: lencería (12) → sugerente/
+  implied (8) → desnudo artístico (10). Sin actos: un LoRA de identidad
+  entrena la persona, no la escena.
+- Descripción canónica SIN ropa (SYSTEM_PROMPT_NSFW_CANONICO: empieza por
+  "adult" + franja de edad; el vestuario va por toma). Campo nuevo
+  cuerpo_detalle (tatuajes/lunares = coherencia entre tomas).
+- SALVAGUARDAS con candado (TestTipoNSFW::test_salvaguardas_adulto):
+  negative bloquea child/teen/underage/minor en TODAS las imágenes y
+  todos los prompts declaran "adult". NO quitar.
+- Pipeline genérico (no el de Personaje): neg_extra por toma para el
+  control de recorte; luz y escenario embebidos por toma (lighting="" y
+  backgrounds=None). Consejo propio _CONSEJOS_NSFW (ToS SeaArt, 18+,
+  consentimiento si se parece a persona real, mezcla con LoRA vestido).
+- El selector de tipos de avatar_ui ahora se DERIVA de LORA_TYPES
+  (tipos nuevos aparecen solos). Ficha auto e imagen de referencia
+  soportadas; el modo edición ignora las claves NSFW (esperado).
+
 ## Pendientes que necesitan al usuario
 
 - **Krea-2**: confirmar formato (asumí natural), `max_chars` real (contador
