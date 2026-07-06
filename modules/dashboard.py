@@ -918,7 +918,7 @@ class DashboardService:
                                  text_color=text_muted, anchor="w").pack(anchor="w")
 
             ctk.CTkButton(win, text=tr("Cerrar"), width=120, height=30,
-                          fg_color="#6b7280", hover_color="#4b5563",
+                          fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                           command=win.destroy).pack(pady=10)
 
         ctk.CTkButton(logros_hdr, text=tr("Ver todos"), width=80, height=22,
@@ -1514,7 +1514,7 @@ class DashboardService:
 
         # Botón cerrar al final
         ctk.CTkButton(main, text=tr("🚪 Cerrar Dashboard"), width=180, height=34,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       text_color="#ffffff",
                       command=v.destroy).pack(pady=(12, 8))

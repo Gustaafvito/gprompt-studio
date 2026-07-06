@@ -45,6 +45,13 @@ BTN_SECUNDARIO_HOVER = "#155e75"
 BTN_NEUTRO = "#444444"
 BTN_NEUTRO_HOVER = "#555555"
 
+# Neutro claro / descartar (gris pizarra). Segundo estilo neutro que ya
+# existía repetido 11 veces en botones Cerrar/Cancelar/Saltar de modales;
+# se centraliza TAL CUAL (unificarlo con BTN_NEUTRO cambiaría el aspecto
+# → decisión de usuario pendiente).
+BTN_GRIS = "#6b7280"
+BTN_GRIS_HOVER = "#4b5563"
+
 # ── Texto de estado (set_estado, labels de feedback) ───────────────────
 TXT_OK = "#2ecc71"        # éxito
 TXT_ERROR = "#e74c3c"     # error

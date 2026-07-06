@@ -362,3 +362,19 @@ class TestI18nSinRemanentesEspanol:
             assert rev["Instagram"] == "Instagram"  # neutro
         finally:
             set_idioma("es")
+
+
+def test_version_installer_coincide_con_config():
+    """Candado: installer.iss lleva la MISMA versión que config.VERSION.
+
+    Al subir la versión es fácil tocar config.py y olvidar el .iss — el
+    instalador saldría con el número viejo (y pisaría mal la instalación)."""
+    import re
+
+    import config
+    ruta = os.path.join(os.path.dirname(__file__), "..", "installer.iss")
+    iss = open(ruta, encoding="utf-8").read()
+    m = re.search(r'#define MyAppVersion "([^"]+)"', iss)
+    assert m, "installer.iss sin #define MyAppVersion"
+    assert m.group(1) == config.VERSION, (
+        f"installer.iss={m.group(1)} pero config.VERSION={config.VERSION}")

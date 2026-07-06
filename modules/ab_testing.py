@@ -418,7 +418,7 @@ class AbTestingService:
         # "Usar este (modelo+prompt)" en una card, así que el usuario
         # necesita un botón explícito para cerrar cuando termine.
         ctk.CTkButton(vent, text=tr("Cerrar comparativa"), width=180, height=30,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=vent.destroy).pack(pady=(0, 8))
 

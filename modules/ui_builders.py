@@ -1705,7 +1705,7 @@ class UIBuildersService:
                 ).pack(anchor="w", padx=10, pady=(0, 8))
             ctk.CTkButton(
                 vent, text=tr("Cerrar"), width=120, height=30,
-                fg_color="#6b7280", hover_color="#4b5563",
+                fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                 command=vent.destroy,
             ).pack(pady=10)
         except Exception as _e:

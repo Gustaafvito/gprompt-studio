@@ -437,7 +437,7 @@ class DialogsService:
 
         # Botón cerrar
         ctk.CTkButton(v, text=tr("Cerrar"), width=120, height=32,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       command=v.destroy).pack(pady=(8, 16))
 
     def _cmd_toggle_tema(self) -> None:

@@ -2297,7 +2297,7 @@ class ToolsAnalysisService:
                       fg_color="#4b5563", hover_color="#374151",
                       command=_copiar).pack(side="left", padx=(0, 6))
         ctk.CTkButton(frame_btn, text=tr("❌ Cerrar"), width=80,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       command=vent.destroy).pack(side="right")
 
     def _mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:

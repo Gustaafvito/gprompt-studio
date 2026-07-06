@@ -476,7 +476,7 @@ class ArquitectoApp(
                       fg_color=P.TXT_OK, hover_color="#27ae60",
                       command=_guardar).pack(side="left", padx=4)
         ctk.CTkButton(btn_frame, text=tr("Saltar"), width=80, height=32,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       command=_guardar).pack(side="left", padx=4)
 
 
@@ -1974,7 +1974,7 @@ class ArquitectoApp(
                       command=_abrir_grid).pack(side="left", padx=6)
 
         ctk.CTkButton(pie, text=tr("Cerrar comparador"), width=180, height=32,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=6)
 
@@ -2106,7 +2106,7 @@ class ArquitectoApp(
                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=_copiar_b).pack(side="left", padx=4)
         ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
 

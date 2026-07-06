@@ -324,7 +324,7 @@ class AvatarFrame(ctk.CTkFrame):
         ctk.CTkButton(barra, text=tr("Todos"), width=58, height=24,
                       command=lambda: self._marcar_angulos(True)).pack(side="left", padx=(0, 4))
         ctk.CTkButton(barra, text=tr("Ninguno"), width=64, height=24,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       command=lambda: self._marcar_angulos(False)).pack(side="left", padx=4)
         n_eq = len(cfg.get("balanced_angles") or cfg["angles"])
         boton_eq = ctk.CTkButton(

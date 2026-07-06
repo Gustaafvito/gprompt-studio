@@ -524,7 +524,7 @@ class PreviewPollinationsService:
                      font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=P.TXT_MUTED_OSCURO
                      ).pack(side="left", padx=8)
         ctk.CTkButton(pie, text=tr("Cerrar"), width=120, height=30,
-                      fg_color="#6b7280", hover_color="#4b5563",
+                      fg_color=P.BTN_GRIS, hover_color=P.BTN_GRIS_HOVER,
                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                       command=vent.destroy).pack(side="left", padx=4)
 
