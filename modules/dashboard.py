@@ -45,7 +45,7 @@ def _dashboard_palette(is_light: bool) -> dict:
             "accent_green":     "#16a34a",
             "accent_amber":     "#d97706",
             "accent_red":       "#dc2626",
-            "accent_purple":    "#7c3aed",
+            "accent_purple":    P.BTN_ACENTO,
             "accent_pink":      "#db2777",
             "bar_bg":           "#e5e7eb",
         }
@@ -1447,7 +1447,7 @@ class DashboardService:
             ("⚡ Quick Generate", getattr(self.app, "cmd_prompt_quick", self.app.cmd_prompt),
              accent_amber, "Generación rápida y barata"),
             ("💡 Ideas Aleatorias", self.app.cmd_ideas, accent_green, "Genera 3 ideas creativas"),
-            ("🔄 Variaciones", self.app.cmd_variaciones, "#7c3aed", "Crea variantes del prompt"),
+            ("🔄 Variaciones", self.app.cmd_variaciones, P.BTN_ACENTO, "Crea variantes del prompt"),
             ("📝 Refinar", getattr(self.app, "cmd_refinar", self.app.cmd_prompt),
              "#db2777", "Mejora el prompt actual"),
             ("📦 Batch", self.app.cmd_batch, "#e84393", "Genera múltiples prompts"),

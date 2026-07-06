@@ -310,7 +310,7 @@ class ModoClienteService:
                     self._abrir_comparador_propuestas(propuestas[:5], brief)
                     self.app.dialogs.set_estado(
                         tr('💼 {0} propuestas profesionales generadas').format(len(propuestas)),
-                        "#2ecc71",
+                        P.TXT_OK,
                     )
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -369,7 +369,7 @@ class ModoClienteService:
         cards_frame.pack(fill="both", expand=True, padx=12, pady=(0, 8))
 
         emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
-        col_colors = ["#1a7a3c", "#1a4a7a", "#7a1a4a", "#7a4a1a", "#1a5a7a"]
+        col_colors = [P.BTN_EXITO, "#1a4a7a", "#7a1a4a", "#7a4a1a", "#1a5a7a"]
 
         for idx, prop in enumerate(propuestas_norm):
             num = prop.get("num") or str(idx + 1)

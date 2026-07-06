@@ -509,6 +509,11 @@ usage_tracker = UsageTracker()
 
 # INTERFAZ BASE
 
+# Timeout de red para TODOS los proveedores LLM. Sin él, los SDKs esperan
+# hasta 600 s (OpenAI/Anthropic) o indefinidamente (google-genai) y el
+# worker queda colgado con la UI en "generando…".
+LLM_TIMEOUT_S = 180
+
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
 
@@ -546,7 +551,8 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         if api_key:
             if not OPENAI_DISPONIBLE:
                 raise ImportError("Paquete `openai` no instalado. Instala con: pip install openai")
-            self._cliente = OpenAI(api_key=api_key or "sin-key", base_url=base_url)
+            self._cliente = OpenAI(api_key=api_key, base_url=base_url,
+                                   timeout=LLM_TIMEOUT_S)
 
     def disponible(self) -> bool:
         return bool(self.api_key) and self._cliente is not None
@@ -625,7 +631,9 @@ class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: str | None, model: str | None = None, **kwargs):
         super().__init__(api_key, model)
         if api_key and GEMINI_DISPONIBLE:
-            self._cliente = google_genai.Client(api_key=api_key)
+            self._cliente = google_genai.Client(
+                api_key=api_key,
+                http_options=genai_types.HttpOptions(timeout=LLM_TIMEOUT_S * 1000))
 
     def disponible(self) -> bool:
         return GEMINI_DISPONIBLE and bool(self.api_key)
@@ -637,7 +645,9 @@ class GeminiProvider(BaseLLMProvider):
             raise Exception("google-genai no instalado")
 
         if self._cliente is None:
-            self._cliente = google_genai.Client(api_key=self.api_key)
+            self._cliente = google_genai.Client(
+                api_key=self.api_key,
+                http_options=genai_types.HttpOptions(timeout=LLM_TIMEOUT_S * 1000))
         cliente = self._cliente
 
         modelo = model or self.model or "gemini-2.5-flash"
@@ -694,7 +704,8 @@ class ClaudeProvider(BaseLLMProvider):
         if api_key:
             try:
                 from anthropic import Anthropic
-                self._cliente = Anthropic(api_key=api_key)
+                self._cliente = Anthropic(api_key=api_key,
+                                          timeout=LLM_TIMEOUT_S)
                 self._anthropic_disponible = True
             except ImportError:
                 self._anthropic_disponible = False
@@ -730,7 +741,16 @@ class ClaudeProvider(BaseLLMProvider):
         if usage is not None:
             self._registrar_uso(getattr(usage, "input_tokens", 0),
                                 getattr(usage, "output_tokens", 0))
-        return res.content[0].text
+        # `content` puede venir vacío o sin bloques de texto (respuesta
+        # filtrada / refusal) — mismo guard que el provider OpenAI, sin él
+        # esto revienta con un IndexError críptico.
+        bloques_texto = [b.text for b in getattr(res, "content", None) or []
+                         if getattr(b, "type", "") == "text"]
+        if not bloques_texto:
+            raise Exception(
+                f"{modelo}: respuesta sin texto "
+                f"(stop_reason={getattr(res, 'stop_reason', '?')})")
+        return bloques_texto[0]
 
 
 # FACTORY

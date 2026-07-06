@@ -1158,9 +1158,9 @@ class DataMgmtService:
 
         # ── Colores por dificultad (para badges) ─────────────────────
         DIF_COLORS = {
-            "principiante": ("#2ecc71", "#FFFFFF"),  # verde
+            "principiante": (P.TXT_OK, "#FFFFFF"),  # verde
             "medio":        ("#f39c12", "#FFFFFF"),  # naranja
-            "avanzado":     ("#e74c3c", "#FFFFFF"),  # rojo
+            "avanzado":     (P.TXT_ERROR, "#FFFFFF"),  # rojo
         }
 
         def _filtrar():

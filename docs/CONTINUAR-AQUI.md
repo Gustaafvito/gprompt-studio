@@ -133,6 +133,28 @@ del escaneo vía `_COMFY_EXCLUIR_TOKENS`).
   (positivo reforzado + `AVATAR_NEGATIVE_PIES`); cowboy/sentada NO (recorte
   correcto). Selector con las 4 plataformas de imagen y familias como grupos.
 
+## Hecho 2026-07-06 (auditoría de código)
+
+- Avatar: nota en CONSEJOS_SEAART explicando prompts/ vs prompts_edicion/
+  (solo con imagen de referencia) + RATIO SUGERIDO también en modo edición.
+- **Auditoría completa** (7 hallazgos, todos corregidos):
+  1. `guardar_en_historial` se llamaba desde el hilo worker en workers_ia
+     (leía ~12 variables Tk fuera del main thread) → ahora vía `after(0)`.
+  2. ClaudeProvider sin guard de respuesta vacía → mismo guard que OpenAI.
+  3. **97 fugas de paleta** (hexes posicionales en set_estado, ternarios,
+     dicts) sustituidas por P.X con valor IDÉNTICO (cero cambio visual).
+     Candado nuevo `test_sin_hex_identicos_en_ninguna_posicion`. Los tonos
+     históricos distintos (#f39c12, #1a8a3c, #5a1a1a) quedan — cambiarlos
+     altera el aspecto y necesita validación visual del usuario.
+  4. Fugas i18n: "JSON importado…" y "puede tener errores de sintaxis"
+     sin tr() (evadían el candado por ser f-string/BinOp en el sink).
+  5. `LLM_TIMEOUT_S = 180` en los 3 SDKs (OpenAI/Anthropic esperaban 600s;
+     google-genai podía colgarse sin límite).
+  6. Candado test_paleta reforzado (cualquier posición, no solo kwargs).
+  7. Código muerto `or "sin-key"` eliminado.
+- Sano confirmado: sin eval/exec/pickle/shell=True, persistencia atómica,
+  keys DPAPI, logging rotado, requests con timeout, 882 tests verdes.
+
 ## Pendientes que necesitan al usuario
 
 - **Krea-2**: confirmar formato (asumí natural), `max_chars` real (contador

@@ -242,7 +242,7 @@ class AdnVisualService:
             if not getattr(self.app, "imagen_cargada", None):
                 self.app.dialogs.set_estado(
                     tr("⚠️ Carga una imagen en la pantalla principal y vuelve."),
-                    "#e67e22",
+                    P.TXT_AVISO,
                 )
                 return
             vent.destroy()
@@ -639,13 +639,13 @@ class AdnVisualService:
                                             if bloqueos.get(cat, {}).get("bloqueado", False)]
                         if cats_bloqueadas:
                             msg = f"🧬 {plataforma} (bloqueados: {', '.join(cats_bloqueadas[:3])}{'...' if len(cats_bloqueadas) > 3 else ''})"
-                            color_ok = "#2ecc71"
+                            color_ok = P.TXT_OK
                         elif fallos:
                             msg = tr("🧬 {0} - parcial (falló: {1})").format(plataforma, ', '.join(fallos))
                             color_ok = "#f39c12"
                         else:
                             msg = f"🧬 {plataforma} en idea"
-                            color_ok = "#2ecc71"
+                            color_ok = P.TXT_OK
 
                         if not _aplicar_partes_a_idea(partes, msg):
                             self.app.dialogs.set_estado(tr('❌ Conversión {0} falló completamente').format(plataforma),

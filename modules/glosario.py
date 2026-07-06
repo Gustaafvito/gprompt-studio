@@ -61,7 +61,7 @@ def abrir_glosario(app):
 
     if not entradas:
         try:
-            app.show_toast("⚠️ data/glosario.json no disponible", "#e67e22")
+            app.show_toast("⚠️ data/glosario.json no disponible", P.TXT_AVISO)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         return
@@ -137,7 +137,7 @@ def abrir_glosario(app):
         except Exception as e:
             logger.warning(f"Error ejecutando {metodo_nombre}: {e}")
             try:
-                app.show_toast(tr("❌ '{0}' no disponible: {1}").format((metodo_nombre), (e)), "#e74c3c")
+                app.show_toast(tr("❌ '{0}' no disponible: {1}").format((metodo_nombre), (e)), P.TXT_ERROR)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
 

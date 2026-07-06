@@ -576,7 +576,7 @@ class UiFooterService:
         n_loras += len(getattr(self.app, "loras_multi", []) or [])
         if n_loras:
             lbl = f"🔗 {n_loras} LoRA" + ("s" if n_loras > 1 else "")
-            chips.append((lbl, "#7c3aed", "loras"))
+            chips.append((lbl, P.BTN_ACENTO, "loras"))
         # ⚓ Anclaje visual persistido
         if getattr(self.app, "_anclaje_visual", None):
             chips.append(("⚓ Anclaje", "#f59e0b", "anclaje"))
@@ -779,7 +779,7 @@ class UiFooterService:
             try:
                 self.app.dialogs.set_estado(
                     tr('🔗 Multi-LoRA: {0} extra(s) activo(s)').format(len(nuevos)),
-                    "#7c3aed",
+                    P.BTN_ACENTO,
                 )
             except Exception:
                 pass
@@ -820,7 +820,7 @@ class UiFooterService:
             color = "#f39c12"
         elif compatible is True:
             warning = "  ✓"
-            color = "#2ecc71"
+            color = P.TXT_OK
         else:
             # None: sin info, color neutral
             warning = ""

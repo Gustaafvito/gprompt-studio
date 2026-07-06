@@ -228,7 +228,7 @@ class BackupExportService:
         if not (hist or favs or stars):
             return self.app.dialogs.set_estado(
                 tr("⚠️ No hay nada que exportar (historial/favoritos/estrellas vacíos)."),
-                "#e67e22",
+                P.TXT_AVISO,
             )
 
         # ── Selector ──
@@ -485,9 +485,9 @@ class BackupExportService:
 
         # Formatos: (nombre, contenido, color, modo)
         formatos = [
-            ("🎨 Midjourney v6",     mj,            "#1a7a3c", "imagen"),
+            ("🎨 Midjourney v6",     mj,            P.BTN_EXITO, "imagen"),
             ("🌸 Niji 6 (anime)",    niji,          "#a64aa6", "imagen"),
-            ("⚡ FLUX Dev",          flux_dev,      "#7c3aed", "imagen"),
+            ("⚡ FLUX Dev",          flux_dev,      P.BTN_ACENTO, "imagen"),
             ("⚡ FLUX Schnell",      flux_schnell,  "#9333ea", "imagen"),
             ("🤖 Grok / X",          grok,          "#1c1c1c", "imagen"),
             ("🖌 DALL-E 3",          dalle,         "#10a37f", "imagen"),

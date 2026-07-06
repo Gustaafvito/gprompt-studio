@@ -191,7 +191,7 @@ def abrir_guia_estilos(app, modo_inicial: str | None = None):
     guia = cargar_guia()
     if not guia:
         try:
-            app.show_toast("⚠️ GUIA_ESTILOS.md no disponible", "#e67e22")
+            app.show_toast("⚠️ GUIA_ESTILOS.md no disponible", P.TXT_AVISO)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         return

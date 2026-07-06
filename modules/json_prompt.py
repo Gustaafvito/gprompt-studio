@@ -398,10 +398,10 @@ class JsonPromptService:
             logger.debug(f"[silent] {e}")
 
         self.app.dialogs.set_estado(
-            f"📥 JSON importado — prompt aplicado"
-            + (f" · modo→{resumen['modo']}" if resumen["modo"] else "")
+            tr("📥 JSON importado — prompt aplicado")
+            + (tr(" · modo→{0}").format(resumen["modo"]) if resumen["modo"] else "")
             + (f" · ratio={resumen['ratio']}" if resumen["ratio"] else ""),
-            "#2ecc71",
+            P.TXT_OK,
         )
         return resumen
 
@@ -444,7 +444,7 @@ class JsonPromptService:
             partes.append(tr("⏱ Duración: {0}s (mostrada como nota)").format(resumen['duration']))
         ctk.CTkLabel(vent, text="  ·  ".join(partes) if partes else tr("Nada aplicado."),
                      font=ctk.CTkFont(size=P.FUENTE_CUERPO),
-                     text_color=P.TXT_OK if partes else "#e67e22",
+                     text_color=P.TXT_OK if partes else P.TXT_AVISO,
                      wraplength=720, justify="center").pack(pady=(0, 10), padx=15)
 
         # Metadatos extras (camera, lighting, vfx_notes, audio, etc.)
@@ -530,7 +530,7 @@ class JsonPromptService:
         if not prompt_actual or len(prompt_actual) < 20:
             self.app.dialogs.set_estado(
                 tr("⚠️ Genera primero un prompt para exportarlo como JSON profesional."),
-                "#e67e22",
+                P.TXT_AVISO,
             )
             return
 
@@ -623,8 +623,9 @@ class JsonPromptService:
                     self._mostrar_modal_export(json_pretty, parsed is not None)
                     self.app.dialogs.set_estado(
                         tr("📤 JSON profesional listo")
-                        + ("" if parsed is not None else " ⚠️ (puede tener errores de sintaxis)"),
-                        "#2ecc71" if parsed is not None else "#e67e22",
+                        + ("" if parsed is not None
+                           else tr(" ⚠️ (puede tener errores de sintaxis)")),
+                        P.TXT_OK if parsed is not None else P.TXT_AVISO,
                     )
 
                 self.app.after(0, _mostrar)
@@ -657,7 +658,7 @@ class JsonPromptService:
                  if json_valido
                  else tr("El LLM no devolvió JSON 100% válido — revisa antes de usar."),
             font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
-            text_color=c["muted_text"] if json_valido else "#fbbf24",
+            text_color=c["muted_text"] if json_valido else P.TXT_ACENTO,
         ).pack(pady=(0, 8))
 
         txt = ctk.CTkTextbox(vent, wrap="none",

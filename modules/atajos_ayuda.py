@@ -191,7 +191,7 @@ class AtajosAyudaService:
             if not hallazgos:
                 self.app.dialogs.set_estado(
                     tr("💡 No hay palabras polisémicas detectadas en tu idea."),
-                    "#2ecc71",
+                    P.TXT_OK,
                 )
                 return "break"
             # Delegamos al método del UIBuildersService que ya construye el modal

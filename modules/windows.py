@@ -889,10 +889,10 @@ def abrir_batch(app):
 
         is_lt = _is_light()
         colores = (
-            ["#2563eb", "#15803d", "#7c3aed", "#c2410c", "#0891b2",
-             "#be185d", "#65a30d", "#7c3aed", "#1d4ed8", "#b45309"]
+            ["#2563eb", "#15803d", P.BTN_ACENTO, "#c2410c", "#0891b2",
+             "#be185d", "#65a30d", P.BTN_ACENTO, "#1d4ed8", "#b45309"]
             if is_lt else
-            ["#1a4a7a", "#1a7a3c", "#4a1a7a", "#7a3c1a", "#1a6a6a",
+            ["#1a4a7a", P.BTN_EXITO, "#4a1a7a", "#7a3c1a", "#1a6a6a",
              "#6a1a4a", "#3a5a1a", "#5a1a6a", "#1a3a5a", "#5a3a1a"]
         )
 
@@ -1365,7 +1365,7 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
             ctk.CTkLabel(card,
                          text=f"🌟 {nota}",
                          font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold", slant="italic"),
-                         text_color="#f59e0b" if _is_light() else "#fbbf24",
+                         text_color="#f59e0b" if _is_light() else P.TXT_ACENTO,
                          wraplength=740, justify="left", anchor="w"
                          ).pack(fill="x", padx=10, pady=(4, 0))
 

@@ -1722,7 +1722,7 @@ class ArquitectoApp(
         frame_cols = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         frame_cols.pack(fill="both", expand=True)
 
-        colores_header = ["#1a4a7a", "#1a7a3c", "#4a1a7a", "#7a3c1a", "#3a5a1a", "#7a1a4a", "#5a3c1a", "#1a5a5a"]
+        colores_header = ["#1a4a7a", P.BTN_EXITO, "#4a1a7a", "#7a3c1a", "#3a5a1a", "#7a1a4a", "#5a3c1a", "#1a5a5a"]
         tiene_neg = self._debe_mostrar_negatives()
 
         # Refs compartidas entre todas las cards: cuando se aplica una,
@@ -1859,7 +1859,7 @@ class ArquitectoApp(
                     except Exception as _e:
                         logger.debug(f"[silent] {_e}")
                 try:
-                    col_ref.configure(border_color="#fbbf24", border_width=3)
+                    col_ref.configure(border_color=P.TXT_ACENTO, border_width=3)
                     hdr_ref.configure(fg_color=P.TXT_ACENTO)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
@@ -1868,11 +1868,11 @@ class ArquitectoApp(
                 if modelo_aplicado:
                     self.dialogs.set_estado(
                         tr("🏆 Modelo '{0}' + prompt cargados — la ventana sigue abierta").format(modelo_aplicado),
-                        "#2ecc71")
+                        P.TXT_OK)
                 else:
                     self.dialogs.set_estado(
                         tr("✅ '{0}' cargada — la ventana sigue abierta").format(label),
-                        "#2ecc71")
+                        P.TXT_OK)
 
             def _traducir(p=pos_text, lbl=lbl_trad):
                 lbl.pack(fill="x", pady=(6, 4))
@@ -1991,7 +1991,7 @@ class ArquitectoApp(
             else:
                 self.set_estado(
                     tr('⚠️ Selecciona EXACTAMENTE 2 cards para comparar (hay {0} marcadas)').format(len(seleccionadas)),
-                    "#e67e22",
+                    P.TXT_AVISO,
                 )
         vent.bind("<Alt-c>", _atajo_comparar)
         # Hint visual debajo del pie sobre los atajos disponibles
@@ -2064,7 +2064,7 @@ class ArquitectoApp(
             return tb
 
         tb_a = _make_panel(cont, label_a, "#1a4a7a")
-        tb_b = _make_panel(cont, label_b, "#1a7a3c")
+        tb_b = _make_panel(cont, label_b, P.BTN_EXITO)
 
         for tag, i1, i2, j1, j2 in ops:
             seg_a = "".join(toks_a[i1:i2])
@@ -2461,7 +2461,7 @@ class ArquitectoApp(
         self.switch_sonido_var = ctk.BooleanVar(value=self._sonido_activo if hasattr(self, '_sonido_activo') else False)
         ctk.CTkSwitch(tab_gen, text=tr("🔔 Sonido al completar generación"),
                       variable=self.switch_sonido_var,
-                      progress_color="#3498db",
+                      progress_color=P.TXT_INFO,
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       height=20, width=42, corner_radius=10,
                       button_length=8,
@@ -2473,7 +2473,7 @@ class ArquitectoApp(
         self.switch_video_sesion_var = ctk.BooleanVar(value=self._sesion_grabar_video if hasattr(self, '_sesion_grabar_video') else False)
         ctk.CTkSwitch(tab_gen, text=tr("🎥 Grabar vídeo (MP4) al usar 🎬 Sesión grabada"),
                       variable=self.switch_video_sesion_var,
-                      progress_color="#e74c3c",
+                      progress_color=P.TXT_ERROR,
                       font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                       height=20, width=42, corner_radius=10,
                       button_length=8,

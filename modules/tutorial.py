@@ -76,7 +76,7 @@ def abrir_tutorial(app):
     pasos = tut.get("pasos", [])
     if not pasos:
         try:
-            app.show_toast("⚠️ data/tutorial.json no disponible", "#e67e22")
+            app.show_toast("⚠️ data/tutorial.json no disponible", P.TXT_AVISO)
         except Exception as _e:
             logger.debug(f"[silent] {_e}")
         return
@@ -411,7 +411,7 @@ def abrir_tutorial(app):
             # NO cerramos la ventana — el usuario verá el toast y podrá leer
             logger.warning(f"Tutorial: acción '{accion}' falló: {e}")
             try:
-                app.show_toast(f"❌ {accion}: {e}", "#e74c3c", 5000)
+                app.show_toast(f"❌ {accion}: {e}", P.TXT_ERROR, 5000)
             except Exception as _e:
                 logger.debug(f"[silent] show_toast: {_e}")
 

@@ -514,7 +514,7 @@ class ToolsWorkflowService:
                         if num >= cantidad:
                             progreso = tr("✅ Cron completado: {0} variantes generadas").format(cantidad)
                         _safe_configure(lbl_progreso, text=progreso,
-                                        text_color=P.TXT_OK if num >= cantidad else "#3498db")
+                                        text_color=P.TXT_OK if num >= cantidad else P.TXT_INFO)
                         self.app.dialogs.set_estado(tr('⏲ Variante {0}/{1} lista').format((num), (cantidad)), P.TXT_INFO)
                     self.app.after(0, _aplicar)
                 except Exception as e:
@@ -877,13 +877,13 @@ class ToolsWorkflowService:
             nuevas = [m for m in MACROS_EJEMPLO if m["nombre"] not in existentes]
             if not nuevas:
                 self.app.dialogs.set_estado(
-                    tr("ℹ️ Los ejemplos ya están cargados."), "#e67e22")
+                    tr("ℹ️ Los ejemplos ya están cargados."), P.TXT_AVISO)
                 return
             actual.extend(nuevas)
             prefs["macros"] = actual
             self.app.store.guardar_preferencias(prefs)
             self.app.dialogs.set_estado(
-                tr('📥 {0} macro(s) de ejemplo cargada(s)').format(len(nuevas)), "#2ecc71")
+                tr('📥 {0} macro(s) de ejemplo cargada(s)').format(len(nuevas)), P.TXT_OK)
             refrescar()
 
         botones = ctk.CTkFrame(form, fg_color="transparent")
@@ -940,7 +940,7 @@ class ToolsWorkflowService:
             with open(ruta, "w", encoding="utf-8") as f:
                 _json.dump(macros, f, ensure_ascii=False, indent=2)
             self.app.dialogs.set_estado(
-                tr('📤 {0} macro(s) exportada(s)').format(len(macros)), "#2ecc71")
+                tr('📤 {0} macro(s) exportada(s)').format(len(macros)), P.TXT_OK)
         except Exception as e:
             self.app.dialogs.set_estado(tr('❌ Error exportando: {0}').format(e), P.TXT_ERROR)
 
@@ -962,7 +962,7 @@ class ToolsWorkflowService:
         macros_imp = parsear_macros_importadas(data)
         if not macros_imp:
             self.app.dialogs.set_estado(
-                tr("⚠️ El archivo no contiene macros válidas."), "#e67e22")
+                tr("⚠️ El archivo no contiene macros válidas."), P.TXT_AVISO)
             return 0
         prefs = self.app.store.cargar_preferencias() or {}
         actual = prefs.get("macros", [])
@@ -974,7 +974,7 @@ class ToolsWorkflowService:
         omitidas = len(macros_imp) - len(nuevas)
         self.app.dialogs.set_estado(
             tr("📥 {0} macro(s) importada(s)").format(len(nuevas))
-            + (tr(" · {0} ya existían").format(omitidas) if omitidas else ""), "#2ecc71")
+            + (tr(" · {0} ya existían").format(omitidas) if omitidas else ""), P.TXT_OK)
         return len(nuevas)
 
     def _ejecutar_macro(self, macro, acciones_disponibles):
@@ -1100,7 +1100,7 @@ class ToolsWorkflowService:
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.app.dialogs.set_estado(
-                tr("⚠️ Genera un prompt primero para adaptarlo."), "#e67e22")
+                tr("⚠️ Genera un prompt primero para adaptarlo."), P.TXT_AVISO)
 
         # Specs del modelo activo (mismo bloque que ve el generador), capado.
         modelo_info = ""
@@ -1110,7 +1110,7 @@ class ToolsWorkflowService:
             logger.debug(f"[silent] {_e}")
         if not modelo_info.strip():
             return self.app.dialogs.set_estado(
-                tr("ℹ️ El modelo activo no expone specs; nada que adaptar."), "#e67e22")
+                tr("ℹ️ El modelo activo no expone specs; nada que adaptar."), P.TXT_AVISO)
 
         def _worker():
             try:
@@ -1122,10 +1122,10 @@ class ToolsWorkflowService:
                 texto = asegurar_etiquetas_prompt(actual, limpiar_marcadores(resp))
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(
-                    tr("🎯 Prompt adaptado al modelo activo"), "#2ecc71"))
+                    tr("🎯 Prompt adaptado al modelo activo"), P.TXT_OK))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
-                    tr('⚠️ Error adaptando: {0}').format(e), "#e74c3c"))
+                    tr('⚠️ Error adaptando: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
@@ -1143,7 +1143,7 @@ class ToolsWorkflowService:
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual or len(actual) < 20:
             return self.app.dialogs.set_estado(
-                tr("⚠️ Genera un prompt primero para optimizar."), "#e67e22")
+                tr("⚠️ Genera un prompt primero para optimizar."), P.TXT_AVISO)
 
         modelo_info = ""
         try:
@@ -1174,10 +1174,10 @@ class ToolsWorkflowService:
                         score_txt = tr(" (partía de {0}/100)").format(int(v / mx * 100))
                 self.app.after(0, lambda: self.app.dialogs.actualizar_salida(texto))
                 self.app.after(0, lambda: self.app.dialogs.set_estado(
-                    tr('⚡ Optimizado en 1 pasada{0}').format(score_txt), "#2ecc71"))
+                    tr('⚡ Optimizado en 1 pasada{0}').format(score_txt), P.TXT_OK))
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
-                    tr('⚠️ Error optimizando: {0}').format(e), "#e74c3c"))
+                    tr('⚠️ Error optimizando: {0}').format(e), P.TXT_ERROR))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 

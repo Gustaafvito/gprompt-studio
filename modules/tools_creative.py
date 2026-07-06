@@ -530,7 +530,7 @@ class ToolsCreativeService:
                 if not sugerencias:
                     self.app.after(0, lambda: self.app.dialogs.set_estado(
                         tr("⚠️ No se pudieron parsear las sugerencias del LLM"),
-                        "#e67e22"))
+                        P.TXT_AVISO))
                     return
 
                 def _mostrar():
@@ -559,7 +559,7 @@ class ToolsCreativeService:
 
         # Colores y rankings
         rank_data = [
-            ("🥇", "#fbbf24", "#1a1a2e"),  # oro
+            ("🥇", P.TXT_ACENTO, "#1a1a2e"),  # oro
             ("🥈", "#94a3b8", "#1a1a2e"),  # plata
             ("🥉", "#cd7f32", "#1a1a2e"),  # bronce
         ]
@@ -709,7 +709,7 @@ class ToolsCreativeService:
                     if len(set(resultados.values())) == 1 and len(resultados) > 1:
                         self.app.dialogs.set_estado(
                             tr("⚠️ El LLM devolvió la misma respuesta para todos los modelos. Prueba con una idea más específica."),
-                            "#e67e22")
+                            P.TXT_AVISO)
                     self.app._abrir_comparador(variantes, labels=labels)
                     self.app.dialogs.set_estado(tr('🚀 {0} versiones listas — elige tu favorita').format(len(modelos)),
                                     P.TXT_OK)

@@ -228,7 +228,7 @@ class UIBuildersService:
                 pid = self.app.clients.provider_activo_id
                 if modelo and self.app.clients.set_model(pid, modelo):
                     self.app.dialogs.set_estado(
-                        tr('🧠 Modelo de {0}: {1}').format(pid, modelo), "#2ecc71")
+                        tr('🧠 Modelo de {0}: {1}').format(pid, modelo), P.TXT_OK)
             except Exception as _e:
                 logger.debug(f"[silent] modelo llm: {_e}")
 
@@ -652,7 +652,7 @@ class UIBuildersService:
                 try:
                     self.app.dialogs.set_estado(
                         tr("🖼 Ref ON: pega SOLO el prompt en la plataforma de vídeo destino — NO subas otra vez la imagen ahí."),
-                        "#7c3aed",
+                        P.BTN_ACENTO,
                     )
                 except Exception as _e:
                     logger.debug(f"[silent ref toast] {_e}")
@@ -661,7 +661,7 @@ class UIBuildersService:
 
         self.app.switch_ref = ctk.CTkSwitch(inner, text=tr("🖼 Ref"), variable=self.app.switch_ref_visual_var,
                                          command=_toggle_ref_visual,
-                                         progress_color="#7c3aed",
+                                         progress_color=P.BTN_ACENTO,
                                          fg_color=c["fg_dark"],
                                          border_color=c["fg_dark_border"],
                                          text_color=c["fg_dark_text"],
@@ -815,7 +815,7 @@ class UIBuildersService:
         self.app.switch_instrumental = ctk.CTkSwitch(row1, text=tr("🎹 Instrumental"),
                                                    variable=self.app.switch_instrumental_var,
                                                    command=_toggle_instr_visual,
-                                                   progress_color="#7c3aed",
+                                                   progress_color=P.BTN_ACENTO,
                                                    fg_color=c["fg_dark"],
                                                    border_color=c["fg_dark_border"],
                                                    border_width=1,
@@ -1130,7 +1130,7 @@ class UIBuildersService:
             "Si lo desactivas, va en su bloque/posición normal."))
 
         # Label trigger visible (Mejora bonus LoRAs)
-        lora_color = "#7c3aed" if is_light else "#9b59b6"
+        lora_color = P.BTN_ACENTO if is_light else "#9b59b6"
         self.app.lbl_lora_trigger = ctk.CTkLabel(self.app.frame_pers_lora, text="",
                                                font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
                                                fg_color="transparent",
@@ -1298,7 +1298,7 @@ class UIBuildersService:
 
         # Label verde con nombres de estilos seleccionados
         # Usar verde más oscuro en light para que se lea sobre fondo claro
-        verde = "#059669" if is_light else "#2ecc71"
+        verde = "#059669" if is_light else P.TXT_OK
         self.app.lbl_estilos_sel = ctk.CTkLabel(parent, text="",
                                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
                                              fg_color="transparent",
@@ -1590,11 +1590,11 @@ class UIBuildersService:
         ratio = min(chars / max_c, 1.0) if max_c > 0 else 0
         # Color según ratio
         if ratio < 0.5:
-            color = "#2ecc71"  # verde
+            color = P.TXT_OK  # verde
         elif ratio < 0.8:
             color = "#f39c12"  # amarillo
         else:
-            color = "#e74c3c"  # rojo
+            color = P.TXT_ERROR  # rojo
 
         try:
             self.app.chars_bar.configure(fg_color=color)
@@ -1797,7 +1797,7 @@ class UIBuildersService:
         VERDE_CLARO  = "#2a8a4a"   # Variantes de Generar (Quick, Variaciones)
         AZUL_ANAL    = "#1e3a8a"   # Análisis
         AZUL_ANAL_2  = "#1e3a5f"   # Análisis Inverso (variante)
-        MORADO_ADN   = "#7c3aed"   # ADN Visual y edición
+        MORADO_ADN   = P.BTN_ACENTO   # ADN Visual y edición
         NARANJA_VAR  = "#d97706"   # Variantes naranja
         ROSA_NARR    = "#be185d"   # Multi-prompt narrativo
         CYAN_CONV    = "#0891b2"   # Conversiones
@@ -1974,7 +1974,7 @@ class UIBuildersService:
         self.app.lbl_estado.pack(side="left", fill="x", expand=True)
 
         self.app.progress = ctk.CTkProgressBar(self.app.frame_estado, width=160, height=10,
-                                                   mode="indeterminate", progress_color="#3498db")
+                                                   mode="indeterminate", progress_color=P.TXT_INFO)
 
     def _build_salida(self):
         is_light = _get_real_is_light()

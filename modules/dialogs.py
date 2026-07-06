@@ -88,7 +88,7 @@ class DialogsService:
             if refs.get("lbl_estado"):
                 refs["lbl_estado"].configure(
                     text=tr("✅ configurado") if current else tr("⚠️ sin configurar"),
-                    text_color=P.TXT_OK if current else "#e67e22",
+                    text_color=P.TXT_OK if current else P.TXT_AVISO,
                 )
             # Origen
             if refs.get("lbl_origen"):
@@ -112,7 +112,7 @@ class DialogsService:
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
             estado_actual = tr("✅ configurado") if current_key_init else tr("⚠️ sin configurar")
-            color_estado = "#2ecc71" if current_key_init else "#e67e22"
+            color_estado = P.TXT_OK if current_key_init else P.TXT_AVISO
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
@@ -230,7 +230,7 @@ class DialogsService:
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
             estado_actual = tr("✅ configurado") if current_key_init else tr("⚪ opcional (modo anónimo)")
-            color_estado = "#2ecc71" if current_key_init else "#9ca3af"
+            color_estado = P.TXT_OK if current_key_init else "#9ca3af"
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
@@ -656,8 +656,8 @@ class DialogsService:
           • Legado:                                 POSITIVE: / NEGATIVE:
         """
         if not hasattr(self.app, 'txt_salida'): return
-        self.app.txt_salida.tag_config("pos_label", foreground="#2ecc71")
-        self.app.txt_salida.tag_config("neg_label", foreground="#e74c3c")
+        self.app.txt_salida.tag_config("pos_label", foreground=P.TXT_OK)
+        self.app.txt_salida.tag_config("neg_label", foreground=P.TXT_ERROR)
         labels = [
             ("pos_label", "POSITIVE PROMPT:"),
             ("neg_label", "NEGATIVE PROMPT:"),
@@ -808,7 +808,7 @@ class DialogsService:
 
         excede = c_pos > max_c
         if c_pos or c_neg:
-            color = "#e74c3c" if excede else "#3498db"
+            color = P.TXT_ERROR if excede else P.TXT_INFO
             aviso = " ⚠️ EXCEDE" if excede else ""
             if c_neg:
                 self.app.lbl_tokens.configure(

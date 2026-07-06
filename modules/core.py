@@ -157,7 +157,7 @@ class CoreMixin:
             self._focus_exit_btn.place(relx=0.5, rely=0.01, anchor="n")
 
             self._modo_focus_activo = True
-            self.set_estado(tr("🎯 Modo Focus ACTIVO — pulsa ✕ para salir"), "#7c3aed")
+            self.set_estado(tr("🎯 Modo Focus ACTIVO — pulsa ✕ para salir"), P.BTN_ACENTO)
         else:
             # DESACTIVAR: quitar botón flotante
             if self._focus_exit_btn:
@@ -654,7 +654,7 @@ class CoreMixin:
 
         # Colores para distinguir las cards
         accent_colors = (
-            ["#2563eb", "#15803d", "#7c3aed"] if is_lt else
+            ["#2563eb", "#15803d", P.BTN_ACENTO] if is_lt else
             ["#3b82f6", "#22c55e", "#a855f7"]
         )
 
@@ -707,14 +707,14 @@ class CoreMixin:
                 for prev_card, prev_accent in cards_refs:
                     try:
                         if prev_card is card_ref:
-                            prev_card.configure(border_color="#fbbf24", border_width=3)
+                            prev_card.configure(border_color=P.TXT_ACENTO, border_width=3)
                         else:
                             prev_card.configure(border_color=prev_accent, border_width=2)
                     except Exception as _e:
                         logger.debug(f"[silent highlight] {_e}")
                 self.set_estado(
                     tr('✅ Variación #{0} aplicada — la ventana sigue abierta para probar otras').format(n),
-                    "#2ecc71")
+                    P.TXT_OK)
 
             def _copiar_todo(v=var, n=i+1):
                 pyperclip.copy(v)
@@ -1169,7 +1169,7 @@ class CoreMixin:
             lbl.pack(fill="x", pady=4)
             chat_frame._parent_canvas.yview_moveto(1.0)
 
-        _add_msg("Sistema", tr("🤖 Copiloto conectado.\nEscribe qué quieres cambiar o añadir al prompt que tienes en pantalla."), "#3498db")
+        _add_msg("Sistema", tr("🤖 Copiloto conectado.\nEscribe qué quieres cambiar o añadir al prompt que tienes en pantalla."), P.TXT_INFO)
 
         def _enviar(event=None):
             instruccion = txt_input.get().strip()
@@ -1228,7 +1228,7 @@ class CoreMixin:
 
                     def _update_ui():
                         self.actualizar_salida(nuevo_prompt) # Actualiza el texto grande en inglés
-                        _add_msg("Sistema", f"🤖 {explicacion}", "#2ecc71") # Te narra lo que hizo en español
+                        _add_msg("Sistema", f"🤖 {explicacion}", P.TXT_OK) # Te narra lo que hizo en español
                         txt_input.configure(state="normal")
                         btn_send.configure(state="normal")
                         txt_input.focus_set()
@@ -1238,7 +1238,7 @@ class CoreMixin:
                 except Exception as e:
                     err = e
                     def _err():
-                        _add_msg("Sistema", f"❌ Error: {err}", "#e74c3c")
+                        _add_msg("Sistema", f"❌ Error: {err}", P.TXT_ERROR)
                         txt_input.configure(state="normal")
                         btn_send.configure(state="normal")
                         self.set_estado(tr("❌ Error en el Copiloto."), P.TXT_ERROR)

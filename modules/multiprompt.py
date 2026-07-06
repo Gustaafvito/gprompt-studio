@@ -470,12 +470,12 @@ class MultiPromptService:
                     self.app._abrir_comparador(
                         bloques[:n],
                         extra_botones=[
-                            (tr("🎬 Encadenar como prompt de vídeo"), "#7c3aed", _encadenar_video),
+                            (tr("🎬 Encadenar como prompt de vídeo"), P.BTN_ACENTO, _encadenar_video),
                         ],
                     )
                     self.app.dialogs.set_estado(
                         tr('📽 Storyboard de {0} frames listo · 🎬 encadénalo a vídeo desde el comparador').format(len(bloques)),
-                        "#2ecc71",
+                        P.TXT_OK,
                     )
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -546,7 +546,7 @@ class MultiPromptService:
                     self.app.guardar_en_historial(resp)
                     self.app.dialogs.set_estado(
                         tr('🎬 Vídeo encadenado de {0} keyframes aplicado al editor').format(len(frames)),
-                        "#2ecc71",
+                        P.TXT_OK,
                     )
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -571,11 +571,11 @@ class MultiPromptService:
         """
         if self.app.modo_var.get() != "video":
             return self.app.dialogs.set_estado(
-                tr("⚠️ El Cortometraje solo está disponible en modo VÍDEO."), "#e67e22")
+                tr("⚠️ El Cortometraje solo está disponible en modo VÍDEO."), P.TXT_AVISO)
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 10:
             return self.app.dialogs.set_estado(
-                tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), "#e67e22")
+                tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), P.TXT_AVISO)
 
         n = self.app._pedir_n_modal(
             tr("🎬 Cortometraje — número de escenas"),
@@ -609,13 +609,13 @@ class MultiPromptService:
                 def _mostrar():
                     self._mostrar_guion_cortometraje(resp, n)
                     self.app.dialogs.set_estado(
-                        tr('🎬 Guion de {0} escenas listo').format(n), "#2ecc71")
+                        tr('🎬 Guion de {0} escenas listo').format(n), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
             except Exception as e:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
-                    tr('❌ Error: {0}').format(e), "#e74c3c"))
+                    tr('❌ Error: {0}').format(e), P.TXT_ERROR))
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
@@ -683,7 +683,7 @@ class MultiPromptService:
         if self.app.modo_var.get() != "imagen":
             return self.app.dialogs.set_estado(
                 tr("⚠️ Storyboard de imagen solo está disponible en modo IMAGEN."),
-                "#e67e22",
+                P.TXT_AVISO,
             )
         idea = self.app.txt_idea.get("1.0", "end").strip()
         if not idea or len(idea) < 5:
@@ -789,12 +789,12 @@ class MultiPromptService:
                     self.app._abrir_comparador(
                         bloques[:n],
                         extra_botones=[
-                            ("📋 Fusionar en 1 prompt", "#7c3aed", _fusionar),
+                            ("📋 Fusionar en 1 prompt", P.BTN_ACENTO, _fusionar),
                         ],
                     )
                     self.app.dialogs.set_estado(
                         tr('🖼 Storyboard de {0} paneles listo · 📋 fusiona en 1 prompt desde el comparador').format(len(bloques)),
-                        "#2ecc71",
+                        P.TXT_OK,
                     )
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -858,7 +858,7 @@ class MultiPromptService:
                     self.app.guardar_en_historial(resp)
                     self.app.dialogs.set_estado(
                         tr('📋 Storyboard fusionado en 1 prompt ({0} paneles) aplicado al editor').format(len(paneles)),
-                        "#2ecc71",
+                        P.TXT_OK,
                     )
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
@@ -999,10 +999,10 @@ class MultiPromptService:
         def _color_nodo(nid):
             n = nodos[nid]
             if nid == sel["id"]:
-                return "#fbbf24", "#1f2937"  # seleccionado: dorado, texto oscuro
+                return P.TXT_ACENTO, "#1f2937"  # seleccionado: dorado, texto oscuro
             if n["depth"] == 0:
                 return "#2563eb", "#ffffff"  # raíz: azul
-            return "#7c3aed", "#ffffff"      # derivado: morado
+            return P.BTN_ACENTO, "#ffffff"      # derivado: morado
 
         def _redibujar():
             _calcular_layout()
@@ -1023,7 +1023,7 @@ class MultiPromptService:
                 fill, txt_col = _color_nodo(n["id"])
                 rect = canvas.create_rectangle(
                     n["_x"], n["_y"], n["_x"] + BOX_W, n["_y"] + BOX_H,
-                    fill=fill, outline="#fbbf24" if n["id"] == sel["id"] else "",
+                    fill=fill, outline=P.TXT_ACENTO if n["id"] == sel["id"] else "",
                     width=3 if n["id"] == sel["id"] else 0,
                     tags=("nodo", f"n{n['id']}"),
                 )

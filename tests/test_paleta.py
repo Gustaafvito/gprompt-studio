@@ -17,8 +17,19 @@ PROHIBIDOS = {
     "#1a7a3c", "#145e2d", "#1a8a3c", "#127a30", "#1e5f3a", "#16492d",
     "#15633a", "#7a1a1a", "#5a1a1a", "#5a0f0f", "#7c3aed", "#6d28d9",
     "#1a4a5a", "#155e75", "#2ecc71", "#e74c3c", "#3498db", "#f39c12",
-    "#fbbf24",
+    "#fbbf24", "#e67e22",
 }
+
+# Hexes cuyo valor es IDÉNTICO a una constante de paleta: prohibidos como
+# literal EN CUALQUIER POSICIÓN (posicional en set_estado, ternarios,
+# dicts, arrays...), no solo en kwargs de color. La auditoría 2026-07-06
+# encontró 97 fugas que el check de kwargs no veía.
+PROHIBIDOS_TOTAL = {
+    "#2ecc71", "#e74c3c", "#e67e22", "#3498db", "#fbbf24", "#7c3aed",
+    "#6d28d9", "#1a7a3c", "#145e2d", "#7a1a1a", "#5a0f0f", "#1a4a5a",
+    "#155e75",
+}
+RE_LITERAL_HEX = re.compile(r'["\'](#[0-9a-fA-F]{6})["\']')
 RE_KW = re.compile(r'\b(fg_color|hover_color|text_color)\s*=\s*"(#[0-9a-fA-F]{3,6})"')
 # theme/config/components definen los DICCIONARIOS de tema (fuente legítima).
 EXCLUIR = {"paleta.py", "theme.py", "config.py", "components.py",
@@ -68,3 +79,20 @@ def test_sin_hex_semanticos_hardcodeados():
     assert not fugas, (
         f"{len(fugas)} colores semánticos hardcodeados (usa modules.paleta): "
         + "; ".join(fugas[:10]))
+
+
+def test_sin_hex_identicos_en_ninguna_posicion():
+    """Los hexes con constante de paleta de valor idéntico no pueden
+    aparecer como literal en ninguna posición: la sustitución por P.X
+    es siempre segura (cero cambio visual) y mantiene la fuente única."""
+    fugas = []
+    for py in list(ROOT.glob("*.py")) + list((ROOT / "modules").glob("*.py")):
+        if py.name in EXCLUIR:
+            continue
+        for i, ln in enumerate(py.read_text(encoding="utf-8").splitlines(), 1):
+            for m in RE_LITERAL_HEX.finditer(ln):
+                if m.group(1).lower() in PROHIBIDOS_TOTAL:
+                    fugas.append(f"{py.name}:{i} {m.group(1)}")
+    assert not fugas, (
+        f"{len(fugas)} hexes con constante idéntica en paleta "
+        f"(sustituye por P.X, mismo valor): " + "; ".join(fugas[:10]))

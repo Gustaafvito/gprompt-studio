@@ -36,10 +36,10 @@ def color_para_score(valor: int, maximo: int) -> str:
         return "#888888"
     pct = (valor / maximo) * 100
     if pct >= 80:
-        return "#2ecc71"
+        return P.TXT_OK
     elif pct >= 50:
         return "#f39c12"
-    return "#e74c3c"
+    return P.TXT_ERROR
 
 
 def construir_peticion_scoring(prompt: str, modelo_info: str = "") -> str:
@@ -706,7 +706,7 @@ class ToolsAnalysisService:
 
         self.app.dialogs.set_estado(
             tr("🚀 Auto-mejora lista ({0} cards)").format(len(resultados) if resultados else 0)
-            + (f" ({tr('💾 caché')})" if cacheado else ""), "#2ecc71")
+            + (f" ({tr('💾 caché')})" if cacheado else ""), P.TXT_OK)
 
     def _abrir_estadisticas(self) -> None:
         """Ventana con estadísticas detalladas + filtro por rango de fechas."""
@@ -808,12 +808,12 @@ class ToolsAnalysisService:
             grid = ctk.CTkFrame(scroll, fg_color="transparent")
             grid.pack(fill="x", padx=5)
             stats_gen = [
-                (tr("📋 Historial"), len(hist_full), "#3498db"),
+                (tr("📋 Historial"), len(hist_full), P.TXT_INFO),
                 (tr("⭐ Favoritos"), len(favs), "#f1c40f"),
-                (tr("🌟 Estrellas"), len(stars), "#e74c3c"),
+                (tr("🌟 Estrellas"), len(stars), P.TXT_ERROR),
                 (tr("💎 Seeds"), len(seeds), "#9b59b6"),
-                (tr("🧑 Personajes"), len(self.app.store.personajes or []), "#2ecc71"),
-                (tr("🔗 LoRAs"), len(self.app.store.loras or []), "#e67e22"),
+                (tr("🧑 Personajes"), len(self.app.store.personajes or []), P.TXT_OK),
+                (tr("🔗 LoRAs"), len(self.app.store.loras or []), P.TXT_AVISO),
                 (tr("🏷️ Snippets"), len(prefs.get("snippets", [])), "#1abc9c"),
                 (tr("📐 Fórmulas"), len(prefs.get("formulas", [])), "#e91e63"),
                 (tr("🧬 ADNs"), len(prefs.get("adns_guardados", [])), "#00bcd4"),
@@ -1444,7 +1444,7 @@ class ToolsAnalysisService:
                         self.app.dialogs.actualizar_salida(mejor["texto"])
                         vent.destroy()
                         self.app.dialogs.set_estado(
-                            tr('🎯 Prompt optimizado aplicado ({0}/100)').format(int(mejor['score'])), "#2ecc71")
+                            tr('🎯 Prompt optimizado aplicado ({0}/100)').format(int(mejor['score'])), P.TXT_OK)
                     btn_aplicar.configure(state="normal", command=_aplicar)
 
                 self.app.after(0, _finalizar)

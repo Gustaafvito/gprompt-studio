@@ -118,7 +118,7 @@ class AbTestingService:
             total = sum(1 for v in dim_vars.values() if v.get())
             lbl_contador.configure(
                 text=tr('Seleccionadas: {0} (máx 2)').format(total),
-                text_color=P.TXT_OK if 1 <= total <= 2 else "#e67e22",
+                text_color=P.TXT_OK if 1 <= total <= 2 else P.TXT_AVISO,
             )
             # Deshabilitar visualmente los no seleccionados si ya hay 2
             for nombre, var in dim_vars.items():
@@ -579,7 +579,7 @@ class AbTestingService:
                                 for _m_key, _info in cards.items():
                                     try:
                                         if _m_key == m2:
-                                            _info["card"].configure(border_color="#fbbf24",
+                                            _info["card"].configure(border_color=P.TXT_ACENTO,
                                                                      border_width=3)
                                             _info["hdr"].configure(fg_color=P.TXT_ACENTO)
                                         else:
@@ -590,7 +590,7 @@ class AbTestingService:
 
                                 self.app.dialogs.set_estado(
                                     tr("🏆 '{0}' aplicado — la ventana sigue abierta para probar otros").format(m2),
-                                    "#2ecc71")
+                                    P.TXT_OK)
 
                             cards[m]["btn_usar"].configure(
                                 state="normal",

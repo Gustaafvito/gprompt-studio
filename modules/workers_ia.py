@@ -207,7 +207,10 @@ class WorkersIaService:
                     texto = re.sub(r'\(([^()]+?):\s*[0-9.]+\s*\)', r'\1', texto)
                     self.app.after(0, lambda: self.app.dialogs.set_estado(tr('⚠️ Pesos numéricos eliminados (ComfyUI + Turbo)'), P.TXT_ACENTO))
 
-            self.app.guardar_en_historial(texto)
+            # guardar_en_historial lee variables Tk (modo_var, combos, footer)
+            # → SIEMPRE en el hilo principal vía after (leerlas desde el
+            # worker arriesga "main thread is not in main loop" al cerrar).
+            self.app.after(0, lambda t=texto: self.app.guardar_en_historial(t))
             # No sobrescribir el resultado con el texto crudo de las
             # variaciones — esas se muestran en un modal con cards.
             # En refinamiento, abrimos el modal de diff con
@@ -338,7 +341,10 @@ class WorkersIaService:
                 texto = re.sub(r'\n?\s*NEGATIVE\s+PROMPT\s*:.*?$', '', texto,
                                 flags=re.DOTALL | re.IGNORECASE).strip()
 
-            self.app.guardar_en_historial(texto)
+            # guardar_en_historial lee variables Tk (modo_var, combos, footer)
+            # → SIEMPRE en el hilo principal vía after (leerlas desde el
+            # worker arriesga "main thread is not in main loop" al cerrar).
+            self.app.after(0, lambda t=texto: self.app.guardar_en_historial(t))
 
             def _aplicar():
                 self.app.dialogs.actualizar_salida(texto)
@@ -373,7 +379,7 @@ class WorkersIaService:
                 self.app.txt_idea.delete("1.0", "end")
                 self.app.txt_idea.insert("1.0", f"{desc}\n\nAdiciones del usuario: {idea_manual}" if idea_manual else desc)
                 if es_referencia:
-                    self.app.dialogs.set_estado(tr('🖼 [{0}] → generando prompt con guía visual (estilo/paleta/personajes)...').format(motor), "#7c3aed")
+                    self.app.dialogs.set_estado(tr('🖼 [{0}] → generando prompt con guía visual (estilo/paleta/personajes)...').format(motor), P.BTN_ACENTO)
                 elif tiene_prompt:
                     self.app.dialogs.set_estado(tr('👁 [{0}] → mejorando prompt existente con análisis visual...').format(motor), P.TXT_ACENTO)
                 else:
@@ -437,7 +443,10 @@ class WorkersIaService:
 
             texto = self.app.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
             texto = limpiar_marcadores(texto)
-            self.app.guardar_en_historial(texto)
+            # guardar_en_historial lee variables Tk (modo_var, combos, footer)
+            # → SIEMPRE en el hilo principal vía after (leerlas desde el
+            # worker arriesga "main thread is not in main loop" al cerrar).
+            self.app.after(0, lambda t=texto: self.app.guardar_en_historial(t))
 
             def _mostrar_final():
                 self.app.dialogs.actualizar_salida(texto)
