@@ -414,7 +414,7 @@ _CONSEJOS_NSFW = """DATASET PARA LoRA DE PERSONAJE NSFW (18+)
   activar el modo NSFW de la cuenta y el LoRA quedará marcado como tal.
   Otras plataformas (Civitai, Tensor.Art) tienen reglas propias.
 
-• CANTIDAD: 25-40 imágenes. Este generador da 30 tomas en 3 niveles
+• CANTIDAD: 25-40 imágenes. Este generador da 50 tomas en 3 niveles
   (lencería → sugerente → desnudo artístico): genera de sobra y ELIGE.
 • IDENTIDAD: la cara y el cuerpo se aprenden igual que en un LoRA normal —
   el ⚖ Equilibrado prioriza lencería + implied (más control de identidad)

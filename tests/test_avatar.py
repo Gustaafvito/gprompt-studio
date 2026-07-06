@@ -641,7 +641,7 @@ class TestTipoNSFW:
             NSFW_ANGLES,
             NSFW_BALANCED_ANGLE_SET,
         )
-        assert len(NSFW_ANGLES) == 30
+        assert len(NSFW_ANGLES) == 50
         assert "NSFW" in LORA_TYPES
         grupos_usados = {d["group"] for d in NSFW_ANGLES.values()}
         assert grupos_usados <= set(NSFW_ANGLE_GROUPS)

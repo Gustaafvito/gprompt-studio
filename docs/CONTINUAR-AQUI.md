@@ -182,9 +182,10 @@ Los 4 catálogos de tomas (Personaje/Paisaje/Objeto/Estilo) pasan de 30 a
 ## Hecho 2026-07-06 (noche): tipo de LoRA NSFW (18+)
 
 5º tipo "🔞 NSFW" en LORA_TYPES (petición usuario). Diseño:
-- 30 tomas SOLO de sujeto adulto en 3 niveles: lencería (12) → sugerente/
-  implied (8) → desnudo artístico (10). Sin actos: un LoRA de identidad
-  entrena la persona, no la escena.
+- 50 tomas SOLO de sujeto adulto en 3 niveles: lencería (18) → sugerente/
+  implied (14) → desnudo artístico (18). Sin actos: un LoRA de identidad
+  entrena la persona, no la escena. ⚖ Equilibrado = 24 (prioriza
+  lencería/implied; los explícitos a elección manual).
 - Descripción canónica SIN ropa (SYSTEM_PROMPT_NSFW_CANONICO: empieza por
   "adult" + franja de edad; el vestuario va por toma). Campo nuevo
   cuerpo_detalle (tatuajes/lunares = coherencia entre tomas).

@@ -2015,6 +2015,157 @@ NSFW_ANGLES = {
         "filename": "30_nude_wet",
         "group": "artistico",
     },
+
+    # --- AMPLIACIÓN A 50 (2026-07-06): más ángulos por nivel ---
+    "nsfw_lenc_bust_34": {
+        "label": "Lencería — busto 3/4",
+        "prompt": "upper body shot, adult subject in an elegant lace bralette, body turned three-quarter view, cropped at the waist, soft flattering light",
+        "framing": "upper body three-quarter, lingerie",
+        "filename": "31_lenc_bust_34",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_profile": {
+        "label": "Lencería — perfil cuerpo entero",
+        "prompt": "full body shot, adult subject standing in full side profile wearing an elegant lingerie set, entire body visible from head to feet, no cropping, soft boudoir lighting",
+        "framing": "full body side profile, lingerie",
+        "filename": "32_lenc_profile",
+        "group": "lenceria",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_lenc_kneel_bed": {
+        "label": "Lencería — de rodillas en la cama",
+        "prompt": "adult subject in elegant lingerie kneeling on a bed, upright torso, playful sensual pose, whole figure visible, warm bedroom light",
+        "framing": "kneeling on bed, lingerie",
+        "filename": "33_lenc_kneel_bed",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_robe": {
+        "label": "Bata de seda entreabierta",
+        "prompt": "adult subject in a silk robe slipping off one shoulder, lingerie visible underneath, standing relaxed pose, warm soft light",
+        "framing": "silk robe over lingerie",
+        "filename": "34_lenc_robe",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_mirror": {
+        "label": "Lencería — frente al espejo",
+        "prompt": "adult subject in lingerie standing in front of a full-length mirror, reflection visible, bedroom setting, soft ambient light",
+        "framing": "mirror reflection, lingerie",
+        "filename": "35_lenc_mirror",
+        "group": "lenceria",
+    },
+    "nsfw_lenc_low_angle": {
+        "label": "Lencería — contrapicado",
+        "prompt": "low camera angle looking up at an adult subject in elegant lingerie, standing confident pose, dramatic perspective, whole figure visible",
+        "framing": "low angle, lingerie",
+        "filename": "36_lenc_low_angle",
+        "group": "lenceria",
+    },
+    "nsfw_impl_lying_front": {
+        "label": "Boca abajo en la cama (espalda)",
+        "prompt": "adult subject lying face down on a bed with bare back exposed, a sheet covering the lower body, implied nudity, relaxed intimate mood, soft light",
+        "framing": "lying face down, bare back",
+        "filename": "37_impl_lying_front",
+        "group": "sugerente",
+        "ratio": "3:2",  # tumbada → horizontal
+    },
+    "nsfw_impl_morning": {
+        "label": "Mañana entre sábanas",
+        "prompt": "adult subject waking up tangled in white sheets, bare shoulders visible, sleepy soft expression, morning window light, implied nudity",
+        "framing": "morning sheets, implied",
+        "filename": "38_impl_morning",
+        "group": "sugerente",
+        "ratio": "3:2",  # escena de cama → horizontal
+    },
+    "nsfw_impl_steam_mirror": {
+        "label": "Espejo empañado (baño)",
+        "prompt": "adult subject partially visible in a steamy fogged bathroom mirror, wrapped in a towel, one hand wiping the glass, implied intimate mood",
+        "framing": "foggy mirror, bathroom",
+        "filename": "39_impl_steam_mirror",
+        "group": "sugerente",
+    },
+    "nsfw_impl_doorway": {
+        "label": "Contraluz en el umbral",
+        "prompt": "adult subject nude silhouette standing in a doorway backlit by warm light, body outline visible without explicit detail, moody atmosphere",
+        "framing": "doorway silhouette, backlit",
+        "filename": "40_impl_doorway",
+        "group": "sugerente",
+    },
+    "nsfw_impl_legs": {
+        "label": "Detalle — piernas con medias",
+        "prompt": "close-up detail of the legs of an adult subject wearing sheer stockings, seated pose, elegant crop from thighs to feet, soft light",
+        "framing": "legs and stockings close-up",
+        "filename": "41_impl_legs",
+        "group": "sugerente",
+        "neg_extra": "full body, face, head",
+    },
+    "nsfw_impl_collarbone": {
+        "label": "Detalle — cuello y clavícula",
+        "prompt": "close-up of the neck collarbone and bare shoulder of an adult subject, delicate skin detail, intimate crop, soft directional light",
+        "framing": "neck and collarbone close-up",
+        "filename": "42_impl_collarbone",
+        "group": "sugerente",
+        "neg_extra": "full body, legs, feet",
+    },
+    "nsfw_nude_profile": {
+        "label": "Desnudo — perfil completo",
+        "prompt": "full body artistic nude, adult subject standing in full side profile, elegant posture, entire body visible from head to feet, no cropping, sculptural studio lighting",
+        "framing": "full body nude, side profile",
+        "filename": "43_nude_profile",
+        "group": "artistico",
+        "neg_extra": "cropped legs, feet out of frame, cut off feet",
+    },
+    "nsfw_nude_high_angle": {
+        "label": "Desnudo — picado (tumbada)",
+        "prompt": "artistic nude, high camera angle looking down at an adult subject lying gracefully on draped fabric, elegant pose, whole figure visible, soft light",
+        "framing": "high angle nude, lying",
+        "filename": "44_nude_high_angle",
+        "group": "artistico",
+        "ratio": "3:2",  # figura tumbada vista desde arriba → horizontal
+    },
+    "nsfw_nude_seated_back": {
+        "label": "Desnudo — sentada de espaldas",
+        "prompt": "artistic nude, adult subject seated on the floor with the back to the camera, spine curve and shoulders visible, whole figure visible, sculptural light",
+        "framing": "seated nude, back view",
+        "filename": "45_nude_seated_back",
+        "group": "artistico",
+    },
+    "nsfw_nude_hug_knees": {
+        "label": "Desnudo — abrazando las rodillas",
+        "prompt": "artistic nude, adult subject seated hugging the knees to the chest, modest compact pose, whole figure visible, soft window light",
+        "framing": "nude hugging knees",
+        "filename": "46_nude_hug_knees",
+        "group": "artistico",
+    },
+    "nsfw_nude_fabric": {
+        "label": "Desnudo — con tela al vuelo",
+        "prompt": "artistic nude, adult subject with flowing sheer fabric partially draped across the body, sense of motion and grace, studio lighting",
+        "framing": "nude with flowing fabric",
+        "filename": "47_nude_fabric",
+        "group": "artistico",
+    },
+    "nsfw_nude_blinds": {
+        "label": "Desnudo — sombras de persiana",
+        "prompt": "artistic nude, adult subject with venetian blind shadow stripes across the skin, film noir mood, dramatic light patterns",
+        "framing": "nude with blind shadows",
+        "filename": "48_nude_blinds",
+        "group": "artistico",
+    },
+    "nsfw_nude_milk_bath": {
+        "label": "Baño de leche (flores)",
+        "prompt": "artistic nude, adult subject in a milk bath with flower petals floating on the surface, shoulders and knees above the milk, dreamy aesthetic, soft light",
+        "framing": "milk bath with petals",
+        "filename": "49_nude_milk_bath",
+        "group": "artistico",
+        "ratio": "3:2",  # bañera → horizontal
+    },
+    "nsfw_nude_back_detail": {
+        "label": "Desnudo — detalle de espalda",
+        "prompt": "artistic nude close-up of the bare back and lumbar curve of an adult subject, skin texture and light interplay, fine art crop",
+        "framing": "bare back close-up",
+        "filename": "50_nude_back_detail",
+        "group": "artistico",
+        "neg_extra": "full body, face, head, legs, feet",
+    },
 }
 
 NSFW_ANGLE_GROUPS = {
@@ -2029,7 +2180,8 @@ NSFW_DEFAULT_ANGLE_SET = list(NSFW_ANGLES.keys())
 # control. Los más explícitos se dejan a elección manual.
 NSFW_BALANCED_ANGLE_SET = [
     "nsfw_lenc_full_front", "nsfw_lenc_full_back", "nsfw_lenc_34",
-    "nsfw_lenc_bust", "nsfw_lenc_seated_bed", "nsfw_lenc_lying_bed",
+    "nsfw_lenc_profile", "nsfw_lenc_bust", "nsfw_lenc_bust_34",
+    "nsfw_lenc_seated_bed", "nsfw_lenc_lying_bed",
     "nsfw_lenc_white", "nsfw_lenc_red_satin", "nsfw_lenc_bodysuit",
     "nsfw_lenc_stockings", "nsfw_lenc_open_shirt", "nsfw_lenc_towel",
     "nsfw_impl_sheet", "nsfw_impl_back_bare", "nsfw_impl_hands_cover",
