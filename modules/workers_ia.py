@@ -143,25 +143,26 @@ class WorkersIaService:
         return f"POSITIVE PROMPT: {trigger}, {texto.lstrip()}"
 
     def _mover_lora_al_inicio_si_pref(self, texto, es_ideas=False):
-        """Si la pref 'LoRA al inicio' está activa, mueve el trigger del LoRA
-        primario al principio del POSITIVE (convención SeaArt). No aplica a
-        ideas ni si no hay LoRA/trigger."""
+        """Si la pref 'LoRA al inicio' está activa, mueve los triggers de
+        TODOS los LoRAs activos (primario + extras del multi-LoRA) al
+        principio del POSITIVE (convención SeaArt). No aplica a ideas ni si
+        no hay LoRA/trigger."""
         if es_ideas or not texto:
             return texto
         try:
             if not (hasattr(self.app, "lora_inicio_var")
                     and self.app.lora_inicio_var.get()):
                 return texto
-            nombre = (self.app.combo_lora.get()
-                      if hasattr(self.app, "combo_lora") else "")
-            if not nombre or nombre == tr("— Sin LoRA —"):
-                return texto
-            trigger = self.app.store.trigger_lora(nombre)
+            triggers = self.app.footer.triggers_loras_activos() or []
         except Exception:
             return texto
-        if not trigger or not trigger.strip():
-            return texto
-        return mover_trigger_al_inicio(texto, trigger)
+        # mover_trigger_al_inicio inserta cada trigger justo tras la etiqueta
+        # POSITIVE, así que iteramos en ORDEN INVERSO para que el orden final
+        # sea el de triggers_loras_activos (primario primero, luego extras).
+        for trigger in reversed(triggers):
+            if trigger and trigger.strip():
+                texto = mover_trigger_al_inicio(texto, trigger.strip())
+        return texto
 
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
                    es_refinamiento=False, texto_previo=None):

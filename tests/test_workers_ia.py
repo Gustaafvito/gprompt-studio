@@ -583,3 +583,58 @@ class TestLoraTriggerConBloqueDedicado:
         assert out.lower().count("lmnlhrr") == 1
         # Y no debe haber sido modificado
         assert out == texto
+
+
+# ─────────────────── _mover_lora_al_inicio_si_pref ──────────────────
+
+
+class TestMoverLoraAlInicio:
+    """Pref 'LoRA al inicio': mueve los triggers al principio del POSITIVE.
+
+    Bug reportado: con varios LoRAs activos solo movía el primario. Debe
+    mover TODOS (primario + extras del modal), preservando el orden."""
+
+    def _stub_app(self, triggers, activa=True):
+        return SimpleNamespace(
+            lora_inicio_var=_var(activa),
+            footer=SimpleNamespace(triggers_loras_activos=lambda: list(triggers)),
+        )
+
+    def test_pref_desactivada_no_toca(self):
+        s = WorkersIaService(self._stub_app(["mistyle"], activa=False))
+        texto = "POSITIVE PROMPT: a castle, mistyle style"
+        assert s._mover_lora_al_inicio_si_pref(texto) == texto
+
+    def test_un_lora_va_al_inicio(self):
+        s = WorkersIaService(self._stub_app(["mistyle"]))
+        texto = "POSITIVE PROMPT: a castle on a cliff, mistyle style, dark"
+        out = s._mover_lora_al_inicio_si_pref(texto)
+        assert out.startswith("POSITIVE PROMPT: mistyle style,")
+        assert out.lower().count("mistyle") == 1
+
+    def test_multi_lora_todos_al_inicio_en_orden(self):
+        # El bug: con 3 LoRAs, solo el primario se movía al frente.
+        s = WorkersIaService(self._stub_app(["lmnlhrr", "c1n3m4t1c", "gothvibe"]))
+        texto = ("POSITIVE PROMPT: a dark scene, lmnlhrr style, moody, "
+                 "c1n3m4t1c style, gothvibe style")
+        out = s._mover_lora_al_inicio_si_pref(texto)
+        # Los tres van al principio, en el orden de triggers_loras_activos
+        cuerpo = out.split("POSITIVE PROMPT:", 1)[1]
+        pos = [cuerpo.lower().index(t) for t in
+               ("lmnlhrr", "c1n3m4t1c", "gothvibe")]
+        assert pos == sorted(pos), f"orden incorrecto: {out}"
+        # Y ninguno duplicado
+        for t in ("lmnlhrr", "c1n3m4t1c", "gothvibe"):
+            assert out.lower().count(t) == 1
+        # Van antes que la descripción
+        assert cuerpo.lower().index("gothvibe") < cuerpo.lower().index("dark scene")
+
+    def test_es_ideas_no_aplica(self):
+        s = WorkersIaService(self._stub_app(["mistyle"]))
+        texto = "1. idea A\n2. idea B"
+        assert s._mover_lora_al_inicio_si_pref(texto, es_ideas=True) == texto
+
+    def test_sin_loras_no_toca(self):
+        s = WorkersIaService(self._stub_app([]))
+        texto = "POSITIVE PROMPT: a castle"
+        assert s._mover_lora_al_inicio_si_pref(texto) == texto
