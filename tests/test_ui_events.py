@@ -346,3 +346,28 @@ class TestEstiloFamiliaDesdeLora:
         assert f(["RealVis Portrait"]) is None
         assert f(["", None]) is None
         assert f([]) is None
+
+
+class TestEstiloFamiliaDesdeModelo:
+    """Helper puro: deduce 'Anime' desde el NOMBRE del modelo de imagen.
+
+    Set más estricto que el de LoRAs: 'Illustrious' NO debe activar Anime
+    (hay modelos de realismo basados en esa arquitectura)."""
+
+    def test_detecta_modelos_anime(self):
+        from modules.ui_footer import estilo_familia_desde_modelo as f
+        assert f("AnimePro FLUX") == "Anime"
+        assert f("Niji 6") == "Anime"
+        assert f("Cyberpunk Anime Diffusion") == "Anime"
+        assert f("Disney Pixar Cartoon type B") == "Anime"
+        assert f("XE: Anime Hentai (FLUX)") == "Anime"
+
+    def test_no_falsos_positivos(self):
+        from modules.ui_footer import estilo_familia_desde_modelo as f
+        # 'Illustrious' es arquitectura: un modelo de realismo basado en ella
+        # NO debe forzar Anime (el token 'illustr' se excluyó a propósito).
+        assert f("Illustrious Realism by Klaabu") is None
+        assert f("RealVisXL V5") is None
+        assert f("Juggernaut XL") is None
+        assert f("") is None
+        assert f(None) is None

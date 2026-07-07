@@ -57,6 +57,25 @@ def estilo_familia_desde_lora(textos) -> str | None:
     return None
 
 
+# Tokens para el NOMBRE del MODELO. MÁS ESTRICTO que el de LoRAs: NO incluye
+# 'illustr'/'ilustr'/'2.5d' a propósito, porque "Illustrious" es una
+# arquitectura base que usan también modelos REALISTAS (p.ej. "Illustrious
+# Realism by Klaabu") — matcharlos daría un falso positivo hacia Anime.
+_ANIME_MODEL_TOKENS = (
+    "anime", "manga", "toon", "cartoon", "chibi", "waifu", "hentai",
+    "niji", "cel shad", "cel-shad",
+)
+
+
+def estilo_familia_desde_modelo(modelo: str) -> str | None:
+    """Sugiere 'Anime' si el NOMBRE del modelo de imagen lo delata (AnimePro,
+    Niji, Cyberpunk Anime, Pixar Cartoon…). Función pura y testeable."""
+    m = (modelo or "").lower()
+    if any(tok in m for tok in _ANIME_MODEL_TOKENS):
+        return "Anime"
+    return None
+
+
 def _get_real_is_light():
     return ctk.get_appearance_mode().lower() == 'light'
 
@@ -853,9 +872,10 @@ class UiFooterService:
             logger.debug(f"[silent estilo auto lora] {e}")
 
     def _autodetectar_estilo_familia(self):
-        """Si hay un LoRA con pinta de anime activo, el modelo/familia admite
-        'Anime' y el usuario NO ha forzado otro estilo (está en 'Auto'),
-        preselecciona 'Anime' en el combo Estilo. No pisa elecciones manuales."""
+        """Si el LoRA activo O el MODELO seleccionado tienen pinta de anime, la
+        familia admite 'Anime' y el usuario NO ha forzado otro estilo (está en
+        'Auto'), preselecciona 'Anime' en el combo Estilo. No pisa elecciones
+        manuales."""
         if not (hasattr(self.app, "familia_estilo_var")
                 and hasattr(self.app, "combo_familia_estilo")):
             return
@@ -873,12 +893,16 @@ class UiFooterService:
             if isinstance(l, dict):
                 textos.append(l.get("nombre", ""))
                 textos.append(l.get("trigger", ""))
-        sugerido = estilo_familia_desde_lora(textos)
+        modelo = (self.app.combo_modelo_imagen.get()
+                  if hasattr(self.app, "combo_modelo_imagen") else "")
+        # Sugerencia: por LoRA (tokens amplios) o, si no, por el NOMBRE del
+        # modelo (tokens estrictos). Así un modelo anime sin LoRA anime (p.ej.
+        # AnimePro FLUX) también preselecciona 'Anime' en vez de tirar a foto.
+        sugerido = (estilo_familia_desde_lora(textos)
+                    or estilo_familia_desde_modelo(modelo))
         if not sugerido:
             return
         from config import ESTILOS_POR_FAMILIA, detectar_familia
-        modelo = (self.app.combo_modelo_imagen.get()
-                  if hasattr(self.app, "combo_modelo_imagen") else "")
         familia = detectar_familia(modelo) if modelo else None
         estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
         if sugerido in estilos:
