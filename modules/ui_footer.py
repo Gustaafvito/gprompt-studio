@@ -57,22 +57,97 @@ def estilo_familia_desde_lora(textos) -> str | None:
     return None
 
 
-# Tokens para el NOMBRE del MODELO. MÁS ESTRICTO que el de LoRAs: NO incluye
-# 'illustr'/'ilustr'/'2.5d' a propósito, porque "Illustrious" es una
-# arquitectura base que usan también modelos REALISTAS (p.ej. "Illustrious
-# Realism by Klaabu") — matcharlos daría un falso positivo hacia Anime.
-_ANIME_MODEL_TOKENS = (
-    "anime", "manga", "toon", "cartoon", "chibi", "waifu", "hentai",
-    "niji", "cel shad", "cel-shad",
+# ── Autodetección de ESTILO desde el modelo de imagen ──────────────────
+# Preselecciona el estilo apropiado (Anime/Ilustración/CG/Fantasy/SciFi…)
+# según el modelo, para que un modelo NO-fotorrealista no se quede en 'Auto'
+# (que tira a foto y mete su propio look en el negativo, peleando con él).
+#
+# Solo se actúa cuando estamos SEGUROS de que el modelo NO es fotorrealista:
+# los modelos foto/realistas se quedan en 'Auto' (que ya es correcto).
+
+# Marcadores que abren la LISTA DE CASOS DE USO en best_for. Todo lo que va
+# después describe "para qué sirve" (ideal para fantasía, sci-fi...), no el
+# ESTILO del modelo → se ignora para no dar falsos positivos en realistas
+# (p.ej. "Fotorrealismo SDXL. Ideal para retratos, fantasía..." NO es Fantasy).
+_MARCADORES_USOS = (
+    "ideal para", "ideal for", "excelente para", "perfecto para",
+    "great for", "bueno para", "recomendado para", "pensado para",
+    "orientado a", "óptimo para", "especial para", "mejor para",
+)
+
+# Cada intent: (scope, keywords, estilos preferidos ORDENADOS).
+#   scope "blob"   → se busca en nombre + parte-de-estilo del best_for.
+#   scope "nombre" → SOLO en el nombre (los GÉNEROS fantasy/scifi los listan
+#                    los modelos foto como temas que hacen bien → falsos
+#                    positivos si se miran en best_for; las TÉCNICAS de render
+#                    —anime/CG/ilustración— sí son fiables ahí).
+_ESTILO_INTENTS = (
+    ("blob", ("anime", "manga", "waifu", "hentai", "niji", "danbooru",
+              "illustrious", "noobai", "pony", "booru"),
+     ("Anime", "Manga", "Ilustración", "Illustration", "Creative")),
+    ("blob", ("chibi",),
+     ("Chibi", "Anime", "Ilustración")),
+    ("blob", ("cg/3d", "cg 3d", "3d render", "3d-render", "render 3d", "cgi",
+              "octane", "pixar", "unreal engine", "estilo 3d", "estilo cg"),
+     ("3D-Render", "Concept-Art", "Creative", "Ilustración", "Illustration")),
+    ("blob", ("watercolor", "acuarela", "óleo", "oil paint", "gouache",
+              "pintura al"),
+     ("Acuarela", "Pintura", "Ilustración", "Creative")),
+    ("blob", ("painterly", "oil painting", "brushstroke", "pintura", "impasto"),
+     ("Pintura", "Acuarela", "Concept-Art", "Creative", "Ilustración")),
+    ("blob", ("concept art", "concept-art", "matte painting", "digital art",
+              "digital painting", "artstation"),
+     ("Concept-Art", "Creative", "Ilustración", "Illustration", "Artistic")),
+    ("blob", ("illustration", "ilustración", "ilustrac", "stylized",
+              "estilizad", "cartoon", "comic", "cómic", "flat design",
+              "flat-design", "vector", "storybook"),
+     ("Ilustración", "Illustration", "Creative", "Concept-Art", "Anime",
+      "Artistic", "Flat-Design")),
+    ("blob", ("surreal", "surrealist", "surrealis", "dreamlike", "onírico",
+              "psychedelic"),
+     ("Surrealista", "Concept-Art", "Creative", "Ilustración")),
+    ("nombre", ("sci-fi", "scifi", "cyberpunk", "mecha", "cyborg"),
+     ("SciFi", "Concept-Art", "Creative", "Ilustración", "3D-Render")),
+    ("nombre", ("fantasy", "fantasía", "fantástic"),
+     ("Fantasy", "Fantasía", "Concept-Art", "Creative", "Ilustración")),
+)
+
+# Fallback "no-foto" cuando el intent matchea pero su estilo no está en la
+# familia (p.ej. un modelo CG/sci-fi en una familia solo-anime).
+_ESTILO_FALLBACK_NOFOTO = (
+    "Creative", "Concept-Art", "Ilustración", "Illustration", "3D-Render",
+    "Anime", "Artistic", "Pintura", "Acuarela",
 )
 
 
-def estilo_familia_desde_modelo(modelo: str) -> str | None:
-    """Sugiere 'Anime' si el NOMBRE del modelo de imagen lo delata (AnimePro,
-    Niji, Cyberpunk Anime, Pixar Cartoon…). Función pura y testeable."""
-    m = (modelo or "").lower()
-    if any(tok in m for tok in _ANIME_MODEL_TOKENS):
-        return "Anime"
+def _parte_estilo_best_for(best_for) -> str:
+    """La parte de best_for ANTES de la lista de casos de uso."""
+    bf = (best_for or "").lower()
+    corte = len(bf)
+    for m in _MARCADORES_USOS:
+        i = bf.find(m)
+        if i != -1:
+            corte = min(corte, i)
+    return bf[:corte]
+
+
+def estilo_sugerido_para_modelo(nombre, best_for, estilos_disponibles) -> str | None:
+    """Sugiere el estilo apropiado para un modelo NO-fotorrealista, elegido
+    entre los `estilos_disponibles` de su familia. None si el modelo parece
+    foto/realista o no encaja (→ se queda en 'Auto'). Función pura y testeable."""
+    disp = set(estilos_disponibles or [])
+    nom = (nombre or "").lower()
+    blob = f"{nom}  {_parte_estilo_best_for(best_for)}"
+    for scope, keywords, preferidos in _ESTILO_INTENTS:
+        texto = nom if scope == "nombre" else blob
+        if any(k in texto for k in keywords):
+            for e in preferidos:
+                if e in disp:
+                    return e
+            for e in _ESTILO_FALLBACK_NOFOTO:
+                if e in disp:
+                    return e
+            return None
     return None
 
 
@@ -895,17 +970,23 @@ class UiFooterService:
                 textos.append(l.get("trigger", ""))
         modelo = (self.app.combo_modelo_imagen.get()
                   if hasattr(self.app, "combo_modelo_imagen") else "")
-        # Sugerencia: por LoRA (tokens amplios) o, si no, por el NOMBRE del
-        # modelo (tokens estrictos). Así un modelo anime sin LoRA anime (p.ej.
-        # AnimePro FLUX) también preselecciona 'Anime' en vez de tirar a foto.
-        sugerido = (estilo_familia_desde_lora(textos)
-                    or estilo_familia_desde_modelo(modelo))
-        if not sugerido:
-            return
-        from config import ESTILOS_POR_FAMILIA, detectar_familia
+        from config import (
+            ESTILOS_POR_FAMILIA,
+            detectar_familia,
+            get_image_model_specs,
+        )
         familia = detectar_familia(modelo) if modelo else None
         estilos = ESTILOS_POR_FAMILIA.get(familia, []) if familia else []
-        if sugerido in estilos:
+        # 1) Prioridad: un LoRA con pinta de anime (intención directa del user).
+        sugerido = estilo_familia_desde_lora(textos)
+        if sugerido not in estilos:
+            sugerido = None
+        # 2) Si no, deducir el estilo del MODELO (anime/ilustración/CG/…) a
+        #    partir de su nombre y best_for, entre los estilos de su familia.
+        if not sugerido:
+            bf = (get_image_model_specs(modelo) or {}).get("best_for", "") if modelo else ""
+            sugerido = estilo_sugerido_para_modelo(modelo, bf, estilos)
+        if sugerido:
             self.app.familia_estilo_var.set(sugerido)
             self.app.combo_familia_estilo.set(tr(sugerido))
 

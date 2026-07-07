@@ -348,26 +348,52 @@ class TestEstiloFamiliaDesdeLora:
         assert f([]) is None
 
 
-class TestEstiloFamiliaDesdeModelo:
-    """Helper puro: deduce 'Anime' desde el NOMBRE del modelo de imagen.
+class TestEstiloSugeridoParaModelo:
+    """Clasificador de estilo por modelo: elige el estilo NO-foto adecuado
+    entre los disponibles de la familia; deja los realistas en Auto (None)."""
 
-    Set más estricto que el de LoRAs: 'Illustrious' NO debe activar Anime
-    (hay modelos de realismo basados en esa arquitectura)."""
+    # Estilos de las dos familias más comunes en el catálogo.
+    FLUX = ["Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi"]
+    ANIME_FAM = ["Auto", "Anime", "Manga", "Ilustración", "Chibi",
+                 "Realista", "Acuarela"]
 
-    def test_detecta_modelos_anime(self):
-        from modules.ui_footer import estilo_familia_desde_modelo as f
-        assert f("AnimePro FLUX") == "Anime"
-        assert f("Niji 6") == "Anime"
-        assert f("Cyberpunk Anime Diffusion") == "Anime"
-        assert f("Disney Pixar Cartoon type B") == "Anime"
-        assert f("XE: Anime Hentai (FLUX)") == "Anime"
+    def test_anime_por_nombre_y_best_for(self):
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        assert f("AnimePro FLUX", "Anime de alta calidad sobre Flux", self.FLUX) == "Anime"
+        assert f("Counterfeit V3.0", "Modelo anime de alta calidad", self.FLUX) == "Anime"
+        assert f("NoobAI-XL", "V-prediction. Estilo anime", self.ANIME_FAM) == "Anime"
 
-    def test_no_falsos_positivos(self):
-        from modules.ui_footer import estilo_familia_desde_modelo as f
-        # 'Illustrious' es arquitectura: un modelo de realismo basado en ella
-        # NO debe forzar Anime (el token 'illustr' se excluyó a propósito).
-        assert f("Illustrious Realism by Klaabu") is None
-        assert f("RealVisXL V5") is None
-        assert f("Juggernaut XL") is None
-        assert f("") is None
-        assert f(None) is None
+    def test_cg3d_cae_en_ilustracion_si_no_hay_3d(self):
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        # Caso real del usuario: modelo CG/3D en familia solo-anime → Ilustración.
+        bf = "Estilo CG/3D render cinematográfico. Ideal para mech suits, sci-fi."
+        assert f("Pipi-iL-CG6.5", bf, self.ANIME_FAM) == "Ilustración"
+
+    def test_pixar_3d(self):
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        assert f("Disney Pixar Flux", "Estilo 3D Disney/Pixar", self.FLUX) == "Creative"
+
+    def test_fantasy_scifi_solo_por_nombre(self):
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        assert f("Alpha_Fantasy_Flux", "Fantasía épica", self.FLUX) == "Fantasy"
+        # Género en el best_for de un modelo FOTO NO debe forzar estilo.
+        bf = "Fotorrealismo SDXL de referencia. Ideal para retratos, fantasía, sci-fi."
+        assert f("Juggernaut XL", bf, self.FLUX) is None
+
+    def test_realistas_se_quedan_en_auto(self):
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        assert f("SeaArt Realism", "Fotorrealismo de SeaArt", self.FLUX) is None
+        assert f("RealVisXL V5", "Checkpoint SDXL fotorrealista", self.FLUX) is None
+        assert f("Juggernaut XL", "Fotorrealismo SDXL de referencia", self.FLUX) is None
+        assert f("", "", self.FLUX) is None
+        assert f(None, None, self.FLUX) is None
+
+    def test_familia_sin_estilo_nofoto_deja_auto(self):
+        # "Illustrious Realism" (realismo) en la familia Realismo SD: aunque el
+        # token 'illustrious' matchee, la familia no ofrece NINGÚN estilo no-foto
+        # → None (se queda en Auto). Es lo que lo salva en el catálogo real.
+        from modules.ui_footer import estilo_sugerido_para_modelo as f
+        realismo_sd = ["Auto", "Fotorrealista", "Retrato", "Cinematográfico",
+                       "Editorial", "Fantasía", "SciFi"]
+        assert f("Illustrious Realism by Klaabu",
+                 "Checkpoint Illustrious realista", realismo_sd) is None
