@@ -200,12 +200,29 @@ Los 4 catálogos de tomas (Personaje/Paisaje/Objeto/Estilo) pasan de 30 a
   (tipos nuevos aparecen solos). Ficha auto e imagen de referencia
   soportadas; el modo edición ignora las claves NSFW (esperado).
 
+## Hecho 2026-07-08 (inventario ComfyUI refrescado)
+
+Actualizado config.py con INVENTARIO_MODELOS.md (C:\IA):
+- **Z-Image CLIP/VAE RESUELTO**: clip qwen_3_4b.safetensors, vae
+  ae.safetensors, clip_type qwen_image (antes vacíos → "elígelo en ComfyUI").
+- **Flux clip_type** "flux" → "flux2" (Flux 2 Klein).
+- **Ideogram 4 ahora LOCAL**: era `ideogram` excluido (solo API); pasa a
+  familia propia con specs + workflow (encoder ideogram4_text_encoder, VAE
+  ideogram4_vae, CFG 4/25 pasos). Test test_ideogram_es_imagen_local.
+- **ACE-Step DEJADO EXCLUIDO** a propósito: el inventario lo documenta como
+  imagen, pero es canónicamente audio (ACE-Step v1.5 música) y "xl_sft" es
+  ambiguo; reclasificar sin confirmación era arriesgado. PENDIENTE: si el
+  usuario confirma que su acestep_v1.5_xl_sft_bf16 genera IMÁGENES, quitar
+  de _COMFY_EXCLUIR_TOKENS y darle familia (como Ideogram).
+- Los nombres exactos de CLIP (qwen_3_4b vs _fp8mixed) son best-guess del
+  inventario; si el paste del workflow pide otro fichero, el usuario lo
+  elige en el dropdown de ComfyUI (no rompe).
+
 ## Pendientes que necesitan al usuario
 
 - **Krea-2**: confirmar formato (asumí natural), `max_chars` real (contador
   bajo la caja) y nota — puestos por estimación.
-- **Z-Image local**: nombres exactos de CLIP y VAE para clavar la chuleta
-  y el workflow (ahora salen "(elígelo en ComfyUI)").
+- **ACE-Step**: ¿es imagen o audio? (ver bloque de arriba).
 - Validar VÍDEO ComfyUI (Wan 2.2, LTX 2.3) con la herramienta — nunca
   probado.
 - Probar el dataset avatar con pies visibles y avisar si algún checkpoint

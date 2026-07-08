@@ -470,11 +470,12 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 # Ficheros que NO sirven en un generador de prompts y se excluyen del escaneo:
 # refinadores (2ª pasada, sin prompt propio), SVD (image-to-video puro que
 # ignora el texto), piezas sueltas de un pipeline (transformer_only), modelos
-# de inpainting (necesitan máscara + imagen), ACE-Step (audio) e Ideogram
-# (sin soporte real en ComfyUI local, solo vía API — el Ideogram 4 de SeaArt
-# cloud sí se mantiene, esto solo excluye los ficheros locales).
+# de inpainting (necesitan máscara + imagen) y ACE-Step (audio).
+# NOTA (jul-2026): Ideogram 4 pasó a ser un modelo de IMAGEN local real
+# (ideogram4_fp8_transformer + su encoder/VAE en el inventario del usuario),
+# así que YA NO se excluye; tiene familia y specs propias.
 _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
-                         "inpaint", "acestep", "ace_step", "ace-step", "ideogram")
+                         "inpaint", "acestep", "ace_step", "ace-step")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -555,6 +556,7 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
 _COMFY_FAMILIAS = (
     ("flux",        ("flux",)),
     ("z_image",     ("z_image", "zimage", "z-image")),
+    ("ideogram",    ("ideogram",)),
     ("qwen",        ("qwen",)),
     ("pony",        ("pony",)),
     ("illustrious", ("illustrious", "noobai", "noob")),
@@ -565,7 +567,7 @@ _COMFY_FAMILIAS = (
 # Nombres legibles de familia para las cabeceras del desplegable
 # (autodiscovery agrupa por familia; '' = sin familia reconocida).
 _COMFY_FAMILIA_LABELS = {
-    "flux": "Flux", "z_image": "Z-Image", "qwen": "Qwen",
+    "flux": "Flux", "z_image": "Z-Image", "ideogram": "Ideogram", "qwen": "Qwen",
     "pony": "Pony", "illustrious": "Illustrious",
     "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)", "": "Otros",
 }
@@ -601,6 +603,7 @@ _COMFY_DESC_LOCAL = {
     "zimagebf16": ("Z-Image Base 6B (S3-DiT)", "Z-Image Base 6B (S3-DiT)"),
     "zimageturbobf16": ("Z-Image Turbo, destilado y rápido", "Z-Image Turbo, distilled and fast"),
     "qwenimageedit2509fp8e4m3fn": ("Qwen Image Edit: edición por instrucciones", "Qwen Image Edit: instruction-based editing"),
+    "ideogram4fp8transformer": ("Ideogram 4: prompt-adherence y texto en imagen", "Ideogram 4: prompt-adherence and in-image text"),
     "wan22i2vhighnoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa high noise", "Wan 2.2 i2v 14B — high-noise stage"),
     "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
     "ltx2322bdev": ("LTX 2.3 22B: vídeo con audio nativo", "LTX 2.3 22B: video with native audio"),
@@ -673,6 +676,17 @@ _COMFY_SPECS_FAMILIA = {
         "best_for_en": "Detailed, specific natural language (NO quality tags like 'masterpiece'): define outfit, pose, background and lighting. Photography terms for portraits ('85mm, shallow DoF'). Base: 25 steps CFG 4. Turbo: 8 steps CFG 2.",
         "prompt_formula": "Descripción concreta y enfocada en prosa incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
         "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field, natural skin texture.",
+    },
+    "ideogram": {
+        # Ideogram 4 local (INVENTARIO_MODELOS jul-2026): fuerte en adherencia
+        # al prompt, tipografías y logos. Formato tags + frase media.
+        "is_natural": False, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~25 pasos, CFG 4.0)",
+        "best_for": "Ideogram 4: máxima adherencia al prompt y texto/tipografía dentro de la imagen. Tags + frase media (sujeto → detalles → iluminación → fondo). CFG 4, 25 pasos, euler/simple. Encoder ideogram4_text_encoder, VAE ideogram4_vae.",
+        "best_for_en": "Ideogram 4: top prompt adherence and in-image text/typography. Tags + medium sentence (subject → details → lighting → background). CFG 4, 25 steps, euler/simple. Encoder ideogram4_text_encoder, VAE ideogram4_vae.",
+        "prompt_formula": "Sujeto claro + detalles + iluminación + fondo, separados por comas con una frase descriptiva. Si quieres TEXTO en la imagen, escríbelo entre comillas — es el punto fuerte de Ideogram.",
+        "prompt_ejemplo": "portrait of a young chef holding a sign that says \"OPEN\", warm kitchen background, soft window light, professional photography, 8K, sharp focus, photorealistic.",
     },
     "qwen": {
         # A CFG 4 (base, no la LoRA Lightning) responde a negative — confirmado
@@ -765,11 +779,16 @@ def comfy_image_specs(nombre: str) -> dict | None:
 # los elija en el dropdown (no rompe el paste).
 _COMFY_WORKFLOW = {
     "flux":        {"arch": "unet", "cfg": 3.5, "steps": 20, "sampler": "euler", "scheduler": "simple",
-                    "clip": "qwen_3_8b_fp8mixed.safetensors", "vae": "flux2-vae.safetensors", "clip_type": "flux"},
+                    "clip": "qwen_3_8b_fp8mixed.safetensors", "vae": "flux2-vae.safetensors", "clip_type": "flux2"},
+    # Z-Image local (INVENTARIO_MODELOS jul-2026): CLIP qwen_3_4b (type
+    # qwen_image), VAE ae. Confirmado por el inventario del usuario.
     "z_image":     {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
-                    "clip": "", "vae": "", "clip_type": "stable_diffusion"},
+                    "clip": "qwen_3_4b.safetensors", "vae": "ae.safetensors", "clip_type": "qwen_image"},
     "qwen":        {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
                     "clip": "qwen_2.5_vl_7b_fp8_scaled.safetensors", "vae": "qwen_image_vae.safetensors", "clip_type": "qwen_image"},
+    # Ideogram 4 local (INVENTARIO_MODELOS jul-2026): encoder y VAE propios.
+    "ideogram":    {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "ideogram4_text_encoder.safetensors", "vae": "ideogram4_vae.safetensors", "clip_type": "ideogram4"},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
     "pony":        {"arch": "checkpoint", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "karras"},

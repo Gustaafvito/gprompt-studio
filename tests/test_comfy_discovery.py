@@ -25,13 +25,15 @@ class TestClasificarModeloComfy:
         assert config.clasificar_modelo_comfy("qwen_image_edit_2509_fp8_e4m3fn") == "imagen"
         assert config.clasificar_modelo_comfy("512-inpainting-ema") == "imagen"
 
-    def test_ideogram_excluido(self, tmp_path):
-        # Ideogram local no tiene soporte real en ComfyUI (solo API) → excluido
-        # del escaneo. El Ideogram 4 de SeaArt cloud no se ve afectado.
+    def test_ideogram_es_imagen_local(self, tmp_path):
+        # Ideogram 4 pasó a ser un modelo de imagen local real (jul-2026):
+        # ya NO se excluye del escaneo y tiene familia + specs propias.
         root = _crear_install_comfy(tmp_path)
         hallados = config._escanear_comfy_root(root)
-        todos = hallados["imagen"] + hallados["video"] + hallados["audio"]
-        assert not any("ideogram" in m for m in todos)
+        assert any("ideogram" in m for m in hallados["imagen"])
+        assert config.detectar_familia_comfy("ideogram4_fp8_transformer") == "ideogram"
+        specs = config.comfy_image_specs("ideogram4_fp8_transformer")
+        assert specs and specs["_comfy_familia"] == "ideogram"
 
     def test_video(self):
         assert config.clasificar_modelo_comfy("wan2.2_i2v_high_noise_14B_fp8_scaled") == "video"
