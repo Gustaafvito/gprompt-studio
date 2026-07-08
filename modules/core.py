@@ -1143,6 +1143,19 @@ class CoreMixin:
     # CHAT COPILOTO NARRADOR
 
     def cmd_copiloto(self):
+        # Single-instance: si ya hay un Copiloto abierto, enfocarlo en vez de
+        # abrir otra ventana igual.
+        previo = getattr(self, "_vent_copiloto", None)
+        if previo is not None:
+            try:
+                if previo.winfo_exists():
+                    previo.lift()
+                    previo.focus_force()
+                    return
+            except Exception as e:
+                logger.debug(f"[silent] {e}")
+            self._vent_copiloto = None
+
         texto_actual = self.txt_salida.get("1.0", "end").strip()
         if not texto_actual or len(texto_actual) < 20:
             return self.set_estado(tr("⚠️ Genera un prompt primero para poder usar el Copiloto."), P.TXT_AVISO)
@@ -1151,6 +1164,7 @@ class CoreMixin:
             logger.debug(f"[silent] {e}")
 
         vent_copiloto = GPromptWindow(self)
+        self._vent_copiloto = vent_copiloto
         vent_copiloto.title(tr("💬 Copiloto de Prompt"))
         vent_copiloto.geometry("450x600")
         vent_copiloto.transient(self)
