@@ -397,3 +397,51 @@ class TestEstiloSugeridoParaModelo:
                        "Editorial", "Fantasía", "SciFi"]
         assert f("Illustrious Realism by Klaabu",
                  "Checkpoint Illustrious realista", realismo_sd) is None
+
+
+class TestAutodetectarEstiloManual:
+    """La autodetección se re-evalúa en cada cambio de modelo salvo elección
+    MANUAL de la sesión (arregla el estilo persistido que quedaba pegado)."""
+
+    def _footer(self, modelo, estilo="Auto", manual=False):
+        from types import SimpleNamespace
+
+        from modules.ui_footer import UiFooterService
+        box = {"v": estilo}
+        app = SimpleNamespace(
+            familia_estilo_var=SimpleNamespace(
+                get=lambda: box["v"], set=lambda x: box.__setitem__("v", x)),
+            combo_familia_estilo=SimpleNamespace(set=lambda x: None),
+            combo_modelo_imagen=SimpleNamespace(get=lambda: modelo),
+            combo_lora=SimpleNamespace(get=lambda: "— Sin LoRA —"),
+            store=SimpleNamespace(trigger_lora=lambda n: ""),
+            loras_multi=[], _estilo_img_disp2key={},
+            _estilo_familia_manual=manual,
+        )
+        f = UiFooterService.__new__(UiFooterService)
+        f.app = app
+        return f, box, app
+
+    def test_modelo_anime_preselecciona(self):
+        f, box, _ = self._footer("AnimePro FLUX")
+        f._autodetectar_estilo_familia()
+        assert box["v"] == "Anime"
+
+    def test_valor_persistido_no_manual_se_despega(self):
+        # "Anime" persistido (no manual) + modelo de realismo → vuelve a Auto.
+        f, box, _ = self._footer("Juggernaut XL", estilo="Anime", manual=False)
+        f._autodetectar_estilo_familia()
+        assert box["v"] == "Auto"
+
+    def test_eleccion_manual_se_respeta(self):
+        f, box, _ = self._footer("AnimePro FLUX", estilo="Photoreal", manual=True)
+        f._autodetectar_estilo_familia()
+        assert box["v"] == "Photoreal"
+
+    def test_handler_manual_marca_flag(self):
+        f, box, app = self._footer("AnimePro FLUX")
+        f._on_estilo_familia_manual("Anime")
+        assert box["v"] == "Anime" and app._estilo_familia_manual is True
+        # Elegir Auto reactiva la autodetección.
+        f._on_estilo_familia_manual("Auto")
+        assert app._estilo_familia_manual is False

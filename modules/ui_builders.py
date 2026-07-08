@@ -898,8 +898,7 @@ class UIBuildersService:
             values=["Auto"],   # placeholder — _on_modelo_imagen_cambio lo repuebla
             width=140, height=28,
             font=ctk.CTkFont(size=P.FUENTE_CUERPO),
-            command=lambda disp: self.app.familia_estilo_var.set(
-                self.app._estilo_img_disp2key.get(disp, disp)),
+            command=lambda disp: self.app.footer._on_estilo_familia_manual(disp),
         )
         self.app.combo_familia_estilo.set("Auto")
         self.app.combo_familia_estilo.pack()

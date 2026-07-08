@@ -946,16 +946,29 @@ class UiFooterService:
         except Exception as e:
             logger.debug(f"[silent estilo auto lora] {e}")
 
+    def _on_estilo_familia_manual(self, disp):
+        """Handler del combo 'Estilo': el usuario elige a mano. Fija el valor
+        (des-traducido a clave ES) y marca 'manual' para que la autodetección
+        no lo pise. Elegir 'Auto' reactiva la autodetección (en el próximo
+        cambio de modelo/LoRA)."""
+        clave = self.app._estilo_img_disp2key.get(disp, disp)
+        self.app.familia_estilo_var.set(clave)
+        self.app._estilo_familia_manual = (clave != "Auto")
+
     def _autodetectar_estilo_familia(self):
-        """Si el LoRA activo O el MODELO seleccionado tienen pinta de anime, la
-        familia admite 'Anime' y el usuario NO ha forzado otro estilo (está en
-        'Auto'), preselecciona 'Anime' en el combo Estilo. No pisa elecciones
-        manuales."""
+        """Preselecciona el estilo adecuado según el LoRA y el MODELO activos
+        (anime/ilustración/CG/…), entre los que ofrece la familia. Se re-evalúa
+        en CADA cambio de modelo/LoRA, salvo que el usuario haya elegido un
+        estilo A MANO en esta sesión (`_estilo_familia_manual`). Si no hay
+        sugerencia, deja "Auto" (no deja pegado un valor viejo/persistido)."""
         if not (hasattr(self.app, "familia_estilo_var")
                 and hasattr(self.app, "combo_familia_estilo")):
             return
-        if (self.app.familia_estilo_var.get() or "Auto") != "Auto":
-            return  # el usuario eligió algo: respetarlo
+        # Respetar SOLO una elección manual del usuario en esta sesión. Un valor
+        # ≠ Auto persistido de otra sesión NO cuenta como manual: así el estilo
+        # sigue al modelo en vez de quedarse pegado.
+        if getattr(self.app, "_estilo_familia_manual", False):
+            return
         textos = []
         try:
             n = self.app.combo_lora.get() if hasattr(self.app, "combo_lora") else ""
@@ -986,9 +999,16 @@ class UiFooterService:
         if not sugerido:
             bf = (get_image_model_specs(modelo) or {}).get("best_for", "") if modelo else ""
             sugerido = estilo_sugerido_para_modelo(modelo, bf, estilos)
-        if sugerido:
-            self.app.familia_estilo_var.set(sugerido)
-            self.app.combo_familia_estilo.set(tr(sugerido))
+        # Aplicar el sugerido; si no hay, "Auto" (nunca dejar pegado un valor
+        # anterior que no corresponde a este modelo). Solo si el combo está
+        # visible/tiene estilos, para no forzar Auto en familias sin toggle.
+        nuevo = sugerido or "Auto"
+        if estilos and self.app.familia_estilo_var.get() != nuevo:
+            self.app.familia_estilo_var.set(nuevo)
+            try:
+                self.app.combo_familia_estilo.set(tr(nuevo))
+            except Exception as _e:
+                logger.debug(f"[silent estilo set] {_e}")
 
     def _es_lora_compatible(self, familia_lora):
         """Devuelve True/False si el LoRA es compatible con el modelo activo. None si no se puede determinar."""

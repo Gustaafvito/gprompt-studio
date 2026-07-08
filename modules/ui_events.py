@@ -355,10 +355,15 @@ class UiEventsService:
                     # reset a "Auto"
                     try:
                         if self.app.familia_estilo_var.get() not in estilos:
+                            # El estilo actual no existe en la nueva familia
+                            # (p.ej. "Anime" al pasar a un modelo de realismo):
+                            # vuelve a Auto y libera el flag manual (esa elección
+                            # ya no aplica) para que la autodetección reevalúe.
                             self.app.familia_estilo_var.set("Auto")
+                            self.app._estilo_familia_manual = False
                         self.app.combo_familia_estilo.set(tr(self.app.familia_estilo_var.get()))
-                        # Si hay un LoRA anime activo y la familia admite Anime,
-                        # preseleccionarlo (solo si quedó en Auto).
+                        # Preselecciona el estilo del modelo/LoRA (salvo elección
+                        # manual del usuario en esta sesión).
                         self.app.footer._autodetectar_estilo_familia()
                     except Exception as _e:
                         logger.debug(f"[silent estilo reset] {_e}")
