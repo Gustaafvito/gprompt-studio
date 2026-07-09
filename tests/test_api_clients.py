@@ -205,8 +205,8 @@ class TestPreciosUsd1M:
 
 class TestCalcularCosteUsd:
     def test_coste_basico(self):
-        # deepseek: 0.28/0.42 por 1M → 1M entrada + 1M salida = 0.70
-        assert calcular_coste_usd("deepseek", 1_000_000, 1_000_000) == pytest.approx(0.70)
+        # deepseek (v4-flash): 0.14/0.28 por 1M → 1M entrada + 1M salida = 0.42
+        assert calcular_coste_usd("deepseek", 1_000_000, 1_000_000) == pytest.approx(0.42)
 
     def test_provider_gratuito_cero(self):
         assert calcular_coste_usd("ollama", 500_000, 500_000) == 0.0
@@ -377,8 +377,8 @@ class TestAcumularHistorico:
 class TestCosteDiaUsd:
     def test_suma_costes_conocidos(self):
         dia = {"openai": {"tokens_entrada": 1_000_000, "tokens_salida": 0},   # 2.50
-               "deepseek": {"tokens_entrada": 0, "tokens_salida": 1_000_000}}  # 0.42
-        assert coste_dia_usd(dia) == pytest.approx(2.92)
+               "deepseek": {"tokens_entrada": 0, "tokens_salida": 1_000_000}}  # 0.28 (v4-flash)
+        assert coste_dia_usd(dia) == pytest.approx(2.78)
 
     def test_ignora_costes_desconocidos(self):
         dia = {"openrouter": {"tokens_entrada": 999, "tokens_salida": 999}}

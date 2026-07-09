@@ -2313,7 +2313,7 @@ class ArquitectoApp(
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://api.deepseek.com",
                                      timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model="deepseek-chat",
+                        cli.chat.completions.create(model="deepseek-v4-flash",
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "groq":

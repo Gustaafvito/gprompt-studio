@@ -65,12 +65,15 @@ LLM_PROVIDERS = {
     "deepseek": {
         "name": "DeepSeek V4",
         "label": "🥈 DeepSeek V4",
-        "descripcion": "Económico (~€0.14/1M tokens). Bueno para creatividad, robusto.",
+        "descripcion": "Económico. Flash barato (~$0.14/1M) · Pro más potente (~$0.44/1M). Bueno para creatividad, robusto.",
         "url_obtener_key": "https://platform.deepseek.com/api_keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.deepseek.com",
-        "model_default": "deepseek-chat",
-        "modelos": ["deepseek-chat", "deepseek-reasoner"],
+        # IDs V4 (los legacy deepseek-chat/deepseek-reasoner se deprecan el
+        # 2026-07-24). Flash = barato y rápido; Pro = 1.6T params, mejor en
+        # razonamiento/tareas complejas (~3x el precio).
+        "model_default": "deepseek-v4-flash",
+        "modelos": ["deepseek-v4-flash", "deepseek-v4-pro"],
         "is_paid": True,
     },
     "fireworks": {
@@ -316,8 +319,10 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-6":         (3.00, 15.00),
     "claude-sonnet-4-5-20250929": (3.00, 15.00),
     "claude-haiku-4-5":          (1.00, 5.00),
-    "deepseek-chat":             (0.28, 0.42),
-    "deepseek-reasoner":         (0.28, 0.42),
+    "deepseek-v4-flash":         (0.14, 0.28),
+    "deepseek-v4-pro":           (0.435, 0.87),
+    "deepseek-chat":             (0.14, 0.28),   # legacy (dep. 2026-07-24) → v4-flash
+    "deepseek-reasoner":         (0.14, 0.28),   # legacy (dep. 2026-07-24)
     "gpt-4o":                    (2.50, 10.00),
     "gpt-4o-mini":               (0.15, 0.60),
     "gemini-2.5-flash":          (0.0, 0.0),   # free tier
@@ -350,7 +355,7 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
 #   precio depende del modelo elegido) → se muestra "—" en la UI.
 PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "claude":        (3.00, 15.00),   # claude-sonnet-4-5
-    "deepseek":      (0.28, 0.42),    # deepseek-chat
+    "deepseek":      (0.14, 0.28),    # deepseek-v4-flash
     "fireworks":     (0.90, 0.90),    # llama-v3p3-70b
     "gemini":        (0.0, 0.0),      # free tier 15rpm (tier de pago: 0.30/2.50)
     "github_models": (0.0, 0.0),      # gratis con cuenta GitHub
@@ -1216,6 +1221,12 @@ class APIClients:
 
     # ── Selección de modelo por proveedor (sesión 19 round 13) ────────
 
+    # Modelos deprecados → su reemplazo (se migran al cargar la preferencia).
+    _MIGRAR_MODELO = {
+        "deepseek-chat": "deepseek-v4-flash",       # dep. 2026-07-24
+        "deepseek-reasoner": "deepseek-v4-flash",   # dep. 2026-07-24
+    }
+
     def _cargar_modelos_activos(self) -> dict:
         """Lee active_models.json: {provider_id: modelo_elegido}."""
         try:
@@ -1225,7 +1236,8 @@ class APIClients:
                 with open(str(ruta), encoding="utf-8") as f:
                     datos = json.load(f)
                 if isinstance(datos, dict):
-                    return {k: str(v) for k, v in datos.items() if v}
+                    return {k: self._MIGRAR_MODELO.get(str(v), str(v))
+                            for k, v in datos.items() if v}
         except Exception as e:
             logger.debug(f"[silent] modelos activos: {e}")
         return {}
