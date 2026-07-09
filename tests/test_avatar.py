@@ -125,6 +125,20 @@ class TestAvatarConfig:
             assert "Anime" in cfg["styles"], f"{tipo} sin estilo Anime"
             assert "anime" in cfg["styles"]["Anime"].lower()
 
+    def test_styles_natural_mismas_claves_que_styles(self):
+        # Cada tipo tiene una variante en lenguaje natural (para Flux/Z-Image/
+        # Qwen) con EXACTAMENTE las mismas claves que la de tags, para que el
+        # combo (que muestra styles) resuelva siempre en styles_natural.
+        for tipo, cfg in LORA_TYPES.items():
+            nat = cfg.get("styles_natural")
+            assert nat, f"{tipo} sin styles_natural"
+            assert set(nat) == set(cfg["styles"]), f"{tipo}: claves distintas"
+            # La variante natural NO debe llevar jerga de tags SD que los
+            # modelos naturales ignoran.
+            jerga = ("octane render", "subsurface scattering", "high poly")
+            for v in nat.values():
+                assert not any(j in v.lower() for j in jerga), f"{tipo}: jerga SD en natural"
+
     def test_vistas_agresivas_de_objeto_tienen_aviso(self):
         # Las vistas agresivas llevan campo "warn" (la UI muestra ⚠ + tooltip).
         angles = LORA_TYPES["Objeto"]["angles"]

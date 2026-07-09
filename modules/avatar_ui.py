@@ -561,7 +561,21 @@ class AvatarFrame(ctk.CTkFrame):
             else:
                 fondo = None
 
-            estilo_sufijo = cfg["styles"].get(tr_es(self.menu_estilo.get()), "")
+            # Estilo consciente del FORMATO del modelo destino: los modelos
+            # de lenguaje natural (Flux, Z-Image, Qwen: is_natural=True) ignoran
+            # la jerga de tags de Stable Diffusion ("octane render, high poly"),
+            # así que usan la variante en prosa (styles_natural). Los modelos de
+            # tags (SDXL, Pony…) siguen con el sufijo de tags de siempre.
+            estilo_key = tr_es(self.menu_estilo.get())
+            estilos_dict = cfg["styles"]
+            try:
+                if modelo_sel and cfg.get("styles_natural"):
+                    from config import get_image_model_specs
+                    if (get_image_model_specs(modelo_sel) or {}).get("is_natural"):
+                        estilos_dict = cfg["styles_natural"]
+            except Exception:
+                pass  # ante cualquier fallo, usar el sufijo de tags por defecto
+            estilo_sufijo = estilos_dict.get(estilo_key, "")
 
             resultado = generar_dataset_lora(
                 tipo=self._tipo_lora,

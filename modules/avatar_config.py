@@ -455,6 +455,20 @@ AVATAR_STYLES = {
     "Pixar / Cartoon 3D": "3D cartoon style, stylized character, soft lighting, animation movie quality",
 }
 
+# Variante en LENGUAJE NATURAL de cada estilo, para modelos que NO usan tags
+# (Flux, Z-Image, Qwen: is_natural=True). La jerga de Stable Diffusion
+# ("octane render, subsurface scattering, high poly") esos modelos la ignoran;
+# aquí el estilo se expresa como una frase que sí interpretan. Mismas claves
+# que AVATAR_STYLES (un candado lo verifica).
+AVATAR_STYLES_NATURAL = {
+    "Fotorrealista": "as a photorealistic professional studio photograph, sharp focus, natural detailed skin texture, shot on an 85mm lens",
+    "Anime": "in a clean, high-quality anime illustration style with crisp linework, cel shading and vibrant colors",
+    "Render 3D": "rendered as a polished 3D CGI character with soft stylized shading, like a modern animated film",
+    "Ilustración digital": "as a detailed digital painting with painterly brushwork and rich color",
+    "Cómic occidental": "in a bold Western comic-book art style with strong ink outlines and flat graphic colors",
+    "Pixar / Cartoon 3D": "in the style of a Pixar-like 3D animated movie, stylized and charming, with soft cinematic lighting",
+}
+
 # ---------------------------------------------------------------------------
 # FONDOS (consistencia crítica para LoRA)
 # ---------------------------------------------------------------------------
@@ -947,6 +961,15 @@ LANDSCAPE_STYLES = {
     "Arte digital": "digital art, concept art landscape, detailed matte painting",
 }
 
+LANDSCAPE_STYLES_NATURAL = {
+    "Fotografía realista": "as a professional nature photograph, ultra sharp, natural light, shot on a 16mm wide-angle lens",
+    "Anime": "as anime background art in the style of Makoto Shinkai, clean and vibrant with painterly skies",
+    "Cinematográfico": "with a cinematic anamorphic look, subtle film grain and graded film color",
+    "Pintura al óleo": "as a traditional oil painting with visible brushstrokes and rich texture",
+    "Acuarela": "as a soft watercolor painting with translucent washes and paper texture",
+    "Arte digital": "as detailed digital concept art, a polished matte painting",
+}
+
 LANDSCAPE_NEGATIVE_PROMPT = (
     "people, person, human, man, woman, child, character, portrait, face, hands, "
     "text, watermark, logo, signature, blurry, lowres, jpeg artifacts, overexposed, "
@@ -1361,6 +1384,14 @@ OBJECT_STYLES = {
     "Artístico / Dramático": "artistic dramatic product shot, moody lighting, artistic composition, fine art photography",
 }
 
+OBJECT_STYLES_NATURAL = {
+    "Fotografía de producto": "as a professional product photograph with clean studio lighting and crisp commercial quality",
+    "Anime": "in a clean anime illustration style with crisp linework and vibrant colors",
+    "Editorial / Lifestyle": "as an editorial lifestyle photograph with atmospheric lighting and a contextual setting",
+    "Render 3D": "as a photorealistic 3D product render with perfect, clean lighting",
+    "Artístico / Dramático": "as an artistic, dramatically lit fine-art photograph with a moody composition",
+}
+
 OBJECT_NEGATIVE_PROMPT = (
     "people, person, human, hands, face, blurry, lowres, jpeg artifacts, "
     "watermark, text, logo, signature, multiple objects of same type, "
@@ -1770,6 +1801,14 @@ STYLE_STYLES = {
     "Alta calidad base": "masterpiece, high quality, detailed",
     "Arte digital": "digital art, high resolution, detailed",
     "Ilustración": "illustration, detailed artwork",
+}
+
+STYLE_STYLES_NATURAL = {
+    "Coherente (sin estilo adicional)": "",
+    "Anime": "in a clean, high-quality anime illustration style with crisp linework, cel shading and vibrant colors",
+    "Alta calidad base": "highly detailed and polished, high quality",
+    "Arte digital": "as high-resolution, detailed digital art",
+    "Ilustración": "as a detailed illustration",
 }
 
 STYLE_NEGATIVE_PROMPT = (
@@ -2218,6 +2257,13 @@ NSFW_STYLES = {
     "Render 3D": "3D render, octane render, subsurface scattering, high poly character model",
 }
 
+NSFW_STYLES_NATURAL = {
+    "Fotorrealista": "as a photorealistic professional boudoir photograph, sharp focus, natural detailed skin texture, shot on an 85mm lens",
+    "Anime": "in a clean, high-quality anime illustration style with crisp linework and cel shading",
+    "Ilustración digital": "as a detailed digital painting with painterly brushwork",
+    "Render 3D": "rendered as a polished 3D CGI character with soft stylized shading, like a modern animated film",
+}
+
 # Negative fijo: el de Personaje (sin las cláusulas de ropa, que aquí varía
 # por toma) + BLOQUEO DURO de menores en todas las imágenes + anti-extra
 # de anatomía típica NSFW.
@@ -2243,6 +2289,7 @@ LORA_TYPES = {
         "balanced_angles": AVATAR_BALANCED_ANGLE_SET,
         "form_fields": AVATAR_FORM_FIELDS,
         "styles": AVATAR_STYLES,
+        "styles_natural": AVATAR_STYLES_NATURAL,
         "backgrounds": AVATAR_BACKGROUNDS,
         "backgrounds_rotacion": AVATAR_BACKGROUNDS_ROTACION,
         "negative": AVATAR_NEGATIVE_PROMPT,
@@ -2262,6 +2309,7 @@ LORA_TYPES = {
         "balanced_angles": LANDSCAPE_BALANCED_ANGLE_SET,
         "form_fields": LANDSCAPE_FORM_FIELDS,
         "styles": LANDSCAPE_STYLES,
+        "styles_natural": LANDSCAPE_STYLES_NATURAL,
         "backgrounds": None,
         "backgrounds_rotacion": None,
         "negative": LANDSCAPE_NEGATIVE_PROMPT,
@@ -2281,6 +2329,7 @@ LORA_TYPES = {
         "balanced_angles": OBJECT_BALANCED_ANGLE_SET,
         "form_fields": OBJECT_FORM_FIELDS,
         "styles": OBJECT_STYLES,
+        "styles_natural": OBJECT_STYLES_NATURAL,
         "backgrounds": AVATAR_BACKGROUNDS,
         "backgrounds_rotacion": AVATAR_BACKGROUNDS_ROTACION,
         "negative": OBJECT_NEGATIVE_PROMPT,
@@ -2300,6 +2349,7 @@ LORA_TYPES = {
         "balanced_angles": STYLE_BALANCED_ANGLE_SET,
         "form_fields": STYLE_FORM_FIELDS,
         "styles": STYLE_STYLES,
+        "styles_natural": STYLE_STYLES_NATURAL,
         "backgrounds": None,
         "backgrounds_rotacion": None,
         "negative": STYLE_NEGATIVE_PROMPT,
@@ -2319,6 +2369,7 @@ LORA_TYPES = {
         "balanced_angles": NSFW_BALANCED_ANGLE_SET,
         "form_fields": NSFW_FORM_FIELDS,
         "styles": NSFW_STYLES,
+        "styles_natural": NSFW_STYLES_NATURAL,
         # Sin selector de fondos: el escenario (cama, ducha, estudio) va
         # embebido en cada toma y un fondo global chocaría con él.
         "backgrounds": None,
