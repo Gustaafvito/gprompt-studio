@@ -1048,7 +1048,10 @@ class ToolsCreativeService:
                     "Responde SOLO con los nombres exactos de la lista, separados por comas. "
                     "Sin explicaciones, sin numeración, sin puntos al final.",
                     peticion,
-                    temperature=0.3, max_tokens=300,
+                    # 900 tokens (no 300): un modelo de razonamiento (DeepSeek V4
+                    # Pro) gasta tokens pensando antes de dar la lista; con margen
+                    # justo devolvía vacío y no se extraía ningún estilo.
+                    temperature=0.3, max_tokens=900,
                 )
                 resp = limpiar_marcadores(resp).strip()
 

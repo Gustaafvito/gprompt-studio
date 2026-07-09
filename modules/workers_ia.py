@@ -265,7 +265,7 @@ class WorkersIaService:
         idea = idea_original
         if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_original):
             self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traduciendo al inglés..."), P.TXT_ACENTO))
-            idea = self.app.deepseek.traducir(idea_original)
+            idea = self.app.deepseek.traducir(idea_original) or idea_original
             self.app.after(0, lambda: self.app.dialogs.set_estado(tr("🌐 Traducido..."), P.TXT_INFO))
         self._worker_ia(self.app._construir_peticion(idea, "B"))
     # ──────────────────────────────────────────────────────────────

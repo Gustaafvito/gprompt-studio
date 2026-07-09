@@ -116,6 +116,34 @@ class TestDeepSeekWorker:
         w.reiniciar("nuevo system")
         assert w.historial == [{"role": "system", "content": "nuevo system"}]
 
+    def _worker_con_respuesta(self, respuesta):
+        """DeepSeekWorker cuyo provider devuelve `respuesta` en completar()."""
+        from types import SimpleNamespace
+
+        from workers import DeepSeekWorker
+        prov = SimpleNamespace(
+            disponible=lambda: True,
+            completar=lambda *a, **k: respuesta,
+        )
+        clients = SimpleNamespace(get_active_provider=lambda: prov)
+        return DeepSeekWorker(clients=clients)
+
+    def test_traducir_respuesta_vacia_devuelve_original(self):
+        # Bug DeepSeek V4 Pro: el razonamiento se comía los tokens y la
+        # traducción volvía vacía → la idea se perdía. Debe caer al original.
+        w = self._worker_con_respuesta("")
+        assert w.traducir("un gato en la playa") == "un gato en la playa"
+        w2 = self._worker_con_respuesta("   \n  ")
+        assert w2.traducir("un gato") == "un gato"
+
+    def test_traducir_respuesta_valida_se_usa(self):
+        w = self._worker_con_respuesta("a cat on the beach")
+        assert w.traducir("un gato en la playa") == "a cat on the beach"
+
+    def test_traducir_a_espanol_vacia_devuelve_original(self):
+        w = self._worker_con_respuesta("")
+        assert w.traducir_a_espanol("a cat") == "a cat"
+
 
 class TestDetectarIdiomaEs:
     def test_espanol_claro(self):

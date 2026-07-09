@@ -225,7 +225,14 @@ class DeepSeekWorker:
 
         try:
             provider = self._get_provider()
-            return provider.completar(msgs, temperature=0.2, max_tokens=200).strip()
+            # 400 tokens (no 200): un modelo de razonamiento (DeepSeek V4 Pro)
+            # gasta tokens "pensando" antes de responder; con margen justo la
+            # traducción volvía vacía y la idea se perdía.
+            trad = provider.completar(msgs, temperature=0.2, max_tokens=400).strip()
+            # Si vuelve VACÍA (respuesta filtrada, razonamiento que se comió el
+            # presupuesto...), NO perder la idea: devolver el original. Los LLM
+            # de imagen entienden el español igual.
+            return trad or texto_es
         except Exception as e:
             logger.warning(f"Traducción ES→EN falló, devolviendo original: {e}")
             return texto_es
@@ -239,7 +246,8 @@ class DeepSeekWorker:
         msgs = [{"role": "user", "content": peticion}]
         try:
             provider = self._get_provider()
-            return provider.completar(msgs, temperature=0.2, max_tokens=5000).strip()
+            trad = provider.completar(msgs, temperature=0.2, max_tokens=5000).strip()
+            return trad or texto_en  # respuesta vacía → no perder el original
         except Exception as e:
             logger.warning(f"Traducción EN→ES falló, devolviendo original: {e}")
             return texto_en
