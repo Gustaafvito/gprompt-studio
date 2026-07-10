@@ -4463,6 +4463,31 @@
     "limitaciones": "Sin negative prompt. Max 2000 chars.",
     "best_for_en": "ByteDance model available on SeaArt. Lightweight version of Seedream 5.0, natural-language image generation. Good understanding of scenes, characters and overall composition."
   },
+  "Seedream 5.0 Pro": {
+    "vigente": true,
+    "has_negative": false,
+    "is_natural": true,
+    "max_chars": 2000,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "modos_gen": [
+      "Default",
+      "Quality"
+    ],
+    "max_imagenes": 16,
+    "best_for": "Modelo de ByteDance en SeaArt. Versión Pro de Seedream 5.0 (la más potente): generación en lenguaje natural con gran fidelidad y coherencia. Acepta hasta 16 imágenes de SUJETO/referencia para consistencia de personaje/estilo. Modo Estándar o Calidad. Salida 2K.",
+    "prompt_formula": "Lenguaje natural descriptivo (prosa), sin negative. Describe sujeto, escena, iluminación, cámara y estilo. Si subes referencias (hasta 16), menciona qué mantener de ellas (identidad, ropa, estilo). Máx 2000 chars.",
+    "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit modern loft, large windows with soft diffused light, shallow depth of field, natural skin texture, cinematic photography, ultra-detailed, photorealistic",
+    "limitaciones": "Sin negative prompt. Máx 2000 chars. Hasta 16 imágenes de sujeto.",
+    "best_for_en": "ByteDance model on SeaArt. Pro version of Seedream 5.0 (the most powerful): natural-language generation with high fidelity and coherence. Accepts up to 16 SUBJECT/reference images for character/style consistency. Standard or Quality mode. 2K output."
+  },
   "Kling 3.0 Image": {
     "vigente": true,
     "has_negative": true,

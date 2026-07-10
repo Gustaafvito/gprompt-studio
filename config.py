@@ -349,6 +349,7 @@ GRUPOS_IMAGEN = [
         "Seedream 4.0",
         "Seedream 4.5",
         "Seedream 5.0 Lite",
+        "Seedream 5.0 Pro",
     ])),
     ("── Wan ──", sorted([
         "Wan 2.2",
