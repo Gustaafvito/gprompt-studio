@@ -645,6 +645,61 @@ class TestPipeline:
             assert "LoRA DE PERSONAJE" in f.read()
 
 
+class TestExportarWorkflowsComfy:
+    """El dataset exporta workflows/ con un .json ComfyUI (formato UI) por
+    toma, cableado al modelo local destino y con resolución según ratio."""
+
+    def _exportar(self, tmp_path, modelo):
+        import json as _json
+
+        from modules.avatar_generator import exportar_workflows_comfy
+        r = generar_dataset_avatar(
+            _llm_fake, {}, "ohwx_t", ["face_front", "full_front"], "style", "bg")
+        base = exportar_dataset(r, str(tmp_path))
+        n = exportar_workflows_comfy(r, base, modelo)
+        wf_dir = os.path.join(base, "workflows")
+
+        def leer(nombre):
+            with open(os.path.join(wf_dir, nombre), encoding="utf-8") as f:
+                return _json.load(f)
+        return n, wf_dir, leer
+
+    def test_un_json_por_toma_mas_leeme(self, tmp_path):
+        n, wf_dir, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        assert n == 2
+        assert os.path.isfile(os.path.join(wf_dir, "01_face_front.json"))
+        assert os.path.isfile(os.path.join(wf_dir, "09_full_front.json"))
+        assert os.path.isfile(os.path.join(wf_dir, "LEEME_WORKFLOWS.txt"))
+
+    def test_formato_ui_y_loader_por_arquitectura(self, tmp_path):
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer("01_face_front.json")
+        for k in ("nodes", "links", "last_node_id", "version"):
+            assert k in wf
+        tipos = {nd["type"] for nd in wf["nodes"]}
+        assert {"UNETLoader", "CLIPLoader", "VAELoader"} <= tipos  # flux = unet
+        # El prompt de la toma va en un CLIPTextEncode
+        textos = [nd["widgets_values"][0] for nd in wf["nodes"]
+                  if nd["type"] == "CLIPTextEncode"]
+        assert any("ohwx_t" in t for t in textos)
+
+    def test_checkpoint_para_sdxl(self, tmp_path):
+        _, _, leer = self._exportar(tmp_path, "Juggernaut-XL_v9_RunDiffusionPhoto_v2")
+        wf = leer("01_face_front.json")
+        tipos = {nd["type"] for nd in wf["nodes"]}
+        assert "CheckpointLoaderSimple" in tipos and "UNETLoader" not in tipos
+
+    def test_resolucion_por_ratio(self, tmp_path):
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+
+        def latente(wf):
+            return next(nd["widgets_values"] for nd in wf["nodes"]
+                        if nd["type"] == "EmptyLatentImage")
+        # face_front → 1:1 → 1024x1024 · full_front → 9:16 → 768x1344
+        assert latente(leer("01_face_front.json"))[:2] == [1024, 1024]
+        assert latente(leer("09_full_front.json"))[:2] == [768, 1344]
+
+
 class TestTipoNSFW:
     """Candados del tipo NSFW (18+): catálogo, salvaguardas y enrutamiento."""
 

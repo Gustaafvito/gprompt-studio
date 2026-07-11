@@ -314,6 +314,60 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     return base
 
 
+def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
+    """Escribe workflows/ con un .json ComfyUI (formato UI) POR TOMA del
+    dataset, cableado al `modelo` local elegido: loader por arquitectura,
+    CFG/pasos/sampler de su familia y resolución del latent según el RATIO
+    sugerido de cada toma. Se cargan en ComfyUI con Load/arrastrar.
+
+    Solo tiene sentido con modelos ComfyUI locales (el caller decide, según
+    la plataforma destino elegida). Devuelve el nº de workflows escritos.
+    """
+    from config import comfy_workflow_params
+    from modules.comfy_export import construir_workflow_comfy
+
+    dir_wf = os.path.join(base, "workflows")
+    os.makedirs(dir_wf, exist_ok=True)
+    n = 0
+    for item in resultado.get("dataset", []):
+        wf = construir_workflow_comfy(
+            pos=item.get("prompt", ""),
+            neg=item.get("negative", "") or "",
+            modelo=modelo,
+            ratio=item.get("ratio", ""),
+        )
+        ruta = os.path.join(dir_wf, f"{item['filename']}.json")
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(wf, f, ensure_ascii=False, indent=2)
+        n += 1
+
+    # LEEME con las instrucciones y la chuleta CLIP/VAE del modelo.
+    p = comfy_workflow_params(modelo)
+    if p["arch"] == "unet":
+        chuleta = (f"CLIP: {p.get('clip') or '(elígelo en ComfyUI)'}\n"
+                   f"VAE:  {p.get('vae') or '(elígelo en ComfyUI)'}\n")
+    else:
+        chuleta = "CLIP y VAE van integrados en el checkpoint (no hay loaders aparte).\n"
+    with open(os.path.join(dir_wf, "LEEME_WORKFLOWS.txt"), "w", encoding="utf-8") as f:
+        f.write(
+            f"WORKFLOWS ComfyUI DEL DATASET — modelo: {modelo}\n"
+            f"{'=' * 60}\n\n"
+            f"Cada .json es UNA toma del dataset, lista para generar:\n"
+            f"prompt + negative + resolución según su ratio sugerido, con\n"
+            f"{p['sampler']}/{p['scheduler']} · CFG {p['cfg']} · {p['steps']} pasos.\n\n"
+            f"CÓMO USARLOS:\n"
+            f"1. Abre ComfyUI y ARRASTRA el .json al canvas (o menú Load).\n"
+            f"2. Verifica el modelo en el loader (si el nombre no coincide\n"
+            f"   exacto con tu fichero, elígelo en el desplegable).\n"
+            f"   {chuleta}"
+            f"3. Queue Prompt. Repite con cada toma (o encadena varias).\n\n"
+            f"El nombre de cada .json coincide con su prompt/caption del\n"
+            f"dataset (01_..., 02_...), así emparejas la imagen generada\n"
+            f"con su caption para entrenar el LoRA.\n"
+        )
+    return n
+
+
 _CONSEJOS_PERSONAJE = """GUÍA OFICIAL SEAART — DATASET PARA LoRA DE PERSONAJE
 ====================================================
 (fuente: docs.seaart.ai → Entrenamiento de LoRA avanzado)

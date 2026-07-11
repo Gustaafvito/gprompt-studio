@@ -539,18 +539,22 @@ class AvatarFrame(ctk.CTkFrame):
         self.label_estado.configure(text=tr("Generando descripción canónica con el LLM…"))
 
         modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
+        plataforma_sel = (self.menu_plataforma.get()
+                          if getattr(self, "menu_plataforma", None) else "")
         if self._executor is not None:
             self._executor.submit(
-                self._worker_generar, form_data, trigger, seleccionados, carpeta, modelo_sel
+                self._worker_generar, form_data, trigger, seleccionados,
+                carpeta, modelo_sel, plataforma_sel
             ).add_done_callback(log_future_exc)
         else:
             threading.Thread(
                 target=self._worker_generar,
-                args=(form_data, trigger, seleccionados, carpeta, modelo_sel),
+                args=(form_data, trigger, seleccionados, carpeta, modelo_sel,
+                      plataforma_sel),
                 daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
-                        modelo_sel=""):
+                        modelo_sel="", plataforma_sel=""):
         try:
             cfg = LORA_TYPES[self._tipo_lora]
             # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
@@ -602,6 +606,21 @@ class AvatarFrame(ctk.CTkFrame):
             avisos = (self.adaptador(resultado, modelo_sel)
                       if self.adaptador else [])
             ruta = exportar_dataset(resultado, carpeta)
+            # Destino ComfyUI local → exportar TAMBIÉN workflows/ con un
+            # .json por toma (formato UI), cableados al modelo elegido:
+            # arrastrar a ComfyUI y Queue, sin montar nada a mano.
+            if modelo_sel and plataforma_sel.startswith("ComfyUI"):
+                try:
+                    from modules.avatar_generator import exportar_workflows_comfy
+                    n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel)
+                    avisos.append(tr(
+                        "🔧 {0} workflows ComfyUI exportados en workflows/ "
+                        "(uno por toma, arrastra cada .json al canvas de "
+                        "ComfyUI y dale a Queue).").format(n_wf))
+                except Exception as e:
+                    avisos.append(tr(
+                        "⚠️ No se pudieron exportar los workflows ComfyUI: {0}"
+                    ).format(e))
             # Copiar la imagen de referencia al dataset: en SeaArt se sube
             # como "sujeto" para anclar la identidad en todos los ángulos.
             if self._imagen_referencia:
