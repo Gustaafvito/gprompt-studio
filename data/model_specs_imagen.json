@@ -4756,6 +4756,34 @@
     "best_for": "ilustración anime y personajes de alta calidad con estilo Illustrious SDXL",
     "best_for_en": "high-quality anime illustration and characters in the Illustrious SDXL style"
   },
+  "EasyDraw IL": {
+    "vigente": true,
+    "has_negative": true,
+    "is_natural": false,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9",
+      "1:2",
+      "2:1",
+      "4:5",
+      "5:4"
+    ],
+    "max_chars": 2000,
+    "max_chars_negative": 2000,
+    "modos_gen": [
+      "Default"
+    ],
+    "best_for": "Illustrious SDXL anime para PRINCIPIANTES: pensado para prompts de UNA palabra. VAE y LoRAs de supresión (manos/deformaciones) ya integrados. Escribe 'girl', 'boy' o un animal ('cat'→catgirl, 'fox'→foxgirl); prefijo 'furry X' para anthro. Sampler Euler a, 30 pasos, CFG 7, Clip Skip 2. Cuanto menos texto, mejor.",
+    "prompt_formula": "Tags cortos estilo Danbooru; menos es más. 1 palabra base (girl/boy/animal) + estilo/fondo opcional. NEGATIVE opcional (ya trae supresión integrada). Para SFW añade ropa al positivo (ej: 'girl in dress'). Euler a · 30 pasos · CFG 7 · Clip Skip 2.",
+    "prompt_ejemplo": "cat girl, school uniform, fantasy background, masterpiece, best quality",
+    "limitaciones": "SDXL: solo modo Estándar (sin modo Calidad img2img). Por defecto tiende a NSFW — para SFW añade ropa al positivo y términos de exclusión al negativo. Mejor con prompts muy cortos.",
+    "best_for_en": "Illustrious SDXL anime for BEGINNERS: designed for ONE-WORD prompts. Built-in VAE and suppression LoRAs (bad hands/deformations). Type 'girl', 'boy' or an animal ('cat'→catgirl, 'fox'→foxgirl); 'furry X' prefix for anthro. Euler a sampler, 30 steps, CFG 7, Clip Skip 2. The fewer words, the better."
+  },
   "Illustrious-xl-v3.5-vpred": {
     "nota": 4.3,
     "vigente": true,

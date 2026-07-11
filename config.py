@@ -256,6 +256,7 @@ GRUPOS_IMAGEN = [
     ("── Anime / Ilustración ──", sorted([
         "Counterfeit V3.0",
         "Disney Pixar Cartoon type B",
+        "EasyDraw IL",
         "Illustrious XL V3.6",
         "Illustrious-xl-v3.5-vpred",
         "Lily-Illustrious XL",
