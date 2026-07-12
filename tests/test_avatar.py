@@ -646,15 +646,16 @@ class TestPipeline:
 
 
 class TestExportarWorkflowsComfy:
-    """El dataset exporta workflows/ con un .json ComfyUI (formato UI) por
-    toma, cableado al modelo local destino y con resolución según ratio."""
+    """El dataset exporta workflows/: LOTES por ratio (loaders compartidos,
+    una rama por toma) + individuales/ por toma, con resolución según ratio."""
 
-    def _exportar(self, tmp_path, modelo):
+    def _exportar(self, tmp_path, modelo,
+                  angulos=("face_front", "full_front")):
         import json as _json
 
         from modules.avatar_generator import exportar_workflows_comfy
         r = generar_dataset_avatar(
-            _llm_fake, {}, "ohwx_t", ["face_front", "full_front"], "style", "bg")
+            _llm_fake, {}, "ohwx_t", list(angulos), "style", "bg")
         base = exportar_dataset(r, str(tmp_path))
         n = exportar_workflows_comfy(r, base, modelo)
         wf_dir = os.path.join(base, "workflows")
@@ -667,13 +668,13 @@ class TestExportarWorkflowsComfy:
     def test_un_json_por_toma_mas_leeme(self, tmp_path):
         n, wf_dir, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
         assert n == 2
-        assert os.path.isfile(os.path.join(wf_dir, "01_face_front.json"))
-        assert os.path.isfile(os.path.join(wf_dir, "09_full_front.json"))
+        assert os.path.isfile(os.path.join(wf_dir, "individuales", "01_face_front.json"))
+        assert os.path.isfile(os.path.join(wf_dir, "individuales", "09_full_front.json"))
         assert os.path.isfile(os.path.join(wf_dir, "LEEME_WORKFLOWS.txt"))
 
     def test_formato_ui_y_loader_por_arquitectura(self, tmp_path):
         _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
-        wf = leer("01_face_front.json")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
         for k in ("nodes", "links", "last_node_id", "version"):
             assert k in wf
         tipos = {nd["type"] for nd in wf["nodes"]}
@@ -685,7 +686,7 @@ class TestExportarWorkflowsComfy:
 
     def test_checkpoint_para_sdxl(self, tmp_path):
         _, _, leer = self._exportar(tmp_path, "Juggernaut-XL_v9_RunDiffusionPhoto_v2")
-        wf = leer("01_face_front.json")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
         tipos = {nd["type"] for nd in wf["nodes"]}
         assert "CheckpointLoaderSimple" in tipos and "UNETLoader" not in tipos
 
@@ -696,8 +697,41 @@ class TestExportarWorkflowsComfy:
             return next(nd["widgets_values"] for nd in wf["nodes"]
                         if nd["type"] == "EmptyLatentImage")
         # face_front → 1:1 → 1024x1024 · full_front → 9:16 → 768x1344
-        assert latente(leer("01_face_front.json"))[:2] == [1024, 1024]
-        assert latente(leer("09_full_front.json"))[:2] == [768, 1344]
+        assert latente(leer(os.path.join("individuales", "01_face_front.json")))[:2] == [1024, 1024]
+        assert latente(leer(os.path.join("individuales", "09_full_front.json")))[:2] == [768, 1344]
+
+    def test_save_prefix_es_el_nombre_de_la_toma(self, tmp_path):
+        # La imagen generada debe emparejar con su caption por nombre.
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        save = next(nd for nd in wf["nodes"] if nd["type"] == "SaveImage")
+        assert save["widgets_values"][0] == "01_face_front"
+
+    def test_lote_por_ratio_con_loaders_compartidos(self, tmp_path):
+        # 2 tomas 1:1 (face_front, expression_smile) + 1 toma 9:16
+        # (full_front) → LOTE_1x1.json (2 ramas); 9:16 con 1 toma NO
+        # genera lote (el individual ya lo cubre).
+        n, wf_dir, leer = self._exportar(
+            tmp_path, "flux-2-klein-9b-fp8",
+            angulos=("face_front", "expression_smile", "full_front"))
+        assert n == 3
+        assert os.path.isfile(os.path.join(wf_dir, "LOTE_1x1.json"))
+        assert not os.path.exists(os.path.join(wf_dir, "LOTE_9x16.json"))
+
+        wf = leer("LOTE_1x1.json")
+        tipos = [nd["type"] for nd in wf["nodes"]]
+        # Loaders UNA sola vez (compartidos entre ramas)
+        assert tipos.count("UNETLoader") == 1
+        assert tipos.count("EmptyLatentImage") == 1
+        # Una rama por toma: 2 KSampler + 2 SaveImage con su prefijo
+        assert tipos.count("KSampler") == 2
+        prefijos = {nd["widgets_values"][0] for nd in wf["nodes"]
+                    if nd["type"] == "SaveImage"}
+        assert prefijos == {"01_face_front", "15_expression_smile"}
+        # Cada rama lleva SU prompt (ambos con el trigger)
+        textos = [nd["widgets_values"][0] for nd in wf["nodes"]
+                  if nd["type"] == "CLIPTextEncode"]
+        assert sum("ohwx_t" in t for t in textos) >= 2
 
 
 class TestTipoNSFW:

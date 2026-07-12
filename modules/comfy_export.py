@@ -41,13 +41,35 @@ RESOLUCION_POR_RATIO = {
 }
 
 
+def _add_loaders(A, add, p, fichero, lora):  # noqa: N803
+    """Añade los nodos de carga (por arquitectura + LoRA opcional) a `A`.
+    Devuelve (model_src, clip_src, vae_src) como tuplas (idx_nodo, slot)."""
+    if p["arch"] == "unet":
+        i_model = add("UNETLoader", [fichero, "default"])
+        i_clip = add("CLIPLoader", [p.get("clip", ""), p.get("clip_type", "stable_diffusion")])
+        i_vae = add("VAELoader", [p.get("vae", "")])
+        model_src, clip_src, vae_src = (i_model, 0), (i_clip, 0), (i_vae, 0)
+    else:
+        i_check = add("CheckpointLoaderSimple", [fichero])
+        model_src, clip_src, vae_src = (i_check, 0), (i_check, 1), (i_check, 2)
+
+    if lora:
+        i_lora = add("LoraLoader", [lora + ".safetensors", 1.0, 1.0],
+                     {"model": model_src, "clip": clip_src})
+        model_src, clip_src = (i_lora, 0), (i_lora, 1)
+    return model_src, clip_src, vae_src
+
+
 def construir_workflow_comfy(pos: str, neg: str, modelo: str,
-                             lora: str = "", ratio: str = "") -> dict:
+                             lora: str = "", ratio: str = "",
+                             save_prefix: str = "G-Prompt-Studio") -> dict:
     """Workflow ComfyUI (formato UI) para `modelo` con el prompt dado.
 
     `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler.
     `ratio`: aspect ratio ("9:16", "3:2"…) → tamaño del latent
     (RESOLUCION_POR_RATIO); vacío o desconocido → 1024x1024.
+    `save_prefix`: prefijo del fichero de salida (SaveImage) — con el nombre
+    de la toma, la imagen generada empareja sola con su caption.
     """
     from config import comfy_workflow_params
 
@@ -63,19 +85,7 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
         A.append({"type": tipo, "widgets": widgets, "conns": conns or {}})
         return len(A) - 1
 
-    if p["arch"] == "unet":
-        i_model = add("UNETLoader", [fichero, "default"])
-        i_clip = add("CLIPLoader", [p.get("clip", ""), p.get("clip_type", "stable_diffusion")])
-        i_vae = add("VAELoader", [p.get("vae", "")])
-        model_src, clip_src, vae_src = (i_model, 0), (i_clip, 0), (i_vae, 0)
-    else:
-        i_check = add("CheckpointLoaderSimple", [fichero])
-        model_src, clip_src, vae_src = (i_check, 0), (i_check, 1), (i_check, 2)
-
-    if lora:
-        i_lora = add("LoraLoader", [lora + ".safetensors", 1.0, 1.0],
-                     {"model": model_src, "clip": clip_src})
-        model_src, clip_src = (i_lora, 0), (i_lora, 1)
+    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
 
     i_latent = add("EmptyLatentImage", [ancho, alto, 1])
     i_pos = add("CLIPTextEncode", [pos], {"clip": clip_src})
@@ -85,7 +95,46 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
                {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
                 "latent_image": (i_latent, 0)})
     i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
-    add("SaveImage", ["G-Prompt-Studio"], {"images": (i_dec, 0)})
+    add("SaveImage", [save_prefix], {"images": (i_dec, 0)})
+
+    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?")
+
+
+def construir_workflow_comfy_lote(items: list, modelo: str,
+                                  lora: str = "", ratio: str = "") -> dict:
+    """Workflow ComfyUI (formato UI) con VARIAS tomas en un solo canvas.
+
+    `items`: lista de dicts {"pos", "neg", "save_prefix"} — todas las tomas
+    comparten el ratio (un único EmptyLatentImage) y los LOADERS (el modelo
+    se carga una sola vez); cada toma tiene su rama prompt/negative →
+    KSampler → VAEDecode → SaveImage con su prefijo. Un solo Queue genera
+    el lote entero.
+    """
+    from config import comfy_workflow_params
+
+    p = comfy_workflow_params(modelo)
+    fichero = (modelo + ".safetensors") if modelo else "model.safetensors"
+    ancho, alto = RESOLUCION_POR_RATIO.get((ratio or "").strip(), (1024, 1024))
+
+    A = []  # noqa: N806
+
+    def add(tipo, widgets, conns=None):
+        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}})
+        return len(A) - 1
+
+    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
+    i_latent = add("EmptyLatentImage", [ancho, alto, 1])
+
+    for it in items:
+        i_pos = add("CLIPTextEncode", [it.get("pos", "")], {"clip": clip_src})
+        i_neg = add("CLIPTextEncode", [it.get("neg", "") or ""], {"clip": clip_src})
+        i_ks = add("KSampler",
+                   [0, "randomize", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
+                   {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
+                    "latent_image": (i_latent, 0)})
+        i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
+        add("SaveImage", [it.get("save_prefix") or "G-Prompt-Studio"],
+            {"images": (i_dec, 0)})
 
     return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?")
 

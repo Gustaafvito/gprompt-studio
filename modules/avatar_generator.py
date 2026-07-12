@@ -315,55 +315,92 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
 
 
 def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
-    """Escribe workflows/ con un .json ComfyUI (formato UI) POR TOMA del
-    dataset, cableado al `modelo` local elegido: loader por arquitectura,
-    CFG/pasos/sampler de su familia y resolución del latent según el RATIO
-    sugerido de cada toma. Se cargan en ComfyUI con Load/arrastrar.
+    """Escribe workflows/ con los .json ComfyUI (formato UI) del dataset,
+    cableados al `modelo` local elegido: loader por arquitectura, CFG/pasos/
+    sampler de su familia y resolución del latent según el RATIO de cada toma.
+
+    Salen DOS variantes (se cargan en ComfyUI con Load/arrastrar):
+      • individuales/NN_toma.json — una toma por workflow.
+      • LOTE_<ratio>.json — TODAS las tomas de ese ratio en un canvas
+        (loaders compartidos, una rama por toma): un Queue = lote entero.
+    Cada SaveImage lleva el nombre de la toma → la imagen generada empareja
+    sola con su caption (01_..., 02_...).
 
     Solo tiene sentido con modelos ComfyUI locales (el caller decide, según
-    la plataforma destino elegida). Devuelve el nº de workflows escritos.
+    la plataforma destino elegida). Devuelve el nº de tomas exportadas.
     """
     from config import comfy_workflow_params
-    from modules.comfy_export import construir_workflow_comfy
+    from modules.comfy_export import (
+        construir_workflow_comfy,
+        construir_workflow_comfy_lote,
+    )
 
     dir_wf = os.path.join(base, "workflows")
-    os.makedirs(dir_wf, exist_ok=True)
+    dir_ind = os.path.join(dir_wf, "individuales")
+    os.makedirs(dir_ind, exist_ok=True)
+
     n = 0
+    por_ratio: dict = {}
     for item in resultado.get("dataset", []):
+        ratio = (item.get("ratio") or "").strip()
         wf = construir_workflow_comfy(
             pos=item.get("prompt", ""),
             neg=item.get("negative", "") or "",
             modelo=modelo,
-            ratio=item.get("ratio", ""),
+            ratio=ratio,
+            save_prefix=item.get("filename") or "G-Prompt-Studio",
         )
-        ruta = os.path.join(dir_wf, f"{item['filename']}.json")
-        with open(ruta, "w", encoding="utf-8") as f:
+        with open(os.path.join(dir_ind, f"{item['filename']}.json"),
+                  "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
+        por_ratio.setdefault(ratio, []).append({
+            "pos": item.get("prompt", ""),
+            "neg": item.get("negative", "") or "",
+            "save_prefix": item.get("filename") or "G-Prompt-Studio",
+        })
         n += 1
+
+    # Un LOTE por ratio (si tiene 2+ tomas): un solo Queue genera el grupo.
+    lotes = []
+    for ratio, items in sorted(por_ratio.items()):
+        if len(items) < 2:
+            continue
+        wf = construir_workflow_comfy_lote(items, modelo, ratio=ratio)
+        nombre = f"LOTE_{(ratio or 'libre').replace(':', 'x')}.json"
+        with open(os.path.join(dir_wf, nombre), "w", encoding="utf-8") as f:
+            json.dump(wf, f, ensure_ascii=False, indent=2)
+        lotes.append(f"{nombre} ({len(items)} tomas)")
 
     # LEEME con las instrucciones y la chuleta CLIP/VAE del modelo.
     p = comfy_workflow_params(modelo)
     if p["arch"] == "unet":
         chuleta = (f"CLIP: {p.get('clip') or '(elígelo en ComfyUI)'}\n"
-                   f"VAE:  {p.get('vae') or '(elígelo en ComfyUI)'}\n")
+                   f"   VAE:  {p.get('vae') or '(elígelo en ComfyUI)'}\n")
     else:
         chuleta = "CLIP y VAE van integrados en el checkpoint (no hay loaders aparte).\n"
+    lotes_txt = ("\n".join(f"  • {x}" for x in lotes)) if lotes else "  (ninguno)"
     with open(os.path.join(dir_wf, "LEEME_WORKFLOWS.txt"), "w", encoding="utf-8") as f:
         f.write(
             f"WORKFLOWS ComfyUI DEL DATASET — modelo: {modelo}\n"
             f"{'=' * 60}\n\n"
-            f"Cada .json es UNA toma del dataset, lista para generar:\n"
-            f"prompt + negative + resolución según su ratio sugerido, con\n"
-            f"{p['sampler']}/{p['scheduler']} · CFG {p['cfg']} · {p['steps']} pasos.\n\n"
-            f"CÓMO USARLOS:\n"
-            f"1. Abre ComfyUI y ARRASTRA el .json al canvas (o menú Load).\n"
+            f"Ajustes: {p['sampler']}/{p['scheduler']} · CFG {p['cfg']} · "
+            f"{p['steps']} pasos · resolución según el ratio de cada toma.\n\n"
+            f"DOS FORMAS DE USARLOS:\n\n"
+            f"A) LOTES POR RATIO (recomendado — un Queue genera el grupo):\n"
+            f"{lotes_txt}\n"
+            f"   Arrastra el LOTE al canvas de ComfyUI: el modelo se carga\n"
+            f"   UNA vez y cada toma tiene su rama con su prompt/negative.\n\n"
+            f"B) individuales/ — un .json por toma, por si quieres generar\n"
+            f"   (o retocar) una toma suelta.\n\n"
+            f"PASOS:\n"
+            f"1. Arrastra el .json al canvas (o menú Load).\n"
             f"2. Verifica el modelo en el loader (si el nombre no coincide\n"
             f"   exacto con tu fichero, elígelo en el desplegable).\n"
             f"   {chuleta}"
-            f"3. Queue Prompt. Repite con cada toma (o encadena varias).\n\n"
-            f"El nombre de cada .json coincide con su prompt/caption del\n"
-            f"dataset (01_..., 02_...), así emparejas la imagen generada\n"
-            f"con su caption para entrenar el LoRA.\n"
+            f"3. Queue Prompt.\n\n"
+            f"Cada SaveImage lleva el NOMBRE de su toma (01_..., 02_...):\n"
+            f"la imagen generada empareja sola con su caption de captions/\n"
+            f"para entrenar el LoRA.\n"
         )
     return n
 

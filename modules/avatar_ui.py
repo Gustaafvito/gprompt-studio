@@ -614,9 +614,9 @@ class AvatarFrame(ctk.CTkFrame):
                     from modules.avatar_generator import exportar_workflows_comfy
                     n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel)
                     avisos.append(tr(
-                        "🔧 {0} workflows ComfyUI exportados en workflows/ "
-                        "(uno por toma, arrastra cada .json al canvas de "
-                        "ComfyUI y dale a Queue).").format(n_wf))
+                        "🔧 {0} tomas exportadas como workflows ComfyUI en "
+                        "workflows/: LOTES por ratio (un Queue genera el "
+                        "grupo entero) + individuales/ por toma.").format(n_wf))
                 except Exception as e:
                     avisos.append(tr(
                         "⚠️ No se pudieron exportar los workflows ComfyUI: {0}"
