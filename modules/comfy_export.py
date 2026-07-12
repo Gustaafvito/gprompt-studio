@@ -26,6 +26,15 @@ COMFY_NODE_SLOTS = {
                      [("LATENT", "LATENT")]),
     "VAEDecode":    ([("samples", "LATENT"), ("vae", "VAE")], [("IMAGE", "IMAGE")]),
     "SaveImage":    ([("images", "IMAGE")], []),
+    # Impact Pack (retoque de caras/ojos). bbox_detector viene del provider.
+    "UltralyticsDetectorProvider": ([], [("BBOX_DETECTOR", "BBOX_DETECTOR"),
+                                         ("SEGM_DETECTOR", "SEGM_DETECTOR")]),
+    "FaceDetailer": ([("image", "IMAGE"), ("model", "MODEL"), ("clip", "CLIP"),
+                      ("vae", "VAE"), ("positive", "CONDITIONING"),
+                      ("negative", "CONDITIONING"), ("bbox_detector", "BBOX_DETECTOR")],
+                     [("image", "IMAGE"), ("cropped_refined", "IMAGE"),
+                      ("cropped_enhanced_alpha", "IMAGE"), ("mask", "MASK"),
+                      ("detailer_pipe", "DETAILER_PIPE"), ("cnet_images", "IMAGE")]),
 }
 
 # Resolución del latent por aspect ratio (~1MP, múltiplos de 64: los
@@ -60,10 +69,18 @@ def _add_loaders(A, add, p, fichero, lora):  # noqa: N803
     return model_src, clip_src, vae_src
 
 
+def _detailer_widgets(p) -> list:
+    """widgets_values estándar del FaceDetailer (Impact Pack), usando el
+    sampler/scheduler del modelo y denoise 0.5 para el retoque."""
+    return [512, "bbox", 1024, 0, "randomize", p["steps"], p["cfg"],
+            p["sampler"], p["scheduler"], 0.5, 5, True, True, 0.5, 10, 3.0,
+            "center-1", 0, 0.93, 0, 0.7, "False", 10, "", 1, False, 20]
+
+
 def construir_workflow_comfy(pos: str, neg: str, modelo: str,
                              lora: str = "", ratio: str = "",
                              save_prefix: str = "G-Prompt-Studio",
-                             caption: str = "") -> dict:
+                             caption: str = "", con_detailer: bool = False) -> dict:
     """Workflow ComfyUI (formato UI) para `modelo` con el prompt dado.
 
     `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler.
@@ -71,8 +88,10 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     (RESOLUCION_POR_RATIO); vacío o desconocido → 1024x1024.
     `save_prefix`: prefijo del fichero de salida (SaveImage) — con el nombre
     de la toma, la imagen generada empareja sola con su caption.
-    `caption`: si se pasa, añade un nodo Note con el caption de entrenamiento
-    junto a la imagen.
+    `caption`: si se pasa, añade un nodo Note con el caption de entrenamiento.
+    `con_detailer`: añade un FaceDetailer (Impact Pack) DESACTIVADO (bypass)
+    tras la imagen, para retocar caras/ojos si salen mal (Ctrl+B para
+    activarlo). Requiere Impact Pack instalado.
     """
     from config import comfy_workflow_params
 
@@ -84,8 +103,8 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     # idx_nodo referencia la posición en esta lista.
     A = []  # noqa: N806 — lista de nodos abstractos
 
-    def add(tipo, widgets, conns=None):
-        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}})
+    def add(tipo, widgets, conns=None, mode=0):
+        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}, "mode": mode})
         return len(A) - 1
 
     model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
@@ -103,6 +122,22 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     notas = [(chuleta_texto(modelo), [40, -300])]
     if caption:
         notas.append((f"📝 CAPTION ({save_prefix}):\n\n{caption}", [1560, 40]))
+
+    if con_detailer:
+        # FaceDetailer bypasseado (mode 4): retoca caras/ojos al activarlo.
+        i_bbox = add("UltralyticsDetectorProvider", ["bbox/face_yolov8m.pt"], mode=4)
+        i_fd = add("FaceDetailer", _detailer_widgets(p),
+                   {"image": (i_dec, 0), "model": model_src, "clip": clip_src,
+                    "vae": vae_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
+                    "bbox_detector": (i_bbox, 0)}, mode=4)
+        add("SaveImage", [save_prefix + "_detailed"], {"images": (i_fd, 0)}, mode=4)
+        notas.append((
+            "🩹 RETOQUE (Impact Pack) — DESACTIVADO por defecto (bypass gris).\n"
+            "¿Cara/ojos/manos mal? Selecciona el FaceDetailer + su SaveImage,\n"
+            "pulsa Ctrl+B para activarlos y vuelve a Queue: sale una versión\n"
+            "'_detailed' corregida. Sube/baja 'denoise' (~0.5) según haga falta.",
+            [1560, 300]))
+
     return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
 
 
@@ -124,8 +159,8 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
 
     A = []  # noqa: N806
 
-    def add(tipo, widgets, conns=None):
-        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}})
+    def add(tipo, widgets, conns=None, mode=0):
+        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}, "mode": mode})
         return len(A) - 1
 
     model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
@@ -147,7 +182,55 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
         if cap:
             notas.append((f"📝 {prefijo}:\n\n{cap}", [2000, 40 + j * 240]))
 
-    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
+    notas.append((
+        "🎚 CONTROL COMPARTIDO: los nodos 'PASOS (todos)' y 'CFG (todos)' de\n"
+        "arriba mandan sobre TODOS los KSampler del lote. Cambia el valor\n"
+        "ahí y todas las tomas lo cogen (no toques cada KSampler uno a uno).",
+        [40, -160]))
+    wf = serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
+    return anadir_control_compartido(wf, p["steps"], p["cfg"])
+
+
+def anadir_control_compartido(wf: dict, steps_val, cfg_val) -> dict:
+    """Post-procesa un workflow serializado: añade dos PrimitiveNode ('PASOS
+    (todos)' y 'CFG (todos)') conectados a los inputs steps/cfg de TODOS los
+    KSampler, para cambiar los pasos/CFG del lote entero desde un sitio.
+    No hace nada si hay menos de 2 KSampler."""
+    ks = [n for n in wf["nodes"] if n["type"] == "KSampler"]
+    if len(ks) < 2:
+        return wf
+    lid = wf["last_link_id"]
+    id_steps, id_cfg = wf["last_node_id"] + 1, wf["last_node_id"] + 2
+    links_steps, links_cfg = [], []
+    for k in ks:
+        base = len(k["inputs"])
+        lid += 1
+        k["inputs"].append({"name": "steps", "type": "INT", "link": lid,
+                            "widget": {"name": "steps"}})
+        wf["links"].append([lid, id_steps, 0, k["id"], base, "INT"])
+        links_steps.append(lid)
+        lid += 1
+        k["inputs"].append({"name": "cfg", "type": "FLOAT", "link": lid,
+                            "widget": {"name": "cfg"}})
+        wf["links"].append([lid, id_cfg, 0, k["id"], base + 1, "FLOAT"])
+        links_cfg.append(lid)
+
+    def _prim(nid, titulo, tipo, links, valor, x):
+        return {
+            "id": nid, "type": "PrimitiveNode", "title": titulo,
+            "pos": [x, -560], "size": [230, 82], "flags": {},
+            "order": 9990 + nid, "mode": 0, "inputs": [],
+            "outputs": [{"name": tipo, "type": tipo, "links": links,
+                         "slot_index": 0, "widget": {"name": titulo.split()[0].lower()}}],
+            "properties": {"Run widget replace on values": False},
+            "widgets_values": [valor, "fixed"],
+            "color": "#323", "bgcolor": "#535",
+        }
+    wf["nodes"].append(_prim(id_steps, "steps (todos)", "INT", links_steps, steps_val, 40))
+    wf["nodes"].append(_prim(id_cfg, "cfg (todos)", "FLOAT", links_cfg, cfg_val, 300))
+    wf["last_node_id"] = id_cfg
+    wf["last_link_id"] = lid
+    return wf
 
 
 def chuleta_texto(modelo: str) -> str:
@@ -226,7 +309,7 @@ def serializar_workflow_ui(abstractos: list, modelo: str, familia: str,
         nodes_ui.append({
             "id": idx + 1, "type": nodo["type"],
             "pos": [col * 360 + 40, y + 40], "size": [300, 200],
-            "flags": {}, "order": idx, "mode": 0,
+            "flags": {}, "order": idx, "mode": nodo.get("mode", 0),
             "inputs": inputs_ui, "outputs": outputs_ui,
             "properties": {"Node name for S&R": nodo["type"]},
             "widgets_values": nodo["widgets"],

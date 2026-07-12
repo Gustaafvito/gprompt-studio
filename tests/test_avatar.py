@@ -729,6 +729,42 @@ class TestExportarWorkflowsComfy:
         for lk in wf["links"]:
             assert lk[1] in ids and lk[3] in ids
 
+    def test_individual_lleva_facedetailer_bypasseado(self, tmp_path):
+        # FaceDetailer (Impact Pack) desactivado por defecto (mode 4) + su
+        # detector, para retocar caras/ojos al activarlo.
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        fd = [nd for nd in wf["nodes"] if nd["type"] == "FaceDetailer"]
+        prov = [nd for nd in wf["nodes"] if nd["type"] == "UltralyticsDetectorProvider"]
+        assert len(fd) == 1 and fd[0]["mode"] == 4  # bypass
+        assert len(prov) == 1
+        ids = {nd["id"] for nd in wf["nodes"]}  # sigue siendo válido
+        for lk in wf["links"]:
+            assert lk[1] in ids and lk[3] in ids
+
+    def test_lote_control_compartido_steps_cfg(self, tmp_path):
+        # Dos PrimitiveNode ('steps (todos)' / 'cfg (todos)') mandan sobre
+        # TODOS los KSampler del lote.
+        n, wf_dir, leer = self._exportar(
+            tmp_path, "flux-2-klein-9b-fp8",
+            angulos=("face_front", "face_34_left", "face_34_right"))
+        wf = leer("LOTE_1x1.json")
+        prims = [nd for nd in wf["nodes"] if nd["type"] == "PrimitiveNode"]
+        ks = [nd for nd in wf["nodes"] if nd["type"] == "KSampler"]
+        assert len(prims) == 2 and len(ks) == 3
+        # Cada KSampler tiene steps y cfg como INPUT (widget convertido).
+        for k in ks:
+            nombres = [i["name"] for i in k["inputs"]]
+            assert "steps" in nombres and "cfg" in nombres
+        # El primitive de steps enlaza con los 3 KSampler.
+        psteps = next(p for p in prims if "steps" in p["title"])
+        assert len(psteps["outputs"][0]["links"]) == 3
+        # Workflow sigue consistente.
+        ids = {nd["id"] for nd in wf["nodes"]}
+        assert wf["last_node_id"] == max(ids)
+        for lk in wf["links"]:
+            assert lk[1] in ids and lk[3] in ids
+
     def test_save_prefix_es_el_nombre_de_la_toma(self, tmp_path):
         # La imagen generada debe emparejar con su caption por nombre.
         _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")

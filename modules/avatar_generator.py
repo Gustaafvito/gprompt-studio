@@ -350,6 +350,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             ratio=ratio,
             save_prefix=item.get("filename") or "G-Prompt-Studio",
             caption=item.get("caption", ""),
+            con_detailer=True,  # FaceDetailer bypasseado para retocar caras/ojos
         )
         with open(os.path.join(dir_ind, f"{item['filename']}.json"),
                   "w", encoding="utf-8") as f:
@@ -400,6 +401,15 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             f"   exacto con tu fichero, elígelo en el desplegable).\n"
             f"   {chuleta}"
             f"3. Queue Prompt.\n\n"
+            f"DENTRO DE CADA WORKFLOW:\n"
+            f"• 🧩 CHULETA — recordatorio de qué elegir y los ajustes.\n"
+            f"• 📝 CAPTION — el caption de entrenamiento junto a cada imagen.\n"
+            f"• 🎚 PASOS/CFG (solo LOTES) — dos nodos arriba que mandan sobre\n"
+            f"  TODOS los KSampler: cambia ahí y todo el lote lo coge.\n"
+            f"• 🩹 FaceDetailer (solo individuales) — DESACTIVADO (gris). Si la\n"
+            f"  cara/ojos salen mal, selecciónalo + su SaveImage, Ctrl+B para\n"
+            f"  activarlos y Queue → sale una versión _detailed corregida.\n"
+            f"  (Requiere el plugin Impact Pack instalado en ComfyUI.)\n\n"
             f"Cada SaveImage lleva el NOMBRE de su toma (01_..., 02_...):\n"
             f"la imagen generada empareja sola con su caption de captions/\n"
             f"para entrenar el LoRA.\n"
