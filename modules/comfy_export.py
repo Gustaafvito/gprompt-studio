@@ -62,7 +62,8 @@ def _add_loaders(A, add, p, fichero, lora):  # noqa: N803
 
 def construir_workflow_comfy(pos: str, neg: str, modelo: str,
                              lora: str = "", ratio: str = "",
-                             save_prefix: str = "G-Prompt-Studio") -> dict:
+                             save_prefix: str = "G-Prompt-Studio",
+                             caption: str = "") -> dict:
     """Workflow ComfyUI (formato UI) para `modelo` con el prompt dado.
 
     `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler.
@@ -70,6 +71,8 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     (RESOLUCION_POR_RATIO); vacío o desconocido → 1024x1024.
     `save_prefix`: prefijo del fichero de salida (SaveImage) — con el nombre
     de la toma, la imagen generada empareja sola con su caption.
+    `caption`: si se pasa, añade un nodo Note con el caption de entrenamiento
+    junto a la imagen.
     """
     from config import comfy_workflow_params
 
@@ -97,7 +100,10 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
     add("SaveImage", [save_prefix], {"images": (i_dec, 0)})
 
-    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?")
+    notas = [(chuleta_texto(modelo), [40, -300])]
+    if caption:
+        notas.append((f"📝 CAPTION ({save_prefix}):\n\n{caption}", [1560, 40]))
+    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
 
 
 def construir_workflow_comfy_lote(items: list, modelo: str,
@@ -125,7 +131,8 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
     model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
     i_latent = add("EmptyLatentImage", [ancho, alto, 1])
 
-    for it in items:
+    notas = [(chuleta_texto(modelo), [40, -300])]
+    for j, it in enumerate(items):
         i_pos = add("CLIPTextEncode", [it.get("pos", "")], {"clip": clip_src})
         i_neg = add("CLIPTextEncode", [it.get("neg", "") or ""], {"clip": clip_src})
         i_ks = add("KSampler",
@@ -133,15 +140,49 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
                    {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
                     "latent_image": (i_latent, 0)})
         i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
-        add("SaveImage", [it.get("save_prefix") or "G-Prompt-Studio"],
-            {"images": (i_dec, 0)})
+        prefijo = it.get("save_prefix") or "G-Prompt-Studio"
+        add("SaveImage", [prefijo], {"images": (i_dec, 0)})
+        # Caption de cada toma junto a su rama (columna de la derecha).
+        cap = it.get("caption")
+        if cap:
+            notas.append((f"📝 {prefijo}:\n\n{cap}", [2000, 40 + j * 240]))
 
-    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?")
+    return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
 
 
-def serializar_workflow_ui(abstractos: list, modelo: str, familia: str) -> dict:
+def chuleta_texto(modelo: str) -> str:
+    """Texto del nodo Note 🧩 CHULETA: qué elegir en los cargadores y
+    ajustes recomendados, dentro del propio workflow."""
+    from config import comfy_workflow_params
+    p = comfy_workflow_params(modelo)
+    L = [f"🧩 CHULETA — {modelo}", ""]  # noqa: N806
+    if p["arch"] == "unet":
+        L += ["Selecciona en los cargadores (si el nombre no coincide con",
+              "tu fichero, elígelo en el desplegable de cada nodo):",
+              f"• UNETLoader → {modelo}.safetensors",
+              f"• CLIPLoader → {p.get('clip') or '(elige tu CLIP)'}   type: {p.get('clip_type')}",
+              f"• VAELoader  → {p.get('vae') or '(elige tu VAE)'}"]
+    else:
+        L += ["Checkpoint (CLIP y VAE ya integrados):",
+              f"• CheckpointLoaderSimple → {modelo}.safetensors"]
+    L += ["",
+          f"AJUSTES: {p['sampler']} / {p['scheduler']} · CFG {p['cfg']} · {p['steps']} pasos",
+          "(cámbialos en el/los nodo KSampler)",
+          "",
+          "¿Manos/ojos/caras defectuosas? Tras el VAEDecode añade un",
+          "FaceDetailer (Impact Pack) o reinyecta la imagen en img2img",
+          "(VAEEncode → KSampler denoise ~0.4) para retocar."]
+    return "\n".join(L)
+
+
+def serializar_workflow_ui(abstractos: list, modelo: str, familia: str,
+                           notas: list | None = None) -> dict:
     """Convierte la lista de nodos abstractos al formato UI de ComfyUI:
-    nodes[] con pos/size/inputs/outputs/widgets_values + links[]."""
+    nodes[] con pos/size/inputs/outputs/widgets_values + links[].
+
+    `notas`: lista de (texto, [x, y]) → nodos Note nativos (amarillos), sin
+    conexiones, para chuletas/captions dentro del propio canvas.
+    """
     slots = COMFY_NODE_SLOTS
     # id real = índice + 1 (ComfyUI usa enteros >= 1)
     nodes_ui, links = [], []
@@ -191,8 +232,23 @@ def serializar_workflow_ui(abstractos: list, modelo: str, familia: str) -> dict:
             "widgets_values": nodo["widgets"],
         })
 
+    # 3) Nodos Note (nativos, sin conexiones): chuleta + captions. Van con
+    #    ids por encima de los de trabajo, en las posiciones indicadas.
+    next_id = len(abstractos)
+    for j, (texto, pos) in enumerate(notas or []):
+        next_id += 1
+        nodes_ui.append({
+            "id": next_id, "type": "Note",
+            "pos": pos, "size": [340, 200],
+            "flags": {}, "order": len(abstractos) + j, "mode": 0,
+            "inputs": [], "outputs": [],
+            "properties": {"text": ""},
+            "widgets_values": [texto],
+            "color": "#432", "bgcolor": "#653",  # amarillo Note nativo
+        })
+
     return {
-        "last_node_id": len(abstractos),
+        "last_node_id": next_id,
         "last_link_id": link_id,
         "nodes": nodes_ui,
         "links": links,

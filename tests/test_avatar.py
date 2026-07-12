@@ -700,6 +700,35 @@ class TestExportarWorkflowsComfy:
         assert latente(leer(os.path.join("individuales", "01_face_front.json")))[:2] == [1024, 1024]
         assert latente(leer(os.path.join("individuales", "09_full_front.json")))[:2] == [768, 1344]
 
+    def test_chuleta_note_dentro_del_workflow(self, tmp_path):
+        # Nodo Note nativo con la chuleta (modelo/CLIP/VAE/ajustes).
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        notas = [nd for nd in wf["nodes"] if nd["type"] == "Note"]
+        assert notas, "sin nodo Note de chuleta"
+        chuleta = next(nd for nd in notas if "CHULETA" in nd["widgets_values"][0])
+        txt = chuleta["widgets_values"][0]
+        assert "flux-2-klein-9b-fp8" in txt and "CLIP" in txt and "CFG" in txt
+
+    def test_caption_note_junto_a_la_imagen(self, tmp_path):
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        caps = [nd for nd in wf["nodes"]
+                if nd["type"] == "Note" and "CAPTION" in nd["widgets_values"][0]]
+        assert caps, "sin nodo Note de caption"
+        # El caption lleva el trigger (identidad del LoRA)
+        assert "ohwx_t" in caps[0]["widgets_values"][0]
+
+    def test_json_valido_con_notes(self, tmp_path):
+        # Los Note no rompen los links ni el conteo de nodos.
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        ids = {nd["id"] for nd in wf["nodes"]}
+        assert len(ids) == len(wf["nodes"])  # ids únicos
+        assert wf["last_node_id"] == max(ids)
+        for lk in wf["links"]:
+            assert lk[1] in ids and lk[3] in ids
+
     def test_save_prefix_es_el_nombre_de_la_toma(self, tmp_path):
         # La imagen generada debe emparejar con su caption por nombre.
         _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")

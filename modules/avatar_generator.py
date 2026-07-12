@@ -349,6 +349,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             modelo=modelo,
             ratio=ratio,
             save_prefix=item.get("filename") or "G-Prompt-Studio",
+            caption=item.get("caption", ""),
         )
         with open(os.path.join(dir_ind, f"{item['filename']}.json"),
                   "w", encoding="utf-8") as f:
@@ -357,6 +358,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             "pos": item.get("prompt", ""),
             "neg": item.get("negative", "") or "",
             "save_prefix": item.get("filename") or "G-Prompt-Studio",
+            "caption": item.get("caption", ""),
         })
         n += 1
 
