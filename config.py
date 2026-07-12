@@ -737,8 +737,22 @@ _COMFY_SPECS_FAMILIA = {
 }
 
 
+# Override de familia para modelos LOCALES cuyo NOMBRE no la revela (el
+# usuario confirma la familia real). Clave = nombre normalizado
+# (_norm_nombre_comfy); tiene PRIORIDAD sobre la detección por tokens.
+# Ej.: "uberRealisticPornMerge_v23Final" es un merge PonyXL, pero el nombre
+# perdió el token "pony" → sin esto caería en "Otros" con params genéricos.
+_COMFY_FAMILIA_OVERRIDE = {
+    "uberrealisticpornmergev23final": "pony",
+    "uberrealisticpornmergeponyxlponyxlhybridv1": "pony",
+}
+
+
 def detectar_familia_comfy(nombre: str) -> str:
     """Familia ComfyUI ('flux'|'sdxl'|'pony'…) por nombre, o '' si no se reconoce."""
+    override = _COMFY_FAMILIA_OVERRIDE.get(_norm_nombre_comfy(nombre))
+    if override:
+        return override
     n = (nombre or "").lower()
     for clave, tokens in _COMFY_FAMILIAS:
         if any(_token_en_nombre(t, n) for t in tokens):

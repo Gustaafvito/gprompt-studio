@@ -409,6 +409,16 @@ class TestComfyWorkflowParams:
         assert p["arch"] == "checkpoint"
         assert "cfg" in p and "sampler" in p
 
+    def test_override_familia_pony_por_nombre_no_evidente(self):
+        # uberRealisticPornMerge es un merge PonyXL cuyo nombre (v23Final)
+        # perdió el token 'pony' → override de familia. Debe salir con los
+        # params de Pony (CFG 5, karras), no los genéricos de 'Otros'.
+        assert config.detectar_familia_comfy("uberRealisticPornMerge_v23Final") == "pony"
+        p = config.comfy_workflow_params("uberRealisticPornMerge_v23Final")
+        assert p["cfg"] == 5.0 and p["scheduler"] == "karras"
+        # Y comfy_image_specs deja de ser None → se registra como modelo destino.
+        assert config.comfy_image_specs("uberRealisticPornMerge_v23Final") is not None
+
 
 class TestConstruirWorkflowComfy:
     """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
