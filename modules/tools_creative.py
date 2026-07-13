@@ -2,6 +2,7 @@
 import concurrent.futures
 import datetime
 import logging
+import random
 import threading
 
 import customtkinter as ctk
@@ -469,8 +470,15 @@ class ToolsCreativeService:
         # (Antes se enviaban solo los 20 primeros de la lista → el LLM siempre
         #  sugería los mismos modelos, sesgados al inicio alfabético; los ~100
         #  restantes nunca podían salir. Ver fix sesión 34.)
+        #
+        # Se BARAJA el orden en cada llamada: al mandarlos siempre en el mismo
+        # orden alfabético el LLM ancla en los primeros y repite favoritos aunque
+        # cambie la idea. Barajar quita ese sesgo posicional y da variedad real
+        # entre pulsaciones. El matching posterior usa modelos_lista (sin tocar).
+        modelos_prompt = modelos_lista[:]
+        random.shuffle(modelos_prompt)
         specs_resumen = []
-        for m in modelos_lista:
+        for m in modelos_prompt:
             s = get_image_model_specs(m) or get_model_specs(m) or get_audio_model_specs(m) or {}
             # 180 chars (antes 120): no cortar los descriptores de ESTILO del
             # best_for (p.ej. "estética punk-ink", "anime", "fotorrealista"),
@@ -497,9 +505,20 @@ class ToolsCreativeService:
             f"RAZÓN: [1 frase concreta]"
         )
 
+        # One-shot SIN historial (generar_batch): "sugerir modelo" es un análisis
+        # puntual, no parte de la conversación de generación de prompts. Con el
+        # historial (generar()) la respuesta anterior quedaba en contexto y el LLM
+        # la repetía en la siguiente pulsación —y contaminaba la charla creativa—,
+        # así que salían "siempre los mismos modelos". T=0.7 para variar el desempate.
+        sistema = (
+            "Eres un experto en modelos de IA generativa (imagen, vídeo, audio). "
+            "Analizas una idea y recomiendas los modelos que mejor encajan por ESTILO "
+            "visual y por contenido. Respondes solo en el formato pedido."
+        )
+
         def _worker():
             try:
-                resp = self.app.deepseek.generar(peticion, temperature=0.5, max_tokens=600)
+                resp = self.app.deepseek.generar_batch(sistema, peticion, temperature=0.7, max_tokens=600)
                 resp = limpiar_marcadores(resp)
 
                 # Parsear las 3 sugerencias

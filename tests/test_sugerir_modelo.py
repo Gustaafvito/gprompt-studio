@@ -22,8 +22,20 @@ class _FakeDeepseek:
     def __init__(self):
         self.peticion = None
         self.temperature = None
+        self.sistema = None
+        self.uso_historial = False
 
     def generar(self, peticion, temperature=None, max_tokens=None):
+        # "Sugerir modelo" NO debe usar la vía con historial (contamina la
+        # conversación y hace que se repitan los mismos modelos). Si se llama
+        # aquí, el test lo detecta.
+        self.uso_historial = True
+        self.peticion = peticion
+        self.temperature = temperature
+        return "#1: __no_existe__\nRAZÓN: n/a"
+
+    def generar_batch(self, system_content, peticion, temperature=None, max_tokens=None):
+        self.sistema = system_content
         self.peticion = peticion
         self.temperature = temperature
         # Respuesta que NO casa con ningún modelo → rama "sin sugerencias"
@@ -84,12 +96,22 @@ def test_sugerir_modelo_envia_todos_los_modelos_imagen():
     assert len(modelos) > 20
 
 
+def test_sugerir_modelo_es_one_shot_sin_historial():
+    """Debe ir por generar_batch (one-shot), no por generar() con historial:
+    el historial hacía que se repitieran siempre los mismos modelos."""
+    app = _FakeApp("una mujer cyberpunk con luces de neón, retrato fotorrealista")
+    svc = ToolsCreativeService(app)
+    svc._cmd_sugerir_modelo()
+    assert not app.deepseek.uso_historial, "Usó generar() con historial en vez de generar_batch()"
+    assert app.deepseek.sistema, "generar_batch no recibió system prompt"
+
+
 def test_sugerir_modelo_temperatura_con_variedad():
     app = _FakeApp("paisaje de montaña al amanecer, estilo acuarela")
     svc = ToolsCreativeService(app)
     svc._cmd_sugerir_modelo()
-    # Subida de 0.3 → 0.5 para que no salga siempre lo mismo.
-    assert app.deepseek.temperature == 0.5
+    # Subida a 0.7: más variedad de desempate para que no salga siempre lo mismo.
+    assert app.deepseek.temperature == 0.7
 
 
 def test_sugerir_modelo_incluye_guia_de_estilo():

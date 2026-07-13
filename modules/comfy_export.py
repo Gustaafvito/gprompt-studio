@@ -37,6 +37,12 @@ COMFY_NODE_SLOTS = {
                       ("detailer_pipe", "DETAILER_PIPE"), ("cnet_images", "IMAGE")]),
 }
 
+# Semilla FIJA para los datasets: todas las tomas usan la misma → la
+# identidad del personaje es consistente entre ángulos (misma "persona",
+# distinta pose). Con "fixed" no se randomiza en cada Queue. En los LOTES
+# hay un nodo 'seed (todos)' para cambiarla y re-rolar todo el grupo.
+SEED_DATASET = 42
+
 # Resolución del latent por aspect ratio (~1MP, múltiplos de 64: los
 # tamaños estándar de SDXL/Flux/Z-Image). Fallback: 1024x1024.
 RESOLUCION_POR_RATIO = {
@@ -113,7 +119,7 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
     i_pos = add("CLIPTextEncode", [pos], {"clip": clip_src})
     i_neg = add("CLIPTextEncode", [neg], {"clip": clip_src})
     i_ks = add("KSampler",
-               [0, "randomize", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
+               [SEED_DATASET, "fixed", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
                {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
                 "latent_image": (i_latent, 0)})
     i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
@@ -171,7 +177,7 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
         i_pos = add("CLIPTextEncode", [it.get("pos", "")], {"clip": clip_src})
         i_neg = add("CLIPTextEncode", [it.get("neg", "") or ""], {"clip": clip_src})
         i_ks = add("KSampler",
-                   [0, "randomize", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
+                   [SEED_DATASET, "fixed", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
                    {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
                     "latent_image": (i_latent, 0)})
         i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
@@ -183,51 +189,61 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
             notas.append((f"📝 {prefijo}:\n\n{cap}", [2000, 40 + j * 240]))
 
     notas.append((
-        "🎚 CONTROL COMPARTIDO: los nodos 'PASOS (todos)' y 'CFG (todos)' de\n"
-        "arriba mandan sobre TODOS los KSampler del lote. Cambia el valor\n"
-        "ahí y todas las tomas lo cogen (no toques cada KSampler uno a uno).",
+        "🎚 CONTROL COMPARTIDO (arriba): 'seed (todos)', 'steps (todos)' y\n"
+        "'cfg (todos)' mandan sobre TODOS los KSampler del lote.\n\n"
+        "👤 CONSISTENCIA: todas las tomas comparten la MISMA semilla → mismo\n"
+        "personaje, distinto ángulo. Si el personaje base no te convence,\n"
+        "cambia SOLO 'seed (todos)' y re-rola el lote entero hasta dar con\n"
+        "una cara que te guste; entonces genera todas las tomas con esa.",
         [40, -160]))
     wf = serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
     return anadir_control_compartido(wf, p["steps"], p["cfg"])
 
 
 def anadir_control_compartido(wf: dict, steps_val, cfg_val) -> dict:
-    """Post-procesa un workflow serializado: añade dos PrimitiveNode ('PASOS
-    (todos)' y 'CFG (todos)') conectados a los inputs steps/cfg de TODOS los
-    KSampler, para cambiar los pasos/CFG del lote entero desde un sitio.
+    """Post-procesa un workflow serializado: añade tres PrimitiveNode
+    ('seed (todos)', 'steps (todos)', 'cfg (todos)') conectados a los inputs
+    seed/steps/cfg de TODOS los KSampler, para gobernar el lote entero desde
+    un sitio. La semilla compartida es CLAVE para la consistencia de identidad
+    (todas las tomas parten de la misma → mismo personaje, distinto ángulo).
     No hace nada si hay menos de 2 KSampler."""
     ks = [n for n in wf["nodes"] if n["type"] == "KSampler"]
     if len(ks) < 2:
         return wf
     lid = wf["last_link_id"]
-    id_steps, id_cfg = wf["last_node_id"] + 1, wf["last_node_id"] + 2
-    links_steps, links_cfg = [], []
+    id_seed = wf["last_node_id"] + 1
+    id_steps = wf["last_node_id"] + 2
+    id_cfg = wf["last_node_id"] + 3
+    links_seed, links_steps, links_cfg = [], [], []
     for k in ks:
         base = len(k["inputs"])
-        lid += 1
-        k["inputs"].append({"name": "steps", "type": "INT", "link": lid,
-                            "widget": {"name": "steps"}})
-        wf["links"].append([lid, id_steps, 0, k["id"], base, "INT"])
-        links_steps.append(lid)
-        lid += 1
-        k["inputs"].append({"name": "cfg", "type": "FLOAT", "link": lid,
-                            "widget": {"name": "cfg"}})
-        wf["links"].append([lid, id_cfg, 0, k["id"], base + 1, "FLOAT"])
-        links_cfg.append(lid)
+        for offset, (nombre, tipo, ids, acc) in enumerate((
+                ("seed", "INT", id_seed, links_seed),
+                ("steps", "INT", id_steps, links_steps),
+                ("cfg", "FLOAT", id_cfg, links_cfg))):
+            lid += 1
+            k["inputs"].append({"name": nombre, "type": tipo, "link": lid,
+                                "widget": {"name": nombre}})
+            wf["links"].append([lid, ids, 0, k["id"], base + offset, tipo])
+            acc.append(lid)
 
-    def _prim(nid, titulo, tipo, links, valor, x):
+    def _prim(nid, nombre_widget, titulo, tipo, links, valor, x):
         return {
             "id": nid, "type": "PrimitiveNode", "title": titulo,
             "pos": [x, -560], "size": [230, 82], "flags": {},
             "order": 9990 + nid, "mode": 0, "inputs": [],
             "outputs": [{"name": tipo, "type": tipo, "links": links,
-                         "slot_index": 0, "widget": {"name": titulo.split()[0].lower()}}],
+                         "slot_index": 0, "widget": {"name": nombre_widget}}],
             "properties": {"Run widget replace on values": False},
             "widgets_values": [valor, "fixed"],
             "color": "#323", "bgcolor": "#535",
         }
-    wf["nodes"].append(_prim(id_steps, "steps (todos)", "INT", links_steps, steps_val, 40))
-    wf["nodes"].append(_prim(id_cfg, "cfg (todos)", "FLOAT", links_cfg, cfg_val, 300))
+    wf["nodes"].append(_prim(id_seed, "seed", "seed (todos)", "INT",
+                             links_seed, SEED_DATASET, 40))
+    wf["nodes"].append(_prim(id_steps, "steps", "steps (todos)", "INT",
+                             links_steps, steps_val, 300))
+    wf["nodes"].append(_prim(id_cfg, "cfg", "cfg (todos)", "FLOAT",
+                             links_cfg, cfg_val, 560))
     wf["last_node_id"] = id_cfg
     wf["last_link_id"] = lid
     return wf

@@ -742,28 +742,36 @@ class TestExportarWorkflowsComfy:
         for lk in wf["links"]:
             assert lk[1] in ids and lk[3] in ids
 
-    def test_lote_control_compartido_steps_cfg(self, tmp_path):
-        # Dos PrimitiveNode ('steps (todos)' / 'cfg (todos)') mandan sobre
-        # TODOS los KSampler del lote.
+    def test_lote_control_compartido_seed_steps_cfg(self, tmp_path):
+        # Tres PrimitiveNode ('seed/steps/cfg (todos)') mandan sobre TODOS los
+        # KSampler del lote (seed compartida = consistencia de identidad).
         n, wf_dir, leer = self._exportar(
             tmp_path, "flux-2-klein-9b-fp8",
             angulos=("face_front", "face_34_left", "face_34_right"))
         wf = leer("LOTE_1x1.json")
         prims = [nd for nd in wf["nodes"] if nd["type"] == "PrimitiveNode"]
         ks = [nd for nd in wf["nodes"] if nd["type"] == "KSampler"]
-        assert len(prims) == 2 and len(ks) == 3
-        # Cada KSampler tiene steps y cfg como INPUT (widget convertido).
+        assert len(prims) == 3 and len(ks) == 3
+        # Cada KSampler tiene seed, steps y cfg como INPUT (widget convertido).
         for k in ks:
             nombres = [i["name"] for i in k["inputs"]]
-            assert "steps" in nombres and "cfg" in nombres
-        # El primitive de steps enlaza con los 3 KSampler.
-        psteps = next(p for p in prims if "steps" in p["title"])
-        assert len(psteps["outputs"][0]["links"]) == 3
+            assert {"seed", "steps", "cfg"} <= set(nombres)
+        # Cada primitive enlaza con los 3 KSampler y es 'fixed'.
+        for p in prims:
+            assert len(p["outputs"][0]["links"]) == 3
+            assert p["widgets_values"][1] == "fixed"
         # Workflow sigue consistente.
         ids = {nd["id"] for nd in wf["nodes"]}
         assert wf["last_node_id"] == max(ids)
         for lk in wf["links"]:
             assert lk[1] in ids and lk[3] in ids
+
+    def test_individual_semilla_fija(self, tmp_path):
+        # Los individuales usan semilla FIJA (no randomize) para consistencia.
+        _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
+        wf = leer(os.path.join("individuales", "01_face_front.json"))
+        ks = next(nd for nd in wf["nodes"] if nd["type"] == "KSampler")
+        assert ks["widgets_values"][1] == "fixed"
 
     def test_save_prefix_es_el_nombre_de_la_toma(self, tmp_path):
         # La imagen generada debe emparejar con su caption por nombre.
