@@ -200,6 +200,62 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
     return anadir_control_compartido(wf, p["steps"], p["cfg"])
 
 
+def construir_workflow_comfy_todas(items: list, modelo: str, lora: str = "") -> dict:
+    """UN ÚNICO workflow con TODAS las tomas del dataset en un solo canvas:
+    LOADERS compartidos (modelo/CLIP/VAE cargados una vez) + seed/steps/cfg
+    compartidos, pero cada toma con su PROPIO tamaño (EmptyLatentImage según
+    su ratio). Un solo Queue genera el dataset entero.
+
+    `items`: lista de dicts {"pos", "neg", "save_prefix", "caption", "ratio"}.
+    OJO: la semilla compartida da la MISMA identidad solo entre tomas del
+    MISMO tamaño; entre ratios distintos la cara varía (limitación de la
+    difusión). Aun así todo va en un workflow por comodidad.
+    """
+    from config import comfy_workflow_params
+
+    p = comfy_workflow_params(modelo)
+    fichero = (modelo + ".safetensors") if modelo else "model.safetensors"
+
+    A = []  # noqa: N806
+
+    def add(tipo, widgets, conns=None, mode=0):
+        A.append({"type": tipo, "widgets": widgets, "conns": conns or {}, "mode": mode})
+        return len(A) - 1
+
+    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
+
+    notas = [(chuleta_texto(modelo), [40, -300])]
+    for j, it in enumerate(items):
+        ancho, alto = RESOLUCION_POR_RATIO.get((it.get("ratio") or "").strip(),
+                                               (1024, 1024))
+        i_latent = add("EmptyLatentImage", [ancho, alto, 1])
+        i_pos = add("CLIPTextEncode", [it.get("pos", "")], {"clip": clip_src})
+        i_neg = add("CLIPTextEncode", [it.get("neg", "") or ""], {"clip": clip_src})
+        i_ks = add("KSampler",
+                   [SEED_DATASET, "fixed", p["steps"], p["cfg"], p["sampler"], p["scheduler"], 1.0],
+                   {"model": model_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
+                    "latent_image": (i_latent, 0)})
+        i_dec = add("VAEDecode", [], {"samples": (i_ks, 0), "vae": vae_src})
+        prefijo = it.get("save_prefix") or "G-Prompt-Studio"
+        add("SaveImage", [prefijo], {"images": (i_dec, 0)})
+        cap = it.get("caption")
+        if cap:
+            r = (it.get("ratio") or "1:1")
+            notas.append((f"📝 {prefijo} [{r}]:\n\n{cap}", [2600, 40 + j * 240]))
+
+    notas.append((
+        "🎚 CONTROL COMPARTIDO (arriba): 'seed (todos)', 'steps (todos)' y\n"
+        "'cfg (todos)' mandan sobre TODOS los KSampler del dataset.\n\n"
+        "👤 CONSISTENCIA: la semilla es la misma para todas. Da el MISMO\n"
+        "personaje entre tomas del MISMO tamaño; entre ratios distintos\n"
+        "(1:1 vs 9:16...) la cara varía algo (así funciona la difusión).\n"
+        "Cambia 'seed (todos)' para re-rolar el personaje base y cura las\n"
+        "mejores 25-40 tomas para entrenar el LoRA.",
+        [40, -160]))
+    wf = serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
+    return anadir_control_compartido(wf, p["steps"], p["cfg"])
+
+
 def anadir_control_compartido(wf: dict, steps_val, cfg_val) -> dict:
     """Post-procesa un workflow serializado: añade tres PrimitiveNode
     ('seed (todos)', 'steps (todos)', 'cfg (todos)') conectados a los inputs

@@ -742,13 +742,13 @@ class TestExportarWorkflowsComfy:
         for lk in wf["links"]:
             assert lk[1] in ids and lk[3] in ids
 
-    def test_lote_control_compartido_seed_steps_cfg(self, tmp_path):
+    def test_completo_control_compartido_seed_steps_cfg(self, tmp_path):
         # Tres PrimitiveNode ('seed/steps/cfg (todos)') mandan sobre TODOS los
-        # KSampler del lote (seed compartida = consistencia de identidad).
+        # KSampler del DATASET_COMPLETO (seed compartida = consistencia).
         n, wf_dir, leer = self._exportar(
             tmp_path, "flux-2-klein-9b-fp8",
             angulos=("face_front", "face_34_left", "face_34_right"))
-        wf = leer("LOTE_1x1.json")
+        wf = leer("DATASET_COMPLETO.json")
         prims = [nd for nd in wf["nodes"] if nd["type"] == "PrimitiveNode"]
         ks = [nd for nd in wf["nodes"] if nd["type"] == "KSampler"]
         assert len(prims) == 3 and len(ks) == 3
@@ -780,31 +780,27 @@ class TestExportarWorkflowsComfy:
         save = next(nd for nd in wf["nodes"] if nd["type"] == "SaveImage")
         assert save["widgets_values"][0] == "01_face_front"
 
-    def test_lote_por_ratio_con_loaders_compartidos(self, tmp_path):
-        # 2 tomas 1:1 (face_front, expression_smile) + 1 toma 9:16
-        # (full_front) → LOTE_1x1.json (2 ramas); 9:16 con 1 toma NO
-        # genera lote (el individual ya lo cubre).
+    def test_dataset_completo_todo_en_uno_tamano_por_toma(self, tmp_path):
+        # UN workflow con TODAS las tomas: loaders compartidos (una vez), una
+        # rama por toma, y CADA toma con su propio EmptyLatentImage (tamaño
+        # según su ratio). face_front=1:1(1024²) · full_front=9:16(768x1344).
         n, wf_dir, leer = self._exportar(
             tmp_path, "flux-2-klein-9b-fp8",
             angulos=("face_front", "expression_smile", "full_front"))
         assert n == 3
-        assert os.path.isfile(os.path.join(wf_dir, "LOTE_1x1.json"))
-        assert not os.path.exists(os.path.join(wf_dir, "LOTE_9x16.json"))
-
-        wf = leer("LOTE_1x1.json")
+        assert os.path.isfile(os.path.join(wf_dir, "DATASET_COMPLETO.json"))
+        wf = leer("DATASET_COMPLETO.json")
         tipos = [nd["type"] for nd in wf["nodes"]]
-        # Loaders UNA sola vez (compartidos entre ramas)
+        # Loaders UNA sola vez; una rama (KSampler + latent + SaveImage) por toma
         assert tipos.count("UNETLoader") == 1
-        assert tipos.count("EmptyLatentImage") == 1
-        # Una rama por toma: 2 KSampler + 2 SaveImage con su prefijo
-        assert tipos.count("KSampler") == 2
+        assert tipos.count("KSampler") == 3
+        assert tipos.count("EmptyLatentImage") == 3  # cada toma su tamaño
+        latentes = {tuple(nd["widgets_values"][:2]) for nd in wf["nodes"]
+                    if nd["type"] == "EmptyLatentImage"}
+        assert (1024, 1024) in latentes and (768, 1344) in latentes  # 1:1 y 9:16
         prefijos = {nd["widgets_values"][0] for nd in wf["nodes"]
                     if nd["type"] == "SaveImage"}
-        assert prefijos == {"01_face_front", "15_expression_smile"}
-        # Cada rama lleva SU prompt (ambos con el trigger)
-        textos = [nd["widgets_values"][0] for nd in wf["nodes"]
-                  if nd["type"] == "CLIPTextEncode"]
-        assert sum("ohwx_t" in t for t in textos) >= 2
+        assert prefijos == {"01_face_front", "15_expression_smile", "09_full_front"}
 
 
 class TestTipoNSFW:

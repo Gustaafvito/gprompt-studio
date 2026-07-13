@@ -320,9 +320,10 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     sampler de su familia y resolución del latent según el RATIO de cada toma.
 
     Salen DOS variantes (se cargan en ComfyUI con Load/arrastrar):
-      • individuales/NN_toma.json — una toma por workflow.
-      • LOTE_<ratio>.json — TODAS las tomas de ese ratio en un canvas
-        (loaders compartidos, una rama por toma): un Queue = lote entero.
+      • DATASET_COMPLETO.json — TODAS las tomas en un canvas: loaders y
+        seed/steps/cfg COMPARTIDOS, cada toma con su propio tamaño. Un
+        Queue genera el dataset entero.
+      • individuales/NN_toma.json — una toma por workflow (con FaceDetailer).
     Cada SaveImage lleva el nombre de la toma → la imagen generada empareja
     sola con su caption (01_..., 02_...).
 
@@ -332,7 +333,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     from config import comfy_workflow_params
     from modules.comfy_export import (
         construir_workflow_comfy,
-        construir_workflow_comfy_lote,
+        construir_workflow_comfy_todas,
     )
 
     dir_wf = os.path.join(base, "workflows")
@@ -340,7 +341,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     os.makedirs(dir_ind, exist_ok=True)
 
     n = 0
-    por_ratio: dict = {}
+    todas: list = []
     for item in resultado.get("dataset", []):
         ratio = (item.get("ratio") or "").strip()
         wf = construir_workflow_comfy(
@@ -355,24 +356,24 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
         with open(os.path.join(dir_ind, f"{item['filename']}.json"),
                   "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
-        por_ratio.setdefault(ratio, []).append({
+        todas.append({
             "pos": item.get("prompt", ""),
             "neg": item.get("negative", "") or "",
             "save_prefix": item.get("filename") or "G-Prompt-Studio",
             "caption": item.get("caption", ""),
+            "ratio": ratio,
         })
         n += 1
 
-    # Un LOTE por ratio (si tiene 2+ tomas): un solo Queue genera el grupo.
+    # UN solo workflow con TODAS las tomas (loaders + seed/steps/cfg compartidos,
+    # cada toma con su tamaño). Un Queue genera el dataset entero.
     lotes = []
-    for ratio, items in sorted(por_ratio.items()):
-        if len(items) < 2:
-            continue
-        wf = construir_workflow_comfy_lote(items, modelo, ratio=ratio)
-        nombre = f"LOTE_{(ratio or 'libre').replace(':', 'x')}.json"
-        with open(os.path.join(dir_wf, nombre), "w", encoding="utf-8") as f:
+    if len(todas) >= 2:
+        wf = construir_workflow_comfy_todas(todas, modelo)
+        with open(os.path.join(dir_wf, "DATASET_COMPLETO.json"),
+                  "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
-        lotes.append(f"{nombre} ({len(items)} tomas)")
+        lotes.append(f"DATASET_COMPLETO.json ({len(todas)} tomas, todos los ratios)")
 
     # LEEME con las instrucciones y la chuleta CLIP/VAE del modelo.
     p = comfy_workflow_params(modelo)
@@ -389,12 +390,12 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             f"Ajustes: {p['sampler']}/{p['scheduler']} · CFG {p['cfg']} · "
             f"{p['steps']} pasos · resolución según el ratio de cada toma.\n\n"
             f"DOS FORMAS DE USARLOS:\n\n"
-            f"A) LOTES POR RATIO (recomendado — un Queue genera el grupo):\n"
+            f"A) DATASET_COMPLETO.json (recomendado — un Queue genera TODO):\n"
             f"{lotes_txt}\n"
-            f"   Arrastra el LOTE al canvas de ComfyUI: el modelo se carga\n"
-            f"   UNA vez y cada toma tiene su rama con su prompt/negative.\n\n"
+            f"   Arrastra el .json al canvas: el modelo se carga UNA vez y\n"
+            f"   cada toma tiene su rama con su prompt/negative y SU tamaño.\n\n"
             f"B) individuales/ — un .json por toma, por si quieres generar\n"
-            f"   (o retocar) una toma suelta.\n\n"
+            f"   (o retocar con FaceDetailer) una toma suelta.\n\n"
             f"PASOS:\n"
             f"1. Arrastra el .json al canvas (o menú Load).\n"
             f"2. Verifica el modelo en el loader (si el nombre no coincide\n"
@@ -404,11 +405,12 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
             f"DENTRO DE CADA WORKFLOW:\n"
             f"• 🧩 CHULETA — recordatorio de qué elegir y los ajustes.\n"
             f"• 📝 CAPTION — el caption de entrenamiento junto a cada imagen.\n"
-            f"• 🎚 SEMILLA/PASOS/CFG (solo LOTES) — tres nodos arriba que mandan\n"
-            f"  sobre TODOS los KSampler: cambia ahí y todo el lote lo coge.\n"
-            f"• 👤 CONSISTENCIA — todas las tomas usan la MISMA semilla (fija),\n"
-            f"  así el personaje es coherente entre ángulos. ¿No te gusta la\n"
-            f"  cara base? En un LOTE cambia 'seed (todos)' y re-rola el grupo.\n"
+            f"• 🎚 SEMILLA/PASOS/CFG (en DATASET_COMPLETO) — tres nodos arriba\n"
+            f"  que mandan sobre TODOS los KSampler: cambia ahí y todo lo coge.\n"
+            f"• 👤 CONSISTENCIA — todas comparten la MISMA semilla. Da el mismo\n"
+            f"  personaje entre tomas del MISMO tamaño; entre ratios distintos\n"
+            f"  (1:1 vs 9:16) la cara varía algo (así es la difusión). Cambia\n"
+            f"  'seed (todos)' para re-rolar y cura las mejores 25-40 tomas.\n"
             f"• 🩹 FaceDetailer (solo individuales) — DESACTIVADO (gris). Si la\n"
             f"  cara/ojos salen mal, selecciónalo + su SaveImage, Ctrl+B para\n"
             f"  activarlos y Queue → sale una versión _detailed corregida.\n"

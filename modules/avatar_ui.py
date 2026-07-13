@@ -615,8 +615,8 @@ class AvatarFrame(ctk.CTkFrame):
                     n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel)
                     avisos.append(tr(
                         "🔧 {0} tomas exportadas como workflows ComfyUI en "
-                        "workflows/: LOTES por ratio (un Queue genera el "
-                        "grupo entero) + individuales/ por toma.").format(n_wf))
+                        "workflows/: DATASET_COMPLETO.json (un Queue genera "
+                        "TODO) + individuales/ por toma.").format(n_wf))
                 except Exception as e:
                     avisos.append(tr(
                         "⚠️ No se pudieron exportar los workflows ComfyUI: {0}"
