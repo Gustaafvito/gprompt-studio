@@ -498,11 +498,27 @@ AVATAR_BACKGROUNDS_ROTACION = [
 # NEGATIVE PROMPT FIJO DEL DATASET
 # Se repite idéntico en todas las imágenes.
 # ---------------------------------------------------------------------------
+# Refuerzo de los DOS defectos más frecuentes en modelos SDXL/Pony (los que
+# se colaban en los datasets): MANOS deformes y MARCAS DE AGUA/texto que el
+# modelo base "recuerda" de sus imágenes de entrenamiento. Los términos base
+# ("bad hands", "watermark") son demasiado flojos; estos fragmentos añaden el
+# vocabulario que de verdad pesa. Se anexan a los negativos de datasets con
+# persona (Personaje y NSFW).
+AVATAR_NEGATIVE_MANOS = (
+    "mutated hands, malformed hands, poorly drawn hands, fused fingers, "
+    "too many fingers, missing fingers, extra digits, deformed fingers, "
+    "disfigured hands, mangled hands"
+)
+AVATAR_NEGATIVE_MARCA_AGUA = (
+    "watermark, text, logo, signature, username, artist name, caption text, letters"
+)
+
 AVATAR_NEGATIVE_PROMPT = (
     "multiple people, two persons, deformed face, asymmetric eyes, extra fingers, "
     "extra limbs, missing limbs, bad anatomy, bad hands, blurry, lowres, jpeg artifacts, "
     "watermark, text, logo, signature, cropped head, out of frame, different clothing, "
-    "different hairstyle, inconsistent face, busy background, cluttered background"
+    "different hairstyle, inconsistent face, busy background, cluttered background, "
+    + AVATAR_NEGATIVE_MANOS + ", " + AVATAR_NEGATIVE_MARCA_AGUA
 )
 
 # Términos extra de negative para FORZAR el recorte en modelos que tienden a
@@ -2273,7 +2289,8 @@ NSFW_NEGATIVE_PROMPT = (
     "extra limbs, missing limbs, bad anatomy, bad hands, deformed body, "
     "blurry, lowres, jpeg artifacts, watermark, text, logo, signature, "
     "cropped head, out of frame, different hairstyle, inconsistent face, "
-    "busy background, cluttered background"
+    "busy background, cluttered background, "
+    + AVATAR_NEGATIVE_MANOS + ", " + AVATAR_NEGATIVE_MARCA_AGUA
 )
 
 

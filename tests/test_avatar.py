@@ -730,14 +730,18 @@ class TestExportarWorkflowsComfy:
             assert lk[1] in ids and lk[3] in ids
 
     def test_individual_lleva_facedetailer_bypasseado(self, tmp_path):
-        # FaceDetailer (Impact Pack) desactivado por defecto (mode 4) + su
-        # detector, para retocar caras/ojos al activarlo.
+        # Retoque (Impact Pack) desactivado por defecto (mode 4): DOS pasos
+        # encadenados (caras + manos), cada uno con su detector, para retocar
+        # caras/ojos/manos al activarlos.
         _, _, leer = self._exportar(tmp_path, "flux-2-klein-9b-fp8")
         wf = leer(os.path.join("individuales", "01_face_front.json"))
         fd = [nd for nd in wf["nodes"] if nd["type"] == "FaceDetailer"]
         prov = [nd for nd in wf["nodes"] if nd["type"] == "UltralyticsDetectorProvider"]
-        assert len(fd) == 1 and fd[0]["mode"] == 4  # bypass
-        assert len(prov) == 1
+        assert len(fd) == 2 and all(nd["mode"] == 4 for nd in fd)  # caras + manos, bypass
+        assert len(prov) == 2  # detector de caras + detector de manos
+        # Uno de los detectores es de manos (hand_yolo).
+        modelos = {nd["widgets_values"][0] for nd in prov}
+        assert any("hand" in m for m in modelos)
         ids = {nd["id"] for nd in wf["nodes"]}  # sigue siendo válido
         for lk in wf["links"]:
             assert lk[1] in ids and lk[3] in ids

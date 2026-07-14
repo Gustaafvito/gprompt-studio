@@ -130,18 +130,28 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
         notas.append((f"📝 CAPTION ({save_prefix}):\n\n{caption}", [1560, 40]))
 
     if con_detailer:
-        # FaceDetailer bypasseado (mode 4): retoca caras/ojos al activarlo.
+        # Retoque bypasseado (mode 4) en DOS pasos encadenados: primero CARAS/
+        # ojos y después MANOS (el defecto más frecuente). Cada paso es un
+        # FaceDetailer del Impact Pack con su detector; el de manos recibe la
+        # imagen ya retocada de caras, así un solo _detailed corrige ambas.
         i_bbox = add("UltralyticsDetectorProvider", ["bbox/face_yolov8m.pt"], mode=4)
         i_fd = add("FaceDetailer", _detailer_widgets(p),
                    {"image": (i_dec, 0), "model": model_src, "clip": clip_src,
                     "vae": vae_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
                     "bbox_detector": (i_bbox, 0)}, mode=4)
-        add("SaveImage", [save_prefix + "_detailed"], {"images": (i_fd, 0)}, mode=4)
+        i_bbox_h = add("UltralyticsDetectorProvider", ["bbox/hand_yolov8s.pt"], mode=4)
+        i_fd_h = add("FaceDetailer", _detailer_widgets(p),
+                     {"image": (i_fd, 0), "model": model_src, "clip": clip_src,
+                      "vae": vae_src, "positive": (i_pos, 0), "negative": (i_neg, 0),
+                      "bbox_detector": (i_bbox_h, 0)}, mode=4)
+        add("SaveImage", [save_prefix + "_detailed"], {"images": (i_fd_h, 0)}, mode=4)
         notas.append((
             "🩹 RETOQUE (Impact Pack) — DESACTIVADO por defecto (bypass gris).\n"
-            "¿Cara/ojos/manos mal? Selecciona el FaceDetailer + su SaveImage,\n"
-            "pulsa Ctrl+B para activarlos y vuelve a Queue: sale una versión\n"
-            "'_detailed' corregida. Sube/baja 'denoise' (~0.5) según haga falta.",
+            "Dos pasos: FaceDetailer de CARAS y otro de MANOS (bbox/hand_yolov8s).\n"
+            "¿Cara/ojos/manos mal? Selecciona los DOS FaceDetailer + sus detectores\n"
+            "+ el SaveImage '_detailed', pulsa Ctrl+B para activarlos y vuelve a\n"
+            "Queue: sale una versión '_detailed' corregida. Sube/baja 'denoise'\n"
+            "(~0.5) según haga falta. (Necesita bbox/face_yolov8m y hand_yolov8s.)",
             [1560, 300]))
 
     return serializar_workflow_ui(A, modelo, p.get("_comfy_familia") or "?", notas)
