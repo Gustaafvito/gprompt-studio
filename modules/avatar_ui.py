@@ -717,8 +717,12 @@ def abrir_avatar_window(app) -> None:
                   temperature: float = 0.3) -> str:
         # T=0.3 para la descripción canónica (determinista); la ficha
         # automática pide T=0.9 para variedad.
+        # max_tokens 2000 (no 900): un modelo RAZONADOR (DeepSeek V4) gasta
+        # cientos de tokens "pensando" antes de responder; con 900 el
+        # razonamiento agotaba el presupuesto y la descripción volvía VACÍA
+        # (3 de 4 llamadas en la auditoría 14-jul-2026).
         return app.deepseek.generar_batch(
-            system_prompt, user_prompt, temperature=temperature, max_tokens=900)
+            system_prompt, user_prompt, temperature=temperature, max_tokens=2000)
 
     # Selector de modelo destino: organizado por plataforma y grupo.
     # El adaptador resuelve specs del modelo elegido al generar.

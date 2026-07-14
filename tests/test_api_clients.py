@@ -66,6 +66,44 @@ class TestOpenAICompatibleProvider:
         with pytest.raises(Exception, match="Proveedor no configurado"):
             p.completar([{"role": "user", "content": "hello"}])
 
+    def _provider_con_respuesta(self, content, finish_reason="stop"):
+        """Provider con el cliente OpenAI mockeado devolviendo `content`."""
+        from unittest.mock import MagicMock
+        p = OpenAICompatibleProvider(api_key="sk-test", model="test")
+        choice = MagicMock()
+        choice.message.content = content
+        choice.finish_reason = finish_reason
+        res = MagicMock()
+        res.choices = [choice]
+        res.usage = None
+        p._cliente = MagicMock()
+        p._cliente.chat.completions.create.return_value = res
+        return p
+
+    def test_completar_raises_si_razonamiento_agota_tokens(self):
+        # CANDADO auditoría 14-jul-2026: DeepSeek V4 (razonador) quemaba TODO
+        # el max_tokens "pensando" (finish_reason='length') y devolvía content
+        # vacío con HTTP 200; el "" silencioso producía datasets sin identidad.
+        p = self._provider_con_respuesta("", finish_reason="length")
+        with pytest.raises(Exception, match="agotó max_tokens"):
+            p.completar([{"role": "user", "content": "hola"}])
+
+    def test_completar_raises_si_respuesta_vacia(self):
+        p = self._provider_con_respuesta(None, finish_reason="stop")
+        with pytest.raises(Exception, match="respuesta vacía"):
+            p.completar([{"role": "user", "content": "hola"}])
+
+    def test_completar_devuelve_contenido_normal(self):
+        p = self._provider_con_respuesta("un prompt estupendo")
+        out = p.completar([{"role": "user", "content": "hola"}])
+        assert out == "un prompt estupendo"
+
+    def test_completar_acepta_truncado_con_contenido(self):
+        # finish_reason='length' con contenido PARCIAL sigue siendo útil:
+        # solo se rechaza cuando además viene vacío.
+        p = self._provider_con_respuesta("texto truncado", finish_reason="length")
+        assert p.completar([{"role": "user", "content": "hola"}]) == "texto truncado"
+
 
 class TestGeminiProvider:
     def test_no_api_key_not_available(self):

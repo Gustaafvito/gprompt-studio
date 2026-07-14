@@ -503,6 +503,29 @@ class TestPipeline:
         desc = generar_descripcion_canonica(llm_sucio, {})
         assert desc == DESC
 
+    def test_descripcion_canonica_vacia_es_error(self):
+        # CANDADO auditoría 14-jul-2026: un LLM razonador puede agotar
+        # max_tokens "pensando" y devolver vacío; sin este guard se
+        # exportaba un dataset entero SIN identidad (inútil para entrenar).
+        import pytest
+        for respuesta in ("", "   ", '""', "```\n```"):
+            def llm_vacio(system, user, _r=respuesta):
+                return _r
+            with pytest.raises(ValueError, match="VACÍA"):
+                generar_descripcion_canonica(llm_vacio, {})
+
+    def test_descripcion_vacia_es_error_en_tipos_genericos(self):
+        # El mismo candado protege Paisaje/Objeto/Estilo/NSFW.
+        import pytest
+
+        from modules.avatar_generator import generar_dataset_lora
+        with pytest.raises(ValueError, match="VACÍA"):
+            generar_dataset_lora(
+                tipo="Paisaje", llm_call=lambda s, u: "",
+                form_data={}, trigger_word="ohwx_x",
+                angulos_seleccionados=["ls_panoramic"],
+                estilo_sufijo="", fondo=None)
+
     def test_generar_dataset_avatar_estructura(self):
         r = generar_dataset_avatar(
             _llm_fake, {"genero": "Mujer"}, "ohwx_ana",

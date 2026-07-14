@@ -591,6 +591,7 @@ TRADUCCIONES = {
     'Dataset generado': 'Dataset generated',
     'Demasiadas': 'Too many',
     "El archivo no parece un backup de G-Prompt Studio (falta el campo 'version').": "The file does not look like a G-Prompt Studio backup (missing the 'version' field).",
+    "El LLM devolvió una descripción canónica VACÍA — el dataset saldría sin identidad. Vuelve a intentarlo (suele ser puntual) o cambia de cerebro LLM.": "The LLM returned an EMPTY canonical description — the dataset would have no identity. Try again (it is usually transient) or switch the LLM brain.",
     "El trigger '{0}' parece una descripción de personaje, no una palabra de activación.\n\nLos triggers de LoRAs son palabras únicas (ej. 'nira', 'lmnlhrr') o, como mucho, varias separadas por comas (ej. 'Nyra, Amber Eyes, Undercut').\n\nSi quieres guardar la descripción del personaje, ponla en 🧑 Personajes; aquí solo el/los trigger(s).\n\n¿Guardar igualmente '{1}'?": "The trigger '{0}' looks like a character description, not an activation word.\n\nLoRA triggers are single words (e.g. 'nira', 'lmnlhrr') or, at most, several separated by commas (e.g. 'Nyra, Amber Eyes, Undercut').\n\nIf you want to save the character description, put it in 🧑 Characters; here only the trigger(s).\n\nSave '{1}' anyway?",
     'Eliminar': 'Delete',
     'Error': 'Error',

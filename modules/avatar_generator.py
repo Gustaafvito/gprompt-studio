@@ -26,6 +26,21 @@ from modules.avatar_prompts import (
 from modules.i18n import tr
 
 
+def _validar_descripcion(desc: str) -> str:
+    """CANDADO FASE 1: la descripción canónica no puede quedar vacía.
+
+    Un LLM razonador puede agotar max_tokens "pensando" y devolver vacío
+    (auditoría 14-jul-2026); sin este guard se ensamblaba un dataset entero
+    SIN identidad de personaje (prompts solo con trigger+encuadre), inútil
+    para entrenar. Mejor cortar aquí con un error claro que la UI muestra."""
+    if not desc.strip():
+        raise ValueError(tr(
+            "El LLM devolvió una descripción canónica VACÍA — el dataset "
+            "saldría sin identidad. Vuelve a intentarlo (suele ser puntual) "
+            "o cambia de cerebro LLM."))
+    return desc
+
+
 def generar_descripcion_canonica(llm_call, form_data: dict) -> str:
     """FASE 1: una sola llamada al LLM para fijar la identidad del personaje."""
     user_prompt = construir_user_prompt_canonico(form_data)
@@ -36,7 +51,7 @@ def generar_descripcion_canonica(llm_call, form_data: dict) -> str:
     desc = respuesta.strip()
     desc = desc.replace("\n", " ").replace("```", "").strip()
     desc = desc.strip('"').strip("'").strip()
-    return desc
+    return _validar_descripcion(desc)
 
 
 def generar_dataset_avatar(
@@ -104,6 +119,7 @@ def generar_dataset_lora(
     descripcion = llm_call(system_p, user_p)
     descripcion = descripcion.strip().replace("\n", " ").replace("```", "").strip()
     descripcion = descripcion.strip('"').strip("'").strip()
+    descripcion = _validar_descripcion(descripcion)
 
     dataset = ensamblar_dataset_generico(
         tipo=tipo,

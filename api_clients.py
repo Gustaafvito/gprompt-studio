@@ -579,7 +579,23 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         # Sin este guard, un None se propaga al historial y a los parsers.
         if not getattr(res, "choices", None):
             raise Exception(f"{modelo}: respuesta sin choices (filtrada o vacía)")
-        return res.choices[0].message.content or ""
+        choice = res.choices[0]
+        content = choice.message.content or ""
+        if not content.strip():
+            # Los modelos RAZONADORES (DeepSeek V4...) pueden quemar TODO el
+            # max_tokens "pensando" (reasoning_tokens == completion_tokens,
+            # finish_reason='length') y devolver content VACÍO con HTTP 200.
+            # Auditoría 14-jul-2026: pasaba en 3 de 4 llamadas con
+            # max_tokens=900. Devolver "" en silencio producía datasets y
+            # prompts inservibles; mejor fallar con diagnóstico claro (los
+            # callers con retry/fallback lo gestionan; la UI muestra el error).
+            fr = getattr(choice, "finish_reason", "") or "?"
+            if fr == "length":
+                raise Exception(
+                    f"{modelo}: el razonamiento agotó max_tokens sin producir "
+                    f"respuesta — reintenta o sube max_tokens")
+            raise Exception(f"{modelo}: respuesta vacía (finish_reason={fr})")
+        return content
 
 
 class OllamaProvider(OpenAICompatibleProvider):
