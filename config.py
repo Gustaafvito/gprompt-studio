@@ -745,6 +745,17 @@ _COMFY_SPECS_FAMILIA = {
 _COMFY_FAMILIA_OVERRIDE = {
     "uberrealisticpornmergev23final": "pony",
     "uberrealisticpornmergeponyxlponyxlhybridv1": "pony",
+    # SD 1.5 clásicos cuyo nombre no lleva token de familia (caían en "Otros"
+    # con params genéricos euler/CFG 6.5). Inventario CivitAI del usuario.
+    "analogmadnessv70": "sd15",
+    "lazymixrealamateurv40": "sd15",
+    "revanimatedv2pruned": "sd15",
+    # Z-Image Base ("ZiB") destilado: sin el override caía en "Otros" y, peor,
+    # se cableaba como CheckpointLoaderSimple cuando Z-Image usa UNETLoader +
+    # CLIP/VAE aparte (el workflow salía roto). OJO: es DESTILADO (pocos pasos)
+    # pero "distilled" no está en COMFY_TURBO_TOKENS, así que sale con los 25
+    # pasos/CFG 4 de Z-Image base; baja a ~8 pasos/CFG 1-2 al generar.
+    "zibbadmilkdistilledv10": "z_image",
 }
 
 

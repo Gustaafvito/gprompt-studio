@@ -419,6 +419,24 @@ class TestComfyWorkflowParams:
         # Y comfy_image_specs deja de ser None → se registra como modelo destino.
         assert config.comfy_image_specs("uberRealisticPornMerge_v23Final") is not None
 
+    def test_override_sd15_por_nombre_no_evidente(self):
+        # Modelos SD 1.5 del inventario del usuario cuyo nombre no lleva token
+        # de familia (auditoría 14-jul-2026): sin override caían en "Otros"
+        # con params genéricos; deben salir como SD 1.5 (arch checkpoint,
+        # dpmpp_2m/karras).
+        for nombre in ("analogMadness_v70", "lazymixRealAmateur_v40",
+                       "revAnimated_v2Pruned"):
+            assert config.detectar_familia_comfy(nombre) == "sd15", nombre
+            p = config.comfy_workflow_params(nombre)
+            assert p["arch"] == "checkpoint" and p["sampler"] == "dpmpp_2m"
+
+    def test_override_zimage_distilled_usa_unet(self):
+        # zibBadmilkDistilled = Z-Image Base destilado. Sin override se cableaba
+        # como CheckpointLoaderSimple; Z-Image necesita UNETLoader + CLIP/VAE.
+        assert config.detectar_familia_comfy("zibBadmilkDistilled_v10") == "z_image"
+        p = config.comfy_workflow_params("zibBadmilkDistilled_v10")
+        assert p["arch"] == "unet" and p.get("clip") and p.get("vae")
+
 
 class TestConstruirWorkflowComfy:
     """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
