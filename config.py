@@ -84,6 +84,7 @@ ARCHIVOS = {
     "active_models":   CARPETA_APP / "active_models.json",
     "autobackup_marker": CARPETA_APP / "_last_autobackup.txt",
     "modelos_comfy": CARPETA_APP / "mis_modelos_comfy.json",
+    "comfy_cache":   CARPETA_APP / "comfy_cache.json",
 }
 
 # ── Modelos Ollama Vision ─────────────────────────────────────────
@@ -1080,6 +1081,104 @@ for g, ms in GRUPOS_VIDEO_COMFYUI:
     MODELOS_VIDEO_COMFYUI_FLAT.extend(ms)
 
 
+# ── Caché del auto-discovery ───────────────────────────────────────
+# El escaneo tarda <1s, pero el hilo compite por el GIL con la construcción de
+# la UI y no aterriza hasta ~17s después del arranque. Sin nada síncrono que
+# mostrar, el desplegable de ComfyUI se veía VACÍO todo ese rato y el usuario
+# lo leía como "han desaparecido los modelos". Se persiste el último escaneo y
+# se puebla aquí, en el import; el hilo pasa a ser solo reconciliación.
+#
+# Cuántos grupos vienen del manifest curado: los del auto-discovery se
+# sustituyen enteros (así desaparecen los modelos que el usuario borre), pero
+# los del manifest nunca se tocan.
+_COMFY_BASE_IMG = len(GRUPOS_IMAGEN_COMFYUI)
+_COMFY_BASE_VID = len(GRUPOS_VIDEO_COMFYUI)
+_COMFY_CACHE_APLICADA = {"imagen": [], "video": []}
+
+
+def _ruta_comfy_configurada() -> str:
+    """Ruta de ComfyUI: manifest (raíz o _meta) y, si no, preferencias."""
+    import json as _json
+    ruta_manifest = None
+    try:
+        if ARCHIVOS["modelos_comfy"].exists():
+            with open(ARCHIVOS["modelos_comfy"], encoding="utf-8") as f:
+                _datos = _json.load(f) or {}
+            # v1 la escribía en la raíz; v2 la anida en "_meta".
+            ruta_manifest = (_datos.get("comfyui_path")
+                             or (_datos.get("_meta") or {}).get("comfyui_path"))
+    except Exception as e:
+        logger.debug(f"[silent] comfyui_path del manifest: {e}")
+    ruta = ruta_manifest or get_comfyui_path(_cargar_preferencias_seguras())
+    return ruta if ruta and Path(ruta).exists() else ""
+
+
+def _rehacer_flat(grupos: list, flat: list) -> None:
+    """Reconstruye la lista plana desde los grupos, IN PLACE (las listas se
+    comparten con MODELOS_POR_PLATAFORMA_* y MOTORES_VIDEO)."""
+    flat[:] = [x for g, ms in grupos for x in (g, *ms)]
+
+
+def _poblar_comfy(imagen: list, video: list) -> None:
+    """Sustituye los grupos del auto-discovery por los indicados."""
+    del GRUPOS_IMAGEN_COMFYUI[_COMFY_BASE_IMG:]
+    del GRUPOS_VIDEO_COMFYUI[_COMFY_BASE_VID:]
+    if imagen:
+        GRUPOS_IMAGEN_COMFYUI.extend(_agrupar_por_familia(
+            imagen, detectar_familia_comfy, _COMFY_FAMILIA_LABELS, "ComfyUI"))
+    if video:
+        GRUPOS_VIDEO_COMFYUI.extend(_agrupar_por_familia(
+            video, detectar_familia_comfy_video, _COMFY_FAMILIA_LABELS_VIDEO,
+            "ComfyUI Video"))
+    _rehacer_flat(GRUPOS_IMAGEN_COMFYUI, MODELOS_IMAGEN_COMFYUI_FLAT)
+    _rehacer_flat(GRUPOS_VIDEO_COMFYUI, MODELOS_VIDEO_COMFYUI_FLAT)
+
+
+def _guardar_cache_comfy(ruta: str, imagen: list, video: list) -> None:
+    import json as _json
+    try:
+        with open(ARCHIVOS["comfy_cache"], "w", encoding="utf-8") as f:
+            _json.dump({"path": str(ruta), "imagen": imagen, "video": video},
+                       f, indent=1, ensure_ascii=False)
+    except Exception as e:
+        logger.warning(f"No se pudo guardar la caché de ComfyUI: {e}")
+
+
+def aplicar_cache_comfy() -> int:
+    """Puebla los desplegables con el último escaneo conocido, sin tocar disco
+    más que un JSON pequeño. Devuelve cuántos modelos aportó."""
+    import json as _json
+    ruta = _ruta_comfy_configurada()
+    if not ruta:
+        return 0
+    try:
+        if not ARCHIVOS["comfy_cache"].exists():
+            return 0
+        with open(ARCHIVOS["comfy_cache"], encoding="utf-8") as f:
+            cache = _json.load(f) or {}
+    except Exception as e:
+        logger.debug(f"[silent] caché comfy: {e}")
+        return 0
+    # Si la ruta cambió, la caché es de otra instalación: se ignora.
+    if cache.get("path") != str(ruta):
+        return 0
+    imagen = cache.get("imagen") or []
+    video = cache.get("video") or []
+    if not (imagen or video):
+        return 0
+    _poblar_comfy(imagen, video)
+    _COMFY_CACHE_APLICADA["imagen"] = imagen
+    _COMFY_CACHE_APLICADA["video"] = video
+    return len(imagen) + len(video)
+
+
+# Síncrono y barato (un JSON pequeño): los desplegables ya salen poblados en el
+# primer frame, sin esperar al hilo.
+_COMFY_DESDE_CACHE = aplicar_cache_comfy()
+if _COMFY_DESDE_CACHE:
+    logger.info(f"ComfyUI: {_COMFY_DESDE_CACHE} modelos desde caché")
+
+
 # ── Auto-discovery ComfyUI diferido ────────────────────────────────
 # Antes el escaneo (rglob recursivo sobre models/, potencialmente miles de
 # ficheros) corría en el import de config.py y frenaba el arranque. Ahora la
@@ -1101,47 +1200,30 @@ def aplicar_autodiscovery_comfy() -> int:
         return 0
     _autodiscovery_hecho = True
 
-    # La ruta puede venir en el propio JSON ("comfyui_path") o en preferencias.
-    ruta_json_manifest = None
-    try:
-        if ARCHIVOS["modelos_comfy"].exists():
-            with open(ARCHIVOS["modelos_comfy"], encoding="utf-8") as f:
-                _datos = _json.load(f) or {}
-            # v1 lo escribía en la raíz; v2 lo anida en "_meta". Leer solo la
-            # raíz dejaba la ruta a None y todo dependía del fallback a
-            # preferencias.json.
-            ruta_json_manifest = (_datos.get("comfyui_path")
-                                  or (_datos.get("_meta") or {}).get("comfyui_path"))
-    except Exception as e:
-        logger.debug(f"[silent] comfyui_path del manifest: {e}")
-    comfy_ruta = ruta_json_manifest or get_comfyui_path(_cargar_preferencias_seguras())
-    if not comfy_ruta or not Path(comfy_ruta).exists():
+    comfy_ruta = _ruta_comfy_configurada()
+    if not comfy_ruta:
         return 0
 
     hallados = _escanear_comfy_root(Path(comfy_ruta))
     # Dedupe contra el manifest curado (mis_modelos_comfy.json): si el usuario
-    # ya listó ese fichero con nombre bonito, el manifest manda.
-    _en_manifest_img = {_norm_nombre_comfy(m) for _, ms in GRUPOS_IMAGEN_COMFYUI for m in ms}
-    _en_manifest_vid = {_norm_nombre_comfy(m) for _, ms in GRUPOS_VIDEO_COMFYUI for m in ms}
+    # ya listó ese fichero con nombre bonito, el manifest manda. Solo los
+    # grupos base — los del auto-discovery se sustituyen enteros.
+    _en_manifest_img = {_norm_nombre_comfy(m)
+                        for _, ms in GRUPOS_IMAGEN_COMFYUI[:_COMFY_BASE_IMG] for m in ms}
+    _en_manifest_vid = {_norm_nombre_comfy(m)
+                        for _, ms in GRUPOS_VIDEO_COMFYUI[:_COMFY_BASE_VID] for m in ms}
     hallados["imagen"] = [m for m in hallados["imagen"]
                           if _norm_nombre_comfy(m) not in _en_manifest_img]
     hallados["video"] = [m for m in hallados["video"]
                          if _norm_nombre_comfy(m) not in _en_manifest_vid]
     total = 0
-    if hallados["imagen"]:
-        for label, ms in _agrupar_por_familia(hallados["imagen"], detectar_familia_comfy,
-                                              _COMFY_FAMILIA_LABELS, "ComfyUI"):
-            GRUPOS_IMAGEN_COMFYUI.append((label, ms))
-            MODELOS_IMAGEN_COMFYUI_FLAT.append(label)
-            MODELOS_IMAGEN_COMFYUI_FLAT.extend(ms)
-        total += len(hallados["imagen"])
-    if hallados["video"]:
-        for label, ms in _agrupar_por_familia(hallados["video"], detectar_familia_comfy_video,
-                                              _COMFY_FAMILIA_LABELS_VIDEO, "ComfyUI Video"):
-            GRUPOS_VIDEO_COMFYUI.append((label, ms))
-            MODELOS_VIDEO_COMFYUI_FLAT.append(label)
-            MODELOS_VIDEO_COMFYUI_FLAT.extend(ms)
-        total += len(hallados["video"])
+    # Si la caché ya mostraba justo esto, los desplegables están al día y no
+    # hay que repoblar nada (evita el parpadeo de reconstruir los combos).
+    if (hallados["imagen"] != _COMFY_CACHE_APLICADA["imagen"]
+            or hallados["video"] != _COMFY_CACHE_APLICADA["video"]):
+        _poblar_comfy(hallados["imagen"], hallados["video"])
+        _guardar_cache_comfy(comfy_ruta, hallados["imagen"], hallados["video"])
+        total += len(hallados["imagen"]) + len(hallados["video"])
     if hallados["audio"]:
         # Audio local (ACE-Step, etc.): entra directo en las listas del modo
         # audio — el filtro de vigencia ya corrió en el import y solo aplica

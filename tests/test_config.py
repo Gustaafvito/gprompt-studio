@@ -70,8 +70,15 @@ class TestCatalogoSpecsCompleto:
             for m in flat:
                 if m.startswith("──"):
                     continue
-                ok = (get_image_model_specs(m) is not None
-                      if plat == self.COMFY else m in specs)
+                if plat == self.COMFY:
+                    # Un checkpoint local sin familia reconocida devuelve None
+                    # a propósito (comportamiento genérico de plataforma; todos
+                    # los consumidores hacen `or {}`). La garantía que sí debe
+                    # cumplirse: si la familia se detecta, hay specs.
+                    ok = (not config.detectar_familia_comfy(m)
+                          or get_image_model_specs(m) is not None)
+                else:
+                    ok = m in specs
                 if not ok:
                     fallos.append(f"{plat} -> {m}")
         assert not fallos, f"modelos de imagen sin spec: {fallos}"
