@@ -1174,9 +1174,11 @@ def aplicar_cache_comfy() -> int:
 
 # Síncrono y barato (un JSON pequeño): los desplegables ya salen poblados en el
 # primer frame, sin esperar al hilo.
+#
+# Sin log aquí: main.py importa config ANTES de llamar a basicConfig, así que
+# cualquier mensaje emitido durante este import se pierde. Lo reporta app.py
+# al lanzar el hilo, ya con el logging montado.
 _COMFY_DESDE_CACHE = aplicar_cache_comfy()
-if _COMFY_DESDE_CACHE:
-    logger.info(f"ComfyUI: {_COMFY_DESDE_CACHE} modelos desde caché")
 
 
 # ── Auto-discovery ComfyUI diferido ────────────────────────────────

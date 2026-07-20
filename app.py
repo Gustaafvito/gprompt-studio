@@ -396,6 +396,10 @@ class ArquitectoApp(
         """Escanea ComfyUI en un hilo y refresca los combos si halló modelos."""
         import threading
 
+        import config as _cfg
+        logger.info(f"ComfyUI: {_cfg._COMFY_DESDE_CACHE} modelos desde caché "
+                    f"({len(_cfg.MODELOS_IMAGEN_COMFYUI_FLAT)} entradas en el combo)")
+
         def _worker():
             try:
                 from config import aplicar_autodiscovery_comfy
