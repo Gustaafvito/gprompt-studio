@@ -1106,7 +1106,12 @@ def aplicar_autodiscovery_comfy() -> int:
     try:
         if ARCHIVOS["modelos_comfy"].exists():
             with open(ARCHIVOS["modelos_comfy"], encoding="utf-8") as f:
-                ruta_json_manifest = (_json.load(f) or {}).get("comfyui_path")
+                _datos = _json.load(f) or {}
+            # v1 lo escribía en la raíz; v2 lo anida en "_meta". Leer solo la
+            # raíz dejaba la ruta a None y todo dependía del fallback a
+            # preferencias.json.
+            ruta_json_manifest = (_datos.get("comfyui_path")
+                                  or (_datos.get("_meta") or {}).get("comfyui_path"))
     except Exception as e:
         logger.debug(f"[silent] comfyui_path del manifest: {e}")
     comfy_ruta = ruta_json_manifest or get_comfyui_path(_cargar_preferencias_seguras())

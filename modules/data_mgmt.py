@@ -1484,6 +1484,21 @@ class DataMgmtService:
         except Exception as _e:
 
             logger.debug(f"[silent] {_e}")
+    def _modelo_img_persistible(self, prefs: dict) -> str:
+        """Modelo de imagen a guardar, protegiendo la elección del usuario.
+
+        Mientras el auto-discovery de ComfyUI no ha poblado el combo, éste
+        queda vacío o con un modelo de otra plataforma; persistir eso borraba
+        la elección real (p.ej. plataforma ComfyUI con modelo "GPT Image 2").
+        Si el valor actual no pertenece al combo, se conserva el ya guardado.
+        """
+        actual = self.app.combo_modelo_imagen.get()
+        valores = [v for v in (self.app.combo_modelo_imagen.cget("values") or [])
+                   if not str(v).startswith("──")]
+        if not valores or actual not in valores:
+            return prefs.get("modelo_img", "") or actual
+        return actual
+
     def _guardar_preferencias(self) -> None:
         # como `nombre` que no se gestionan en este método.
         try:
@@ -1495,7 +1510,7 @@ class DataMgmtService:
             "llm":         self.app.llm_var.get() if hasattr(self.app, 'llm_var') else "DeepSeek V4",
             "modo":        self.app.modo_var.get(),
             "plataforma":  self.app.plataforma_var.get(),
-            "modelo_img":  self.app.combo_modelo_imagen.get(),
+            "modelo_img":  self._modelo_img_persistible(prefs),
             "modelo_vid":  self.app.combo_modelo_video.get(),
             "modelo_aud":  self.app.combo_modelo_audio.get() if hasattr(self.app, 'combo_modelo_audio') else "",
             "ratio":       self.app.ratio_var.get(),

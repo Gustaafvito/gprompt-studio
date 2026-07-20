@@ -379,7 +379,12 @@ class ArquitectoApp(
         # models/ puede tardar segundos con carpetas grandes y antes corría
         # en el import de config.py (frenaba el arranque). Al terminar,
         # repoblar el combo de modelos en el hilo Tk.
-        self.after(400, self._lanzar_autodiscovery_comfy)
+        #
+        # Se lanza YA (no con after) porque el mainloop queda ocupado ~17s
+        # construyendo la UI: con after(400) el escaneo aterrizaba DESPUÉS de
+        # restaurar preferencias y el combo de ComfyUI se veía vacío todo ese
+        # rato. Solo arranca un hilo; no toca Tk hasta el after(0) final.
+        self._lanzar_autodiscovery_comfy()
         try:
             prefs = self.store.cargar_preferencias() or {}
             if not prefs.get("nombre"):
@@ -398,11 +403,30 @@ class ArquitectoApp(
                 if total > 0:
                     # Repoblar combos en el hilo de Tk (los dicts por
                     # plataforma comparten las listas mutadas in place).
-                    self.after(0, self.events._on_plataforma_cambio)
+                    self.after(0, self._tras_autodiscovery_comfy)
             except Exception as e:
-                logger.debug(f"[silent] autodiscovery comfy: {e}")
+                # A warning, no debug: el log corre a INFO, así que un fallo
+                # aquí era invisible y el usuario solo veía "no hay modelos".
+                logger.warning(f"autodiscovery comfy falló: {e}", exc_info=True)
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def _tras_autodiscovery_comfy(self):
+        """Repuebla los combos y recupera el modelo de imagen guardado.
+
+        Si las preferencias se restauraron con la lista de ComfyUI todavía
+        vacía, el combo se quedó en un modelo de otra plataforma; ahora que ya
+        hay modelos, se vuelve a aplicar el que el usuario tenía elegido.
+        """
+        self.events._on_plataforma_cambio()
+        try:
+            guardado = (self.store.cargar_preferencias() or {}).get("modelo_img", "")
+            valores = list(self.combo_modelo_imagen.cget("values") or [])
+            if guardado and guardado in valores and self.combo_modelo_imagen.get() != guardado:
+                self.combo_modelo_imagen.set(guardado)
+                self.events._on_modelo_imagen_cambio()
+        except Exception as e:
+            logger.warning(f"autodiscovery comfy (recuperar modelo): {e}")
 
     def _marcar_init_completo(self):
         """Activa el flag _gprompt_init_done en sys.modules (post-init)."""
