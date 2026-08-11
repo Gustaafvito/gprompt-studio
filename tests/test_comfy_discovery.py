@@ -438,6 +438,62 @@ class TestComfyWorkflowParams:
         assert p["arch"] == "unet" and p.get("clip") and p.get("vae")
 
 
+class TestInventarioAgo2026:
+    """Ampliación del inventario del usuario (ago-2026): checkpoints que caían
+    en 'Otros' (prompt genérico) por no llevar token de familia en el nombre,
+    más exclusión de modelos no-generativos. Familias confirmadas por el usuario.
+    """
+
+    def test_sd15_clasicos_sin_token(self):
+        # Merges SD 1.5 famosos cuyo nombre no lleva '1.5'/'sd15'/'512'.
+        for nombre in ("chilloutmix_NiPrunedFp32Fix", "epicrealism_naturalSin",
+                       "majicmixRealistic_v1", "meinamix_v12Final",
+                       "realisticVisionV60B1_v51HyperVAE",
+                       "revAnimated_v2Rebirth", "cyberrealistic_v90"):
+            assert config.detectar_familia_comfy(nombre) == "sd15", nombre
+            assert config.comfy_image_specs(nombre)["is_natural"] is False
+
+    def test_krea_y_chroma_son_flux(self):
+        # 'krea' y 'chroma' como token de familia Flux (no override por fichero).
+        for nombre in ("Chroma1-HD-fp8mixed", "krea2MuseByStable_v10TurboFp8",
+                       "darkBeastINT8Convrot2_darkBeastKREA2FP8",
+                       "krea2TurboNSFWAIO_v10"):
+            assert config.detectar_familia_comfy(nombre) == "flux", nombre
+            assert config.comfy_image_specs(nombre)["is_natural"] is True
+
+    def test_krea_turbo_pierde_negative(self):
+        # Las variantes turbo/destiladas fuerzan has_negative=False.
+        s = config.comfy_image_specs("krea2_turbo_fp8_scaled")
+        assert s["_comfy_familia"] == "flux" and s["has_negative"] is False
+
+    def test_unstable_serie_es_flux_no_sdxl(self):
+        # unstableEvolution corrige un falso positivo: 'xl' casaba dentro de
+        # 't5xxl' → salía sdxl; el override lo devuelve a flux (T5xxl+Clip).
+        assert config.detectar_familia_comfy("unstableEvolution_NF4VAEClipT5xxl") == "flux"
+        assert config.detectar_familia_comfy("unstableDissolution_Fp8E4m3") == "flux"
+
+    def test_snofs_flux_e_illust_illustrious(self):
+        assert config.detectar_familia_comfy(
+            "snofsSexNudesAndOtherFunStuff_v14Distilled") == "flux"
+        assert config.detectar_familia_comfy("illustOccultSemi_v2") == "illustrious"
+
+    def test_no_generativos_excluidos(self, tmp_path):
+        # SUPIR (upscaler), hunyuan3d (malla 3D) y stable_cascade_stage_b/c
+        # (piezas de pipeline) no sirven como destino de prompts.
+        ckpt = tmp_path / "models" / "checkpoints"
+        ckpt.mkdir(parents=True)
+        for n in ("SUPIR-v0Q", "hunyuan3d-dit-v2-mv-turbo_fp16",
+                  "stable_cascade_stage_b", "stable_cascade_stage_c",
+                  "flux1-dev"):
+            (ckpt / f"{n}.safetensors").write_text("x")
+        hallados = config._escanear_comfy_root(tmp_path)
+        todos = hallados["imagen"] + hallados["video"] + hallados["audio"]
+        assert "flux1-dev" in todos  # los normales siguen apareciendo
+        for excluido in ("SUPIR-v0Q", "hunyuan3d-dit-v2-mv-turbo_fp16",
+                         "stable_cascade_stage_b", "stable_cascade_stage_c"):
+            assert excluido not in todos, excluido
+
+
 class TestConstruirWorkflowComfy:
     """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
     loader correcto por arquitectura."""

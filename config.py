@@ -477,8 +477,13 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 # NOTA (jul-2026): Ideogram 4 pasó a ser un modelo de IMAGEN local real
 # (ideogram4_fp8_transformer + su encoder/VAE en el inventario del usuario),
 # así que YA NO se excluye; tiene familia y specs propias.
+# NOTA (ago-2026): SUPIR es un upscaler/restaurador (no genera desde texto),
+# hunyuan3d genera malla 3D (no imagen 2D) y stable_cascade_stage_b/c son
+# piezas sueltas de un pipeline de 2 etapas — ninguno sirve como modelo
+# destino de prompts, así que se excluyen del escaneo.
 _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
-                         "inpaint", "acestep", "ace_step", "ace-step")
+                         "inpaint", "acestep", "ace_step", "ace-step",
+                         "supir", "hunyuan3d", "stable_cascade")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -557,7 +562,10 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
 # en el JSON curado. Robusto a renombrados: detecta por substring del nombre.
 # (clave, tokens) — orden de específico → genérico; gana el primero que casa.
 _COMFY_FAMILIAS = (
-    ("flux",        ("flux",)),
+    # 'chroma' (des-destilado de Flux.1 schnell) y 'krea' (Flux.1 Krea de BFL)
+    # son arquitectura Flux: prosa natural, CFG real, encoder T5. Como token
+    # capturan variantes futuras sin listar cada fichero (krea2_*, darkBeast…KREA2…).
+    ("flux",        ("flux", "chroma", "krea")),
     ("z_image",     ("z_image", "zimage", "z-image")),
     ("ideogram",    ("ideogram",)),
     ("qwen",        ("qwen",)),
@@ -757,6 +765,23 @@ _COMFY_FAMILIA_OVERRIDE = {
     # pero "distilled" no está en COMFY_TURBO_TOKENS, así que sale con los 25
     # pasos/CFG 4 de Z-Image base; baja a ~8 pasos/CFG 1-2 al generar.
     "zibbadmilkdistilledv10": "z_image",
+    # ── Inventario ampliado (ago-2026), familias confirmadas por el usuario ──
+    # SD 1.5 clásicos sin token de familia en el nombre (caían en "Otros").
+    "chilloutmixniprunedfp32fix": "sd15",
+    "epicrealismnaturalsin": "sd15",
+    "majicmixrealisticv1": "sd15",
+    "meinamixv12final": "sd15",
+    "realisticvisionv60b1v51hypervae": "sd15",
+    "revanimatedv2rebirth": "sd15",
+    "cyberrealisticv90": "sd15",
+    # Flux sin el token 'flux' en el nombre. unstableEvolution ADEMÁS corrige
+    # un falso positivo: el token 'xl' casaba dentro de 't5xxl' → salía sdxl,
+    # cuando 'T5xxl'+'Clip' delatan Flux (el override tiene prioridad).
+    "unstableevolutionnf4vaeclipt5xxl": "flux",
+    "unstabledissolutionfp8e4m3": "flux",
+    "snofssexnudesandotherfunstuffv14distilled": "flux",
+    # Illustrious (prefijo 'illust' pero sin token 'illustrious'/'noob').
+    "illustoccultsemiv2": "illustrious",
 }
 
 
