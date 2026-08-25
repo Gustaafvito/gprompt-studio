@@ -3124,6 +3124,28 @@
     "limitaciones": "Sin negative.",
     "vigente": true
   },
+  "Grok Imagen": {
+    "nota": 4.3,
+    "has_negative": false,
+    "is_natural": true,
+    "ratios": [
+      "1:1",
+      "2:3",
+      "3:2",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "Standard"
+    ],
+    "best_for": "Grok Imagen (xAI, app propia): generación de imagen por lenguaje natural, muy buena adherencia al prompt y en escenas creativas/absurdas. Fuerte en fotorrealismo y en texto dentro de la imagen. Sin negative ni pesos numéricos.",
+    "best_for_en": "Grok Imagen (xAI, own app): natural-language image generation, strong prompt adherence and great at creative/absurd scenes. Strong at photorealism and in-image text. No negative or numeric weights.",
+    "prompt_formula": "Lenguaje natural descriptivo (prosa): sujeto → escena → iluminación → cámara/estilo. Para texto en la imagen, escríbelo entre comillas. Nada de tags ni pesos.",
+    "prompt_ejemplo": "A photorealistic portrait of an astronaut relaxing at a neon-lit ramen bar in Tokyo, steam rising from the bowl, cinematic side lighting, shallow depth of field.",
+    "limitaciones": "Sin negative ni pesos numéricos. Menos control fino que un modelo SD/ComfyUI.",
+    "vigente": true
+  },
   "Grok": {
     "nota": 4.2,
     "has_negative": false,

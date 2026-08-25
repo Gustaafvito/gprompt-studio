@@ -209,6 +209,7 @@ GRUPOS_VIDEO = [
     ])),
     ("── Seedance ──", sorted([
         "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast", "Seedance 2.0 Mini",
+        "Seedance 2.5",
     ])),
     ("── Nano Banana ──", sorted([
         "Nano Banana Video", "Nano Banana Pro Video",
@@ -456,9 +457,13 @@ _COMFY_TOKENS_AUDIO = (
     "stableaudio", "audioldm", "mmaudio",
 )
 _COMFY_TOKENS_VIDEO = (
-    "wan", "ltx", "svd", "i2v", "t2v", "video", "stable_video",
+    "wan", "ltx", "ltxv", "svd", "i2v", "t2v", "video", "stable_video",
     "stable-video", "hunyuanvideo", "hunyuan_video", "hunyuan-video",
     "cogvideo", "mochi", "animatediff",
+    # MiniMax/Hailuo local (minimax_h3_fl2va…): el usuario confirma que es
+    # vídeo (ago-2026). 'ltxv' porque los ficheros LTX-Video suelen llamarse
+    # 'ltxv-…' y el token 'ltx' (límite de palabra) NO casa con 'ltxv'.
+    "minimax", "hailuo",
 )
 # Tokens "fast" (pocos pasos, CFG~1): el modelo IGNORA NEGATIVE y pesos
 # numéricos. Fuente única; prompt_logic.es_comfyui_turbo los reutiliza.
@@ -483,7 +488,10 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 # destino de prompts, así que se excluyen del escaneo.
 _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
                          "inpaint", "acestep", "ace_step", "ace-step",
-                         "supir", "hunyuan3d", "stable_cascade")
+                         "supir", "hunyuan3d", "stable_cascade",
+                         # Pieza suelta del pipeline LTX (proyección de texto),
+                         # no un modelo generable: 'ltx-2.3_text_projection_bf16'.
+                         "text_projection")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",
@@ -562,10 +570,15 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
 # en el JSON curado. Robusto a renombrados: detecta por substring del nombre.
 # (clave, tokens) — orden de específico → genérico; gana el primero que casa.
 _COMFY_FAMILIAS = (
-    # 'chroma' (des-destilado de Flux.1 schnell) y 'krea' (Flux.1 Krea de BFL)
-    # son arquitectura Flux: prosa natural, CFG real, encoder T5. Como token
-    # capturan variantes futuras sin listar cada fichero (krea2_*, darkBeast…KREA2…).
-    ("flux",        ("flux", "chroma", "krea")),
+    # 'krea' (Flux.1/2 Krea de BFL+Krea) es arquitectura Flux, pero el usuario
+    # lo quiere como grupo propio "Krea" (ago-2026). VA ANTES de flux porque
+    # varios ficheros llevan AMBOS tokens ('flux1KreaDev…') y krea debe ganar.
+    # Sus specs de prompt son Flux-like; el workflow deja CLIP/VAE en blanco
+    # (los ficheros Krea son heterogéneos: all-in-one, GGUF, fp8).
+    ("krea",        ("krea",)),
+    # 'chroma' (des-destilado de Flux.1 schnell) sigue en Flux: prosa natural,
+    # CFG real, encoder T5. Token → captura variantes futuras.
+    ("flux",        ("flux", "chroma")),
     ("z_image",     ("z_image", "zimage", "z-image")),
     ("ideogram",    ("ideogram",)),
     ("qwen",        ("qwen",)),
@@ -578,13 +591,13 @@ _COMFY_FAMILIAS = (
 # Nombres legibles de familia para las cabeceras del desplegable
 # (autodiscovery agrupa por familia; '' = sin familia reconocida).
 _COMFY_FAMILIA_LABELS = {
-    "flux": "Flux", "z_image": "Z-Image", "ideogram": "Ideogram", "qwen": "Qwen",
-    "pony": "Pony", "illustrious": "Illustrious",
+    "flux": "Flux", "krea": "Krea", "z_image": "Z-Image", "ideogram": "Ideogram",
+    "qwen": "Qwen", "pony": "Pony", "illustrious": "Illustrious",
     "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)", "": "Otros",
 }
 _COMFY_FAMILIA_LABELS_VIDEO = {
     "ltx": "LTX", "wan": "Wan", "svd": "SVD", "hunyuan": "Hunyuan",
-    "cogvideo": "CogVideo", "mochi": "Mochi", "": "Otros",
+    "cogvideo": "CogVideo", "mochi": "Mochi", "minimax": "MiniMax", "": "Otros",
 }
 
 
@@ -673,6 +686,18 @@ _COMFY_SPECS_FAMILIA = {
         "best_for_en": "Flowing, detailed natural-language prose (almost a paragraph): subject → scene → lighting → camera. Qwen text encoder (multilingual). CFG ~3.5, ~20 steps, euler/simple. Flux 2 Klein DOES use negative.",
         "prompt_formula": "Frases completas en prosa, NO tags por comas. Empieza por el sujeto, sigue con el entorno, describe la iluminación exacta y cierra con los detalles de cámara/lente.",
         "prompt_ejemplo": "A weathered fisherman mending nets on a wooden dock at golden hour, warm rim light catching the salt in his beard, calm harbor water behind, shot on 50mm with shallow depth of field.",
+    },
+    "krea": {
+        # Krea (Flux.1/2 Krea): arquitectura Flux → prosa natural, CFG real,
+        # SÍ negative. Grupo propio a petición del usuario. Muy fuerte en
+        # fotorrealismo con estética "sin plástico" y buena piel/textura.
+        "is_natural": True, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~20 pasos, CFG ~3.5; Turbo ~8 pasos CFG 2, sin negative)",
+        "best_for": "Krea (BFL+Krea): fotorrealismo con estética natural (piel y texturas creíbles, sin acabado 'plástico' de IA). Prosa fluida: sujeto → escena → iluminación → cámara. CFG ~3.5, ~20 pasos. Variantes Turbo: 8 pasos, CFG 2, sin negative.",
+        "best_for_en": "Krea (BFL+Krea): photorealism with a natural aesthetic (believable skin and textures, no 'plastic' AI finish). Flowing prose: subject → scene → lighting → camera. CFG ~3.5, ~20 steps. Turbo variants: 8 steps, CFG 2, no negative.",
+        "prompt_formula": "Frases completas en prosa, NO tags por comas. Sujeto → entorno → iluminación exacta → detalles de cámara/lente. Enfatiza textura de piel y materiales realistas.",
+        "prompt_ejemplo": "A candid portrait of a woman laughing in a sunlit kitchen, natural window light, fine skin texture and flyaway hairs, shot on 50mm at f/1.8 with soft background blur.",
     },
     "z_image": {
         # LOCAL (ComfyUI): testing del usuario dice LENGUAJE NATURAL PURO, sin
@@ -833,6 +858,12 @@ def comfy_image_specs(nombre: str) -> dict | None:
 _COMFY_WORKFLOW = {
     "flux":        {"arch": "unet", "cfg": 3.5, "steps": 20, "sampler": "euler", "scheduler": "simple",
                     "clip": "qwen_3_8b_fp8mixed.safetensors", "vae": "flux2-vae.safetensors", "clip_type": "flux2"},
+    # Krea: mismo muestreo que Flux, pero CLIP/VAE en BLANCO porque los ficheros
+    # Krea son heterogéneos (all-in-one 'CLIPVAEFP8', GGUF, fp8 sueltos) y los
+    # de Flux 2 (qwen/flux2-vae) NO son los suyos. ComfyUI deja los dropdowns
+    # para que el usuario elija los correctos al pegar el workflow.
+    "krea":        {"arch": "unet", "cfg": 3.5, "steps": 20, "sampler": "euler", "scheduler": "simple",
+                    "clip": "", "vae": "", "clip_type": "flux2"},
     # Z-Image local (INVENTARIO_MODELOS jul-2026): CLIP qwen_3_4b (type
     # qwen_image), VAE ae. Confirmado por el inventario del usuario.
     "z_image":     {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
@@ -897,12 +928,13 @@ def comfy_cheatsheet() -> list[dict]:
 # specs sintéticas deben incluir TODAS esas claves.
 # (clave, tokens) — específico → genérico.
 _COMFY_FAMILIAS_VIDEO = (
-    ("ltx",      ("ltx",)),
+    ("ltx",      ("ltx", "ltxv")),
     ("wan",      ("wan",)),
     ("svd",      ("svd", "stable_video", "stable-video", "stablevideo")),
     ("hunyuan",  ("hunyuanvideo", "hunyuan_video", "hunyuan-video")),
     ("cogvideo", ("cogvideo",)),
     ("mochi",    ("mochi",)),
+    ("minimax",  ("minimax", "hailuo")),
 )
 
 _COMFY_SPECS_FAMILIA_VIDEO = {
@@ -983,6 +1015,22 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
         "prompt_formula": "Prosa cinematográfica concisa: sujeto + acción + cámara + iluminación. Enfatiza el movimiento físico realista.",
         "prompt_ejemplo": "A surfer carving down the face of a large wave at sunrise, dynamic side-tracking shot, spray catching golden light, fluid realistic water motion.",
         "limitaciones": "Sin audio nativo. Generación pesada (modelo grande).",
+        "vigente": True,
+    },
+    "minimax": {
+        # MiniMax/Hailuo H3 local (minimax_h3_fl2va…). El usuario lo clasifica
+        # como vídeo. Lenguaje natural, buena coherencia de movimiento; base
+        # sin audio nativo (conservador). Fuerte en image-to-video.
+        "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
+        "duraciones": ["5s", "6s"],
+        "ratios": ["1:1", "9:16", "16:9"],
+        "modos_gen": ["720p"],
+        "max_chars": 1200, "max_imagenes": 1, "nota": None,
+        "best_for": "MiniMax/Hailuo H3 (local): lenguaje natural cinematográfico con muy buena coherencia de movimiento y físicas. Excelente en image-to-video: sube una imagen y describe la acción y el movimiento de cámara. Soporta negative.",
+        "best_for_en": "MiniMax/Hailuo H3 (local): cinematic natural language with very good motion coherence and physics. Excellent at image-to-video: upload an image and describe the action and camera move. Supports negative.",
+        "prompt_formula": "Sujeto + acción + movimiento de cámara + iluminación + estilo, en prosa presente. En i2v deja que la imagen ancle la escena y describe solo el movimiento.",
+        "prompt_ejemplo": "A woman in a flowing red dress turns slowly toward the camera as wind lifts her hair, slow dolly-in, warm sunset backlight, cinematic shallow depth of field.",
+        "limitaciones": "Clips cortos. Sin audio nativo en la base. Evita acciones extremas en i2v (puede alucinar).",
         "vigente": True,
     },
 }
@@ -1094,6 +1142,17 @@ def _cargar_modelos_locales():
 
 
 GRUPOS_IMAGEN_COMFYUI, GRUPOS_VIDEO_COMFYUI = _cargar_modelos_locales()
+
+# ── Modelos ComfyUI curados (visibles aunque el fichero no esté en disco) ──
+# La herramienta genera PROMPTS: tener "LTX 2.5" seleccionable ya da valor
+# (prompts optimizados para LTX) aunque el usuario aún no haya descargado el
+# .safetensors. Van en la BASE (antes de _COMFY_BASE_VID) para que el
+# auto-discovery no los borre; cuando el fichero real aparezca se añade aparte
+# (el dedup solo funde nombres idénticos normalizados). Alta ago-2026.
+_COMFY_VIDEO_CURADO = [
+    ("── ComfyUI Video · LTX (curado) ──", ["LTX 2.5"]),
+]
+GRUPOS_VIDEO_COMFYUI = _COMFY_VIDEO_CURADO + GRUPOS_VIDEO_COMFYUI
 
 MODELOS_IMAGEN_COMFYUI_FLAT = []
 for g, ms in GRUPOS_IMAGEN_COMFYUI:
@@ -1427,11 +1486,20 @@ GRUPOS_DALLE_IMAGEN = [
 ]
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
 
+# Grok (xAI) — plataforma propia (alta ago-2026 a petición del usuario).
+GRUPOS_GROK_IMAGEN = [
+    ("── Grok (xAI) ──", sorted([
+        "Grok Imagen",
+    ])),
+]
+MODELOS_GROK_IMAGEN_FLAT = _lista_plana(GRUPOS_GROK_IMAGEN)
+
 # Mapeo plataforma -> lista de modelos (para imagen)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
     "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
     "ComfyUI / Fooocus":            MODELOS_IMAGEN_COMFYUI_FLAT,
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
+    "Grok (xAI)":                    MODELOS_GROK_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
 }
 
@@ -1845,6 +1913,7 @@ PLATAFORMAS_IMAGEN = {
     "SeaArt / Tensor.Art":        "sd",
     "ComfyUI / Fooocus":          "sd",
     "ChatGPT / GPT Image":         "natural",
+    "Grok (xAI)":                  "natural",
     "Magnific":                    "natural",
 }
 

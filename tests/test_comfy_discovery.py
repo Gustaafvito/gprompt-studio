@@ -453,18 +453,30 @@ class TestInventarioAgo2026:
             assert config.detectar_familia_comfy(nombre) == "sd15", nombre
             assert config.comfy_image_specs(nombre)["is_natural"] is False
 
-    def test_krea_y_chroma_son_flux(self):
-        # 'krea' y 'chroma' como token de familia Flux (no override por fichero).
-        for nombre in ("Chroma1-HD-fp8mixed", "krea2MuseByStable_v10TurboFp8",
+    def test_krea_es_familia_propia(self):
+        # Krea (ago-2026): grupo propio 'krea', separado de Flux, aunque el
+        # fichero lleve el token 'flux' ('flux1KreaDev…') — krea gana por orden.
+        for nombre in ("krea2MuseByStable_v10TurboFp8",
                        "darkBeastINT8Convrot2_darkBeastKREA2FP8",
-                       "krea2TurboNSFWAIO_v10"):
-            assert config.detectar_familia_comfy(nombre) == "flux", nombre
+                       "krea2TurboNSFWAIO_v10", "flux1KreaDevFp8_v10"):
+            assert config.detectar_familia_comfy(nombre) == "krea", nombre
             assert config.comfy_image_specs(nombre)["is_natural"] is True
+
+    def test_chroma_sigue_en_flux(self):
+        # 'chroma' permanece en Flux (des-destilado de Flux.1 schnell).
+        assert config.detectar_familia_comfy("Chroma1-HD-fp8mixed") == "flux"
 
     def test_krea_turbo_pierde_negative(self):
         # Las variantes turbo/destiladas fuerzan has_negative=False.
         s = config.comfy_image_specs("krea2_turbo_fp8_scaled")
-        assert s["_comfy_familia"] == "flux" and s["has_negative"] is False
+        assert s["_comfy_familia"] == "krea" and s["has_negative"] is False
+
+    def test_krea_workflow_deja_clip_vae_en_blanco(self):
+        # Los ficheros Krea son heterogéneos: el workflow no fuerza el CLIP/VAE
+        # de Flux 2 (que no son los suyos); ComfyUI deja los dropdowns.
+        p = config.comfy_workflow_params("krea2MuseByStable_v10TurboFp8")
+        assert p["_comfy_familia"] == "krea"
+        assert p.get("clip") == "" and p.get("vae") == ""
 
     def test_unstable_serie_es_flux_no_sdxl(self):
         # unstableEvolution corrige un falso positivo: 'xl' casaba dentro de
