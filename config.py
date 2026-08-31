@@ -215,7 +215,7 @@ GRUPOS_VIDEO = [
         "Nano Banana Video", "Nano Banana Pro Video",
     ])),
     ("── Wan ──", sorted([
-        "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7",
+        "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7", "Wan 3.0", "Wan 3.0 Prime",
     ])),
     ("── StarDream ──", sorted([
         "StarDream 2.0", "StarDream 2.0 Fast", "StarDream 2.0 Mini",

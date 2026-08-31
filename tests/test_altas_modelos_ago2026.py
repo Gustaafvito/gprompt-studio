@@ -74,3 +74,28 @@ class TestSeedance25:
         s = config.get_model_specs("Seedance 2.5")
         assert s is not None and s.get("vigente") is True
         assert s.get("has_audio") is True
+
+
+class TestWan30:
+    """Wan 3.0 y Wan 3.0 Prime — vídeo multimodal de Alibaba vía SeaArt."""
+
+    def test_wan_30_y_prime_visibles(self):
+        assert "Wan 3.0" in config.MODELOS_VIDEO_FLAT
+        assert "Wan 3.0 Prime" in config.MODELOS_VIDEO_FLAT
+
+    def test_wan_30_en_grupo_wan(self):
+        # Ambos cuelgan de la familia "── Wan ──", no de "Otros Motores".
+        wan = next(ms for cab, ms in config.GRUPOS_VIDEO if cab.strip("─ ") == "Wan")
+        assert "Wan 3.0" in wan and "Wan 3.0 Prime" in wan
+
+    def test_wan_30_specs_audio_nativo(self):
+        for n in ("Wan 3.0", "Wan 3.0 Prime"):
+            s = config.get_model_specs(n)
+            assert s is not None and s.get("vigente") is True
+            assert s.get("has_audio") is True
+
+    def test_wan_30_tope_1080p(self):
+        # La ficha dice salida hasta 1080P (a diferencia de Wan 2.7 → 4K).
+        s = config.get_model_specs("Wan 3.0")
+        assert "1080p" in s["modos_gen"]
+        assert not any(m in ("2K", "4K") for m in s["modos_gen"])

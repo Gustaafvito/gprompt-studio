@@ -1821,6 +1821,66 @@
     "vigente": true,
     "best_for_en": "Wan 2.7 engine (via SeaArt). Multimodal with @ references (Seedance style) + character library. THREE input modes: Video reference, Image-to-Video and Text-to-Video. Up to 4K. Free for a limited time."
   },
+  "Wan 3.0": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado, activado por defecto (se puede desactivar para un clip mudo)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "30s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Motor Wan 3.0 (Alibaba Cloud, vía SeaArt). Vídeo multimodal: combina texto, imágenes, vídeo, audio, documentos y páginas web públicas como fuentes. Hasta 30s con control de primer y último fotograma. Text-to-Video, Image-to-Video y Referencia de vídeo. Audio nativo por defecto. Salida hasta 1080P. Evolución de Wan 2.7 con más vías de referencia.",
+    "prompt_formula": "Crea un vídeo de [duración] [ratio] para [objetivo]. El sujeto principal es [sujeto y apariencia]. Usa [Imagen ref 1 / Vídeo ref 1 / documento / web] para definir [su papel]. Muestra [una acción o progresión] en [escena]. Dirección visual: [luz, tono, estilo]. Salida a [resolución] con [dirección de audio]. Da un papel a cada referencia. Máx 1500 chars.",
+    "prompt_ejemplo": "Create a 10-second 16:9 product story. Use Reference Image 1 to define the appearance of the travel bag. Use Reference Video 1 to guide the walking pace. Show a traveler carrying the bag through a bright train station, then placing it beside a window seat. Clean, optimistic style. Output at 1080P with light travel ambience.",
+    "limitaciones": "Narrativas largas van mejor como clips encadenados (usar primer/último fotograma para continuidad). Acción multi-personaje compleja puede requerir varias tiradas. POR CONFIRMAR en el panel: lista exacta de duraciones, si expone prompt negativo y coste en energía.",
+    "vigente": true,
+    "best_for_en": "Wan 3.0 engine (Alibaba Cloud, via SeaArt). Multimodal video: combines text, images, video, audio, documents and public webpages as sources. Up to 30s with first and last frame control. Text-to-Video, Image-to-Video and Video reference. Native audio by default. Output up to 1080P. Evolution of Wan 2.7 with more reference paths."
+  },
+  "Wan 3.0 Prime": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado, activado por defecto (se puede desactivar para un clip mudo)",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "30s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 1500,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Motor Wan 3.0 (Alibaba Cloud, vía SeaArt), variante Prime: misma capacidad multimodal (texto, imágenes, vídeo, audio, documentos y web) con GENERACIÓN MÁS RÁPIDA. Hasta 30s con control de primer y último fotograma. Text-to-Video, Image-to-Video y Referencia de vídeo. Audio nativo por defecto. Salida hasta 1080P.",
+    "prompt_formula": "Crea un vídeo de [duración] [ratio] para [objetivo]. El sujeto principal es [sujeto y apariencia]. Usa [Imagen ref 1 / Vídeo ref 1 / documento / web] para definir [su papel]. Muestra [una acción o progresión] en [escena]. Dirección visual: [luz, tono, estilo]. Salida a [resolución] con [dirección de audio]. Da un papel a cada referencia. Máx 1500 chars.",
+    "prompt_ejemplo": "Create an 8-second 16:9 video for a quiet cafe social post. The main subject is a barista in a small neighborhood cafe at sunrise. Show the barista placing a fresh cup of coffee on a wooden counter as warm sunlight reaches the room. Soft, calm, realistic atmosphere. Output at 1080P with generated ambient audio.",
+    "limitaciones": "Variante rápida de Wan 3.0 (calidad puede ceder algo frente a la generación estándar). Narrativas largas van mejor como clips encadenados. POR CONFIRMAR en el panel: lista exacta de duraciones, si expone prompt negativo y coste en energía.",
+    "vigente": true,
+    "best_for_en": "Wan 3.0 engine (Alibaba Cloud, via SeaArt), Prime variant: same multimodal capability (text, images, video, audio, documents and webpages) with FASTER generation. Up to 30s with first and last frame control. Text-to-Video, Image-to-Video and Video reference. Native audio by default. Output up to 1080P."
+  },
   "Wan 2.6": {
     "nota": 3.5,
     "has_negative": true,
