@@ -506,6 +506,49 @@ class TestInventarioAgo2026:
             assert excluido not in todos, excluido
 
 
+class TestAltasSep2026:
+    """Altas guiadas una a una por el usuario (sep-2026): HiDream (familia
+    propia), snofs Klein → Flux, Anima → Illustrious, FireRed/JoyAI → edición.
+    """
+
+    def test_hidream_familia_propia(self):
+        s = config.comfy_image_specs("hidream_o1_image_dev_fp8_scaled")
+        assert s is not None and s["_comfy_familia"] == "hidream"
+        assert s["is_natural"] is True and s["has_negative"] is True
+        # unet + CLIP/VAE en blanco (encoders propios, el usuario los elige).
+        p = config.comfy_workflow_params("hidream_o1_image_dev_fp8_scaled")
+        assert p["arch"] == "unet" and p.get("clip") == "" and p.get("vae") == ""
+
+    def test_snofs_klein_es_flux(self):
+        # snofs ya es Flux; 'klein' delata Flux.2 → flux. 'distilled' NO está en
+        # los turbo-tokens, así que conserva negative (Flux.2 Klein lo acepta).
+        s = config.comfy_image_specs("snofs_klein_9b_distilled_fp8")
+        assert s["_comfy_familia"] == "flux" and s["has_negative"] is True
+
+    def test_anima_es_illustrious_por_override(self):
+        # Va por override, NO por token: 'anima' colisionaría con anima_pencil-XL.
+        for n in ("anima-base-v1.0", "anima-preview3-base"):
+            assert config.detectar_familia_comfy(n) == "illustrious", n
+
+    def test_anima_no_rompe_anima_pencil_xl(self):
+        # El SDXL anima_pencil sigue siendo SDXL (no lo captura el override).
+        assert config.detectar_familia_comfy("anima_pencil-XL") == "sdxl"
+        assert config.detectar_familia_comfy("animaPencilXL_v500") == "sdxl"
+
+    def test_firered_y_joyai_son_edicion(self):
+        for n in ("FireRed-Image-Edit-1.1-Q3_K_M",
+                  "FireRed-Image-Edit-1.1-transformer",
+                  "joyai_image_edit_int8_convrot"):
+            s = config.comfy_image_specs(n)
+            assert s["_comfy_familia"] == "edit", n
+            # Edición por instrucciones: prosa natural, SIN negative.
+            assert s["is_natural"] is True and s["has_negative"] is False
+
+    def test_edit_no_captura_qwen_image_edit(self):
+        # El edit local va por override específico → qwen_image_edit sigue qwen.
+        assert config.detectar_familia_comfy("qwen_image_edit_2509_fp8_e4m3fn") == "qwen"
+
+
 class TestConstruirWorkflowComfy:
     """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
     loader correcto por arquitectura."""

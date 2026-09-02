@@ -580,6 +580,7 @@ _COMFY_FAMILIAS = (
     # CFG real, encoder T5. Token → captura variantes futuras.
     ("flux",        ("flux", "chroma")),
     ("z_image",     ("z_image", "zimage", "z-image")),
+    ("hidream",     ("hidream",)),
     ("ideogram",    ("ideogram",)),
     ("qwen",        ("qwen",)),
     ("pony",        ("pony",)),
@@ -713,6 +714,32 @@ _COMFY_SPECS_FAMILIA = {
         "prompt_formula": "Descripción concreta y enfocada en prosa incluyendo iluminación y entorno explícitos. Para retratos usa lenguaje de fotografía (lente, apertura, profundidad de campo).",
         "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field, natural skin texture.",
     },
+    "hidream": {
+        # HiDream-I1 (local): DiT abierto de 17B (MoE). Prompts en lenguaje
+        # natural, encoders y VAE propios → se carga como unet (UNETLoader) con
+        # CLIP/VAE aparte (en blanco, el usuario los elige al pegar el workflow).
+        # Familia confirmada por el usuario (ago-2026).
+        "is_natural": True, "has_negative": True,
+        "negative_sugerido": _NEG_FLUX_QWEN_ZIMAGE,
+        "sampler_recomendado": "euler / simple (~25 pasos, CFG ~5.0)",
+        "best_for": "HiDream-I1: modelo abierto de 17B. Prosa natural detallada (sujeto → escena → iluminación → cámara), fuerte adherencia al prompt y texto en imagen. CFG ~5, ~25 pasos, euler/simple. Encoders y VAE propios (elígelos en ComfyUI).",
+        "best_for_en": "HiDream-I1: open 17B model. Detailed natural-language prose (subject → scene → lighting → camera), strong prompt adherence and in-image text. CFG ~5, ~25 steps, euler/simple. Own encoders and VAE (pick them in ComfyUI).",
+        "prompt_formula": "Frases completas en prosa, NO tags por comas. Sujeto → entorno → iluminación → detalles de cámara. Puedes pedir texto en la imagen entre comillas.",
+        "prompt_ejemplo": "A serene mountain lake at dawn, mist rising over still water, a lone wooden canoe near the shore, soft pink and gold sky, ultra-detailed, cinematic wide shot.",
+    },
+    "edit": {
+        # Modelos de EDICIÓN por instrucciones LOCALES (FireRed, JoyAI…): se les
+        # da una imagen de referencia + una instrucción en lenguaje natural de
+        # qué cambiar. NO usan prompt negativo. Se cargan como unet con CLIP/VAE
+        # aparte (en blanco, el usuario los elige). Familia confirmada por el
+        # usuario (ago-2026): "si son edición, trátalos como edición".
+        "is_natural": True, "has_negative": False,
+        "sampler_recomendado": "euler / simple (~20-25 pasos)",
+        "best_for": "Edición por instrucciones: sube la imagen a editar y describe EN LENGUAJE NATURAL qué cambiar y qué mantener (no tags, no negative). Requiere imagen de referencia.",
+        "best_for_en": "Instruction-based editing: upload the image to edit and describe IN NATURAL LANGUAGE what to change and what to keep (no tags, no negative). Requires a reference image.",
+        "prompt_formula": "Instrucción directa: qué cambiar + qué preservar, en prosa. Sin tags ni negative. Requiere imagen de referencia.",
+        "prompt_ejemplo": "Change the season to winter with fresh snow on the ground and rooftops, keep the house, the people and the composition exactly the same.",
+    },
     "ideogram": {
         # Ideogram 4 local (INVENTARIO_MODELOS jul-2026): fuerte en adherencia
         # al prompt, tipografías y logos. Formato tags + frase media.
@@ -807,6 +834,19 @@ _COMFY_FAMILIA_OVERRIDE = {
     "snofssexnudesandotherfunstuffv14distilled": "flux",
     # Illustrious (prefijo 'illust' pero sin token 'illustrious'/'noob').
     "illustoccultsemiv2": "illustrious",
+    # ── Altas ago-2026 (guiadas una a una por el usuario) ──
+    # snofs sobre Flux.2 Klein 9B: snofs ya es Flux; 'klein' delata Flux.2 → flux.
+    "snofsklein9bdistilledfp8": "flux",
+    # 'Anima' (base/preview) → el usuario confirma que es ANIME (Illustrious).
+    # Va por override, NO por token: 'anima' colisiona con anima_pencil-XL (SDXL)
+    # y con animatediff/revAnimated.
+    "animabasev10": "illustrious",
+    "animapreview3base": "illustrious",
+    # Modelos de EDICIÓN por instrucciones → familia 'edit' (prosa + imagen ref,
+    # sin negative). Por override para no chocar con qwen_image_edit.
+    "fireredimageedit11q3km": "edit",
+    "fireredimageedit11transformer": "edit",
+    "joyaiimageeditint8convrot": "edit",
 }
 
 
@@ -873,6 +913,13 @@ _COMFY_WORKFLOW = {
     # Ideogram 4 local (INVENTARIO_MODELOS jul-2026): encoder y VAE propios.
     "ideogram":    {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
                     "clip": "ideogram4_text_encoder.safetensors", "vae": "ideogram4_vae.safetensors", "clip_type": "ideogram4"},
+    # HiDream: unet + encoders/VAE propios (en blanco → el usuario los elige).
+    "hidream":     {"arch": "unet", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "", "vae": ""},
+    # Edición local (FireRed/JoyAI): unet + CLIP/VAE en blanco. clip_type cae en
+    # "stable_diffusion" por defecto → el usuario ajusta el loader al pegar.
+    "edit":        {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
+                    "clip": "", "vae": ""},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
     "pony":        {"arch": "checkpoint", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "karras"},
