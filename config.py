@@ -200,8 +200,6 @@ GRUPOS_VIDEO = [
         "SeaArt SonoVision", "SeaArt SonoVision 2.0", "SeaArt Sono W3",
         "SeaArt Sono W3 Prime", "SeaArt Sono Wave", "SeaArt Sparkle",
         "SeaArt Sparkle H3", "SeaArt Sparkle H3 Max", "SeaArt Stage",
-        "SeaArt Opera Refer", "SeaArt Spark Refer", "SeaArt Clip Refer",
-        "SeaArt Clip Remake", "SeaArt Ultra Remix Video",
         "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
         "SeaArt Turbo", "SeaArt Ultra", "SeaArt Ultra 2.0", "SeaArt Ultra 3.0",
         "SeaArt Ultra 3.0 Turbo", "SeaArt Ultra Frame Video", "SeaArt Ultra Plus",
@@ -209,8 +207,8 @@ GRUPOS_VIDEO = [
         "SeaArt Ultra2 Pro", "SeaArt UltraVision", "SeaArt Vibe",
     ])),
     ("── Kling ──", sorted([
-        "Kling 01 Video Model", "Kling O1", "Kling 2.6", "Kling 3.0",
-        "Kling 3.0 Omni", "Kling 3.0 Turbo",
+        "Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
+        "Kling 3.0 Turbo",
     ])),
     ("── Seedance ──", sorted([
         "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast", "Seedance 2.0 Mini",
@@ -242,11 +240,9 @@ GRUPOS_VIDEO = [
     # "Drama" = cine/cortometraje · "Ad" = anuncios/publicidad.
     ("── Reference ──", sorted([
         "Ad Reference",
-        "Character Reference",
         "Drama Reference",
         "Vidu Ad Reference",
         "Vidu Drama Reference",
-        "Vidu Q3 Reference",
     ])),
     ("── Grok ──", sorted([
         "Grok Imagine Video", "Grok Imagine Video 1.5",

@@ -117,14 +117,26 @@ class TestAltasVideoSep2026:
     usuario (sep-2026): 19 fichas nuevas en 5 grupos.
     """
 
+    # Solo modelos GENERATIVOS. Los de edición/referencia (Clip/Spark/Opera Refer,
+    # Clip Remake, Ultra Remix, Character/Vidu Q3 Reference, Kling O1) se
+    # descartaron a propósito (el prompt aporta poco en vídeo-a-vídeo).
     NUEVOS = [
-        "StarDream 2.5", "Character Reference", "Vidu Q3 Reference",
+        "StarDream 2.5",
         "SeaArt Sono W3", "SeaArt Sono W3 Prime", "SeaArt Sparkle H3",
-        "SeaArt Sparkle H3 Max", "SeaArt SonoVision 2.0", "SeaArt Opera Refer",
-        "SeaArt Spark Refer", "SeaArt Clip Refer", "SeaArt Clip Remake",
-        "SeaArt Ultra Remix Video", "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
-        "MiniMax H3", "MiniMax H3 Max", "MiniMax H3 Open", "Kling O1",
+        "SeaArt Sparkle H3 Max", "SeaArt SonoVision 2.0",
+        "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
+        "MiniMax H3", "MiniMax H3 Max", "MiniMax H3 Open",
     ]
+
+    DESCARTADOS = [
+        "SeaArt Opera Refer", "SeaArt Spark Refer", "SeaArt Clip Refer",
+        "SeaArt Clip Remake", "SeaArt Ultra Remix Video",
+        "Character Reference", "Vidu Q3 Reference", "Kling O1",
+    ]
+
+    def test_edit_reference_no_estan(self):
+        for n in self.DESCARTADOS:
+            assert n not in config.MODELOS_VIDEO_FLAT_TODOS, n
 
     def test_todos_visibles_y_con_spec(self):
         for n in self.NUEVOS:
