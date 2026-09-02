@@ -88,14 +88,25 @@ class TestWan30:
         wan = next(ms for cab, ms in config.GRUPOS_VIDEO if cab.strip("─ ") == "Wan")
         assert "Wan 3.0" in wan and "Wan 3.0 Prime" in wan
 
-    def test_wan_30_specs_audio_nativo(self):
+    def test_wan_30_specs_audio_y_negativo(self):
+        # Verificado contra el panel real de SeaArt (get_model_params):
+        # ambos tienen audio nativo Y prompt negativo.
         for n in ("Wan 3.0", "Wan 3.0 Prime"):
             s = config.get_model_specs(n)
             assert s is not None and s.get("vigente") is True
             assert s.get("has_audio") is True
+            assert s.get("has_negative") is True
 
-    def test_wan_30_tope_1080p(self):
-        # La ficha dice salida hasta 1080P (a diferencia de Wan 2.7 → 4K).
+    def test_wan_30_tope_1080p_prime_sube_a_4k(self):
+        # Panel real: Wan 3.0 estándar tope 1080P; Prime añade 2K/4K.
+        base = config.get_model_specs("Wan 3.0")
+        assert "1080p" in base["modos_gen"]
+        assert not any(m in ("2K", "4K") for m in base["modos_gen"])
+        prime = config.get_model_specs("Wan 3.0 Prime")
+        assert "4K" in prime["modos_gen"] and "2K" in prime["modos_gen"]
+
+    def test_wan_30_duraciones_rango_completo(self):
+        # Panel real: 5–15s (paso 1) + 20/25/30s = 14 opciones.
         s = config.get_model_specs("Wan 3.0")
-        assert "1080p" in s["modos_gen"]
-        assert not any(m in ("2K", "4K") for m in s["modos_gen"])
+        assert s["duraciones"][0] == "5s" and s["duraciones"][-1] == "30s"
+        assert len(s["duraciones"]) == 14
