@@ -336,6 +336,8 @@ GRUPOS_IMAGEN = [
     ("── Qwen (Alibaba en SeaArt) ──", sorted([
         "Qwen-Image",
         "Qwen Image 2.0 Pro",
+        "Qwen Image 3.0",
+        "Qwen Image 3.0 Pro",
     ])),
     ("── Ideogram (en SeaArt) ──", sorted([
         "Ideogram 4",
