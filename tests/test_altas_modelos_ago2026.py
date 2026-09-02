@@ -110,3 +110,31 @@ class TestWan30:
         s = config.get_model_specs("Wan 3.0")
         assert s["duraciones"][0] == "5s" and s["duraciones"][-1] == "30s"
         assert len(s["duraciones"]) == 14
+
+
+class TestAltasVideoSep2026:
+    """Modelos de vídeo SeaArt añadidos desde las capturas del catálogo del
+    usuario (sep-2026): 19 fichas nuevas en 5 grupos.
+    """
+
+    NUEVOS = [
+        "StarDream 2.5", "Character Reference", "Vidu Q3 Reference",
+        "SeaArt Sono W3", "SeaArt Sono W3 Prime", "SeaArt Sparkle H3",
+        "SeaArt Sparkle H3 Max", "SeaArt SonoVision 2.0", "SeaArt Opera Refer",
+        "SeaArt Spark Refer", "SeaArt Clip Refer", "SeaArt Clip Remake",
+        "SeaArt Ultra Remix Video", "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
+        "MiniMax H3", "MiniMax H3 Max", "MiniMax H3 Open", "Kling O1",
+    ]
+
+    def test_todos_visibles_y_con_spec(self):
+        for n in self.NUEVOS:
+            assert n in config.MODELOS_VIDEO_FLAT, n
+            assert config.get_model_specs(n) is not None, n
+
+    def test_familia_minimax_existe(self):
+        cabs = [c.strip("─ ") for c, _ in config.GRUPOS_VIDEO]
+        assert "MiniMax" in cabs
+
+    def test_familia_sono_w3_lleva_audio(self):
+        for n in ("SeaArt Sono W3", "SeaArt Sono W3 Prime", "MiniMax H3"):
+            assert config.get_model_specs(n)["has_audio"] is True, n

@@ -197,15 +197,20 @@ GRUPOS_VIDEO = [
         "SeaArt Pony 1.1",
         "SeaArt Sono Blink",
         "SeaArt Sono Cast", "SeaArt Sono Epic", "SeaArt Sono Lite",
-        "SeaArt SonoVision", "SeaArt Sono Wave", "SeaArt Sparkle", "SeaArt Stage",
+        "SeaArt SonoVision", "SeaArt SonoVision 2.0", "SeaArt Sono W3",
+        "SeaArt Sono W3 Prime", "SeaArt Sono Wave", "SeaArt Sparkle",
+        "SeaArt Sparkle H3", "SeaArt Sparkle H3 Max", "SeaArt Stage",
+        "SeaArt Opera Refer", "SeaArt Spark Refer", "SeaArt Clip Refer",
+        "SeaArt Clip Remake", "SeaArt Ultra Remix Video",
+        "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
         "SeaArt Turbo", "SeaArt Ultra", "SeaArt Ultra 2.0", "SeaArt Ultra 3.0",
         "SeaArt Ultra 3.0 Turbo", "SeaArt Ultra Frame Video", "SeaArt Ultra Plus",
         "SeaArt Ultra Pro",
         "SeaArt Ultra2 Pro", "SeaArt UltraVision", "SeaArt Vibe",
     ])),
     ("── Kling ──", sorted([
-        "Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
-        "Kling 3.0 Turbo",
+        "Kling 01 Video Model", "Kling O1", "Kling 2.6", "Kling 3.0",
+        "Kling 3.0 Omni", "Kling 3.0 Turbo",
     ])),
     ("── Seedance ──", sorted([
         "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast", "Seedance 2.0 Mini",
@@ -218,13 +223,16 @@ GRUPOS_VIDEO = [
         "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7", "Wan 3.0", "Wan 3.0 Prime",
     ])),
     ("── StarDream ──", sorted([
-        "StarDream 2.0", "StarDream 2.0 Fast", "StarDream 2.0 Mini",
+        "StarDream 2.0", "StarDream 2.0 Fast", "StarDream 2.0 Mini", "StarDream 2.5",
     ])),
     ("── PixVerse ──", sorted([
         "PixVerse V6",
     ])),
     ("── Hailuo ──", sorted([
         "Hailuo 2.0", "Hailuo 2.3 Fast",
+    ])),
+    ("── MiniMax ──", sorted([
+        "MiniMax H3", "MiniMax H3 Max", "MiniMax H3 Open",
     ])),
     ("── Vidu ──", sorted([
         "Vidu Q3 Pro", "Vidu Q3 Turbo",
@@ -234,9 +242,11 @@ GRUPOS_VIDEO = [
     # "Drama" = cine/cortometraje · "Ad" = anuncios/publicidad.
     ("── Reference ──", sorted([
         "Ad Reference",
+        "Character Reference",
         "Drama Reference",
         "Vidu Ad Reference",
         "Vidu Drama Reference",
+        "Vidu Q3 Reference",
     ])),
     ("── Grok ──", sorted([
         "Grok Imagine Video", "Grok Imagine Video 1.5",

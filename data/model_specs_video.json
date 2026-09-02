@@ -2429,5 +2429,549 @@
     "prompt_formula": "Etiqueta producto/modelos (@imagenN) + describe plano, acción, cámara y mensaje del spot. Genera plano por plano. Máx 5000 chars.",
     "prompt_ejemplo": "Product@imagen1 rotates on a glossy podium, dramatic rim light, fast push-in. Model@imagen2 smiles holding it. Upbeat premium commercial lighting.",
     "limitaciones": "Por referencia: requiere subir imágenes (hasta 7). Duraciones 5/10/15s, modos 720p/1080p. Sin prompt negativo. Audio no confirmado. Cantidad de generación no visible en panel."
+  },
+  "StarDream 2.5": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "20s",
+      "25s",
+      "30s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "StarDream 2.5 (SeaArt): evolucion multimodal con referencias @ (personajes, vestuario, escenas). Hasta 30s y 4K, audio nativo. Referencia al video, Image-to-Video y Text-to-Video.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "StarDream 2.5 (SeaArt): multimodal evolution with @ references. Up to 30s and 4K, native audio. Video reference, Image-to-Video and Text-to-Video."
+  },
+  "Character Reference": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "8s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p"
+    ],
+    "best_for": "Character Reference (SeaArt): video por REFERENCIA centrado en personajes. Subes imagenes del personaje y las etiquetas con @; el prompt describe la escena y la accion. Hasta 8s, 720p.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "Character Reference (SeaArt): character-focused REFERENCE video. Upload character images and tag them with @. Up to 8s, 720p."
+  },
+  "Vidu Q3 Reference": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Vidu Q3 Reference (SeaArt): video por referencia del motor Vidu Q3. Subes imagenes de referencia y compones la escena con @. Hasta 15s, 1080p.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "Vidu Q3 Reference (SeaArt): reference video on the Vidu Q3 engine. Up to 15s, 1080p."
+  },
+  "SeaArt Sono W3": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "20s",
+      "25s",
+      "30s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "Familia Sono de SeaArt (audio nativo integrado): W3, hasta 30s y 4K. Image-to-Video con sonido automatico generado.",
+    "prompt_formula": "Combina con la imagen de partida para describir escena, accion y movimiento de camara. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Sono family (native integrated audio): W3, up to 30s and 4K. Image-to-Video with automatic generated sound."
+  },
+  "SeaArt Sono W3 Prime": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s",
+      "20s",
+      "25s",
+      "30s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "Familia Sono de SeaArt (audio nativo), variante W3 Prime: hasta 30s y 4K con referencias. Sonido automatico generado.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Sono family (native audio), W3 Prime variant: up to 30s and 4K with references."
+  },
+  "SeaArt Sparkle H3": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "SeaArt Sparkle H3: motor rapido con audio nativo, hasta 15s y 4K. Admite referencias.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Sparkle H3: fast engine with native audio, up to 15s and 4K. Supports references."
+  },
+  "SeaArt Sparkle H3 Max": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "768p"
+    ],
+    "best_for": "SeaArt Sparkle H3 Max: variante con control de fotogramas (primer/ultimo), audio nativo, hasta 15s.",
+    "prompt_formula": "Define primer y ultimo fotograma con imagenes; el prompt describe la transicion entre ambos. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Sparkle H3 Max: frame-control variant (first/last), native audio, up to 15s."
+  },
+  "SeaArt SonoVision 2.0": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K"
+    ],
+    "best_for": "SeaArt SonoVision 2.0: familia Sono con audio nativo, hasta 15s y 2K. Admite referencias.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt SonoVision 2.0: Sono family with native audio, up to 15s and 2K. Supports references."
+  },
+  "SeaArt Opera Refer": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Opera Refer: variante por referencia del motor Opera (calidad estudio), audio nativo, hasta 15s y 1080p.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Opera Refer: reference variant of the Opera engine (studio quality), native audio, up to 15s and 1080p."
+  },
+  "SeaArt Spark Refer": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Spark Refer: video por referencia, hasta 10s y 1080p. Subes referencias y compones con @.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Spark Refer: reference video, up to 10s and 1080p."
+  },
+  "SeaArt Clip Refer": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "8s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Clip Refer: clips cortos por referencia, hasta 8s y 1080p.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Clip Refer: short reference clips, up to 8s and 1080p."
+  },
+  "SeaArt Clip Remake": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Clip Remake: EDICION/rehecho de video. Partes de un clip existente y describes el cambio. Salida 1080p.",
+    "prompt_formula": "Parte de un video existente y describe en lenguaje natural el cambio a aplicar. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Clip Remake: video EDIT/remake. Start from an existing clip and describe the change. 1080p output."
+  },
+  "SeaArt Ultra Remix Video": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Ultra Remix Video: EDICION de video (remix) sobre un clip existente. Salida 1080p.",
+    "prompt_formula": "Parte de un video existente y describe en lenguaje natural el cambio a aplicar. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Ultra Remix Video: video EDIT (remix) over an existing clip. 1080p output."
+  },
+  "SeaArt Spicy Video 22": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "8s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p"
+    ],
+    "best_for": "SeaArt Spicy Video 22 (contenido adulto): Image-to-Video, hasta 8s y 720p.",
+    "prompt_formula": "Combina con la imagen de partida para describir escena, accion y movimiento de camara. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Spicy Video 22 (adult content): Image-to-Video, up to 8s and 720p."
+  },
+  "SeaArt Spicy Video 27": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "SeaArt Spicy Video 27 (contenido adulto): Image-to-Video, hasta 15s y 1080p.",
+    "prompt_formula": "Combina con la imagen de partida para describir escena, accion y movimiento de camara. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "SeaArt Spicy Video 27 (adult content): Image-to-Video, up to 15s and 1080p."
+  },
+  "MiniMax H3": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "Motor MiniMax/Hailuo H3 (via SeaArt): video con audio nativo, hasta 15s y 4K. Admite referencias.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "MiniMax/Hailuo H3 engine (via SeaArt): video with native audio, up to 15s and 4K. Supports references."
+  },
+  "MiniMax H3 Max": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado automaticamente (sin toggle en el panel).",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "768p"
+    ],
+    "best_for": "MiniMax H3 Max (via SeaArt): control de fotogramas (primer/ultimo), audio nativo, hasta 15s.",
+    "prompt_formula": "Define primer y ultimo fotograma con imagenes; el prompt describe la transicion entre ambos. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "MiniMax H3 Max (via SeaArt): frame control (first/last), native audio, up to 15s."
+  },
+  "MiniMax H3 Open": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s",
+      "15s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "2K",
+      "4K"
+    ],
+    "best_for": "MiniMax H3 Open (via SeaArt): variante abierta, hasta 15s y 4K, con referencias.",
+    "prompt_formula": "Subes imagenes/videos de referencia y las etiquetas con @; el prompt describe la escena, la accion y el movimiento. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "MiniMax H3 Open (via SeaArt): open variant, up to 15s and 4K, with references."
+  },
+  "Kling O1": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Kling O1 (SeaArt): EDICION de video del motor Kling. Partes de un clip y describes el cambio. Salida 1080p.",
+    "prompt_formula": "Parte de un video existente y describe en lenguaje natural el cambio a aplicar. Prompt max 2000 chars.",
+    "prompt_ejemplo": "A cinematic shot of a woman walking through a neon-lit city street at night, reflections on wet pavement, smooth camera dolly, atmospheric haze.",
+    "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
+    "vigente": true,
+    "best_for_en": "Kling O1 (SeaArt): video EDIT on the Kling engine. 1080p output."
   }
 }
