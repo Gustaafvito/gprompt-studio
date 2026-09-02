@@ -1568,6 +1568,7 @@ MODELOS_POR_PLATAFORMA_VIDEO = {
     "SeaArt Video":                MODELOS_VIDEO_FLAT,
     "ComfyUI / Fooocus":          MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI":                    [m for m in MODELOS_VIDEO_FLAT if "Kling" in m or m.startswith("──")],
+    "Sora / Veo":                  ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
 }
 
 # ── Ratios ────────────────────────────────────────────────────────
@@ -2020,7 +2021,8 @@ DESTINOS = ["— Personal —"] + sorted([
 MOTORES_VIDEO = {
     "SeaArt Video": MODELOS_VIDEO_FLAT,
     "ComfyUI / Fooocus": MODELOS_VIDEO_COMFYUI_FLAT,
-    "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni"],
+    "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
+                 "Kling 3.0 Turbo"],
     "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
     # Apagadas (ver PLATAFORMAS_VIDEO): "Pika / Luma", "Runway Gen", "Pixverse.ai"
 }
@@ -2028,7 +2030,7 @@ MOTORES_VIDEO = {
 MOTORES_AUDIO = {
     "Suno": ["Suno v5.5", "Suno v5", "Suno v4.5", "Suno v4.5-All (Free)", "Suno v4"],
     "Udio": ["Udio v4", "Udio v1.5"],
-    "SeaArt Audio": ["Minimax Music 2.6", "Minimax Music 2.5", "SeaArt MusicGo"],
+    "SeaArt Audio": ["Minimax Music 2.6", "Minimax Music 2.5", "Mureka V9", "SeaArt MusicGo"],
 }
 
 MOTOR_DEFAULT = {
