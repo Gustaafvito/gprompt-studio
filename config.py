@@ -491,7 +491,12 @@ _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
                          "supir", "hunyuan3d", "stable_cascade",
                          # Pieza suelta del pipeline LTX (proyección de texto),
                          # no un modelo generable: 'ltx-2.3_text_projection_bf16'.
-                         "text_projection")
+                         "text_projection",
+                         # No-generativos desde texto (sep-2026, confirmado por
+                         # el usuario): rife=interpolador de frames ('rife49'),
+                         # cosmos=world model Text2World de NVIDIA, relight_lora=
+                         # LoRA de reiluminación ('WanAnimate_relight_lora').
+                         "rife", "cosmos", "relight_lora")
 
 
 # Tokens cortos que aparecen dentro de palabras normales ("swan", "wanostyle",

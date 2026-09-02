@@ -548,6 +548,21 @@ class TestAltasSep2026:
         # El edit local va por override específico → qwen_image_edit sigue qwen.
         assert config.detectar_familia_comfy("qwen_image_edit_2509_fp8_e4m3fn") == "qwen"
 
+    def test_no_generativos_sep2026_excluidos(self, tmp_path):
+        # rife (interpolador), cosmos (Text2World) y relight_lora (LoRA) fuera
+        # del escaneo, sin arrastrar modelos legítimos.
+        ckpt = tmp_path / "models" / "checkpoints"
+        ckpt.mkdir(parents=True)
+        for n in ("rife49", "Cosmos-1_0-Diffusion-7B-Text2World",
+                  "WanAnimate_relight_lora_fp16",
+                  "flux1-dev", "wan2.2_t2v_high_noise_14B_fp16"):
+            (ckpt / f"{n}.safetensors").write_text("x")
+        todos = sum(config._escanear_comfy_root(tmp_path).values(), [])
+        assert "flux1-dev" in todos and "wan2.2_t2v_high_noise_14B_fp16" in todos
+        for excl in ("rife49", "Cosmos-1_0-Diffusion-7B-Text2World",
+                     "WanAnimate_relight_lora_fp16"):
+            assert excl not in todos, excl
+
 
 class TestConstruirWorkflowComfy:
     """El workflow sale en formato UI de ComfyUI (nodes[] + links[]) con el
