@@ -96,6 +96,24 @@ class MultiPromptService:
     def __init__(self, app):
         self.app = app
 
+    def _estado_lote(self, texto_ok, n_pedidos, n_obtenidos):
+        """Estado final de un lote de N prompts, avisando si salieron MENOS.
+
+        Antes se mostraba el resultado corto en silencio: pedias 10 y veias 4
+        sin ninguna explicacion. La causa habitual es un modelo RAZONADOR que
+        agota max_tokens "pensando" y deja la respuesta truncada a medias (si
+        la deja del todo vacia, api_clients ya lanza un error claro); tambien
+        puede pasar si el LLM no respeta el formato numerado.
+        """
+        if n_obtenidos < n_pedidos:
+            self.app.dialogs.set_estado(
+                tr('⚠️ Pedidos {0}, generados {1} — el modelo se quedó corto '
+                   '(reintenta, baja la cantidad o usa un modelo no razonador)'
+                   ).format(n_pedidos, n_obtenidos),
+                P.TXT_AVISO)
+        else:
+            self.app.dialogs.set_estado(texto_ok, P.TXT_OK)
+
     def _cmd_moodboard(self):
         """Genera N prompts complementarios con mismo mood pero distintos sujetos.
 
@@ -157,7 +175,9 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n])
-                    self.app.dialogs.set_estado(tr('🎨 Moodboard listo ({0} prompts)').format(len(bloques)), P.TXT_OK)
+                    self._estado_lote(
+                        tr('🎨 Moodboard listo ({0} prompts)').format(len(bloques)),
+                        n, len(bloques))
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
@@ -393,7 +413,9 @@ class MultiPromptService:
 
                 def _mostrar():
                     self.app._abrir_comparador(bloques[:n], labels=labels_comp)
-                    self.app.dialogs.set_estado(tr('🎬 Secuencia de {0} shots lista').format(len(bloques)), P.TXT_OK)
+                    self._estado_lote(
+                        tr('🎬 Secuencia de {0} shots lista').format(len(bloques)),
+                        n, len(bloques))
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
@@ -473,10 +495,9 @@ class MultiPromptService:
                             (tr("🎬 Encadenar como prompt de vídeo"), P.BTN_ACENTO, _encadenar_video),
                         ],
                     )
-                    self.app.dialogs.set_estado(
+                    self._estado_lote(
                         tr('📽 Storyboard de {0} frames listo · 🎬 encadénalo a vídeo desde el comparador').format(len(bloques)),
-                        P.TXT_OK,
-                    )
+                        n, len(bloques))
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)
@@ -792,10 +813,9 @@ class MultiPromptService:
                             ("📋 Fusionar en 1 prompt", P.BTN_ACENTO, _fusionar),
                         ],
                     )
-                    self.app.dialogs.set_estado(
+                    self._estado_lote(
                         tr('🖼 Storyboard de {0} paneles listo · 📋 fusiona en 1 prompt desde el comparador').format(len(bloques)),
-                        P.TXT_OK,
-                    )
+                        n, len(bloques))
                     self.app.dialogs.toggle_botones(True)
                     self.app.dialogs._sonar_completado()
                 self.app.after(0, _mostrar)

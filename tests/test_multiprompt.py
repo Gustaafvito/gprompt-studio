@@ -240,3 +240,31 @@ class TestEncadenarBoardAVideo:
         h._encadenar_board_a_video(["frame A", "frame B"], vent_comparador=None)
         mock_exec.submit.assert_called_once()
         h.app.dialogs.toggle_botones.assert_called_once_with(False)
+
+class TestEstadoLoteIncompleto:
+    """Bug sep-2026: pedias 10 prompts, el LLM devolvia 4 (razonador que agota
+    max_tokens y deja la respuesta truncada) y la app los mostraba EN SILENCIO.
+    Ahora el estado final avisa de que salieron menos de los pedidos.
+    """
+
+    @staticmethod
+    def _svc():
+        app = SimpleNamespace(dialogs=SimpleNamespace(set_estado=MagicMock()))
+        return MultiPromptService(app), app
+
+    def test_avisa_cuando_salen_menos(self):
+        svc, app = self._svc()
+        svc._estado_lote("Moodboard listo", 10, 4)
+        texto = app.dialogs.set_estado.call_args[0][0]
+        assert "10" in texto and "4" in texto
+        assert texto != "Moodboard listo"
+
+    def test_estado_normal_si_esta_completo(self):
+        svc, app = self._svc()
+        svc._estado_lote("Moodboard listo", 10, 10)
+        assert app.dialogs.set_estado.call_args[0][0] == "Moodboard listo"
+
+    def test_no_avisa_si_devuelve_de_mas(self):
+        svc, app = self._svc()
+        svc._estado_lote("Moodboard listo", 3, 5)
+        assert app.dialogs.set_estado.call_args[0][0] == "Moodboard listo"
