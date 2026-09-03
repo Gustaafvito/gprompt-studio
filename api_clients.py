@@ -1027,6 +1027,22 @@ def _descifrar_aes(texto_cifrado: str, clave: bytes) -> str:
         return ""
 
 
+def _migrar_a_dpapi(claves: dict) -> None:
+    """Reescribe el fichero de fallback con DPAPI si venia en un formato viejo.
+
+    Se llama al LEER un formato v0 (claro) o v1 (AES con clave MAC+usuario).
+    Silencioso a proposito: si falla, el usuario conserva sus claves y se
+    reintentara en el siguiente arranque.
+    """
+    if not claves or not _dpapi_disponible():
+        return
+    try:
+        _escribir_dict_fallback(claves)
+        logger.info("API keys migradas al formato cifrado con DPAPI.")
+    except Exception as e:
+        logger.debug(f"[silent] migracion DPAPI: {e}")
+
+
 def _cargar_dict_fallback() -> dict:
     ruta = _ruta_keys_fallback()
     if not os.path.exists(ruta):
@@ -1049,13 +1065,21 @@ def _cargar_dict_fallback() -> dict:
                         logger.debug(f"[silent] DPAPI unprotect '{k}': {e}")
                         descifrado[k] = ""
                 return descifrado
-            # Formato v1 legacy: AES con clave MAC+usuario
+            # Formato v1 legacy: AES con clave derivada de MAC+usuario. Eso es
+            # OFUSCACION, no criptografia real (la clave se puede reconstruir en
+            # la propia maquina), asi que en cuanto se lee se REESCRIBE con
+            # DPAPI. Migracion silenciosa: el formato v1 se extingue solo y no
+            # deja a nadie sin claves, que es lo que pasaria si lo borrasemos.
             if isinstance(datos, dict) and "encrypted" in datos:
                 clave = _obtener_clave_cifrado()
                 descifrado = {}
                 for k, v in datos.get("keys", {}).items():
                     descifrado[k] = _descifrar_aes(v, clave)
+                _migrar_a_dpapi(descifrado)
                 return descifrado
+            # Formato v0: JSON en claro (instalaciones muy antiguas) -> migrar.
+            if isinstance(datos, dict) and datos:
+                _migrar_a_dpapi(datos)
             return datos
     except Exception:
         return {}

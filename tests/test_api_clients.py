@@ -6,6 +6,7 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import api_clients
 from api_clients import (
     LLM_PROVIDERS,
     BaseLLMProvider,
@@ -505,3 +506,32 @@ class TestSetModel:
     def test_get_provider_sin_modelo_usa_default(self):
         p = get_provider("claude", "test-key")
         assert p.model == "claude-sonnet-4-6"
+
+class TestMigracionDPAPI:
+    """Las API keys en formato viejo (v0 en claro / v1 AES con clave MAC+usuario)
+    se reescriben con DPAPI al leerlas. Se migra en vez de borrar el formato
+    viejo para no dejar a nadie sin claves.
+    """
+
+    def test_migra_si_dpapi_disponible(self, monkeypatch):
+        escrito = {}
+        monkeypatch.setattr(api_clients, "_dpapi_disponible", lambda: True)
+        monkeypatch.setattr(api_clients, "_escribir_dict_fallback",
+                            lambda d: escrito.update(d))
+        api_clients._migrar_a_dpapi({"openai": "sk-vieja"})
+        assert escrito == {"openai": "sk-vieja"}
+
+    def test_no_migra_sin_dpapi(self, monkeypatch):
+        llamadas = []
+        monkeypatch.setattr(api_clients, "_dpapi_disponible", lambda: False)
+        monkeypatch.setattr(api_clients, "_escribir_dict_fallback",
+                            lambda d: llamadas.append(d))
+        api_clients._migrar_a_dpapi({"openai": "sk-vieja"})
+        assert llamadas == []
+
+    def test_migracion_fallida_no_rompe(self, monkeypatch):
+        def _boom(_d):
+            raise OSError("disco lleno")
+        monkeypatch.setattr(api_clients, "_dpapi_disponible", lambda: True)
+        monkeypatch.setattr(api_clients, "_escribir_dict_fallback", _boom)
+        api_clients._migrar_a_dpapi({"openai": "sk"})  # no debe lanzar
