@@ -612,14 +612,17 @@ class OllamaProvider(OpenAICompatibleProvider):
         except Exception:
             return False
 
-    def _obtener_modelo_disponible(self) -> str | None:
+    def listar_modelos(self) -> list[str]:
+        """Modelos descargados en Ollama ([] si no responde)."""
         try:
             with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=3) as r:
                 data = json.loads(r.read())
-            modelos = [m["name"] for m in data.get("models", [])]
-            return elegir_modelo_chat(modelos)
+            return [m["name"] for m in data.get("models", []) if m.get("name")]
         except Exception:
-            return None
+            return []
+
+    def _obtener_modelo_disponible(self) -> str | None:
+        return elegir_modelo_chat(self.listar_modelos())
 
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
         modelo = model or self.model or self._obtener_modelo_disponible()
@@ -851,6 +854,43 @@ class ClaudeProvider(BaseLLMProvider):
 
 
 # FACTORY
+
+# Proveedores que corren en la maquina del usuario: su lista de modelos NO se
+# puede fijar en el codigo, es lo que cada uno tenga cargado/descargado.
+PROVEEDORES_LOCALES = ("lm_studio", "ollama")
+
+
+def ordenar_modelos_chat(modelos: list[str]) -> list[str]:
+    """Ordena para el desplegable: primero los de chat, vision al final.
+
+    Los de embeddings/rerank se QUITAN: no pueden generar texto, asi que
+    ofrecerlos como "cerebro" solo sirve para que alguien los elija y falle.
+    """
+    utiles = [m for m in modelos
+              if not any(t in m.lower() for t in _TOKENS_NO_CHAT)]
+    normales = [m for m in utiles
+                if not any(t in m.lower() for t in _TOKENS_VISION)]
+    vision = [m for m in utiles if m not in normales]
+    return normales + vision
+
+
+def modelos_disponibles(provider_id: str) -> list[str]:
+    """Modelos elegibles de un proveedor, para poblar el desplegable.
+
+    Los LOCALES se consultan EN VIVO (LM Studio /v1/models, Ollama /api/tags);
+    si el servidor no responde se devuelve [] y la UI cae al comportamiento de
+    siempre. El resto devuelven su lista estatica de LLM_PROVIDERS.
+    """
+    info = LLM_PROVIDERS.get(provider_id, {})
+    if provider_id in PROVEEDORES_LOCALES:
+        try:
+            prov = get_provider(provider_id, api_key="")
+            return ordenar_modelos_chat(prov.listar_modelos())
+        except Exception as e:
+            logger.debug(f"[silent] modelos de {provider_id}: {e}")
+            return []
+    return list(info.get("modelos") or [])
+
 
 def get_provider(provider_id: str, api_key: str, model: str | None = None) -> BaseLLMProvider:
     """Devuelve una instancia del proveedor configurado."""

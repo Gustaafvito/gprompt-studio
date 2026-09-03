@@ -608,3 +608,36 @@ class TestElegirModeloChat:
 
     def test_respeta_el_orden_entre_modelos_validos(self):
         assert api_clients.elegir_modelo_chat(["a-instruct", "b-instruct"]) == "a-instruct"
+
+class TestModelosDisponibles:
+    """El desplegable de modelos: los proveedores LOCALES se consultan en vivo
+    (su lista es lo que el usuario tenga cargado), los de nube son estáticos.
+    """
+
+    def test_los_de_nube_usan_su_lista_estatica(self):
+        from api_clients import LLM_PROVIDERS
+        assert (api_clients.modelos_disponibles("deepseek")
+                == list(LLM_PROVIDERS["deepseek"]["modelos"]))
+
+    def test_los_locales_se_consultan_en_vivo(self, monkeypatch):
+        class _Fake:
+            def listar_modelos(self):
+                return ["qwen2.5-32b", "nomic-embed-text", "llava"]
+        monkeypatch.setattr(api_clients, "get_provider", lambda *a, **k: _Fake())
+        got = api_clients.modelos_disponibles("lm_studio")
+        assert "nomic-embed-text" not in got      # embeddings fuera
+        assert got == ["qwen2.5-32b", "llava"]    # visión al final
+
+    def test_si_el_servidor_local_no_responde_devuelve_vacio(self, monkeypatch):
+        def _boom(*a, **k):
+            raise OSError("connection refused")
+        monkeypatch.setattr(api_clients, "get_provider", _boom)
+        assert api_clients.modelos_disponibles("lm_studio") == []
+
+    def test_ordenar_quita_embeddings_y_deja_vision_al_final(self):
+        got = api_clients.ordenar_modelos_chat(
+            ["llava", "text-embedding-3", "mistral", "qwen2.5vl", "phi-4"])
+        assert got == ["mistral", "phi-4", "llava", "qwen2.5vl"]
+
+    def test_lm_studio_y_ollama_son_los_locales(self):
+        assert set(api_clients.PROVEEDORES_LOCALES) == {"lm_studio", "ollama"}

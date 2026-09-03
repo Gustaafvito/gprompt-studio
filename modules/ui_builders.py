@@ -236,9 +236,12 @@ class UIBuildersService:
             """Repuebla el combo con los modelos del proveedor activo."""
             try:
                 from api_clients import LLM_PROVIDERS as _PROVS
+                from api_clients import modelos_disponibles
                 pid = self.app.clients.provider_activo_id
                 info = _PROVS.get(pid, {})
-                modelos = list(info.get("modelos", []) or
+                # Los locales (LM Studio / Ollama) se consultan en vivo: su
+                # lista es lo que el usuario tenga cargado, no algo fijo.
+                modelos = list(modelos_disponibles(pid) or
                                ([info.get("model_default")] if info.get("model_default") else []))
                 actual = self.app.clients.get_model(pid)
                 if actual and actual not in modelos:
