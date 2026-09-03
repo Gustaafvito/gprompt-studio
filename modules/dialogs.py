@@ -425,6 +425,7 @@ class DialogsService:
         links_frame = ctk.CTkFrame(v, fg_color="transparent")
         links_frame.pack(pady=(0, 14))
         enlaces = [
+            ("🌐 Web", "https://gustaafvito.com/"),
             ("🐙 GitHub", "https://github.com/Gustaafvito/"),
             ("📺 YouTube", "https://www.youtube.com/@GustaafvitocreadorIA"),
             ("🐦 X / Twitter", "https://x.com/gustaafvito"),

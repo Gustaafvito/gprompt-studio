@@ -436,3 +436,26 @@ class TestCatalogosEnJSON:
         nombres_json = {m for _c, ms in config._grupos("imagen") for m in ms}
         nombres_cfg = {m for _c, ms in config.GRUPOS_IMAGEN for m in ms}
         assert nombres_cfg == nombres_json
+
+class TestAutoriaYWeb:
+    """La firma del autor viaja en la app (config.AUTHOR) y se muestra en
+    "Acerca de", el instalador y el README.
+    """
+
+    def test_author_tiene_web(self):
+        assert config.AUTHOR["web"] == "https://gustaafvito.com/"
+
+    def test_author_conserva_sus_redes(self):
+        for clave in ("nombre", "github", "youtube", "instagram", "tiktok", "x"):
+            assert config.AUTHOR.get(clave), clave
+
+    def test_la_web_esta_en_acerca_de(self):
+        from pathlib import Path
+        dialogs = (Path(config.__file__).parent / "modules" / "dialogs.py")
+        assert "https://gustaafvito.com/" in dialogs.read_text(encoding="utf-8")
+
+    def test_la_web_es_la_del_editor_en_el_instalador(self):
+        from pathlib import Path
+        iss = (Path(config.__file__).parent / "installer.iss").read_text(encoding="utf-8")
+        assert 'MyAppPublisherURL "https://gustaafvito.com/"' in iss
+        assert "AppPublisherURL={#MyAppPublisherURL}" in iss

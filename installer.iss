@@ -10,6 +10,7 @@
 #define MyAppName "G-Prompt Studio"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Gustaafvito"
+#define MyAppPublisherURL "https://gustaafvito.com/"
 #define MyAppURL "https://github.com/gustaafvito/gprompt-studio"
 #define MyAppExeName "GPromptStudio.exe"
 ; AppId con escape doble `{{...}}` — sintaxis OBLIGATORIA de Inno Setup
@@ -31,7 +32,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL={#MyAppURL}
+AppPublisherURL={#MyAppPublisherURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}

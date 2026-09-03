@@ -1875,6 +1875,7 @@ PROMPT_TEMPLATES = {
 # ── Autor ─────────────────────────────────────────────────────────
 AUTHOR = {
     "nombre":    "Gustaafvito",
+    "web":       "https://gustaafvito.com/",
     "instagram": "gustaafvito.creador.ia",
     "tiktok":    "gustaafvito.creador.ia",
     "youtube":   "@GustaafvitocreadorIA",

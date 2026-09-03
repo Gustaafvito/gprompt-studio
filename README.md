@@ -3,6 +3,7 @@
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
 
+[![Web](https://img.shields.io/badge/web-gustaafvito.com-orange.svg)](https://gustaafvito.com/)
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
@@ -214,7 +215,9 @@ Si algo no funciona, revisa el log en:
 
 ---
 
-**Creado por [Gustaafvito](https://github.com/Gustaafvito)** ·
+**Creado por [Gustaafvito](https://gustaafvito.com/)** ·
+[Web](https://gustaafvito.com/) ·
+[GitHub](https://github.com/Gustaafvito) ·
 [Instagram](https://www.instagram.com/gustaafvito.creador.ia) ·
 [TikTok](https://www.tiktok.com/@gustaafvito.creador.ia) ·
 [YouTube](https://www.youtube.com/@GustaafvitocreadorIA)
