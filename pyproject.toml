@@ -82,6 +82,11 @@ include = ["modules*"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
+# El barrido de UI arranca la app real (~50s). Para iterar rapido:
+#   pytest -m "not slow"
+markers = [
+    "slow: arranca la aplicacion real; lento pero cubre ventanas y botones",
+]
 
 [tool.mypy]
 python_version = "3.10"
