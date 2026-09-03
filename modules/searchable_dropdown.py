@@ -26,6 +26,14 @@ from modules import paleta as P
 from modules.i18n import tr
 
 
+# Tope de filas dibujadas de una vez. Cada fila es un CTkButton y crearlos es
+# CARO (canvas + label + bindings): con el catalogo de imagen entero eran ~170
+# widgets en cada apertura Y en cada tecla, que es el "tarda en activarse".
+_MAX_FILAS = 80
+# Espera antes de repintar al escribir: teclear 6 letras hacia 6 repintados.
+_DEBOUNCE_MS = 140
+
+
 def _es_separador(v):
     return isinstance(v, str) and v.strip().startswith("──")
 
@@ -41,10 +49,16 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
     # `collapsed`: conjunto de cabeceras de familia plegadas. Persiste entre
     # aperturas del popup (estado en el closure), así el usuario no tiene que
     # volver a plegar lo mismo. Por defecto todas desplegadas.
-    state = {"popup": None, "collapsed": set()}
+    state = {"popup": None, "collapsed": set(), "job": None}
     original_open = combo._open_dropdown_menu  # fallback defensivo
 
     def _cerrar():
+        if state.get("job") is not None:
+            try:
+                combo.after_cancel(state["job"])
+            except Exception:
+                pass
+            state["job"] = None
         p = state["popup"]
         state["popup"] = None
         if p is not None:
@@ -137,6 +151,8 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                     w.destroy()
                 filtro = buscar_var.get().strip().lower()
                 hay = False
+                dibujadas = 0   # filas realmente pintadas (tope _MAX_FILAS)
+                ocultas = 0     # las que no caben: se resumen al final
                 fam_colapsada = False  # ¿la familia en curso está plegada?
                 for v in valores:
                     if _es_separador(v):
@@ -164,6 +180,10 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                     if not filtro and fam_colapsada:
                         continue  # familia plegada: ocultar sus modelos
                     hay = True
+                    if dibujadas >= _MAX_FILAS:
+                        ocultas += 1
+                        continue
+                    dibujadas += 1
                     # Truncar SOLO el texto mostrado (el valor real va en command).
                     texto = v if len(v) <= 42 else v[:41] + "…"
                     es_actual = v == valor_actual
@@ -177,12 +197,28 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                                           weight="bold" if es_actual else "normal"),
                         command=lambda val=v: _elegir(val),
                     ).pack(fill="x", padx=2, pady=1)
+                if ocultas:
+                    ctk.CTkLabel(
+                        lista,
+                        text=tr("… y {0} más — escribe para afinar").format(ocultas),
+                        text_color=c["muted_text"], anchor="w",
+                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+                    ).pack(fill="x", padx=6, pady=6)
                 if not hay and filtro:
                     ctk.CTkLabel(lista, text=tr("(sin coincidencias)"),
                                  text_color=c["muted_text"],
                                  anchor="w").pack(fill="x", padx=6, pady=6)
 
-            buscar_var.trace_add("write", _repintar)
+            def _repintar_pronto(*_):
+                """Repinta tras una pausa: escribir rapido no dispara N repintados."""
+                if state.get("job") is not None:
+                    try:
+                        combo.after_cancel(state["job"])
+                    except Exception:
+                        pass
+                state["job"] = combo.after(_DEBOUNCE_MS, _repintar)
+
+            buscar_var.trace_add("write", _repintar_pronto)
             _repintar()
 
             # Mapear y dar foco antes del grab (Windows lo necesita mapeado).

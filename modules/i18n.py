@@ -402,6 +402,7 @@ TRADUCCIONES = {
     '⏲ Cron iniciado: {0} variantes cada {1}min': '⏲ Cron started: {0} variants every {1}min',
     '⏲ Variante {0}/{1} lista': '⏲ Variant {0}/{1} ready',
     "⚠️ El proyecto '{0}' no tiene setup guardado": "⚠️ Project '{0}' has no saved setup",
+    "… y {0} más — escribe para afinar": "… and {0} more — type to narrow down",
     "⚠️ Pedidos {0}, generados {1} — el modelo se quedó corto (reintenta, baja la cantidad o usa un modelo no razonador)": "⚠️ Requested {0}, generated {1} — the model fell short (retry, lower the count or use a non-reasoning model)",
     '⚠️ Error adaptando: {0}': '⚠️ Error adapting: {0}',
     '⚠️ Error aplicando setup: {0}': '⚠️ Error applying setup: {0}',
