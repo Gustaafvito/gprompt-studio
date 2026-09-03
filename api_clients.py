@@ -628,6 +628,57 @@ class OllamaProvider(OpenAICompatibleProvider):
         return super().completar(messages, temperature, max_tokens, model=modelo)
 
 
+class LMStudioProvider(OpenAICompatibleProvider):
+    """LM Studio: servidor local OpenAI-compatible (por defecto puerto 1234).
+
+    Igual que en Ollama, el modelo NO se elige a mano: se usa el que el usuario
+    tenga CARGADO en LM Studio. Antes se enviaba el literal "local-model" que
+    venia en model_default, y las versiones recientes de LM Studio lo rechazan
+    con "model not found" en vez de ignorarlo, asi que el proveedor estaba
+    declarado pero no servia.
+
+    LM Studio expone /v1/models (OpenAI-compatible), el equivalente al
+    /api/tags de Ollama.
+    """
+
+    # Placeholder historico de model_default: no es un modelo real, hay que
+    # resolverlo consultando al servidor.
+    _PLACEHOLDER = "local-model"
+
+    def __init__(self, api_key: str | None = None, model: str | None = None,
+                 base_url: str = "http://localhost:1234/v1", **kwargs):
+        super().__init__(api_key="lm-studio", model=model, base_url=base_url)
+        self._raiz = (base_url or "http://localhost:1234/v1").rstrip("/")
+
+    def listar_modelos(self) -> list[str]:
+        """Modelos cargados ahora mismo en LM Studio ([] si no responde)."""
+        try:
+            with urllib.request.urlopen(self._raiz + "/models", timeout=2) as r:
+                data = json.loads(r.read())
+            return [m["id"] for m in data.get("data", []) if m.get("id")]
+        except Exception:
+            return []
+
+    def disponible(self) -> bool:
+        return bool(self.listar_modelos())
+
+    def _obtener_modelo_disponible(self) -> str | None:
+        modelos = self.listar_modelos()
+        return modelos[0] if modelos else None
+
+    def completar(self, messages: list[dict], temperature: float = 0.75,
+                  max_tokens: int = 900, model: str | None = None) -> str:
+        modelo = model or self.model
+        if not modelo or modelo == self._PLACEHOLDER:
+            modelo = self._obtener_modelo_disponible()
+        if not modelo:
+            raise Exception(
+                "No se encontro LM Studio corriendo en "
+                f"{self._raiz} o no tienes ningun modelo cargado. "
+                "Abre LM Studio, carga un modelo y activa el servidor local.")
+        return super().completar(messages, temperature, max_tokens, model=modelo)
+
+
 def _limpiar_respuesta_gemini(raw: str) -> str:
     """Elimina ecos de tags <system-reminder> de una respuesta de Gemini.
 
@@ -787,6 +838,9 @@ def get_provider(provider_id: str, api_key: str, model: str | None = None) -> Ba
 
     if provider_id == "ollama":
         prov = OllamaProvider(api_key=None, model=modelo_final, base_url=info.get("base_url"))
+    elif provider_id == "lm_studio":
+        # Local como Ollama: sin key y resolviendo el modelo cargado.
+        prov = LMStudioProvider(api_key=None, model=modelo_final, base_url=info.get("base_url"))
     elif tipo == "openai_compatible":
         prov = OpenAICompatibleProvider(api_key=api_key, model=modelo_final, base_url=info.get("base_url"))
     elif tipo == "google":

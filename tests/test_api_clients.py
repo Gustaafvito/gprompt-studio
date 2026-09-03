@@ -535,3 +535,48 @@ class TestMigracionDPAPI:
         monkeypatch.setattr(api_clients, "_dpapi_disponible", lambda: True)
         monkeypatch.setattr(api_clients, "_escribir_dict_fallback", _boom)
         api_clients._migrar_a_dpapi({"openai": "sk"})  # no debe lanzar
+
+class TestLMStudioProvider:
+    """LM Studio es local como Ollama: el modelo NO se elige a mano, se usa el
+    que el usuario tenga cargado. Antes se enviaba el literal "local-model" de
+    model_default, que las versiones recientes rechazan con "model not found".
+    """
+
+    def test_la_fabrica_usa_la_clase_dedicada(self):
+        prov = api_clients.get_provider("lm_studio", api_key="")
+        assert isinstance(prov, api_clients.LMStudioProvider)
+        assert prov.base_url == "http://localhost:1234/v1"
+
+    def test_lista_los_modelos_cargados(self, monkeypatch):
+        prov = api_clients.LMStudioProvider()
+        monkeypatch.setattr(prov, "listar_modelos", lambda: ["qwen2.5-7b", "otro"])
+        assert prov.disponible() is True
+        assert prov._obtener_modelo_disponible() == "qwen2.5-7b"
+
+    def test_sin_servidor_no_esta_disponible(self, monkeypatch):
+        prov = api_clients.LMStudioProvider()
+        monkeypatch.setattr(prov, "listar_modelos", lambda: [])
+        assert prov.disponible() is False
+        assert prov._obtener_modelo_disponible() is None
+
+    def test_error_claro_si_no_hay_nada_cargado(self, monkeypatch):
+        prov = api_clients.LMStudioProvider()
+        monkeypatch.setattr(prov, "listar_modelos", lambda: [])
+        with pytest.raises(Exception) as exc:
+            prov.completar([{"role": "user", "content": "hola"}])
+        msg = str(exc.value)
+        assert "LM Studio" in msg and "1234" in msg
+
+    def test_el_placeholder_se_resuelve_al_modelo_real(self, monkeypatch):
+        """model_default es "local-model": no es un modelo, hay que resolverlo."""
+        prov = api_clients.LMStudioProvider(model="local-model")
+        monkeypatch.setattr(prov, "listar_modelos", lambda: ["mistral-7b"])
+        usado = {}
+
+        def _fake(self, messages, temperature=0.75, max_tokens=900, model=None):
+            usado["model"] = model
+            return "ok"
+
+        monkeypatch.setattr(api_clients.OpenAICompatibleProvider, "completar", _fake)
+        assert prov.completar([{"role": "user", "content": "hola"}]) == "ok"
+        assert usado["model"] == "mistral-7b"
