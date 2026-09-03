@@ -580,3 +580,31 @@ class TestLMStudioProvider:
         monkeypatch.setattr(api_clients.OpenAICompatibleProvider, "completar", _fake)
         assert prov.completar([{"role": "user", "content": "hola"}]) == "ok"
         assert usado["model"] == "mistral-7b"
+
+class TestElegirModeloChat:
+    """Los servidores locales listan TODO lo descargado. Coger "el primero"
+    puede caer en un modelo de embeddings y fallar de forma incomprensible.
+    """
+
+    def test_descarta_embeddings(self):
+        elegido = api_clients.elegir_modelo_chat(
+            ["text-embedding-nomic-embed-text-v1.5", "qwen2.5-32b-instruct"])
+        assert elegido == "qwen2.5-32b-instruct"
+
+    def test_none_si_solo_hay_embeddings(self):
+        assert api_clients.elegir_modelo_chat(
+            ["text-embedding-nomic-embed-text-v1.5"]) is None
+
+    def test_descarta_rerankers(self):
+        assert api_clients.elegir_modelo_chat(["bge-reranker-v2", "mistral"]) == "mistral"
+
+    def test_vision_va_al_final_pero_no_se_descarta(self):
+        assert api_clients.elegir_modelo_chat(["llava:latest", "mistral"]) == "mistral"
+        # Si es lo unico instalado, se usa igualmente.
+        assert api_clients.elegir_modelo_chat(["llava:latest"]) == "llava:latest"
+
+    def test_lista_vacia(self):
+        assert api_clients.elegir_modelo_chat([]) is None
+
+    def test_respeta_el_orden_entre_modelos_validos(self):
+        assert api_clients.elegir_modelo_chat(["a-instruct", "b-instruct"]) == "a-instruct"

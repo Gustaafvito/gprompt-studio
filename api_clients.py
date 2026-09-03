@@ -617,7 +617,7 @@ class OllamaProvider(OpenAICompatibleProvider):
             with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=3) as r:
                 data = json.loads(r.read())
             modelos = [m["name"] for m in data.get("models", [])]
-            return modelos[0] if modelos else None
+            return elegir_modelo_chat(modelos)
         except Exception:
             return None
 
@@ -626,6 +626,32 @@ class OllamaProvider(OpenAICompatibleProvider):
         if not modelo:
             raise Exception("No se encontró Ollama corriendo o no tienes modelos instalados.")
         return super().completar(messages, temperature, max_tokens, model=modelo)
+
+
+# Modelos locales que NO sirven para redactar prompts. Los servidores locales
+# (LM Studio, Ollama) listan TODO lo que tengas descargado, y coger "el primero"
+# puede caer en un modelo de embeddings -> error incomprensible para el usuario.
+_TOKENS_NO_CHAT = ("embed", "embedding", "rerank", "reranker")
+# Visión: sí generan texto, pero describiendo imágenes; como cerebro son malos.
+# No se descartan (puede ser lo unico instalado), solo van al final.
+_TOKENS_VISION = ("vl-", "vl.", "-vl", "llava", "vision", "qwen2.5vl")
+
+
+def elegir_modelo_chat(modelos: list[str]) -> str | None:
+    """Mejor modelo para chatear de una lista de un servidor local.
+
+    Descarta los de embeddings/rerank (no pueden generar texto) y deja los de
+    vision para el final. Devuelve None si no queda ninguno usable.
+    """
+    if not modelos:
+        return None
+    utiles = [m for m in modelos
+              if not any(t in m.lower() for t in _TOKENS_NO_CHAT)]
+    if not utiles:
+        return None
+    normales = [m for m in utiles
+                if not any(t in m.lower() for t in _TOKENS_VISION)]
+    return (normales or utiles)[0]
 
 
 class LMStudioProvider(OpenAICompatibleProvider):
@@ -663,8 +689,7 @@ class LMStudioProvider(OpenAICompatibleProvider):
         return bool(self.listar_modelos())
 
     def _obtener_modelo_disponible(self) -> str | None:
-        modelos = self.listar_modelos()
-        return modelos[0] if modelos else None
+        return elegir_modelo_chat(self.listar_modelos())
 
     def completar(self, messages: list[dict], temperature: float = 0.75,
                   max_tokens: int = 900, model: str | None = None) -> str:
