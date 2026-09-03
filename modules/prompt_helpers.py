@@ -86,13 +86,59 @@ def extraer_pos_de_bloque(bloque: str) -> str:
     return p.strip(" \n*")
 
 
+# Lineas que son ECO de las instrucciones del system prompt, no prompt.
+# Los modelos LOCALES (LM Studio, Ollama) y los mas flojos tienden a repetir
+# las reglas que se les dan y a comentar su propio trabajo; sin filtrar, todo
+# eso acababa pegado en el prompt que copia el usuario. Detectado probando
+# LM Studio de punta a punta (sep-2026): salian dentro del POSITIVE lineas como
+# "(No generes NEGATIVE PROMPT - este modelo no lo soporta)" y
+# "- Limitaciones: Modelo muy pesado...".
+_PREFIJOS_ECO = ("•", "⚠️", "❌", "✅", "→", "- Limitaciones:", "Limitaciones:")
+_FRASES_ECO = (
+    "no generes negative",
+    "no lo soporta",
+    "idioma del prompt",
+    "caracteres totales",
+    "objetivo de longitud",
+    "este prompt se centra",
+    "formato obligatorio",
+)
+
+
+def quitar_eco_instrucciones(texto: str) -> str:
+    """Descarta las lineas que son instrucciones repetidas por el modelo.
+
+    Conservador a proposito: solo cae una linea si EMPIEZA por un marcador de
+    vineta/aviso o si contiene una frase inequivocamente de instruccion. Un
+    prompt de imagen normal no empieza por "•" ni habla de "caracteres totales".
+    """
+    if not texto:
+        return texto
+    limpias = []
+    for linea in texto.splitlines():
+        cruda = linea.strip()
+        if not cruda:
+            limpias.append(linea)
+            continue
+        if cruda.startswith(_PREFIJOS_ECO):
+            continue
+        bajo = cruda.lower()
+        # Solo se descarta por frase si la linea es CORTA: una frase larga que
+        # mencione algo parecido es mas probable que sea prompt de verdad.
+        if len(cruda) < 200 and any(f in bajo for f in _FRASES_ECO):
+            continue
+        limpias.append(linea)
+    return "\n".join(limpias).strip(" \n")
+
+
 def extraer_positive_de_texto(texto: str):
     """Extrae POSITIVE PROMPT de un string ya limpio (sin acceso a widgets)."""
     if "POSITIVE PROMPT:" in texto:
         bloque = texto.split("POSITIVE PROMPT:")[1]
         if "NEGATIVE PROMPT:" in bloque:
-            return bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*")
-        return bloque.strip(" \n*")
+            return quitar_eco_instrucciones(
+                bloque.split("NEGATIVE PROMPT:")[0].strip(" \n*"))
+        return quitar_eco_instrucciones(bloque.strip(" \n*"))
 
     if "PROMPT:" in texto:
         bloque = texto.split("PROMPT:")[1]
@@ -102,7 +148,7 @@ def extraer_positive_de_texto(texto: str):
         for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
             if sep in bloque:
                 bloque = bloque.split(sep)[0]
-        return bloque.strip(" \n*")
+        return quitar_eco_instrucciones(bloque.strip(" \n*"))
 
     marcas_neg = ["NEGATIVE PROMPT:", "NEGATIVE:", "\nNEGATIVE\n", "\nNEGATIVE ", "\nNEGATIVE:"]
     limpia = texto
@@ -113,7 +159,7 @@ def extraer_positive_de_texto(texto: str):
     for sep in ["\n1.", "\n2.", "\n3.", "\n──", "\n══"]:
         if sep in limpia:
             limpia = limpia.split(sep)[0]
-    limpia = limpia.strip(" \n*:")
+    limpia = quitar_eco_instrucciones(limpia.strip(" \n*:"))
     if limpia and len(limpia.strip()) > 5:
         return limpia
     return None
@@ -127,7 +173,7 @@ def extraer_negative_de_texto(texto: str):
             for sep in ["\n1.", "\n2.", "\n3.", "\n──"]:
                 if sep in bloque:
                     bloque = bloque.split(sep)[0]
-            return bloque.strip(" \n*:")
+            return quitar_eco_instrucciones(bloque.strip(" \n*:"))
     return None
 
 

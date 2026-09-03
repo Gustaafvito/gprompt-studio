@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from modules.prompt_helpers import (
+    quitar_eco_instrucciones,
     extraer_negative_de_texto,
     extraer_pos_de_bloque,
     extraer_positive_de_texto,
