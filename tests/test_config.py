@@ -6,6 +6,8 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import config
+
 
 def _ratios_en_orden_canonico(ratios, canon):
     """Devuelve True si `ratios` sigue el orden canónico: los que están en
@@ -385,3 +387,25 @@ def test_version_installer_coincide_con_config():
     assert m, "installer.iss sin #define MyAppVersion"
     assert m.group(1) == config.VERSION, (
         f"installer.iss={m.group(1)} pero config.VERSION={config.VERSION}")
+
+class TestOverrideDatosUsuario:
+    """data/ viaja DENTRO del .exe (solo lectura). Una copia en
+    ~/.arquitecto_prompts/data/ manda sobre la empaquetada, para poder añadir
+    modelos y estilos sin recompilar.
+    """
+
+    def test_override_del_usuario_gana(self, tmp_path, monkeypatch):
+        (tmp_path / "demo.json").write_text('{"quien": "usuario"}', encoding="utf-8")
+        monkeypatch.setattr(config, "_DATA_DIR_USUARIO", tmp_path)
+        assert config._load_json_data("demo.json") == {"quien": "usuario"}
+
+    def test_sin_override_usa_el_empaquetado(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(config, "_DATA_DIR_USUARIO", tmp_path)  # vacío
+        datos = config._load_json_data("estilos_grupos.json")
+        assert isinstance(datos, dict) and datos
+
+    def test_override_corrupto_no_rompe_la_app(self, tmp_path, monkeypatch):
+        (tmp_path / "estilos_grupos.json").write_text("{ esto no es json", encoding="utf-8")
+        monkeypatch.setattr(config, "_DATA_DIR_USUARIO", tmp_path)
+        datos = config._load_json_data("estilos_grupos.json")
+        assert isinstance(datos, dict) and datos  # cae al empaquetado

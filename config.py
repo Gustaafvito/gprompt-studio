@@ -21,8 +21,30 @@ import json as _json
 
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 
+# Copia EDITABLE por el usuario. Los datos empaquetados viajan DENTRO del .exe
+# (ver ('data','data') en gprompt-studio.spec), asi que son de solo lectura: sin
+# esto, tocar un JSON del repo no cambiaba nada en un .exe ya construido. Si el
+# usuario deja aqui un fichero con el mismo nombre, MANDA sobre el empaquetado,
+# y puede anadir modelos o estilos sin recompilar.
+_DATA_DIR_USUARIO = Path.home() / ".arquitecto_prompts" / "data"
+
+
 def _load_json_data(filename: str):
-    """Carga data/<filename> y devuelve el objeto deserializado."""
+    """Carga data/<filename> y devuelve el objeto deserializado.
+
+    Prioridad: copia del usuario (_DATA_DIR_USUARIO) -> copia empaquetada.
+    Si la del usuario existe pero esta corrupta se avisa y se usa la
+    empaquetada: una edicion a mano con una coma de mas no debe dejar la
+    aplicacion sin arrancar.
+    """
+    override = _DATA_DIR_USUARIO / filename
+    if override.is_file():
+        try:
+            with open(override, "r", encoding="utf-8") as f:
+                return _json.load(f)
+        except Exception as e:
+            print(f"[config] {filename}: override de usuario invalido ({e}); "
+                  f"se usa el empaquetado")
     path = _DATA_DIR / filename
     with open(path, "r", encoding="utf-8") as f:
         return _json.load(f)
