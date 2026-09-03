@@ -49,6 +49,18 @@ def _load_json_data(filename: str):
     with open(path, "r", encoding="utf-8") as f:
         return _json.load(f)
 
+# Catalogos de modelos por grupo. Viven en datos (no en codigo) para poder
+# anadir modelos sin tocar Python: con el override de _DATA_DIR_USUARIO basta
+# dejar modelos_grupos.json en ~/.arquitecto_prompts/data/ y no hay que
+# recompilar el .exe.
+_GRUPOS_DATA = _load_json_data("modelos_grupos.json")
+
+
+def _grupos(clave: str) -> list:
+    """Devuelve [(cabecera, [modelos...])] del catalogo `clave`."""
+    return [(cab, list(modelos)) for cab, modelos in _GRUPOS_DATA[clave]]
+
+
 # Mapa de constantes lazy → archivo en data/. Solo cuando se accede al
 # atributo por primera vez (vía __getattr__) se hace I/O y se cachea.
 _LAZY_DATASETS = {
@@ -205,255 +217,17 @@ ADN_A_PLATAFORMA = {
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE VÍDEO
 # ══════════════════════════════════════════════════════════════════
-GRUPOS_VIDEO = [
-    ("── SeaArt Oficiales ──", sorted([
-        "SeaArt Dance", "SeaArt Depth", "SeaArt Film Video", "SeaArt Film Video Boost",
-        "SeaArt Film Video Melody", "SeaArt Film Video Neo", "SeaArt Film Video Nova",
-        "SeaArt Film Video Pro",
-        "SeaArt Flash", "SeaArt Flow", "SeaArt Flow 2.0", "SeaArt Genesis Video",
-        "SeaArt Jump", "SeaArt Jump Go", "SeaArt Jump Lite",
-        "SeaArt Jump Pro", "SeaArt Lite", "SeaArt Magic", "SeaArt Magic Pro",
-        "SeaArt Magic Rise", "SeaArt Magic Star",
-        "SeaArt Muse",
-        "SeaArt Opera", "SeaArt Opera Lite", "SeaArt Plus", "SeaArt Pony",
-        "SeaArt Pony 1.1",
-        "SeaArt Sono Blink",
-        "SeaArt Sono Cast", "SeaArt Sono Epic", "SeaArt Sono Lite",
-        "SeaArt SonoVision", "SeaArt SonoVision 2.0", "SeaArt Sono W3",
-        "SeaArt Sono W3 Prime", "SeaArt Sono Wave", "SeaArt Sparkle",
-        "SeaArt Sparkle H3", "SeaArt Sparkle H3 Max", "SeaArt Stage",
-        "SeaArt Spicy Video 22", "SeaArt Spicy Video 27",
-        "SeaArt Turbo", "SeaArt Ultra", "SeaArt Ultra 2.0", "SeaArt Ultra 3.0",
-        "SeaArt Ultra 3.0 Turbo", "SeaArt Ultra Frame Video", "SeaArt Ultra Plus",
-        "SeaArt Ultra Pro",
-        "SeaArt Ultra2 Pro", "SeaArt UltraVision", "SeaArt Vibe",
-    ])),
-    ("── Kling ──", sorted([
-        "Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
-        "Kling 3.0 Turbo",
-    ])),
-    ("── Seedance ──", sorted([
-        "Seedance 1.5 PRO", "Seedance 2.0", "Seedance 2.0 Fast", "Seedance 2.0 Mini",
-        "Seedance 2.5",
-    ])),
-    ("── Nano Banana ──", sorted([
-        "Nano Banana Video", "Nano Banana Pro Video",
-    ])),
-    ("── Wan ──", sorted([
-        "Wan 2.2", "Wan 2.5", "Wan 2.6", "Wan 2.7", "Wan 3.0", "Wan 3.0 Prime",
-    ])),
-    ("── StarDream ──", sorted([
-        "StarDream 2.0", "StarDream 2.0 Fast", "StarDream 2.0 Mini", "StarDream 2.5",
-    ])),
-    ("── PixVerse ──", sorted([
-        "PixVerse V6",
-    ])),
-    ("── Hailuo ──", sorted([
-        "Hailuo 2.0", "Hailuo 2.3 Fast",
-    ])),
-    ("── MiniMax ──", sorted([
-        "MiniMax H3", "MiniMax H3 Max", "MiniMax H3 Open",
-    ])),
-    ("── Vidu ──", sorted([
-        "Vidu Q3 Pro", "Vidu Q3 Turbo",
-    ])),
-    # Reference-to-video: subes imágenes de personajes/objetos y etiquetas con
-    # @ref. El prompt describe la escena → flujo del modo 🎬 Cortometraje.
-    # "Drama" = cine/cortometraje · "Ad" = anuncios/publicidad.
-    ("── Reference ──", sorted([
-        "Ad Reference",
-        "Drama Reference",
-        "Vidu Ad Reference",
-        "Vidu Drama Reference",
-    ])),
-    ("── Grok ──", sorted([
-        "Grok Imagine Video", "Grok Imagine Video 1.5",
-    ])),
-    ("── Happy Horse ──", sorted([
-        "Happy Horse", "Happy Horse 1.1",
-    ])),
-    ("── Otros Motores ──", sorted([
-        "Sora2 Video", "Veo 3.1", "Gemini Omni Flash",
-    ])),
-]
+# Reference-to-video: subes imagenes de personajes/objetos y etiquetas
+# con @ref. El prompt describe la escena -> flujo del modo Cortometraje.
+# "Drama" = cine/cortometraje . "Ad" = anuncios/publicidad.
+GRUPOS_VIDEO = _grupos("video")
 # Familias en orden alfabético (case-insensitive), ignorando los ── decorativos.
 GRUPOS_VIDEO = sorted(GRUPOS_VIDEO, key=lambda g: g[0].strip("─ ").lower())
 
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE IMAGEN
 # ══════════════════════════════════════════════════════════════════
-GRUPOS_IMAGEN = [
-    ("── Anime / Ilustración ──", sorted([
-        "Counterfeit V3.0",
-        "Disney Pixar Cartoon type B",
-        "EasyDraw IL",
-        "Illustrious XL V3.6",
-        "Illustrious-xl-v3.5-vpred",
-        "Lily-Illustrious XL",
-        "majicMIX fantasy",
-        "MiaoMiao Harem V2.0",
-        "NoobAI-XL (NAI-XL)",
-        "Pie - Models 🥧",
-        "Pipi-iL-CG6.5",
-        "Pixel Illustrious",
-        "SDXL FaeTastic",
-        "T-Ponynai3 V6",
-        "Temporal Paradox Mix",
-        "WAI-Illustrious-SDXL",
-        "WAI-Pluralistic-Noob",
-    ])),
-    ("── Familia FLUX ──", sorted([
-        "FLUX.1 [dev]",
-        "FLUX.1-dev-fp8",
-        "FLUX.1D UltraReal",
-        "MASTER FLUX (LoRA merged with flux1-dev fp16)",
-        "Midjourney Mimic Neo",
-        "CyberRealistic Flux",
-        "Realistic Amateurs Flux",
-        "Real Vision - FLUX",
-        "True Real Vision - Flux",
-        "lyh_anime_Flux",
-        "Goddess Project (FLUX)",
-        "XE: Cosplay Flux",
-        "AnimePro FLUX",
-        "VNS - Horror World Flux",
-        "Moxie Fusion Flux",
-        "Nai3-Flux",
-        "Alpha_Fantasy_Flux",
-        "XE: Figure Flux",
-        "Disney Pixar Flux",
-        "FLUX.1 Krea dev",
-        "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]",
-        "FLUX.1-Kontext-dev",
-        "Nepotism",
-        "Splashed Flux",
-        "Real Dream Klein",
-    ])),
-    ("── Familia Z-Image ──", sorted([
-        "GLM-Image",
-        "Z Image Turbo",
-        "Z-Image-Base",
-    ])),
-    ("── GPT Image (OpenAI en SeaArt) ──", sorted([
-        "GPT Image 1.5",
-        "GPT Image 2",
-    ])),
-    ("── Sora (OpenAI en SeaArt) ──", sorted([
-        "Sora2 Image",
-    ])),
-    ("── Grok (xAI en SeaArt) ──", sorted([
-        "Grok Imagine Image",
-    ])),
-    ("── Higgsfield ──", sorted([
-        "Higgsfield Image",
-    ])),
-    ("── Krea (en SeaArt) ──", sorted([
-        "Krea-2",
-    ])),
-    ("── Kling Image (Kuaishou en SeaArt) ──", sorted([
-        "Kling 3.0 Image",
-        "Kling 3.0 Omni Image Editing",
-        "Kling O1 Image Model",
-    ])),
-    ("── Qwen (Alibaba en SeaArt) ──", sorted([
-        "Qwen-Image",
-        "Qwen Image 2.0 Pro",
-        "Qwen Image 3.0",
-        "Qwen Image 3.0 Pro",
-    ])),
-    ("── Ideogram (en SeaArt) ──", sorted([
-        "Ideogram 4",
-    ])),
-    ("── MAI Image (Microsoft en SeaArt) ──", sorted([
-        "MAI-Image-2.5",
-        "MAI-Image-2.5-Flash",
-    ])),
-    ("── Midjourney / Niji (en SeaArt) ──", sorted([
-        "Midjourney v8.1", "Niji 6", "Niji 7",
-    ])),
-    ("── Nano Banana ──", sorted([
-        "Nano Banana", "Nano Banana Pro Image", "Nano Banana 2",
-        "Nano Banana 2 Lite",
-    ])),
-    ("── Reve ──", sorted([
-        "Reve 2.0",
-    ])),
-    ("── Seedream (ByteDance en SeaArt) ──", sorted([
-        "Seedream 4.0",
-        "Seedream 4.5",
-        "Seedream 5.0 Lite",
-        "Seedream 5.0 Pro",
-    ])),
-    ("── Wan ──", sorted([
-        "Wan 2.2",
-        "Wan2.5 Image",
-        "Wan 2.6 Text to Image",
-        "Wan 2.7 Image",
-        "Wan 2.7 Image Pro",
-    ])),
-    ("── Realismo SD ──", sorted([
-        "Alchemist Mix (Illustrious Realism)",
-        "CyberRealistic",
-        "Deliberate",
-        "DreamShaper",
-        "DreamShaper XL",
-        "FantasticChix-HR",
-        "Illustrious Realism by Klaabu",
-        "Juggernaut XL",
-        "Juggernaut-XL v9 RunDiffusionPhoto v2",
-        "JuggernautXL Ragnarok",
-        "MajicMIX Realistic v6",
-        "Real Dream SDXL",
-        "RealVisXL V5.0 fp16",
-        "Realistic Vision V6.0 B1",
-        "Realities Edge XL Turbo V7",
-        "Prodigies",
-        "TFV.SDXL.BAKED",
-    ])),
-    ("── NSFW / Adultos ──", sorted([
-        "WildCardX-REAL",
-        "PornRealistic",
-        "Woman Realistic 3.1.0",
-        "REED_XXX_illustrious_SDXL",
-        "XE: Anime Hentai (FLUX)",
-    ])),
-    ("── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──", sorted([
-        "SeaArt Film",
-        "SeaArt Film V2.0",
-        "SeaArt Film Edit",
-        "SeaArt Film Edit 2.0",
-        "SeaArt Film Edit 3.0",
-        "SeaArt Furry XL V1.0",
-        "SeaArt Story",
-        "SeaArt Story 2.0",
-        "SeaArt Story Edit",
-        "SeaArt Fusion",
-        "SeaArt Genesis",
-        "SeaArt Ultra Edit",
-    ])),
-    ("── SeaArt Oficiales ──", sorted([
-        "FLUX.2 [Klein]",
-        "Luma Uni-1 Image",
-        "Luma Uni-1.1 Image",
-        "SeaArt Infinity",
-        "SeaArt Infinity V2.0",
-        "SeaArt Realism",
-    ])),
-    ("── Stable Diffusion 3.5 ──", sorted([
-        "SD 3.5 Large",
-        "SD 3.5 Medium",
-        "SD 3.5 Large Turbo",
-    ])),
-    ("── Estilos Únicos SD ──", sorted([
-        "Inkpunk Diffusion",
-        "Arcane Diffusion",
-        "Cyberpunk Anime Diffusion",
-        "Robo-Diffusion",
-        "anima_pencil-XL",
-        "Hollie Mengert Illustration",
-        "Fred Herzog Photography Style",
-    ])),
-]
+GRUPOS_IMAGEN = _grupos("imagen")
 
 # ══════════════════════════════════════════════════════════════════
 # RUTA COMFYUI Y AUTO-DISCOVERY DE MODELOS
@@ -1410,14 +1184,7 @@ def aplicar_autodiscovery_comfy() -> int:
 # ══════════════════════════════════════════════════════════════════
 # MODELOS DE AUDIO
 # ══════════════════════════════════════════════════════════════════
-GRUPOS_AUDIO = [
-    ("── Motores Externos ──", sorted([
-        "Suno v5.5", "Suno v5", "Suno v4.5", "Suno v4",
-    ])),
-    ("── SeaArt Audio ──", sorted([
-        "Minimax Music 2.6", "Minimax Music 2.5", "Mureka V9", "SeaArt MusicGo",
-    ])),
-]
+GRUPOS_AUDIO = _grupos("audio")
 
 def _lista_plana(grupos):
     r = []
@@ -1508,72 +1275,16 @@ MODELOS_IMAGEN_FLAT = _lista_plana(GRUPOS_IMAGEN_VIGENTES)     # lo que se MUEST
 # ══════════════════════════════════════════════════════════════════
 
 # Modelos exclusivos de Magnific (anteriormente Freepik AI, rebrand abril 2026)
-GRUPOS_MAGNIFIC_IMAGEN = [
-    ("── Auto / Sugerido ──", [
-        "Auto (Sugerencias)",
-    ]),
-    ("── OpenAI GPT ──", sorted([
-        "GPT 2",
-        "GPT 1.5 - High",
-        "GPT 1.5",
-        "GPT 1 - HQ",
-        "GPT",
-    ])),
-    ("── Familia Flux ──", sorted([
-        "Flux.2 Max",
-        "Flux.2 Pro",
-        "Flux.2 Flex",
-        "Flux.2 Klein",
-        "Flux.1 Kontext Max",
-        "Flux.1 Kontext Pro",
-        "Flux.1 Realism",
-        "Flux.1 Fast",
-        "Flux.1.1",
-        "Flux.1",
-    ])),
-    ("── Mystic ──", sorted([
-        "Mystic 2.5 Fluid",
-    ])),
-    ("── Google Imagen ──", sorted([
-        "Google Imagen 4 Ultra",
-        "Google Imagen 4",
-        "Google Imagen 3",
-    ])),
-    ("── Seedream ──", sorted([
-        "Seedream 5 Lite",
-        "Seedream 4.5",
-        "Seedream 4 4K",
-        "Seedream 4",
-    ])),
-    ("── Recraft ──", sorted([
-        "Recraft V4 Pro",
-        "Recraft V4",
-    ])),
-    ("── Otros Magnific ──", sorted([
-        "Z-Image",
-        "Qwen",
-        "Grok",
-        "Classic",
-        "Classic Fast",
-    ])),
-]
+GRUPOS_MAGNIFIC_IMAGEN = _grupos("magnific_imagen")
 MODELOS_MAGNIFIC_IMAGEN_FLAT = _lista_plana(GRUPOS_MAGNIFIC_IMAGEN)
 
 # Modelos OpenAI/ChatGPT oficial (DALL-E retirado mayo 2026)
 # Solo familia GPT Image actualmente activa en la API oficial.
-GRUPOS_DALLE_IMAGEN = [
-    ("── ChatGPT / GPT Image (OpenAI oficial) ──", sorted([
-        "GPT Image 1.5", "GPT Image 2",
-    ])),
-]
+GRUPOS_DALLE_IMAGEN = _grupos("dalle_imagen")
 MODELOS_DALLE_IMAGEN_FLAT = _lista_plana(GRUPOS_DALLE_IMAGEN)
 
 # Grok (xAI) — plataforma propia (alta ago-2026 a petición del usuario).
-GRUPOS_GROK_IMAGEN = [
-    ("── Grok (xAI) ──", sorted([
-        "Grok Imagen",
-    ])),
-]
+GRUPOS_GROK_IMAGEN = _grupos("grok_imagen")
 MODELOS_GROK_IMAGEN_FLAT = _lista_plana(GRUPOS_GROK_IMAGEN)
 
 # Higgsfield — plataforma propia (alta sep-2026). SOLO MAPEADA: el usuario aún
@@ -1583,14 +1294,7 @@ MODELOS_GROK_IMAGEN_FLAT = _lista_plana(GRUPOS_GROK_IMAGEN)
 # terceros que revende (Nano Banana, GPT Image, Seedream, FLUX, Recraft) NO se
 # duplican aquí: ya están en sus plataformas/grupos. OJO: "Higgsfield Image"
 # sigue en el grupo Higgsfield de SeaArt (SeaArt lo revende), igual que Grok.
-GRUPOS_HIGGSFIELD_IMAGEN = [
-    ("── Higgsfield (Soul) ──", sorted([
-        "Higgsfield Soul",
-        "Higgsfield Soul 2.0",
-        "Higgsfield Soul Cinema",
-        "Higgsfield Popcorn",
-    ])),
-]
+GRUPOS_HIGGSFIELD_IMAGEN = _grupos("higgsfield_imagen")
 MODELOS_HIGGSFIELD_IMAGEN_FLAT = _lista_plana(GRUPOS_HIGGSFIELD_IMAGEN)
 
 # Mapeo plataforma -> lista de modelos (para imagen)

@@ -1,0 +1,535 @@
+{
+ "_comentario": "Catalogo de modelos por grupo. Antes vivia en config.py como literales Python. Formato: clave -> lista de [cabecera, [modelos...]]. Para anadir un modelo basta editarlo aqui (y darle su ficha en model_specs_*.json). Dejando una copia de este fichero en ~/.arquitecto_prompts/data/ los cambios se aplican SIN recompilar el .exe.",
+ "video": [
+  [
+   "── Grok ──",
+   [
+    "Grok Imagine Video",
+    "Grok Imagine Video 1.5"
+   ]
+  ],
+  [
+   "── Hailuo ──",
+   [
+    "Hailuo 2.0",
+    "Hailuo 2.3 Fast"
+   ]
+  ],
+  [
+   "── Happy Horse ──",
+   [
+    "Happy Horse",
+    "Happy Horse 1.1"
+   ]
+  ],
+  [
+   "── Kling ──",
+   [
+    "Kling 01 Video Model",
+    "Kling 2.6",
+    "Kling 3.0",
+    "Kling 3.0 Omni",
+    "Kling 3.0 Turbo"
+   ]
+  ],
+  [
+   "── MiniMax ──",
+   [
+    "MiniMax H3",
+    "MiniMax H3 Max",
+    "MiniMax H3 Open"
+   ]
+  ],
+  [
+   "── Nano Banana ──",
+   [
+    "Nano Banana Pro Video",
+    "Nano Banana Video"
+   ]
+  ],
+  [
+   "── Otros Motores ──",
+   [
+    "Gemini Omni Flash",
+    "Sora2 Video",
+    "Veo 3.1"
+   ]
+  ],
+  [
+   "── PixVerse ──",
+   [
+    "PixVerse V6"
+   ]
+  ],
+  [
+   "── Reference ──",
+   [
+    "Ad Reference",
+    "Drama Reference",
+    "Vidu Ad Reference",
+    "Vidu Drama Reference"
+   ]
+  ],
+  [
+   "── SeaArt Oficiales ──",
+   [
+    "SeaArt Dance",
+    "SeaArt Depth",
+    "SeaArt Film Video",
+    "SeaArt Film Video Boost",
+    "SeaArt Film Video Melody",
+    "SeaArt Film Video Neo",
+    "SeaArt Film Video Nova",
+    "SeaArt Film Video Pro",
+    "SeaArt Flash",
+    "SeaArt Flow",
+    "SeaArt Flow 2.0",
+    "SeaArt Genesis Video",
+    "SeaArt Jump",
+    "SeaArt Jump Go",
+    "SeaArt Jump Lite",
+    "SeaArt Jump Pro",
+    "SeaArt Lite",
+    "SeaArt Magic",
+    "SeaArt Magic Pro",
+    "SeaArt Magic Rise",
+    "SeaArt Magic Star",
+    "SeaArt Muse",
+    "SeaArt Opera",
+    "SeaArt Opera Lite",
+    "SeaArt Plus",
+    "SeaArt Pony",
+    "SeaArt Pony 1.1",
+    "SeaArt Sono Blink",
+    "SeaArt Sono Cast",
+    "SeaArt Sono Epic",
+    "SeaArt Sono Lite",
+    "SeaArt Sono W3",
+    "SeaArt Sono W3 Prime",
+    "SeaArt Sono Wave",
+    "SeaArt SonoVision",
+    "SeaArt SonoVision 2.0",
+    "SeaArt Sparkle",
+    "SeaArt Sparkle H3",
+    "SeaArt Sparkle H3 Max",
+    "SeaArt Spicy Video 22",
+    "SeaArt Spicy Video 27",
+    "SeaArt Stage",
+    "SeaArt Turbo",
+    "SeaArt Ultra",
+    "SeaArt Ultra 2.0",
+    "SeaArt Ultra 3.0",
+    "SeaArt Ultra 3.0 Turbo",
+    "SeaArt Ultra Frame Video",
+    "SeaArt Ultra Plus",
+    "SeaArt Ultra Pro",
+    "SeaArt Ultra2 Pro",
+    "SeaArt UltraVision",
+    "SeaArt Vibe"
+   ]
+  ],
+  [
+   "── Seedance ──",
+   [
+    "Seedance 1.5 PRO",
+    "Seedance 2.0",
+    "Seedance 2.0 Fast",
+    "Seedance 2.0 Mini",
+    "Seedance 2.5"
+   ]
+  ],
+  [
+   "── StarDream ──",
+   [
+    "StarDream 2.0",
+    "StarDream 2.0 Fast",
+    "StarDream 2.0 Mini",
+    "StarDream 2.5"
+   ]
+  ],
+  [
+   "── Vidu ──",
+   [
+    "Vidu Q3 Pro",
+    "Vidu Q3 Turbo"
+   ]
+  ],
+  [
+   "── Wan ──",
+   [
+    "Wan 2.2",
+    "Wan 2.5",
+    "Wan 2.6",
+    "Wan 2.7",
+    "Wan 3.0",
+    "Wan 3.0 Prime"
+   ]
+  ]
+ ],
+ "imagen": [
+  [
+   "── Anime / Ilustración ──",
+   [
+    "Counterfeit V3.0",
+    "Disney Pixar Cartoon type B",
+    "EasyDraw IL",
+    "Illustrious XL V3.6",
+    "Illustrious-xl-v3.5-vpred",
+    "Lily-Illustrious XL",
+    "majicMIX fantasy",
+    "MiaoMiao Harem V2.0",
+    "NoobAI-XL (NAI-XL)",
+    "Pie - Models 🥧",
+    "Pipi-iL-CG6.5",
+    "Pixel Illustrious",
+    "SDXL FaeTastic",
+    "T-Ponynai3 V6",
+    "Temporal Paradox Mix",
+    "WAI-Illustrious-SDXL",
+    "WAI-Pluralistic-Noob"
+   ]
+  ],
+  [
+   "── Estilos Únicos SD ──",
+   [
+    "anima_pencil-XL",
+    "Arcane Diffusion",
+    "Cyberpunk Anime Diffusion",
+    "Fred Herzog Photography Style",
+    "Hollie Mengert Illustration",
+    "Inkpunk Diffusion",
+    "Robo-Diffusion"
+   ]
+  ],
+  [
+   "── Familia FLUX ──",
+   [
+    "Alpha_Fantasy_Flux",
+    "AnimePro FLUX",
+    "CyberRealistic Flux",
+    "Disney Pixar Flux",
+    "Flux 1.Dev UNLOCKED fp_16 & fp_8 [GGUF]",
+    "FLUX.1 [dev]",
+    "FLUX.1 Krea dev",
+    "FLUX.1-dev-fp8",
+    "FLUX.1-Kontext-dev",
+    "FLUX.1D UltraReal",
+    "Goddess Project (FLUX)",
+    "lyh_anime_Flux",
+    "MASTER FLUX (LoRA merged with flux1-dev fp16)",
+    "Midjourney Mimic Neo",
+    "Moxie Fusion Flux",
+    "Nai3-Flux",
+    "Nepotism",
+    "Real Dream Klein",
+    "Real Vision - FLUX",
+    "Realistic Amateurs Flux",
+    "Splashed Flux",
+    "True Real Vision - Flux",
+    "VNS - Horror World Flux",
+    "XE: Cosplay Flux",
+    "XE: Figure Flux"
+   ]
+  ],
+  [
+   "── Familia Z-Image ──",
+   [
+    "GLM-Image",
+    "Z Image Turbo",
+    "Z-Image-Base"
+   ]
+  ],
+  [
+   "── GPT Image (OpenAI en SeaArt) ──",
+   [
+    "GPT Image 1.5",
+    "GPT Image 2"
+   ]
+  ],
+  [
+   "── Grok (xAI en SeaArt) ──",
+   [
+    "Grok Imagine Image"
+   ]
+  ],
+  [
+   "── Higgsfield ──",
+   [
+    "Higgsfield Image"
+   ]
+  ],
+  [
+   "── Ideogram (en SeaArt) ──",
+   [
+    "Ideogram 4"
+   ]
+  ],
+  [
+   "── Kling Image (Kuaishou en SeaArt) ──",
+   [
+    "Kling 3.0 Image",
+    "Kling 3.0 Omni Image Editing",
+    "Kling O1 Image Model"
+   ]
+  ],
+  [
+   "── Krea (en SeaArt) ──",
+   [
+    "Krea-2"
+   ]
+  ],
+  [
+   "── MAI Image (Microsoft en SeaArt) ──",
+   [
+    "MAI-Image-2.5",
+    "MAI-Image-2.5-Flash"
+   ]
+  ],
+  [
+   "── Midjourney / Niji (en SeaArt) ──",
+   [
+    "Midjourney v8.1",
+    "Niji 6",
+    "Niji 7"
+   ]
+  ],
+  [
+   "── Nano Banana ──",
+   [
+    "Nano Banana",
+    "Nano Banana 2",
+    "Nano Banana 2 Lite",
+    "Nano Banana Pro Image"
+   ]
+  ],
+  [
+   "── NSFW / Adultos ──",
+   [
+    "PornRealistic",
+    "REED_XXX_illustrious_SDXL",
+    "WildCardX-REAL",
+    "Woman Realistic 3.1.0",
+    "XE: Anime Hentai (FLUX)"
+   ]
+  ],
+  [
+   "── Qwen (Alibaba en SeaArt) ──",
+   [
+    "Qwen Image 2.0 Pro",
+    "Qwen Image 3.0",
+    "Qwen Image 3.0 Pro",
+    "Qwen-Image"
+   ]
+  ],
+  [
+   "── Realismo SD ──",
+   [
+    "Alchemist Mix (Illustrious Realism)",
+    "CyberRealistic",
+    "Deliberate",
+    "DreamShaper",
+    "DreamShaper XL",
+    "FantasticChix-HR",
+    "Illustrious Realism by Klaabu",
+    "Juggernaut XL",
+    "Juggernaut-XL v9 RunDiffusionPhoto v2",
+    "JuggernautXL Ragnarok",
+    "MajicMIX Realistic v6",
+    "Prodigies",
+    "Real Dream SDXL",
+    "Realistic Vision V6.0 B1",
+    "Realities Edge XL Turbo V7",
+    "RealVisXL V5.0 fp16",
+    "TFV.SDXL.BAKED"
+   ]
+  ],
+  [
+   "── Reve ──",
+   [
+    "Reve 2.0"
+   ]
+  ],
+  [
+   "── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──",
+   [
+    "SeaArt Film",
+    "SeaArt Film Edit",
+    "SeaArt Film Edit 2.0",
+    "SeaArt Film Edit 3.0",
+    "SeaArt Film V2.0",
+    "SeaArt Furry XL V1.0",
+    "SeaArt Fusion",
+    "SeaArt Genesis",
+    "SeaArt Story",
+    "SeaArt Story 2.0",
+    "SeaArt Story Edit",
+    "SeaArt Ultra Edit"
+   ]
+  ],
+  [
+   "── SeaArt Oficiales ──",
+   [
+    "FLUX.2 [Klein]",
+    "Luma Uni-1 Image",
+    "Luma Uni-1.1 Image",
+    "SeaArt Infinity",
+    "SeaArt Infinity V2.0",
+    "SeaArt Realism"
+   ]
+  ],
+  [
+   "── Seedream (ByteDance en SeaArt) ──",
+   [
+    "Seedream 4.0",
+    "Seedream 4.5",
+    "Seedream 5.0 Lite",
+    "Seedream 5.0 Pro"
+   ]
+  ],
+  [
+   "── Sora (OpenAI en SeaArt) ──",
+   [
+    "Sora2 Image"
+   ]
+  ],
+  [
+   "── Stable Diffusion 3.5 ──",
+   [
+    "SD 3.5 Large",
+    "SD 3.5 Large Turbo",
+    "SD 3.5 Medium"
+   ]
+  ],
+  [
+   "── Wan ──",
+   [
+    "Wan 2.2",
+    "Wan 2.6 Text to Image",
+    "Wan 2.7 Image",
+    "Wan 2.7 Image Pro",
+    "Wan2.5 Image"
+   ]
+  ]
+ ],
+ "audio": [
+  [
+   "── Motores Externos ──",
+   [
+    "Suno v4",
+    "Suno v4.5",
+    "Suno v5",
+    "Suno v5.5"
+   ]
+  ],
+  [
+   "── SeaArt Audio ──",
+   [
+    "Minimax Music 2.5",
+    "Minimax Music 2.6",
+    "Mureka V9",
+    "SeaArt MusicGo"
+   ]
+  ]
+ ],
+ "magnific_imagen": [
+  [
+   "── Auto / Sugerido ──",
+   [
+    "Auto (Sugerencias)"
+   ]
+  ],
+  [
+   "── OpenAI GPT ──",
+   [
+    "GPT",
+    "GPT 1 - HQ",
+    "GPT 1.5",
+    "GPT 1.5 - High",
+    "GPT 2"
+   ]
+  ],
+  [
+   "── Familia Flux ──",
+   [
+    "Flux.1",
+    "Flux.1 Fast",
+    "Flux.1 Kontext Max",
+    "Flux.1 Kontext Pro",
+    "Flux.1 Realism",
+    "Flux.1.1",
+    "Flux.2 Flex",
+    "Flux.2 Klein",
+    "Flux.2 Max",
+    "Flux.2 Pro"
+   ]
+  ],
+  [
+   "── Mystic ──",
+   [
+    "Mystic 2.5 Fluid"
+   ]
+  ],
+  [
+   "── Google Imagen ──",
+   [
+    "Google Imagen 3",
+    "Google Imagen 4",
+    "Google Imagen 4 Ultra"
+   ]
+  ],
+  [
+   "── Seedream ──",
+   [
+    "Seedream 4",
+    "Seedream 4 4K",
+    "Seedream 4.5",
+    "Seedream 5 Lite"
+   ]
+  ],
+  [
+   "── Recraft ──",
+   [
+    "Recraft V4",
+    "Recraft V4 Pro"
+   ]
+  ],
+  [
+   "── Otros Magnific ──",
+   [
+    "Classic",
+    "Classic Fast",
+    "Grok",
+    "Qwen",
+    "Z-Image"
+   ]
+  ]
+ ],
+ "dalle_imagen": [
+  [
+   "── ChatGPT / GPT Image (OpenAI oficial) ──",
+   [
+    "GPT Image 1.5",
+    "GPT Image 2"
+   ]
+  ]
+ ],
+ "grok_imagen": [
+  [
+   "── Grok (xAI) ──",
+   [
+    "Grok Imagen"
+   ]
+  ]
+ ],
+ "higgsfield_imagen": [
+  [
+   "── Higgsfield (Soul) ──",
+   [
+    "Higgsfield Popcorn",
+    "Higgsfield Soul",
+    "Higgsfield Soul 2.0",
+    "Higgsfield Soul Cinema"
+   ]
+  ]
+ ]
+}

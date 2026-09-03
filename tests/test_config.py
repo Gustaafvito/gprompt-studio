@@ -409,3 +409,30 @@ class TestOverrideDatosUsuario:
         monkeypatch.setattr(config, "_DATA_DIR_USUARIO", tmp_path)
         datos = config._load_json_data("estilos_grupos.json")
         assert isinstance(datos, dict) and datos  # cae al empaquetado
+
+class TestCatalogosEnJSON:
+    """Los catálogos GRUPOS_* viven en data/modelos_grupos.json, no en código,
+    para poder añadir modelos sin tocar Python (y sin recompilar, combinándolo
+    con el override de _DATA_DIR_USUARIO).
+    """
+
+    CLAVES = ["video", "imagen", "audio", "magnific_imagen",
+              "dalle_imagen", "grok_imagen", "higgsfield_imagen"]
+
+    def test_el_json_tiene_todos_los_catalogos(self):
+        datos = config._load_json_data("modelos_grupos.json")
+        for clave in self.CLAVES:
+            assert clave in datos and datos[clave], clave
+
+    def test_grupos_devuelve_tuplas_cabecera_modelos(self):
+        grupos = config._grupos("video")
+        assert grupos and all(isinstance(g, tuple) and len(g) == 2 for g in grupos)
+        cab, modelos = grupos[0]
+        assert isinstance(cab, str) and isinstance(modelos, list)
+
+    def test_los_grupos_publicos_salen_del_json(self):
+        # Si alguien vuelve a hardcodear un catálogo en config.py, esto lo caza.
+        assert config.GRUPOS_VIDEO and config.GRUPOS_IMAGEN and config.GRUPOS_AUDIO
+        nombres_json = {m for _c, ms in config._grupos("imagen") for m in ms}
+        nombres_cfg = {m for _c, ms in config.GRUPOS_IMAGEN for m in ms}
+        assert nombres_cfg == nombres_json
