@@ -222,6 +222,14 @@ def main():
         except Exception as e:
             logger.debug(f"[silent] icono no aplicado: {e}")
         logger.info("App inicializada correctamente.")
+
+        # Bienvenida para quien entra sin ningun "cerebro" configurado: sin
+        # API key la app no puede generar nada y antes nadie se lo decia.
+        try:
+            from modules.bienvenida import mostrar_si_hace_falta
+            mostrar_si_hace_falta(app)
+        except Exception as e:
+            logger.debug(f"[silent] bienvenida: {e}")
         try:
             app.mainloop()
         except Exception as e:
