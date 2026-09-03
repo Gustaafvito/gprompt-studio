@@ -154,7 +154,14 @@
     "A24 Aesthetic",
     "Studio Ghibli Cinematography",
     "Tarantino Style",
-    "Denis Villeneuve Style"
+    "Denis Villeneuve Style",
+    "Anamorphic Widescreen",
+    "Technicolor",
+    "Silent Film",
+    "Documentary Still",
+    "Neo-Noir",
+    "Spaghetti Western",
+    "Symmetric Kubrick Framing"
   ],
   "🎯 Diseño Gráfico": [
     "Minimalista",
@@ -174,7 +181,14 @@
     "3D Icon",
     "Swiss Design",
     "Brutalist Web",
-    "Editorial Layout"
+    "Editorial Layout",
+    "Duotone",
+    "Isometric Illustration",
+    "Grid System",
+    "Album Cover",
+    "Logo Concept",
+    "Infographic Poster",
+    "Zine Layout"
   ],
   "🌑 Oscuro & Fantasy": [
     "Fantasy Épica",
@@ -192,7 +206,16 @@
     "Cosmic Horror / Lovecraftian",
     "Dieselpunk",
     "Biopunk",
-    "Apocalyptic / Wasteland"
+    "Apocalyptic / Wasteland",
+    "Eldritch",
+    "Vampiric",
+    "Witchcraft / Occult",
+    "Necromancer",
+    "Grimdark",
+    "Dark Fairy Tale",
+    "Infernal / Underworld",
+    "Haunted Mansion",
+    "Cryptid / Folklore"
   ],
   "✨ Estética & Mood": [
     "Pastel Aesthetic",
@@ -234,7 +257,17 @@
     "Streetwear Lookbook",
     "Y2K Fashion",
     "Vintage Glam",
-    "Punk Editorial"
+    "Punk Editorial",
+    "Beauty Campaign",
+    "Perfume Ad",
+    "Jewelry Editorial",
+    "Menswear Editorial",
+    "Sportswear Campaign",
+    "Bridal Editorial",
+    "Denim Campaign",
+    "Minimal Fashion",
+    "90s Fashion",
+    "Couture Detail"
   ],
   "👶 Infantil & Juguete": [
     "Children's Story",
@@ -252,7 +285,13 @@
     "Crayon Drawing",
     "Felt Craft",
     "Paper Cut-out",
-    "Action Figure / Blister"
+    "Action Figure / Blister",
+    "Pop-up Book",
+    "Brick Toy Style",
+    "Sticker Sheet",
+    "Nursery Art",
+    "Chibi",
+    "Puppet / Marionette"
   ],
   "🏗 Arquitectura & Espacios": [
     "Architecture",
@@ -263,7 +302,18 @@
     "Art Deco Interior",
     "Industrial Loft",
     "Tropical Modern",
-    "Japanese Tea House"
+    "Japanese Tea House",
+    "Scandinavian Interior",
+    "Minimalist Architecture",
+    "Gothic Cathedral",
+    "Parametric Architecture",
+    "Green / Biophilic Building",
+    "Cyberpunk Cityscape",
+    "Mediterranean Villa",
+    "Zen Garden",
+    "Futuristic Megastructure",
+    "Rustic Cabin",
+    "Blueprint Elevation"
   ],
   "📦 Mockups & Producto": [
     "Mockup / Phone Photo",
@@ -272,7 +322,20 @@
     "Coffee Shop Mockup",
     "Branding in the Wild",
     "Packaging Design",
-    "Book Cover Mockup"
+    "Book Cover Mockup",
+    "Product Hero Shot",
+    "Cosmetic Product",
+    "Food Packaging",
+    "Billboard Mockup",
+    "Poster on Wall",
+    "Business Card Mockup",
+    "Magazine Spread Mockup",
+    "Bottle Mockup",
+    "Tote Bag Mockup",
+    "Signage Mockup",
+    "Device Screen UI",
+    "Flat Lay Product",
+    "Label Design"
   ],
   "🏛 Otros estilos": [
     "Pinup Vintage",
@@ -281,6 +344,18 @@
     "Tattoo Neo Traditional",
     "Manuscript / Codex",
     "Cartography / Maps",
-    "Religious Iconography"
+    "Religious Iconography",
+    "Botanical Illustration",
+    "Scientific Diagram",
+    "Technical Blueprint",
+    "X-Ray Art",
+    "Stained Glass",
+    "Woodcut / Linocut",
+    "Silhouette Art",
+    "Vintage Advertisement",
+    "Propaganda Poster",
+    "Heraldry / Coat of Arms",
+    "Alchemical Illustration",
+    "Ex Libris"
   ]
 }
