@@ -2764,5 +2764,228 @@
     "limitaciones": "Ficha derivada de los badges de la tarjeta del catalogo SeaArt (duracion/resolucion/audio/modo). Duraciones, ratios y prompt negativo por CONFIRMAR en el panel de generacion.",
     "vigente": true,
     "best_for_en": "MiniMax H3 Open (via SeaArt): open variant, up to 15s and 4K, with references."
+  },
+  "Runway Gen-4 Turbo": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Runway Gen-4 Turbo (via Pollo AI): motor de Runway, ultima generacion. Text-to-Video e Image-to-Video, movimiento coherente y control de camara. Lenguaje natural.",
+    "best_for_en": "Runway Gen-4 Turbo (via Pollo AI): Runway latest-generation engine. Text-to-Video and Image-to-Video, coherent motion and camera control. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Runway Gen-3 Turbo": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Runway Gen-3 Turbo (via Pollo AI): generacion anterior de Runway, rapida y estable. Text-to-Video e Image-to-Video. Lenguaje natural.",
+    "best_for_en": "Runway Gen-3 Turbo (via Pollo AI): previous Runway generation, fast and stable. Text-to-Video and Image-to-Video. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Luma Ray 2": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": true,
+    "audio_desc": "Audio nativo generado.",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p",
+      "4K"
+    ],
+    "best_for": "Luma Ray 2 (Dream Machine, via Pollo AI): fisica y movimiento realistas, buena coherencia de escena. Text-to-Video e Image-to-Video. Lenguaje natural.",
+    "best_for_en": "Luma Ray 2 (Dream Machine, via Pollo AI): realistic physics and motion, good scene coherence. Text-to-Video and Image-to-Video. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Luma Ray 2 Flash": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Luma Ray 2 Flash (via Pollo AI): variante rapida y economica de Ray 2. Lenguaje natural.",
+    "best_for_en": "Luma Ray 2 Flash (via Pollo AI): fast, cheaper Ray 2 variant. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Pika 2.2": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Pika 2.2 (via Pollo AI): motor de Pika Labs, fuerte en efectos y transformaciones (Pikaffects). Text-to-Video e Image-to-Video. Lenguaje natural.",
+    "best_for_en": "Pika 2.2 (via Pollo AI): Pika Labs engine, strong at effects and transformations (Pikaffects). Text-to-Video and Image-to-Video. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Hunyuan Video": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p"
+    ],
+    "best_for": "Hunyuan Video (Tencent, via Pollo AI): modelo abierto de video. Lenguaje natural, buen movimiento de camara. Text-to-Video e Image-to-Video.",
+    "best_for_en": "Hunyuan Video (Tencent, via Pollo AI): open video model. Natural language, good camera movement. Text-to-Video and Image-to-Video.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "SkyReels V2": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "540p",
+      "720p"
+    ],
+    "best_for": "SkyReels V2 (via Pollo AI): modelo de video de formato largo orientado a narrativa y personajes. Lenguaje natural.",
+    "best_for_en": "SkyReels V2 (via Pollo AI): long-form video model aimed at narrative and characters. Natural language.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
+  },
+  "Higgsfield DOP": {
+    "nota": null,
+    "has_negative": false,
+    "has_audio": false,
+    "audio_desc": "",
+    "duraciones": [
+      "5s",
+      "10s"
+    ],
+    "ratios": [
+      "1:1",
+      "3:4",
+      "4:3",
+      "9:16",
+      "16:9"
+    ],
+    "max_chars": 2000,
+    "modos_gen": [
+      "720p",
+      "1080p"
+    ],
+    "best_for": "Higgsfield DOP: motor de video PROPIO de Higgsfield. OJO: se dirige por PRESETS de camara y VFX (dolly, crash zoom, bullet time...), no por prosa libre. El prompt describe la escena; el movimiento lo eliges en el preset. Incluye Cinema Studio y Soul ID (consistencia de personaje).",
+    "best_for_en": "Higgsfield DOP: Higgsfield own video engine. NOTE: driven by camera and VFX PRESETS (dolly, crash zoom, bullet time...), not free prose. The prompt describes the scene; motion comes from the preset. Includes Cinema Studio and Soul ID.",
+    "prompt_formula": "Sujeto + accion + movimiento de camara + estilo + iluminacion, en prosa natural. Sin prompt negativo.",
+    "prompt_ejemplo": "A cinematic tracking shot following a vintage car along a coastal road at sunset, golden light, smooth camera movement, atmospheric haze.",
+    "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real.",
+    "vigente": true
   }
 }

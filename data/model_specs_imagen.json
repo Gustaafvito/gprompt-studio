@@ -5039,5 +5039,105 @@
   "prompt_ejemplo": "A serene mountain lake at golden hour, crystal clear water reflecting snow-capped peaks, lone pine tree on rocky shore, dramatic cloud formations, cinematic lighting, photorealistic, 8K",
   "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars.",
   "best_for_en": "Qwen Image 3.0 Pro (Alibaba, on SeaArt): top-quality Pro variant of the 3.0 generation. Natural language, portraits and detailed scenes."
+ },
+ "Higgsfield Soul": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "modos_gen": [
+   "Preset",
+   "Custom"
+  ],
+  "best_for": "Higgsfield Soul: modelo de imagen PROPIO de Higgsfield, orientado a alta estetica (art-directed). Generacion guiada por PRESETS (General, TikTok Core, Instagram Aesthetics, Beauty, Mood, Camera Photo, Graphic Art) + lenguaje natural.",
+  "best_for_en": "Higgsfield Soul: Higgsfield own image model, high-aesthetic / art-directed. Preset-driven generation (General, TikTok Core, Instagram Aesthetics, Beauty, Mood, Camera Photo, Graphic Art) plus natural language.",
+  "prompt_formula": "Prosa natural: sujeto -> escena -> iluminacion -> camara. Elige antes un PRESET de estilo; el prompt describe el contenido. Sin prompt negativo.",
+  "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field.",
+  "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real."
+ },
+ "Higgsfield Soul 2.0": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "modos_gen": [
+   "Preset",
+   "Custom"
+  ],
+  "best_for": "Higgsfield Soul 2.0: control creativo completo: Moodboards, Soul HEX (paleta) e imagenes de referencia, ademas de los presets. Lenguaje natural.",
+  "best_for_en": "Higgsfield Soul 2.0: full creative control: Moodboards, Soul HEX (palette) and reference images, on top of presets. Natural language.",
+  "prompt_formula": "Prosa natural: sujeto -> escena -> iluminacion -> camara. Elige antes un PRESET de estilo; el prompt describe el contenido. Sin prompt negativo.",
+  "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field.",
+  "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real."
+ },
+ "Higgsfield Soul Cinema": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "modos_gen": [
+   "Preset",
+   "Custom"
+  ],
+  "best_for": "Higgsfield Soul Cinema: variante de la familia Soul para acabado CINEMATOGRAFICO (luz, grano y encuadre de cine). Lenguaje natural + presets.",
+  "best_for_en": "Higgsfield Soul Cinema: Soul family variant for CINEMATIC finish (film lighting, grain and framing). Natural language plus presets.",
+  "prompt_formula": "Prosa natural: sujeto -> escena -> iluminacion -> camara. Elige antes un PRESET de estilo; el prompt describe el contenido. Sin prompt negativo.",
+  "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field.",
+  "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real."
+ },
+ "Higgsfield Popcorn": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "modos_gen": [
+   "Preset",
+   "Custom"
+  ],
+  "best_for": "Higgsfield Popcorn: modelo de imagen propio de Higgsfield. Lenguaje natural.",
+  "best_for_en": "Higgsfield Popcorn: Higgsfield own image model. Natural language.",
+  "prompt_formula": "Prosa natural: sujeto -> escena -> iluminacion -> camara. Elige antes un PRESET de estilo; el prompt describe el contenido. Sin prompt negativo.",
+  "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field.",
+  "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real."
  }
 }

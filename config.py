@@ -1554,12 +1554,30 @@ GRUPOS_GROK_IMAGEN = [
 ]
 MODELOS_GROK_IMAGEN_FLAT = _lista_plana(GRUPOS_GROK_IMAGEN)
 
+# Higgsfield — plataforma propia (alta sep-2026). SOLO MAPEADA: el usuario aún
+# NO genera ahí (lo probará más adelante), así que las specs son mínimas y van
+# marcadas "por confirmar en panel". Modelos PROPIOS de Higgsfield: familia Soul
+# (alta estética / art-directed, con presets y Moodboards) + Popcorn. Los de
+# terceros que revende (Nano Banana, GPT Image, Seedream, FLUX, Recraft) NO se
+# duplican aquí: ya están en sus plataformas/grupos. OJO: "Higgsfield Image"
+# sigue en el grupo Higgsfield de SeaArt (SeaArt lo revende), igual que Grok.
+GRUPOS_HIGGSFIELD_IMAGEN = [
+    ("── Higgsfield (Soul) ──", sorted([
+        "Higgsfield Soul",
+        "Higgsfield Soul 2.0",
+        "Higgsfield Soul Cinema",
+        "Higgsfield Popcorn",
+    ])),
+]
+MODELOS_HIGGSFIELD_IMAGEN_FLAT = _lista_plana(GRUPOS_HIGGSFIELD_IMAGEN)
+
 # Mapeo plataforma -> lista de modelos (para imagen)
 MODELOS_POR_PLATAFORMA_IMAGEN = {
     "SeaArt / Tensor.Art":          MODELOS_IMAGEN_FLAT,
     "ComfyUI / Fooocus":            MODELOS_IMAGEN_COMFYUI_FLAT,
     "ChatGPT / GPT Image":           MODELOS_DALLE_IMAGEN_FLAT,
     "Grok (xAI)":                    MODELOS_GROK_IMAGEN_FLAT,
+    "Higgsfield":                    MODELOS_HIGGSFIELD_IMAGEN_FLAT,
     "Magnific":                      MODELOS_MAGNIFIC_IMAGEN_FLAT,
 }
 
@@ -1569,6 +1587,10 @@ MODELOS_POR_PLATAFORMA_VIDEO = {
     "ComfyUI / Fooocus":          MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI":                    [m for m in MODELOS_VIDEO_FLAT if "Kling" in m or m.startswith("──")],
     "Sora / Veo":                  ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
+    "Pollo AI":                    ["Runway Gen-4 Turbo", "Runway Gen-3 Turbo",
+                                    "Luma Ray 2", "Luma Ray 2 Flash", "Pika 2.2",
+                                    "Hunyuan Video", "SkyReels V2"],
+    "Higgsfield":                  ["Higgsfield DOP"],
 }
 
 # ── Ratios ────────────────────────────────────────────────────────
@@ -1975,6 +1997,7 @@ PLATAFORMAS_IMAGEN = {
     "ComfyUI / Fooocus":          "sd",
     "ChatGPT / GPT Image":         "natural",
     "Grok (xAI)":                  "natural",
+    "Higgsfield":                  "natural",
     "Magnific":                    "natural",
 }
 
@@ -1983,10 +2006,13 @@ PLATAFORMAS_VIDEO = {
     "ComfyUI / Fooocus": "sd",
     "Kling AI":         "natural",
     "Sora / Veo":       "natural",
-    # APAGADAS 2026-07-04 (sin modelos dados de alta; el usuario las
-    # reactivará con panel real cuando toque):
-    # "Pika / Luma":      "natural",
-    # "Runway Gen":       "natural",
+    # Agregadores dados de alta sep-2026 SOLO COMO MAPEO (el usuario aun no
+    # genera ahi). Pollo AI aporta los motores que no cubriamos por otra via
+    # (Runway, Luma, Pika, Hunyuan, SkyReels) -> hace innecesarias las
+    # plataformas "Pika / Luma" y "Runway Gen" que estaban apagadas.
+    "Pollo AI":         "natural",
+    "Higgsfield":       "natural",
+    # APAGADA 2026-07-04 (sin modelos dados de alta):
     # "Pixverse.ai":      "natural",
 }
 
@@ -2024,7 +2050,13 @@ MOTORES_VIDEO = {
     "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
                  "Kling 3.0 Turbo"],
     "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
-    # Apagadas (ver PLATAFORMAS_VIDEO): "Pika / Luma", "Runway Gen", "Pixverse.ai"
+    # Pollo AI: solo los motores que NO cubrimos ya por SeaArt (el resto de su
+    # catalogo -- Kling/Veo/Sora/Hailuo/Wan/Vidu/Seedance/PixVerse -- duplica).
+    "Pollo AI": ["Runway Gen-4 Turbo", "Runway Gen-3 Turbo", "Luma Ray 2",
+                 "Luma Ray 2 Flash", "Pika 2.2", "Hunyuan Video", "SkyReels V2"],
+    # Higgsfield: solo su motor PROPIO de video (DOP, control por presets).
+    "Higgsfield": ["Higgsfield DOP"],
+    # Apagada (ver PLATAFORMAS_VIDEO): "Pixverse.ai"
 }
 
 MOTORES_AUDIO = {

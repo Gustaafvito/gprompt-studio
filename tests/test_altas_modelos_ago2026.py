@@ -150,3 +150,43 @@ class TestAltasVideoSep2026:
     def test_familia_sono_w3_lleva_audio(self):
         for n in ("SeaArt Sono W3", "SeaArt Sono W3 Prime", "MiniMax H3"):
             assert config.get_model_specs(n)["has_audio"] is True, n
+
+class TestPlataformasMapeadasSep2026:
+    """Pollo AI y Higgsfield dados de alta SOLO COMO MAPEO (sep-2026): el usuario
+    todavia no genera ahi, pero quiere las plataformas listas.
+    """
+
+    SOUL = ["Higgsfield Soul", "Higgsfield Soul 2.0", "Higgsfield Soul Cinema",
+            "Higgsfield Popcorn"]
+    POLLO = ["Runway Gen-4 Turbo", "Runway Gen-3 Turbo", "Luma Ray 2",
+             "Luma Ray 2 Flash", "Pika 2.2", "Hunyuan Video", "SkyReels V2"]
+
+    def test_higgsfield_es_plataforma_de_imagen(self):
+        assert "Higgsfield" in config.PLATAFORMAS_IMAGEN
+        assert config.PLATAFORMAS_IMAGEN["Higgsfield"] == "natural"
+        assert "Higgsfield" in config.MODELOS_POR_PLATAFORMA_IMAGEN
+
+    def test_familia_soul_resuelve_specs(self):
+        for n in self.SOUL:
+            s = config.get_image_model_specs(n)
+            assert s is not None, n
+            # Soul es prosa natural guiada por presets, sin negativo.
+            assert s["is_natural"] is True and s["has_negative"] is False, n
+            assert n in config.MODELOS_POR_PLATAFORMA_IMAGEN["Higgsfield"], n
+
+    def test_pollo_es_plataforma_de_video(self):
+        assert config.PLATAFORMAS_VIDEO.get("Pollo AI") == "natural"
+        assert set(self.POLLO) <= set(config.MOTORES_VIDEO["Pollo AI"])
+
+    def test_motores_pollo_resuelven_specs(self):
+        for n in self.POLLO:
+            assert config.get_model_specs(n) is not None, n
+
+    def test_higgsfield_dop_es_video_propio(self):
+        assert config.MOTORES_VIDEO["Higgsfield"] == ["Higgsfield DOP"]
+        assert config.get_model_specs("Higgsfield DOP") is not None
+
+    def test_pollo_no_duplica_motores_de_seaart(self):
+        # Pollo solo lista lo que NO cubrimos ya por SeaArt (Kling/Veo/Wan/etc.).
+        for m in config.MOTORES_VIDEO["Pollo AI"]:
+            assert m not in config.MODELOS_VIDEO_FLAT, m
