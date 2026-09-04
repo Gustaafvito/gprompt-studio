@@ -562,13 +562,17 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     def disponible(self) -> bool:
         return bool(self.api_key) and self._cliente is not None
 
-    def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
-        if not self._cliente:
-            raise Exception("Proveedor no configurado (sin api key)")
-        modelo = model or self.model
-        logger.debug(f"OpenAICompatible: calling {modelo}")
+    # Cuanto se amplia el presupuesto al reintentar con un razonador, y hasta
+    # donde. Un modelo que "piensa" gasta esos tokens del mismo max_tokens: con
+    # el presupuesto normal se lo funde razonando y devuelve vacio.
+    _FACTOR_REINTENTO = 3
+    _TECHO_REINTENTO = 16000
+
+    def _llamar(self, messages, temperature, max_tokens, modelo):
+        """Una llamada. Devuelve (texto, finish_reason)."""
         res = self._cliente.chat.completions.create(
-            model=modelo, messages=messages, temperature=temperature, max_tokens=max_tokens,
+            model=modelo, messages=messages, temperature=temperature,
+            max_tokens=max_tokens,
         )
         usage = getattr(res, "usage", None)
         if usage is not None:
@@ -580,20 +584,39 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         if not getattr(res, "choices", None):
             raise Exception(f"{modelo}: respuesta sin choices (filtrada o vacía)")
         choice = res.choices[0]
-        content = choice.message.content or ""
+        return (choice.message.content or ""), (getattr(choice, "finish_reason", "") or "?")
+
+    def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
+        if not self._cliente:
+            raise Exception("Proveedor no configurado (sin api key)")
+        modelo = model or self.model
+        logger.debug(f"OpenAICompatible: calling {modelo}")
+        content, fr = self._llamar(messages, temperature, max_tokens, modelo)
+
+        if not content.strip() and fr == "length":
+            # RAZONADORES (deepseek-v4-pro, o3, deepseek-r1...): queman TODO el
+            # max_tokens "pensando" (reasoning_tokens == completion_tokens) y
+            # devuelven content VACÍO con HTTP 200. Auditoría 14-jul-2026: 3 de
+            # cada 4 llamadas con max_tokens=900.
+            #
+            # Antes se fallaba directamente y el usuario veía "reintenta o sube
+            # max_tokens" sin poder subirlo desde la UI. Ahora se reintenta UNA
+            # vez con presupuesto ampliado, que es exactamente lo que hacía
+            # falta. No se mantiene una lista de "modelos razonadores" porque
+            # envejece mal: se reacciona al síntoma, que es inequívoco.
+            ampliado = min(max_tokens * self._FACTOR_REINTENTO, self._TECHO_REINTENTO)
+            if ampliado > max_tokens:
+                logger.info(
+                    f"{modelo}: razonamiento agotó {max_tokens} tokens sin "
+                    f"responder; reintentando con {ampliado}")
+                content, fr = self._llamar(messages, temperature, ampliado, modelo)
+
         if not content.strip():
-            # Los modelos RAZONADORES (DeepSeek V4...) pueden quemar TODO el
-            # max_tokens "pensando" (reasoning_tokens == completion_tokens,
-            # finish_reason='length') y devolver content VACÍO con HTTP 200.
-            # Auditoría 14-jul-2026: pasaba en 3 de 4 llamadas con
-            # max_tokens=900. Devolver "" en silencio producía datasets y
-            # prompts inservibles; mejor fallar con diagnóstico claro (los
-            # callers con retry/fallback lo gestionan; la UI muestra el error).
-            fr = getattr(choice, "finish_reason", "") or "?"
             if fr == "length":
                 raise Exception(
-                    f"{modelo}: el razonamiento agotó max_tokens sin producir "
-                    f"respuesta — reintenta o sube max_tokens")
+                    f"{modelo}: el razonamiento agotó max_tokens (incluso al "
+                    f"reintentar) — usa un modelo no razonador, como "
+                    f"deepseek-v4-flash, o pide menos cantidad de golpe")
             raise Exception(f"{modelo}: respuesta vacía (finish_reason={fr})")
         return content
 
