@@ -340,14 +340,38 @@ def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
     hallados = {"imagen": set(), "video": set(), "audio": set()}
     for sub in _COMFY_SUBDIRS:
         carpeta = ruta_comfyui / "models" / sub
-        if not carpeta.exists():
+        # exists() normalmente devuelve False ante un error, pero solo se traga
+        # los de "no encontrado": un [WinError 448] "punto de montaje no
+        # confiable" LO PROPAGA y antes tumbaba el escaneo COMPLETO, dejando al
+        # usuario sin ningun modelo local. Visto 16 veces en el log del usuario
+        # sobre C:\IA\ComfyUI\models\checkpoints (jul-sep 2026), aunque la
+        # carpeta se lee bien desde una consola normal.
+        try:
+            if not carpeta.exists():
+                continue
+        except OSError as e:
+            logger.warning(f"ComfyUI: no se puede acceder a {carpeta}: {e}")
             continue
-        for f in carpeta.rglob("*"):
-            if f.is_file() and f.suffix.lower() in _COMFY_EXTS:
+
+        # rglob tambien puede reventar a media recorrida (un subdirectorio
+        # inaccesible, un enlace roto). Se recorre tolerando fallos para
+        # quedarse con lo que SI se pudo leer, en vez de con nada.
+        try:
+            for f in carpeta.rglob("*"):
+                try:
+                    if not (f.is_file() and f.suffix.lower() in _COMFY_EXTS):
+                        continue
+                except OSError as e:
+                    logger.debug(f"[silent] ComfyUI: {f}: {e}")
+                    continue
                 stem_l = f.stem.lower()
                 if any(_token_en_nombre(t, stem_l) for t in _COMFY_EXCLUIR_TOKENS):
                     continue
                 hallados[clasificar_modelo_comfy(f.stem)].add(f.stem)
+        except OSError as e:
+            logger.warning(
+                f"ComfyUI: recorrido de {carpeta} interrumpido ({e}); "
+                f"se conserva lo encontrado hasta ahora")
     return {k: sorted(v, key=str.lower) for k, v in hallados.items()}
 
 
