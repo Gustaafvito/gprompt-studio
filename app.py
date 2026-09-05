@@ -14,6 +14,7 @@ from modules.i18n import tr
 
 logger = logging.getLogger(__name__)
 
+import tkinter
 from tkinter import messagebox
 
 import pyperclip
@@ -89,6 +90,26 @@ class ArquitectoApp(
         "cliente", "ab", "json", "refinar", "workers", "prompts",
         "dashboard",
     )
+
+    def after(self, ms, func=None, *args):
+        """Como Tk.after, pero sin reventar si la ventana ya no existe.
+
+        Hay ~175 llamadas a `app.after(0, ...)` desde hilos de fondo: así es
+        como el trabajo pesado vuelve al hilo de Tk para pintar el resultado.
+        Si el usuario cierra la ventana ANTES de que ese trabajo termine, Tk
+        lanza "main thread is not in main loop" y el log se llena de un
+        traceback que no aporta nada: no hay nada que pintar porque ya no hay
+        ventana.
+
+        Visto en el log del usuario (04-sep-2026) justo después de que fallara
+        una generación, y reproducido al cortar un moodboard largo a mitad.
+        Se resuelve en un único sitio en vez de en las 175 llamadas.
+        """
+        try:
+            return super().after(ms, func, *args)
+        except (RuntimeError, tkinter.TclError) as e:
+            logger.debug(f"[silent] after() con la ventana ya cerrada: {e}")
+            return None
 
     def __getattr__(self, name):
         """Fallback: busca el atributo en los services registrados.
