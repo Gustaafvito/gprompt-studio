@@ -74,3 +74,45 @@ class TestLaAppLoImplementa:
         from app import ArquitectoApp
         doc = (ArquitectoApp.after.__doc__ or "").lower()
         assert "cerr" in doc or "ventana" in doc
+
+
+class TestDistingueVentanaVivaDeCerrada:
+    """Tragarse el error a secas deja fallos MUDOS.
+
+    Tk lanza el mismo "main thread is not in main loop" cuando la ventana ya
+    no existe (rutina al cerrar) y cuando sigue viva y el callback se pierde
+    (fallo de verdad: la interfaz deja de actualizarse). El 05-sep-2026 el
+    segundo caso costó media hora de diagnóstico porque iba a logger.debug.
+    """
+
+    def _widget(self, viva):
+        class _W:
+            def winfo_exists(self):
+                if viva is None:
+                    raise RuntimeError("ni eso responde")
+                return 1 if viva else 0
+        return _W()
+
+    def test_ventana_viva_avisa_en_warning(self, caplog):
+        import logging
+        from app import _log_after_descartado
+        with caplog.at_level(logging.WARNING):
+            _log_after_descartado(self._widget(True), RuntimeError("boom"))
+        assert any(r.levelno == logging.WARNING for r in caplog.records), \
+            "una actualización perdida con la ventana viva NO puede ser muda"
+        assert "perdido" in caplog.text.lower()
+
+    def test_ventana_cerrada_se_queda_en_debug(self, caplog):
+        import logging
+        from app import _log_after_descartado
+        with caplog.at_level(logging.DEBUG):
+            _log_after_descartado(self._widget(False), RuntimeError("boom"))
+        assert not any(r.levelno >= logging.WARNING for r in caplog.records), \
+            "cerrar la ventana es rutina: no debe ensuciar el log"
+
+    def test_si_winfo_exists_revienta_se_asume_cerrada(self, caplog):
+        import logging
+        from app import _log_after_descartado
+        with caplog.at_level(logging.DEBUG):
+            _log_after_descartado(self._widget(None), RuntimeError("boom"))
+        assert not any(r.levelno >= logging.WARNING for r in caplog.records)

@@ -556,8 +556,14 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         if api_key:
             if not OPENAI_DISPONIBLE:
                 raise ImportError("Paquete `openai` no instalado. Instala con: pip install openai")
+            # max_retries=0 A PROPOSITO: el SDK reintenta 2 veces por su
+            # cuenta y DeepSeekWorker.generar() otras 3, asi que se
+            # MULTIPLICAN: 3x3 = 9 llamadas de hasta LLM_TIMEOUT_S cada una =
+            # 27 minutos mirando "Generando..." antes de ver el error. El
+            # reintento se deja en un solo sitio (el worker), que ademas
+            # aplica backoff y lo deja en el log.
             self._cliente = OpenAI(api_key=api_key, base_url=base_url,
-                                   timeout=LLM_TIMEOUT_S)
+                                   timeout=LLM_TIMEOUT_S, max_retries=0)
 
     def disponible(self) -> bool:
         return bool(self.api_key) and self._cliente is not None
@@ -827,8 +833,10 @@ class ClaudeProvider(BaseLLMProvider):
         if api_key:
             try:
                 from anthropic import Anthropic
+                # max_retries=0: misma razon que en OpenAICompatibleProvider
+                # (el reintento vive en el worker, no aqui).
                 self._cliente = Anthropic(api_key=api_key,
-                                          timeout=LLM_TIMEOUT_S)
+                                          timeout=LLM_TIMEOUT_S, max_retries=0)
                 self._anthropic_disponible = True
             except ImportError:
                 self._anthropic_disponible = False

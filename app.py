@@ -50,6 +50,27 @@ from workers import (
 bus = EventBus()
 
 
+def _log_after_descartado(widget, error):
+    """Decide si un after() descartado es rutina o merece un aviso.
+
+    Tk lanza el mismo "main thread is not in main loop" en dos situaciones muy
+    distintas: la ventana ya no existe (normal al cerrar; no hay nada que
+    pintar) o la ventana SIGUE VIVA y el callback se ha perdido (un fallo de
+    verdad: el usuario se queda mirando una interfaz que no se actualiza).
+    Distinguirlas por el mensaje no es fiable; se pregunta por la ventana.
+    """
+    try:
+        viva = bool(widget.winfo_exists())
+    except Exception:
+        viva = False          # si ni eso responde, la ventana se fue
+    if viva:
+        logger.warning(
+            f"after() descartado con la ventana VIVA: se ha perdido una "
+            f"actualización de la interfaz ({error})")
+    else:
+        logger.debug(f"[silent] after() con la ventana ya cerrada: {error}")
+
+
 class ArquitectoApp(
     ctk.CTk,
     # UIBuildersMixin removido (A1 fase 2, sesión 14) → self.ui.* (UIBuildersService)
@@ -104,11 +125,16 @@ class ArquitectoApp(
         Visto en el log del usuario (04-sep-2026) justo después de que fallara
         una generación, y reproducido al cortar un moodboard largo a mitad.
         Se resuelve en un único sitio en vez de en las 175 llamadas.
+
+        OJO: tragarse el error a secas deja fallos MUDOS. Si la ventana sigue
+        viva, un after() descartado significa que se ha perdido una
+        actualización de la interfaz de verdad, y eso se avisa en el log
+        (05-sep-2026: media hora perdida diagnosticando justo eso).
         """
         try:
             return super().after(ms, func, *args)
         except (RuntimeError, tkinter.TclError) as e:
-            logger.debug(f"[silent] after() con la ventana ya cerrada: {e}")
+            _log_after_descartado(self, e)
             return None
 
     def __getattr__(self, name):
