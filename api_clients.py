@@ -8,6 +8,7 @@ Cada proveedor implementa la misma interfaz BaseLLMProvider:
 Para añadir un proveedor nuevo solo hay que crear su clase aquí.
 """
 import json
+import time
 import logging
 import os
 import re
@@ -534,6 +535,8 @@ usage_tracker = UsageTracker()
 # hasta 600 s (OpenAI/Anthropic) o indefinidamente (google-genai) y el
 # worker queda colgado con la UI en "generando…".
 LLM_TIMEOUT_S = 180
+# El catálogo solo llena un desplegable: si tarda, no se espera.
+TIMEOUT_CATALOGO_S = 5
 
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
@@ -583,6 +586,32 @@ class OpenAICompatibleProvider(BaseLLMProvider):
 
     def disponible(self) -> bool:
         return bool(self.api_key) and self._cliente is not None
+
+    def listar_modelos(self) -> list[str]:
+        """Catálogo EN VIVO del proveedor vía GET /v1/models ([] si no responde).
+
+        Todos los proveedores OpenAI-compatible publican este endpoint con la
+        misma forma, así que groq, mistral, together, fireworks, openrouter,
+        xai, deepseek y openai lo heredan de golpe.
+
+        Existe porque las listas escritas a mano se pudren: el 06-sep-2026 los
+        SEIS modelos ":free" de OpenRouter devolvían 404 (y era el segundo
+        rescate de esa misma lista), y Gemini iba dos generaciones por detrás.
+        Timeout corto y fallo silencioso: esto alimenta un desplegable, nunca
+        puede bloquear la interfaz.
+        """
+        if not (self.api_key and self.base_url):
+            return []
+        try:
+            req = urllib.request.Request(
+                self.base_url.rstrip("/") + "/models",
+                headers={"Authorization": f"Bearer {self.api_key}"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
+                data = json.loads(r.read())
+            return [m["id"] for m in data.get("data", []) if m.get("id")]
+        except Exception as e:
+            logger.debug(f"[silent] catálogo en vivo de {self.base_url}: {e}")
+            return []
 
     # Cuanto se amplia el presupuesto al reintentar con un razonador, y hasta
     # donde. Un modelo que "piensa" gasta esos tokens del mismo max_tokens: con
@@ -940,12 +969,45 @@ def ordenar_modelos_chat(modelos: list[str]) -> list[str]:
     return normales + vision
 
 
-def modelos_disponibles(provider_id: str) -> list[str]:
+# Catálogo en vivo cacheado: el desplegable puede abrirse muchas veces y no
+# tiene sentido preguntar al proveedor en cada una.
+_CACHE_CATALOGO: dict[str, tuple[float, list[str]]] = {}
+_CACHE_CATALOGO_TTL_S = 600
+
+
+def _catalogo_en_vivo(provider_id: str, api_key: str) -> list[str]:
+    """Modelos que el proveedor dice servir ahora mismo ([] si no se sabe)."""
+    ahora = time.time()
+    cacheado = _CACHE_CATALOGO.get(provider_id)
+    if cacheado and ahora - cacheado[0] < _CACHE_CATALOGO_TTL_S:
+        return cacheado[1]
+    try:
+        prov = get_provider(provider_id, api_key)
+        vivos = prov.listar_modelos() if hasattr(prov, "listar_modelos") else []
+    except Exception as e:
+        logger.debug(f"[silent] catálogo de {provider_id}: {e}")
+        vivos = []
+    if vivos:
+        _CACHE_CATALOGO[provider_id] = (ahora, vivos)
+    return vivos
+
+
+def modelos_disponibles(provider_id: str, api_key: str | None = None) -> list[str]:
     """Modelos elegibles de un proveedor, para poblar el desplegable.
 
     Los LOCALES se consultan EN VIVO (LM Studio /v1/models, Ollama /api/tags);
     si el servidor no responde se devuelve [] y la UI cae al comportamiento de
-    siempre. El resto devuelven su lista estatica de LLM_PROVIDERS.
+    siempre.
+
+    Para los de nube OpenAI-compatible, si hay `api_key` se consulta su
+    catálogo real y se usa para DEPURAR la lista curada: los IDs que el
+    proveedor ya no sirve se caen. Las listas escritas a mano se pudren —el
+    06-sep-2026 los seis modelos ":free" de OpenRouter daban 404— pero volcar
+    el catálogo entero tampoco vale: OpenRouter publica 430 modelos y eso no
+    es un desplegable, es un listín. Por eso se filtra en vez de sustituir.
+
+    Si NINGUNO de los curados sobrevive, entonces sí se cae al catálogo vivo:
+    peor un listín largo que un desplegable vacío.
     """
     info = LLM_PROVIDERS.get(provider_id, {})
     if provider_id in PROVEEDORES_LOCALES:
@@ -955,7 +1017,27 @@ def modelos_disponibles(provider_id: str) -> list[str]:
         except Exception as e:
             logger.debug(f"[silent] modelos de {provider_id}: {e}")
             return []
-    return list(info.get("modelos") or [])
+
+    estaticos = list(info.get("modelos") or [])
+    if not api_key or info.get("tipo") != "openai_compatible":
+        return estaticos
+
+    vivos = _catalogo_en_vivo(provider_id, api_key)
+    if not vivos:
+        return estaticos
+
+    conjunto = set(vivos)
+    validos = [m for m in estaticos if m in conjunto]
+    if validos:
+        if len(validos) != len(estaticos):
+            caidos = [m for m in estaticos if m not in conjunto]
+            logger.info(f"{provider_id}: {len(caidos)} modelo(s) del catálogo ya "
+                        f"no se sirven y se ocultan: {caidos}")
+        return validos
+
+    logger.warning(f"{provider_id}: NINGÚN modelo del catálogo curado sigue vivo; "
+                   f"se muestra el catálogo del proveedor ({len(vivos)} modelos)")
+    return ordenar_modelos_chat(sorted(vivos))
 
 
 def get_provider(provider_id: str, api_key: str, model: str | None = None) -> BaseLLMProvider:

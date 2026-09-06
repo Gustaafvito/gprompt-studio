@@ -241,7 +241,14 @@ class UIBuildersService:
                 info = _PROVS.get(pid, {})
                 # Los locales (LM Studio / Ollama) se consultan en vivo: su
                 # lista es lo que el usuario tenga cargado, no algo fijo.
-                modelos = list(modelos_disponibles(pid) or
+                # La key permite depurar la lista contra el catálogo real del
+                # proveedor: los modelos que ya no sirve no se ofrecen.
+                try:
+                    from api_clients import cargar_api_key as _key
+                    _k = _key(pid)
+                except Exception:
+                    _k = None
+                modelos = list(modelos_disponibles(pid, _k) or
                                ([info.get("model_default")] if info.get("model_default") else []))
                 actual = self.app.clients.get_model(pid)
                 if actual and actual not in modelos:
