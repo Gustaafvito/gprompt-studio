@@ -49,16 +49,17 @@ LLM_PROVIDERS = {
         "descripcion": "Calidad excelente para creatividad. Pago (desde $3/1M).",
         "url_obtener_key": "https://console.anthropic.com/settings/keys",
         "tipo": "anthropic",
-        # IDs oficiales julio 2026 (skill claude-api). Sonnet 4.6 como
-        # default: mejor equilibrio velocidad/inteligencia/precio.
-        # claude-fable-5 restaurado el 1-jul-2026 (suspendido 12-jun-2026
-        # por orden del gobierno EE.UU., ya levantada).
-        "model_default": "claude-sonnet-4-6",
+        # Actualizado el 06-sep-2026 a la familia Claude 5. SIN VERIFICAR
+        # contra la API: no hay key de Anthropic configurada. Se conserva la
+        # generación 4.x debajo por si una key antigua no alcanza la 5.
+        "model_default": "claude-sonnet-5",
         "modelos": [
-            "claude-fable-5",      # tope de gama Mythos-class ($10/$50)
-            "claude-opus-4-8",     # Opus actual ($5/$25)
-            "claude-sonnet-4-6",   # equilibrio ($3/$15)
+            "claude-fable-5-1",    # tope de gama ($10/$50)
+            "claude-opus-5",       # Opus actual ($5/$25)
+            "claude-sonnet-5",     # equilibrio ($2/$10) — default
             "claude-haiku-4-5",    # rápido y barato ($1/$5)
+            "claude-opus-4-8",     # generación anterior ($5/$25)
+            "claude-sonnet-4-6",   # ($3/$15)
         ],
         "is_paid": True,
     },
@@ -98,11 +99,18 @@ LLM_PROVIDERS = {
         "descripcion": "Gratis hasta 15rpm. Bueno para visión y prompts.",
         "url_obtener_key": "https://aistudio.google.com/apikey",
         "tipo": "google",
-        "model_default": "gemini-2.5-flash",
+        # Verificado el 06-sep-2026 contra la API con una key real: 3.8-flash
+        # respondió en 1.2s y siguió la instrucción al pie; 2.5-flash tardó
+        # 2.3s y ADEMÁS la malinterpretó. Se deja 2.5 al final como red de
+        # seguridad para keys antiguas.
+        "model_default": "gemini-3.8-flash",
         "modelos": [
-            "gemini-2.5-flash",   # rápido, gratis tier generoso
-            "gemini-2.5-pro",     # mayor calidad, límites más bajos
-            "gemini-2.0-flash",   # estable, buena relación velocidad/coste
+            "gemini-3.8-flash",       # el más rápido y certero (1.2s)
+            "gemini-3.5-flash",       # alternativa estable (1.4s)
+            "gemini-3.1-pro-preview", # máxima calidad, aún en preview
+            "gemini-flash-latest",    # alias: siempre el flash más nuevo
+            "gemini-2.5-flash",       # fallback para keys sin acceso a 3.x
+            "gemini-2.5-pro",
         ],
         "is_paid": False,
     },
@@ -192,17 +200,22 @@ LLM_PROVIDERS = {
     "openai": {
         "name": "OpenAI",
         "label": "💎 OpenAI",
-        "descripcion": "GPT-4o, GPT-4.1 y modelos de razonamiento o3/o4. Pago.",
+        "descripcion": "GPT-5.6 (Sol/Terra/Luna) y la generación 4.x. Pago.",
         "url_obtener_key": "https://platform.openai.com/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.openai.com/v1",
-        "model_default": "gpt-4o",
+        # Añadida la familia 5.x el 06-sep-2026 desde la documentación oficial.
+        # SIN VERIFICAR contra la API: no hay key de OpenAI configurada. Por eso
+        # se conserva toda la generación 4.x debajo, que llevaba meses en uso.
+        "model_default": "gpt-5.6",
         "modelos": [
-            "gpt-4o",          # flagship multimodal
+            "gpt-5.6",         # alias de Sol, el flagship actual
+            "gpt-5.6-terra",   # coste menor, rinde como 5.5
+            "gpt-5.6-luna",    # el más rápido y barato
+            "gpt-5.5",         # generación anterior, estable
+            "gpt-4o",          # flagship multimodal de la serie 4
             "gpt-4o-mini",     # económico, rápido
-            "gpt-4.1",         # contexto 1M, mejor en código/instrucciones
-            "gpt-4.1-mini",    # 4.1 económico
-            "gpt-4.1-nano",    # 4.1 ultra-rápido y barato
+            "gpt-4.1",         # contexto 1M, fuerte en código
             "o3",              # razonamiento máximo
             "o4-mini",         # razonamiento rápido
         ],
@@ -215,22 +228,22 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://openrouter.ai/keys",
         "tipo": "openai_compatible",
         "base_url": "https://openrouter.ai/api/v1",
-        # Modelo gratis y siempre disponible en OpenRouter. Antes era
-        # "deepseek/deepseek-chat" pero ese ID legacy devuelve 404.
-        "model_default": "meta-llama/llama-3.1-8b-instruct:free",
+        # OJO: el catálogo gratuito de OpenRouter SE PUDRE cada pocos meses.
+        # Historial de esta misma línea: "deepseek/deepseek-chat" murió y se
+        # cambió por "meta-llama/llama-3.1-8b-instruct:free", que el
+        # 06-sep-2026 también devolvía 404 — junto con los SEIS gratuitos que
+        # había aquí, comprobados uno a uno con la key del usuario. Si vuelve
+        # a fallar, la lista viva está en https://openrouter.ai/api/v1/models
+        # filtrando por los que acaban en ":free".
+        "model_default": "minimax/minimax-m3:free",
         "modelos": [
-            # Gratuitos (sufijo :free)
-            "meta-llama/llama-3.1-8b-instruct:free",
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "google/gemma-2-9b-it:free",
-            "mistralai/mistral-7b-instruct:free",
-            "qwen/qwen-2.5-72b-instruct:free",
-            "deepseek/deepseek-r1:free",
-            # De pago (acceso a los mejores modelos con una sola key)
+            # Gratuitos — verificados el 06-sep-2026
+            "minimax/minimax-m3:free",              # 1.5s, 1M de contexto
+            "nvidia/nemotron-3.5-lightning:free",   # 8.6s, 1M de contexto
+            # De pago (los mejores modelos con una sola key)
             "anthropic/claude-sonnet-4-6",
             "openai/gpt-4o",
             "google/gemini-2.5-pro",
-            "meta-llama/llama-3.3-70b-instruct",
         ],
         "is_paid": True,
     },
@@ -312,7 +325,10 @@ IMAGE_PROVIDERS = {
 # Tiene prioridad sobre PRECIOS_USD_1M cuando el modelo es conocido.
 # Claude: IDs y precios oficiales de Anthropic (junio 2026).
 PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
+    "claude-fable-5-1":          (10.00, 50.00),
     "claude-fable-5":            (10.00, 50.00),
+    "claude-opus-5":             (5.00, 25.00),
+    "claude-sonnet-5":           (2.00, 10.00),   # más barato que Sonnet 4.6
     "claude-opus-4-8":           (5.00, 25.00),
     "claude-opus-4-7":           (5.00, 25.00),
     "claude-opus-4-6":           (5.00, 25.00),
@@ -831,7 +847,12 @@ class GeminiProvider(BaseLLMProvider):
 # top_k devuelven 400): Opus 4.7/4.8 los tienen eliminados.
 # Fuente: doc oficial de migración de Anthropic (junio 2026).
 # claude-fable-5 (restaurado 1-jul-2026) rechaza sampling igual que Opus.
-MODELOS_CLAUDE_SIN_SAMPLING = ("claude-fable-5", "claude-opus-4-8", "claude-opus-4-7")
+# Modelos Claude que devuelven 400 si se les envía `temperature`. La familia 5
+# entera (Fable 5/5.1, Opus 5, Sonnet 5) eliminó el sampling, no solo Opus.
+# Añadidos el 06-sep-2026 al actualizar el catálogo: sin esto, poner
+# claude-sonnet-5 como default habría hecho fallar TODAS las llamadas.
+MODELOS_CLAUDE_SIN_SAMPLING = ("claude-fable-5", "claude-opus-5", "claude-sonnet-5",
+                               "claude-opus-4-8", "claude-opus-4-7")
 
 
 def modelo_acepta_temperature(modelo: str) -> bool:

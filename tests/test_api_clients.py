@@ -439,16 +439,26 @@ from api_clients import (  # noqa: E402
 class TestModelosClaude:
     def test_ids_oficiales_en_lista_seleccionable(self):
         modelos = LLM_PROVIDERS["claude"]["modelos"]
-        for mid in ("claude-fable-5", "claude-opus-4-8",
-                    "claude-sonnet-4-6", "claude-haiku-4-5"):
+        for mid in ("claude-fable-5-1", "claude-opus-5",
+                    "claude-sonnet-5", "claude-haiku-4-5"):
             assert mid in modelos
 
     def test_fable_restaurado_con_precio(self):
         # claude-fable-5 restaurado el 1-jul-2026 (suspendido 12-jun-2026)
         assert PRECIOS_USD_1M_MODELO["claude-fable-5"] == (10.00, 50.00)
 
-    def test_default_claude_es_sonnet_46(self):
-        assert LLM_PROVIDERS["claude"]["model_default"] == "claude-sonnet-4-6"
+    def test_default_claude_es_sonnet_5(self):
+        assert LLM_PROVIDERS["claude"]["model_default"] == "claude-sonnet-5"
+
+    def test_la_familia_5_no_acepta_temperature(self):
+        """Sonnet 5 / Opus 5 / Fable 5.1 devuelven 400 si se envía temperature.
+
+        Candado añadido el 06-sep-2026: al poner claude-sonnet-5 como default
+        faltaba meterlo en MODELOS_CLAUDE_SIN_SAMPLING, y eso habría hecho
+        fallar TODAS las llamadas a Claude con un 400.
+        """
+        for mid in ("claude-sonnet-5", "claude-opus-5", "claude-fable-5-1"):
+            assert modelo_acepta_temperature(mid) is False, mid
 
     def test_opus_no_acepta_temperature(self):
         # Opus 4.8 / 4.7 devuelven 400 si se envía temperature
@@ -508,7 +518,7 @@ class TestSetModel:
 
     def test_get_provider_sin_modelo_usa_default(self):
         p = get_provider("claude", "test-key")
-        assert p.model == "claude-sonnet-4-6"
+        assert p.model == "claude-sonnet-5"
 
 class TestMigracionDPAPI:
     """Las API keys en formato viejo (v0 en claro / v1 AES con clave MAC+usuario)
