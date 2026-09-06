@@ -561,12 +561,14 @@ class TestLMStudioProvider:
         assert prov.base_url == "http://localhost:1234/v1"
 
     def test_lista_los_modelos_cargados(self, monkeypatch):
+        api_clients._CACHE_LOCAL.clear()
         prov = api_clients.LMStudioProvider()
         monkeypatch.setattr(prov, "listar_modelos", lambda: ["qwen2.5-7b", "otro"])
         assert prov.disponible() is True
         assert prov._obtener_modelo_disponible() == "qwen2.5-7b"
 
     def test_sin_servidor_no_esta_disponible(self, monkeypatch):
+        api_clients._CACHE_LOCAL.clear()   # el sondeo local se cachea 20s
         prov = api_clients.LMStudioProvider()
         monkeypatch.setattr(prov, "listar_modelos", lambda: [])
         assert prov.disponible() is False

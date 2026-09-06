@@ -539,6 +539,7 @@ TRADUCCIONES = {
     '→ Versión {0}/{1}': '→ Version {0}/{1}',
     '⚠️ Selecciona EXACTAMENTE 2 cards para comparar (hay {0} marcadas)': '⚠️ Select EXACTLY 2 cards to compare ({0} selected)',
     '⚠️ {0}': '⚠️ {0}',
+    '💤 {0} no está abierto — ábrelo y carga un modelo (no necesita API key)': '💤 {0} is not running — open it and load a model (no API key needed)',
     '⚠️ {0} no tiene API key — abre 🔑 para configurar': '⚠️ {0} has no API key — open 🔑 to configure',
     '⚡ Pulse: generando {0} versiones (T={1:.1f} → T={2:.1f})...': '⚡ Pulse: generating {0} versions (T={1:.1f} → T={2:.1f})...',
     '✅ Aplicado: {0}': '✅ Applied: {0}',

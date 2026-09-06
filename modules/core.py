@@ -243,8 +243,17 @@ class CoreMixin:
         if hasattr(self.clients, "providers"):
             provider = self.clients.providers.get(pid)
             if not provider or not provider.disponible():
-                # Sin key — abrir wizard automáticamente
                 info = LLM_PROVIDERS.get(pid, {})
+                from api_clients import PROVEEDORES_LOCALES
+                if pid in PROVEEDORES_LOCALES:
+                    # LM Studio / Ollama no llevan API key: lo que falta es que
+                    # el programa esté abierto con un modelo cargado. Abrir el
+                    # wizard de keys aquí pedía una API que no existe.
+                    self.set_estado(
+                        tr('💤 {0} no está abierto — ábrelo y carga un modelo (no necesita API key)').format(
+                            info.get('name', pid)), P.TXT_AVISO)
+                    return
+                # Sin key — abrir wizard automáticamente
                 self.set_estado(tr('⚠️ {0} no tiene API key — abre 🔑 para configurar').format(info.get('name', pid)), P.TXT_AVISO)
                 self._cmd_configurar_api_keys(provider_focus=pid)
                 return

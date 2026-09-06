@@ -538,6 +538,37 @@ LLM_TIMEOUT_S = 180
 # El catálogo solo llena un desplegable: si tarda, no se espera.
 TIMEOUT_CATALOGO_S = 5
 
+# Sondeo de los servidores LOCALES (LM Studio / Ollama). 0.6s es de sobra para
+# localhost: o contesta al instante o no está. Con 2s, y como urlopen prueba
+# IPv6 y luego IPv4, un LM Studio apagado costaba 4s — y el refresco de iconos
+# del desplegable de cerebros pregunta a los 14 proveedores, así que cambiar de
+# cerebro congelaba la ventana 12 segundos ("No responde", 06-sep-2026).
+TIMEOUT_LOCAL_S = 0.6
+
+# Y el resultado se cachea: el refresco se dispara varias veces seguidas (al
+# cambiar de cerebro, al guardar una key, al abrir el desplegable).
+_CACHE_LOCAL: dict[str, tuple[float, list[str]]] = {}
+_CACHE_LOCAL_TTL_S = 20
+
+
+def _local_cacheado(clave: str, consultar):
+    """Ejecuta `consultar()` como mucho una vez cada _CACHE_LOCAL_TTL_S.
+
+    La clave es la URL del servidor, no el nombre del proveedor: si el usuario
+    cambia el puerto de LM Studio, una clave fija habria devuelto la respuesta
+    del puerto anterior.
+    """
+    ahora = time.time()
+    prev = _CACHE_LOCAL.get(clave)
+    if prev and ahora - prev[0] < _CACHE_LOCAL_TTL_S:
+        return prev[1]
+    try:
+        res = consultar() or []
+    except Exception:
+        res = []
+    _CACHE_LOCAL[clave] = (ahora, res)
+    return res
+
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
 
@@ -693,17 +724,12 @@ class OllamaProvider(OpenAICompatibleProvider):
         super().__init__(api_key="ollama", model=model, base_url=base_url)
 
     def disponible(self) -> bool:
-        try:
-            with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2) as r:
-                data = json.loads(r.read())
-                return bool(data.get("models", []))
-        except Exception:
-            return False
+        return bool(_local_cacheado(self.base_url or "ollama", self.listar_modelos))
 
     def listar_modelos(self) -> list[str]:
         """Modelos descargados en Ollama ([] si no responde)."""
         try:
-            with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=3) as r:
+            with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=TIMEOUT_LOCAL_S) as r:
                 data = json.loads(r.read())
             return [m["name"] for m in data.get("models", []) if m.get("name")]
         except Exception:
@@ -770,14 +796,14 @@ class LMStudioProvider(OpenAICompatibleProvider):
     def listar_modelos(self) -> list[str]:
         """Modelos cargados ahora mismo en LM Studio ([] si no responde)."""
         try:
-            with urllib.request.urlopen(self._raiz + "/models", timeout=2) as r:
+            with urllib.request.urlopen(self._raiz + "/models", timeout=TIMEOUT_LOCAL_S) as r:
                 data = json.loads(r.read())
             return [m["id"] for m in data.get("data", []) if m.get("id")]
         except Exception:
             return []
 
     def disponible(self) -> bool:
-        return bool(self.listar_modelos())
+        return bool(_local_cacheado(self._raiz, self.listar_modelos))
 
     def _obtener_modelo_disponible(self) -> str | None:
         return elegir_modelo_chat(self.listar_modelos())

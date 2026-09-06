@@ -162,15 +162,24 @@ class UIBuildersService:
             self.app._llm_providers_dict = LLM_PROVIDERS
 
             # Construir labels con indicador visual de estado:
-            # ✅ = key configurada (provider disponible)
-            # 🔒 = sin key (al pulsarlo se abre el wizard automáticamente)
+            # ✅ = listo para usar
+            # 🔒 = falta la API key (al pulsarlo se abre el wizard)
+            # 💤 = LOCAL y apagado. LM Studio y Ollama no llevan key: lo que
+            #      les falta es estar abiertos con un modelo cargado. Antes
+            #      salian con 🔒 y al pulsarlos se abria el wizard de keys
+            #      ofreciendo meter una API que no existe (reportado por el
+            #      usuario el 06-sep-2026).
             def _label_con_estado(pid: str, label: str) -> str:
                 try:
                     prov = self.app.clients.providers.get(pid) if hasattr(self.app.clients, "providers") else None
                     ok = bool(prov and prov.disponible())
                 except Exception:
                     ok = False
-                icon = "✅" if ok else "🔒"
+                if ok:
+                    icon = "✅"
+                else:
+                    from api_clients import PROVEEDORES_LOCALES
+                    icon = "💤" if pid in PROVEEDORES_LOCALES else "🔒"
                 return f"{icon} {tr(label)}"
 
             lista_llms = [_label_con_estado(pid, info["label"]) for pid, info in LLM_PROVIDERS.items()]
@@ -241,20 +250,43 @@ class UIBuildersService:
                 info = _PROVS.get(pid, {})
                 # Los locales (LM Studio / Ollama) se consultan en vivo: su
                 # lista es lo que el usuario tenga cargado, no algo fijo.
-                # La key permite depurar la lista contra el catálogo real del
-                # proveedor: los modelos que ya no sirve no se ofrecen.
-                try:
-                    from api_clients import cargar_api_key as _key
-                    _k = _key(pid)
-                except Exception:
-                    _k = None
-                modelos = list(modelos_disponibles(pid, _k) or
+                # PRIMERO lo instantáneo: la lista estática, sin tocar la red.
+                # Consultar el catálogo del proveedor aquí congelaba la ventana
+                # ("No responde", reportado el 06-sep-2026): esto corre en el
+                # hilo de Tk y una petición HTTP con timeout puede bloquearlo
+                # varios segundos.
+                modelos = list(modelos_disponibles(pid) or
                                ([info.get("model_default")] if info.get("model_default") else []))
                 actual = self.app.clients.get_model(pid)
                 if actual and actual not in modelos:
                     modelos.insert(0, actual)
                 self.app.combo_modelo_llm.configure(values=modelos)
                 self.app.combo_modelo_llm.set(actual or (modelos[0] if modelos else ""))
+
+                # DESPUÉS, en segundo plano, se depura contra el catálogo real
+                # del proveedor y se repinta si hay cambios. Si tarda o falla,
+                # el usuario ya tiene su lista y no se entera de nada.
+                def _depurar_en_segundo_plano(pid=pid, actual=actual):
+                    try:
+                        from api_clients import cargar_api_key as _key
+                        vivos = modelos_disponibles(pid, _key(pid))
+                    except Exception as _e:
+                        logger.debug(f"[silent] catálogo en vivo de {pid}: {_e}")
+                        return
+                    if not vivos or vivos == modelos:
+                        return
+
+                    def _pintar():
+                        # El usuario pudo cambiar de cerebro mientras tanto.
+                        if self.app.clients.provider_activo_id != pid:
+                            return
+                        lista = list(vivos)
+                        if actual and actual not in lista:
+                            lista.insert(0, actual)
+                        self.app.combo_modelo_llm.configure(values=lista)
+                    self.app.after(0, _pintar)
+
+                self.app._executor.submit(_depurar_en_segundo_plano)
             except Exception as _e:
                 logger.debug(f"[silent] refresco modelo llm: {_e}")
 
