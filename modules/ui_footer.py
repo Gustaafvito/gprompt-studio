@@ -392,9 +392,17 @@ class UiFooterService:
             except Exception: pass
             # Apuntar self.app.estilo_checks al dict cacheado
             self.app.estilo_checks = self.app._checks_vars_cache[cache_key]
-            # Reset visual: desmarcar todo
+            # Reset visual: desmarcar SOLO lo que estuviera marcado.
+            # var.set() dispara el trace de Tk aunque el valor no cambie, y
+            # cada disparo repinta el checkbox entero (~40 itemconfigure). Con
+            # 257 estilos de imagen eso son ~10.000 operaciones de dibujo por
+            # cambio de modo: medido el 06-sep-2026 en 575 ms de interfaz
+            # congelada al volver de vídeo a imagen. El usuario suele tener 0-2
+            # estilos marcados, asi que preguntar antes de escribir sale gratis.
             for var in self.app.estilo_checks.values():
-                try: var.set(False)
+                try:
+                    if var.get():
+                        var.set(False)
                 except Exception as _e:
                     logger.debug(f"[silent] {_e}")
             if hasattr(self.app, 'lbl_estilos_sel'):
