@@ -1336,7 +1336,7 @@ MODELOS_POR_PLATAFORMA_VIDEO = {
     "SeaArt Video":                MODELOS_VIDEO_FLAT,
     "ComfyUI / Fooocus":          MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI":                    [m for m in MODELOS_VIDEO_FLAT if "Kling" in m or m.startswith("──")],
-    "Sora / Veo":                  ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
+    "Veo / Gemini":                ["Veo 3.1", "Gemini Omni Flash"],
     "Pollo AI":                    ["Runway Gen-4 Turbo", "Runway Gen-3 Turbo",
                                     "Luma Ray 2", "Luma Ray 2 Flash", "Pika 2.2",
                                     "Hunyuan Video", "SkyReels V2"],
@@ -1663,7 +1663,6 @@ ESTILOS_POR_FAMILIA = {
     "── SeaArt Familia (Film/Story/Fusion/Genesis/Ultra) ──": _PAL_ARTE,
     "── SeaArt Oficiales ──": _PAL_ARTE,
     "── Seedream (ByteDance en SeaArt) ──": _PAL_FOTO,
-    "── Sora (OpenAI en SeaArt) ──": _PAL_FOTO,
     "── Stable Diffusion 3.5 ──": _PAL_REALISMO,
     "── Wan ──": _PAL_FOTO,
 }
@@ -1755,7 +1754,7 @@ PLATAFORMAS_VIDEO = {
     "SeaArt Video":     "sd",
     "ComfyUI / Fooocus": "sd",
     "Kling AI":         "natural",
-    "Sora / Veo":       "natural",
+    "Veo / Gemini":     "natural",
     # Agregadores dados de alta sep-2026 SOLO COMO MAPEO (el usuario aun no
     # genera ahi). Pollo AI aporta los motores que no cubriamos por otra via
     # (Runway, Luma, Pika, Hunyuan, SkyReels) -> hace innecesarias las
@@ -1799,7 +1798,7 @@ MOTORES_VIDEO = {
     "ComfyUI / Fooocus": MODELOS_VIDEO_COMFYUI_FLAT,
     "Kling AI": ["Kling 01 Video Model", "Kling 2.6", "Kling 3.0", "Kling 3.0 Omni",
                  "Kling 3.0 Turbo"],
-    "Sora / Veo": ["Sora2 Video", "Veo 3.1", "Gemini Omni Flash"],
+    "Veo / Gemini": ["Veo 3.1", "Gemini Omni Flash"],
     # Pollo AI: solo los motores que NO cubrimos ya por SeaArt (el resto de su
     # catalogo -- Kling/Veo/Sora/Hailuo/Wan/Vidu/Seedance/PixVerse -- duplica).
     "Pollo AI": ["Runway Gen-4 Turbo", "Runway Gen-3 Turbo", "Luma Ray 2",
@@ -1841,7 +1840,7 @@ TOKEN_LIMITS = {
     "Kling AI": 75,
     "Runway Gen": 75,
     "Pixverse.ai": 75,
-    "Sora / Veo": 75,
+    "Veo / Gemini": 75,
     "Suno": 500,
     "SeaArt Audio": 400,
 }
@@ -1890,7 +1889,7 @@ PROMPT_TEMPLATES = {
     },
     # ── Vídeo Cinematográfico ────────────────────────────────
     "video_cinematico": {
-        "modelos": ["Kling 3.0", "Kling 3.0 Omni", "SeaArt Ultra Pro", "Sora2 Video", "Wan 2.6"],
+        "modelos": ["Kling 3.0", "Kling 3.0 Omni", "SeaArt Ultra Pro", "Wan 2.6"],
         "positive_base": "{duracion}. {encuadre_camara}, {sujeto} {accion}, {entorno}, {iluminacion}, {movimiento_camara}, {atmosfera}. Audio: {audio_desc}.",
         "negative_base": "worst quality, static shot, no movement, blurry, low resolution, deformed, morphing, flickering",
     },
