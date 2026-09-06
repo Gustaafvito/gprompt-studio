@@ -111,7 +111,22 @@ class GPromptWindow(ctk.CTkToplevel):
     def _revert_withdraw_after_windows_set_titlebar_color(self, *a, **k):
         if self._es_duplicado or not self.winfo_exists():
             return
-        return super()._revert_withdraw_after_windows_set_titlebar_color(*a, **k)
+        res = super()._revert_withdraw_after_windows_set_titlebar_color(*a, **k)
+        # CTk hace withdraw()+deiconify() para pintar la barra de título, y ese
+        # deiconify ocurre DESPUÉS del _bring_to_front que programa __init__,
+        # dejando la ventana DETRÁS de la principal. Medido el 06-sep-2026 con
+        # el diálogo de API keys (el usuario reportó que no salía delante):
+        #
+        #   2816 ms  _bring_to_front        <- nuestro lift()
+        #   3628 ms  _revert_withdraw...    <- el deiconify de CTk, 800 ms despues
+        #
+        # Se vuelve a subir DESPUÉS de cada deiconify, que es el único momento
+        # en que se sabe que CTk ya terminó de mostrarla.
+        try:
+            self.after(10, self._bring_to_front)
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+        return res
 
     def _windows_set_titlebar_icon(self, *a, **k):
         if self._es_duplicado or not self.winfo_exists():
