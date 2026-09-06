@@ -87,12 +87,31 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://fireworks.ai/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.fireworks.ai/inference/v1",
-        "model_default": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        # Rehecha entera el 06-sep-2026: los CUATRO modelos anteriores
+        # (llama-v3p3-70b, qwen2p5-72b, deepseek-r1, mixtral-8x22b) habían
+        # desaparecido del catálogo. Al no sobrevivir ninguno, el desplegable
+        # caía al catálogo completo del proveedor — 25 entradas, dos de ellas
+        # de embeddings. Estos ocho se probaron uno a uno con una petición real
+        # de prompt: todos responden en formato correcto. Tiempos medidos entre
+        # paréntesis.
+        # OJO: /v1/models lista TODO el catálogo, incluidos los que NO son
+        # serverless y exigen desplegar una GPU dedicada — esos dan 404 al
+        # llamarlos (deepseek-v4-pro y minimax-m2p7 ese día). Por eso la lista
+        # curada no se puede generar volcando el endpoint: hay que probarlos.
+        "model_default": "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
         "modelos": [
-            "accounts/fireworks/models/llama-v3p3-70b-instruct",  # Llama 3.3 70B
-            "accounts/fireworks/models/qwen2p5-72b-instruct",     # Qwen 2.5 72B
-            "accounts/fireworks/models/deepseek-r1",              # DeepSeek R1
-            "accounts/fireworks/models/mixtral-8x22b-instruct",   # Mixtral 8x22B
+            # rápido y baratísimo — default ($0,05/$0,20)         (2,3s)
+            "accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b",
+            "accounts/fireworks/models/qwen3p8-max",              # (2,2s)
+            "accounts/fireworks/models/qwen3p8-2p4t-a95b",        # (2,6s)
+            "accounts/fireworks/models/minimax-m3",               # (3,3s)
+            "accounts/fireworks/models/gpt-oss-120b",             # (3,6s)
+            # visión + 1M de contexto ($0,15/$0,50)               (15,7s)
+            "accounts/fireworks/models/glm-5p3-flash",
+            # visión ($0,22/$0,66)                                (5,1s)
+            "accounts/fireworks/models/deepseek-v4-flash-vision-exp",
+            # tope de gama ($1,40/$4,40)                          (11,8s)
+            "accounts/fireworks/models/glm-5p3",
         ],
         "is_paid": True,
     },
@@ -375,7 +394,7 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
 PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "claude":        (3.00, 15.00),   # claude-sonnet-4-5
     "deepseek":      (0.14, 0.28),    # deepseek-v4-flash
-    "fireworks":     (0.90, 0.90),    # llama-v3p3-70b
+    "fireworks":     (0.05, 0.20),    # nemotron-lightning-3p5-30b (verificado 06-sep-2026)
     "gemini":        (0.0, 0.0),      # free tier 15rpm (tier de pago: 0.30/2.50)
     "github_models": (0.0, 0.0),      # gratis con cuenta GitHub
     "groq":          (0.0, 0.0),      # free tier

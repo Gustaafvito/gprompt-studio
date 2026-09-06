@@ -126,3 +126,38 @@ class TestAliasConFecha:
 
     def test_claude_provider_sabe_listarse(self):
         assert hasattr(api_clients.ClaudeProvider, "listar_modelos")
+
+
+class TestFireworksRehecha:
+    """Los 4 modelos que tenía Fireworks estaban muertos, 4 de 4 (06-sep-2026).
+
+    Al no sobrevivir ninguno saltaba el último recurso —volcar el catálogo del
+    proveedor— y el desplegable pasaba a tener 25 entradas, dos de ellas de
+    embeddings. Los ocho actuales se probaron uno a uno contra la API.
+    """
+
+    MUERTOS = ("llama-v3p3-70b-instruct", "qwen2p5-72b-instruct",
+               "deepseek-r1", "mixtral-8x22b-instruct")
+    # Listados por /v1/models pero SIN serverless: dan 404 al llamarlos.
+    NO_SERVERLESS = ("models/deepseek-v4-pro", "models/minimax-m2p7")
+
+    def test_no_vuelven_los_ids_muertos(self):
+        modelos = api_clients.LLM_PROVIDERS["fireworks"]["modelos"]
+        for m in self.MUERTOS:
+            assert not any(m in x for x in modelos), \
+                f"{m} ya no lo sirve Fireworks (comprobado con key real)"
+
+    def test_no_se_cuela_uno_que_exige_gpu_dedicada(self):
+        modelos = api_clients.LLM_PROVIDERS["fireworks"]["modelos"]
+        for m in self.NO_SERVERLESS:
+            assert not any(x.endswith(m) for x in modelos), \
+                f"{m} no es serverless: devuelve 404"
+
+    def test_el_default_esta_en_la_lista(self):
+        info = api_clients.LLM_PROVIDERS["fireworks"]
+        assert info["model_default"] in info["modelos"]
+
+    def test_ningun_modelo_de_embeddings_en_la_lista_curada(self):
+        for m in api_clients.LLM_PROVIDERS["fireworks"]["modelos"]:
+            assert not any(t in m.lower() for t in ("embedding", "reranker")), \
+                f"{m} no genera texto; como cerebro solo sirve para fallar"
