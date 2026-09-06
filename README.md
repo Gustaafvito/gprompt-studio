@@ -15,11 +15,20 @@
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-| Modo | Modelos soportados |
-|------|--------------------|
-| 🖼 **Imagen** | 93+ modelos vigentes: FLUX.1 [dev/schnell], Z-Image, GPT Image, Nano Banana, Illustrious, Pony, Qwen, Realismo SD, Anime/Ilustración y más |
-| 🎬 **Vídeo** | 72 motores: Kling, Seedance, Wan, Hailuo, StarDream, PixVerse, Vidu, Grok, Happy Horse, Nano Banana, Sora2, Veo, SeaArt y más |
-| 🎵 **Audio** | 11 modelos: Suno (×4), Udio (×2), Minimax Music (×2), MusicGo, Mureka V9 — con letras, estilo, emoción, voz e idioma |
+**406 modelos repartidos en 15 plataformas**, cada uno con sus reglas propias:
+
+| Modo | Modelos | Plataformas |
+|------|---------|-------------|
+| 🖼 **Imagen** | **261** | SeaArt/Tensor.Art (126) · ComfyUI/Fooocus (97) · Magnific (31) · Higgsfield (4) · GPT Image (2) · Grok (1) |
+| 🎬 **Vídeo** | **134** | SeaArt Video (90) · ComfyUI/Fooocus (28) · Pollo AI (7) · Kling AI (5) · Sora/Veo (3) · Higgsfield (1) |
+| 🎵 **Audio** | **11** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
+
+Entre ellos: FLUX.1, Z-Image, Qwen Image 3.0 / 3.0 Pro, Illustrious, Pony, Nano Banana,
+Wan 3.0 y Wan 3.0 Prime, Kling, Seedance, Hailuo, PixVerse, Vidu, Sora 2, Veo, Suno v5.5…
+Y **333 estilos** agrupados por familia.
+
+Los modelos locales de **ComfyUI se detectan solos**: apunta a tu carpeta y la herramienta
+clasifica cada checkpoint por familia para aplicarle el formato de prompt correcto.
 
 ## 🧠 Multi-Cerebro (14 LLMs soportados)
 
@@ -27,7 +36,7 @@ Conecta con cualquiera de estos proveedores con una sola key:
 
 | Proveedor | Tipo | Coste |
 |-----------|------|-------|
-| 🥈 **DeepSeek V3** | Pago | ~€0.14/1M tokens |
+| 🥈 **DeepSeek V4** | Pago | ~€0.14/1M tokens |
 | 💎 **Claude (Anthropic)** | Pago | ~€2.40/1M tokens |
 | 💎 **Fireworks AI** | Pago | Modelos open-source rápidos |
 | 🏆 **Google Gemini** | Gratis | 15 rpm |
@@ -40,7 +49,7 @@ Conecta con cualquiera de estos proveedores con una sola key:
 | 🥈 **OpenRouter** | Pago | 100+ modelos con UNA key |
 | 💎 **Perplexity** | Pago | Modelos con búsqueda en tiempo real |
 | 💎 **Together AI** | Pago | Modelos open-source y propietarios |
-| 🏆 **Google Gemini Omni** | Nuevo | Modelo de vídeo multimodal |
+| 💎 **xAI (Grok)** | Pago | Modelos Grok |
 
 ## 🚀 Funciones principales
 
@@ -56,6 +65,7 @@ Conecta con cualquiera de estos proveedores con una sola key:
 | 📦 **Batch** | Generación masiva (2-10 prompts a la vez) |
 | 🎨 **Previsualizar** | Boceto rápido vía Pollinations |
 | ⚡ **Modo Brief** | Optimización para anuncios/concursos |
+| 👋 **Bienvenida** | Al primer arranque sin ninguna key: te guía hasta un cerebro gratis o local |
 
 ## 📋 Gestión de datos
 
@@ -75,6 +85,30 @@ Conecta con cualquiera de estos proveedores con una sola key:
 - **Por destino**: Instagram, TikTok, YouTube, Anthum, Freepik, etc. — cada destino adapta el prompt (ratio, estilo, gancho).
 - **ComfyUI + Turbo**: detecta automáticamente y elimina pesos numéricos `(tag:1.2)` que rompen los modelos Turbo.
 - **Negative inteligente**: añade NEGATIVE PROMPT solo si el modelo lo soporta.
+
+## 🆕 Novedades (septiembre 2026)
+
+**Modelos y plataformas**
+- Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).
+- Alta de Pollo AI y Higgsfield; modelos que faltaban, enganchados a su plataforma.
+- +75 estilos para equilibrar los grupos más flacos (hasta 333).
+- Los catálogos viven en `data/*.json` y se pueden **sobrescribir desde
+  `~/.arquitecto_prompts/data/`** sin recompilar nada.
+
+**Cerebro**
+- **LM Studio** como proveedor de primera clase: autodetecta el modelo cargado.
+- Selector de modelo para LM Studio y Ollama, que ya no ofrece modelos de
+  *embeddings* (no sirven como cerebro).
+- Reintento automático cuando el LLM agota `max_tokens` y devuelve vacío.
+- Los reintentos del SDK ya no se multiplican con los del worker.
+
+**Fiabilidad**
+- Aviso cuando el LLM entrega **menos prompts de los pedidos** (antes fallaba en silencio).
+- El prompt final ya no arrastra el eco de las instrucciones.
+- Una carpeta de ComfyUI ilegible ya no te deja sin ningún modelo local.
+- Cerrar la ventana a mitad de una generación ya no ensucia el log.
+- Las API keys antiguas se migran solas a DPAPI.
+- Selector de modelos sin lag al abrir y buscar.
 
 ## 🆕 Novedades v1.0
 
@@ -100,7 +134,7 @@ Conecta con cualquiera de estos proveedores con una sola key:
 ### Setup rápido
 
 ```bash
-git clone https://github.com/tu-usuario/gprompt-studio.git
+git clone https://github.com/Gustaafvito/gprompt-studio.git
 cd gprompt-studio
 pip install -e .
 python main.py
