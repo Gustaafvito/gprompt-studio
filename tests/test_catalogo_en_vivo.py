@@ -92,3 +92,37 @@ class TestElProveedorSabePreguntar:
     def test_timeout_corto_para_no_bloquear_la_ui(self):
         assert api_clients.TIMEOUT_CATALOGO_S <= 10, \
             "esto solo llena un desplegable, no puede congelar la interfaz"
+
+
+class TestAliasConFecha:
+    """Anthropic publica los modelos viejos CON fecha y acepta el alias sin ella.
+
+    Verificado el 06-sep-2026 contra la API real: `GET /v1/models` devuelve
+    `claude-haiku-4-5-20251001`, pero `claude-haiku-4-5` —que es lo que guarda
+    el catálogo curado, porque hay un candado que prohíbe las fechas en los
+    IDs— responde en 0,6s. Sin normalizar, el filtro daba por muerto un modelo
+    que funciona y lo borraba del desplegable.
+    """
+
+    def test_el_alias_sobrevive_aunque_el_catalogo_lleve_fecha(self, monkeypatch):
+        _con_catalogo(monkeypatch, ["claude-sonnet-5", "claude-haiku-4-5-20251001"])
+        got = api_clients.modelos_disponibles("claude", "key")
+        assert "claude-haiku-4-5" in got, \
+            "el alias sin fecha funciona; no se puede ocultar"
+
+    def test_sin_fecha_solo_quita_ocho_digitos_al_final(self):
+        assert api_clients._sin_fecha("claude-haiku-4-5-20251001") == "claude-haiku-4-5"
+        assert api_clients._sin_fecha("claude-sonnet-5") == "claude-sonnet-5"
+        assert api_clients._sin_fecha("gpt-5.6") == "gpt-5.6"
+        # No debe morder un número que no sea fecha ni uno en medio del ID.
+        assert api_clients._sin_fecha("llama-v3p3-70b") == "llama-v3p3-70b"
+        assert api_clients._sin_fecha("modelo-20251001-turbo") == "modelo-20251001-turbo"
+
+    def test_anthropic_entra_en_el_filtro_pese_a_no_ser_openai_compatible(self, monkeypatch):
+        _con_catalogo(monkeypatch, ["claude-sonnet-5"])
+        got = api_clients.modelos_disponibles("claude", "key")
+        assert got == ["claude-sonnet-5"], \
+            "Anthropic tiene su propio listar_modelos(); debe depurarse igual"
+
+    def test_claude_provider_sabe_listarse(self):
+        assert hasattr(api_clients.ClaudeProvider, "listar_modelos")

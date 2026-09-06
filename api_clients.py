@@ -50,9 +50,11 @@ LLM_PROVIDERS = {
         "descripcion": "Calidad excelente para creatividad. Pago (desde $3/1M).",
         "url_obtener_key": "https://console.anthropic.com/settings/keys",
         "tipo": "anthropic",
-        # Actualizado el 06-sep-2026 a la familia Claude 5. SIN VERIFICAR
-        # contra la API: no hay key de Anthropic configurada. Se conserva la
-        # generación 4.x debajo por si una key antigua no alcanza la 5.
+        # Actualizado el 06-sep-2026 a la familia Claude 5 y VERIFICADO ese
+        # mismo día contra la API con una key real: los tres modelos de la
+        # familia 5 responden y rechazan `temperature` con 400 (ver
+        # MODELOS_CLAUDE_SIN_SAMPLING). Se conserva la generación 4.x debajo
+        # por si una key antigua no alcanza la 5.
         "model_default": "claude-sonnet-5",
         "modelos": [
             "claude-fable-5-1",    # tope de gama ($10/$50)
@@ -935,6 +937,27 @@ class ClaudeProvider(BaseLLMProvider):
     def disponible(self) -> bool:
         return getattr(self, "_anthropic_disponible", False) and bool(self.api_key)
 
+    def listar_modelos(self) -> list[str]:
+        """Catálogo EN VIVO de Anthropic ([] si no responde).
+
+        Anthropic no es OpenAI-compatible: el endpoint es el mismo /v1/models
+        pero la auth va en `x-api-key` y exige la cabecera `anthropic-version`,
+        así que no se puede heredar de OpenAICompatibleProvider.
+        """
+        if not self.api_key:
+            return []
+        try:
+            req = urllib.request.Request(
+                "https://api.anthropic.com/v1/models?limit=100",
+                headers={"x-api-key": self.api_key,
+                         "anthropic-version": "2023-06-01"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
+                data = json.loads(r.read())
+            return [m["id"] for m in data.get("data", []) if m.get("id")]
+        except Exception as e:
+            logger.debug(f"[silent] catálogo de Anthropic: {e}")
+            return []
+
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
         if not self._cliente:
             raise Exception("Claude no configurado (instala 'anthropic' o falta api key)")
@@ -1018,6 +1041,20 @@ def _catalogo_en_vivo(provider_id: str, api_key: str) -> list[str]:
     return vivos
 
 
+_RE_FECHA_MODELO = re.compile(r"-\d{8}$")
+
+
+def _sin_fecha(modelo: str) -> str:
+    """Quita el sufijo -YYYYMMDD de un ID de modelo.
+
+    Anthropic publica los modelos viejos CON fecha ("claude-haiku-4-5-20251001")
+    pero acepta el alias sin ella, que es lo que guarda el catálogo curado (hay
+    un candado que prohíbe las fechas en los IDs). Sin normalizar, el filtro en
+    vivo daba por muerto un modelo que responde en 0,6s.
+    """
+    return _RE_FECHA_MODELO.sub("", modelo or "")
+
+
 def modelos_disponibles(provider_id: str, api_key: str | None = None) -> list[str]:
     """Modelos elegibles de un proveedor, para poblar el desplegable.
 
@@ -1045,14 +1082,16 @@ def modelos_disponibles(provider_id: str, api_key: str | None = None) -> list[st
             return []
 
     estaticos = list(info.get("modelos") or [])
-    if not api_key or info.get("tipo") != "openai_compatible":
+    # Anthropic entra aunque no sea OpenAI-compatible: tiene su propio
+    # listar_modelos(). Gemini sigue fuera, no lo implementa.
+    if not api_key or info.get("tipo") not in ("openai_compatible", "anthropic"):
         return estaticos
 
     vivos = _catalogo_en_vivo(provider_id, api_key)
     if not vivos:
         return estaticos
 
-    conjunto = set(vivos)
+    conjunto = set(vivos) | {_sin_fecha(m) for m in vivos}
     validos = [m for m in estaticos if m in conjunto]
     if validos:
         if len(validos) != len(estaticos):
