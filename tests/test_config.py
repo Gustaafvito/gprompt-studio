@@ -459,3 +459,22 @@ class TestAutoriaYWeb:
         iss = (Path(config.__file__).parent / "installer.iss").read_text(encoding="utf-8")
         assert 'MyAppPublisherURL "https://gustaafvito.com/"' in iss
         assert "AppPublisherURL={#MyAppPublisherURL}" in iss
+
+    def test_la_web_es_la_homepage_del_paquete(self):
+        """pyproject: quien instale con pip debe llegar a la web, no solo al repo."""
+        from pathlib import Path
+        toml = (Path(config.__file__).parent / "pyproject.toml").read_text(encoding="utf-8")
+        assert 'Homepage = "https://gustaafvito.com/"' in toml
+        assert 'Repository = "https://github.com/Gustaafvito/gprompt-studio"' in toml,             "al mover Homepage a la web, el repo no puede quedarse sin enlace"
+
+    def test_la_web_esta_en_el_leeme_del_distribuible(self):
+        """Es lo unico que lee quien recibe el .exe suelto, sin repo ni README."""
+        from pathlib import Path
+        leeme = (Path(config.__file__).parent / "docs" / "LEEME-PRIMERO.txt")
+        assert "https://gustaafvito.com/" in leeme.read_text(encoding="utf-8")
+
+    def test_no_queda_ningun_placeholder_tu_usuario(self):
+        """El README traia 'github.com/tu-usuario/...' en el git clone."""
+        from pathlib import Path
+        readme = (Path(config.__file__).parent / "README.md").read_text(encoding="utf-8")
+        assert "tu-usuario" not in readme

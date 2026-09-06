@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-    { name = "Gustaafvito" },
+    { name = "Gustaafvito", email = "209388097+Gustaafvito@users.noreply.github.com" },
 ]
 keywords = ["ai", "prompt-engineering", "image-generation", "video-generation", "llm", "stable-diffusion"]
 classifiers = [
@@ -65,7 +65,8 @@ all = [
 gprompt-studio = "main:main"
 
 [project.urls]
-Homepage = "https://github.com/Gustaafvito/gprompt-studio"
+Homepage = "https://gustaafvito.com/"
+Repository = "https://github.com/Gustaafvito/gprompt-studio"
 Issues = "https://github.com/Gustaafvito/gprompt-studio/issues"
 Documentation = "https://github.com/Gustaafvito/gprompt-studio/blob/main/README.md"
 

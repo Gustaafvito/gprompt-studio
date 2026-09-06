@@ -152,3 +152,7 @@ SOPORTE Y CÓDIGO FUENTE
   Para más info: ver docs/BUILD.md en el repositorio.
 
 ═══════════════════════════════════════════════════════════════════
+  G-Prompt Studio — creado por Gustaafvito
+  Web:    https://gustaafvito.com/
+  Código: https://github.com/Gustaafvito/gprompt-studio
+═══════════════════════════════════════════════════════════════════
