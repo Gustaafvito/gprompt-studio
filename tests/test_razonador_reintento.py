@@ -88,7 +88,7 @@ class TestCuandoSigueFallando:
         with pytest.raises(Exception) as exc:
             prov.completar([{"role": "user", "content": "hola"}], max_tokens=900)
         msg = str(exc.value)
-        assert "flash" in msg, "debe sugerir un modelo no razonador"
+        assert "menos cantidad" in msg or "proveedor" in msg
         assert "max_tokens" not in msg.split("—")[-1], \
             "no debe pedir subir algo que no se toca desde la UI"
 
@@ -105,3 +105,43 @@ class TestCuandoSigueFallando:
         with pytest.raises(Exception) as exc:
             prov.completar([{"role": "user", "content": "hola"}])
         assert "choices" in str(exc.value)
+
+
+class TestNoRecomendarFlash:
+    """El mensaje llegó a decir "usa deepseek-v4-flash, que no razona".
+
+    Medido contra la API el 06-sep-2026: flash razona igual que pro — con
+    max_tokens=500 gasta los 500 razonando y devuelve vacío, exactamente como
+    pro. El consejo mandaba al usuario al mismo muro del que venía.
+    """
+
+    def test_el_error_no_recomienda_flash(self):
+        prov = _proveedor([_respuesta("", "length"), _respuesta("", "length")])
+        with pytest.raises(Exception) as exc:
+            prov.completar([{"role": "user", "content": "hola"}], max_tokens=900)
+        assert "flash" not in str(exc.value).lower()
+
+
+class TestSueloDelReintento:
+    """Con presupuestos pequeños, multiplicar por 3 no basta.
+
+    "Sugerir negative" pide 500 tokens; ×3 son 1500, y DeepSeek V4 gasta entre
+    263 y 780 solo razonando. Unas veces entra y otras no — el usuario lo
+    reportó como "me SUELE dar error al escoger negativo".
+    """
+
+    def test_presupuesto_pequeno_sube_hasta_el_piso(self):
+        prov = _proveedor([_respuesta("", "length"), _respuesta("ok", "stop")])
+        prov.completar([{"role": "user", "content": "hola"}], max_tokens=500)
+        assert prov._cliente.presupuestos[1] >= prov._PISO_REINTENTO, \
+            "500x3=1500 es justo el margen que falla a veces"
+
+    def test_presupuesto_grande_no_baja_al_piso(self):
+        prov = _proveedor([_respuesta("", "length"), _respuesta("ok", "stop")])
+        prov.completar([{"role": "user", "content": "hola"}], max_tokens=7500)
+        assert prov._cliente.presupuestos[1] > prov._PISO_REINTENTO
+
+    def test_el_techo_sigue_mandando(self):
+        prov = _proveedor([_respuesta("", "length"), _respuesta("ok", "stop")])
+        prov.completar([{"role": "user", "content": "hola"}], max_tokens=9000)
+        assert prov._cliente.presupuestos[1] <= prov._TECHO_REINTENTO

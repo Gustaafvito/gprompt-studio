@@ -573,6 +573,14 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     # el presupuesto normal se lo funde razonando y devuelve vacio.
     _FACTOR_REINTENTO = 3
     _TECHO_REINTENTO = 16000
+    # Suelo del reintento. Medido el 06-sep-2026 contra la API de DeepSeek: V4
+    # (pro Y flash, los dos razonan) quema entre 263 y 780 tokens pensando ANTES
+    # de escribir nada. Con presupuestos pequeños —el boton "Sugerir negative"
+    # pide 500, la traduccion 400, varios sitios 200— multiplicar por 3 deja
+    # 1500 o menos, que es justo el margen donde unas veces entra y otras no:
+    # de ahi que el usuario reportara que "suele" fallar. 4000 responde siempre
+    # en la medicion, y solo se gasta cuando el sintoma ya ha ocurrido.
+    _PISO_REINTENTO = 4000
 
     def _llamar(self, messages, temperature, max_tokens, modelo):
         """Una llamada. Devuelve (texto, finish_reason)."""
@@ -610,7 +618,8 @@ class OpenAICompatibleProvider(BaseLLMProvider):
             # vez con presupuesto ampliado, que es exactamente lo que hacía
             # falta. No se mantiene una lista de "modelos razonadores" porque
             # envejece mal: se reacciona al síntoma, que es inequívoco.
-            ampliado = min(max_tokens * self._FACTOR_REINTENTO, self._TECHO_REINTENTO)
+            ampliado = min(max(max_tokens * self._FACTOR_REINTENTO,
+                               self._PISO_REINTENTO), self._TECHO_REINTENTO)
             if ampliado > max_tokens:
                 logger.info(
                     f"{modelo}: razonamiento agotó {max_tokens} tokens sin "
@@ -619,10 +628,15 @@ class OpenAICompatibleProvider(BaseLLMProvider):
 
         if not content.strip():
             if fr == "length":
+                # OJO: no recomendar aqui "deepseek-v4-flash como modelo no
+                # razonador". Medido el 06-sep-2026: flash razona igual que pro
+                # (500 tokens de razonamiento con max_tokens=500, respuesta
+                # vacia). El consejo era falso y mandaba al usuario al mismo
+                # muro. Gemini si respondio a la misma peticion sin agotarse.
                 raise Exception(
-                    f"{modelo}: el razonamiento agotó max_tokens (incluso al "
-                    f"reintentar) — usa un modelo no razonador, como "
-                    f"deepseek-v4-flash, o pide menos cantidad de golpe")
+                    f"{modelo}: se quedó sin tokens razonando, incluso al "
+                    f"reintentar con {ampliado} — pide menos cantidad de golpe "
+                    f"o cambia de proveedor (Gemini responde bien a esto)")
             raise Exception(f"{modelo}: respuesta vacía (finish_reason={fr})")
         return content
 

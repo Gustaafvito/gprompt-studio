@@ -86,7 +86,10 @@ class TestOpenAICompatibleProvider:
         # el max_tokens "pensando" (finish_reason='length') y devolvía content
         # vacío con HTTP 200; el "" silencioso producía datasets sin identidad.
         p = self._provider_con_respuesta("", finish_reason="length")
-        with pytest.raises(Exception, match="agotó max_tokens"):
+        # 06-sep-2026: el texto pasó a "se quedó sin tokens razonando" al
+        # dejar de recomendar flash (que también razona). Se comprueba el
+        # síntoma, no la frase exacta.
+        with pytest.raises(Exception, match="sin tokens razonando"):
             p.completar([{"role": "user", "content": "hola"}])
 
     def test_completar_raises_si_respuesta_vacia(self):
