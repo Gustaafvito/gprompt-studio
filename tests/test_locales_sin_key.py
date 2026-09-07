@@ -53,3 +53,34 @@ class TestLosDosLocalesEstanDeclarados:
     def test_ninguno_es_de_pago(self):
         for pid in api_clients.PROVEEDORES_LOCALES:
             assert api_clients.LLM_PROVIDERS[pid].get("is_paid") is not True
+
+
+class TestElWizardNoEnseñaCampoDeKeyALosLocales:
+    """Reportado el 07-sep-2026: "en lm studio deberías quitar el sitio para
+    poner la api". El usuario había llegado a pegar una key real en Ollama,
+    que quedó muerta en el Credential Manager: los dos providers locales
+    sobrescriben `api_key` con un literal en su __init__ y tiran lo que se les
+    pase, así que el campo solo servía para engañar.
+    """
+
+    def _fuente(self):
+        from modules import dialogs
+        return inspect.getsource(dialogs)
+
+    def test_los_locales_salen_antes_de_crear_el_entry(self):
+        fuente = self._fuente()
+        i = fuente.find("entries_keys[pid] = ent")
+        assert i != -1, "no encuentro el alta del campo de key"
+        antes = fuente[max(0, i - 6000):i]
+        assert "PROVEEDORES_LOCALES" in antes and "continue" in antes, \
+            "un proveedor local debe saltarse el campo de API key"
+
+    def test_el_provider_local_ignora_la_key_que_le_pasen(self):
+        for pid, literal in (("lm_studio", "lm-studio"), ("ollama", "ollama")):
+            prov = api_clients.get_provider(pid, "sk-una-key-de-verdad")
+            assert prov.api_key == literal, \
+                f"{pid} descarta la key; el wizard no debe pedirla"
+
+    def test_se_explica_por_que_no_hay_campo(self):
+        assert "No necesita API key" in self._fuente(), \
+            "quitar el campo sin decir nada deja al usuario sin saber qué hacer"

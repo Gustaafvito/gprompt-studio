@@ -44,6 +44,7 @@ class DialogsService:
             from api_clients import (
                 IMAGE_PROVIDERS,
                 LLM_PROVIDERS,
+                PROVEEDORES_LOCALES,
                 borrar_api_key,
                 cargar_api_key,
                 guardar_api_key,
@@ -111,8 +112,12 @@ class DialogsService:
             hdr.pack(fill="x", padx=12, pady=(8, 4))
             current_key_init = cargar_api_key(pid) or ""
             origen_init = ubicacion_api_key(pid)
-            estado_actual = tr("✅ configurado") if current_key_init else tr("⚠️ sin configurar")
-            color_estado = P.TXT_OK if current_key_init else P.TXT_AVISO
+            es_local = pid in PROVEEDORES_LOCALES
+            if es_local:
+                estado_actual, color_estado = tr("💤 local — sin key"), P.TXT_INFO
+            else:
+                estado_actual = tr("✅ configurado") if current_key_init else tr("⚠️ sin configurar")
+                color_estado = P.TXT_OK if current_key_init else P.TXT_AVISO
             ctk.CTkLabel(hdr, text=f"{info['label']}",
                          font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(side="left")
             lbl_estado = ctk.CTkLabel(hdr, text=estado_actual,
@@ -123,6 +128,22 @@ class DialogsService:
             ctk.CTkLabel(card, text=f"  {info['descripcion']}",
                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA, slant="italic"), text_color=P.TXT_MUTED,
                          wraplength=720, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 2))
+
+            # LM Studio y Ollama corren en tu maquina y NO usan key: sus
+            # providers la sobrescriben con un literal ("lm-studio", "ollama")
+            # y tiran la que se les pase. Enseñar el campo invitaba a pegar una
+            # key real que se quedaba muerta en el Credential Manager.
+            if es_local:
+                ctk.CTkLabel(
+                    card,
+                    text=tr("  No necesita API key: corre en tu ordenador. "
+                            "Ábrelo, carga un modelo y aparecerá en el "
+                            "desplegable de cerebros."),
+                    font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+                    text_color=P.TXT_MUTED_OSCURO,
+                    wraplength=720, justify="left", anchor="w",
+                ).pack(fill="x", padx=12, pady=(0, 10))
+                continue
 
             # Indicador de origen: keyring / keys.json cifrado / .env
             lbl_origen = ctk.CTkLabel(
