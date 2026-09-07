@@ -478,3 +478,20 @@ class TestAutoriaYWeb:
         from pathlib import Path
         readme = (Path(config.__file__).parent / "README.md").read_text(encoding="utf-8")
         assert "tu-usuario" not in readme
+
+
+def test_el_instalador_no_puede_matar_apps_ajenas():
+    """Candado: el Restart Manager solo mira NUESTRO ejecutable.
+
+    El 07-sep-2026 el instalador le ofreció al usuario cerrar Google Chrome,
+    que no comparte un solo archivo con esta app. Con CloseApplications=force
+    y el radio "Cerrar automáticamente" marcado por defecto, seguir adelante
+    le habría matado el navegador con las pestañas abiertas.
+    """
+    ruta = os.path.join(os.path.dirname(__file__), "..", "installer.iss")
+    with open(ruta, encoding="utf-8-sig") as f:
+        iss = f.read()
+    assert "CloseApplicationsFilter={#MyAppExeName}" in iss, \
+        "sin filtro, el Restart Manager reporta procesos ajenos"
+    assert "CloseApplications=force" not in iss, \
+        "'force' mata procesos que no cierran por las buenas; usa 'yes'"

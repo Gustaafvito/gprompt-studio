@@ -1,4 +1,4 @@
-; Inno Setup script for G-Prompt Studio
+﻿; Inno Setup script for G-Prompt Studio
 ; Requiere Inno Setup 6 (https://jrsoftware.org/isinfo.php)
 ;
 ; Uso:
@@ -51,8 +51,17 @@ UninstallDisplayName={#MyAppName} {#MyAppVersion}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-; Cerrar la app si está corriendo antes de instalar (evita "archivo en uso")
-CloseApplications=force
+; Cerrar la app si está corriendo antes de instalar (evita "archivo en uso").
+; El filtro es lo importante: por defecto Inno pregunta al Restart Manager por
+; *.exe,*.dll,*.chm y ese servicio devuelve falsos positivos con generosidad.
+; El 07-sep-2026 el instalador le ofreció al usuario cerrar GOOGLE CHROME, que
+; no comparte un solo archivo con esta app — y con "force" y el radio de
+; "Cerrar automáticamente" marcado por defecto, un Siguiente distraído se lo
+; habría matado con las pestañas abiertas. Mirando solo nuestro binario no
+; puede volver a pasar, y se deja "yes" en vez de "force": si algo no cierra
+; por las buenas, mejor avisar que matar procesos del usuario.
+CloseApplications=yes
+CloseApplicationsFilter={#MyAppExeName}
 RestartApplications=no
 
 [Languages]
