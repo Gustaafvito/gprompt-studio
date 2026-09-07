@@ -10,7 +10,20 @@ y Ollama apagados:
 
 El desplegable de cerebros pinta un icono ✅/🔒/💤 por proveedor, y para
 saberlo pregunta `disponible()` a los catorce. Los dos locales se quedaban
-esperando su timeout. Con timeout de 0.6s y caché de 20s: 1 ms.
+esperando su timeout.
+
+ACTUALIZADO EL 07-SEP-2026 — la causa real era otra. Recortar el timeout a
+0.6s tapaba el sintoma y creaba el contrario: con LM Studio ABIERTO y 19
+modelos cargados, `/v1/models` tardaba 2,05s y se le declaraba dormido. Medido
+en la maquina del usuario:
+
+    http://localhost:1234/v1/models   ->  2019 ms
+    http://127.0.0.1:1234/v1/models   ->     1 ms
+
+`localhost` resuelve a ::1 antes que a 127.0.0.1, y ese puerto no rechaza: se
+queda colgado hasta agotar el timeout. Arreglado forzando IPv4, y separando
+las dos preguntas: "esta encendido" (connect de TCP, milisegundos) de "que
+modelos tiene" (HTTP, ya puede esperar).
 """
 import time
 
@@ -19,10 +32,28 @@ import api_clients
 
 class TestSondeoLocalAcotado:
 
-    def test_el_timeout_local_es_corto(self):
-        assert api_clients.TIMEOUT_LOCAL_S <= 1.0, (
-            "localhost contesta al instante o no está; esperar más solo "
-            "congela la interfaz")
+    def test_el_sondeo_del_puerto_es_corto(self):
+        # Este es el que corre en el hilo de Tk, uno por proveedor.
+        assert api_clients.TIMEOUT_SONDEO_LOCAL_S <= 1.0, (
+            "el icono del desplegable no puede costar segundos")
+
+    def test_las_urls_locales_no_usan_localhost(self):
+        for pid in api_clients.PROVEEDORES_LOCALES:
+            url = api_clients.LLM_PROVIDERS[pid].get("base_url", "")
+            assert "//localhost:" not in url, (
+                f"{pid}: 'localhost' resuelve ::1 primero y cuelga 1s; "
+                f"usa 127.0.0.1")
+
+    def test_forzar_ipv4_reescribe_solo_localhost(self):
+        f = api_clients._forzar_ipv4
+        assert f("http://localhost:1234/v1") == "http://127.0.0.1:1234/v1"
+        assert f("http://127.0.0.1:1234/v1") == "http://127.0.0.1:1234/v1"
+        assert f("https://api.deepseek.com") == "https://api.deepseek.com"
+
+    def test_un_puerto_muerto_se_detecta_rapido(self):
+        t = time.perf_counter()
+        assert api_clients._puerto_abierto("http://127.0.0.1:1/v1") is False
+        assert time.perf_counter() - t < 1.0
 
     def test_el_timeout_local_es_menor_que_el_de_generacion(self):
         assert api_clients.TIMEOUT_LOCAL_S < api_clients.LLM_TIMEOUT_S

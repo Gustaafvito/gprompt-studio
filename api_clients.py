@@ -13,6 +13,8 @@ import logging
 import os
 import re
 import urllib.request
+import urllib.parse
+import socket
 
 try:
     from openai import OpenAI
@@ -185,7 +187,7 @@ LLM_PROVIDERS = {
         "descripcion": "Servidor local OpenAI-compatible. Requiere instalar LM Studio y cargar un modelo.",
         "url_obtener_key": "https://lmstudio.ai",
         "tipo": "openai_compatible",
-        "base_url": "http://localhost:1234/v1",
+        "base_url": "http://127.0.0.1:1234/v1",
         "model_default": "local-model",
         "is_paid": False,
     },
@@ -219,7 +221,7 @@ LLM_PROVIDERS = {
         "descripcion": "Sin internet, sin coste. Requiere instalar Ollama y descargar modelo.",
         "url_obtener_key": "https://ollama.com/download",
         "tipo": "openai_compatible",
-        "base_url": "http://localhost:11434/v1",
+        "base_url": "http://127.0.0.1:11434/v1",
         "model_default": "llama3.2",
         "modelos": [
             "llama3.2",        # más reciente, 3B/11B
@@ -577,12 +579,62 @@ LLM_TIMEOUT_S = 180
 # El catálogo solo llena un desplegable: si tarda, no se espera.
 TIMEOUT_CATALOGO_S = 5
 
-# Sondeo de los servidores LOCALES (LM Studio / Ollama). 0.6s es de sobra para
-# localhost: o contesta al instante o no está. Con 2s, y como urlopen prueba
-# IPv6 y luego IPv4, un LM Studio apagado costaba 4s — y el refresco de iconos
-# del desplegable de cerebros pregunta a los 14 proveedores, así que cambiar de
-# cerebro congelaba la ventana 12 segundos ("No responde", 06-sep-2026).
-TIMEOUT_LOCAL_S = 0.6
+# Servidores LOCALES (LM Studio / Ollama). Hay DOS operaciones distintas y
+# confundirlas costó un bug en cada dirección:
+#
+#   1) "¿está encendido?" -> lo pregunta el refresco de iconos del desplegable
+#      de cerebros, para los 14 proveedores y varias veces seguidas. Con 2s de
+#      timeout, cambiar de cerebro congelaba la ventana 12 segundos ("No
+#      responde", 06-sep-2026). Se bajó a 0.6s... y entonces se rompió al revés:
+#      el 07-sep-2026, con 19 modelos cargados, el /v1/models de LM Studio
+#      tardaba 2,05s CONSISTENTES (medido seis veces), así que se declaraba
+#      dormido un servidor que estaba abierto.
+#      Arreglo: para esto no hace falta la lista de modelos, basta con saber si
+#      alguien escucha en el puerto. Un connect() de TCP tarda milisegundos.
+#
+#   2) "¿qué modelos tiene?" -> solo al poblar el desplegable de modelos, y
+#      fuera del hilo de Tk. Ahí sí se puede esperar.
+TIMEOUT_SONDEO_LOCAL_S = 0.4
+TIMEOUT_LOCAL_S = 5.0
+
+
+def _forzar_ipv4(url: str) -> str:
+    """Cambia 'localhost' por '127.0.0.1' en una URL local.
+
+    Medido el 07-sep-2026 en la maquina del usuario, con LM Studio ABIERTO:
+
+        http://localhost:1234/v1/models   ->  2019 ms
+        http://127.0.0.1:1234/v1/models   ->     1 ms
+
+    'localhost' resuelve a ::1 (IPv6) primero, y ese puerto no rechaza la
+    conexion: la deja colgada hasta agotar el timeout. Solo despues se prueba
+    IPv4, que responde al instante. Esa espera fantasma es la causa REAL del
+    cuelgue de 12s al cambiar de cerebro; bajar timeouts solo lo disimulaba, y
+    de hecho el ultimo recorte (0.6s) dejaba a LM Studio por debajo del umbral
+    y lo declaraba dormido estando abierto.
+    """
+    return (url or "").replace("//localhost:", "//127.0.0.1:")
+
+
+def _puerto_abierto(url: str, timeout: float = TIMEOUT_SONDEO_LOCAL_S) -> bool:
+    """¿Hay algo escuchando en el host:puerto de esa URL?
+
+    No comprueba que sea LM Studio ni que responda bien: solo que el puerto
+    esté abierto. Es justo lo que necesita el icono del desplegable, y cuesta
+    milisegundos en vez de segundos.
+    """
+    try:
+        url = _forzar_ipv4(url)
+        partes = urllib.parse.urlsplit(url if "://" in url else "http://" + url)
+        host = partes.hostname or "localhost"
+        puerto = partes.port or (443 if partes.scheme == "https" else 80)
+    except Exception:
+        return False
+    try:
+        with socket.create_connection((host, puerto), timeout=timeout):
+            return True
+    except Exception:
+        return False
 
 # Y el resultado se cachea: el refresco se dispara varias veces seguidas (al
 # cambiar de cerebro, al guardar una key, al abrir el desplegable).
@@ -759,16 +811,20 @@ class OpenAICompatibleProvider(BaseLLMProvider):
 class OllamaProvider(OpenAICompatibleProvider):
     """Variante: Ollama local. Detecta modelo instalado automáticamente."""
 
-    def __init__(self, api_key: str | None = None, model: str | None = None, base_url: str = "http://localhost:11434/v1", **kwargs):
+    def __init__(self, api_key: str | None = None, model: str | None = None, base_url: str = "http://127.0.0.1:11434/v1", **kwargs):
         super().__init__(api_key="ollama", model=model, base_url=base_url)
 
     def disponible(self) -> bool:
-        return bool(_local_cacheado(self.base_url or "ollama", self.listar_modelos))
+        raiz = _forzar_ipv4(self.base_url or "http://127.0.0.1:11434/v1")
+        return bool(_local_cacheado(
+            "puerto:" + raiz, lambda: ["ok"] if _puerto_abierto(raiz) else []))
 
     def listar_modelos(self) -> list[str]:
         """Modelos descargados en Ollama ([] si no responde)."""
         try:
-            with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=TIMEOUT_LOCAL_S) as r:
+            raiz = _forzar_ipv4(self.base_url or "http://127.0.0.1:11434/v1")
+            tags = raiz.rsplit("/v1", 1)[0] + "/api/tags"
+            with urllib.request.urlopen(tags, timeout=TIMEOUT_LOCAL_S) as r:
                 data = json.loads(r.read())
             return [m["name"] for m in data.get("models", []) if m.get("name")]
         except Exception:
@@ -828,9 +884,9 @@ class LMStudioProvider(OpenAICompatibleProvider):
     _PLACEHOLDER = "local-model"
 
     def __init__(self, api_key: str | None = None, model: str | None = None,
-                 base_url: str = "http://localhost:1234/v1", **kwargs):
+                 base_url: str = "http://127.0.0.1:1234/v1", **kwargs):
         super().__init__(api_key="lm-studio", model=model, base_url=base_url)
-        self._raiz = (base_url or "http://localhost:1234/v1").rstrip("/")
+        self._raiz = _forzar_ipv4(base_url or "http://127.0.0.1:1234/v1").rstrip("/")
 
     def listar_modelos(self) -> list[str]:
         """Modelos cargados ahora mismo en LM Studio ([] si no responde)."""
@@ -842,7 +898,9 @@ class LMStudioProvider(OpenAICompatibleProvider):
             return []
 
     def disponible(self) -> bool:
-        return bool(_local_cacheado(self._raiz, self.listar_modelos))
+        return bool(_local_cacheado(
+            "puerto:" + self._raiz,
+            lambda: ["ok"] if _puerto_abierto(self._raiz) else []))
 
     def _obtener_modelo_disponible(self) -> str | None:
         return elegir_modelo_chat(self.listar_modelos())

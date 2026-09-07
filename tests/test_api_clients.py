@@ -558,7 +558,9 @@ class TestLMStudioProvider:
     def test_la_fabrica_usa_la_clase_dedicada(self):
         prov = api_clients.get_provider("lm_studio", api_key="")
         assert isinstance(prov, api_clients.LMStudioProvider)
-        assert prov.base_url == "http://localhost:1234/v1"
+        # 127.0.0.1 y no localhost: en Windows localhost resuelve ::1 primero
+        # y ese puerto se cuelga 1s antes de caer a IPv4 (07-sep-2026).
+        assert prov.base_url == "http://127.0.0.1:1234/v1"
 
     def test_lista_los_modelos_cargados(self, monkeypatch):
         api_clients._CACHE_LOCAL.clear()
@@ -569,7 +571,10 @@ class TestLMStudioProvider:
 
     def test_sin_servidor_no_esta_disponible(self, monkeypatch):
         api_clients._CACHE_LOCAL.clear()   # el sondeo local se cachea 20s
-        prov = api_clients.LMStudioProvider()
+        # disponible() ya no lista modelos: mira si el puerto esta abierto.
+        # Se apunta a un puerto muerto en vez de simular, porque en la maquina
+        # de desarrollo LM Studio puede estar corriendo de verdad.
+        prov = api_clients.LMStudioProvider(base_url="http://127.0.0.1:1/v1")
         monkeypatch.setattr(prov, "listar_modelos", lambda: [])
         assert prov.disponible() is False
         assert prov._obtener_modelo_disponible() is None
