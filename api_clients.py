@@ -188,13 +188,20 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://console.mistral.ai/api-keys/",
         "tipo": "openai_compatible",
         "base_url": "https://api.mistral.ai/v1",
-        "model_default": "mistral-large-latest",
+        # Revisada el 07-sep-2026 con key real: de los cinco anteriores solo
+        # sobrevivían small y codestral. mistral-large-latest, mistral-nemo y
+        # open-mistral-7b habían desaparecido del catálogo (46 modelos vivos).
+        # Los ministral SÍ respondieron; small/medium y los magistral devuelven
+        # 429 "Rate limit exceeded" de forma persistente en el plan gratuito,
+        # así que se conservan pero el default es uno que funciona sin pagar.
+        "model_default": "ministral-8b-latest",
         "modelos": [
-            "mistral-large-latest",   # flagship Mistral
-            "mistral-small-latest",   # económico, muy rápido
-            "codestral-latest",       # especializado en código
-            "mistral-nemo",           # 12B, Apache 2.0, contexto 128k
-            "open-mistral-7b",        # open-source ligero
+            "ministral-8b-latest",    # equilibrio — default   (7,1s)
+            "ministral-3b-latest",    # el más rápido          (3,4s)
+            "ministral-14b-latest",   # el más capaz de los que van (9,3s)
+            "mistral-medium-latest",  # flagship — 429 en plan gratis
+            "mistral-small-latest",   # 429 en plan gratis
+            "codestral-latest",       # especializado en código (2,4s)
         ],
         "is_paid": True,
     },
@@ -399,7 +406,10 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "github_models": (0.0, 0.0),      # gratis con cuenta GitHub
     "groq":          (0.0, 0.0),      # free tier
     "lm_studio":     (0.0, 0.0),      # local
-    "mistral":       (2.00, 6.00),    # mistral-large
+    # Referencia del flagship (mistral-medium): PRECIO SIN VERIFICAR, es
+    # solo la estimación de respaldo. El default (ministral-8b) es mucho
+    # más barato, así que la cifra peca de alta, que es el lado seguro.
+    "mistral":       (2.00, 6.00),
     "ollama":        (0.0, 0.0),      # local
     "openai":        (2.50, 10.00),   # gpt-4o
     "openrouter":    None,            # depende del modelo elegido
