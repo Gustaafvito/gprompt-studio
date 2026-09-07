@@ -566,6 +566,10 @@ class TestLMStudioProvider:
         api_clients._CACHE_LOCAL.clear()
         prov = api_clients.LMStudioProvider()
         monkeypatch.setattr(prov, "listar_modelos", lambda: ["qwen2.5-7b", "otro"])
+        # disponible() ya NO pasa por listar_modelos: sondea el puerto. Sin
+        # simularlo, este test dependia de que LM Studio estuviera abierto en
+        # la maquina que corre la suite — pasaba o fallaba segun la hora.
+        monkeypatch.setattr(api_clients, "_puerto_abierto", lambda *a, **k: True)
         assert prov.disponible() is True
         assert prov._obtener_modelo_disponible() == "qwen2.5-7b"
 

@@ -480,18 +480,25 @@ class TestAutoriaYWeb:
         assert "tu-usuario" not in readme
 
 
-def test_el_instalador_no_puede_matar_apps_ajenas():
-    """Candado: el Restart Manager solo mira NUESTRO ejecutable.
+def test_el_instalador_no_mata_procesos_del_usuario():
+    """Candado: avisar de un bloqueo, sí; matar el proceso ajeno, no.
 
-    El 07-sep-2026 el instalador le ofreció al usuario cerrar Google Chrome,
-    que no comparte un solo archivo con esta app. Con CloseApplications=force
-    y el radio "Cerrar automáticamente" marcado por defecto, seguir adelante
-    le habría matado el navegador con las pestañas abiertas.
+    El 07-sep-2026 el instalador listó Google Chrome entre las apps a cerrar y
+    parecía un falso positivo del Restart Manager. NO lo era: chrome.exe y
+    chrome-native-host.exe tenían cargado nuestro _internal\VCRUNTIME140.dll
+    (orden de búsqueda de DLLs de Windows), y sin cerrarlos la instalación
+    moría con "DeleteFile falló; código 5".
+
+    De ahí las dos mitades del candado: el filtro por defecto tiene que seguir
+    vivo para que ese bloqueo real se detecte y se avise, y `force` no, porque
+    con "Cerrar automáticamente" marcado por defecto le habría cerrado el
+    navegador con las pestañas abiertas.
     """
     ruta = os.path.join(os.path.dirname(__file__), "..", "installer.iss")
     with open(ruta, encoding="utf-8-sig") as f:
         iss = f.read()
-    assert "CloseApplicationsFilter={#MyAppExeName}" in iss, \
-        "sin filtro, el Restart Manager reporta procesos ajenos"
     assert "CloseApplications=force" not in iss, \
-        "'force' mata procesos que no cierran por las buenas; usa 'yes'"
+        "'force' mata los procesos que no cierran por las buenas; usa 'yes'"
+    assert "CloseApplicationsFilter" not in iss, \
+        ("el filtro por defecto (*.exe,*.dll,*.chm) tiene que seguir vivo: "
+         "acotarlo a nuestro binario oculta bloqueos reales de terceros")

@@ -52,16 +52,23 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ; Cerrar la app si está corriendo antes de instalar (evita "archivo en uso").
-; El filtro es lo importante: por defecto Inno pregunta al Restart Manager por
-; *.exe,*.dll,*.chm y ese servicio devuelve falsos positivos con generosidad.
-; El 07-sep-2026 el instalador le ofreció al usuario cerrar GOOGLE CHROME, que
-; no comparte un solo archivo con esta app — y con "force" y el radio de
-; "Cerrar automáticamente" marcado por defecto, un Siguiente distraído se lo
-; habría matado con las pestañas abiertas. Mirando solo nuestro binario no
-; puede volver a pasar, y se deja "yes" en vez de "force": si algo no cierra
-; por las buenas, mejor avisar que matar procesos del usuario.
+;
+; El 07-sep-2026 el instalador listó GOOGLE CHROME entre las apps a cerrar y
+; parecía un falso positivo del Restart Manager. NO LO ERA: chrome.exe y
+; chrome-native-host.exe tenían cargado
+; {app}\_internal\VCRUNTIME140.dll — Windows lo encontró por orden de
+; búsqueda de DLLs al arrancar el host nativo, que vive en otra carpeta. Sin
+; cerrarlos, la instalación muere con "DeleteFile falló; código 5".
+;
+; Por eso el filtro se queda en el de por defecto (*.exe,*.dll,*.chm): acotarlo
+; a nuestro binario habría ocultado un bloqueo REAL y el usuario se habría
+; comido el error sin aviso previo.
+;
+; Lo que sí se baja es force -> yes. "force" MATA los procesos que no cierran
+; por las buenas, y el radio "Cerrar automáticamente" viene marcado: un
+; Siguiente distraído le cerraba Chrome con las pestañas abiertas. Avisar es
+; correcto; matar procesos del usuario, no.
 CloseApplications=yes
-CloseApplicationsFilter={#MyAppExeName}
 RestartApplications=no
 
 [Languages]
