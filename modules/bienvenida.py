@@ -13,13 +13,13 @@ primer contacto: aquí solo se enseña a desbloquear la app y los 5 pasos del
 flujo básico.
 """
 import logging
-import webbrowser
 
 import customtkinter as ctk
 
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
+from modules.navegador import abrir_url
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ def abrir_bienvenida(app) -> None:
 
 def _abrir_url(url: str) -> None:
     try:
-        webbrowser.open(url)
+        abrir_url(url)
     except Exception as e:
         logger.warning(f"No se pudo abrir {url}: {e}")
 

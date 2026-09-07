@@ -72,6 +72,7 @@ hiddenimports = [
     'modules.dashboard',
     'modules.ui_footer',
     'modules.tooltip',
+    'modules.navegador',
     'modules.i18n',
     # Módulo Avatar dataset LoRA (sesión 19)
     'modules.avatar_config',

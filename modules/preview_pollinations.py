@@ -20,6 +20,7 @@ from config import get_theme_colors
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
+from modules.navegador import abrir_url
 from workers import log_future_exc
 
 logger = logging.getLogger("gprompt")
@@ -322,7 +323,6 @@ class PreviewPollinationsService:
         Genera las N previews EN PARALELO (un thread por variante).
         Click en una imagen → la abre a tamaño completo en ventana nueva.
         """
-        import webbrowser
         from urllib.parse import quote
 
         is_lt = ctk.get_appearance_mode().lower() == "light"
@@ -473,7 +473,7 @@ class PreviewPollinationsService:
                                 f"?width=1024&height=1024&model={modelo_url}&nologo=true"
                                 f"&referrer=gprompt-studio{auth_qs}"
                             )
-                            webbrowser.open(url)
+                            abrir_url(url)
                         except Exception as _e:
                             logger.debug(f"[silent] open large: {_e}")
                     lbl.bind("<Button-1>", _open_large)
@@ -530,7 +530,6 @@ class PreviewPollinationsService:
 
     def mostrar_window(self, image_pil, img_ctk, url_imagen, desde_cache=False):
         """Ventana de preview con imagen + URL + botones Guardar/Copiar/Abrir."""
-        import webbrowser
         vent_previa = GPromptWindow(self.app)
         vent_previa.title(tr("🖼 Preview") + (tr(" (caché)") if desde_cache else ""))
         vent_previa.geometry("560x680")
@@ -566,7 +565,7 @@ class PreviewPollinationsService:
                       ).pack(side="left", padx=4)
         ctk.CTkButton(btn_row, text=tr("🌐 Abrir en navegador"), width=160, height=30,
                       **P.estilo_boton(P.BTN_ACENTO),
-                      command=lambda: webbrowser.open(url_imagen)
+                      command=lambda: abrir_url(url_imagen)
                       ).pack(side="left", padx=4)
 
     def guardar_boceto(self, image_pil):

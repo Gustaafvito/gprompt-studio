@@ -10,6 +10,7 @@ from config import get_theme_colors
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr
+from modules.navegador import abrir_url
 
 logger = logging.getLogger("gprompt")
 
@@ -174,8 +175,7 @@ class DialogsService:
             def _crear_obtener_btn(url=info.get('url_obtener_key', '')):
                 def _abrir():
                     try:
-                        import webbrowser
-                        webbrowser.open(url)
+                        abrir_url(url)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
@@ -291,8 +291,7 @@ class DialogsService:
             def _crear_obtener_btn_img(url=info.get('url_obtener_key', '')):
                 def _abrir():
                     try:
-                        import webbrowser
-                        webbrowser.open(url)
+                        abrir_url(url)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
                 return _abrir
@@ -405,7 +404,6 @@ class DialogsService:
 
     def _cmd_acerca_de(self) -> None:
         """Modal 'Acerca de' con info de la app, versión, autor y enlaces."""
-        import webbrowser
 
         from config import APP_TITLE, AUTHOR, PUBLIC_VERSION
 
@@ -455,7 +453,7 @@ class DialogsService:
             ctk.CTkButton(links_frame, text=label, width=140, height=30,
                           fg_color=c["fg_dark"],
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
-                          command=lambda u=url: webbrowser.open(u)).pack(side="left", padx=5)
+                          command=lambda u=url: abrir_url(u)).pack(side="left", padx=5)
 
         # Botón cerrar
         ctk.CTkButton(v, text=tr("Cerrar"), width=120, height=32,
@@ -550,7 +548,6 @@ class DialogsService:
         MISMA fila en el footer (texto a la izquierda, enlaces a la
         derecha), todo en la última línea de la ventana.
         """
-        import webbrowser
 
         from config import AUTHOR, PUBLIC_VERSION
 
@@ -601,7 +598,7 @@ class DialogsService:
 
         def _abrir(url):
             try:
-                webbrowser.open(url)
+                abrir_url(url)
                 if hasattr(self.app, "show_toast"):
                     try:
                         self.app.show_toast(tr('🌐 Abriendo {0}...').format(url[:40]), "#3b82f6", 1500)
