@@ -157,17 +157,25 @@ LLM_PROVIDERS = {
     "groq": {
         "name": "Groq",
         "label": "🏆 Groq (gratis, rápido)",
-        "descripcion": "Gratis (14.400 req/día). Llama 3.3 70B muy rápido.",
+        "descripcion": "Gratis y el más rápido de todos: Qwen3.8 responde en menos de un segundo.",
         "url_obtener_key": "https://console.groq.com/keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.groq.com/openai/v1",
-        "model_default": "llama-3.3-70b-versatile",
+        # Rehecha el 07-sep-2026 con key real: los CINCO anteriores daban 404,
+        # los dos Llama incluidos pese a que la documentación de Groq los sigue
+        # dando por producción. Estos seis se probaron uno a uno.
+        # OJO: con esta key `GET /v1/models` devuelve 403 (las keys de Groq
+        # llevan permisos por ámbito), así que el filtro en vivo no puede
+        # depurar Groq y la lista curada pasa tal cual. Es el único proveedor
+        # OpenAI-compatible en esa situación.
+        "model_default": "qwen/qwen3.8-27b",
         "modelos": [
-            "llama-3.3-70b-versatile",        # más capaz, gratis
-            "llama-3.1-8b-instant",            # ultra-rápido
-            "llama-3.2-90b-vision-preview",    # con visión
-            "gemma2-9b-it",                    # Google Gemma 2
-            "mixtral-8x7b-32768",              # Mixtral MoE, contexto largo
+            "qwen/qwen3.8-27b",       # el más rápido de todos — default (0,7s)
+            "openai/gpt-oss-20b",     # (1,2s)
+            "qwen/qwen3.6-27b",       # razona (<think>): ver _PISO_REINTENTO (1,9s)
+            "openai/gpt-oss-120b",    # el más capaz de los rápidos   (2,5s)
+            "groq/compound-mini",     # sistema con herramientas      (3,8s)
+            "groq/compound",          # idem, más capaz               (8,4s)
         ],
         "is_paid": False,
     },

@@ -2290,7 +2290,7 @@ class ArquitectoApp(
                 "groq",
                 "🏆 Groq API Key (GRATIS, 14.400 req/día):",
                 "gsk_...",
-                "Consíguela en: console.groq.com/keys  ·  Llama 3.3 70B muy rápido",
+                "Consíguela en: console.groq.com/keys  ·  el más rápido de todos",
                 lambda k: len(k) > 20,
                 "Groq",
             ),
@@ -2377,18 +2377,26 @@ class ArquitectoApp(
                 # o la red están lentas, el usuario no quiere esperar 10 min
                 # (default del SDK de OpenAI).
                 TEST_TIMEOUT = 15.0
+                # El modelo de prueba sale del catálogo, NO se escribe aquí.
+                # Hasta el 07-sep-2026 estaban los tres a fuego y TRES de los
+                # cinco apuntaban a modelos muertos: groq probaba con
+                # llama-3.3-70b-versatile (404), openrouter con uno de los
+                # ":free" retirados y gemini con 2.0-flash-exp. O sea que el
+                # botón le decía al usuario que su key era mala siendo buena.
+                from api_clients import LLM_PROVIDERS as _LP
+                modelo_test = _LP.get(primer_pid, {}).get("model_default", "")
                 try:
                     if primer_pid == "gemini":
                         from google import genai as _genai
                         cli = _genai.Client(api_key=primer_valor)
-                        cli.models.generate_content(model="gemini-2.0-flash-exp",
+                        cli.models.generate_content(model=modelo_test,
                                                     contents="Responde solo 'ok'")
                     elif primer_pid == "deepseek":
                         from openai import OpenAI
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://api.deepseek.com",
                                      timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model="deepseek-v4-flash",
+                        cli.chat.completions.create(model=modelo_test,
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "groq":
@@ -2396,7 +2404,7 @@ class ArquitectoApp(
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://api.groq.com/openai/v1",
                                      timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model="llama-3.3-70b-versatile",
+                        cli.chat.completions.create(model=modelo_test,
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "github_models":
@@ -2404,7 +2412,7 @@ class ArquitectoApp(
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://models.inference.ai.azure.com",
                                      timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model="gpt-4o-mini",
+                        cli.chat.completions.create(model=modelo_test,
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
                     elif primer_pid == "openrouter":
@@ -2412,7 +2420,7 @@ class ArquitectoApp(
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://openrouter.ai/api/v1",
                                      timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model="meta-llama/llama-3.1-8b-instruct:free",
+                        cli.chat.completions.create(model=modelo_test,
                                                     messages=[{"role": "user", "content": "ok"}],
                                                     max_tokens=5)
 

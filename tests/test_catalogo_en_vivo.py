@@ -161,3 +161,40 @@ class TestFireworksRehecha:
         for m in api_clients.LLM_PROVIDERS["fireworks"]["modelos"]:
             assert not any(t in m.lower() for t in ("embedding", "reranker")), \
                 f"{m} no genera texto; como cerebro solo sirve para fallar"
+
+
+class TestElBotonProbarKeysNoUsaModelosAFuego:
+    """El wizard probaba la key llamando a un modelo escrito a mano.
+
+    El 07-sep-2026 TRES de los cinco apuntaban a modelos muertos: groq a
+    llama-3.3-70b-versatile (404 con key válida), openrouter a un ":free"
+    retirado y gemini a 2.0-flash-exp. Resultado: el botón declaraba inválida
+    una key que funcionaba. Ahora el modelo sale de LLM_PROVIDERS.
+    """
+    import pathlib
+    FUENTE = pathlib.Path(__file__).resolve().parent.parent / "app.py"
+
+    def _bloque(self):
+        txt = self.FUENTE.read_text(encoding="utf-8")
+        i = txt.find("TEST_TIMEOUT = 15.0")
+        assert i != -1, "no encuentro el test de keys del wizard"
+        return txt[i:i + 3000]
+
+    def test_el_modelo_sale_del_catalogo(self):
+        assert "modelo_test" in self._bloque()
+
+    def test_no_queda_ningun_id_escrito_a_mano(self):
+        # El comentario que documenta el bug CITA los IDs muertos; aqui
+        # solo interesa que no sigan siendo el argumento model= real.
+        sin_comentarios = [x for x in self._bloque().splitlines()
+                           if not x.strip().startswith('#')]
+        bloque = chr(10).join(sin_comentarios)
+        for muerto in ("llama-3.3-70b-versatile", "gemini-2.0-flash-exp",
+                       "meta-llama/llama-3.1-8b-instruct:free"):
+            assert muerto not in bloque, f"{muerto} ya no responde"
+
+    def test_todos_los_defaults_del_wizard_estan_en_su_lista(self):
+        for pid in ("gemini", "deepseek", "groq", "github_models", "openrouter"):
+            info = api_clients.LLM_PROVIDERS[pid]
+            assert info["model_default"] in info["modelos"], \
+                f"{pid}: el default no está en su propia lista"

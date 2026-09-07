@@ -2830,7 +2830,7 @@ TRADUCCIONES = {
     '🏆 Gemini API Key (Google — GRATIS, 15 req/min):': '🏆 Gemini API Key (Google — FREE, 15 req/min):',
     'Consíguela en: aistudio.google.com/apikey  ·  formato: AIzaXXXXXX...': 'Get it at: aistudio.google.com/apikey  ·  format: AIzaXXXXXX...',
     '🏆 Groq API Key (GRATIS, 14.400 req/día):': '🏆 Groq API Key (FREE, 14,400 req/day):',
-    'Consíguela en: console.groq.com/keys  ·  Llama 3.3 70B muy rápido': 'Get it at: console.groq.com/keys  ·  very fast Llama 3.3 70B',
+    'Consíguela en: console.groq.com/keys  ·  el más rápido de todos': 'Get it at: console.groq.com/keys  ·  the fastest of them all',
     '🏆 GitHub Token (GRATIS con cuenta GitHub):': '🏆 GitHub Token (FREE with a GitHub account):',
     'Consíguelo en: github.com/settings/tokens  ·  Acceso a OpenAI/Claude/Llama': 'Get it at: github.com/settings/tokens  ·  Access to OpenAI/Claude/Llama',
     '🥈 DeepSeek API Key (~€0.14/1M tokens):': '🥈 DeepSeek API Key (~€0.14/1M tokens):',
