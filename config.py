@@ -982,22 +982,23 @@ def _cargar_modelos_locales():
 
     ruta_json = ARCHIVOS["modelos_comfy"]
 
+    # VACIA A PROPOSITO. Hasta el 08-sep-2026 esta plantilla traia los once
+    # checkpoints del equipo del autor (Juggernaut-XL, z_image_turbo,
+    # flux-2-klein, wan2.2_i2v...). Quien instalara la app veia once modelos
+    # que NO tiene: elegir cualquiera daba "model not found" en ComfyUI, y de
+    # paso tapaba el auto-discovery haciendo creer que ya estaba configurado.
+    # Un desplegable vacio es mejor: empuja a poner la ruta, que es lo unico
+    # que hace falta.
     plantilla_default = {
         "_meta": {
-            "version": 1,
-            "descripcion": "Tus modelos locales. Edita este archivo o conecta ComfyUI para auto-discovery."
+            "version": 2,
+            "descripcion": ("Tus modelos locales. Con la ruta de ComfyUI configurada, "
+                            "el auto-discovery los detecta y agrupa por familia solo. "
+                            "Usa este archivo solo para entradas manuales extra "
+                            "(nombres bonitos, modelos fuera de ComfyUI)."),
         },
-        "imagen": [
-            {"grupo": "── Checkpoints SDXL ──", "modelos": ["Juggernaut-XL v9 RunDiffusionPhoto v2", "RealVisXL V5.0 fp16", "JuggernautXL Ragnarok"]},
-            {"grupo": "── Familia Z-Image ──", "modelos": ["z_image_bf16 (Base)", "z_image_turbo_bf16 (Turbo)", "zImageBase_base"]},
-            {"grupo": "── Familia FLUX (UNet) ──", "modelos": ["flux-2-klein-base-4b-fp8"]},
-            {"grupo": "── Edit ──", "modelos": ["qwen_image_edit_2509_fp8_e4m3fn"]},
-        ],
-        "video": [
-            {"grupo": "── Wan 2.2 (Image-to-Video) ──", "modelos": ["wan2.2_i2v_high_noise_14B_fp8_scaled", "wan2.2_i2v_low_noise_14B_fp8_scaled"]},
-            {"grupo": "── LTX-Video ──", "modelos": ["ltx-2.3-22b-dev-fp8"]},
-            {"grupo": "── Stable Video ──", "modelos": ["svd"]},
-        ]
+        "imagen": [],
+        "video": [],
     }
 
     if not ruta_json.exists():
@@ -1060,6 +1061,74 @@ _COMFY_BASE_VID = len(GRUPOS_VIDEO_COMFYUI)
 _COMFY_CACHE_APLICADA = {"imagen": [], "video": []}
 
 
+# Carpetas donde suele vivir ComfyUI. Se prueban en orden y gana la primera
+# que tenga models/ dentro. Sin esto, quien instalaba la app abria un
+# desplegable vacio y no tenia forma de saber que le faltaba pegar una ruta en
+# Ajustes: el auto-discovery devolvia 0 en silencio.
+_COMFY_SUFIJOS = (
+    "ComfyUI",
+    "IA/ComfyUI",
+    "AI/ComfyUI",
+    "ComfyUI_windows_portable/ComfyUI",
+    "ComfyUI/ComfyUI",
+    "StabilityMatrix/Packages/ComfyUI",
+    "Documents/ComfyUI",
+)
+_ruta_comfy_detectada = None   # None = aun no se ha buscado; "" = no hay
+
+
+def _unidades_fijas() -> list:
+    """Letras de unidad FIJAS (no CD ni red ni USB).
+
+    Se consulta a Windows en vez de probar de la A a la Z: tocar una unidad
+    extraible vacia o una de red caida puede tardar segundos o sacar un dialogo
+    del sistema, y esto corre en el arranque.
+    """
+    letras = []
+    try:
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        mascara = k32.GetLogicalDrives()
+        for i in range(26):
+            if not (mascara >> i) & 1:
+                continue
+            letra = "%s:/" % chr(ord("A") + i)
+            if k32.GetDriveTypeW(ctypes.c_wchar_p(letra)) == 3:   # DRIVE_FIXED
+                letras.append(letra)
+    except Exception as e:
+        logger.debug(f"[silent] unidades fijas: {e}")
+        letras = ["C:/"]
+    return letras
+
+
+def detectar_comfy_automatico() -> str:
+    """Busca ComfyUI en las rutas habituales. Devuelve "" si no lo encuentra.
+
+    Solo mira si existe `models/`: no abre nada ni escanea, para que el coste
+    en el arranque sea de milisegundos.
+    """
+    global _ruta_comfy_detectada
+    if _ruta_comfy_detectada is not None:
+        return _ruta_comfy_detectada
+    _ruta_comfy_detectada = ""
+    bases = list(_unidades_fijas())
+    try:
+        bases.insert(0, str(Path.home()) + "/")
+    except Exception as e:
+        logger.debug(f"[silent] home para autodeteccion: {e}")
+    for base in bases:
+        for sufijo in _COMFY_SUFIJOS:
+            try:
+                cand = Path(base) / sufijo
+                if (cand / "models").is_dir():
+                    _ruta_comfy_detectada = str(cand)
+                    logger.info(f"ComfyUI detectado automaticamente en {cand}")
+                    return _ruta_comfy_detectada
+            except Exception as e:
+                logger.debug(f"[silent] candidata {base}{sufijo}: {e}")
+    return _ruta_comfy_detectada
+
+
 def _ruta_comfy_configurada() -> str:
     """Ruta de ComfyUI: manifest (raíz o _meta) y, si no, preferencias."""
     import json as _json
@@ -1074,7 +1143,13 @@ def _ruta_comfy_configurada() -> str:
     except Exception as e:
         logger.debug(f"[silent] comfyui_path del manifest: {e}")
     ruta = ruta_manifest or get_comfyui_path(_cargar_preferencias_seguras())
-    return ruta if ruta and Path(ruta).exists() else ""
+    if ruta and Path(ruta).exists():
+        return ruta
+    # Nadie la ha configurado: mirar donde suele estar. Lo que se detecta NO se
+    # guarda desde aqui — el que decide persistirla es quien arranca el
+    # auto-discovery, para que Ajustes muestre la ruta que se esta usando en
+    # vez de un campo vacio con modelos apareciendo por arte de magia.
+    return detectar_comfy_automatico()
 
 
 def _rehacer_flat(grupos: list, flat: list) -> None:
@@ -1154,6 +1229,30 @@ _COMFY_DESDE_CACHE = aplicar_cache_comfy()
 _autodiscovery_hecho = False
 
 
+def _persistir_ruta_comfy(ruta: str) -> bool:
+    """Escribe la ruta detectada en _meta del manifest. No pisa una existente."""
+    import json as _json
+    destino = ARCHIVOS["modelos_comfy"]
+    try:
+        datos = {}
+        if destino.exists():
+            with open(destino, encoding="utf-8") as f:
+                datos = _json.load(f) or {}
+        meta = datos.setdefault("_meta", {})
+        if meta.get("comfyui_path") or datos.get("comfyui_path"):
+            return False
+        meta["comfyui_path"] = ruta
+        datos.setdefault("imagen", [])
+        datos.setdefault("video", [])
+        with open(destino, "w", encoding="utf-8") as f:
+            _json.dump(datos, f, indent=4, ensure_ascii=False)
+        logger.info(f"Ruta de ComfyUI detectada y guardada: {ruta}")
+        return True
+    except Exception as e:
+        logger.warning(f"No se pudo guardar la ruta detectada de ComfyUI: {e}")
+        return False
+
+
 def aplicar_autodiscovery_comfy() -> int:
     """Escanea la carpeta ComfyUI configurada y añade los modelos hallados a
     GRUPOS_*_COMFYUI / MODELOS_*_COMFYUI_FLAT (mutación in place).
@@ -1169,6 +1268,11 @@ def aplicar_autodiscovery_comfy() -> int:
     comfy_ruta = _ruta_comfy_configurada()
     if not comfy_ruta:
         return 0
+    # Si la ruta salio de la autodeteccion, dejarla escrita en el manifest: sin
+    # esto el usuario veria modelos aparecer con el campo de Ajustes vacio y no
+    # sabria de donde salen ni como cambiarlos.
+    if comfy_ruta == _ruta_comfy_detectada:
+        _persistir_ruta_comfy(comfy_ruta)
 
     hallados = _escanear_comfy_root(Path(comfy_ruta))
     # Dedupe contra el manifest curado (mis_modelos_comfy.json): si el usuario
