@@ -212,7 +212,7 @@ class TestElBotonProbarKeysNoUsaModelosAFuego:
             assert muerto not in bloque, f"{muerto} ya no responde"
 
     def test_todos_los_defaults_del_wizard_estan_en_su_lista(self):
-        for pid in ("gemini", "deepseek", "groq", "github_models", "openrouter"):
+        for pid in ("gemini", "deepseek", "groq", "xai", "openrouter"):
             info = api_clients.LLM_PROVIDERS[pid]
             assert info["model_default"] in info["modelos"], \
                 f"{pid}: el default no está en su propia lista"

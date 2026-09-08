@@ -30,7 +30,6 @@ logger = logging.getLogger(__name__)
 PROVEEDORES_GRATIS = [
     ("gemini", tr("Gratis hasta 15 peticiones/min. La opción más rápida para empezar.")),
     ("groq", tr("Gratis, 14.400 peticiones/día. Muy rápido.")),
-    ("github_models", tr("Gratis con tu cuenta de GitHub. Da acceso a varios modelos.")),
     ("ollama", tr("Local: sin internet, sin cuenta y sin coste. Hay que instalarlo.")),
 ]
 

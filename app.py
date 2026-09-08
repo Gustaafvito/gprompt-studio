@@ -2221,7 +2221,7 @@ class ArquitectoApp(
         """Wizard de primera vez cuando faltan API keys. Devuelve True si se configuraron.
 
         Pide cualquiera de los 5 proveedores soportados de entrada:
-          • Gemini, Groq, GitHub Models — GRATIS
+          • Gemini, Groq — GRATIS
           • DeepSeek (~€0.14/1M), OpenRouter (100+ modelos)
 
         Con que el usuario rellene UNA, la app puede arrancar. El resto
@@ -2293,14 +2293,6 @@ class ArquitectoApp(
                 "Consíguela en: console.groq.com/keys  ·  el más rápido de todos",
                 lambda k: len(k) > 20,
                 "Groq",
-            ),
-            (
-                "github_models",
-                "🏆 GitHub Token (GRATIS con cuenta GitHub):",
-                "ghp_... o github_pat_...",
-                "Consíguelo en: github.com/settings/tokens  ·  Acceso a OpenAI/Claude/Llama",
-                lambda k: len(k) > 20,
-                "GitHub Models",
             ),
             (
                 "deepseek",
@@ -2403,14 +2395,6 @@ class ArquitectoApp(
                         from openai import OpenAI
                         cli = OpenAI(api_key=primer_valor,
                                      base_url="https://api.groq.com/openai/v1",
-                                     timeout=TEST_TIMEOUT)
-                        cli.chat.completions.create(model=modelo_test,
-                                                    messages=[{"role": "user", "content": "ok"}],
-                                                    max_tokens=5)
-                    elif primer_pid == "github_models":
-                        from openai import OpenAI
-                        cli = OpenAI(api_key=primer_valor,
-                                     base_url="https://models.inference.ai.azure.com",
                                      timeout=TEST_TIMEOUT)
                         cli.chat.completions.create(model=modelo_test,
                                                     messages=[{"role": "user", "content": "ok"}],

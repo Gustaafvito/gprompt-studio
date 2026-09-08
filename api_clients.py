@@ -138,24 +138,15 @@ LLM_PROVIDERS = {
         ],
         "is_paid": False,
     },
-    "github_models": {
-        "name": "GitHub Models",
-        "label": "🏆 GitHub Models",
-        "descripcion": "Gratis con cuenta GitHub. Acceso a OpenAI/Claude/Llama. Límite generoso.",
-        "url_obtener_key": "https://github.com/settings/tokens",
-        "tipo": "openai_compatible",
-        "base_url": "https://models.inference.ai.azure.com",
-        "model_default": "gpt-4o-mini",
-        "modelos": [
-            "gpt-4o-mini",                      # OpenAI económico
-            "gpt-4o",                           # OpenAI flagship
-            "Meta-Llama-3.3-70B-Instruct",      # Llama 3.3 70B
-            "Phi-4",                            # Microsoft Phi-4 14B
-            "Phi-4-mini",                       # Microsoft Phi-4 mini
-            "Mistral-large",                    # Mistral Large
-        ],
-        "is_paid": False,
-    },
+    # RETIRADO 08-sep-2026. GitHub cerro GitHub Models el 30-jul-2026: dejo de
+    # admitir clientes nuevos el 16-jun, hubo brownouts el 16 y el 23-jul, y
+    # ahora la API responde 410 "github_models_retirement_brownout" a todo.
+    # Comprobado con un token recien creado del usuario.
+    # Se quita en vez de dejarlo fallando porque estaba anunciado como opcion
+    # ESTRELLA y GRATUITA del asistente de bienvenida: quien instalara la app
+    # lo elegiria primero y se comeria un 410 sin entender nada.
+    # Alternativas gratuitas que SI funcionan y ya estan aqui: Groq y Gemini.
+    # "github_models": { ... }  <- base_url models.inference.ai.azure.com
     "groq": {
         "name": "Groq",
         "label": "🏆 Groq (gratis, rápido)",
@@ -459,7 +450,6 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "deepseek":      (0.14, 0.28),    # deepseek-v4-flash
     "fireworks":     (0.05, 0.20),    # nemotron-lightning-3p5-30b (verificado 06-sep-2026)
     "gemini":        (0.0, 0.0),      # free tier 15rpm (tier de pago: 0.30/2.50)
-    "github_models": (0.0, 0.0),      # gratis con cuenta GitHub
     "groq":          (0.0, 0.0),      # free tier
     "lm_studio":     (0.0, 0.0),      # local
     # Referencia del flagship (mistral-medium): PRECIO SIN VERIFICAR, es
@@ -1370,7 +1360,6 @@ ENV_VAR_POR_PROVIDER = {
     "mistral": "MISTRAL_API_KEY",
     "xai": "XAI_API_KEY",
     "fireworks": "FIREWORKS_API_KEY",
-    "github_models": "GITHUB_TOKEN",
     "lm_studio": "",  # local, no necesita key
     "perplexity": "PERPLEXITY_API_KEY",
     "togetherai": "TOGETHER_API_KEY",
