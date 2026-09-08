@@ -163,3 +163,20 @@ class TestLaListaDeOpenAIEstaViva:
         # usa y el que sale en el wizard.
         d = A.LLM_PROVIDERS["openai"]["model_default"]
         assert A.PRECIOS_USD_1M_MODELO.get(d), f"{d} sin precio en la tabla"
+
+    def test_todos_los_curados_tienen_precio(self):
+        # Un modelo sin precio propio hereda el respaldo del proveedor (el de
+        # gpt-4o), y para gpt-6-astra eso es infravalorar el gasto 4 veces.
+        sin_precio = [m for m in A.LLM_PROVIDERS["openai"]["modelos"]
+                      if not A.PRECIOS_USD_1M_MODELO.get(m)]
+        assert not sin_precio, f"sin precio en la tabla: {sin_precio}"
+
+    def test_el_default_es_el_mas_barato_de_la_lista(self):
+        # El default se usa en el wizard y en cada llamada que no elige
+        # modelo: que sea el más caro sería una factura silenciosa.
+        entrada = {m: A.PRECIOS_USD_1M_MODELO[m][0]
+                   for m in A.LLM_PROVIDERS["openai"]["modelos"]}
+        d = A.LLM_PROVIDERS["openai"]["model_default"]
+        assert entrada[d] == min(entrada.values()), (
+            f"{d} cuesta {entrada[d]} y el más barato es "
+            f"{min(entrada, key=entrada.get)}")

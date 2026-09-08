@@ -429,6 +429,19 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "gemini-2.5-flash":          (0.0, 0.0),   # free tier
     "gemini-2.5-pro":            (0.0, 0.0),   # free tier (límites más bajos)
     "gemini-2.0-flash":          (0.0, 0.0),   # free tier
+    # OpenAI GPT-5.x y GPT-6. AVISO SOBRE LA FUENTE: openai.com devuelve 403 a
+    # una peticion automatica, asi que estos numeros NO salen de la pagina
+    # oficial ni de la API (que no publica precios en /v1/models). Salen de
+    # varias fuentes secundarias independientes que coinciden entre si
+    # (08-sep-2026). Sirven para que el contador de gasto de un orden de
+    # magnitud razonable en vez de aplicar el respaldo de gpt-4o a todos;
+    # si alguna vez cuadran mal contra el panel de facturacion, el panel manda.
+    "gpt-6-astra":               (10.00, 50.00),
+    "gpt-5.6-sol":               (5.00, 30.00),
+    "gpt-5.6-terra":             (2.00, 12.00),
+    "gpt-5.6-luna":              (0.20,  1.20),
+    "gpt-5.5":                   (5.00, 30.00),
+    "gpt-5.4-mini":              (0.75,  4.50),
     # OpenAI GPT-4.1 y razonamiento (precios abril 2025)
     "gpt-4.1":                   (2.00,  8.00),
     "gpt-4.1-mini":              (0.40,  1.60),
