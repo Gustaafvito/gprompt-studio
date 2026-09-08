@@ -2375,8 +2375,25 @@ class ArquitectoApp(
                 # llama-3.3-70b-versatile (404), openrouter con uno de los
                 # ":free" retirados y gemini con 2.0-flash-exp. O sea que el
                 # botón le decía al usuario que su key era mala siendo buena.
-                from api_clients import LLM_PROVIDERS as _LP
+                # 08-sep-2026: usar el model_default tampoco basta. Ese campo
+                # es OTRA lista escrita a mano, y el mismo día se le murieron
+                # CUATRO: openrouter (minimax-m3:free), xai (grok-3), openai
+                # (gpt-5.6, que ni existe) y antes groq. Ahora se le pregunta
+                # al proveedor cuál sirve AHORA — modelos_disponibles() ya
+                # depura la lista curada contra su catálogo en vivo — y el
+                # default queda solo de red de seguridad para cuando no
+                # conteste. Así queda cubierto también togetherai y
+                # perplexity, que no se han podido verificar por falta de key.
+                from api_clients import LLM_PROVIDERS as _LP, modelos_disponibles
                 modelo_test = _LP.get(primer_pid, {}).get("model_default", "")
+                try:
+                    vivos = modelos_disponibles(primer_pid, primer_valor)
+                    if vivos and modelo_test not in vivos:
+                        logger.info(f"{primer_pid}: '{modelo_test}' no está vivo; "
+                                    f"se prueba la key con '{vivos[0]}'")
+                        modelo_test = vivos[0]
+                except Exception as e:
+                    logger.debug(f"[silent] catálogo para probar la key: {e}")
                 try:
                     if primer_pid == "gemini":
                         from google import genai as _genai

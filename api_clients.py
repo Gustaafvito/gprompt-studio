@@ -319,6 +319,14 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://www.perplexity.ai/settings/api",
         "tipo": "openai_compatible",
         "base_url": "https://api.perplexity.ai",
+        # SIN VERIFICAR: no hay key de este proveedor. El 08-sep-2026 se
+        # auditaron con key real los NUEVE proveedores que si la tienen y
+        # las SEIS listas curadas que quedaban por revisar estaban podridas,
+        # asi que lo probable es que esta tambien lo este. No se quita el
+        # proveedor porque el servicio funciona para quien pague; lo que se
+        # ha hecho es que el boton "Probar keys" pregunte al catalogo en vivo
+        # en vez de fiarse del model_default (ver app.py), de modo que un
+        # default muerto ya no declara invalida una key buena.
         "model_default": "sonar-pro",
         "modelos": [
             "sonar-pro",        # con búsqueda web en tiempo real, máxima calidad
@@ -334,6 +342,14 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://api.together.xyz/settings/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.together.xyz/v1",
+        # SIN VERIFICAR: no hay key de este proveedor. El 08-sep-2026 se
+        # auditaron con key real los NUEVE proveedores que si la tienen y
+        # las SEIS listas curadas que quedaban por revisar estaban podridas,
+        # asi que lo probable es que esta tambien lo este. No se quita el
+        # proveedor porque el servicio funciona para quien pague; lo que se
+        # ha hecho es que el boton "Probar keys" pregunte al catalogo en vivo
+        # en vez de fiarse del model_default (ver app.py), de modo que un
+        # default muerto ya no declara invalida una key buena.
         "model_default": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         "modelos": [
             "meta-llama/Llama-3.3-70B-Instruct-Turbo",   # flagship open-source
