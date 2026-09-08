@@ -2,43 +2,46 @@
   G-Prompt Studio v1.0.0 — Listo para distribuir
 ═══════════════════════════════════════════════════════════════════
 
-Aquí tienes TRES opciones para usar la app o compartirla:
+Aquí tienes TRES opciones para usar la app o compartirla.
+Son ALTERNATIVAS, no acumulativas: elige una.
 
 
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.0.exe  (~94 MB)
+Archivo: GPromptStudio-Setup-1.0.0.exe  (118 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
+  - Muestra la licencia (Apache 2.0) antes de instalar.
   - Crea acceso directo en el menú Inicio.
   - Opcional: acceso directo en el escritorio.
   - Aparece en "Agregar o quitar programas" para desinstalar limpio.
-  - Comprimido con LZMA2 (más pequeño que la carpeta portable).
+  - Comprimido con LZMA2 (mucho más pequeño que la carpeta portable).
+  - Se instala en %LOCALAPPDATA% — NO pide permisos de administrador.
 
 CÓMO USAR:
   1. Doble-click en GPromptStudio-Setup-1.0.0.exe
   2. Acepta la advertencia de Windows SmartScreen
      ("Más info" → "Ejecutar de todas formas")
-     [Esto es normal en programas no firmados con certificado]
+     [Normal en programas sin certificado de firma. Ver más abajo.]
   3. Sigue el asistente: Siguiente → Instalar → Finalizar
   4. Lanza desde el menú Inicio o desde el escritorio.
 
 CÓMO COMPARTIR:
-  Sube este archivo (~94 MB) a Google Drive / WeTransfer / Mega
-  (no cabe por email). El receptor solo necesita el .exe del
-  instalador, nada más.
+  Sube este archivo a Google Drive / WeTransfer / Mega (no cabe por
+  email). El receptor solo necesita este .exe, nada más.
 
 
 OPCIÓN 2: PORTABLE (sin instalación)
 ═══════════════════════════════════════════════════════════════════
 
-Carpeta: GPromptStudio-Portable/  (~327 MB sin comprimir)
+Carpeta: GPromptStudio-Portable/  (434 MB sin comprimir)
 
 QUÉ HACE:
   - Una carpeta autocontenida. No requiere instalación.
   - Borrando la carpeta desinstalas completamente.
+  - Arranca más rápido que la Opción 3 (no se descomprime nada).
   - Útil si quieres llevarla en un USB o probarla sin tocar el SO.
 
 CÓMO USAR:
@@ -47,18 +50,19 @@ CÓMO USAR:
   3. La app abre directamente.
 
 CÓMO COMPARTIR:
-  Comprime la carpeta a ZIP y súbela (~130 MB en ZIP).
+  Comprime la carpeta a ZIP antes de subirla: sin comprimir son
+  demasiados ficheros pequeños y cualquier nube tarda una eternidad.
 
 
 OPCIÓN 3: ONEFILE (un solo .exe portable)
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Portable-Onefile.exe  (~134 MB)
+Archivo: GPromptStudio-Portable-Onefile.exe  (167 MB)
 
 QUÉ HACE:
   - TODO en un único .exe. Sin instalación ni carpetas.
-  - Arranca algo más lento que las otras opciones (se descomprime
-    en una carpeta temporal en cada arranque — es normal).
+  - Arranca más lento que las otras dos: se descomprime en una
+    carpeta temporal en CADA arranque. Es normal, no está colgado.
 
 CÓMO USAR:
   Doble-click y listo. Misma advertencia SmartScreen que el instalador.
@@ -66,17 +70,41 @@ CÓMO USAR:
 CÓMO COMPARTIR:
   Es el más cómodo de enviar: un solo archivo, nada que descomprimir.
 
-NOTA: las tres opciones son ALTERNATIVAS, no acumulativas. Elige una.
+
+SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
+═══════════════════════════════════════════════════════════════════
+
+  Al abrir cualquiera de las tres opciones, Windows mostrará una
+  pantalla azul: "Windows protegió su PC". Es ESPERADO.
+
+  Ocurre porque el ejecutable no está firmado con un certificado de
+  firma de código (cuestan 200-400 €/año). No dice nada sobre si el
+  programa es seguro: dice que Windows no conoce a quien lo firma.
+
+  PARA ABRIRLO:
+    "Más información"  →  "Ejecutar de todas formas"
+
+  Si quieres verificar por tu cuenta que el archivo que has recibido
+  es el original y no está manipulado, compara su hash SHA-256 con el
+  publicado en la página de descarga. En PowerShell:
+
+    Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
+
+  Algún antivirus poco conocido puede marcar la Opción 3 (onefile).
+  Es un falso positivo típico de los ejecutables autoextraíbles: se
+  descomprimen en una carpeta temporal al arrancar, igual que hace
+  cierto malware, y los motores heurísticos flojos lo confunden.
 
 
 SOBRE SEGURIDAD Y PRIVACIDAD
 ═══════════════════════════════════════════════════════════════════
 
-  ✓ NINGUNA de las API keys del autor está en este paquete.
-    Verificable: el .exe NUNCA contiene "sk_..." ni similar. Las keys
-    se leen del Windows Credential Manager (gestor del SO) en cada
-    arranque — no se bundlean.
-  ✓ Las keys que metas tú se guardan cifradas en:
+  ✓ NINGUNA API key del autor viaja en este paquete. Verificado
+    sobre los artefactos reales, no sobre la intención: se buscan
+    los prefijos de todos los proveedores (sk-proj-, sk-ant-, xai-,
+    pplx-, gsk_, AIzaSy...) y los nombres keys.json, .env y
+    .encryption_salt. Resultado: limpio en los tres artefactos.
+  ✓ Las keys que metas TÚ se guardan cifradas en:
     - Windows Credential Manager (recomendado, gestor del SO)
     - keys.json cifrado con DPAPI de Windows (fallback en
       %USERPROFILE%\.arquitecto_prompts — solo tu usuario de Windows
@@ -84,8 +112,7 @@ SOBRE SEGURIDAD Y PRIVACIDAD
   ✓ Las dependencias del .exe pasan una auditoría de CVEs conocidos
     (pip-audit) en cada build.
   ✓ La app NO envía datos a ningún servidor del autor.
-  ✓ Solo se comunica con los proveedores de LLM que tú configures
-    (DeepSeek, OpenRouter, Groq, Anthropic, OpenAI, Gemini, etc.).
+  ✓ Solo se comunica con los proveedores de LLM que tú configures.
 
   Pollinations.ai (previews de imagen en el comparador 👁) es
   OPCIONAL. Sin key funciona en modo anónimo (más lento, con
@@ -107,9 +134,22 @@ PRIMER ARRANQUE
   Tienes botones "🌐 Obtener key" que abren la web de cada proveedor
   donde puedes generar tu clave gratuita o de pago.
 
-  💡 PARA EMPEZAR GRATIS: Gemini (Google) y Groq regalan API key
-  gratuita con límites generosos — con una de las dos la app ya
-  funciona al completo. Sin tarjeta.
+  💡 PARA EMPEZAR GRATIS Y SIN TARJETA: Gemini (Google) y Groq
+  regalan API key con límites generosos — con una de las dos la app
+  funciona al completo. Groq es además el más rápido de todos los
+  proveedores soportados (respuestas en menos de un segundo).
+
+  Los ONCE proveedores de la app se verificaron uno a uno con keys
+  reales el 08-sep-2026: catálogo en vivo y una llamada de verdad a
+  cada modelo del desplegable. Si un modelo desaparece del catálogo
+  de su proveedor, la app lo oculta sola en el siguiente arranque.
+
+  SI USAS COMFYUI: no hay que configurar nada. La app busca la
+  carpeta de ComfyUI en las rutas habituales de tus discos fijos,
+  detecta tus checkpoints y los agrupa por familia (SDXL, Flux,
+  SD 1.5, Pony, Illustrious, Qwen, Z-Image...) para inyectar las
+  reglas de prompt correctas a cada uno. Si la tienes en un sitio
+  raro, pégale la ruta en Ajustes.
 
   IDIOMA: la interfaz es bilingüe español/inglés. Se detecta el
   idioma de Windows en el primer arranque; puedes cambiarlo en
@@ -132,24 +172,44 @@ REQUISITOS DEL SISTEMA
 
   - Windows 10 / 11 (64-bit)
   - 4 GB RAM mínimo (8 GB recomendado)
-  - 500 MB de espacio en disco (300 MB instalado)
+  - 700 MB de espacio libre para instalar (ocupa 492 MB instalado)
   - Conexión a internet (para llamadas a APIs de LLM)
   - NO requiere Python ni dependencias previas.
+
+
+LICENCIA
+═══════════════════════════════════════════════════════════════════
+
+  Apache License 2.0.
+  Copyright 2026 Gustavo Luis Sánchez Escobar («Gustaafvito»).
+
+  El texto completo viaja DENTRO de los tres artefactos, en los
+  ficheros LICENSE y NOTICE. El instalador además te la muestra
+  antes de instalar.
+
+  Puedes usar, modificar y redistribuir la herramienta, incluso con
+  fines comerciales. A cambio, la licencia pide tres cosas:
+  conservar el aviso de copyright y el NOTICE, indicar los cambios
+  que hagas, y no usar el nombre del proyecto para dar a entender
+  que una versión modificada es la original.
+
+  Eso incluye el catálogo de data/: las fichas de los modelos con
+  sus fórmulas de prompt, límites y samplers son trabajo original
+  medido contra las plataformas reales.
 
 
 SOPORTE Y CÓDIGO FUENTE
 ═══════════════════════════════════════════════════════════════════
 
-  El código fuente vive en:
-    C:\Proyectos\gprompt-studio
-  (repositorio git privado: github.com/Gustaafvito/gprompt-studio)
+  Código, incidencias y últimas versiones:
+    https://github.com/Gustaafvito/gprompt-studio
 
-  Para generar una nueva versión del distribuible completo:
+  Para generar una nueva versión del distribuible completo (desde
+  el repositorio):
     python build_release.py
-  (tests + auditoría CVEs + onedir + instalador + onefile, y copia
-  los 3 artefactos y este LEEME a esta carpeta)
-
-  Para más info: ver docs/BUILD.md en el repositorio.
+  Corre los tests, audita CVEs, construye onedir + instalador +
+  onefile y copia los 3 artefactos y este LEEME a la carpeta de
+  distribución. Ver docs/BUILD.md para el detalle.
 
 ═══════════════════════════════════════════════════════════════════
   G-Prompt Studio — creado por Gustaafvito

@@ -22,6 +22,7 @@ que `build.py`. Ver docs/BUILD.md.
 """
 import argparse
 import io
+import re
 import shutil
 import subprocess
 import sys
@@ -145,6 +146,58 @@ def copiar_artefactos(src_dist: Path):
                              DEST / "LEEME-PRIMERO.txt"),
         "LEEME-PRIMERO.txt")
     print(f"✓ 3 artefactos + LEEME copiados a {DEST}")
+    avisar_tamanos_desfasados(portable)
+
+
+def avisar_tamanos_desfasados(portable: Path):
+    """El LEEME anuncia el peso de cada opción: avisa si ya no cuadra.
+
+    El 08-sep-2026 los TRES estaban mal —decía 94 MB del instalador cuando
+    iban 118, 134 del onefile cuando iban 167 y 327 de la carpeta cuando iba
+    418— porque los números se escribieron a mano y los artefactos engordan
+    en cada build. Un usuario que descarga 167 MB donde le prometieron 134
+    piensa que le han colado otra cosa, y con razón.
+    """
+    def _mb(p: Path) -> float:
+        if p.is_dir():
+            return sum(f.stat().st_size for f in p.rglob("*")
+                       if f.is_file()) / 1e6
+        return p.stat().st_size / 1e6
+
+    leeme = DEST / "LEEME-PRIMERO.txt"
+    try:
+        texto = leeme.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"  ⚠ no se pudo revisar el LEEME: {e}")
+        return
+
+    reales = {
+        "GPromptStudio-Setup-1.0.0.exe": _mb(DEST / "GPromptStudio-Setup-1.0.0.exe"),
+        "GPromptStudio-Portable-Onefile.exe": _mb(DEST / "GPromptStudio-Portable-Onefile.exe"),
+        "GPromptStudio-Portable/": _mb(portable),
+    }
+    desfases = []
+    for nombre, mb in reales.items():
+        # Se busca "(NNN MB)" en la línea que menciona ese artefacto.
+        anunciado = None
+        for linea in texto.splitlines():
+            if nombre.rstrip("/") in linea:
+                m = re.search(r"\(\D{0,8}?(\d+(?:[.,]\d+)?)\s*MB", linea)
+                if m:
+                    anunciado = float(m.group(1).replace(",", "."))
+                    break
+        if anunciado is None:
+            desfases.append(f"{nombre}: el LEEME no anuncia su tamaño "
+                            f"(son {mb:.0f} MB)")
+        elif abs(anunciado - mb) / mb > 0.08:
+            desfases.append(f"{nombre}: el LEEME dice {anunciado:.0f} MB "
+                            f"y son {mb:.0f} MB")
+    if desfases:
+        print("  ⚠ LEEME-PRIMERO.txt desfasado — actualiza docs/LEEME-PRIMERO.txt:")
+        for d in desfases:
+            print(f"      · {d}")
+    else:
+        print("  ✓ los tamaños del LEEME cuadran con los artefactos")
 
 
 def main():
