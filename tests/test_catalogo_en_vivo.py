@@ -64,10 +64,28 @@ class TestNuncaEmpeoraLoQueYaHabia:
         got = api_clients.modelos_disponibles("openrouter", "key")
         assert got == api_clients.LLM_PROVIDERS["openrouter"]["modelos"]
 
-    def test_un_proveedor_no_openai_compatible_no_se_toca(self, monkeypatch):
+    def test_un_tipo_que_no_sabemos_consultar_no_se_toca(self, monkeypatch):
+        # Este test probaba con "gemini" hasta el 08-sep-2026, cuando el tipo
+        # "google" pasó a consultarse (su lista era la única de nube que no se
+        # auto-depuraba nunca). Ya no queda ningún proveedor real sin
+        # consultar, así que se usa uno sintético: la garantía es que un tipo
+        # cuyo catálogo no sabemos leer conserva su lista curada intacta, en
+        # vez de quedarse vacío o recibir lo que devuelva otro endpoint.
+        monkeypatch.setitem(api_clients.LLM_PROVIDERS, "inventado", {
+            "name": "Inventado", "tipo": "protocolo_desconocido",
+            "modelos": ["mi-modelo-a", "mi-modelo-b"],
+        })
         _con_catalogo(monkeypatch, ["lo-que-sea"])
+        got = api_clients.modelos_disponibles("inventado", "key")
+        assert got == ["mi-modelo-a", "mi-modelo-b"]
+
+    def test_gemini_SI_se_consulta(self, monkeypatch):
+        # El complemento del anterior: el tipo "google" tiene que entrar.
+        api_clients._CACHE_CATALOGO.clear()
+        _con_catalogo(monkeypatch, ["gemini-2.5-flash"])
         got = api_clients.modelos_disponibles("gemini", "key")
-        assert got == api_clients.LLM_PROVIDERS["gemini"]["modelos"]
+        assert got == ["gemini-2.5-flash"], (
+            "la lista de Google ya se depura contra su catálogo en vivo")
 
 
 class TestCache:

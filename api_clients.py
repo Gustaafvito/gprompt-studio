@@ -271,18 +271,37 @@ LLM_PROVIDERS = {
         # Historial de esta misma línea: "deepseek/deepseek-chat" murió y se
         # cambió por "meta-llama/llama-3.1-8b-instruct:free", que el
         # 06-sep-2026 también devolvía 404 — junto con los SEIS gratuitos que
-        # había aquí, comprobados uno a uno con la key del usuario. Si vuelve
-        # a fallar, la lista viva está en https://openrouter.ai/api/v1/models
-        # filtrando por los que acaban en ":free".
-        "model_default": "minimax/minimax-m3:free",
+        # había aquí. El 08-sep-2026, CUARTO rescate: de los 5 que quedaban,
+        # "minimax/minimax-m3:free" y "anthropic/claude-sonnet-4-6" ya no
+        # existían (y el primero era el model_default, así que probar la key
+        # fallaba), y "nemotron-3.5-lightning:free" respondía en 120s cuando
+        # aquí decía 8,6s.
+        #
+        # Aparecer en /v1/models NO es prueba de nada: hay que llamarlos. De
+        # los 16 gratuitos vivos el 08-sep-2026, medidos uno a uno con la key
+        # del usuario, solo CUATRO sirven:
+        #
+        #   inkling:free / inkling-small:free  403 "only available on
+        #                                      agentic harnesses"
+        #   nemotron-3-ultra-550b:free         211s
+        #   nemotron-3.5-lightning:free        120s
+        #   nemotron-3-super-120b:free         respuesta sin 'choices'
+        #   gemma-4-26b-a4b-it:free            429 del proveedor
+        #
+        # La lista viva está en https://openrouter.ai/api/v1/models.
+        "model_default": "google/gemma-4-31b-it:free",
         "modelos": [
-            # Gratuitos — verificados el 06-sep-2026
-            "minimax/minimax-m3:free",              # 1.5s, 1M de contexto
-            "nvidia/nemotron-3.5-lightning:free",   # 8.6s, 1M de contexto
+            # Gratuitos — LLAMADOS uno a uno el 08-sep-2026
+            "google/gemma-4-31b-it:free",           # 1,0s — el más rápido
+            "inclusionai/ling-3.0-flash-fin:free",  # 1,9s
+            "dots-studio/dots-3-note-preview:free", # 7,3s
+            "cohere/north-mini-code:free",          # 7,7s
             # De pago (los mejores modelos con una sola key)
-            "anthropic/claude-sonnet-4-6",
-            "openai/gpt-4o",
-            "google/gemini-2.5-pro",
+            "anthropic/claude-haiku-4.5",           # 1,9s
+            "openai/gpt-4o",                        # 1,8s
+            "google/gemini-2.5-pro",                # 14,3s
+            # claude-opus-4.6 vive, pero con el saldo del usuario devuelve
+            # 402 "requires more credits": fuera hasta que haya credito.
         ],
         "is_paid": True,
     },
@@ -579,6 +598,15 @@ LLM_TIMEOUT_S = 180
 # El catálogo solo llena un desplegable: si tarda, no se espera.
 TIMEOUT_CATALOGO_S = 5
 
+# Groq esta detras de Cloudflare y RECHAZA el User-Agent por defecto de
+# urllib ("Python-urllib/3.10") con un 403 "error code: 1010" — el codigo de
+# bloqueo por cliente, no un problema de key. Medido el 08-sep-2026 contra su
+# /openai/v1/models: sin cabecera 403, con CUALQUIER User-Agent 200 y 14
+# modelos. La generacion no se enteraba porque va por el SDK de OpenAI, que
+# manda el suyo; el que se quedaba mudo era el catalogo en vivo, y por eso la
+# lista curada de Groq no se auto-depuraba nunca.
+UA_CATALOGO = "G-Prompt-Studio/1.0"
+
 # Servidores LOCALES (LM Studio / Ollama). Hay DOS operaciones distintas y
 # confundirlas costó un bug en cada dirección:
 #
@@ -727,7 +755,8 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         try:
             req = urllib.request.Request(
                 self.base_url.rstrip("/") + "/models",
-                headers={"Authorization": f"Bearer {self.api_key}"})
+                headers={"Authorization": f"Bearer {self.api_key}",
+                         "User-Agent": UA_CATALOGO})
             with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
                 data = json.loads(r.read())
             return [m["id"] for m in data.get("data", []) if m.get("id")]
@@ -949,6 +978,36 @@ class GeminiProvider(BaseLLMProvider):
     def disponible(self) -> bool:
         return GEMINI_DISPONIBLE and bool(self.api_key)
 
+    def listar_modelos(self) -> list[str]:
+        """Catálogo EN VIVO de Google ([] si no responde).
+
+        Google no es OpenAI-compatible: la key va en la query, el endpoint es
+        /v1beta/models y los IDs vienen con prefijo ("models/gemini-2.5-flash").
+        Hasta el 08-sep-2026 el filtro en vivo solo admitía openai_compatible y
+        anthropic, así que la lista de Gemini era la ÚNICA de nube que no se
+        auto-depuraba nunca — y es de las que más rota se ha quedado (ya iba
+        dos generaciones por detrás una vez).
+
+        Se queda solo con los que sirven para generar texto: de los 54 que
+        devuelve, 40 aceptan generateContent y el resto son embeddings, TTS o
+        imagen, que no pintan nada en el desplegable de cerebros.
+        """
+        if not self.api_key:
+            return []
+        try:
+            req = urllib.request.Request(
+                "https://generativelanguage.googleapis.com/v1beta/models"
+                f"?pageSize=200&key={urllib.parse.quote(self.api_key)}",
+                headers={"User-Agent": UA_CATALOGO})
+            with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
+                data = json.loads(r.read())
+            return [m["name"].split("/")[-1] for m in data.get("models", [])
+                    if m.get("name")
+                    and "generateContent" in (m.get("supportedGenerationMethods") or [])]
+        except Exception as e:
+            logger.debug(f"[silent] catálogo de Google: {e}")
+            return []
+
     def completar(self, messages: list[dict], temperature: float = 0.75, max_tokens: int = 900, model: str | None = None) -> str:
         if not self.api_key:
             raise Exception("Gemini no configurado (sin api key)")
@@ -1045,7 +1104,8 @@ class ClaudeProvider(BaseLLMProvider):
             req = urllib.request.Request(
                 "https://api.anthropic.com/v1/models?limit=100",
                 headers={"x-api-key": self.api_key,
-                         "anthropic-version": "2023-06-01"})
+                         "anthropic-version": "2023-06-01",
+                         "User-Agent": UA_CATALOGO})
             with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
                 data = json.loads(r.read())
             return [m["id"] for m in data.get("data", []) if m.get("id")]
@@ -1179,7 +1239,8 @@ def modelos_disponibles(provider_id: str, api_key: str | None = None) -> list[st
     estaticos = list(info.get("modelos") or [])
     # Anthropic entra aunque no sea OpenAI-compatible: tiene su propio
     # listar_modelos(). Gemini sigue fuera, no lo implementa.
-    if not api_key or info.get("tipo") not in ("openai_compatible", "anthropic"):
+    if not api_key or info.get("tipo") not in ("openai_compatible", "anthropic",
+                                               "google"):
         return estaticos
 
     vivos = _catalogo_en_vivo(provider_id, api_key)
