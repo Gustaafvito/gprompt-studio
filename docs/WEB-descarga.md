@@ -83,6 +83,30 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 ---
 
+## Bloque 4 — Dudas y soporte
+
+> ### ¿Dudas o algo no funciona?
+>
+> - **Fallos:** [abre un issue en
+>   GitHub](https://github.com/Gustaafvito/gprompt-studio/issues) y adjunta
+>   el log, que está en
+>   `%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`
+> - **Dudas e ideas:**
+>   [Discussions](https://github.com/Gustaafvito/gprompt-studio/discussions)
+> - **Sígueme:** [Instagram](https://www.instagram.com/gustaafvito.creador.ia)
+>   · [TikTok](https://www.tiktok.com/@gustaafvito.creador.ia) ·
+>   [YouTube](https://www.youtube.com/@GustaafvitocreadorIA)
+
+Si creas un correo del dominio (`hola@gustaafvito.com`), añádelo aquí. Si el
+hosting no da buzones, **Cloudflare Email Routing** reenvía gratis a tu Gmail
+sin exponerlo.
+
+⚠️ **NO pongas el Gmail personal en la web ni en el README.** Los bots
+cosechan direcciones de páginas publicas en cuestion de dias y eso no se
+deshace: un alias del dominio se puede borrar y rehacer, una cuenta personal
+no. Ademas contradiria el trabajo de sacar el email de los 577 commits.
+
+
 ## Recordatorios para ti
 
 - **Los hashes cambian en cada build.** Si regeneras los .exe, actualiza la

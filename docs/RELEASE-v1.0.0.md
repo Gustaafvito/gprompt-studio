@@ -101,6 +101,11 @@ señalando los cambios que hagas.
 
 ---
 
-**Problemas o ideas:** abre un
-[issue](https://github.com/Gustaafvito/gprompt-studio/issues).
+**¿Algo no funciona?**
+[Abre un issue](https://github.com/Gustaafvito/gprompt-studio/issues) y
+adjunta el log (`%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`).
+
+**¿Dudas o ideas?**
+[Discussions](https://github.com/Gustaafvito/gprompt-studio/discussions).
+
 Más en [gustaafvito.com](https://gustaafvito.com/).

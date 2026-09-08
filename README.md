@@ -249,6 +249,23 @@ Si algo no funciona, revisa el log en:
 
 ---
 
+## Dudas, fallos e ideas
+
+- **¿Algo no funciona?** Abre un
+  [issue](https://github.com/Gustaafvito/gprompt-studio/issues). Cuenta qué
+  hacías, qué esperabas y qué pasó, y adjunta el log —
+  `%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`. Con el log se
+  arregla en la mitad de tiempo.
+- **¿Una duda o una idea?**
+  [Discussions](https://github.com/Gustaafvito/gprompt-studio/discussions).
+  Se responden en público a propósito: así la siguiente persona con la misma
+  duda la encuentra sin preguntar.
+- **¿Un fallo de seguridad?** No lo abras como issue público. Escribe por
+  privado desde [gustaafvito.com](https://gustaafvito.com/) y dame margen
+  para corregirlo antes de que sea público.
+
+---
+
 **Creado por [Gustaafvito](https://gustaafvito.com/)** ·
 [Web](https://gustaafvito.com/) ·
 [GitHub](https://github.com/Gustaafvito) ·
