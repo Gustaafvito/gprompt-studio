@@ -55,12 +55,10 @@ class TestSmokeConstruccion:
     verdad para pillar errores que la lógica pura no ve. Se salta si el
     entorno no tiene display (CI headless)."""
 
-    def test_toggle_construye_y_cierra_sin_error(self):
-        try:
-            import customtkinter as ctk
-            root = ctk.CTk()
-        except Exception as e:
-            pytest.skip(f"sin display para Tk: {e}")
+    def test_toggle_construye_y_cierra_sin_error(self, tk_root):
+        # Root compartido de la sesion: crear uno propio chocaba con el de
+        # los otros modulos de UI y el choque se saltaba como "sin display".
+        root = tk_root
         try:
             root.store = SimpleNamespace(
                 historial=[{"contenido": "test", "modo": "imagen",
@@ -77,4 +75,15 @@ class TestSmokeConstruccion:
             toggle_panel(root)              # cerrar
             assert root._panel_lateral is None
         finally:
-            root.destroy()
+            # El root es de la SESION: no se destruye, se deja limpio para
+            # el siguiente test. Destruirlo aqui tumbaba a los demas.
+            if getattr(root, "_panel_lateral", None) is not None:
+                try:
+                    toggle_panel(root)
+                except Exception:
+                    pass
+            for attr in ("store", "set_estado", "actualizar_salida", "_sesion_log"):
+                try:
+                    delattr(root, attr)
+                except Exception:
+                    pass

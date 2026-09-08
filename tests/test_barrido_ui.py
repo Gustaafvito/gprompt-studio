@@ -34,13 +34,13 @@ VENTANAS = [
 
 
 @pytest.fixture(scope="module")
-def app(monkeypatch_module):
+def app(monkeypatch_module, exige_tk):
     """La aplicación real, con todo lo que puede BLOQUEAR neutralizado."""
     from app import ArquitectoApp
-    try:
-        a = ArquitectoApp()
-    except Exception as e:  # sin display / Tk no disponible
-        pytest.skip(f"No se pudo arrancar la app: {e}")
+    # Se salta SOLO si el entorno no tiene Tk (CI headless). Si Tk funciona,
+    # que la app no arranque es un FALLO y tiene que verse: cazarlo aqui
+    # convertia una regresion de arranque en un salto silencioso.
+    a = ArquitectoApp()
     a.update()
     a.update_idletasks()
     yield a

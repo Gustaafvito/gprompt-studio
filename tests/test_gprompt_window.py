@@ -10,19 +10,13 @@ from modules.gprompt_window import GPromptWindow
 
 
 @pytest.fixture(scope="module")
-def _root():
-    # Un ÚNICO root CTk por módulo (Tk no admite varios roots por proceso).
-    try:
-        r = ctk.CTk()
-    except Exception as e:  # sin display / Tk no disponible
-        pytest.skip(f"Tk no disponible: {e}")
-    r.withdraw()
-    r.title("G-Prompt Studio v1.0")
-    yield r
-    try:
-        r.destroy()
-    except Exception:
-        pass
+def _root(tk_root):
+    # Tk no admite varios roots por proceso, asi que se usa el UNICO de la
+    # sesion (conftest). Crear uno aqui chocaba con el de test_panel_lateral
+    # y test_barrido_ui segun el orden, y el choque se veia como un salto
+    # "sin display" en vez de como el fallo que era.
+    tk_root.title("G-Prompt Studio v1.0")
+    yield tk_root
 
 
 @pytest.fixture()
