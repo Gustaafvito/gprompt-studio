@@ -61,15 +61,25 @@ class TestElModeloDePruebaSaleDelCatalogoEnVivo:
             "de la pantalla de bienvenida")
 
 
-class TestLosProveedoresSinVerificarEstanMarcados:
+class TestYaNoQuedaNingunProveedorSinVerificar:
+    """El 08-sep-2026 se cerraron los once con key real.
 
-    def test_together_avisa_en_el_codigo(self):
-        # Perplexity SI se verifico el 08-sep (regalan 10$ de credito), asi
-        # que ya no lleva el aviso — ver test_perplexity.py. Together sigue
-        # pendiente: hace falta un deposito para que la key funcione.
+    Perplexity fue gratis (regalan 10$ de credito de API) y Together pidio
+    un deposito de 5$. Antes de eso, sus listas llevaban un aviso
+    "SIN VERIFICAR" para no aparentar estar comprobadas. Ya no queda
+    ninguna: si vuelve a aparecer ese aviso es que se ha dado de alta un
+    proveedor a ciegas, y la historia de este proyecto dice como acaba —
+    de las once listas escritas desde documentacion, ONCE estaban podridas
+    al comprobarlas.
+    """
+
+    def test_ninguna_lista_lleva_el_aviso(self):
+        # Acotado al diccionario de proveedores: en la tabla de PRECIOS hay
+        # otro "SIN VERIFICAR" legitimo (una referencia de Mistral) que no
+        # tiene nada que ver con listas de modelos.
         fuente = inspect.getsource(__import__("api_clients"))
-        i = fuente.find('"togetherai": {')
-        assert i != -1
-        assert "SIN VERIFICAR" in fuente[i:i + 1400], (
-            "togetherai no se ha podido probar con key real: su lista no "
-            "puede aparentar estar comprobada como las demas")
+        ini = fuente.find("LLM_PROVIDERS")
+        fin = fuente.find("PRECIOS_USD_1M_MODELO")
+        assert 0 <= ini < fin, "no localizo el bloque de proveedores"
+        assert "SIN VERIFICAR" not in fuente[ini:fin], (
+            "hay un proveedor dado de alta sin probarlo con key real")

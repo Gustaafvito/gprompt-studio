@@ -359,21 +359,27 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://api.together.xyz/settings/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.together.xyz/v1",
-        # SIN VERIFICAR: no hay key de este proveedor. El 08-sep-2026 se
-        # auditaron con key real los NUEVE proveedores que si la tienen y
-        # las SEIS listas curadas que quedaban por revisar estaban podridas,
-        # asi que lo probable es que esta tambien lo este. No se quita el
-        # proveedor porque el servicio funciona para quien pague; lo que se
-        # ha hecho es que el boton "Probar keys" pregunte al catalogo en vivo
-        # en vez de fiarse del model_default (ver app.py), de modo que un
-        # default muerto ya no declara invalida una key buena.
-        "model_default": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        # VERIFICADO el 08-sep-2026 con key real (Together exige un deposito
+        # de 5$ para salir del modo solo-lectura; no hay tier gratuito).
+        #
+        # De los CINCO que habia, solo Llama-3.3-70B-Turbo se podia llamar.
+        # Y no por estar "muertos": DeepSeek-R1 ya no existe, pero Qwen2.5-72B,
+        # Mistral-7B-v0.3 y gemma-2-27b SIGUEN LISTADOS en /v1/models y aun asi
+        # responden 400 "Unable to access non-serverless model" — hay que
+        # levantar hardware dedicado para usarlos. Es la misma trampa que ya
+        # tuvo Fireworks: el catalogo lista mucho mas de lo que se puede
+        # llamar de verdad, y por eso esta lista se prueba a mano.
+        #
+        # Su /v1/models devuelve 275 entradas, 172 de tipo chat y solo 74
+        # serverless con precio. Llamados uno a uno, en segunda pasada (la
+        # primera puede tardar 25s por arranque en frio):
+        "model_default": "openai/gpt-oss-20b",
         "modelos": [
-            "meta-llama/Llama-3.3-70B-Instruct-Turbo",   # flagship open-source
-            "Qwen/Qwen2.5-72B-Instruct-Turbo",            # Qwen 2.5 72B
-            "deepseek-ai/DeepSeek-R1",                     # razonamiento
-            "mistralai/Mistral-7B-Instruct-v0.3",          # ligero
-            "google/gemma-2-27b-it",                       # Gemma 2 27B
+            "openai/gpt-oss-20b",                       # 1,3s — $0,05/$0,20, el mas barato
+            "openai/gpt-oss-120b",                      # 1,3s — $0,15/$0,60
+            "deepseek-ai/DeepSeek-V4-Flash-0731",       # 1,5s — $0,14/$0,28
+            "zai-org/GLM-5.3-Flash",                    # 2,0s — $0,15/$0,50
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo",  # 1,1s — $1,04, el unico que sobrevive
         ],
         "is_paid": True,
     },
@@ -497,6 +503,13 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "codestral-latest":          (0.30,  0.90),
     "mistral-nemo":              (0.15,  0.15),
     # Perplexity Sonar
+    # Together AI. Leidos de su propio /v1/models el 08-sep-2026, que publica
+    # el precio de cada modelo, y contrastados con la consola del usuario.
+    "openai/gpt-oss-20b":                      (0.05, 0.20),
+    "openai/gpt-oss-120b":                     (0.15, 0.60),
+    "deepseek-ai/DeepSeek-V4-Flash-0731":      (0.14, 0.28),
+    "zai-org/GLM-5.3-Flash":                   (0.15, 0.50),
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo": (1.04, 1.04),
     # Perplexity. Confirmados el 08-sep-2026 contra la propia API, que
     # devuelve el coste real en usage.cost de cada respuesta.
     #
@@ -533,7 +546,7 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "openai":        (2.50, 10.00),   # gpt-4o
     "openrouter":    None,            # depende del modelo elegido
     "perplexity":    (3.00, 15.00),   # sonar-pro
-    "togetherai":    (0.88, 0.88),    # Llama-3.3-70B-Turbo
+    "togetherai":    (0.05, 0.20),    # openai/gpt-oss-20b (el default)
     "xai":           (1.25,  2.50),   # grok-4.20-non-reasoning (el default)
 }
 
@@ -849,8 +862,13 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                          "User-Agent": UA_CATALOGO})
             with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
                 data = json.loads(r.read())
+            # Together AI devuelve una LISTA pelada en /v1/models, no el
+            # {"data": [...]} de OpenAI. Con data.get("data", []) daba
+            # SIEMPRE [] y su lista curada no se depuraba jamas — es como
+            # sobrevivieron ahi cuatro modelos que ya no se pueden llamar.
+            entradas = data if isinstance(data, list) else data.get("data", [])
             vivos = []
-            for m in data.get("data", []):
+            for m in entradas:
                 if not m.get("id"):
                     continue
                 vivos.append(m["id"])
