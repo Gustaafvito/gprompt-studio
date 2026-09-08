@@ -3,6 +3,7 @@ G-Prompt Studio v1.0 — Configuración y constantes.
 Modelos, estilos, ratios, presets de negativos, colores UI.
 """
 import logging
+import os
 import re
 from pathlib import Path
 
@@ -366,6 +367,37 @@ def clasificar_modelo_comfy(nombre: str) -> str:
     return "imagen"
 
 
+def _resolver_junction(carpeta: Path):
+    """Ruta REAL de una carpeta cuando se llega a ella por un junction.
+
+    Windows 11 no deja recorrer un junction creado por un usuario sin permisos
+    de administrador (Redirection Guard): [WinError 448] "punto de montaje no
+    confiable". El equipo del autor tiene
+
+        C:/IA/ComfyUI/models  ->  D:/ComfyUI/models
+
+    y la app se quedaba SIN NINGUN modelo local aunque la carpeta se lea
+    perfectamente desde una consola. Entrando por D:/ ya no hay redireccion
+    que vigilar y el escaneo funciona.
+
+    Returns: la ruta real, o None si no hay junction o tampoco se puede leer.
+    """
+    try:
+        real = Path(os.path.realpath(str(carpeta)))
+    except OSError as e:
+        logger.debug(f"[silent] no se pudo resolver {carpeta}: {e}")
+        return None
+    if real == carpeta:
+        return None          # no era un junction: el fallo es otro
+    try:
+        if not real.exists():
+            return None
+    except OSError as e:
+        logger.debug(f"[silent] la ruta real tampoco se lee: {e}")
+        return None
+    return real
+
+
 def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
     """Escanea models/{checkpoints,diffusion_models,unet} de forma recursiva.
 
@@ -386,8 +418,16 @@ def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
             if not carpeta.exists():
                 continue
         except OSError as e:
-            logger.warning(f"ComfyUI: no se puede acceder a {carpeta}: {e}")
-            continue
+            # Antes se saltaba la carpeta y se seguia: no habia crash, pero el
+            # usuario se quedaba con CERO modelos, que para el es lo mismo.
+            # Casi siempre es un junction, asi que se reintenta por la ruta
+            # real antes de rendirse.
+            real = _resolver_junction(carpeta)
+            if real is None:
+                logger.warning(f"ComfyUI: no se puede acceder a {carpeta}: {e}")
+                continue
+            logger.info(f"ComfyUI: {carpeta} redirige a {real}; se entra por ahi")
+            carpeta = real
 
         # rglob tambien puede reventar a media recorrida (un subdirectorio
         # inaccesible, un enlace roto). Se recorre tolerando fallos para
@@ -1339,7 +1379,20 @@ def aplicar_autodiscovery_comfy() -> int:
     total = 0
     # Si la caché ya mostraba justo esto, los desplegables están al día y no
     # hay que repoblar nada (evita el parpadeo de reconstruir los combos).
-    if (hallados["imagen"] != _COMFY_CACHE_APLICADA["imagen"]
+    # Un escaneo EN BLANCO no es una noticia: es un sintoma. Si la cache tenia
+    # modelos y ahora no se encuentra ninguno, lo probable es que la carpeta no
+    # se pueda leer (junction bloqueado, disco externo dormido, ComfyUI movido),
+    # no que el usuario haya borrado sus 124 checkpoints. Antes se creia el cero:
+    # vaciaba los desplegables Y guardaba la cache vacia, asi que el arranque
+    # siguiente ya nacia sin modelos y sin forma de recuperarlos.
+    habia_en_cache = bool(_COMFY_CACHE_APLICADA["imagen"]
+                          or _COMFY_CACHE_APLICADA["video"])
+    if not (hallados["imagen"] or hallados["video"]) and habia_en_cache:
+        logger.warning(
+            f"ComfyUI: el escaneo de {comfy_ruta} no encontro nada, pero la "
+            f"cache tenia modelos: se conserva la cache. Revisa que la carpeta "
+            f"sea accesible.")
+    elif (hallados["imagen"] != _COMFY_CACHE_APLICADA["imagen"]
             or hallados["video"] != _COMFY_CACHE_APLICADA["video"]):
         _poblar_comfy(hallados["imagen"], hallados["video"])
         _guardar_cache_comfy(comfy_ruta, hallados["imagen"], hallados["video"])
