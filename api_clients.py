@@ -230,24 +230,40 @@ LLM_PROVIDERS = {
     "openai": {
         "name": "OpenAI",
         "label": "💎 OpenAI",
-        "descripcion": "GPT-5.6 (Sol/Terra/Luna) y la generación 4.x. Pago.",
+        "descripcion": "GPT-6 Astra, la familia 5.x (Sol/Terra/Luna) y la 4.x. Pago.",
         "url_obtener_key": "https://platform.openai.com/api-keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.openai.com/v1",
-        # Añadida la familia 5.x el 06-sep-2026 desde la documentación oficial.
-        # SIN VERIFICAR contra la API: no hay key de OpenAI configurada. Por eso
-        # se conserva toda la generación 4.x debajo, que llevaba meses en uso.
-        "model_default": "gpt-5.6",
+        # La familia 5.x se anadio el 06-sep-2026 desde la documentacion, SIN
+        # key. Verificada por fin el 08-sep con key real, y habia dos fallos:
+        #
+        #  · "gpt-5.6" a secas NO EXISTE — solo -sol, -terra y -luna. Y era el
+        #    model_default, asi que "Probar keys" fallaba con una key buena.
+        #  · toda la familia 5.x y 6 rechaza `max_tokens` Y `temperature` con
+        #    un 400, asi que elegir cualquiera de ellos reventaba la app. Se
+        #    arregla en OpenAICompatibleProvider._llamar, que aprende la mania
+        #    de cada modelo del propio error.
+        #
+        # Los once probados con llamada real: 4o-mini 1,1s - 5.4-mini 0,7s -
+        # 5.6-luna 1,7s - 5.6-sol 1,8s - 6-astra 1,9s - 5.5 y 5.6-terra 2,0s.
+        #
+        # OJO con los precios: OpenAI no los publica en /v1/models y la
+        # familia 5.x/6 no esta en PRECIOS_USD_1M_MODELO, asi que el contador
+        # de gasto les aplica el respaldo del proveedor (el de gpt-4o). Es una
+        # aproximacion, no un dato: hay que leerlos del panel y rellenarlos.
+        "model_default": "gpt-4o-mini",
         "modelos": [
-            "gpt-5.6",         # alias de Sol, el flagship actual
+            "gpt-6-astra",     # la generacion nueva
+            "gpt-5.6-sol",     # flagship de la 5.6
             "gpt-5.6-terra",   # coste menor, rinde como 5.5
-            "gpt-5.6-luna",    # el más rápido y barato
-            "gpt-5.5",         # generación anterior, estable
+            "gpt-5.6-luna",    # el mas rapido de la 5.6
+            "gpt-5.5",         # generacion anterior, estable
+            "gpt-5.4-mini",    # 0,7s, el mas rapido de todos
             "gpt-4o",          # flagship multimodal de la serie 4
-            "gpt-4o-mini",     # económico, rápido
-            "gpt-4.1",         # contexto 1M, fuerte en código
-            "o3",              # razonamiento máximo
-            "o4-mini",         # razonamiento rápido
+            "gpt-4o-mini",     # economico y con precio conocido: el default
+            "gpt-4.1",         # contexto 1M, fuerte en codigo
+            "o3",              # razonamiento maximo
+            "o4-mini",         # razonamiento rapido
         ],
         "is_paid": True,
     },
@@ -807,12 +823,56 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     # en la medicion, y solo se gasta cuando el sintoma ya ha ocurrido.
     _PISO_REINTENTO = 4000
 
+    # Manias por modelo, APRENDIDAS del propio 400 y recordadas para pagar el
+    # error una sola vez por modelo y proceso. Se guardan por MODELO y no por
+    # proveedor porque conviven en el mismo: gpt-4o-mini acepta los parametros
+    # de siempre y gpt-5.6-terra no.
+    _SIN_MAX_TOKENS: set = set()    # exigen max_completion_tokens
+    _SIN_TEMPERATURE: set = set()   # no aceptan temperature
+
     def _llamar(self, messages, temperature, max_tokens, modelo):
-        """Una llamada. Devuelve (texto, finish_reason)."""
-        res = self._cliente.chat.completions.create(
-            model=modelo, messages=messages, temperature=temperature,
-            max_tokens=max_tokens,
-        )
+        """Una llamada. Devuelve (texto, finish_reason).
+
+        OpenAI RETIRO dos parametros en sus modelos modernos. Toda la familia
+        GPT-5.x y GPT-6 responde 400 a los dos:
+
+          "Unsupported parameter: 'max_tokens' is not supported with this
+           model. Use 'max_completion_tokens' instead."
+          "Unsupported value: 'temperature' does not support 0.75..."
+
+        Medido el 08-sep-2026 con la key del usuario: de su lista curada solo
+        gpt-4o-mini y gpt-4o siguen aceptando los de siempre, asi que elegir
+        cualquier GPT-5.5, 5.6 o 6 reventaba con un 400 en la cara. El resto
+        de proveedores OpenAI-compatible (groq, xai, deepseek, mistral...)
+        siguen con los parametros clasicos.
+
+        Se aprende del error en vez de mantener una lista a mano: es
+        exactamente el tipo de lista que se pudre (ver MODELOS_CLAUDE_SIN_
+        SAMPLING, que hubo que descubrir igual para la familia Claude 5).
+        """
+        for intento in range(3):
+            kwargs = {"model": modelo, "messages": messages}
+            kwargs["max_completion_tokens" if modelo in self._SIN_MAX_TOKENS
+                   else "max_tokens"] = max_tokens
+            if modelo not in self._SIN_TEMPERATURE:
+                kwargs["temperature"] = temperature
+            try:
+                res = self._cliente.chat.completions.create(**kwargs)
+                break
+            except Exception as e:
+                msg = str(e)
+                if ("max_completion_tokens" in msg
+                        and modelo not in self._SIN_MAX_TOKENS):
+                    logger.info(f"{modelo}: usa max_completion_tokens")
+                    self._SIN_MAX_TOKENS.add(modelo)
+                elif ("temperature" in msg and "nsupported" in msg
+                        and modelo not in self._SIN_TEMPERATURE):
+                    logger.info(f"{modelo}: no acepta temperature")
+                    self._SIN_TEMPERATURE.add(modelo)
+                else:
+                    raise
+        else:
+            raise Exception(f"{modelo}: no acepta los parámetros de la llamada")
         usage = getattr(res, "usage", None)
         if usage is not None:
             self._registrar_uso(getattr(usage, "prompt_tokens", 0),
