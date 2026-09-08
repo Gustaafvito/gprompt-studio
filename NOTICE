@@ -1,0 +1,37 @@
+G-Prompt Studio
+Copyright 2026 Gustaafvito
+
+Este producto incluye software desarrollado por Gustaafvito
+(https://gustaafvito.com/).
+
+Distribuido bajo la Licencia Apache, Versión 2.0. Puedes obtener una copia
+en el fichero LICENSE que acompaña a este software, o en:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+SOBRE LAS FICHAS DE MODELOS (data/*.json)
+
+El directorio data/ contiene el catálogo de modelos de imagen, vídeo y audio
+con sus fichas: fórmulas de prompt, límites de caracteres, si aceptan prompt
+negativo, samplers recomendados y ejemplos. Ese catálogo es trabajo original
+de este proyecto, medido contra las plataformas reales, y queda cubierto por
+la misma licencia Apache 2.0 que el código.
+
+Si reutilizas esas fichas, la licencia te obliga a conservar este aviso y a
+dejar constancia de los cambios que hagas (secciones 4.b y 4.c).
+
+---
+
+DEPENDENCIAS DE TERCEROS
+
+Este software se distribuye empaquetado con bibliotecas de terceros, cada
+una bajo su propia licencia (customtkinter, Pillow, cryptography, los SDK de
+OpenAI, Anthropic y Google, entre otras). Sus licencias son las que
+acompañan a cada paquete y no se ven alteradas por este aviso.
+
+Los nombres de modelos, plataformas y marcas mencionados en el catálogo
+(SeaArt, ComfyUI, Kling, Veo, Flux, Grok, Claude, GPT...) pertenecen a sus
+respectivos propietarios y se citan únicamente a efectos de
+interoperabilidad y descripción.

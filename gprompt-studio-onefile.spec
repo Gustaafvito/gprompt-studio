@@ -30,6 +30,11 @@ datas = [
     ('assets',        'assets'),
     # Solo docs de USUARIO (los docs de desarrollo no se empaquetan)
     ('README.md',     '.'),
+    # Apache 2.0 §4(a) OBLIGA a entregar una copia de la licencia a quien
+    # reciba el software, y §4(d) a propagar el NOTICE. No es cortesia: sin
+    # esto, cada .exe distribuido incumple la propia licencia del proyecto.
+    ('LICENSE',       '.'),
+    ('NOTICE',        '.'),
     ('GUIA_ESTILOS.md', '.'),
     ('GUIA_ESTILOS.en.md', '.'),
 ]

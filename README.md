@@ -6,7 +6,7 @@
 [![Web](https://img.shields.io/badge/web-gustaafvito.com-orange.svg)](https://gustaafvito.com/)
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)]()
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 ---
@@ -256,4 +256,12 @@ Si algo no funciona, revisa el log en:
 [TikTok](https://www.tiktok.com/@gustaafvito.creador.ia) ·
 [YouTube](https://www.youtube.com/@GustaafvitocreadorIA)
 
-Licencia MIT.
+## Licencia
+
+Apache License 2.0 — ver [LICENSE](LICENSE) y [NOTICE](NOTICE).
+
+Puedes usar, modificar y redistribuir este software, incluso con fines
+comerciales. A cambio, la licencia te pide tres cosas: conservar el aviso de
+copyright y el fichero NOTICE, indicar los cambios que hagas, y no usar el
+nombre del proyecto para dar a entender que una versión modificada es la
+original.
