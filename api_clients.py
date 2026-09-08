@@ -319,19 +319,36 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://www.perplexity.ai/settings/api",
         "tipo": "openai_compatible",
         "base_url": "https://api.perplexity.ai",
-        # SIN VERIFICAR: no hay key de este proveedor. El 08-sep-2026 se
-        # auditaron con key real los NUEVE proveedores que si la tienen y
-        # las SEIS listas curadas que quedaban por revisar estaban podridas,
-        # asi que lo probable es que esta tambien lo este. No se quita el
-        # proveedor porque el servicio funciona para quien pague; lo que se
-        # ha hecho es que el boton "Probar keys" pregunte al catalogo en vivo
-        # en vez de fiarse del model_default (ver app.py), de modo que un
-        # default muerto ya no declara invalida una key buena.
+        # VERIFICADO el 08-sep-2026 con key real. (Perplexity regala 10$ de
+        # credito de API al darse de alta: no hizo falta pagar nada.)
+        #
+        # OJO, TIENE DOS PRODUCTOS EN RUTAS DISTINTAS y confundirlos rompe
+        # la lista entera:
+        #
+        #   /chat/completions   la API Sonar, que es la que usa la app. Solo
+        #                       acepta nombres pelados: sonar, sonar-pro...
+        #   /v1/models          un catalogo-pasarela de 49 modelos AJENOS
+        #                       (anthropic/claude-opus-5, openai/gpt-6-astra,
+        #                       xai/grok-4.6, google/gemini-3.8-flash) con sus
+        #                       precios. El endpoint de chat RECHAZA esos ids
+        #                       con "Invalid model".
+        #
+        # Por eso listar_modelos() NO debe apuntar a /v1/models. Heredado de
+        # OpenAICompatibleProvider pide base_url + "/models", que aqui da 404,
+        # devuelve [] y deja la lista curada intacta — que es exactamente lo
+        # que hace falta. "Arreglar" ese 404 apuntandolo al /v1 daria por
+        # MUERTOS a todos los Sonar, porque ninguno sale en esa lista.
+        #
+        # Llamados uno a uno: sonar-pro 1,9s, sonar 2,7s, sonar-reasoning-pro
+        # 5,9s. Fuera "sonar-reasoning", que responde 400 "has been
+        # deprecated". Fuera tambien "sonar-deep-research": tarda 47s y
+        # devuelve un informe con secciones en vez de una respuesta — es un
+        # agente de investigacion, no un cerebro para redactar prompts.
         "model_default": "sonar-pro",
         "modelos": [
-            "sonar-pro",        # con búsqueda web en tiempo real, máxima calidad
-            "sonar",            # con búsqueda, económico
-            "sonar-reasoning",  # razonamiento + búsqueda web
+            "sonar-pro",            # 1,9s — el equilibrado, y el default
+            "sonar",                # 2,7s — el basico y mas barato
+            "sonar-reasoning-pro",  # 5,9s — razona antes de responder
         ],
         "is_paid": True,
     },
@@ -480,9 +497,20 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "codestral-latest":          (0.30,  0.90),
     "mistral-nemo":              (0.15,  0.15),
     # Perplexity Sonar
+    # Perplexity. Confirmados el 08-sep-2026 contra la propia API, que
+    # devuelve el coste real en usage.cost de cada respuesta.
+    #
+    # AVISO: ademas de los tokens, Perplexity cobra una TARIFA FIJA POR
+    # PETICION que esta tabla no sabe representar — medida en usage.cost:
+    # sonar 0,0050 $ y los dos "pro" 0,0060 $ por llamada, se use lo que se
+    # use. Para esta app, que hace muchas llamadas cortas, esa tarifa es el
+    # coste DOMINANTE: mil prompts son ~6 $ de tarifas frente a centimos de
+    # tokens. Asi que el gasto real de Perplexity sale muy por encima de lo
+    # que estime el contador. Es el unico proveedor de los once que cobra
+    # asi, porque cada respuesta lleva busqueda web incluida.
     "sonar-pro":                 (3.00, 15.00),
     "sonar":                     (1.00,  1.00),
-    "sonar-reasoning":           (5.00,  5.00),
+    "sonar-reasoning-pro":       (2.00,  8.00),
 }
 
 # Precios en USD por 1M tokens (entrada, salida) para el model_default

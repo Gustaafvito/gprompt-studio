@@ -63,12 +63,13 @@ class TestElModeloDePruebaSaleDelCatalogoEnVivo:
 
 class TestLosProveedoresSinVerificarEstanMarcados:
 
-    def test_perplexity_y_together_avisan_en_el_codigo(self):
+    def test_together_avisa_en_el_codigo(self):
+        # Perplexity SI se verifico el 08-sep (regalan 10$ de credito), asi
+        # que ya no lleva el aviso — ver test_perplexity.py. Together sigue
+        # pendiente: hace falta un deposito para que la key funcione.
         fuente = inspect.getsource(__import__("api_clients"))
-        for pid in ('"perplexity": {', '"togetherai": {'):
-            i = fuente.find(pid)
-            assert i != -1, pid
-            bloque = fuente[i:i + 1400]
-            assert "SIN VERIFICAR" in bloque, (
-                f"{pid} no se ha podido probar con key real: la lista no "
-                f"puede aparentar estar comprobada como las otras nueve")
+        i = fuente.find('"togetherai": {')
+        assert i != -1
+        assert "SIN VERIFICAR" in fuente[i:i + 1400], (
+            "togetherai no se ha podido probar con key real: su lista no "
+            "puede aparentar estar comprobada como las demas")
