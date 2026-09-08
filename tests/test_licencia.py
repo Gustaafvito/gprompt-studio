@@ -30,9 +30,20 @@ class TestLosFicherosExisten:
         assert len(txt.splitlines()) > 190
 
     def test_lleva_el_copyright_puesto(self):
+        # El titular es la PERSONA, no el pseudonimo: una obra bajo
+        # pseudonimo esta igual de protegida, pero el nombre legal es mas
+        # solido si algun dia hay que reclamar la autoria. Decision del
+        # autor el 08-sep-2026.
         txt = (RAIZ / "LICENSE").read_text(encoding="utf-8")
-        assert "Copyright 2026 Gustaafvito" in txt
+        assert "Copyright 2026 Gustavo Luis Sánchez Escobar" in txt
         assert "[yyyy]" not in txt, "quedó la plantilla sin rellenar"
+
+    def test_el_notice_conserva_la_identidad_publica(self):
+        # El proyecto se conoce como «Gustaafvito» y asi firma la web: el
+        # titular legal no debe borrar la marca con la que se distribuye.
+        txt = (RAIZ / "NOTICE").read_text(encoding="utf-8")
+        assert "Gustavo Luis Sánchez Escobar" in txt
+        assert "Gustaafvito" in txt
 
     def test_hay_notice(self):
         txt = (RAIZ / "NOTICE").read_text(encoding="utf-8")
