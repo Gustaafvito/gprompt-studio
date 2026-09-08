@@ -5139,5 +5139,51 @@
   "prompt_formula": "Prosa natural: sujeto -> escena -> iluminacion -> camara. Elige antes un PRESET de estilo; el prompt describe el contenido. Sin prompt negativo.",
   "prompt_ejemplo": "A confident woman in a tailored charcoal suit standing in a sunlit loft, large windows with soft diffused light, 85mm portrait lens, shallow depth of field.",
   "limitaciones": "Ficha MAPEADA sep-2026: el usuario aun no genera en esta plataforma. Duraciones, ratios, modos y prompt negativo POR CONFIRMAR en el panel real."
+ },
+ "Grok Imagine Image 2.0": {
+  "nota": null,
+  "has_negative": false,
+  "is_natural": true,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "9:16",
+   "16:9"
+  ],
+  "max_chars": 4000,
+  "modos_gen": [
+   "1K",
+   "2K"
+  ],
+  "best_for": "Grok Imagine Image 2.0 (xAI, API directa): edicion precisa e imagen generada. La propia x.ai lo posiciona para infografias, anuncios, assets de videojuego, mockups de UI/UX y storyboards — no solo foto bonita. Acepta prompts largos y estructurados (64K de contexto), asi que describir bien el layout renta. Sin negative.",
+  "best_for_en": "Grok Imagine Image 2.0 (xAI, direct API): precise editing plus generation. xAI positions it for infographics, ads, game assets, UI/UX mockups and storyboards, not just pretty photos. Handles long, structured prompts (64K context), so describing the layout pays off. No negative.",
+  "prompt_formula": "Prosa natural, pero ESTRUCTURADA cuando el resultado lleva texto o layout: di que va arriba, en el centro y abajo, y escribe entre comillas el texto exacto que debe aparecer. Sin tags ni pesos.",
+  "prompt_ejemplo": "A clean infographic poster on a dark background: the title \"QUARTERLY GROWTH\" in bold white at the top, three vertical bar charts in teal below it, a short caption under each bar, generous margins, flat vector style.",
+  "limitaciones": "Ficha MAPEADA 08-sep-2026 desde la consola de x.ai: generacion y edicion, 1K y 2K, $0,01 entrada y $0,04 por imagen. Ratios y limite real de prompt POR CONFIRMAR generando.",
+  "vigente": true
+ },
+ "Grok Imagine Image Quality": {
+  "nota": null,
+  "has_negative": false,
+  "is_natural": true,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "9:16",
+   "16:9"
+  ],
+  "max_chars": 2000,
+  "modos_gen": [
+   "1K",
+   "2K"
+  ],
+  "best_for": "Grok Imagine Image Quality (xAI, API directa): la variante orientada a calidad de imagen final antes que a edicion o layout. Generacion y edicion, 1K y 2K. Sin negative ni pesos.",
+  "best_for_en": "Grok Imagine Image Quality (xAI, direct API): the variant aimed at final image quality rather than editing or layout. Generation and editing, 1K and 2K. No negative or weights.",
+  "prompt_formula": "Prosa natural descriptiva: sujeto, escena, iluminacion, camara. Para texto en la imagen, entre comillas.",
+  "prompt_ejemplo": "A photorealistic close-up of a blacksmith's hands shaping glowing steel, sparks frozen mid-air, warm forge light against deep shadow, shallow depth of field.",
+  "limitaciones": "Ficha MAPEADA 08-sep-2026 desde la consola de x.ai: $0,01 entrada y $0,05 por imagen. Ratios y limite real de prompt POR CONFIRMAR generando.",
+  "vigente": true
  }
 }

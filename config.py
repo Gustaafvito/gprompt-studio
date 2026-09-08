@@ -1560,6 +1560,8 @@ MODELOS_POR_PLATAFORMA_VIDEO = {
                                     "Luma Ray 2", "Luma Ray 2 Flash", "Pika 2.2",
                                     "Hunyuan Video", "SkyReels V2"],
     "Higgsfield":                  ["Higgsfield DOP"],
+    "Grok (xAI)":                  ["Grok Imagine Video 1.5 (xAI)",
+                                    "Grok Imagine Video (xAI)"],
 }
 
 # ── Ratios ────────────────────────────────────────────────────────
@@ -1980,6 +1982,9 @@ PLATAFORMAS_VIDEO = {
     # plataformas "Pika / Luma" y "Runway Gen" que estaban apagadas.
     "Pollo AI":         "natural",
     "Higgsfield":       "natural",
+    # Grok (xAI), alta 08-sep-2026. Lenguaje natural: sus modelos de imagen
+    # y video no aceptan negative ni pesos numericos.
+    "Grok (xAI)":       "natural",
     # APAGADA 2026-07-04 (sin modelos dados de alta):
     # "Pixverse.ai":      "natural",
 }
@@ -2024,6 +2029,16 @@ MOTORES_VIDEO = {
                  "Luma Ray 2 Flash", "Pika 2.2", "Hunyuan Video", "SkyReels V2"],
     # Higgsfield: solo su motor PROPIO de video (DOP, control por presets).
     "Higgsfield": ["Higgsfield DOP"],
+    # Grok (xAI), alta 08-sep-2026. Habia dos entradas de Grok Imagine, pero
+    # eran la ruta de SEAART y describen otro producto: la 1.5 de SeaArt es
+    # SOLO imagen-a-video, se queda en 720p y SI tiene campo de negativo
+    # (porque lo pone SeaArt). La ruta directa de x.ai es multi-modo, llega a
+    # 1080p y no tiene negativo. Por eso los motores de esta plataforma son
+    # fichas APARTE, con el sufijo "(xAI)", y no las de SeaArt.
+    # Como el resto de plataformas mapeadas (Pollo, Higgsfield), esto NO
+    # consume API: la app escribe el prompt adaptado y el usuario lo pega en
+    # Grok. Que ademas haya key de x.ai como cerebro es independiente.
+    "Grok (xAI)": ["Grok Imagine Video 1.5 (xAI)", "Grok Imagine Video (xAI)"],
     # Apagada (ver PLATAFORMAS_VIDEO): "Pixverse.ai"
 }
 
