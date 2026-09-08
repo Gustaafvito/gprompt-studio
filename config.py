@@ -290,9 +290,45 @@ _COMFY_EXTS = (".safetensors", ".ckpt", ".pth", ".gguf", ".sft")
 # hunyuan3d genera malla 3D (no imagen 2D) y stable_cascade_stage_b/c son
 # piezas sueltas de un pipeline de 2 etapas — ninguno sirve como modelo
 # destino de prompts, así que se excluyen del escaneo.
+# Subcarpetas que NO contienen modelos generables aunque cuelguen de
+# checkpoints/ o unet/. El formato HuggingFace reparte un modelo en
+# transformer/, text_encoder/ y vae/, y el escaneo recursivo se tragaba las
+# piezas sueltas: en el equipo del usuario colaba 'model' (235 MB) desde
+# unet/flux_unchained/text_encoder/ como si fuera un checkpoint.
+_COMFY_CARPETAS_EXCLUIDAS = frozenset({
+    "text_encoder", "text_encoders", "text_encoder_2", "tokenizer",
+    "tokenizer_2", "vae", "vae_decoder", "vae_encoder", "clip", "clip_vision",
+    "scheduler", "feature_extractor", "safety_checker", ".cache",
+})
+
+# Carpetas cuyo NOMBRE nombra la familia. El usuario organiza sus checkpoints
+# en SDXL/, Flux/, SD15/, ZImage/, Krea2/... y hasta ahora esa informacion se
+# tiraba: 'playground-v2.5-1024px-aesthetic.fp16' vivia en checkpoints/SDXL/ y
+# salia sin familia. El nombre del fichero sigue mandando; la carpeta solo
+# entra cuando el nombre no dice nada.
+_COMFY_CARPETA_FAMILIA = {
+    "sdxl": "sdxl", "sd15": "sd15", "sd1.5": "sd15", "flux": "flux",
+    "flux_unchained": "flux", "krea": "krea", "krea2": "krea",
+    "zimage": "z_image", "z_image": "z_image", "z-image": "z_image",
+    "pony": "pony", "illustrious": "illustrious", "qwen": "qwen",
+    "ideogram": "ideogram", "hidream": "hidream",
+}
+# stem normalizado -> familia deducida de su carpeta (lo rellena el escaneo)
+_COMFY_FAMILIA_CARPETA: dict = {}
+
+
 _COMFY_EXCLUIR_TOKENS = ("refiner", "transformer_only", "svd", "inpainting",
                          "inpaint", "acestep", "ace_step", "ace-step",
                          "supir", "hunyuan3d", "stable_cascade",
+                         # 3D: generan mallas o splats, no imagenes. Salian en
+                         # el desplegable de IMAGEN y elegirlos no podia
+                         # funcionar. 'hunyuan3d' ya estaba pero NO cazaba
+                         # 'hunyuan_3d_v2.1' (guion bajo) — de ahi las
+                         # variantes. Confirmado en el inventario del usuario
+                         # el 08-sep-2026: hunyuan_3d_v2.1 (6,9 GB) y
+                         # triposplat_fp16 (707 MB).
+                         "hunyuan_3d", "hunyuan-3d", "triposplat", "tripo",
+                         "trellis", "sf3d", "instantmesh", "zero123", "splat",
                          # Pieza suelta del pipeline LTX (proyección de texto),
                          # no un modelo generable: 'ltx-2.3_text_projection_bf16'.
                          "text_projection",
@@ -364,9 +400,22 @@ def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
                 except OSError as e:
                     logger.debug(f"[silent] ComfyUI: {f}: {e}")
                     continue
+                try:
+                    partes = [p.lower() for p in f.relative_to(carpeta).parts[:-1]]
+                except Exception:
+                    partes = []
+                if any(p in _COMFY_CARPETAS_EXCLUIDAS for p in partes):
+                    continue
                 stem_l = f.stem.lower()
                 if any(_token_en_nombre(t, stem_l) for t in _COMFY_EXCLUIR_TOKENS):
                     continue
+                # La carpeta como pista de familia, de la mas profunda a la mas
+                # externa: checkpoints/SDXL/x.safetensors -> sdxl.
+                for p in reversed(partes):
+                    fam_dir = _COMFY_CARPETA_FAMILIA.get(p)
+                    if fam_dir:
+                        _COMFY_FAMILIA_CARPETA[_norm_nombre_comfy(f.stem)] = fam_dir
+                        break
                 hallados[clasificar_modelo_comfy(f.stem)].add(f.stem)
         except OSError as e:
             logger.warning(
@@ -692,7 +741,8 @@ def detectar_familia_comfy(nombre: str) -> str:
     for clave, tokens in _COMFY_FAMILIAS:
         if any(_token_en_nombre(t, n) for t in tokens):
             return clave
-    return ""
+    # El nombre no dice nada: probar con la carpeta donde estaba el fichero.
+    return _COMFY_FAMILIA_CARPETA.get(_norm_nombre_comfy(nombre), "")
 
 
 def comfy_image_specs(nombre: str) -> dict | None:
