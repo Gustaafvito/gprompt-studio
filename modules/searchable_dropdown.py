@@ -29,13 +29,73 @@ from modules.i18n import tr
 # Tope de filas dibujadas de una vez. Cada fila es un CTkButton y crearlos es
 # CARO (canvas + label + bindings): con el catalogo de imagen entero eran ~170
 # widgets en cada apertura Y en cada tecla, que es el "tarda en activarse".
-_MAX_FILAS = 80
+#
+# 80 dejaba fuera 17 de los 97 modelos de ComfyUI del usuario, y las dos
+# ultimas familias (SDXL Fooocus y Z-Image) quedaban INALCANZABLES salvo
+# escribiendo. Medido en su equipo, el coste de pintar N filas:
+#
+#      80 -> 174 ms      130 -> 296 ms
+#      97 -> 208 ms      170 -> 501 ms   <- aqui esta el "tarda"
+#
+# 120 cabe de sobra para su catalogo local entero por 90 ms mas, y sigue lejos
+# del tramo que se nota. El resumen "y N mas" queda para catalogos mayores.
+_MAX_FILAS = 120
 # Espera antes de repintar al escribir: teclear 6 letras hacia 6 repintados.
 _DEBOUNCE_MS = 140
 
 
 def _es_separador(v):
     return isinstance(v, str) and v.strip().startswith("──")
+
+
+def _plan_filas(valores, filtro="", colapsadas=(), tope=_MAX_FILAS):
+    """Decide QUE se pinta, sin tocar un solo widget.
+
+    Separado del pintado porque aqui vivia el fallo que dejaba cabeceras
+    huerfanas: se pintaba la cabecera al leerla y solo despues se descubria
+    que todos sus modelos caian pasado el tope, asi que la familia aparecia
+    vacia (el usuario vio "SDXL (Fooocus)" y "Z-Image" sin nada debajo).
+    Ahora una cabecera desplegada espera a su primer modelo.
+
+    Returns: (plan, ocultas, hay) donde plan es una lista de
+        ("cab", texto, colapsada) | ("mod", texto)
+        `ocultas` cuantos modelos no caben en el tope y `hay` si algo
+        coincidia con el filtro (aunque no quepa).
+    """
+    filtro = (filtro or "").strip().lower()
+    colapsadas = set(colapsadas)
+    plan, ocultas, dibujadas, hay = [], 0, 0, False
+    fam_colapsada = False
+    pendiente = None   # cabecera desplegada que aun espera su primer modelo
+    for v in valores:
+        if _es_separador(v):
+            # Al buscar se ocultan las cabeceras: los resultados salen planos.
+            if filtro:
+                fam_colapsada, pendiente = False, None
+                continue
+            fam_colapsada = v in colapsadas
+            if fam_colapsada:
+                # Plegada: la cabecera es lo UNICO visible de la familia, y
+                # sin ella no habria forma de desplegarla.
+                plan.append(("cab", v, True))
+                pendiente = None
+            else:
+                pendiente = v
+            continue
+        if filtro and filtro not in v.lower():
+            continue
+        if not filtro and fam_colapsada:
+            continue
+        hay = True
+        if dibujadas >= tope:
+            ocultas += 1
+            continue
+        if pendiente is not None:
+            plan.append(("cab", pendiente, False))
+            pendiente = None
+        plan.append(("mod", v))
+        dibujadas += 1
+    return plan, ocultas, hay
 
 
 def attach_searchable_dropdown(combo, command=None, max_height=380,
@@ -150,40 +210,29 @@ def attach_searchable_dropdown(combo, command=None, max_height=380,
                 for w in lista.winfo_children():
                     w.destroy()
                 filtro = buscar_var.get().strip().lower()
-                hay = False
-                dibujadas = 0   # filas realmente pintadas (tope _MAX_FILAS)
-                ocultas = 0     # las que no caben: se resumen al final
-                fam_colapsada = False  # ¿la familia en curso está plegada?
-                for v in valores:
-                    if _es_separador(v):
-                        if filtro:  # al buscar se ocultan las cabeceras de grupo
-                            fam_colapsada = False
-                            continue
-                        colapsada = v in state["collapsed"]
-                        fam_colapsada = colapsada
-                        flecha = "▸" if colapsada else "▾"
-                        # Cabecera = CTkLabel (color acento, discreta) pero
-                        # clicable para plegar/desplegar la familia.
-                        hdr = ctk.CTkLabel(
-                            lista, text=f"{flecha} {tr(v)}", anchor="w",
-                            font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
-                            text_color=c["accent_text"],
-                            cursor="hand2",
-                        )
-                        hdr.pack(fill="x", padx=4, pady=(6, 1))
-                        hdr.bind("<Button-1>", lambda e, fam=v: _toggle_fam(fam))
-                        sep = ctk.CTkFrame(lista, fg_color=c["combo_border"], height=1)
-                        sep.pack(fill="x", padx=4, pady=(0, 2))
+                plan, ocultas, hay = _plan_filas(
+                    valores, filtro, state["collapsed"], _MAX_FILAS)
+
+                def _pintar_cabecera(v, colapsada):
+                    """Cabecera = CTkLabel (color acento, discreta) pero
+                    clicable para plegar/desplegar la familia."""
+                    hdr = ctk.CTkLabel(
+                        lista, text=f"{'▸' if colapsada else '▾'} {tr(v)}",
+                        anchor="w",
+                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
+                        text_color=c["accent_text"],
+                        cursor="hand2",
+                    )
+                    hdr.pack(fill="x", padx=4, pady=(6, 1))
+                    hdr.bind("<Button-1>", lambda e, fam=v: _toggle_fam(fam))
+                    sep = ctk.CTkFrame(lista, fg_color=c["combo_border"], height=1)
+                    sep.pack(fill="x", padx=4, pady=(0, 2))
+
+                for fila in plan:
+                    if fila[0] == "cab":
+                        _pintar_cabecera(fila[1], fila[2])
                         continue
-                    if filtro and filtro not in v.lower():
-                        continue
-                    if not filtro and fam_colapsada:
-                        continue  # familia plegada: ocultar sus modelos
-                    hay = True
-                    if dibujadas >= _MAX_FILAS:
-                        ocultas += 1
-                        continue
-                    dibujadas += 1
+                    v = fila[1]
                     # Truncar SOLO el texto mostrado (el valor real va en command).
                     texto = v if len(v) <= 42 else v[:41] + "…"
                     es_actual = v == valor_actual

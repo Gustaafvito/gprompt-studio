@@ -516,7 +516,13 @@ _COMFY_FAMILIAS = (
 _COMFY_FAMILIA_LABELS = {
     "flux": "Flux", "krea": "Krea", "z_image": "Z-Image", "ideogram": "Ideogram",
     "qwen": "Qwen", "pony": "Pony", "illustrious": "Illustrious",
-    "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)", "": "Otros",
+    "sd15": "SD 1.5 (Fooocus)", "sdxl": "SDXL (Fooocus)",
+    # 'edit' y 'hidream' TIENEN ficha en _COMFY_SPECS_FAMILIA pero les faltaba
+    # la etiqueta, asi que caian en "Otros": las dos tablas se habian
+    # desincronizado y el usuario veia tres cabeceras "Otros" seguidas.
+    # test_comfy_familias_etiquetadas lo vigila.
+    "edit": "Edición de imagen", "hidream": "HiDream",
+    "": "Otros",
 }
 _COMFY_FAMILIA_LABELS_VIDEO = {
     "ltx": "LTX", "wan": "Wan", "svd": "SVD", "hunyuan": "Hunyuan",
@@ -575,13 +581,19 @@ def _agrupar_por_familia(nombres, detector, labels, prefijo):
     Cabeceras "── {prefijo} · {Familia} ──" ordenadas alfabéticamente;
     modelos ordenados case-insensitive dentro de cada grupo.
     """
-    por_fam = {}
+    # Se agrupa por ETIQUETA, no por clave de familia: varias claves sin
+    # etiqueta comparten el "Otros" del get() y agrupando por clave salian
+    # tantas cabeceras "Otros" identicas como claves huerfanas hubiera (tres
+    # en el equipo del usuario: '', 'edit' y 'hidream'). Ademas el plegado de
+    # familias se indexa por el TEXTO de la cabecera, asi que las cabeceras
+    # repetidas se plegaban y desplegaban todas a la vez.
+    por_etiqueta = {}
     for n in nombres:
-        por_fam.setdefault(detector(n), []).append(n)
+        por_etiqueta.setdefault(labels.get(detector(n), "Otros"), []).append(n)
     grupos = []
-    for fam in sorted(por_fam, key=lambda f: labels.get(f, "Otros").lower()):
-        label = f"── {prefijo} · {labels.get(fam, 'Otros')} ──"
-        grupos.append((label, sorted(por_fam[fam], key=str.lower)))
+    for etiqueta in sorted(por_etiqueta, key=str.lower):
+        grupos.append((f"── {prefijo} · {etiqueta} ──",
+                       sorted(por_etiqueta[etiqueta], key=str.lower)))
     return grupos
 
 

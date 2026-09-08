@@ -425,6 +425,12 @@ TRADUCCIONES = {
     'Empezar a trastear': 'Start playing around',
     'Obtener key': 'Get key',
     "… y {0} más — escribe para afinar": "… and {0} more — type to narrow down",
+    # Cabeceras de familia del auto-discovery de ComfyUI. Las demás son nombres
+    # propios (Flux, Qwen, Pony...) y no se traducen; estas dos sí llevan
+    # palabras españolas y salían tal cual en la UI inglesa.
+    "── ComfyUI · Otros ──": "── ComfyUI · Other ──",
+    "── ComfyUI · Edición de imagen ──": "── ComfyUI · Image editing ──",
+    "── ComfyUI Video · Otros ──": "── ComfyUI Video · Other ──",
     "⚠️ Pedidos {0}, generados {1} — el modelo se quedó corto (reintenta, baja la cantidad o usa un modelo no razonador)": "⚠️ Requested {0}, generated {1} — the model fell short (retry, lower the count or use a non-reasoning model)",
     '⚠️ Error adaptando: {0}': '⚠️ Error adapting: {0}',
     '⚠️ Error aplicando setup: {0}': '⚠️ Error applying setup: {0}',
