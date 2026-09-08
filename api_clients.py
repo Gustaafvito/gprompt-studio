@@ -340,15 +340,35 @@ LLM_PROVIDERS = {
     "xai": {
         "name": "xAI Grok",
         "label": "💎 xAI Grok",
-        "descripcion": "Modelos de xAI (Elon Musk). Calidad alta.",
+        "descripcion": "Modelos de xAI (Elon Musk). Calidad alta, 1M de contexto.",
         "url_obtener_key": "https://console.x.ai/",
         "tipo": "openai_compatible",
         "base_url": "https://api.x.ai/v1",
-        "model_default": "grok-3",
+        # Lista rehecha el 08-sep-2026 con la key del usuario: la anterior
+        # (grok-3, grok-3-mini, grok-2-1212) iba TRES generaciones por detras
+        # y NINGUNO de los tres existia ya — el default incluido, asi que
+        # probar la key fallaba.
+        #
+        # Todos los Grok RAZONAN menos la variante non-reasoning. Tokens
+        # quemados pensando antes de escribir "OK", medidos uno a uno:
+        # 4.20-non-reasoning 0, 4.5 30, 4.6 132, 4.3 165, 4.20 174,
+        # build-0.1 366. Es la misma trampa que con DeepSeek V4: con
+        # presupuestos pequenos se funden el max_tokens razonando y devuelven
+        # vacio, de ahi que el default sea el non-reasoning (0,7s) y no el
+        # flagship.
+        #
+        # OJO con los ids: x.ai publica el fechado ("grok-4.20-0309-reasoning")
+        # y el estable como ALIAS ("grok-4.20"). Aqui se curan los estables,
+        # que no se rompen al rotar la fecha; el catalogo en vivo cuenta los
+        # alias como vivos para que no parezcan muertos.
+        "model_default": "grok-4.20-non-reasoning",
         "modelos": [
-            "grok-3",       # flagship xAI, excelente creatividad
-            "grok-3-mini",  # rápido y económico
-            "grok-2-1212",  # generación anterior, estable
+            "grok-4.20-non-reasoning",  # 0,7s, sin razonar, 1M ctx — $1,25/$2,50
+            "grok-4.6",                 # 3,2s, flagship, 500K ctx — $2/$6
+            "grok-4.5",                 # 1,4s, 500K ctx — $2/$6
+            "grok-4.3",                 # 2,0s, 1M ctx — $1,25/$2,50
+            "grok-4.20",                # 1,7s, razona, 1M ctx — $1,25/$2,50
+            "grok-build-0.1",           # 3,8s, para codigo, 256K — $1/$2
         ],
         "is_paid": True,
     },
@@ -408,9 +428,16 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "gpt-4.1-nano":              (0.10,  0.40),
     "o3":                        (10.00, 40.00),
     "o4-mini":                   (1.10,  4.40),
-    # xAI Grok 3
-    "grok-3":                    (3.00, 15.00),
-    "grok-3-mini":               (0.30,  0.50),
+    # xAI Grok. Leidos del propio catalogo (/v1/models trae los precios en
+    # centesimas de milesima de dolar por millon: dividir por 10.000) y
+    # cuadrados contra la consola, que marca $2/$6 para 4.6 y $1/$2 para
+    # build-0.1. Los de grok-3 estaban aqui y ese modelo ya no existe.
+    "grok-4.6":                  (2.00,  6.00),
+    "grok-4.5":                  (2.00,  6.00),
+    "grok-4.3":                  (1.25,  2.50),
+    "grok-4.20":                 (1.25,  2.50),
+    "grok-4.20-non-reasoning":   (1.25,  2.50),
+    "grok-build-0.1":            (1.00,  2.00),
     # Mistral
     "mistral-large-latest":      (2.00,  6.00),
     "mistral-small-latest":      (0.10,  0.30),
@@ -444,7 +471,7 @@ PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "openrouter":    None,            # depende del modelo elegido
     "perplexity":    (3.00, 15.00),   # sonar-pro
     "togetherai":    (0.88, 0.88),    # Llama-3.3-70B-Turbo
-    "xai":           (3.00, 15.00),   # grok-3
+    "xai":           (1.25,  2.50),   # grok-4.20-non-reasoning (el default)
 }
 
 
@@ -759,7 +786,19 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                          "User-Agent": UA_CATALOGO})
             with urllib.request.urlopen(req, timeout=TIMEOUT_CATALOGO_S) as r:
                 data = json.loads(r.read())
-            return [m["id"] for m in data.get("data", []) if m.get("id")]
+            vivos = []
+            for m in data.get("data", []):
+                if not m.get("id"):
+                    continue
+                vivos.append(m["id"])
+                # Los ALIAS cuentan como vivos: son nombres que el proveedor
+                # acepta igual en /chat/completions. x.ai publica el id con
+                # fecha ("grok-4.20-0309-reasoning") y el estable como alias
+                # ("grok-4.20"), que es lo que interesa curar — un id fechado
+                # se rompe cuando rota la fecha. Sin esto, la lista curada de
+                # x.ai aparecia MUERTA entera aunque los modelos respondan.
+                vivos.extend(a for a in (m.get("aliases") or []) if a)
+            return vivos
         except Exception as e:
             logger.debug(f"[silent] catálogo en vivo de {self.base_url}: {e}")
             return []
