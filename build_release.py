@@ -182,6 +182,18 @@ def publicar_hashes():
         texto = notas.read_text(encoding="utf-8")
     except Exception:
         return
+    # docs/RELEASE-CUERPO.md = SOLO lo que se pega en GitHub, sin las notas
+    # del autor que van entre <!-- -->. Existe porque copiar desde la pagina
+    # renderizada descarta los ###, los | y los -, y el texto llega sin
+    # formato; y copiar el .md entero arrastra las notas. Se regenera aqui
+    # para que no se desincronice del original.
+    try:
+        i = texto.index("## G-Prompt Studio")
+        (ROOT / "docs" / "RELEASE-CUERPO.md").write_text(
+            texto[i:].rstrip() + "\n", encoding="utf-8", newline="\n")
+        print("  ✓ docs/RELEASE-CUERPO.md regenerado (listo para pegar)")
+    except Exception as e:
+        print(f"  ⚠ no se pudo regenerar el cuerpo del release: {e}")
     viejos = [n for n, hx in hashes.items() if hx not in texto]
     if viejos:
         print(f"  ⚠ docs/RELEASE-v1.0.0.md tiene hashes de otro build — "
