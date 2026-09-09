@@ -281,6 +281,8 @@ language; you can switch it under **UI → 🌐 Language**.
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
+**Copyright 2026 Gustavo Luis Sánchez Escobar** («Gustaafvito»).
+
 You may use, modify and redistribute this software, including commercially.
 In exchange the licence asks three things: keep the copyright notice and the
 NOTICE file, state the changes you make, and don't use the project's name to

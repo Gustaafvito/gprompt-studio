@@ -342,6 +342,8 @@ bucear por los menús.
 
 Apache License 2.0 — ver [LICENSE](LICENSE) y [NOTICE](NOTICE).
 
+**Copyright 2026 Gustavo Luis Sánchez Escobar** «Gustaafvito».
+
 Puedes usar, modificar y redistribuir este software, incluso con fines
 comerciales. A cambio, la licencia te pide tres cosas: conservar el aviso de
 copyright y el fichero NOTICE, indicar los cambios que hagas, y no usar el

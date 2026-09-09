@@ -79,3 +79,27 @@ class TestLaLicenciaViajaConElExe:
         txt = (RAIZ / "installer.iss").read_text(encoding="utf-8")
         assert "LicenseFile=LICENSE" in txt, (
             "el instalador tenía LicenseFile vacío: nadie veía la licencia")
+
+
+class TestElTitularSeVeSinBucear:
+    """En el LICENSE el copyright cae en la linea 190 de 202.
+
+    Es donde Apache dice que va (el APPENDIX), y ahi se queda: el detector
+    de licencias de GitHub casa contra el cuerpo literal, y meterle una
+    linea delante arriesga que el repo muestre "Other" en vez de
+    "Apache-2.0". Pero quien abre la pestana de licencia ve texto generico y
+    no sabe de quien es la obra, asi que el titular va tambien en los dos
+    README, que es donde la gente mira.
+    """
+
+    def test_los_dos_readme_nombran_al_titular(self):
+        for n in ("README.md", "README.en.md"):
+            txt = (RAIZ / n).read_text(encoding="utf-8")
+            assert "Gustavo Luis Sánchez Escobar" in txt, f"{n} no nombra al titular"
+
+    def test_el_license_sigue_siendo_el_texto_literal(self):
+        # Si alguien mete el copyright ARRIBA, GitHub puede dejar de
+        # reconocer la licencia.
+        txt = (RAIZ / "LICENSE").read_text(encoding="utf-8")
+        assert txt.lstrip().startswith("Apache License"), (
+            "el LICENSE tiene que empezar por el texto de Apache")
