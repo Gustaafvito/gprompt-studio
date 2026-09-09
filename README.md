@@ -33,6 +33,21 @@ castellano, eliges el modelo, y sale el prompt con **sus** reglas.
 
 ---
 
+
+## Funciona
+
+Los prompts de mis **dos últimos premios en SeaArt** los generó esta
+herramienta — los dos en Wan 3.0, en septiembre de 2026:
+
+- [«¡Esa cosa flotante en el cielo me da escalofríos!»](https://www.seaart.ai/postDetail/daff1kle878c73923gj0)
+- [«¡Un castillo de chatarra de niño es asombroso!»](https://www.seaart.ai/postDetail/daen215e878c73fpeong)
+
+Si abres cualquiera de los dos verás el prompt entero: tres planos
+coreografiados, dirección de cámara, paleta de color y diseño de audio. Eso
+es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
+
+---
+
 ## ✨ Qué hace
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.

@@ -35,6 +35,21 @@ model's** rules.
 
 ---
 
+
+## It works
+
+The prompts behind my **two most recent SeaArt awards** were written by this
+tool — both on Wan 3.0, September 2026:
+
+- [«¡Esa cosa flotante en el cielo me da escalofríos!»](https://www.seaart.ai/postDetail/daff1kle878c73923gj0)
+- [«¡Un castillo de chatarra de niño es asombroso!»](https://www.seaart.ai/postDetail/daen215e878c73fpeong)
+
+Open either one and you'll see the full prompt: three choreographed shots,
+camera direction, colour palette and audio design. That's what the tool
+writes once you tell it the target is Wan 3.0.
+
+---
+
 ## ✨ What it does
 
 You type something simple — *"a girl with silver hair in a magical forest"* —
