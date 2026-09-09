@@ -11,6 +11,12 @@
 
 ---
 
+![La pantalla principal de G-Prompt Studio: una idea en español convertida en prompt para GPT Image 2.5 Sunburst, con positivo, negativo y ajustes recomendados](docs/capturas/01-pantalla-principal.png)
+
+<p align="center"><em>Una idea en una frase → el prompt que ese modelo concreto entiende, con su negativo y sus ajustes.</em></p>
+
+---
+
 ## ✨ Qué hace
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
@@ -246,6 +252,31 @@ pytest tests/ -v   # → 760 passed
 Si algo no funciona, revisa el log en:
 - Windows: `%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`
 - macOS/Linux: `~/.arquitecto_prompts/logs/gprompt.log`
+
+---
+
+## Capturas
+
+<table>
+<tr>
+<td width="50%">
+
+![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
+
+**276 modelos con ficha propia**, agrupados por familia y con buscador. Si
+usas ComfyUI, los tuyos aparecen solos.
+
+</td>
+<td width="50%">
+
+![La paleta de comandos abierta sobre la aplicación, con las herramientas filtrables](docs/capturas/03-paleta-comandos.png)
+
+**`Ctrl+K`** y escribe lo que buscas. Todas las herramientas a una tecla, sin
+bucear por los menús.
+
+</td>
+</tr>
+</table>
 
 ---
 

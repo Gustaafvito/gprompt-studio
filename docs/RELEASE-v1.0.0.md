@@ -8,6 +8,12 @@ Sube como *assets*: `GPromptStudio-Setup-1.0.0.exe` y
 `GPromptStudio-Portable-Onefile.exe`. La carpeta portable no, es lo mismo
 que instala el Setup y tres opciones confunden.
 
+**Las capturas:** arrastra los PNG de `docs/capturas/` al editor del release
+y GitHub las sube y te da la URL. NO uses rutas relativas tipo
+`docs/capturas/...` — en el cuerpo de un release no resuelven y sale el
+icono de imagen rota. Pon al menos `01-pantalla-principal.png` justo debajo
+del primer parrafo.
+
 ---
 
 ## G-Prompt Studio v1.0.0
