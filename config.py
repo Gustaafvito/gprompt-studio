@@ -1194,7 +1194,7 @@ def _unidades_fijas() -> list:
         for i in range(26):
             if not (mascara >> i) & 1:
                 continue
-            letra = "%s:/" % chr(ord("A") + i)
+            letra = f"{chr(ord('A') + i)}:/"
             if k32.GetDriveTypeW(ctypes.c_wchar_p(letra)) == 3:   # DRIVE_FIXED
                 letras.append(letra)
     except Exception as e:

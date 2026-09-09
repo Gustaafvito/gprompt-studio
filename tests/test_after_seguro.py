@@ -95,6 +95,7 @@ class TestDistingueVentanaVivaDeCerrada:
 
     def test_ventana_viva_avisa_en_warning(self, caplog):
         import logging
+
         from app import _log_after_descartado
         with caplog.at_level(logging.WARNING):
             _log_after_descartado(self._widget(True), RuntimeError("boom"))
@@ -104,6 +105,7 @@ class TestDistingueVentanaVivaDeCerrada:
 
     def test_ventana_cerrada_se_queda_en_debug(self, caplog):
         import logging
+
         from app import _log_after_descartado
         with caplog.at_level(logging.DEBUG):
             _log_after_descartado(self._widget(False), RuntimeError("boom"))
@@ -112,6 +114,7 @@ class TestDistingueVentanaVivaDeCerrada:
 
     def test_si_winfo_exists_revienta_se_asume_cerrada(self, caplog):
         import logging
+
         from app import _log_after_descartado
         with caplog.at_level(logging.DEBUG):
             _log_after_descartado(self._widget(None), RuntimeError("boom"))

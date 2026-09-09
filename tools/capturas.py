@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Capturas para el README, el release y la web.
 
 La app se arranca de verdad y se rellena con un prompt REAL escrito a mano
@@ -58,8 +57,8 @@ def capturar(widget, nombre, espera=0.35):
     img = ImageGrab.grab(bbox=(x, y, x + w, y + h))
     destino = DEST / nombre
     img.save(destino, "PNG", optimize=True)
-    print("  %-28s %dx%d  %.0f KB" % (nombre, img.width, img.height,
-                                      destino.stat().st_size / 1024))
+    kb = destino.stat().st_size / 1024
+    print(f"  {nombre:<28} {img.width}x{img.height}  {kb:.0f} KB")
     return destino
 
 

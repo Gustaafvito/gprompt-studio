@@ -2384,7 +2384,8 @@ class ArquitectoApp(
                 # default queda solo de red de seguridad para cuando no
                 # conteste. Así queda cubierto también togetherai y
                 # perplexity, que no se han podido verificar por falta de key.
-                from api_clients import LLM_PROVIDERS as _LP, modelos_disponibles
+                from api_clients import LLM_PROVIDERS as _LP
+                from api_clients import modelos_disponibles
                 modelo_test = _LP.get(primer_pid, {}).get("model_default", "")
                 try:
                     vivos = modelos_disponibles(primer_pid, primer_valor)

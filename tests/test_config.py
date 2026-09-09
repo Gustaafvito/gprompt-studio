@@ -481,7 +481,7 @@ class TestAutoriaYWeb:
 
 
 def test_el_instalador_no_mata_procesos_del_usuario():
-    """Candado: avisar de un bloqueo, sí; matar el proceso ajeno, no.
+    r"""Candado: avisar de un bloqueo, sí; matar el proceso ajeno, no.
 
     El 07-sep-2026 el instalador listó Google Chrome entre las apps a cerrar y
     parecía un falso positivo del Restart Manager. NO lo era: chrome.exe y

@@ -25,7 +25,6 @@ import customtkinter as ctk
 from modules import paleta as P
 from modules.i18n import tr
 
-
 # Tope de filas dibujadas de una vez. Cada fila es un CTkButton y crearlos es
 # CARO (canvas + label + bindings): con el catalogo de imagen entero eran ~170
 # widgets en cada apertura Y en cada tecla, que es el "tarda en activarse".
