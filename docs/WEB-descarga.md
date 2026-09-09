@@ -117,6 +117,7 @@ deshace: un alias del dominio se puede borrar y rehacer, una cuenta personal
 no. Ademas contradiria el trabajo de sacar el email de los 577 commits.
 
 
+<!--
 ## Recordatorios para ti
 
 - **Los hashes cambian en cada build.** Si regeneras los .exe, actualiza la
@@ -129,3 +130,4 @@ no. Ademas contradiria el trabajo de sacar el email de los 577 commits.
   acepten, Defender deja de marcarlo para todos. Es gratis y tarda 1-3 días
 - SmartScreen **acumula reputación con las descargas**: cuanta más gente lo
   instale sin incidencias, más se suaviza el aviso por sí solo
+-->

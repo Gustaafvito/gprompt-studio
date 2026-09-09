@@ -176,7 +176,7 @@ Lista de comprobaciones rápidas:
 - [ ] `python -c "import app; print('OK')"` → OK
 - [ ] Working tree limpio (`git status`)
 - [ ] Versión actualizada en `installer.iss`
-- [ ] `HANDOFF.md` actualizado con cambios desde el último build
+- [ ] `README.md` y `README.en.md` al día con los cambios del build
 - [ ] Probar el .exe resultante antes de distribuir:
   ```powershell
   dist\GPromptStudio\GPromptStudio.exe

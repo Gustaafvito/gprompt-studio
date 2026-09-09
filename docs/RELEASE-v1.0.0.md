@@ -1,5 +1,4 @@
-# Texto del release v1.0.0
-
+<!--
 Pega el bloque de abajo en el cuerpo del release de GitHub. Los hashes son
 del build del 09-sep-2026 14:26 — **si regeneras, cámbialos** (los saca
 `build_release.py` o `sha256sum *.exe` en la carpeta de distribución).
@@ -13,6 +12,7 @@ y GitHub las sube y te da la URL. NO uses rutas relativas tipo
 `docs/capturas/...` — en el cuerpo de un release no resuelven y sale el
 icono de imagen rota. Pon al menos `01-pantalla-principal.png` justo debajo
 del primer parrafo.
+-->
 
 ---
 

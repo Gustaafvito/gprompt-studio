@@ -4,7 +4,7 @@ Plantilla y checklist para añadir un modelo nuevo (o auditar uno
 existente) al catálogo de G-Prompt Studio. Mantén este archivo
 actualizado cuando descubras patrones nuevos.
 
-> ⚠️ **Política sesión 16+**: TODAS las auditorías de modelos se
+> ⚠️ **Regla del proyecto**: TODAS las auditorías de modelos se
 > hacen **desde la perspectiva de SeaArt** (cómo aparece y se
 > comporta el modelo en SeaArt, NO en la API original ni en otras
 > plataformas como Magnific, ComfyUI local, etc.). Los modelos de
@@ -277,7 +277,7 @@ for n, s in d.items():
 
 ---
 
-## 📊 Estado actual del catálogo (sesión 19)
+## 📊 Estado actual del catálogo
 
 | Categoría | Familia | Modelos | Auditado |
 |---|---|---:|:---:|
@@ -300,7 +300,7 @@ for n, s in d.items():
 | Audio | Todos | 10 | ⏳ |
 
 Total: 120 imagen + 15 vídeo + 10 audio. **11 auditados + 10 semi**.
-Sesión 19: Reve 2.0 y MAI-Image-2.5 con max_chars MEDIDO (2000/5000,
+Reve 2.0 y MAI-Image-2.5 con max_chars MEDIDO (2000/5000,
 prompt marcado de 5192 chars; Flash asume el del 2.5). Además, 10
 modelos actualizados con la DOC OFICIAL (docs.seaart.ai): correcciones
 críticas `no_weights=true` en Infinity/Realism/SD3.5 e

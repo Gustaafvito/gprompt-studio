@@ -114,6 +114,7 @@ English-speaking visitors will follow them and bounce. Something like
 
 ---
 
+<!--
 ## Reminders
 
 - **Hashes change with every build.** Regenerate the `.exe` and you must
@@ -123,3 +124,4 @@ English-speaking visitors will follow them and bounce. Something like
   yourself — GitHub serves them free, with no bandwidth cap.
 - Keep both languages in sync. Two download pages that disagree on the size,
   the hash or the VirusTotal result are worse than one.
+-->
