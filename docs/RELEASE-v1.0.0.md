@@ -39,10 +39,10 @@ proveedores soportados.
 
 ### Descarga
 
-| | |
-|---|---|
-| **[GPromptStudio-Setup-1.0.0.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
-| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento |
+| | | VirusTotal |
+|---|---|---|
+| **[GPromptStudio-Setup-1.0.0.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | [**0/59** limpio](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28) |
+| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | [2/63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8) — ver abajo |
 
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
@@ -66,6 +66,26 @@ no conoce a quien lo firma.
 
 Si prefieres no fiarte de mi palabra, compara el hash de arriba: si coincide,
 el fichero es exactamente el que se publicó aquí.
+
+### Sobre los 2 avisos del portable
+
+El instalador sale **limpio, 0 de 59** motores. El portable de un solo
+fichero lo marcan **2 de 63**: Bkav Pro y Zillya. Te lo cuento yo antes de
+que lo encuentres tú.
+
+Los dos son motores minoritarios, y la etiqueta que ponen —`trojan.xworm`—
+tiene una explicación concreta: XWorm es un malware real que **se empaqueta
+con PyInstaller**, la misma herramienta con la que se construye este
+portable. Esa firma no reconoce el código: reconoce el empaquetado. Por eso
+el instalador, hecho con Inno Setup, sale limpio con el mismo programa
+dentro.
+
+Microsoft Defender —el que llevan todos los Windows— dice **Undetected**, y
+también Kaspersky, ESET, Bitdefender, Norton y Avast.
+
+**Si te preocupa, usa el instalador**: es el mismo programa, no necesita
+permisos de administrador y no arrastra ese falso positivo. Los dos informes
+completos están enlazados arriba para que los mires tú.
 
 ### Qué trae
 

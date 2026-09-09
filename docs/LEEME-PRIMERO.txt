@@ -90,10 +90,24 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
 
     Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
 
-  Algún antivirus poco conocido puede marcar la Opción 3 (onefile).
-  Es un falso positivo típico de los ejecutables autoextraíbles: se
-  descomprimen en una carpeta temporal al arrancar, igual que hace
-  cierto malware, y los motores heurísticos flojos lo confunden.
+  ANALIZADO EN VIRUSTOTAL (09-sep-2026), y el resultado entero:
+    - Opción 1, el instalador ..... 0 de 59 motores. Limpio.
+    - Opción 3, el onefile ........ 2 de 63: Bkav Pro y Zillya.
+
+  Esos dos son motores minoritarios, y su etiqueta tiene explicación:
+  el malware que buscan se empaqueta con PyInstaller, la misma
+  herramienta con la que se construye el onefile. La firma reconoce
+  el EMPAQUETADO, no el programa — por eso el instalador, hecho con
+  Inno Setup, lleva lo mismo dentro y sale limpio.
+
+  Microsoft Defender, que es el que tienes tú, dice Undetected. Igual
+  que Kaspersky, ESET, Bitdefender, Norton y Avast.
+
+  Si te preocupa, usa la Opción 1. Los informes completos:
+    Setup:   virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f27
+             4ec6e1ae3a551eb617d343f5774c0caf28
+    Onefile: virustotal.com/gui/file/d11f32741865565acdbb814ec88732
+             ce628ab76a861816e248958355fd6304b8
 
 
 SOBRE SEGURIDAD Y PRIVACIDAD

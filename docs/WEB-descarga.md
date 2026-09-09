@@ -70,16 +70,22 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 
 Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
-> **¿Tu antivirus ha marcado el archivo?**
+> **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> Puede pasar con la versión portable de un solo fichero. Es un falso
-> positivo conocido de este tipo de ejecutables: se descomprimen en una
-> carpeta temporal al arrancar, que es también lo que hace cierto malware, y
-> algunos motores heurísticos lo confunden.
+> - **Instalador: [0 de 59 motores](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28)**, limpio
+> - **Portable de un solo fichero: [2 de 63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8)** — Bkav Pro y Zillya
 >
-> Si te preocupa, usa el **instalador** en lugar de la versión portable:
-> tiene otra estructura y no da ese falso positivo. Y compara siempre el
-> hash.
+> Esos dos son motores minoritarios y la etiqueta que ponen tiene
+> explicación: es un falso positivo del **empaquetado**, no del programa. El
+> malware que esa firma busca se empaqueta con la misma herramienta
+> (PyInstaller) con la que se construye el portable. El instalador lleva el
+> mismo programa dentro, está hecho con otra herramienta, y sale limpio.
+>
+> **Microsoft Defender**, que es el que tienes tú, dice *Undetected*. Igual
+> que Kaspersky, ESET, Bitdefender, Norton y Avast.
+>
+> **Si te preocupa, descarga el instalador.** Y compara el hash en cualquier
+> caso.
 
 ---
 
