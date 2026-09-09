@@ -176,3 +176,44 @@ class TestElReadmeEnIngles:
 
     def test_no_reaparece_github_models(self):
         assert "GitHub Models" not in self._en()
+
+
+class TestLasDosPaginasDeDescargaConcuerdan:
+    """El texto de la web existe en ES y EN, y dice lo mismo.
+
+    El publico de la herramienta esta mayoritariamente en ingles (#use-cases
+    del Discord de OpenAI, r/StableDiffusion, los Discord de ComfyUI), y de
+    ahi llega a la web. Pero la marca en redes es en castellano, asi que se
+    traduce ESTA pagina, no el sitio entero.
+
+    Los hashes y el resultado de VirusTotal tienen que coincidir en las dos:
+    dos paginas que discrepan en eso invitan a desconfiar justo donde se
+    pedia confianza.
+    """
+
+    ES = RAIZ / "docs" / "WEB-descarga.md"
+    EN = RAIZ / "docs" / "WEB-descarga.en.md"
+
+    def test_existen_las_dos(self):
+        assert self.ES.is_file() and self.EN.is_file()
+
+    def test_se_enlazan(self):
+        assert "WEB-descarga.en.md" in self.ES.read_text(encoding="utf-8")
+        assert "WEB-descarga.md" in self.EN.read_text(encoding="utf-8")
+
+    def test_los_mismos_hashes_en_las_dos(self):
+        h_es = set(re.findall(r"[0-9a-f]{64}", self.ES.read_text(encoding="utf-8")))
+        h_en = set(re.findall(r"[0-9a-f]{64}", self.EN.read_text(encoding="utf-8")))
+        assert h_es and h_es == h_en, "los hashes no coinciden entre ES y EN"
+
+    def test_los_hashes_son_los_del_release(self):
+        h_rel = set(re.findall(r"[0-9a-f]{64}", NOTAS.read_text(encoding="utf-8")))
+        h_web = set(re.findall(r"[0-9a-f]{64}", self.ES.read_text(encoding="utf-8")))
+        assert h_web <= h_rel, (
+            "la web publica un hash que no esta en el release: uno de los dos "
+            "es de otro build")
+
+    def test_las_dos_avisan_de_smartscreen(self):
+        assert "SmartScreen" in self.ES.read_text(encoding="utf-8")
+        assert "code-signing" in self.EN.read_text(encoding="utf-8")
+

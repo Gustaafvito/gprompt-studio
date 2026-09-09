@@ -1,5 +1,9 @@
 # Sección de descarga para gustaafvito.com
 
+Versión en inglés: [`WEB-descarga.en.md`](WEB-descarga.en.md). Las dos
+tienen que decir lo mismo — dos páginas de descarga que discrepan en el
+tamaño, el hash o el resultado de VirusTotal son peor que una sola.
+
 Texto listo para pegar en la web. Dos bloques: el de descarga y el del aviso
 de Windows, que es el que más abandonos evita.
 
