@@ -5185,5 +5185,111 @@
   "prompt_ejemplo": "A photorealistic close-up of a blacksmith's hands shaping glowing steel, sparks frozen mid-air, warm forge light against deep shadow, shallow depth of field.",
   "limitaciones": "Ficha MAPEADA 08-sep-2026 desde la consola de x.ai: $0,01 entrada y $0,05 por imagen. Ratios y limite real de prompt POR CONFIRMAR generando.",
   "vigente": true
+ },
+ "GPT Image 2.5 Flare": {
+  "has_negative": false,
+  "is_natural": true,
+  "formato_bloques": "gpt_image",
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "9:21"
+  ],
+  "max_chars": 5000,
+  "modos_gen": [
+   "Baja",
+   "Media",
+   "Alta",
+   "Muy alta",
+   "Máxima"
+  ],
+  "resoluciones": [
+   "1K",
+   "2K",
+   "4K"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 10,
+  "magia_sugerencia": [
+   "Automático",
+   "Abrir",
+   "Cerrar"
+  ],
+  "prompt_formula": "Estructura de 6 bloques en lenguaje natural:\n1. COMPOSICIÓN/ENCUADRE — tipo de plano (overhead, close-up, wide angle), ángulo, perspectiva\n2. SUJETO — qué aparece, con detalles visuales precisos (materiales, colores, expresión, postura)\n3. ILUMINACIÓN — dirección, tipo, temperatura (golden hour, studio soft light, rim lighting, chiaroscuro)\n4. FONDO/CONTEXTO — ambiente, elementos secundarios, profundidad de campo\n5. ESTILO/TÉCNICA — referencia cinematográfica o artística (50mm f/2.0, film grain, flat lay, editorial)\n6. RESTRICCIONES — qué NO debe aparecer (sin marcas de agua, sin logos reales, sin texto extra)\n\nTEXTO en imagen: pon la frase exacta entre comillas (\\\"Morning Ritual\\\"), nombres en MAYÚSCULAS, especificá tipografía (bold serif, thin sans-serif), cerrá con \\\"verbatim, perfectly legible, no extra text\\\". Máx 15 chars en superficies curvas.\n\nEDICIÓN iterativa: en cada turno reafirmá invariantes explícitamente (\\\"same face, same outfit, same lighting — only change the background\\\"). Primera iteración = base para ajuste fino, no asset final.\n\nEvitá adjetivos vacíos (\\\"stunning 8K masterpiece\\\") — usá descriptores técnicos (\\\"shot at 50mm, soft window light from left\\\"). Soporta hasta 5000 chars.",
+  "prompt_tips": [
+   "ESTRUCTURA 6 BLOQUES: composición → sujeto → iluminación → fondo → estilo → restricciones",
+   "TEXTO EN IMAGEN: pon la frase exacta entre comillas, nombres en MAYÚSCULAS, especificá tipografía (bold serif, thin sans-serif), añadí 'verbatim, perfectly legible, no extra text'",
+   "EVITÁ adjetivos vacíos ('stunning masterpiece') — usá descriptores técnicos ('50mm, f/2.0, soft window light')",
+   "EDICIÓN ITERATIVA: en cada turno reafirmá invariantes ('same face, outfit and lighting — only change background')",
+   "COMPOSICIÓN EXPLÍCITA: especificá placement ('overhead flat-lay', 'rule of thirds, subject bottom-left')",
+   "RESTRICCIONES siempre al final: 'sin marca de agua, sin logos reales, sin texto extra'",
+   "PROMPTS CORTOS (<30 palabras): para conceptos simples donde el modelo rellena creativamente",
+   "PROMPTS LARGOS ESTRUCTURADOS: para composición exacta, tipografía precisa, iluminación nombrada"
+  ],
+  "vigente": true,
+  "nota": 4.6,
+  "best_for": "GPT Image 2.5 Flare (OpenAI, 08-sep-2026). La variante RAPIDA de la familia 2.5: hasta un 50% menos de latencia que Images 2.0 con calidad comparable a GPT Image 2. Es la que hay que usar para ITERAR — probar encuadres, variaciones de composicion, tandas de bocetos — porque a igual precio te da mas intentos por minuto. Mantiene lo que hace fuerte a la familia: texto legible dentro de la imagen, edicion local precisa, consistencia entre ediciones sucesivas y maquetas con tipografia (mockups de UI, infografias, product shots, e-commerce). Cuando la composicion ya este aprobada y toque afinar detalles, cambia a Sunburst.",
+  "best_for_en": "GPT Image 2.5 Flare (OpenAI, 2026-09-08). The FAST variant of the 2.5 family: up to 50% lower latency than Images 2.0 with quality comparable to GPT Image 2. This is the one for ITERATING — testing framings, composition variants, batches of sketches — because at the same price it gives you more attempts per minute. Keeps the family's strengths: legible in-image text, precise local editing, consistency across successive edits, and layouts with typography (UI mockups, infographics, product shots, e-commerce). Once the composition is approved and it's time to refine details, switch to Sunburst.",
+  "prompt_ejemplo": "Overhead flat-lay product shot. Subject: a white ceramic espresso cup on a dark walnut wood surface, wisps of steam rising, small cinnamon stick resting on the saucer, scattered coffee beans around. Lighting: diffused morning window light from the upper-left, soft shadows, no harsh reflections. Background: dark walnut grain texture, subtle depth. Style: commercial food photography, 85mm macro lens, shallow depth of field, slight warm color grade, film grain at ISO 400. Typography: clean bold sans-serif centered above the cup reading \\\"Morning Ritual\\\" in cream white, verbatim, perfectly legible. Restrictions: no watermarks, no extra text, no logo, no hands in frame.",
+  "limitaciones": "Variante RAPIDA (gpt-image-2.5-flare). Sin negative prompt (modelo natural) ni pesos numericos. Calidad documentada en la API: low/medium/high/xhigh/max/auto — tres niveles MAS que GPT Image 2; SeaArt puede exponer solo los primeros. Precio de API identico en las dos variantes y el mismo que la generacion anterior: $5/1M tokens de texto de entrada, $8/1M de imagen de entrada y $30/1M de imagen de salida — asi que elegir entre Flare y Sunburst es tiempo contra precision, NO coste. El '50% menos de latencia' es un tope, no una garantia por prompt. POR CONFIRMAR generando: ratios, tope real de prompt y numero de imagenes de referencia se heredan de GPT Image 2 porque OpenAI no los publica para 2.5."
+ },
+ "GPT Image 2.5 Sunburst": {
+  "has_negative": false,
+  "is_natural": true,
+  "formato_bloques": "gpt_image",
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "9:21"
+  ],
+  "max_chars": 5000,
+  "modos_gen": [
+   "Baja",
+   "Media",
+   "Alta",
+   "Muy alta",
+   "Máxima"
+  ],
+  "resoluciones": [
+   "1K",
+   "2K",
+   "4K"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 10,
+  "magia_sugerencia": [
+   "Automático",
+   "Abrir",
+   "Cerrar"
+  ],
+  "prompt_formula": "Estructura de 6 bloques en lenguaje natural:\n1. COMPOSICIÓN/ENCUADRE — tipo de plano (overhead, close-up, wide angle), ángulo, perspectiva\n2. SUJETO — qué aparece, con detalles visuales precisos (materiales, colores, expresión, postura)\n3. ILUMINACIÓN — dirección, tipo, temperatura (golden hour, studio soft light, rim lighting, chiaroscuro)\n4. FONDO/CONTEXTO — ambiente, elementos secundarios, profundidad de campo\n5. ESTILO/TÉCNICA — referencia cinematográfica o artística (50mm f/2.0, film grain, flat lay, editorial)\n6. RESTRICCIONES — qué NO debe aparecer (sin marcas de agua, sin logos reales, sin texto extra)\n\nTEXTO en imagen: pon la frase exacta entre comillas (\\\"Morning Ritual\\\"), nombres en MAYÚSCULAS, especificá tipografía (bold serif, thin sans-serif), cerrá con \\\"verbatim, perfectly legible, no extra text\\\". Máx 15 chars en superficies curvas.\n\nEDICIÓN iterativa: en cada turno reafirmá invariantes explícitamente (\\\"same face, same outfit, same lighting — only change the background\\\"). Primera iteración = base para ajuste fino, no asset final.\n\nEvitá adjetivos vacíos (\\\"stunning 8K masterpiece\\\") — usá descriptores técnicos (\\\"shot at 50mm, soft window light from left\\\"). Soporta hasta 5000 chars.",
+  "prompt_tips": [
+   "ESTRUCTURA 6 BLOQUES: composición → sujeto → iluminación → fondo → estilo → restricciones",
+   "TEXTO EN IMAGEN: pon la frase exacta entre comillas, nombres en MAYÚSCULAS, especificá tipografía (bold serif, thin sans-serif), añadí 'verbatim, perfectly legible, no extra text'",
+   "EVITÁ adjetivos vacíos ('stunning masterpiece') — usá descriptores técnicos ('50mm, f/2.0, soft window light')",
+   "EDICIÓN ITERATIVA: en cada turno reafirmá invariantes ('same face, outfit and lighting — only change background')",
+   "COMPOSICIÓN EXPLÍCITA: especificá placement ('overhead flat-lay', 'rule of thirds, subject bottom-left')",
+   "RESTRICCIONES siempre al final: 'sin marca de agua, sin logos reales, sin texto extra'",
+   "PROMPTS CORTOS (<30 palabras): para conceptos simples donde el modelo rellena creativamente",
+   "PROMPTS LARGOS ESTRUCTURADOS: para composición exacta, tipografía precisa, iluminación nombrada"
+  ],
+  "vigente": true,
+  "nota": 4.8,
+  "best_for": "GPT Image 2.5 Sunburst (OpenAI, 08-sep-2026). La variante de CALIDAD de la familia 2.5: por encima de GPT Image 2, y pensada para cuando el cambio local tiene que respetar lo ya aprobado. Tarda mas que Flare y cuesta lo mismo, asi que la eleccion es tiempo contra precision, no dinero. Destaca en graficos cargados de TEXTO, prototipos de UI, fotorrealismo, diagramas cientificos y material didactico; maneja instrucciones visuales complejas, fondos transparentes y estilos artisticos. Usala para el asset final: portadas, maquetas de producto, campanas, comics, presentaciones.",
+  "best_for_en": "GPT Image 2.5 Sunburst (OpenAI, 2026-09-08). The QUALITY variant of the 2.5 family: above GPT Image 2, and built for when a local change must preserve what was already approved. It takes longer than Flare and costs the same, so the trade-off is time versus precision, not money. Excels at TEXT-HEAVY graphics, UI prototypes, photorealism, scientific diagrams and educational material; handles complex visual instructions, transparent backgrounds and artistic styles. Use it for the final asset: covers, product mockups, campaigns, comics, presentations.",
+  "prompt_ejemplo": "Overhead flat-lay product shot. Subject: a white ceramic espresso cup on a dark walnut wood surface, wisps of steam rising, small cinnamon stick resting on the saucer, scattered coffee beans around. Lighting: diffused morning window light from the upper-left, soft shadows, no harsh reflections. Background: dark walnut grain texture, subtle depth. Style: commercial food photography, 85mm macro lens, shallow depth of field, slight warm color grade, film grain at ISO 400. Typography: clean bold sans-serif centered above the cup reading \\\"Morning Ritual\\\" in cream white, verbatim, perfectly legible. Restrictions: no watermarks, no extra text, no logo, no hands in frame.",
+  "limitaciones": "Variante de CALIDAD (gpt-image-2.5-sunburst). Sin negative prompt (modelo natural) ni pesos numericos. Calidad documentada en la API: low/medium/high/xhigh/max/auto — tres niveles MAS que GPT Image 2; SeaArt puede exponer solo los primeros. Precio de API identico en las dos variantes y el mismo que la generacion anterior: $5/1M tokens de texto de entrada, $8/1M de imagen de entrada y $30/1M de imagen de salida — asi que elegir entre Flare y Sunburst es tiempo contra precision, NO coste. El '50% menos de latencia' es un tope, no una garantia por prompt. POR CONFIRMAR generando: ratios, tope real de prompt y numero de imagenes de referencia se heredan de GPT Image 2 porque OpenAI no los publica para 2.5."
  }
 }

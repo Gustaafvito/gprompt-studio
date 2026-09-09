@@ -244,7 +244,9 @@
    "── GPT Image (OpenAI en SeaArt) ──",
    [
     "GPT Image 1.5",
-    "GPT Image 2"
+    "GPT Image 2",
+    "GPT Image 2.5 Flare",
+    "GPT Image 2.5 Sunburst"
    ]
   ],
   [
@@ -504,7 +506,9 @@
    "── ChatGPT / GPT Image (OpenAI oficial) ──",
    [
     "GPT Image 1.5",
-    "GPT Image 2"
+    "GPT Image 2",
+    "GPT Image 2.5 Flare",
+    "GPT Image 2.5 Sunburst"
    ]
   ]
  ],
