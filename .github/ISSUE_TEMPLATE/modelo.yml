@@ -1,0 +1,67 @@
+name: Falta un modelo, o su ficha está mal
+description: Un modelo que no está en el catálogo, o uno cuyas reglas no cuadran
+labels: ["catálogo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        El catálogo son 271 modelos, cada uno con su ficha: si escribe en
+        prosa o en tags, cuántos caracteres acepta, si usa negativo, qué
+        sampler. **Se pudre solo**: los proveedores retiran modelos y sacan
+        otros cada pocas semanas.
+
+        Si usas ComfyUI y no ves tus modelos locales, eso no es esto — abre
+        un [fallo](?template=fallo.yml) con el log.
+
+  - type: input
+    id: modelo
+    attributes:
+      label: Qué modelo
+      description: El nombre exacto, como aparece en su plataforma.
+      placeholder: Seedream 5.0
+    validations:
+      required: true
+
+  - type: input
+    id: plataforma
+    attributes:
+      label: Dónde se usa
+      placeholder: SeaArt · Kling AI · ComfyUI · la API de OpenAI…
+    validations:
+      required: true
+
+  - type: dropdown
+    id: que-pasa
+    attributes:
+      label: Qué pasa
+      options:
+        - No está en el catálogo
+        - Está, pero su ficha no cuadra con la realidad
+        - Ya no existe y habría que quitarlo
+    validations:
+      required: true
+
+  - type: textarea
+    id: reglas
+    attributes:
+      label: Qué sabes de sus reglas
+      description: |
+        Lo que hayas comprobado **generando**, no lo que ponga la
+        documentación: se contradicen a menudo. Cualquier dato ayuda,
+        aunque sea uno solo.
+      placeholder: |
+        - Prosa o tags: prosa
+        - Límite: se corta sobre los 2000 caracteres
+        - Negativo: lo ignora
+        - Sampler y CFG: euler, CFG 3,5
+        - Ratios que ofrece: 1:1, 16:9, 9:16
+    validations:
+      required: false
+
+  - type: input
+    id: enlace
+    attributes:
+      label: Enlace a su página
+      placeholder: https://www.seaart.ai/es/models/detail/...
+    validations:
+      required: false

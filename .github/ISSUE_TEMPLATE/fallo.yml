@@ -1,0 +1,77 @@
+name: Reportar un fallo
+description: Algo no funciona como debería
+labels: ["fallo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. **El log es lo que más ayuda**: con él se
+        arregla en la mitad de tiempo, sin él toca adivinar.
+
+        ¿Es un fallo de **seguridad**? No lo pongas aquí — mira
+        [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: Qué pasó
+      description: Qué hacías, qué esperabas y qué pasó en realidad.
+      placeholder: |
+        Elegí el modelo Flux, le di a Generar y salió un error rojo abajo.
+        Esperaba que saliera el prompt.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Cómo repetirlo
+      description: Los pasos, aunque parezcan obvios.
+      placeholder: |
+        1. Abrir la app
+        2. Modo Imagen, plataforma SeaArt
+        3. Escribir "un gato" y pulsar Generar
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: El log
+      description: |
+        Pega las últimas ~30 líneas de
+        `%USERPROFILE%\.arquitecto_prompts\logs\gprompt.log`
+
+        **Míralo antes de pegarlo**: si aparece alguna clave API, bórrala.
+      render: text
+    validations:
+      required: false
+
+  - type: dropdown
+    id: instalacion
+    attributes:
+      label: Cómo la instalaste
+      options:
+        - Instalador (GPromptStudio-Setup-1.0.0.exe)
+        - Portable de un solo fichero
+        - Desde el código, con Python
+    validations:
+      required: true
+
+  - type: input
+    id: cerebro
+    attributes:
+      label: Qué proveedor tenías puesto
+      description: DeepSeek, Gemini, Groq, Ollama… y el modelo si lo recuerdas.
+      placeholder: Groq · qwen/qwen3.8-27b
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: Sale en el pie de la ventana.
+      placeholder: v1.0.0
+    validations:
+      required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Una duda o una idea
+    url: https://github.com/Gustaafvito/gprompt-studio/discussions
+    about: Las dudas van a Discussions, en público, para que la siguiente persona con la misma pregunta la encuentre sin preguntar.
+  - name: Un fallo de seguridad
+    url: https://github.com/Gustaafvito/gprompt-studio/security/policy
+    about: No lo abras como issue público. Aquí tienes cómo reportarlo en privado.
