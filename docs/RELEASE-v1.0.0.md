@@ -121,7 +121,7 @@ reales, buscando los prefijos de todos los proveedores.
   desaparece del catálogo de su proveedor, la app lo oculta sola
 - ComfyUI: detección automática de la carpeta, y soporta que `models/` sea
   un enlace a otro disco
-- 1.298 tests. Las dependencias pasan auditoría de CVEs en cada build
+- 1.332 tests. Las dependencias pasan auditoría de CVEs en cada build
 
 ### Licencia
 

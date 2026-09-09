@@ -150,6 +150,35 @@ def copiar_artefactos(src_dist: Path):
     publicar_hashes()
 
 
+def _avisar_cifra_de_tests(texto_release: str):
+    """El release presume del numero de tests: avisa si se quedo atras.
+
+    Se comprueba AQUI y no con un test de la suite: un test que compara con
+    el total de la suite se cuenta a si mismo, asi que fallaria cada vez que
+    se anade otro. Un candado que rompe con cada cambio acaba desactivado.
+    El momento de mirarlo es al cortar una version, que es justo esto.
+    """
+    m = re.search(r"([\d.]+) tests\.", texto_release)
+    if not m:
+        return
+    anunciados = int(m.group(1).replace(".", ""))
+    try:
+        res = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests", "-q", "--collect-only"],
+            cwd=ROOT, capture_output=True, text=True, timeout=180)
+        m2 = re.search(r"(\d+) tests? collected", res.stdout)
+        if not m2:
+            return
+        reales = int(m2.group(1))
+    except Exception:
+        return
+    if anunciados != reales:
+        print(f"  ⚠ el release dice {anunciados} tests y hay {reales} — "
+              f"actualiza docs/RELEASE-v1.0.0.md")
+    else:
+        print(f"  ✓ la cifra de tests del release cuadra ({reales})")
+
+
 def publicar_hashes():
     """SHA-256 de los .exe, y aviso si el texto del release ya no cuadra.
 
@@ -192,6 +221,7 @@ def publicar_hashes():
         (ROOT / "docs" / "RELEASE-CUERPO.md").write_text(
             texto[i:].rstrip() + "\n", encoding="utf-8", newline="\n")
         print("  ✓ docs/RELEASE-CUERPO.md regenerado (listo para pegar)")
+        _avisar_cifra_de_tests(texto)
     except Exception as e:
         print(f"  ⚠ no se pudo regenerar el cuerpo del release: {e}")
     viejos = [n for n, hx in hashes.items() if hx not in texto]

@@ -216,4 +216,3 @@ class TestLasDosPaginasDeDescargaConcuerdan:
     def test_las_dos_avisan_de_smartscreen(self):
         assert "SmartScreen" in self.ES.read_text(encoding="utf-8")
         assert "code-signing" in self.EN.read_text(encoding="utf-8")
-
