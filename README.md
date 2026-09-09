@@ -9,6 +9,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
+**Español** · [English](README.en.md)
+
 ---
 
 ![La pantalla principal de G-Prompt Studio: una idea en español convertida en prompt para GPT Image 2.5 Sunburst, con positivo, negativo y ajustes recomendados](docs/capturas/01-pantalla-principal.png)
@@ -229,7 +231,7 @@ pip install -e ".[all]"
 gprompt-studio/
 ├── main.py              # Punto de entrada
 ├── app.py               # ArquitectoApp (clase principal)
-├── api_clients.py       # 14 proveedores LLM (patrón Provider)
+├── api_clients.py       # 13 proveedores LLM (patrón Provider)
 ├── workers.py           # DeepSeekWorker + VisionChain
 ├── persistence.py       # DataStore con escrituras atómicas
 ├── prompts.py           # System prompts por modo/modelo
@@ -244,14 +246,14 @@ gprompt-studio/
 │   ├── avatar_*.py      # Generador de datasets LoRA (4 módulos)
 │   └── …               # (ver docs/ESTRUCTURA.md para el árbol completo)
 ├── data/                # JSONs: specs de modelos, estilos, plantillas
-└── tests/               # 760 tests pytest
+└── tests/               # 1319 tests pytest
 ```
 
 ## 🧪 Tests
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v   # → 760 passed
+pytest tests/ -v   # → 1319 passed
 ```
 
 ## ⌨ Atajos de teclado (29 registrados — `Ctrl+?` muestra la lista completa)

@@ -131,3 +131,48 @@ class TestElReadmeNoInflaLasCifras:
 
     def test_cuenta_por_que_existe(self):
         assert "## Por qué existe" in self._readme()
+
+
+class TestElReadmeEnIngles:
+    """La interfaz ya era bilingüe; la portada no.
+
+    El público de esta herramienta no está solo en España — el foro
+    #use-cases del Discord de OpenAI, r/StableDiffusion o los Discord de
+    ComfyUI son en inglés. Un README solo en castellano deja fuera a la
+    mayoría de quien podría usarla.
+
+    Los dos ficheros tienen que contar lo MISMO: dos portadas que se
+    contradicen en cifras o en cómo se instala son peor que una sola.
+    """
+
+    def _en(self):
+        return (RAIZ / "README.en.md").read_text(encoding="utf-8")
+
+    def _es(self):
+        return (RAIZ / "README.md").read_text(encoding="utf-8")
+
+    def test_existe(self):
+        assert (RAIZ / "README.en.md").is_file()
+
+    def test_se_enlazan_entre_si(self):
+        assert "README.en.md" in self._es(), "el español no lleva al inglés"
+        assert "README.md" in self._en(), "el inglés no vuelve al español"
+
+    def test_la_misma_cifra_de_modelos_en_los_dos(self):
+        es = {n for n in re.findall(r"\*\*(\d{3}) model", self._es())}
+        en = {n for n in re.findall(r"\*\*(\d{3}) model", self._en())}
+        assert es and es == en, f"español dice {es} e inglés {en}"
+
+    def test_los_dos_llevan_primero_al_instalador(self):
+        for nombre, txt in (("es", self._es()), ("en", self._en())):
+            i_exe = txt.find("GPromptStudio-Setup")
+            i_clone = txt.find("git clone")
+            assert i_exe != -1 and i_exe < i_clone, (
+                f"README {nombre}: el .exe tiene que ir antes que git clone")
+
+    def test_las_capturas_tambien_en_el_ingles(self):
+        for ruta in re.findall(r"\(docs/capturas/([^)]+)\)", self._en()):
+            assert (RAIZ / "docs" / "capturas" / ruta).is_file()
+
+    def test_no_reaparece_github_models(self):
+        assert "GitHub Models" not in self._en()
