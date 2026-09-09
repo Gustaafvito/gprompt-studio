@@ -7,6 +7,10 @@ tamaño, el hash o el resultado de VirusTotal son peor que una sola.
 Texto listo para pegar en la web. Dos bloques: el de descarga y el del aviso
 de Windows, que es el que más abandonos evita.
 
+Para la **portada** hay algo aparte: [`WEB-destacado.html`](WEB-destacado.html),
+una banda para poner entre el titular y «#01 Proyectos». Este fichero es
+para la página de descarga; ese es para el escaparate.
+
 **Lo importante: el aviso va ANTES del botón, no después.** Quien se
 encuentra la pantalla azul sin haberlo leído, cierra y no vuelve. Quien ya
 sabe que va a salir, la pasa sin pensar.

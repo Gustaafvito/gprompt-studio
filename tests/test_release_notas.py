@@ -216,3 +216,41 @@ class TestLasDosPaginasDeDescargaConcuerdan:
     def test_las_dos_avisan_de_smartscreen(self):
         assert "SmartScreen" in self.ES.read_text(encoding="utf-8")
         assert "code-signing" in self.EN.read_text(encoding="utf-8")
+
+
+class TestElDestacadoDeLaWeb:
+    """La banda de portada de gustaafvito.com.
+
+    La web abre con "Construyo las herramientas que uso para crear" y no
+    enseñaba ninguna herramienta descargable: solo mencionaba ComfyUI. Esta
+    banda cierra ese argumento en la primera pantalla.
+
+    Va con estilos EN LÍNEA a proposito, para que funcione pegada tal cual
+    sin conocer la hoja de estilos del sitio.
+    """
+
+    HTML = RAIZ / "docs" / "WEB-destacado.html"
+
+    def test_existe(self):
+        assert self.HTML.is_file()
+
+    def test_las_cifras_son_las_mismas_que_en_el_release(self):
+        txt = self.HTML.read_text(encoding="utf-8")
+        total = sum(_seleccionables())
+        assert str(total) in txt, (
+            f"el destacado no anuncia los {total} modelos seleccionables")
+
+    def test_enlaza_a_la_descarga_y_al_codigo(self):
+        txt = self.HTML.read_text(encoding="utf-8")
+        assert "releases/latest" in txt, "sin enlace de descarga directa"
+        assert "github.com/Gustaafvito/gprompt-studio\"" in txt
+
+    def test_avisa_de_smartscreen_antes_de_que_lo_vean(self):
+        # Quien se encuentra la pantalla azul sin haberla leido, cierra.
+        assert "Ejecutar de todas formas" in self.HTML.read_text(encoding="utf-8")
+
+    def test_la_captura_lleva_texto_alternativo(self):
+        import re as _re
+        txt = self.HTML.read_text(encoding="utf-8")
+        m = _re.search(r'alt="([^"]{30,})"', txt)
+        assert m, "la imagen del destacado necesita alt descriptivo"
