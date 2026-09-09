@@ -147,6 +147,47 @@ def copiar_artefactos(src_dist: Path):
         "LEEME-PRIMERO.txt")
     print(f"✓ 3 artefactos + LEEME copiados a {DEST}")
     avisar_tamanos_desfasados(portable)
+    publicar_hashes()
+
+
+def publicar_hashes():
+    """SHA-256 de los .exe, y aviso si el texto del release ya no cuadra.
+
+    Los hashes van en el cuerpo del release y en la web para que quien
+    descargue pueda comprobar que el fichero no está manipulado. Cambian en
+    CADA build, asi que calcularlos a mano es garantia de publicar unos que
+    no corresponden — que es peor que no publicar ninguno: invita a
+    verificar y la verificacion falla.
+    """
+    import hashlib
+
+    hashes = {}
+    for nombre in ("GPromptStudio-Setup-1.0.0.exe",
+                   "GPromptStudio-Portable-Onefile.exe"):
+        ruta = DEST / nombre
+        if not ruta.is_file():
+            continue
+        h = hashlib.sha256()
+        with open(ruta, "rb") as f:
+            for trozo in iter(lambda: f.read(1 << 20), b""):
+                h.update(trozo)
+        hashes[nombre] = h.hexdigest()
+
+    print("  SHA-256 de los artefactos:")
+    for nombre, hx in hashes.items():
+        print(f"      {hx}  {nombre}")
+
+    notas = ROOT / "docs" / "RELEASE-v1.0.0.md"
+    try:
+        texto = notas.read_text(encoding="utf-8")
+    except Exception:
+        return
+    viejos = [n for n, hx in hashes.items() if hx not in texto]
+    if viejos:
+        print(f"  ⚠ docs/RELEASE-v1.0.0.md tiene hashes de otro build — "
+              f"actualiza los de: {', '.join(viejos)}")
+    elif hashes:
+        print("  ✓ los hashes del texto del release cuadran")
 
 
 def avisar_tamanos_desfasados(portable: Path):

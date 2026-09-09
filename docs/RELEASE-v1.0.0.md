@@ -1,7 +1,7 @@
 # Texto del release v1.0.0
 
 Pega el bloque de abajo en el cuerpo del release de GitHub. Los hashes son
-del build del 08-sep-2026 23:12 — **si regeneras, cámbialos** (los saca
+del build del 09-sep-2026 14:26 — **si regeneras, cámbialos** (los saca
 `build_release.py` o `sha256sum *.exe` en la carpeta de distribución).
 
 Sube como *assets*: `GPromptStudio-Setup-1.0.0.exe` y
@@ -15,7 +15,7 @@ que instala el Setup y tres opciones confunden.
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **350 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **276 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -45,11 +45,11 @@ Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
 ```
 
 ```
-255775b23168a5d8e1c700da15bc77d97df0929ad9333070b080f30c63002729  GPromptStudio-Setup-1.0.0.exe
-ba8ddde73c8a86b733a3f71604fb0ab17b43dae85f9f1fa642a16be333d743a1  GPromptStudio-Portable-Onefile.exe
+40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28  GPromptStudio-Setup-1.0.0.exe
+d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8  GPromptStudio-Portable-Onefile.exe
 ```
 
-### ⚠️ Windows mostrará un aviso
+### ⚠️ Windows mostrará un aviso (SmartScreen)
 
 Al abrirlo verás **"Windows protegió su PC"**. Es esperado: el ejecutable no
 está firmado con un certificado de firma de código, que cuesta unos 300 €
@@ -63,7 +63,11 @@ el fichero es exactamente el que se publicó aquí.
 
 ### Qué trae
 
-- **350 modelos con ficha propia** — 222 de imagen, 117 de vídeo, 8 de audio
+- **276 modelos con ficha propia** — 165 de imagen, 100 de vídeo, 11 de
+  audio. Y encima de esos, los tuyos: si usas ComfyUI, los detecta y los
+  clasifica solo
+- **GPT Image 2.5** (Flare y Sunburst) el mismo día del anuncio, por las
+  dos vías: SeaArt y la API oficial de OpenAI
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
   OpenAI, OpenRouter, Fireworks, xAI Grok, Perplexity y Together. Más
   **LM Studio y Ollama** si prefieres no salir de tu ordenador
@@ -91,7 +95,7 @@ reales, buscando los prefijos de todos los proveedores.
   desaparece del catálogo de su proveedor, la app lo oculta sola
 - ComfyUI: detección automática de la carpeta, y soporta que `models/` sea
   un enlace a otro disco
-- 1.287 tests. Las dependencias pasan auditoría de CVEs en cada build
+- 1.298 tests. Las dependencias pasan auditoría de CVEs en cada build
 
 ### Licencia
 
