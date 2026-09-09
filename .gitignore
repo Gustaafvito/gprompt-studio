@@ -57,3 +57,10 @@ INTEGRACIÓN DEL MÓDULO AVATAR EN ARQUITECTO DE PROMPTS/
 dist/
 build/
 *.spec~
+
+# Bitacora interna de desarrollo. Se queda en el disco del autor pero NO en
+# el repo publico: son 3.733 lineas de handoff entre sesiones, utiles para
+# retomar el trabajo y puro ruido como carta de presentacion. No contienen
+# datos personales — se comprobo antes de dejar de trackearlas.
+HANDOFF.md
+docs/handoff-historico.md

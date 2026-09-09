@@ -17,17 +17,34 @@
 
 ---
 
+## Por qué existe
+
+Empecé a generar imágenes y vídeo y me encontré con lo mismo una y otra vez:
+cada modelo quiere el prompt de una forma. Flux pide prosa, SDXL pide tags,
+unos aceptan prompt negativo y otros lo ignoran, cada uno tiene su límite de
+caracteres y su sampler. Tenía las reglas repartidas entre notas, pestañas
+abiertas y capturas, y aun así escribía el prompt para el modelo equivocado.
+
+No encontré un sitio donde estuviera todo junto, así que lo hice. G-Prompt
+Studio es esas notas convertidas en herramienta: escribes la idea en
+castellano, eliges el modelo, y sale el prompt con **sus** reglas.
+
+---
+
 ## ✨ Qué hace
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**406 modelos repartidos en 15 plataformas**, cada uno con sus reglas propias:
+**271 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
-| 🖼 **Imagen** | **261** | SeaArt/Tensor.Art (126) · ComfyUI/Fooocus (97) · Magnific (31) · Higgsfield (4) · GPT Image (2) · Grok (1) |
-| 🎬 **Vídeo** | **134** | SeaArt Video (90) · ComfyUI/Fooocus (28) · Pollo AI (7) · Kling AI (5) · Sora/Veo (3) · Higgsfield (1) |
-| 🎵 **Audio** | **11** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
+| 🖼 **Imagen** | **164** | SeaArt/Tensor.Art (127) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🎬 **Vídeo** | **99** | SeaArt Video (91) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
+| 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
+
+Y **encima de esos, los tuyos**: si usas ComfyUI no cuentan aquí porque son
+distintos en cada ordenador.
 
 Entre ellos: FLUX.1, Z-Image, Qwen Image 3.0 / 3.0 Pro, Illustrious, Pony, Nano Banana,
 Wan 3.0 y Wan 3.0 Prime, Kling, Seedance, Hailuo, PixVerse, Vidu, Sora 2, Veo, Suno v5.5…
@@ -36,9 +53,12 @@ Y **333 estilos** agrupados por familia.
 Los modelos locales de **ComfyUI se detectan solos**: apunta a tu carpeta y la herramienta
 clasifica cada checkpoint por familia para aplicarle el formato de prompt correcto.
 
-## 🧠 Multi-Cerebro (14 LLMs soportados)
+## 🧠 Multi-Cerebro (13 proveedores)
 
-Conecta con cualquiera de estos proveedores con una sola key:
+Conecta con cualquiera de estos proveedores con una sola key. Los once de
+nube se verificaron uno a uno con keys reales: catálogo en vivo y una
+llamada de verdad a cada modelo del desplegable. Si un modelo desaparece
+del catálogo de su proveedor, la app lo oculta sola.
 
 | Proveedor | Tipo | Coste |
 |-----------|------|-------|
@@ -46,16 +66,15 @@ Conecta con cualquiera de estos proveedores con una sola key:
 | 💎 **Claude (Anthropic)** | Pago | ~€2.40/1M tokens |
 | 💎 **Fireworks AI** | Pago | Modelos open-source rápidos |
 | 🏆 **Google Gemini** | Gratis | 15 rpm |
-| 🏆 **GitHub Models** | Gratis | Acceso a OpenAI/Claude/Llama |
 | 🏆 **Groq** | Gratis | 14.400 req/día |
 | 🏆 **LM Studio** | Local | Servidor OpenAI-compatible |
 | 💎 **Mistral** | Pago | Modelos europeos |
 | 🏆 **Ollama** | Local | Sin internet, sin coste |
-| 💎 **OpenAI GPT-4o** | Pago | ~€2.40/1M |
+| 💎 **OpenAI** | Pago | GPT-6 Astra, familia 5.x y 4.x |
 | 🥈 **OpenRouter** | Pago | 100+ modelos con UNA key |
 | 💎 **Perplexity** | Pago | Modelos con búsqueda en tiempo real |
 | 💎 **Together AI** | Pago | Modelos open-source y propietarios |
-| 💎 **xAI (Grok)** | Pago | Modelos Grok |
+| 💎 **xAI (Grok)** | Pago | Grok 4.6, 4.5, 4.3 — hasta 1M de contexto |
 
 ## 🚀 Funciones principales
 
@@ -132,12 +151,25 @@ Conecta con cualquiera de estos proveedores con una sola key:
 
 ## 🛠 Instalación
 
-### Requisitos
-- **Python 3.10 o superior**
-- Conexión a internet (para las APIs)
-- Windows / macOS / Linux
+### La forma normal: descargar e instalar
 
-### Setup rápido
+Ve a [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
+baja `GPromptStudio-Setup-1.0.0.exe` y ábrelo. **No hace falta Python ni
+instalar dependencias**: va todo dentro.
+
+- Windows 10 u 11 de 64 bits
+- No pide permisos de administrador — se instala en tu perfil de usuario
+- Windows mostrará un aviso de SmartScreen porque el ejecutable no está
+  firmado: *Más información* → *Ejecutar de todas formas*. En la página del
+  release está el hash SHA-256 y el análisis de VirusTotal para que lo
+  compruebes tú
+
+También hay una **versión portable** de un solo fichero, sin instalar.
+
+### Desde el código (desarrollo)
+
+Solo si quieres tocar el código o correrlo en macOS/Linux. Necesitas
+**Python 3.10 o superior**:
 
 ```bash
 git clone https://github.com/Gustaafvito/gprompt-studio.git
@@ -146,7 +178,7 @@ pip install -e .
 python main.py
 ```
 
-Para instalar todas las dependencias opcionales (Claude, keyring, visión, etc.):
+Para todas las dependencias opcionales (Claude, keyring, visión…):
 
 ```bash
 pip install -e ".[all]"
@@ -263,7 +295,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**276 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**271 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>

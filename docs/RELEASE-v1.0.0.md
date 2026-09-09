@@ -21,7 +21,7 @@ del primer parrafo.
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **276 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **271 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -89,9 +89,9 @@ completos están enlazados arriba para que los mires tú.
 
 ### Qué trae
 
-- **276 modelos con ficha propia** — 165 de imagen, 100 de vídeo, 11 de
-  audio. Y encima de esos, los tuyos: si usas ComfyUI, los detecta y los
-  clasifica solo
+- **271 modelos con ficha propia** — 164 de imagen, 99 de vídeo, 8 de
+  audio, en 13 plataformas. Y encima de esos, los tuyos: si usas ComfyUI,
+  los detecta y los clasifica solo
 - **GPT Image 2.5** (Flare y Sunburst) el mismo día del anuncio, por las
   dos vías: SeaArt y la API oficial de OpenAI
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
