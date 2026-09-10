@@ -11,6 +11,18 @@
 
 **Español** · [English](README.en.md)
 
+<p align="center">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.0/GPromptStudio-Setup-1.0.0.exe">
+    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.0.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
+  </a>
+</p>
+
+<p align="center">
+  <sub>118 MB &middot; Windows 10 u 11 de 64 bits &middot; no necesita Python ni permisos de administrador<br>
+  &iquest;Prefieres no instalar nada? <a href="https://github.com/Gustaafvito/gprompt-studio/releases/latest">Versi&oacute;n portable y hashes SHA-256</a></sub>
+</p>
+
+
 ---
 
 ![La pantalla principal de G-Prompt Studio: una idea en español convertida en prompt para GPT Image 2.5 Sunburst, con positivo, negativo y ajustes recomendados](docs/capturas/01-pantalla-principal.png)

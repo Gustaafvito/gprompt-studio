@@ -65,7 +65,7 @@ api_clients.py      los 13 proveedores de LLM
 prompts.py          las reglas de redacción por modo y modelo
 data/*.json         las fichas de los modelos, los estilos, el glosario
 modules/            la interfaz y los servicios
-tests/              1.348 candados
+tests/              1.353 candados
 ```
 
 `docs/AGREGAR_MODELO.md` explica el proceso de dar de alta un modelo, y
