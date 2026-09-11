@@ -36,8 +36,8 @@ proveedores soportados.
 
 | | | VirusTotal |
 |---|---|---|
-| **[GPromptStudio-Setup-1.0.1.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | [**0/59** limpio](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28) |
-| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | [2/63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8) — ver abajo |
+| **[GPromptStudio-Setup-1.0.1.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | pendiente de reanalizar |
+| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | pendiente de reanalizar — ver abajo |
 
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
@@ -46,8 +46,8 @@ Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 ```
 
 ```
-40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28  GPromptStudio-Setup-1.0.1.exe
-d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8  GPromptStudio-Portable-Onefile.exe
+0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.1.exe
+668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -138,7 +138,7 @@ hasta la mitad de la página para encontrar cómo instalarlo.
 Precio de DeepSeek actualizado a la tarifa nueva: 0,15 $ de entrada y 0,60 $
 de salida por millón de tokens, fuera de horas punta.
 
-1.396 tests. Las dependencias pasan auditoría de CVEs en cada build.
+1.397 tests. Las dependencias pasan auditoría de CVEs en cada build.
 
 ### Licencia
 

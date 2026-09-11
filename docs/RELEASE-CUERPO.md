@@ -1,4 +1,4 @@
-## G-Prompt Studio v1.0.0
+## G-Prompt Studio v1.0.1
 
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
@@ -23,18 +23,18 @@ proveedores soportados.
 
 | | | VirusTotal |
 |---|---|---|
-| **[GPromptStudio-Setup-1.0.0.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | [**0/59** limpio](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28) |
-| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | [2/63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8) — ver abajo |
+| **[GPromptStudio-Setup-1.0.1.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | pendiente de reanalizar |
+| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | pendiente de reanalizar — ver abajo |
 
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
 ```powershell
-Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
+Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 ```
 
 ```
-40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28  GPromptStudio-Setup-1.0.0.exe
-d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8  GPromptStudio-Portable-Onefile.exe
+0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.1.exe
+668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -98,12 +98,34 @@ reales, buscando los prefijos de todos los proveedores.
 
 ### Notas de esta versión
 
-- Los once proveedores verificados uno a uno con keys reales: catálogo en
-  vivo y una llamada real a cada modelo del desplegable. Si un modelo
-  desaparece del catálogo de su proveedor, la app lo oculta sola
-- ComfyUI: detección automática de la carpeta, y soporta que `models/` sea
-  un enlace a otro disco
-- 1.332 tests. Las dependencias pasan auditoría de CVEs en cada build
+**Esta es una versión de parche.** Si ya tienes la 1.0.0 instalada, instala
+encima: se conservan tus claves, tu historial, tus plantillas y tus modelos
+de ComfyUI, que viven fuera del programa en `%USERPROFILE%\.arquitecto_prompts`.
+
+**Arreglado: DeepSeek dejó de generar.** El 10 de septiembre DeepSeek publicó
+V4.1 Flash y de paso le cambió el identificador al modelo —`deepseek-v4-flash`
+pasó a llamarse `deepseek-flash`— sin anunciarlo. La 1.0.0 lleva el nombre
+viejo como modelo por defecto, así que a quien tuviera DeepSeek configurado le
+fallaba al generar. Ahora usa el identificador correcto, y si tenías el viejo
+guardado se migra solo al abrir la app.
+
+De paso se corrigió algo que llevaba roto desde julio sin que se notara: los
+dos identificadores antiguos (`deepseek-chat` y `deepseek-reasoner`) migraban
+al que acababa de morir, o sea de un modelo muerto a otro modelo muerto.
+
+**Nuevo: tres estilos más para GPT Image 2.5.** La familia solo ofrecía
+opciones de diseño comercial —Editorial, UI-Mockup, Poster-Typography— y
+ninguna de arte. Se añaden **Anime**, **Comic** y **3D-Render**. Comic es el
+que más se aprovecha de este modelo en concreto: las viñetas con bocadillos
+exigen texto legible dentro de la imagen, que es justo donde gana.
+
+**Botón de descarga en el README**, arriba del todo. Antes había que bajar
+hasta la mitad de la página para encontrar cómo instalarlo.
+
+Precio de DeepSeek actualizado a la tarifa nueva: 0,15 $ de entrada y 0,60 $
+de salida por millón de tokens, fuera de horas punta.
+
+1.397 tests. Las dependencias pasan auditoría de CVEs en cada build.
 
 ### Licencia
 
