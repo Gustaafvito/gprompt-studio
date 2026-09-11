@@ -54,8 +54,17 @@ que de verdad importa:
   **`!ml`** — la marca con la que Microsoft indica que el veredicto sale de
   un modelo estadístico y no de una firma— y *Wacatac* es su cajón de sastre
   para ejecutables sin firmar que le resultan raros.
-  La prueba de que es el **empaquetado** y no el programa: el mismo código,
-  empaquetado con Inno Setup en vez de PyInstaller, **Microsoft no lo marca**.
+  La prueba de que es el **empaquetado** y no el programa son dos
+  comparaciones que puedes repetir tú:
+  1. El mismo código, empaquetado con Inno Setup en vez de PyInstaller,
+     **Microsoft no lo marca**. Mismo software, distinto envoltorio,
+     distinto veredicto.
+  2. El instalador de la **1.0.0**, reanalizado el mismo día que el de la
+     1.0.1, sale **0 de 64** — y DeepInstinct, el motor que marca el nuevo,
+     dice *Undetected* en el viejo. Entre las dos versiones cambia el
+     identificador de un modelo de DeepSeek y tres entradas de estilos:
+     nada que pueda parecerse a malware. Lo que cambia son los bytes del
+     empaquetado, que son otros en cada build.
   ⚠️ Consecuencia práctica: Defender puede poner el portable en cuarentena.
   Si te pasa, usa el instalador.
 - **Que tu clave API se gaste.** La app usa la clave que tú configuras
