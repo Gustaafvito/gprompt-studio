@@ -77,10 +77,6 @@ la opción recomendada de todas formas, y Microsoft no lo señala.
 Y si no quieres fiarte de nada de esto, están los dos análisis enlazados
 arriba y el hash para comprobar que el fichero que has bajado es el mismo.
 
-**Si te preocupa, usa el instalador**: es el mismo programa, no necesita
-permisos de administrador y no arrastra ese falso positivo. Los dos informes
-completos están enlazados arriba para que los mires tú.
-
 ### Qué trae
 
 - **271 modelos con ficha propia** — 164 de imagen, 99 de vídeo, 8 de
