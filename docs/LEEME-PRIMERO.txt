@@ -1,5 +1,5 @@
 ═══════════════════════════════════════════════════════════════════
-  G-Prompt Studio v1.0.0 — Listo para distribuir
+  G-Prompt Studio v1.0.1 — Listo para distribuir
 ═══════════════════════════════════════════════════════════════════
 
 Aquí tienes TRES opciones para usar la app o compartirla.
@@ -9,7 +9,7 @@ Son ALTERNATIVAS, no acumulativas: elige una.
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.0.exe  (118 MB)
+Archivo: GPromptStudio-Setup-1.0.1.exe  (118 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -21,7 +21,7 @@ QUÉ HACE:
   - Se instala en %LOCALAPPDATA% — NO pide permisos de administrador.
 
 CÓMO USAR:
-  1. Doble-click en GPromptStudio-Setup-1.0.0.exe
+  1. Doble-click en GPromptStudio-Setup-1.0.1.exe
   2. Acepta la advertencia de Windows SmartScreen
      ("Más info" → "Ejecutar de todas formas")
      [Normal en programas sin certificado de firma. Ver más abajo.]
@@ -88,7 +88,7 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   es el original y no está manipulado, compara su hash SHA-256 con el
   publicado en la página de descarga. En PowerShell:
 
-    Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
+    Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 
   ANALIZADO EN VIRUSTOTAL (09-sep-2026), y el resultado entero:
     - Opción 1, el instalador ..... 0 de 59 motores. Limpio.

@@ -65,7 +65,7 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > exactamente el que publiqué, sin manipular:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 > ```
 >
 > Y si te gusta mirar el código, está entero

@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.0.0
+# 🧠 G-Prompt Studio v1.0.1
 
 > A desktop prompt-engineering suite for generative AI.
 > Turns a plain idea into precise instructions for **image, video and audio**.
@@ -7,13 +7,13 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.0.1-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 [Español](README.md) · **English**
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.0/GPromptStudio-Setup-1.0.0.exe">
-    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.0.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.1/GPromptStudio-Setup-1.0.1.exe">
+    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.0.1-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
   </a>
 </p>
 
@@ -160,7 +160,7 @@ without paying anything.
 ### The normal way: download and install
 
 Go to [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-grab `GPromptStudio-Setup-1.0.0.exe` and open it. **No Python, no
+grab `GPromptStudio-Setup-1.0.1.exe` and open it. **No Python, no
 dependencies** — everything ships inside.
 
 - Windows 10 or 11, 64-bit

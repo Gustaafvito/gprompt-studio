@@ -8,7 +8,7 @@
 ;   3. Resultado: dist/installer/GPromptStudio-Setup-X.Y.Z.exe
 
 #define MyAppName "G-Prompt Studio"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Gustaafvito"
 #define MyAppPublisherURL "https://gustaafvito.com/"
 #define MyAppURL "https://github.com/gustaafvito/gprompt-studio"

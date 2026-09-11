@@ -61,7 +61,7 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.0.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 > ```
 >
 > And if you like reading code, all of it is

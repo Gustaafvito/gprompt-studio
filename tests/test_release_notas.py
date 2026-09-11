@@ -17,7 +17,13 @@ import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-NOTAS = RAIZ / "docs" / "RELEASE-v1.0.0.md"
+
+# El nombre del fichero lleva la versión dentro. Escrito a mano, subir de
+# 1.0.0 a 1.0.1 dejaba este candado vigilando las notas de la versión
+# ANTERIOR: seguía en verde mientras las nuevas salían sin revisar.
+import config  # noqa: E402
+
+NOTAS = RAIZ / "docs" / f"RELEASE-v{config.PUBLIC_VERSION}.md"
 
 
 def _seleccionables():

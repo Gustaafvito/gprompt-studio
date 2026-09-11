@@ -92,8 +92,8 @@ def __getattr__(name):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # ── Versión ───────────────────────────────────────────────────────
-VERSION = "1.0.0"
-PUBLIC_VERSION = "1.0.0"
+VERSION = "1.0.1"
+PUBLIC_VERSION = "1.0.1"
 APP_TITLE = f"G-Prompt Studio v{PUBLIC_VERSION}"
 
 # ── Persistencia ──────────────────────────────────────────────────

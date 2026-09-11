@@ -39,6 +39,17 @@ ROOT = Path(__file__).resolve().parent
 CLEAN = ROOT.parent / "GPromptStudio-build-clean"
 DEST = Path.home() / "OneDrive" / "Desktop" / "GPromptStudio-Distribuible"
 
+# La versión sale de config.py y de ningún otro sitio. El nombre del
+# instalador la lleva dentro ("GPromptStudio-Setup-1.0.1.exe"), así que
+# cuando estaba escrita a mano aquí —en cuatro sitios— subir de versión
+# obligaba a acordarse de los cuatro o el script buscaba un fichero que
+# Inno Setup ya no generaba.
+_VERSION = re.search(r'(?m)^PUBLIC_VERSION = "([^"]+)"',
+                     (ROOT / "config.py").read_text(encoding="utf-8")).group(1)
+INSTALADOR = f"GPromptStudio-Setup-{_VERSION}.exe"
+PORTABLE = "GPromptStudio-Portable-Onefile.exe"
+NOTAS_RELEASE = f"docs/RELEASE-v{_VERSION}.md"
+
 # Paquetes que PyInstaller empaqueta dentro del .exe (directos + transitivos
 # relevantes). El entorno global tiene ~230 paquetes de otros proyectos que NO
 # entran en el build — auditar solo estos evita falsos positivos.
@@ -136,8 +147,8 @@ def copiar_artefactos(src_dist: Path):
                              DEST / "GPromptStudio-Portable-Onefile.exe"),
         "onefile .exe")
     _con_reintentos(
-        lambda: shutil.copy2(src_dist / "installer" / "GPromptStudio-Setup-1.0.0.exe",
-                             DEST / "GPromptStudio-Setup-1.0.0.exe"),
+        lambda: shutil.copy2(src_dist / "installer" / INSTALADOR,
+                             DEST / INSTALADOR),
         "installer .exe")
     # README del distribuible: versionado en el repo para que no se quede
     # obsoleto en el escritorio (rutas, tamaños, opciones).
@@ -174,7 +185,7 @@ def _avisar_cifra_de_tests(texto_release: str):
         return
     if anunciados != reales:
         print(f"  ⚠ el release dice {anunciados} tests y hay {reales} — "
-              f"actualiza docs/RELEASE-v1.0.0.md")
+              f"actualiza {NOTAS_RELEASE}")
     else:
         print(f"  ✓ la cifra de tests del release cuadra ({reales})")
 
@@ -191,8 +202,7 @@ def publicar_hashes():
     import hashlib
 
     hashes = {}
-    for nombre in ("GPromptStudio-Setup-1.0.0.exe",
-                   "GPromptStudio-Portable-Onefile.exe"):
+    for nombre in (INSTALADOR, PORTABLE):
         ruta = DEST / nombre
         if not ruta.is_file():
             continue
@@ -206,7 +216,7 @@ def publicar_hashes():
     for nombre, hx in hashes.items():
         print(f"      {hx}  {nombre}")
 
-    notas = ROOT / "docs" / "RELEASE-v1.0.0.md"
+    notas = ROOT / NOTAS_RELEASE
     try:
         texto = notas.read_text(encoding="utf-8")
     except Exception:
@@ -226,7 +236,7 @@ def publicar_hashes():
         print(f"  ⚠ no se pudo regenerar el cuerpo del release: {e}")
     viejos = [n for n, hx in hashes.items() if hx not in texto]
     if viejos:
-        print(f"  ⚠ docs/RELEASE-v1.0.0.md tiene hashes de otro build — "
+        print(f"  ⚠ {NOTAS_RELEASE} tiene hashes de otro build — "
               f"actualiza los de: {', '.join(viejos)}")
     elif hashes:
         print("  ✓ los hashes del texto del release cuadran")
@@ -255,8 +265,8 @@ def avisar_tamanos_desfasados(portable: Path):
         return
 
     reales = {
-        "GPromptStudio-Setup-1.0.0.exe": _mb(DEST / "GPromptStudio-Setup-1.0.0.exe"),
-        "GPromptStudio-Portable-Onefile.exe": _mb(DEST / "GPromptStudio-Portable-Onefile.exe"),
+        INSTALADOR: _mb(DEST / INSTALADOR),
+        PORTABLE: _mb(DEST / PORTABLE),
         "GPromptStudio-Portable/": _mb(portable),
     }
     desfases = []
