@@ -68,6 +68,11 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 > ```
 >
+> ```
+> 0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.1.exe
+> 668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
+> ```
+>
 > Y si te gusta mirar el código, está entero
 > [en GitHub](https://github.com/Gustaafvito/gprompt-studio) bajo licencia
 > Apache 2.0.
@@ -80,11 +85,12 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador: [0 de 59 motores](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28)**, limpio
-> - **Portable de un solo fichero: [2 de 63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8)** — Bkav Pro y Zillya
+> - **Instalador:** pendiente de reanalizar en VirusTotal
+> - **Portable de un solo fichero:** pendiente de reanalizar en VirusTotal
 >
-> Esos dos son motores minoritarios y la etiqueta que ponen tiene
-> explicación: es un falso positivo del **empaquetado**, no del programa. El
+> En la versión anterior el instalador salió limpio (0 de 59) y el portable
+> con 2 de 63. Si vuelve a pasar, la etiqueta tiene explicación: es un falso
+> positivo del **empaquetado**, no del programa. El
 > malware que esa firma busca se empaqueta con la misma herramienta
 > (PyInstaller) con la que se construye el portable. El instalador lleva el
 > mismo programa dentro, está hecho con otra herramienta, y sale limpio.

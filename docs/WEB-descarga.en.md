@@ -64,6 +64,11 @@ Put this right under the button, visible without expanding anything.
 > Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
 > ```
 >
+> ```
+> 0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.1.exe
+> 668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
+> ```
+>
 > And if you like reading code, all of it is
 > [on GitHub](https://github.com/Gustaafvito/gprompt-studio) under the
 > Apache 2.0 licence.
@@ -74,8 +79,8 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer: [0 of 59 engines](https://www.virustotal.com/gui/file/40f3ab05f6ac0d9597c99fea357f274ec6e1ae3a551eb617d343f5774c0caf28)**, clean
-> - **Single-file portable: [2 of 63](https://www.virustotal.com/gui/file/d11f32741865565acdbb814ec88732ce628ab76a861816e248958355fd6304b8)** — Bkav Pro and Zillya
+> - **Installer:** pending re-scan on VirusTotal
+> - **Single-file portable:** pending re-scan on VirusTotal
 >
 > Those two are minor engines, and the label they attach has a specific
 > explanation: it's a false positive on the **packaging**, not the program.
