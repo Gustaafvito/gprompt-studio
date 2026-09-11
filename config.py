@@ -1858,8 +1858,17 @@ ESTILOS_POR_FAMILIA = {
     "z_image": [
         "Auto", "Photoreal", "Anime", "Creative", "Fantasy", "SciFi",
     ],
+    # 11-sep-2026: la lista original (Photoreal/Editorial/Illustration/
+    # UI-Mockup/Poster-Typography) estaba curada hacia diseño comercial, que
+    # es donde este modelo saca ventaja por su texto en imagen — pero se pasó
+    # de frenada: no tenía NI UNA opción de arte estilizado, cuando el resto
+    # de familias llevan Anime desde siempre y GPT Image 2.5 lo hace de sobra.
+    # Se añaden tres y no más a propósito: el selector de estilos generales
+    # (333 entradas) ya existe y se aplica encima; este desplegable es el
+    # TIPO de imagen, y alargarlo duplicaría el otro.
     "gpt_image": [
         "Auto", "Photoreal", "Editorial", "Illustration",
+        "Anime", "Comic", "3D-Render",
         "UI-Mockup", "Poster-Typography",
     ],
     "nano_banana": [

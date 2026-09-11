@@ -756,6 +756,35 @@ class PromptsInyeccionService:
                     "ayuda. [Composition] más creativa. EVITA pedir "
                     "photorealistic."
                 ),
+                "Anime": (
+                    "🎌 ANIME / MANGA. El [Style] DEBE pedir: anime "
+                    "illustration, cel shading, clean linework, expressive "
+                    "eyes. Especifica subestilo (shonen, shojo, seinen, "
+                    "chibi, 90s retro anime, modern digital anime) y color "
+                    "(flat color o screentone). [Mood] con lenguaje visual "
+                    "de anime: speed lines, impact frames, fondo en bokeh. "
+                    "EVITA photorealistic y EVITA 3D salvo cel-shaded."
+                ),
+                "Comic": (
+                    "💬 CÓMIC / VIÑETA. Página o viñeta con TEXTO "
+                    "INTEGRADO — es donde este modelo saca ventaja frente "
+                    "a los demás. [Subject] la acción del panel. "
+                    "[Composition] de cómic: gutters, reparto de viñetas, "
+                    "ángulos dramáticos. [Text in image] OBLIGATORIO con "
+                    "bocadillos y onomatopeyas, texto exacto entre "
+                    "comillas. Especifica tradición (American comic, manga "
+                    "en b/n con screentone, bande dessinée, webtoon "
+                    "vertical)."
+                ),
+                "3D-Render": (
+                    "🧊 RENDER 3D. El [Style] DEBE pedir: 3D render, CGI, "
+                    "look de Octane/Redshift/Blender Cycles, subsurface "
+                    "scattering, global illumination. Especifica acabado "
+                    "del material (matte, glossy, clay, soft plastic, "
+                    "brushed metal) e iluminación de estudio (three-point, "
+                    "HDRI, softbox). [Composition] tipo producto o diorama. "
+                    "EVITA hand-drawn y EVITA film grain."
+                ),
                 "UI-Mockup": (
                     "🖥 UI / MOCKUP. El [Subject] es la INTERFAZ (app "
                     "screen, dashboard, browser window, product page). "
