@@ -247,8 +247,13 @@ class TestPreciosUsd1M:
 
 class TestCalcularCosteUsd:
     def test_coste_basico(self):
-        # deepseek (v4-flash): 0.14/0.28 por 1M → 1M entrada + 1M salida = 0.42
-        assert calcular_coste_usd("deepseek", 1_000_000, 1_000_000) == pytest.approx(0.42)
+        # La tarifa se saca de la tabla, no se escribe aquí: lo que este test
+        # comprueba es la ARITMÉTICA. Con la cifra a mano, renombrar un modelo
+        # —deepseek-v4-flash pasó a deepseek-flash el 11-sep-2026, y con él su
+        # precio— rompía un test que no tenía nada que ver con el cambio.
+        entrada, salida = PRECIOS_USD_1M["deepseek"]
+        assert calcular_coste_usd("deepseek", 1_000_000, 1_000_000) == (
+            pytest.approx(entrada + salida))
 
     def test_provider_gratuito_cero(self):
         assert calcular_coste_usd("ollama", 500_000, 500_000) == 0.0
@@ -418,9 +423,10 @@ class TestAcumularHistorico:
 
 class TestCosteDiaUsd:
     def test_suma_costes_conocidos(self):
-        dia = {"openai": {"tokens_entrada": 1_000_000, "tokens_salida": 0},   # 2.50
-               "deepseek": {"tokens_entrada": 0, "tokens_salida": 1_000_000}}  # 0.28 (v4-flash)
-        assert coste_dia_usd(dia) == pytest.approx(2.78)
+        dia = {"openai": {"tokens_entrada": 1_000_000, "tokens_salida": 0},
+               "deepseek": {"tokens_entrada": 0, "tokens_salida": 1_000_000}}
+        esperado = PRECIOS_USD_1M["openai"][0] + PRECIOS_USD_1M["deepseek"][1]
+        assert coste_dia_usd(dia) == pytest.approx(esperado)
 
     def test_ignora_costes_desconocidos(self):
         dia = {"openrouter": {"tokens_entrada": 999, "tokens_salida": 999}}

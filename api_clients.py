@@ -75,11 +75,14 @@ LLM_PROVIDERS = {
         "url_obtener_key": "https://platform.deepseek.com/api_keys",
         "tipo": "openai_compatible",
         "base_url": "https://api.deepseek.com",
-        # IDs V4 (los legacy deepseek-chat/deepseek-reasoner se deprecan el
-        # 2026-07-24). Flash = barato y rápido; Pro = 1.6T params, mejor en
-        # razonamiento/tareas complejas (~3x el precio).
-        "model_default": "deepseek-v4-flash",
-        "modelos": ["deepseek-v4-flash", "deepseek-v4-pro"],
+        # 11-sep-2026: DeepSeek publicó V4.1 Flash y de paso le quitó la
+        # versión al ID: "deepseek-v4-flash" ya NO existe y "deepseek-flash"
+        # es el que sirven. Comprobado contra /v1/models y con una llamada
+        # real (responde en 1,4s). El Pro sigue vivo: el correo que anunciaba
+        # su retirada el 14-sep quedó anulado por otro posterior que la
+        # cancela, con la facturación intacta.
+        "model_default": "deepseek-flash",
+        "modelos": ["deepseek-flash", "deepseek-v4-pro"],
         "is_paid": True,
     },
     "fireworks": {
@@ -459,10 +462,15 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-6":         (3.00, 15.00),
     "claude-sonnet-4-5-20250929": (3.00, 15.00),
     "claude-haiku-4-5":          (1.00, 5.00),
-    "deepseek-v4-flash":         (0.14, 0.28),
+    # V4.1 Flash, tarifa FUERA de punta (cache miss). En horas punta
+    # —1:00-4:00 y 6:00-10:00 UTC, de lunes a viernes— cuesta el doble:
+    # (0.30, 1.20). Se usa la de fuera de punta porque cubre 17 de las 24
+    # horas de cada día laborable y el fin de semana entero.
+    "deepseek-flash":            (0.15, 0.60),
     "deepseek-v4-pro":           (0.435, 0.87),
-    "deepseek-chat":             (0.14, 0.28),   # legacy (dep. 2026-07-24) → v4-flash
-    "deepseek-reasoner":         (0.14, 0.28),   # legacy (dep. 2026-07-24)
+    "deepseek-v4-flash":         (0.15, 0.60),   # retirado 11-sep → deepseek-flash
+    "deepseek-chat":             (0.15, 0.60),   # legacy (dep. 2026-07-24)
+    "deepseek-reasoner":         (0.15, 0.60),   # legacy (dep. 2026-07-24)
     "gpt-4o":                    (2.50, 10.00),
     "gpt-4o-mini":               (0.15, 0.60),
     "gemini-2.5-flash":          (0.0, 0.0),   # free tier
@@ -533,7 +541,7 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
 #   precio depende del modelo elegido) → se muestra "—" en la UI.
 PRECIOS_USD_1M: dict[str, tuple[float, float] | None] = {
     "claude":        (3.00, 15.00),   # claude-sonnet-4-5
-    "deepseek":      (0.14, 0.28),    # deepseek-v4-flash
+    "deepseek":      (0.15, 0.60),    # deepseek-flash (V4.1, fuera de punta)
     "fireworks":     (0.05, 0.20),    # nemotron-lightning-3p5-30b (verificado 06-sep-2026)
     "gemini":        (0.0, 0.0),      # free tier 15rpm (tier de pago: 0.30/2.50)
     "groq":          (0.0, 0.0),      # free tier
@@ -988,7 +996,7 @@ class OpenAICompatibleProvider(BaseLLMProvider):
 
         if not content.strip():
             if fr == "length":
-                # OJO: no recomendar aqui "deepseek-v4-flash como modelo no
+                # OJO: no recomendar aqui "deepseek-flash como modelo no
                 # razonador". Medido el 06-sep-2026: flash razona igual que pro
                 # (500 tokens de razonamiento con max_tokens=500, respuesta
                 # vacia). El consejo era falso y mandaba al usuario al mismo
@@ -1914,8 +1922,11 @@ class APIClients:
 
     # Modelos deprecados → su reemplazo (se migran al cargar la preferencia).
     _MIGRAR_MODELO = {
-        "deepseek-chat": "deepseek-v4-flash",       # dep. 2026-07-24
-        "deepseek-reasoner": "deepseek-v4-flash",   # dep. 2026-07-24
+        "deepseek-chat": "deepseek-flash",          # dep. 2026-07-24
+        "deepseek-reasoner": "deepseek-flash",      # dep. 2026-07-24
+        # Sin esto, a quien tuviera Flash elegido se le queda un ID muerto
+        # guardado en active_models.json y la app falla al generar.
+        "deepseek-v4-flash": "deepseek-flash",      # renombrado 11-sep-2026
     }
 
     def _cargar_modelos_activos(self) -> dict:
