@@ -79,20 +79,25 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** pending re-scan on VirusTotal
-> - **Single-file portable:** pending re-scan on VirusTotal
+> - **Installer:** [1 of 67 engines](https://www.virustotal.com/gui/file/0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366) — DeepInstinct
+> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1) — Bkav Pro and Microsoft
+>   Defender
 >
-> Those two are minor engines, and the label they attach has a specific
-> explanation: it's a false positive on the **packaging**, not the program.
-> The malware that signature looks for is built with the same tool
-> (PyInstaller) used for the portable build. The installer contains the exact
-> same program, is built with a different tool, and comes back clean.
+> **None of the three names an actual malware family**, which matters more
+> than the count. Bkav says `W32.Malware.67AF34BE`, a generic label derived
+> from the file itself. Microsoft says `Trojan:Win32/Wacatac.C!ml`: the
+> **`!ml`** suffix is Microsoft's own marker for a verdict produced by a
+> machine-learning model rather than a signature, and *Wacatac* is its
+> catch-all bucket for unsigned executables. DeepInstinct gives no name at
+> all.
 >
-> **Microsoft Defender** — the one you actually have — reports *Undetected*.
-> So do Kaspersky, ESET, Bitdefender, Norton and Avast.
+> What bothers them is the **packaging**, not the program, and there's proof:
+> the exact same code, wrapped in an installer instead of a single file, is
+> **not flagged by Microsoft**. Same software, different wrapper, different
+> verdict.
 >
-> **If it worries you, download the installer.** And check the hash either
-> way.
+> **If your antivirus complains about the portable, grab the installer** —
+> it's the recommended option anyway. And check the hash either way.
 
 ---
 

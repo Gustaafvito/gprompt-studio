@@ -36,8 +36,8 @@ proveedores soportados.
 
 | | | VirusTotal |
 |---|---|---|
-| **[GPromptStudio-Setup-1.0.1.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | pendiente de reanalizar |
-| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | pendiente de reanalizar — ver abajo |
+| **[GPromptStudio-Setup-1.0.1.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | [**1/67**](https://www.virustotal.com/gui/file/0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366) — ver abajo |
+| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | [**2/68**](https://www.virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1) — ver abajo |
 
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
@@ -62,21 +62,33 @@ no conoce a quien lo firma.
 Si prefieres no fiarte de mi palabra, compara el hash de arriba: si coincide,
 el fichero es exactamente el que se publicó aquí.
 
-### Sobre los 2 avisos del portable
+### Sobre los avisos de los antivirus
 
-El instalador sale **limpio, 0 de 59** motores. El portable de un solo
-fichero lo marcan **2 de 63**: Bkav Pro y Zillya. Te lo cuento yo antes de
-que lo encuentres tú.
+Te lo cuento yo antes de que lo encuentres tú. El instalador lo marca
+**1 motor de 67** (DeepInstinct) y el portable **2 de 68** (Bkav Pro y
+Microsoft Defender).
 
-Los dos son motores minoritarios, y la etiqueta que ponen —`trojan.xworm`—
-tiene una explicación concreta: XWorm es un malware real que **se empaqueta
-con PyInstaller**, la misma herramienta con la que se construye este
-portable. Esa firma no reconoce el código: reconoce el empaquetado. Por eso
-el instalador, hecho con Inno Setup, sale limpio con el mismo programa
-dentro.
+**Ninguna de las tres detecciones nombra un malware real**, y eso es lo que
+hay que mirar, no el número:
 
-Microsoft Defender —el que llevan todos los Windows— dice **Undetected**, y
-también Kaspersky, ESET, Bitdefender, Norton y Avast.
+- Bkav Pro dice `W32.Malware.67AF34BE` — una etiqueta genérica derivada del
+  propio fichero, no una familia conocida.
+- Microsoft dice `Trojan:Win32/Wacatac.C!ml`. El sufijo **`!ml`** es la marca
+  con la que Microsoft avisa de que el veredicto sale de un modelo
+  estadístico y no de una firma, y *Wacatac* es su cajón de sastre para
+  ejecutables sin firmar que le resultan sospechosos.
+- DeepInstinct dice «MALICIOUS» a secas, sin nombre.
+
+La prueba de que lo que molesta es el **empaquetado** y no el programa: el
+mismo código exacto, metido en un instalador de Inno Setup en vez de en un
+onefile de PyInstaller, **Microsoft no lo marca**. Es el mismo software, y
+el veredicto cambia según cómo esté envuelto.
+
+⚠️ **Si Defender te pone el portable en cuarentena, usa el instalador.** Es
+la opción recomendada de todas formas, y Microsoft no lo señala.
+
+Y si no quieres fiarte de nada de esto, están los dos análisis enlazados
+arriba y el hash para comprobar que el fichero que has bajado es el mismo.
 
 **Si te preocupa, usa el instalador**: es el mismo programa, no necesita
 permisos de administrador y no arrastra ese falso positivo. Los dos informes
@@ -138,7 +150,7 @@ hasta la mitad de la página para encontrar cómo instalarlo.
 Precio de DeepSeek actualizado a la tarifa nueva: 0,15 $ de entrada y 0,60 $
 de salida por millón de tokens, fuera de horas punta.
 
-1.397 tests. Las dependencias pasan auditoría de CVEs en cada build.
+1.401 tests. Las dependencias pasan auditoría de CVEs en cada build.
 
 ### Licencia
 

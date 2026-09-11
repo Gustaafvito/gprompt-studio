@@ -44,11 +44,20 @@ que de verdad importa:
   a empresas de EE. UU. y Canadá o con tres años de historial. Está
   explicado en el README, y cada descarga publica su hash SHA-256 para que
   puedas verificarla.
-- **Los 2 de 63 motores de VirusTotal en la versión portable.** Es un falso
-  positivo del empaquetado, no del programa: el malware que buscan esas
-  firmas se empaqueta con PyInstaller, igual que el portable. El instalador
-  lleva el mismo programa por otra vía y sale 0/59. Microsoft Defender dice
-  *Undetected*.
+- **Los avisos de VirusTotal.** En la 1.0.1: el instalador **1 de 67**
+  (DeepInstinct) y el portable **2 de 68** (Bkav Pro y Microsoft
+  Defender). Publico los dos porque cualquiera los comprueba en treinta
+  segundos con el hash que doy yo mismo.
+  **Ninguna de las tres detecciones nombra un malware real.** La de Bkav,
+  `W32.Malware.67AF34BE`, es una etiqueta genérica derivada del propio
+  fichero. La de Microsoft, `Trojan:Win32/Wacatac.C!ml`, lleva el sufijo
+  **`!ml`** — la marca con la que Microsoft indica que el veredicto sale de
+  un modelo estadístico y no de una firma— y *Wacatac* es su cajón de sastre
+  para ejecutables sin firmar que le resultan raros.
+  La prueba de que es el **empaquetado** y no el programa: el mismo código,
+  empaquetado con Inno Setup en vez de PyInstaller, **Microsoft no lo marca**.
+  ⚠️ Consecuencia práctica: Defender puede poner el portable en cuarentena.
+  Si te pasa, usa el instalador.
 - **Que tu clave API se gaste.** La app usa la clave que tú configuras
   contra el proveedor que tú eliges. Cada uno paga la suya.
 

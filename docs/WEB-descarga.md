@@ -85,21 +85,24 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** pendiente de reanalizar en VirusTotal
-> - **Portable de un solo fichero:** pendiente de reanalizar en VirusTotal
+> - **Instalador:** [1 de 67 motores](https://www.virustotal.com/gui/file/0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366) — DeepInstinct
+> - **Portable de un solo fichero:** [2 de 68](https://www.virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1) — Bkav Pro y
+>   Microsoft Defender
 >
-> En la versión anterior el instalador salió limpio (0 de 59) y el portable
-> con 2 de 63. Si vuelve a pasar, la etiqueta tiene explicación: es un falso
-> positivo del **empaquetado**, no del programa. El
-> malware que esa firma busca se empaqueta con la misma herramienta
-> (PyInstaller) con la que se construye el portable. El instalador lleva el
-> mismo programa dentro, está hecho con otra herramienta, y sale limpio.
+> **Ninguna de las tres nombra un malware real**, y eso importa más que el
+> número. Bkav dice `W32.Malware.67AF34BE`, una etiqueta genérica sacada del
+> propio fichero. Microsoft dice `Trojan:Win32/Wacatac.C!ml`: el sufijo
+> **`!ml`** es su forma de avisar de que lo ha dicho un modelo estadístico y
+> no una firma, y *Wacatac* es su cajón de sastre para ejecutables sin
+> firmar. DeepInstinct no pone nombre siquiera.
 >
-> **Microsoft Defender**, que es el que tienes tú, dice *Undetected*. Igual
-> que Kaspersky, ESET, Bitdefender, Norton y Avast.
+> Lo que molesta es el **empaquetado**, no el programa, y hay una prueba: el
+> mismo código exacto, metido en un instalador en vez de en un fichero único,
+> **Microsoft no lo marca**. Mismo software, distinto envoltorio, distinto
+> veredicto.
 >
-> **Si te preocupa, descarga el instalador.** Y compara el hash en cualquier
-> caso.
+> **Si tu antivirus se queja del portable, baja el instalador**, que es la
+> opción recomendada de todas formas. Y compara el hash en cualquier caso.
 
 ---
 
