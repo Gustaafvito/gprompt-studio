@@ -9,7 +9,7 @@ Son ALTERNATIVAS, no acumulativas: elige una.
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.2.exe  (118 MB)
+Archivo: GPromptStudio-Setup-1.0.2.exe  (179 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -17,8 +17,9 @@ QUÉ HACE:
   - Crea acceso directo en el menú Inicio.
   - Opcional: acceso directo en el escritorio.
   - Aparece en "Agregar o quitar programas" para desinstalar limpio.
-  - Comprimido con LZMA2 (mucho más pequeño que la carpeta portable).
   - Se instala en %LOCALAPPDATA% — NO pide permisos de administrador.
+  - Si venías de la 1.0.1, borra la carpeta _internal que dejó
+    aquella versión (unos 180 MB que ya no sirven).
 
 CÓMO USAR:
   1. Doble-click en GPromptStudio-Setup-1.0.2.exe
@@ -28,41 +29,33 @@ CÓMO USAR:
   3. Sigue el asistente: Siguiente → Instalar → Finalizar
   4. Lanza desde el menú Inicio o desde el escritorio.
 
+TARDA UNOS SEGUNDOS EN ABRIR, Y ES NORMAL:
+  Desde la 1.0.2 el programa va en un único ejecutable que se
+  descomprime en una carpeta temporal en cada arranque. Son 4-5
+  segundos la primera vez. No está colgado.
+
+  El motivo es serio: la 1.0.1 instalaba el programa repartido en
+  una carpeta, y a ese ejecutable Windows Defender lo confundía con
+  malware y lo BORRABA después de instalarlo. Empaquetado así ya no
+  ocurre. Se cambió velocidad de arranque por que la aplicación siga
+  existiendo, y se volverá atrás en cuanto Microsoft corrija su
+  detección.
+
 CÓMO COMPARTIR:
   Sube este archivo a Google Drive / WeTransfer / Mega (no cabe por
   email). El receptor solo necesita este .exe, nada más.
 
 
-OPCIÓN 2: PORTABLE (sin instalación)
+OPCIÓN 2: PORTABLE (un solo .exe, sin instalar)
 ═══════════════════════════════════════════════════════════════════
 
-Carpeta: GPromptStudio-Portable/  (434 MB sin comprimir)
-
-QUÉ HACE:
-  - Una carpeta autocontenida. No requiere instalación.
-  - Borrando la carpeta desinstalas completamente.
-  - Arranca más rápido que la Opción 3 (no se descomprime nada).
-  - Útil si quieres llevarla en un USB o probarla sin tocar el SO.
-
-CÓMO USAR:
-  1. Entra en la carpeta GPromptStudio-Portable
-  2. Doble-click en GPromptStudio.exe
-  3. La app abre directamente.
-
-CÓMO COMPARTIR:
-  Comprime la carpeta a ZIP antes de subirla: sin comprimir son
-  demasiados ficheros pequeños y cualquier nube tarda una eternidad.
-
-
-OPCIÓN 3: ONEFILE (un solo .exe portable)
-═══════════════════════════════════════════════════════════════════
-
-Archivo: GPromptStudio-Portable-Onefile.exe  (167 MB)
+Archivo: GPromptStudio-Portable-Onefile.exe  (186 MB)
 
 QUÉ HACE:
   - TODO en un único .exe. Sin instalación ni carpetas.
-  - Arranca más lento que las otras dos: se descomprime en una
-    carpeta temporal en CADA arranque. Es normal, no está colgado.
+  - Es el mismo programa que instala la Opción 1.
+  - Borrando el .exe lo desinstalas del todo.
+  - Tarda lo mismo en abrir: 4-5 segundos.
 
 CÓMO USAR:
   Doble-click y listo. Misma advertencia SmartScreen que el instalador.
@@ -74,7 +67,7 @@ CÓMO COMPARTIR:
 SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
 ═══════════════════════════════════════════════════════════════════
 
-  Al abrir cualquiera de las tres opciones, Windows mostrará una
+  Al abrir cualquiera de las dos opciones, Windows mostrará una
   pantalla azul: "Windows protegió su PC". Es ESPERADO.
 
   Ocurre porque el ejecutable no está firmado con un certificado de
@@ -90,29 +83,26 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
 
     Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
 
-  ANALIZADO EN VIRUSTOTAL (11-sep-2026), y el resultado entero:
-    - Opción 1, el instalador ..... 1 de 67: DeepInstinct.
-    - Opción 3, el onefile ........ 2 de 68: Bkav Pro y Microsoft.
+  ANALIZADO EN VIRUSTOTAL, y el resultado entero:
+    - Opción 1, el instalador ..... PENDIENTE
+    - Opción 2, el onefile ........ PENDIENTE
 
-  Ninguna de las tres nombra un malware real: la de Bkav es una
-  etiqueta genérica sacada del propio fichero, y la de Microsoft
-  acaba en "!ml", que es su forma de decir que lo ha dicho un modelo
-  y no una firma.
+  Un par de motores minoritarios suelen marcar estos ficheros. Ninguna
+  de esas detecciones nombra un malware real: son etiquetas genéricas,
+  o acaban en "!ml", que es la forma que tiene Microsoft de decir que
+  el veredicto lo ha dado un modelo estadístico y no una firma.
 
-  Lo que molesta es el EMPAQUETADO, no el programa, y hay una prueba:
-  el mismo código exacto, metido en un instalador de Inno Setup en
-  vez de en un fichero único de PyInstaller, Microsoft NO lo marca.
-  Mismo software, distinto envoltorio, distinto veredicto.
+  Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
+  se construyen con PyInstaller, y su componente de arranque es el
+  mismo que usan muchas muestras de malware reales: los antivirus
+  reconocen ese componente, no el código.
 
-  IMPORTANTE: si Windows Defender te pone el onefile en cuarentena,
-  usa la Opción 1, el instalador. Es la recomendada de todas formas
-  y Microsoft no la señala.
+  En la versión 1.0.1 eso tuvo consecuencias de verdad: Windows
+  Defender BORRABA el programa después de instalarlo. Por eso la 1.0.2
+  se empaqueta de otra forma, con la que Microsoft no lo marca.
 
-  Los informes completos:
-    Setup:   virustotal.com/gui/file/0916fb761e988179a38f030f7acc85
-             dc920c7be8663fd84e3e496f39830a6366
-    Onefile: virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb52
-             52eb1dd34d29c1d70d3c6868608f4fe2f1
+  Si aun así tu antivirus se queja, compara el hash: si coincide con
+  el publicado, el fichero es exactamente el que se publicó.
 
 
 SOBRE SEGURIDAD Y PRIVACIDAD

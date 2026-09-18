@@ -134,14 +134,6 @@ def _con_reintentos(accion, descripcion, intentos=5, espera=3.0):
 
 def copiar_artefactos(src_dist: Path):
     DEST.mkdir(parents=True, exist_ok=True)
-    portable = DEST / "GPromptStudio-Portable"
-
-    def _copiar_portable():
-        if portable.exists():
-            shutil.rmtree(portable)
-        shutil.copytree(src_dist / "GPromptStudio", portable)
-
-    _con_reintentos(_copiar_portable, "onedir Portable")
     _con_reintentos(
         lambda: shutil.copy2(src_dist / "GPromptStudio.exe",
                              DEST / "GPromptStudio-Portable-Onefile.exe"),
@@ -156,8 +148,8 @@ def copiar_artefactos(src_dist: Path):
         lambda: shutil.copy2(ROOT / "docs" / "LEEME-PRIMERO.txt",
                              DEST / "LEEME-PRIMERO.txt"),
         "LEEME-PRIMERO.txt")
-    print(f"✓ 3 artefactos + LEEME copiados a {DEST}")
-    avisar_tamanos_desfasados(portable)
+    print(f"✓ 2 artefactos + LEEME copiados a {DEST}")
+    avisar_tamanos_desfasados()
     publicar_hashes()
 
 
@@ -242,7 +234,7 @@ def publicar_hashes():
         print("  ✓ los hashes del texto del release cuadran")
 
 
-def avisar_tamanos_desfasados(portable: Path):
+def avisar_tamanos_desfasados():
     """El LEEME anuncia el peso de cada opción: avisa si ya no cuadra.
 
     El 08-sep-2026 los TRES estaban mal —decía 94 MB del instalador cuando
@@ -267,7 +259,6 @@ def avisar_tamanos_desfasados(portable: Path):
     reales = {
         INSTALADOR: _mb(DEST / INSTALADOR),
         PORTABLE: _mb(DEST / PORTABLE),
-        "GPromptStudio-Portable/": _mb(portable),
     }
     desfases = []
     for nombre, mb in reales.items():
@@ -329,10 +320,14 @@ def main():
         print("(--export-only) Hecho. Build no ejecutado.")
         return
 
-    print("▶ Build onedir + instalador…")
-    run([sys.executable, "build.py", "--clean", "--installer"], cwd=clean)
-    print("▶ Build onefile…")
-    run([sys.executable, "build.py", "--onefile"], cwd=clean)
+    # 18-sep-2026: un solo build, y el instalador lleva el ONEFILE dentro.
+    # Antes eran dos pasadas y el instalador empaquetaba el onedir — que es
+    # justo el ejecutable que Microsoft marca y que Defender borraba del
+    # disco del usuario. El onedir ya no se construye ni se distribuye: sería
+    # publicar el binario por el que existe todo este lío.
+    print("▶ Build onefile + instalador…")
+    run([sys.executable, "build.py", "--clean", "--onefile", "--installer"],
+        cwd=clean)
 
     copiar_artefactos(clean / "dist")
 
