@@ -14,6 +14,11 @@ Your social brand stays Spanish. It's **this page** that needs English, not
 the whole site. A `hreflang` pair or a simple ES/EN toggle on the tool page
 is enough.
 
+**Already live** since 18 Sep 2026 at `gustaafvito-web/gprompt-studio.html`.
+This file is the source of the copy: change something here and carry it over
+to that page, and the other way round. It sat written but unpublished for
+nine days, which is the silliest way to waste the work.
+
 ---
 
 ## Block 1 — Download
@@ -84,18 +89,14 @@ Put this right under the button, visible without expanding anything.
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **None of the three names an actual malware family**, which matters more
-> than the count. Bkav says `W32.Malware.67AF34BE`, a generic label derived
-> from the file itself. Microsoft says `Trojan:Win32/Wacatac.C!ml`: the
-> **`!ml`** suffix is Microsoft's own marker for a verdict produced by a
-> machine-learning model rather than a signature, and *Wacatac* is its
-> catch-all bucket for unsigned executables. DeepInstinct gives no name at
-> all.
+> **The one remaining detection names no actual malware family**, which
+> matters more than the count: Bkav Pro says `W32.Malware.62456B6B`, a
+> generic label derived from the file itself, not a known family.
 >
-> What bothers them is the **packaging**, not the program, and there's proof:
-> the exact same code, wrapped in an installer instead of a single file, is
-> **not flagged by Microsoft**. Same software, different wrapper, different
-> verdict.
+> What antivirus engines score is the **packaging**, not the program. The
+> proof is inside 1.0.2 itself: the exact same code comes back completely
+> clean wrapped in the installer, and with one detection wrapped in a single
+> file. Same software, different wrapper, different verdict.
 >
 > **If your antivirus complains about the portable, grab the installer** —
 > it's the recommended option anyway. And check the hash either way.

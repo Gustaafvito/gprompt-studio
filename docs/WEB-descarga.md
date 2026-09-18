@@ -15,6 +15,12 @@ para la página de descarga; ese es para el escaparate.
 encuentra la pantalla azul sin haberlo leído, cierra y no vuelve. Quien ya
 sabe que va a salir, la pasa sin pensar.
 
+**Ya está publicado**, el 18-sep-2026, en
+`gustaafvito-web/gprompt-studio.html`. Este fichero es la fuente del texto:
+si cambias algo aquí, llévalo también a esa página — y al revés. Estuvo nueve
+días escrito sin llegar a la web, que es la forma más tonta de perder el
+trabajo.
+
 ---
 
 ## Bloque 1 — Descarga
@@ -90,17 +96,14 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
-> **Ninguna de las tres nombra un malware real**, y eso importa más que el
-> número. Bkav dice `W32.Malware.67AF34BE`, una etiqueta genérica sacada del
-> propio fichero. Microsoft dice `Trojan:Win32/Wacatac.C!ml`: el sufijo
-> **`!ml`** es su forma de avisar de que lo ha dicho un modelo estadístico y
-> no una firma, y *Wacatac* es su cajón de sastre para ejecutables sin
-> firmar. DeepInstinct no pone nombre siquiera.
+> **La única detección que queda no nombra un malware real**, y eso importa
+> más que el número: Bkav Pro dice `W32.Malware.62456B6B`, una etiqueta
+> genérica derivada del propio fichero, no una familia conocida.
 >
-> Lo que molesta es el **empaquetado**, no el programa, y hay una prueba: el
-> mismo código exacto, metido en un instalador en vez de en un fichero único,
-> **Microsoft no lo marca**. Mismo software, distinto envoltorio, distinto
-> veredicto.
+> Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
+> prueba está en la propia 1.0.2: el mismo código exacto sale limpio del todo
+> metido en el instalador y con una detección metido en un fichero único.
+> Mismo software, distinto envoltorio, distinto veredicto.
 >
 > **Si tu antivirus se queja del portable, baja el instalador**, que es la
 > opción recomendada de todas formas. Y compara el hash en cualquier caso.
