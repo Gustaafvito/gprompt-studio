@@ -13,7 +13,16 @@ Después puedes lanzar Inno Setup con installer.iss para empaquetar el
 instalador completo.
 """
 import os
+
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+
+# PyInstaller ejecuta este spec con un sys.path que NO incluye la carpeta
+# del propio spec, así que un import normal del proyecto falla. SPECPATH lo
+# inyecta PyInstaller en el espacio de nombres del spec.
+import sys as _sys
+if SPECPATH not in _sys.path:
+    _sys.path.insert(0, SPECPATH)
+import pyinstaller_version
 
 block_cipher = None
 
@@ -146,7 +155,12 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,           # comprimir con UPX si está disponible (más pequeño)
+    # upx=False a propósito: UPX no está instalado, así que True nunca hizo
+    # nada, pero dejarlo puesto significa que el día que alguien lo instale
+    # el build empieza a comprimir solo. Y comprimir con UPX es de los
+    # disparadores más conocidos de falso positivo en antivirus, que es
+    # justo el problema que estamos intentando quitarnos de encima.
+    upx=False,
     console=False,       # ventana sin consola (GUI app)
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -154,6 +168,9 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='assets/icon.ico',
+    # Sin esto el .exe no lleva NINGÚN metadato: ni producto, ni empresa, ni
+    # versión. Ver pyinstaller_version.py — es el perfil que Defender marcaba.
+    version=pyinstaller_version.escribir('GPromptStudio.exe'),
 )
 
 coll = COLLECT(
@@ -162,7 +179,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='GPromptStudio',
 )

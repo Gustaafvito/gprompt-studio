@@ -13,6 +13,13 @@ Para el modo onedir (más rápido al arrancar, recomendado para
 instalación con Inno Setup), usa gprompt-studio.spec.
 """
 import os
+# PyInstaller ejecuta este spec con un sys.path que NO incluye la carpeta
+# del propio spec, así que un import normal del proyecto falla. SPECPATH lo
+# inyecta PyInstaller en el espacio de nombres del spec.
+import sys as _sys
+if SPECPATH not in _sys.path:
+    _sys.path.insert(0, SPECPATH)
+import pyinstaller_version
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
@@ -133,7 +140,12 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    # upx=False a propósito: UPX no está instalado, así que True nunca hizo
+    # nada, pero dejarlo puesto significa que el día que alguien lo instale
+    # el build empieza a comprimir solo. Y comprimir con UPX es de los
+    # disparadores más conocidos de falso positivo en antivirus, que es
+    # justo el problema que estamos intentando quitarnos de encima.
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
@@ -143,4 +155,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='assets/icon.ico',
+    version=pyinstaller_version.escribir('GPromptStudio-Portable-Onefile.exe'),
 )

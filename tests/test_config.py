@@ -94,8 +94,21 @@ class TestCatalogoSpecsCompleto:
             for m in flat:
                 if m.startswith("──"):
                     continue
-                ok = (get_model_specs(m) is not None
-                      if plat == self.COMFY else m in specs)
+                if plat == self.COMFY:
+                    # Mismo criterio que la mitad de imagen, que ya lo hacía
+                    # bien: la carpeta de ComfyUI es un MUNDO ABIERTO —el
+                    # usuario deja ahí el checkpoint que quiera— así que
+                    # exigir ficha para todos convierte en fallo del proyecto
+                    # que alguien se baje un modelo nuevo. Pasó el
+                    # 18-sep-2026 con Kandinsky 5 Lite.
+                    # Lo que sí se garantiza, y es lo que protege de verdad:
+                    # si la familia SE detecta, tiene que haber specs. Un
+                    # modelo sin familia cae al comportamiento genérico de
+                    # plataforma, y todos los consumidores tratan el None.
+                    ok = (not config.detectar_familia_comfy_video(m)
+                          or get_model_specs(m) is not None)
+                else:
+                    ok = m in specs
                 if not ok:
                     fallos.append(f"{plat} -> {m}")
         assert not fallos, f"modelos de vídeo sin spec: {fallos}"

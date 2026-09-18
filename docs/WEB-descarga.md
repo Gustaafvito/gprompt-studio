@@ -65,11 +65,11 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > exactamente el que publiqué, sin manipular:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.0.1.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.1.exe
+> 0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.2.exe
 > 668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
 > ```
 >
