@@ -31,10 +31,14 @@ proveedores soportados.
 
 ### Descarga
 
-| | | VirusTotal |
-|---|---|---|
-| **[GPromptStudio-Setup-1.0.2.exe]** · 118 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador | [**1/67**](https://www.virustotal.com/gui/file/0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366) — ver abajo |
-| **[GPromptStudio-Portable-Onefile.exe]** · 167 MB | Un solo fichero, sin instalar. Arranca más lento | [**2/68**](https://www.virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1) — ver abajo |
+| | |
+|---|---|
+| **[GPromptStudio-Setup-1.0.2.exe]** · 179 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Portable-Onefile.exe]** · 186 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
+
+Desde esta versión **las dos opciones son el mismo ejecutable**: el
+instalador se limita a colocarlo, crear los accesos directos y registrar la
+desinstalación. Tardan lo mismo en abrir, unos 4-5 segundos.
 
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
@@ -43,8 +47,8 @@ Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
 ```
 
 ```
-0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.2.exe
-668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
+da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb  GPromptStudio-Setup-1.0.2.exe
+614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -61,31 +65,28 @@ el fichero es exactamente el que se publicó aquí.
 
 ### Sobre los avisos de los antivirus
 
-Te lo cuento yo antes de que lo encuentres tú. El instalador lo marca
-**1 motor de 67** (DeepInstinct) y el portable **2 de 68** (Bkav Pro y
-Microsoft Defender).
+Te lo cuento yo antes de que lo encuentres tú: **es normal que uno o dos
+motores minoritarios marquen estos ficheros**, y hay un motivo concreto.
 
-**Ninguna de las tres detecciones nombra un malware real**, y eso es lo que
-hay que mirar, no el número:
+Estos ejecutables se construyen con **PyInstaller**, y su componente de
+arranque —el mismo binario precompilado que viene con la herramienta— lo
+comparten muchas muestras de malware reales. Hay motores que reconocen ese
+componente y no el código: por eso una de las etiquetas que aparece es
+literalmente `XWorm`, que es un malware que también se empaqueta así.
 
-- Bkav Pro dice `W32.Malware.67AF34BE` — una etiqueta genérica derivada del
-  propio fichero, no una familia conocida.
-- Microsoft dice `Trojan:Win32/Wacatac.C!ml`. El sufijo **`!ml`** es la marca
-  con la que Microsoft avisa de que el veredicto sale de un modelo
-  estadístico y no de una firma, y *Wacatac* es su cajón de sastre para
-  ejecutables sin firmar que le resultan sospechosos.
-- DeepInstinct dice «MALICIOUS» a secas, sin nombre.
+Cuando un veredicto acaba en **`!ml`**, como el `Trojan:Win32/Wacatac.C!ml`
+de Microsoft, es la propia marca del fabricante para decir que lo ha dicho
+un modelo estadístico y no una firma. No hay código reconocido: hay un
+perfil que encaja.
 
-La prueba de que lo que molesta es el **empaquetado** y no el programa: el
-mismo código exacto, metido en un instalador de Inno Setup en vez de en un
-onefile de PyInstaller, **Microsoft no lo marca**. Es el mismo software, y
-el veredicto cambia según cómo esté envuelto.
+**En la 1.0.1 esto tuvo consecuencias reales**, y por eso existe esta
+versión: Windows Defender no avisaba, **borraba** el programa después de
+instalarlo. La 1.0.2 se empaqueta de otra forma, y con ella Defender lo
+deja en paz.
 
-⚠️ **Si Defender te pone el portable en cuarentena, usa el instalador.** Es
-la opción recomendada de todas formas, y Microsoft no lo señala.
-
-Y si no quieres fiarte de nada de esto, están los dos análisis enlazados
-arriba y el hash para comprobar que el fichero que has bajado es el mismo.
+Si tu antivirus se queja igualmente, **compara el hash** con el publicado
+arriba. Si coincide, el fichero es exactamente el que se publicó aquí, sin
+manipular. Y el código está entero en este repositorio para que lo mires.
 
 ### Qué trae
 

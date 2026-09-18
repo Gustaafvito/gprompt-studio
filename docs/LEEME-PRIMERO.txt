@@ -83,6 +83,15 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
 
     Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
 
+  Estos son los de esta versión (partidos en dos líneas por el
+  ancho; al comprobar, júntalos):
+
+    da63460f6ca202638c7b60b0ed205f47
+    a29b11755ecb423d54c383f66e26effb   GPromptStudio-Setup-1.0.2.exe
+
+    614fcb74a646c52d2ec3a416e8e6e910
+    45087647ec84d7254f2e0d682d1850cc   GPromptStudio-Portable-Onefile.exe
+
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
     - Opción 1, el instalador ..... PENDIENTE
     - Opción 2, el onefile ........ PENDIENTE

@@ -65,8 +65,8 @@ Put this right under the button, visible without expanding anything.
 > ```
 >
 > ```
-> 0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366  GPromptStudio-Setup-1.0.2.exe
-> 668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1  GPromptStudio-Portable-Onefile.exe
+> da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb  GPromptStudio-Setup-1.0.2.exe
+> 614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -79,9 +79,8 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [1 of 67 engines](https://www.virustotal.com/gui/file/0916fb761e988179a38f030f7acc85dc920c7be8663fd84e3e496f39830a6366) — DeepInstinct
-> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/668fa06106bbb4d3bda4c5f527eb5252eb1dd34d29c1d70d3c6868608f4fe2f1) — Bkav Pro and Microsoft
->   Defender
+> - **Installer:** pending analysis
+> - **Single-file portable:** pending analysis
 >
 > **None of the three names an actual malware family**, which matters more
 > than the count. Bkav says `W32.Malware.67AF34BE`, a generic label derived
