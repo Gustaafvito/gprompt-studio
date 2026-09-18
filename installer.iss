@@ -83,9 +83,33 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; \
     OnlyBelowVersion: 6.1
 
 [Files]
-; Distribuir TODO el contenido de dist\GPromptStudio (output del PyInstaller en modo onedir)
+; Dos formas de empaquetar, y la elige build.py pasando /DModoOnefile a ISCC.
+; NO se detecta mirando qué hay en dist\: ahí pueden convivir los dos builds
+; y el instalador acabaría llevando el que tocara por casualidad.
+;
+; 18-sep-2026, por qué existe el modo onefile. Windows Defender BORRABA la
+; aplicación tras instalarla (Trojan:Win32/Wacatac). Medido en VirusTotal, de
+; los tres artefactos Microsoft solo marca uno: el ejecutable del onedir, que
+; son 14 MB de los cuales casi todo es el bootloader de PyInstaller — el mismo
+; binario precompilado que llevan las muestras de XWorm. En el onefile de
+; 178 MB ese bootloader se diluye y Microsoft lo da por limpio.
+; El precio son 3-5 segundos de arranque, porque el onefile se descomprime en
+; una carpeta temporal cada vez. Se paga a gusto a cambio de que la app no se
+; borre sola.
+#ifdef ModoOnefile
+Source: "dist\GPromptStudio.exe"; DestDir: "{app}"; Flags: ignoreversion
+#else
 Source: "dist\GPromptStudio\*"; DestDir: "{app}"; \
     Flags: ignoreversion recursesubdirs createallsubdirs
+#endif
+
+[InstallDelete]
+; Al actualizar desde una instalación onedir (1.0.1 y anteriores) queda
+; colgada la carpeta _internal con las dependencias de aquel build: unos
+; 180 MB que ya no usa nadie, e incluye el VCRUNTIME140.dll que el 07-sep
+; hizo que el instalador pidiera cerrar Chrome. Si no se borra aquí, el
+; desinstalador tampoco se la lleva: Inno solo retira lo que él instaló.
+Type: filesandordirs; Name: "{app}\_internal"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

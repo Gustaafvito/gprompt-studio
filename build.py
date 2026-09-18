@@ -310,7 +310,7 @@ def build_pyinstaller(onefile=False):
     return out
 
 
-def build_installer():
+def build_installer(onefile=False):
     """Lanza Inno Setup con installer.iss."""
     if not ISS.exists():
         log("✗ No encuentro installer.iss", "red")
@@ -326,13 +326,18 @@ def build_installer():
         log(r"  'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'", "yellow")
         return False
 
-    log(f"📦 Ejecutando Inno Setup…", "blue")
-    log(f"  $ ISCC.exe /Q installer.iss", "blue")
+    # /DModoOnefile hace que installer.iss empaquete dist/GPromptStudio.exe
+    # en lugar de la carpeta del onedir. Explícito y no por adivinación: en
+    # dist/ pueden convivir los dos builds y el instalador acabaría llevando
+    # el que tocara por casualidad.
+    defines = ["/DModoOnefile"] if onefile else []
+    log("📦 Ejecutando Inno Setup…", "blue")
+    log("  $ ISCC.exe /Q " + " ".join(defines + ["installer.iss"]), "blue")
     t0 = time.time()
     # /Q = quiet mode (solo errores). Sin esto Inno Setup imprime cada
     # archivo comprimido con su path absoluto. También capturamos y
     # limpiamos por si /Q deja escapar alguna línea.
-    proc = subprocess.run([iscc, "/Q", "installer.iss"], cwd=ROOT,
+    proc = subprocess.run([iscc, "/Q", *defines, "installer.iss"], cwd=ROOT,
                           capture_output=True, text=True)
     _print_scrubbed(proc.stdout)
     _print_scrubbed(proc.stderr)
@@ -398,7 +403,7 @@ def main():
         if args.onefile:
             log("⚠ Modo onefile + installer: el instalador empaqueta el onefile.",
                 "yellow")
-        build_installer()
+        build_installer(onefile=args.onefile)
 
     log("═══════════════════════════════════════════════════════════", "green")
     log(" ✓ Build completado", "green")
