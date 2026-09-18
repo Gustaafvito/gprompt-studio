@@ -23,10 +23,10 @@ sabe que va a salir, la pasa sin pensar.
 >
 > Windows 10 u 11 (64 bits). No necesitas Python ni instalar nada más.
 >
-> **[⬇ Descargar el instalador (118 MB)]**
+> **[⬇ Descargar el instalador (188 MB)]**
 > ← enlazar al asset del release en GitHub
 >
-> ¿Prefieres no instalar nada? [Versión portable, un solo archivo (167 MB)]
+> ¿Prefieres no instalar nada? [Versión portable, un solo archivo (187 MB)]
 >
 > Para empezar solo necesitas una **API key gratuita** de
 > [Gemini](https://aistudio.google.com/apikey) o

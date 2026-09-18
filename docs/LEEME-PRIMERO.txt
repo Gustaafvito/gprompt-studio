@@ -9,7 +9,7 @@ Son ALTERNATIVAS, no acumulativas: elige una.
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.2.exe  (179 MB)
+Archivo: GPromptStudio-Setup-1.0.2.exe  (188 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -49,7 +49,7 @@ CÓMO COMPARTIR:
 OPCIÓN 2: PORTABLE (un solo .exe, sin instalar)
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Portable-Onefile.exe  (186 MB)
+Archivo: GPromptStudio-Portable-Onefile.exe  (187 MB)
 
 QUÉ HACE:
   - TODO en un único .exe. Sin instalación ni carpetas.

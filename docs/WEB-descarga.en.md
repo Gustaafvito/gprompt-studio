@@ -22,10 +22,10 @@ is enough.
 >
 > Windows 10 or 11 (64-bit). No Python, no dependencies.
 >
-> **[⬇ Download the installer (118 MB)]**
+> **[⬇ Download the installer (188 MB)]**
 > ← link to the GitHub release asset
 >
-> Would rather not install anything? [Single-file portable build (167 MB)]
+> Would rather not install anything? [Single-file portable build (187 MB)]
 >
 > To get started you only need a **free API key** from
 > [Gemini](https://aistudio.google.com/apikey) or

@@ -242,6 +242,14 @@ def avisar_tamanos_desfasados():
     418— porque los números se escribieron a mano y los artefactos engordan
     en cada build. Un usuario que descarga 167 MB donde le prometieron 134
     piensa que le han colado otra cosa, y con razón.
+
+    El 18-sep-2026, con la 1.0.2 ya publicada, se coló otro: el instalador
+    se anunciaba con 179 MB y pesaba 188. El número estaba escrito en MiB
+    (1024) mientras el otro iba en MB (1000), así que la tabla hacía parecer
+    que el instalador pesaba 7 MB MENOS que el portable cuando pesa 1 más.
+    No saltó porque la tolerancia era del 8 % y el desfase se quedó en 4,6.
+    Bajada al 3 %: absorbe el redondeo de un build a otro —son décimas— pero
+    ya no se traga una unidad equivocada.
     """
     def _mb(p: Path) -> float:
         if p.is_dir():
@@ -273,7 +281,7 @@ def avisar_tamanos_desfasados():
         if anunciado is None:
             desfases.append(f"{nombre}: el LEEME no anuncia su tamaño "
                             f"(son {mb:.0f} MB)")
-        elif abs(anunciado - mb) / mb > 0.08:
+        elif abs(anunciado - mb) / mb > 0.03:
             desfases.append(f"{nombre}: el LEEME dice {anunciado:.0f} MB "
                             f"y son {mb:.0f} MB")
     if desfases:

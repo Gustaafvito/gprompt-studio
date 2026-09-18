@@ -33,8 +33,8 @@ proveedores soportados.
 
 | | |
 |---|---|
-| **[GPromptStudio-Setup-1.0.2.exe]** · 179 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
-| **[GPromptStudio-Portable-Onefile.exe]** · 186 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
+| **[GPromptStudio-Setup-1.0.2.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Portable-Onefile.exe]** · 187 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
 
 Desde esta versión **las dos opciones son el mismo ejecutable**: el
 instalador se limita a colocarlo, crear los accesos directos y registrar la
