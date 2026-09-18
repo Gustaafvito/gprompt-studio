@@ -79,8 +79,10 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** pending analysis
-> - **Single-file portable:** pending analysis
+> - **Installer:** [clean, 0 of 67 engines](https://www.virustotal.com/gui/file/da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb)
+> - **Single-file portable:** [1 of 66](https://www.virustotal.com/gui/file/614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc) — Bkav Pro
+>
+> **Microsoft Defender flags neither of them.**
 >
 > **None of the three names an actual malware family**, which matters more
 > than the count. Bkav says `W32.Malware.67AF34BE`, a generic label derived

@@ -93,13 +93,14 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
     45087647ec84d7254f2e0d682d1850cc   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... PENDIENTE
-    - Opción 2, el onefile ........ PENDIENTE
+    - Opción 1, el instalador ..... 0 de 67. Limpio.
+    - Opción 2, el onefile ........ 1 de 66: Bkav Pro.
 
-  Un par de motores minoritarios suelen marcar estos ficheros. Ninguna
-  de esas detecciones nombra un malware real: son etiquetas genéricas,
-  o acaban en "!ml", que es la forma que tiene Microsoft de decir que
-  el veredicto lo ha dado un modelo estadístico y no una firma.
+  Microsoft Defender no marca ninguno de los dos.
+
+  Esa única detección de Bkav Pro es "W32.Malware.62456B6B", una
+  etiqueta genérica derivada del propio fichero: no nombra ningún
+  malware conocido.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el

@@ -65,8 +65,18 @@ el fichero es exactamente el que se publicó aquí.
 
 ### Sobre los avisos de los antivirus
 
-Te lo cuento yo antes de que lo encuentres tú: **es normal que uno o dos
-motores minoritarios marquen estos ficheros**, y hay un motivo concreto.
+Te lo cuento yo antes de que lo encuentres tú, y esta vez son buenas
+noticias: el instalador sale **[limpio, 0 de 67](https://www.virustotal.com/gui/file/da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb)** y el portable
+**[1 de 66](https://www.virustotal.com/gui/file/614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc)**, un único motor minoritario. **Microsoft Defender no
+marca ninguno de los dos.**
+
+Para comparar: la 1.0.1 iba 1/67 y 2/68, y el ejecutable que dejaba
+instalado —que nunca llegó a analizarse— 5 de 69, con Microsoft dentro.
+
+La detección que queda, `W32.Malware.62456B6B` de Bkav Pro, es una etiqueta
+genérica derivada del propio fichero: no nombra ningún malware conocido.
+
+Y sobre por qué pasa esto en general, que conviene saberlo:
 
 Estos ejecutables se construyen con **PyInstaller**, y su componente de
 arranque —el mismo binario precompilado que viene con la herramienta— lo

@@ -85,8 +85,10 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** pendiente de analizar
-> - **Portable de un solo fichero:** pendiente de analizar
+> - **Instalador:** [limpio, 0 de 67 motores](https://www.virustotal.com/gui/file/da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb)
+> - **Portable de un solo fichero:** [1 de 66](https://www.virustotal.com/gui/file/614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc) — Bkav Pro
+>
+> **Microsoft Defender no marca ninguno de los dos.**
 >
 > **Ninguna de las tres nombra un malware real**, y eso importa más que el
 > número. Bkav dice `W32.Malware.67AF34BE`, una etiqueta genérica sacada del
