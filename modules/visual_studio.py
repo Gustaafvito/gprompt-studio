@@ -513,7 +513,7 @@ class VisualStudio(ctk.CTkToplevel):
         self.previews[ref.uid] = window
         # El titulo ya no es clave de nada: es solo lo que lee el usuario en la
         # barra. Por eso puede repetirse sin consecuencias.
-        window.title(f"{chr(65 + index)} · {tr(ref.name)[:45]} · {self.panel_label()}")
+        window.title(self.titulo_preview(index, ref))
         window.geometry("850x700")
         label = ctk.CTkLabel(window, text="")
         label.pack(fill="both", expand=True, padx=10, pady=10)
@@ -527,12 +527,32 @@ class VisualStudio(ctk.CTkToplevel):
             label.image = picture
         window.bind("<Configure>", resize)
 
+    def titulo_preview(self, index, ref):
+        """Lo que se lee en la barra de una vista previa.
+
+        La letra depende de la POSICION, asi que caduca en cuanto se
+        intercambian o se quitan referencias. Por eso vive aqui y no dentro
+        de preview_reference(): sync_previews() la reaplica a las ventanas
+        que ya estan abiertas.
+
+        Ojo: esto es solo la etiqueta. La identidad es `ref.uid`, y no
+        depende de nada de esto.
+        """
+        return f"{chr(65 + index)} · {tr(ref.name)[:45]} · {self.panel_label()}"
+
     def sync_previews(self):
-        """Cierra las vistas previas cuyas referencias ya no estan.
+        """Pone al dia las vistas previas abiertas: cierra y retitula.
 
         Se llama desde render(), que corre tras anadir, quitar, intercambiar
-        y cambiar la funcion. Sin esto, quitar una referencia dejaba su
-        ventana abierta ensenando una imagen que ya no esta en el panel.
+        y cambiar la funcion.
+
+        CIERRA las de referencias que ya no estan: si no, quedaban abiertas
+        ensenando una imagen que ya no existe en el panel.
+
+        RETITULA las que siguen: la letra del titulo es la posicion, asi que
+        al intercambiar A/B la ventana de la imagen roja seguia diciendo «A»
+        cuando su referencia ya era la B. La imagen que se ve siempre fue la
+        correcta —de eso se encarga el uid— pero la etiqueta despistaba.
         """
         vivos = {ref.uid for ref in self.refs}
         for uid in [u for u in self.previews if u not in vivos]:
@@ -540,6 +560,15 @@ class VisualStudio(ctk.CTkToplevel):
             try:
                 if ventana.winfo_exists():
                     ventana.destroy()
+            except Exception:
+                pass
+        for index, ref in enumerate(self.refs):
+            ventana = self.previews.get(ref.uid)
+            if ventana is None:
+                continue
+            try:
+                if ventana.winfo_exists():
+                    ventana.title(self.titulo_preview(index, ref))
             except Exception:
                 pass
 

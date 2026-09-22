@@ -358,6 +358,16 @@ class TestLaVistaPreviaEnsenaLaImagenCORRECTA:
         assert azul in mostradas, (
             "tras intercambiar, ampliar A no ensena la imagen de A; "
             "se ven " + str(len(ventanas)) + " ventana(s)")
+
+        # Y la etiqueta tiene que seguir a la imagen. La roja paso a ser B: su
+        # ventana ya no puede decir «A». La imagen mostrada siempre fue la
+        # correcta —de eso se encarga el uid— pero un titulo caducado despista.
+        por_imagen = {id(self._imagen_mostrada(w)): w.title() for w in ventanas}
+        assert por_imagen[id(roja)].startswith("B "), (
+            "la ventana de la imagen roja dice " + repr(por_imagen[id(roja)])
+            + " cuando su referencia ya es la B")
+        assert por_imagen[id(azul)].startswith("A "), (
+            "la ventana de la imagen azul deberia decir A")
         for w in ventanas:
             w.destroy()
         v.destroy()
@@ -412,5 +422,53 @@ class TestLaVistaPreviaEnsenaLaImagenCORRECTA:
         assert self._imagen_mostrada(ventanas[0]) is roja
         assert v.refs[0].role == ROLES[1]
         for w in ventanas:
+            w.destroy()
+        v.destroy()
+
+    def test_el_titulo_se_recalcula_al_quitar_una_referencia(self, root):
+        """Quitar la A convierte a la B en A: su ventana tiene que enterarse."""
+        primera, segunda = _img("red"), _img("blue")
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(primera, ROLES[0], "una.png"))
+        v.refs.append(Reference(segunda, ROLES[0], "otra.png"))
+        v.preview_reference(1)          # ampliar la B
+        _bombear(root, 200)
+        ventana = v.previews[v.refs[1].uid]
+        assert ventana.title().startswith("B ")
+
+        v.refs.pop(0)                   # la B pasa a ser la A
+        v.render()
+        _bombear(root, 200)
+        assert ventana.title().startswith("A "), (
+            "el titulo se quedo en " + repr(ventana.title()))
+        assert self._imagen_mostrada(ventana) is segunda
+        ventana.destroy()
+        v.destroy()
+
+    def test_el_titulo_sigue_siendo_solo_una_etiqueta(self, root):
+        """Dos ventanas pueden compartir titulo sin pisarse.
+
+        Es la diferencia con el diseno anterior: el titulo ya no es clave de
+        nada. Si volviera a serlo, este test caeria.
+        """
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(_img("red"), ROLES[0], "imagen.png"))
+        v.refs.append(Reference(_img("blue"), ROLES[0], "imagen.png"))
+        v.preview_reference(0)
+        _bombear(root, 200)
+        v.preview_reference(1)
+        _bombear(root, 220)
+        abiertas = [w for w in v.previews.values() if w.winfo_exists()]
+        assert len(abiertas) == 2
+        # Se les fuerza el MISMO titulo: ninguna debe cerrarse.
+        for w in abiertas:
+            w.title("mismo titulo para las dos")
+        _bombear(root, 200)
+        assert all(w.winfo_exists() for w in abiertas), (
+            "una ventana se autocerro por compartir titulo: ha vuelto la "
+            "deduplicacion de GPromptWindow")
+        for w in abiertas:
             w.destroy()
         v.destroy()
