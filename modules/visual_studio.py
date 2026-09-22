@@ -34,6 +34,31 @@ from modules.visual_brief import (
 from modules.visual_history import VisualHistory
 
 
+class _VentanaPrevia(GPromptWindow):
+    """La ventana de «Ampliar»: el foco de GPromptWindow, sin su
+    deduplicacion por titulo.
+
+    GPromptWindow evita ventanas duplicadas usando el TITULO como clave, y
+    para los paneles de la app eso esta bien. Aqui no: el titulo lleva el
+    nombre del fichero, y dos imagenes distintas pueden llamarse igual. Peor
+    aun, el titulo cambia de significado al mover las referencias —tras
+    intercambiar A/B, «A {0} imagen.png» ya es otra imagen— asi que la
+    ventana vieja se reutilizaba y ensenaba lo que no era.
+
+    La identidad de una vista previa es su REFERENCIA, y de eso se encarga
+    VisualStudio con `ref.uid`. Aqui solo se hereda el comportamiento que si
+    interesa: salir delante tras el deiconify tardio de CustomTkinter,
+    topmost temporal y conservar minimizar/maximizar.
+    """
+
+    def title(self, string=None):
+        # Se salta GPromptWindow.title() a propositico y va directo al de
+        # CTkToplevel, que es el que solo pone el texto.
+        if string is None:
+            return ctk.CTkToplevel.title(self)
+        return ctk.CTkToplevel.title(self, string)
+
+
 class VisualStudio(ctk.CTkToplevel):
     # Cuantos paneles se han abierto en esta sesion. Solo sirve para dar a
     # cada uno un identificador estable con el que titular sus ventanas.
@@ -55,6 +80,8 @@ class VisualStudio(ctk.CTkToplevel):
         # enfocaria la del primero, ensenando la imagen equivocada.
         VisualStudio._contador_paneles += 1
         self.panel_id = VisualStudio._contador_paneles
+        # uid de la referencia -> su ventana de vista previa abierta.
+        self.previews = {}
         self.history = VisualHistory()
         self.analysis_stale = False
         self.refs = []
@@ -415,10 +442,14 @@ class VisualStudio(ctk.CTkToplevel):
             self.render()
             return
         old = self.refs[index]
-        self.refs[index] = Reference(old.image, role, old.name)
+        # old.uid a proposito: es la MISMA imagen, solo cambia su funcion.
+        # Sin conservarlo, su vista previa abierta quedaria huerfana y
+        # render() la cerraria en las narices del usuario.
+        self.refs[index] = Reference(old.image, role, old.name, old.uid)
         self.invalidate()
 
     def render(self):
+        self.sync_previews()
         for child in self.cards.winfo_children():
             child.destroy()
         try:
@@ -458,26 +489,30 @@ class VisualStudio(ctk.CTkToplevel):
                           command=lambda index=i: self.remove(index)).pack(side="right", padx=5)
 
     def preview_reference(self, index):
-        # GPromptWindow y no CTkToplevel: un Toplevel pelado se abre DETRÁS.
-        # CustomTkinter hace withdraw()+deiconify() para pintar la barra de
-        # título de Windows, y ese deiconify llega ~800 ms después del lift(),
-        # así que subirla una sola vez no sirve — está medido en
-        # tests/test_ventana_al_frente.py. GPromptWindow vuelve a subirla tras
-        # CADA deiconify, pone el topmost 250 ms y lo suelta, y deja intactos
-        # los botones de minimizar y maximizar (su transient() es un no-op a
-        # propósito: en Windows, transient los esconde).
-        # De regalo, al ser single-instance por título, volver a pulsar la lupa
-        # sobre la misma referencia enfoca la ventana abierta en vez de apilar
-        # otra encima.
+        # _VentanaPrevia y no un CTkToplevel pelado, porque un Toplevel pelado se
+        # abre DETRÁS: CustomTkinter hace withdraw()+deiconify() para pintar la
+        # barra de título de Windows, y ese deiconify llega ~800 ms después del
+        # lift(), así que subirla una sola vez no sirve — está medido en
+        # tests/test_ventana_al_frente.py. De GPromptWindow hereda volver a
+        # subirla tras CADA deiconify, el topmost temporal de 250 ms y los
+        # botones de minimizar y maximizar intactos.
+        #
+        # Lo que _VentanaPrevia NO hereda es la deduplicación por título: aquí
+        # el título no identifica nada. Dos imágenes pueden llamarse igual, y al
+        # intercambiar A/B el mismo título pasa a designar otra imagen. De la
+        # identidad se encarga `ref.uid`, aquí debajo.
         ref = self.refs[index]
-        window = GPromptWindow(self)
-        # El titulo es la CLAVE de deduplicacion de GPromptWindow, asi que
-        # tiene que identificar la referencia, no el fichero: dos imagenes de
-        # carpetas distintas pueden llamarse igual, y con el nombre a secas la
-        # segunda se cerraba sola y enfocaba la ventana de la primera. Lleva
-        # la letra (que referencia) y la etiqueta del panel (que proyecto).
-        # Repetir la lupa sobre la MISMA referencia sigue reutilizando su
-        # ventana, que es lo que se queria.
+        # La identidad es la REFERENCIA, no el titulo ni la posicion. Si ya
+        # hay una ventana para esta imagen, se trae al frente; si no, se abre
+        # una nueva aunque otra referencia se llame igual.
+        abierta = self.previews.get(ref.uid)
+        if abierta is not None and abierta.winfo_exists():
+            abierta._bring_to_front()
+            return abierta
+        window = _VentanaPrevia(self)
+        self.previews[ref.uid] = window
+        # El titulo ya no es clave de nada: es solo lo que lee el usuario en la
+        # barra. Por eso puede repetirse sin consecuencias.
         window.title(f"{chr(65 + index)} · {tr(ref.name)[:45]} · {self.panel_label()}")
         window.geometry("850x700")
         label = ctk.CTkLabel(window, text="")
@@ -491,6 +526,22 @@ class VisualStudio(ctk.CTkToplevel):
             label.configure(image=picture)
             label.image = picture
         window.bind("<Configure>", resize)
+
+    def sync_previews(self):
+        """Cierra las vistas previas cuyas referencias ya no estan.
+
+        Se llama desde render(), que corre tras anadir, quitar, intercambiar
+        y cambiar la funcion. Sin esto, quitar una referencia dejaba su
+        ventana abierta ensenando una imagen que ya no esta en el panel.
+        """
+        vivos = {ref.uid for ref in self.refs}
+        for uid in [u for u in self.previews if u not in vivos]:
+            ventana = self.previews.pop(uid)
+            try:
+                if ventana.winfo_exists():
+                    ventana.destroy()
+            except Exception:
+                pass
 
     def panel_label(self):
         """Como se nombra este panel en los titulos de sus ventanas hijas.

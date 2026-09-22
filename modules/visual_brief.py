@@ -4,8 +4,9 @@ import json
 import os
 import re
 import tempfile
+import uuid
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageOps
@@ -169,6 +170,22 @@ class Reference:
     image: Image.Image
     role: str
     name: str
+    # Identidad estable de ESTA referencia, independiente de su posicion y
+    # de su nombre. Hace falta porque ninguna de las dos identifica una
+    # imagen: dos ficheros de carpetas distintas pueden llamarse igual, y
+    # la posicion cambia al intercambiar A/B o al quitar una referencia.
+    # Con el nombre y la posicion como identidad, la vista previa acababa
+    # ensenando la imagen equivocada.
+    #
+    # NO se serializa: save_project() escribe file/role/name y nada mas, asi
+    # que los .gprompt ya guardados siguen abriendo. Al cargar uno se genera
+    # uno nuevo, que es correcto: un proyecto recien abierto no tiene
+    # ventanas de vista previa a las que seguir la pista.
+    #
+    # compare=False para que la igualdad siga mirando imagen, funcion y
+    # nombre, como antes.
+    uid: str = field(default_factory=lambda: uuid.uuid4().hex[:12],
+                     compare=False)
 
 
 def load_image(path):

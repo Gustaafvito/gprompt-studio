@@ -109,12 +109,23 @@ class TestLaVistaPreviaSaleDelante:
     """
 
     def test_la_vista_previa_usa_la_ventana_del_proyecto(self):
+        """Hereda el foco de GPromptWindow, pero no su deduplicación por título.
+
+        La segunda mitad importa tanto como la primera: usar GPromptWindow tal
+        cual hacía que dos imágenes llamadas igual compartieran ventana. La
+        identidad de una vista previa es su referencia, no su título.
+        """
         from modules.gprompt_window import GPromptWindow as GW
+        from modules.visual_studio import _VentanaPrevia
+
         fuente = inspect.getsource(VisualStudio.preview_reference)
-        assert "GPromptWindow(" in fuente, (
+        assert "_VentanaPrevia(" in fuente, (
             "con un CTkToplevel pelado la vista previa se abre DETRÁS")
         assert "ctk.CTkToplevel(" not in fuente
-        assert GW is not None
+        assert issubclass(_VentanaPrevia, GW), (
+            "sin heredar de GPromptWindow se pierde el arreglo del foco")
+        assert _VentanaPrevia.title is not GW.title, (
+            "si no sobrescribe title(), vuelve la deduplicación por título")
 
     def test_ya_no_se_apoya_en_un_lift_suelto(self):
         fuente = inspect.getsource(VisualStudio.preview_reference)

@@ -307,3 +307,110 @@ class TestElRecorridoCompletoDeGuardarYAbrir:
         finally:
             i18n.set_idioma("es")
         origen.destroy()
+
+
+class TestLaVistaPreviaEnsenaLaImagenCORRECTA:
+    """Ni la posicion ni el nombre identifican una imagen.
+
+    Cuarto hallazgo de ChatGPT, y el mas fino de los cuatro. El titulo era
+    «letra · nombre · panel», y eso parecia unico hasta que las referencias se
+    mueven:
+
+        1. dos imagenes distintas llamadas imagen.png
+        2. amplias A y dejas la vista previa abierta
+        3. intercambias A/B
+        4. amplias la nueva A  ->  mismo titulo que el paso 2
+
+    GPromptWindow deduplica por titulo, asi que devolvia la ventana vieja: la
+    imagen equivocada, con el titulo correcto. Pasa igual quitando una
+    referencia y anadiendo otra que se llame como la que habia.
+
+    Estos tests miran la IMAGEN QUE SE VE, no cuantas ventanas hay. Contar
+    ventanas daba verde en este caso: hay una, y es la de antes.
+    """
+
+    def _imagen_mostrada(self, ventana):
+        """El PIL que la ventana esta pintando ahora mismo."""
+        for hijo in ventana.winfo_children():
+            imagen = getattr(hijo, "image", None)
+            if imagen is not None:
+                # CTkImage guarda el PIL original en light_image.
+                return imagen.cget("light_image")
+        return None
+
+    def test_tras_intercambiar_ensena_la_nueva_A(self, root):
+        roja, azul = _img("red"), _img("blue")
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(roja, ROLES[0], "imagen.png"))
+        v.refs.append(Reference(azul, ROLES[0], "imagen.png"))
+
+        v.preview_reference(0)          # A = roja
+        _bombear(root, 200)
+        v.swap()                        # ahora A = azul
+        _bombear(root, 200)
+        v.preview_reference(0)          # ampliar la NUEVA A
+        _bombear(root, 220)
+
+        ventanas = [w for w in v.winfo_children()
+                    if isinstance(w, GPromptWindow) and w.winfo_exists()]
+        mostradas = [self._imagen_mostrada(w) for w in ventanas]
+        assert azul in mostradas, (
+            "tras intercambiar, ampliar A no ensena la imagen de A; "
+            "se ven " + str(len(ventanas)) + " ventana(s)")
+        for w in ventanas:
+            w.destroy()
+        v.destroy()
+
+    def test_quitar_y_anadir_con_el_mismo_nombre(self, root):
+        vieja, nueva = _img("red"), _img("green")
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(vieja, ROLES[0], "imagen.png"))
+        v.preview_reference(0)
+        _bombear(root, 200)
+
+        v.refs.pop(0)
+        v.refs.append(Reference(nueva, ROLES[0], "imagen.png"))
+        v.render()
+        _bombear(root, 200)
+        v.preview_reference(0)
+        _bombear(root, 220)
+
+        ventanas = [w for w in v.winfo_children()
+                    if isinstance(w, GPromptWindow) and w.winfo_exists()]
+        mostradas = [self._imagen_mostrada(w) for w in ventanas]
+        assert nueva in mostradas, (
+            "la referencia nueva reutiliza la ventana de la que se quito")
+        assert vieja not in mostradas, (
+            "sigue abierta la vista previa de una referencia que ya no existe")
+        for w in ventanas:
+            w.destroy()
+        v.destroy()
+
+    def test_cambiar_la_funcion_conserva_su_ventana(self, root):
+        """role_changed() RECONSTRUYE el Reference; sigue siendo la misma imagen.
+
+        Si la identidad se perdiera al cambiar la funcion, la vista previa
+        abierta quedaria huerfana y ampliar otra vez abriria una segunda.
+        """
+        roja = _img("red")
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(roja, ROLES[0], "imagen.png"))
+        v.preview_reference(0)
+        _bombear(root, 200)
+        v.role_changed(0, i18n.tr(ROLES[1]))
+        _bombear(root, 200)
+        v.preview_reference(0)
+        _bombear(root, 220)
+
+        ventanas = [w for w in v.winfo_children()
+                    if isinstance(w, GPromptWindow) and w.winfo_exists()]
+        assert len(ventanas) == 1, (
+            "cambiar la funcion dejo " + str(len(ventanas)) + " ventanas")
+        assert self._imagen_mostrada(ventanas[0]) is roja
+        assert v.refs[0].role == ROLES[1]
+        for w in ventanas:
+            w.destroy()
+        v.destroy()
