@@ -35,6 +35,10 @@ from modules.visual_history import VisualHistory
 
 
 class VisualStudio(ctk.CTkToplevel):
+    # Cuantos paneles se han abierto en esta sesion. Solo sirve para dar a
+    # cada uno un identificador estable con el que titular sus ventanas.
+    _contador_paneles = 0
+
     def __init__(self, app):
         super().__init__(app)
         self.app = app
@@ -44,6 +48,13 @@ class VisualStudio(ctk.CTkToplevel):
         self.title(tr("Crear desde imágenes · G-Prompt Studio") + " · Beta 9")
         self.geometry("1000x820")
         self.minsize(760, 620)
+        # Identidad del panel. open_project() abre un VisualStudio NUEVO por
+        # cada proyecto, asi que puede haber varios a la vez con una
+        # referencia que se llame igual. GPromptWindow deduplica por titulo:
+        # sin esto, la vista previa del segundo panel se cerraria sola y
+        # enfocaria la del primero, ensenando la imagen equivocada.
+        VisualStudio._contador_paneles += 1
+        self.panel_id = VisualStudio._contador_paneles
         self.history = VisualHistory()
         self.analysis_stale = False
         self.refs = []
@@ -142,6 +153,13 @@ class VisualStudio(ctk.CTkToplevel):
                                      width=100)
             menu.set(tr(variable.get()))
             menu.pack(side="left")
+            # Guardados para sync_menus(): al quitar variable= el widget ya
+            # no sigue a la StringVar, asi que hay que ponerlo al dia a mano
+            # cuando el valor cambia desde fuera (abrir un proyecto).
+            if variable is self.aspect:
+                self.aspect_menu = menu
+            else:
+                self.language_menu = menu
         self.duration_label = ctk.CTkLabel(options, text=tr("Segundos"))
         self.duration_entry = ctk.CTkEntry(options, textvariable=self.duration, width=75)
         ctk.CTkLabel(body, text=tr("Analizar envía las imágenes al proveedor de visión configurado y sus alternativas. "
@@ -305,6 +323,27 @@ class VisualStudio(ctk.CTkToplevel):
         self.reset_confirmation()
         self.status.set(tr("Referencias modificadas. Vuelve a analizar antes de generar."))
 
+    def sync_menus(self):
+        """Pone los tres desplegables al dia con sus variables.
+
+        Hace falta porque los menus van sin `variable=`: si la tuvieran,
+        CTkOptionMenu escribiria el texto MOSTRADO dentro de la variable y en
+        ingles se romperian las comparaciones con MODES y los proyectos
+        guardados. El precio de esa separacion es este metodo: cuando el
+        valor cambia desde fuera —abrir un proyecto, sobre todo— el widget no
+        se entera solo.
+
+        Sin esto, un proyecto guardado como «Inicio -> final», 16:9 y espanol
+        se abria ensenando «Imagen -> prompt», 9:16 e ingles. Lo peor es que
+        por dentro el valor era el correcto, asi que el usuario creia estar
+        editando algo distinto de lo que iba a generar.
+        """
+        for menu, variable in ((getattr(self, "mode_menu", None), self.mode),
+                               (getattr(self, "aspect_menu", None), self.aspect),
+                               (getattr(self, "language_menu", None), self.language)):
+            if menu is not None:
+                menu.set(tr(variable.get()))
+
     def mode_changed(self, value):
         # value llega en el idioma de la interfaz; self.mode SIEMPRE guarda
         # el identificador espanol, que es lo que se escribe en el proyecto.
@@ -399,7 +438,12 @@ class VisualStudio(ctk.CTkToplevel):
             # queda guardado en el proyecto.
             label = f"{chr(65+i)} · {tr(ref.name)[:45]}"
             if self.mode.get() == MODES[2]:
-                label += " · " + ("INICIO" if i == 0 else "FINAL" if i == 1 else "Sobra: quitar")
+                # Se escaparon del candado de i18n porque van dentro de un
+                # ternario encadenado y sumadas a una variable, no directas a
+                # un sink; y ningun test construia este modo.
+                label += " · " + (tr("INICIO") if i == 0
+                                       else tr("FINAL") if i == 1
+                                       else tr("Sobra: quitar"))
             ctk.CTkLabel(row, text=label).pack(side="left", padx=5)
             if self.mode.get() != MODES[2]:
                 # Igual que los modos: se ensena traducido y se guarda el
@@ -427,7 +471,14 @@ class VisualStudio(ctk.CTkToplevel):
         # otra encima.
         ref = self.refs[index]
         window = GPromptWindow(self)
-        window.title(tr(ref.name))
+        # El titulo es la CLAVE de deduplicacion de GPromptWindow, asi que
+        # tiene que identificar la referencia, no el fichero: dos imagenes de
+        # carpetas distintas pueden llamarse igual, y con el nombre a secas la
+        # segunda se cerraba sola y enfocaba la ventana de la primera. Lleva
+        # la letra (que referencia) y la etiqueta del panel (que proyecto).
+        # Repetir la lupa sobre la MISMA referencia sigue reutilizando su
+        # ventana, que es lo que se queria.
+        window.title(f"{chr(65 + index)} · {tr(ref.name)[:45]} · {self.panel_label()}")
         window.geometry("850x700")
         label = ctk.CTkLabel(window, text="")
         label.pack(fill="both", expand=True, padx=10, pady=10)
@@ -440,6 +491,19 @@ class VisualStudio(ctk.CTkToplevel):
             label.configure(image=picture)
             label.image = picture
         window.bind("<Configure>", resize)
+
+    def panel_label(self):
+        """Como se nombra este panel en los titulos de sus ventanas hijas.
+
+        El nombre del proyecto si lo hay, porque es lo que le dice algo al
+        usuario, y el identificador del panel siempre: dos paneles pueden
+        tener el mismo nombre de proyecto (o ninguno) y sus titulos seguirian
+        chocando.
+        """
+        nombre = self.project_name.get().strip()
+        if nombre:
+            return f"{nombre[:30]} #{self.panel_id}"
+        return tr("Panel {0}").format(self.panel_id)
 
     def direction(self):
         if output_kind(self.mode.get(), self.target.get()) != "video":
@@ -531,6 +595,10 @@ class VisualStudio(ctk.CTkToplevel):
         for key in ("idea", "analysis", "output", "negative", "notes"):
             getattr(other, key).insert("1.0", fields.get(key, ""))
         other.analysis_stale = fields.get("analysis_stale", "true") != "false"
+        # Los desplegables no siguen a sus variables (ver sync_menus): sin
+        # esta llamada ensenarian los valores por defecto del panel recien
+        # construido y no los del proyecto que se acaba de abrir.
+        other.sync_menus()
         other.render()
         other.status.set(tr("Proyecto recuperado. Comprueba el modelo de destino del panel."))
 

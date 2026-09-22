@@ -3016,6 +3016,14 @@ TRADUCCIONES = {
     'Escenario': 'Scene',
     'Iluminación': 'Lighting',
     'Composición': 'Composition',
+
+    # Modo inicio/final y etiqueta de panel. Las tres primeras se colaron
+    # hasta el 22-sep-2026: van dentro de un ternario encadenado sumado a una
+    # variable, que no es un sink directo, y ningún test construía ese modo.
+    'INICIO': 'START',
+    'FINAL': 'END',
+    'Sobra: quitar': 'Extra: remove',
+    'Panel {0}': 'Panel {0}',
 }
 
 
