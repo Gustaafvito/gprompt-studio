@@ -560,7 +560,7 @@ class VisionChain:
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
                         {"type": "text", "text": prompt_v},
                     ]}],
-                    max_tokens=250, temperature=0.1,
+                    max_tokens=1500, temperature=0.1,
                 )
                 desc = res.choices[0].message.content.strip().strip("'\"\n ")
                 if desc and len(desc) >= 5:

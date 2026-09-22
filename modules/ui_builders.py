@@ -1242,6 +1242,10 @@ class UIBuildersService:
         CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
         self.app._sw_brief_callback = _toggle_brief_visual
 
+        ctk.CTkButton(parent, text=tr("Crear desde imágenes · Inicio/final · Referencias"),
+                      command=self.app.cmd_crear_desde_imagenes,
+                      height=30).pack(fill="x", pady=5)
+
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
         self.app.frame_imgref_inner = ctk.CTkFrame(parent, fg_color=tab_bg)
         self.app.frame_imgref_inner.pack(fill="x", pady=(1, 2))

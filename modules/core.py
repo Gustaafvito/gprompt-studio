@@ -1035,6 +1035,10 @@ class CoreMixin:
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_vision).add_done_callback(log_future_exc)
 
+    def cmd_crear_desde_imagenes(self):
+        from modules.visual_studio import open_visual_studio
+        open_visual_studio(self)
+
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return
         self._ocultar_ideas()
