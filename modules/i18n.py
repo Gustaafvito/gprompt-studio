@@ -3024,6 +3024,21 @@ TRADUCCIONES = {
     'FINAL': 'END',
     'Sobra: quitar': 'Extra: remove',
     'Panel {0}': 'Panel {0}',
+
+    # Selector de proveedor de visión. Elegir uno concreto es EXCLUSIVO:
+    # si falla, no se llama a ningún otro servicio. Quien elige Ollama
+    # suele hacerlo para no gastar cuota de pago, y una cadena que continúa
+    # al fallar hace justo lo contrario.
+    'Visión': 'Vision',
+    'Cadena automática': 'Automatic chain',
+    'Sin proveedores de visión configurados.': 'No vision providers configured.',
+    'Se probarán por orden: {0}': 'Will be tried in order: {0}',
+    'Solo {0}. Si falla, no se usa ningún otro.': '{0} only. If it fails, no other provider is used.',
+    '{0} no está disponible ahora mismo.': '{0} is not available right now.',
+    'Analizando con {0}…': 'Analysing with {0}…',
+    'Respondió: {0}': 'Answered: {0}',
+    'El proveedor de visión «{0}» no está disponible. Elige otro o usa la cadena automática.': 'Vision provider “{0}” is not available. Pick another one or use the automatic chain.',
+    '{0} devolvió un análisis vacío.': '{0} returned an empty analysis.',
 }
 
 

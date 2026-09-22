@@ -33,6 +33,11 @@ from modules.visual_brief import (
 )
 from modules.visual_history import VisualHistory
 
+# Clave del modo «encadenar como siempre». Es la etiqueta en espanol, como
+# el resto de identificadores del panel: se pinta con tr() y se recupera con
+# tr_es(). Un candado comprueba que sigue cuadrando con VisionChain.
+CADENA_AUTOMATICA = "Cadena automática"
+
 
 class _VentanaPrevia(GPromptWindow):
     """La ventana de «Ampliar»: el foco de GPromptWindow, sin su
@@ -91,6 +96,10 @@ class VisualStudio(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.mode = ctk.StringVar(value=MODES[0])
         self.language = ctk.StringVar(value="Inglés")
+        # Que proveedor de vision usar al analizar. Por defecto la cadena de
+        # siempre; si se elige uno concreto, es EXCLUSIVO y un fallo no se
+        # cae a otro servicio (ver VisionChain).
+        self.vision_provider = ctk.StringVar(value=CADENA_AUTOMATICA)
         self.aspect = ctk.StringVar(value="9:16")
         self.duration = ctk.StringVar(value="5")
         self.target = ctk.StringVar(value="Imagen")
@@ -199,6 +208,20 @@ class VisualStudio(ctk.CTkToplevel):
         self.environment_motion = self.entry(self.video_controls, "Entorno: niebla, viento, luces, objetos…")
         self.audio_direction = self.entry(self.video_controls, "Sonido: ambiente; diálogo literal e idioma si lo necesitas")
         self.transition_direction = self.entry(self.video_controls, "Inicio → final: cómo pasar de A a B, sin saltos")
+        vision_bar = ctk.CTkFrame(body)
+        vision_bar.pack(fill="x", pady=(8, 0))
+        ctk.CTkLabel(vision_bar, text=tr("Visión")).pack(side="left", padx=5)
+        self.vision_menu = ctk.CTkOptionMenu(
+            vision_bar, values=[tr(v) for v in self.vision_options()],
+            command=self.vision_provider_changed, width=190)
+        self.vision_menu.set(tr(self.vision_provider.get()))
+        self.vision_menu.pack(side="left")
+        # Quien va a responder, ANTES de pulsar. Tras analizar pasa a decir
+        # quien respondio de verdad, que no siempre es el mismo si se deja la
+        # cadena automatica.
+        self.vision_hint = ctk.CTkLabel(vision_bar, text="", anchor="w")
+        self.vision_hint.pack(side="left", padx=8)
+        self.refresh_vision_hint()
         self.analyze_button = ctk.CTkButton(body, text=tr("1. Analizar imágenes"), command=self.analyze)
         self.analyze_button.pack(anchor="w", pady=8)
         self.analysis = self.text_field(body, "Análisis editable — corrige lo que la IA haya interpretado mal", 150)
@@ -349,6 +372,37 @@ class VisualStudio(ctk.CTkToplevel):
         self.analysis_stale = True
         self.reset_confirmation()
         self.status.set(tr("Referencias modificadas. Vuelve a analizar antes de generar."))
+
+    def vision_options(self):
+        """La cadena automatica y, detras, los proveedores vivos.
+
+        Se pregunta a la app, no se adivina: si no hay ninguno configurado,
+        la lista se queda solo con la opcion automatica y el panel lo dice.
+        getattr porque los tests construyen el panel colgando de un root
+        pelado, sin la app real detras.
+        """
+        vision = getattr(self.app, "vision", None)
+        nombres = list(vision.nombres_proveedores()) if vision is not None else []
+        return [CADENA_AUTOMATICA] + nombres
+
+    def vision_provider_changed(self, value):
+        # value llega traducido; la variable guarda el identificador.
+        self.vision_provider.set(tr_es(value))
+        self.refresh_vision_hint()
+
+    def refresh_vision_hint(self):
+        """Dice quien va a responder antes de gastar nada."""
+        elegido = self.vision_provider.get()
+        disponibles = self.vision_options()[1:]
+        if not disponibles:
+            texto = tr("Sin proveedores de visión configurados.")
+        elif elegido == CADENA_AUTOMATICA:
+            texto = tr("Se probarán por orden: {0}").format(", ".join(disponibles))
+        elif elegido in disponibles:
+            texto = tr("Solo {0}. Si falla, no se usa ningún otro.").format(elegido)
+        else:
+            texto = tr("{0} no está disponible ahora mismo.").format(elegido)
+        self.vision_hint.configure(text=texto)
 
     def sync_menus(self):
         """Pone los tres desplegables al dia con sus variables.
@@ -692,7 +746,10 @@ class VisualStudio(ctk.CTkToplevel):
             return
         if not self.checkpoint():
             return
-        self.status.set(tr("Analizando referencias…"))
+        elegido = self.vision_provider.get()
+        exclusivo = elegido != CADENA_AUTOMATICA
+        self.status.set(tr("Analizando con {0}…").format(elegido) if exclusivo
+                        else tr("Analizando referencias…"))
 
         def done(result):
             text, provider = result
@@ -704,7 +761,14 @@ class VisualStudio(ctk.CTkToplevel):
             if not self.checkpoint():
                 return
             self.status.set(tr("Análisis de {0}. Revísalo antes de generar.").format(provider))
-        self.submit(lambda: self.app.vision.describir_con_prompt(board, request), done)
+            # Quien respondio DE VERDAD. Con la cadena automatica puede no
+            # ser el primero, y conviene que se vea sin abrir el log.
+            self.vision_hint.configure(
+                text=tr("Respondió: {0}").format(provider))
+        self.submit(
+            lambda: self.app.vision.describir_con_prompt(
+                board, request, None, None if not exclusivo else elegido),
+            done)
 
     def generate(self):
         if self.busy:
