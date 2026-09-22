@@ -10,6 +10,7 @@ from config import (
     get_image_model_specs,
     get_model_specs,
 )
+from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr, tr_es
 from modules.visual_brief import (
     MODE_HELP,
@@ -59,13 +60,18 @@ class VisualStudio(ctk.CTkToplevel):
         self.model = ctk.StringVar(value="")
         self.reference_use = ctk.StringVar(value="Solo texto")
         self.attachment_confirmed = ctk.BooleanVar(value=False)
-        self.status = ctk.StringVar(value="Añade imágenes; el análisis se podrá revisar antes de generar.")
+        self.status = ctk.StringVar(value=tr("Añade imágenes; el análisis se podrá revisar antes de generar."))
         body = ctk.CTkScrollableFrame(self)
         self.body = body
         body.pack(fill="both", expand=True, padx=12, pady=10)
         ctk.CTkLabel(body, text=tr("Crear desde imágenes"), font=ctk.CTkFont(size=22, weight="bold")).pack(anchor="w")
-        ctk.CTkOptionMenu(body, values=list(MODES), variable=self.mode,
-                          command=self.mode_changed, width=260).pack(anchor="w", pady=8)
+        # Sin variable=: CTkOptionMenu escribiria el texto MOSTRADO dentro de
+        # self.mode y en ingles reventaria cada self.mode.get() == MODES[n].
+        # Se pinta traducido y mode_changed() guarda el identificador.
+        self.mode_menu = ctk.CTkOptionMenu(body, values=[tr(m) for m in MODES],
+                          command=self.mode_changed, width=260)
+        self.mode_menu.set(tr(self.mode.get()))
+        self.mode_menu.pack(anchor="w", pady=8)
         self.help_label = ctk.CTkLabel(body, text=tr(MODE_HELP[self.mode.get()]),
                                      wraplength=700, justify="left")
         self.help_label.pack(anchor="w")
@@ -113,12 +119,29 @@ class VisualStudio(ctk.CTkToplevel):
         self.reference_use_changed(tr("Solo texto"))
         options = ctk.CTkFrame(body)
         options.pack(fill="x", pady=8)
+        def _guardar_identificador(variable):
+            # Closure con la variable atada: sin esto, las dos entradas del
+            # bucle compartirian la ultima.
+            return lambda value: variable.set(tr_es(value))
+
         for title, variable, values in (
             ("Formato", self.aspect, ["9:16", "16:9", "1:1", "4:5"]),
             ("Idioma prompt", self.language, ["Inglés", "Español"]),
         ):
-            ctk.CTkLabel(options, text=title).pack(side="left", padx=5)
-            ctk.CTkOptionMenu(options, variable=variable, values=values, width=100).pack(side="left")
+            # tr(title) y no tr("..."): aqui llega una VARIABLE, que es el
+            # mismo punto ciego del candado que tenian text_field/entry.
+            ctk.CTkLabel(options, text=tr(title)).pack(side="left", padx=5)
+            # Se ensena traducido y se guarda el identificador espanol. El
+            # idioma del prompt viaja al modelo tal cual ("IDIOMA DEL PROMPT:
+            # Ingles"), y el formato es clave de catalogo: si la variable
+            # guardara el texto mostrado, ambos se romperian en ingles.
+            # tr()/tr_es() son la identidad para lo que no conocen, asi que
+            # "9:16" pasa intacto.
+            menu = ctk.CTkOptionMenu(options, values=[tr(v) for v in values],
+                                     command=_guardar_identificador(variable),
+                                     width=100)
+            menu.set(tr(variable.get()))
+            menu.pack(side="left")
         self.duration_label = ctk.CTkLabel(options, text=tr("Segundos"))
         self.duration_entry = ctk.CTkEntry(options, textvariable=self.duration, width=75)
         ctk.CTkLabel(body, text=tr("Analizar envía las imágenes al proveedor de visión configurado y sus alternativas. "
@@ -252,14 +275,20 @@ class VisualStudio(ctk.CTkToplevel):
 
     @staticmethod
     def text_field(parent, label, height):
-        ctk.CTkLabel(parent, text=label).pack(anchor="w", pady=(6, 0))
+        # tr() AQUÍ y no en cada llamada: el candado de i18n solo mira los
+        # literales que van directos a un sink (text=, placeholder_text=…), y
+        # aquí llega una variable, así que catorce rótulos en español se
+        # colaban sin que saltara nada. Traduciendo en el ayudante se arregla
+        # de una vez y quien llama sigue escribiendo el español tal cual.
+        ctk.CTkLabel(parent, text=tr(label)).pack(anchor="w", pady=(6, 0))
         widget = ctk.CTkTextbox(parent, height=height)
         widget.pack(fill="x", pady=3)
         return widget
 
     @staticmethod
     def entry(parent, placeholder):
-        widget = ctk.CTkEntry(parent, placeholder_text=placeholder)
+        # Mismo caso que text_field: el placeholder llegaba sin traducir.
+        widget = ctk.CTkEntry(parent, placeholder_text=tr(placeholder))
         widget.pack(fill="x", pady=4)
         return widget
 
@@ -274,11 +303,15 @@ class VisualStudio(ctk.CTkToplevel):
     def invalidate(self):
         self.analysis_stale = True
         self.reset_confirmation()
-        self.status.set("Referencias modificadas. Vuelve a analizar antes de generar.")
+        self.status.set(tr("Referencias modificadas. Vuelve a analizar antes de generar."))
 
-    def mode_changed(self, _value):
+    def mode_changed(self, value):
+        # value llega en el idioma de la interfaz; self.mode SIEMPRE guarda
+        # el identificador espanol, que es lo que se escribe en el proyecto.
+        self.mode.set(tr_es(value))
         if self.busy:
             self.mode.set(self.running_mode)
+            self.mode_menu.set(tr(self.running_mode))
             return
         self.invalidate()
         self.refresh_mode_help()
@@ -293,13 +326,13 @@ class VisualStudio(ctk.CTkToplevel):
         if not paths:
             return
         if len(paths) + len(self.refs) > 4:
-            self.status.set("Máximo cuatro imágenes. Quita alguna antes de añadir más.")
+            self.status.set(tr("Máximo cuatro imágenes. Quita alguna antes de añadir más."))
             return
         try:
             from pathlib import Path
             additions = [Reference(load_image(p), ROLES[0], Path(p).name) for p in paths]
         except Exception as exc:
-            self.status.set(f"No se pudieron cargar las imágenes: {exc}")
+            self.status.set(tr("No se pudieron cargar las imágenes: {0}").format(exc))
             return
         if not self.checkpoint():
             return
@@ -312,7 +345,7 @@ class VisualStudio(ctk.CTkToplevel):
             return
         image = getattr(self.app, "imagen_cargada", None)
         if image is None or len(self.refs) >= 4:
-            self.status.set("Carga una imagen en la app o deja espacio entre las cuatro referencias.")
+            self.status.set(tr("Carga una imagen en la app o deja espacio entre las cuatro referencias."))
             return
         image = image.convert("RGB").copy()
         image.thumbnail((1600, 1600))
@@ -335,6 +368,7 @@ class VisualStudio(ctk.CTkToplevel):
             self.render()
 
     def role_changed(self, index, role):
+        role = tr_es(role)
         if self.busy:
             self.render()
             return
@@ -360,14 +394,19 @@ class VisualStudio(ctk.CTkToplevel):
             ratio = min(64 / ref.image.width, 64 / ref.image.height)
             thumb = ctk.CTkImage(ref.image, size=(max(1, int(ref.image.width * ratio)), max(1, int(ref.image.height * ratio))))
             ctk.CTkLabel(row, text="", image=thumb).pack(side="left", padx=6)
-            label = f"{chr(65+i)} · {ref.name[:45]}"
+            # tr() sobre el nombre: los de fichero salen intactos y el unico
+            # sintetico ("Imagen de la app") se traduce, sin alterar lo que
+            # queda guardado en el proyecto.
+            label = f"{chr(65+i)} · {tr(ref.name)[:45]}"
             if self.mode.get() == MODES[2]:
                 label += " · " + ("INICIO" if i == 0 else "FINAL" if i == 1 else "Sobra: quitar")
             ctk.CTkLabel(row, text=label).pack(side="left", padx=5)
             if self.mode.get() != MODES[2]:
-                menu = ctk.CTkOptionMenu(row, values=list(ROLES),
+                # Igual que los modos: se ensena traducido y se guarda el
+                # identificador, porque ref.role se serializa en el proyecto.
+                menu = ctk.CTkOptionMenu(row, values=[tr(r) for r in ROLES],
                                          command=lambda value, index=i: self.role_changed(index, value))
-                menu.set(ref.role)
+                menu.set(tr(ref.role))
                 menu.pack(side="left", padx=5)
             ctk.CTkButton(row, text=tr("Ampliar"), width=75,
                           command=lambda index=i: self.preview_reference(index)).pack(side="right", padx=5)
@@ -375,9 +414,20 @@ class VisualStudio(ctk.CTkToplevel):
                           command=lambda index=i: self.remove(index)).pack(side="right", padx=5)
 
     def preview_reference(self, index):
+        # GPromptWindow y no CTkToplevel: un Toplevel pelado se abre DETRÁS.
+        # CustomTkinter hace withdraw()+deiconify() para pintar la barra de
+        # título de Windows, y ese deiconify llega ~800 ms después del lift(),
+        # así que subirla una sola vez no sirve — está medido en
+        # tests/test_ventana_al_frente.py. GPromptWindow vuelve a subirla tras
+        # CADA deiconify, pone el topmost 250 ms y lo suelta, y deja intactos
+        # los botones de minimizar y maximizar (su transient() es un no-op a
+        # propósito: en Windows, transient los esconde).
+        # De regalo, al ser single-instance por título, volver a pulsar la lupa
+        # sobre la misma referencia enfoca la ventana abierta en vez de apilar
+        # otra encima.
         ref = self.refs[index]
-        window = ctk.CTkToplevel(self)
-        window.title(ref.name)
+        window = GPromptWindow(self)
+        window.title(tr(ref.name))
         window.geometry("850x700")
         label = ctk.CTkLabel(window, text="")
         label.pack(fill="both", expand=True, padx=10, pady=10)
@@ -390,7 +440,6 @@ class VisualStudio(ctk.CTkToplevel):
             label.configure(image=picture)
             label.image = picture
         window.bind("<Configure>", resize)
-        window.lift()
 
     def direction(self):
         if output_kind(self.mode.get(), self.target.get()) != "video":
@@ -421,7 +470,7 @@ class VisualStudio(ctk.CTkToplevel):
             try:
                 on_success(self.future.result())
             except Exception as exc:
-                self.status.set(f"No se completó la operación: {exc}")
+                self.status.set(tr("No se completó la operación: {0}").format(exc))
         self.after(100, poll)
 
     def set_controls(self, state):
@@ -448,9 +497,9 @@ class VisualStudio(ctk.CTkToplevel):
         fields = self.fields()
         try:
             save_project(path, self.refs, fields)
-            self.status.set("Proyecto guardado con sus imágenes, idea, análisis y resultado.")
+            self.status.set(tr("Proyecto guardado con sus imágenes, idea, análisis y resultado."))
         except Exception as exc:
-            self.status.set(f"No se pudo guardar: {exc}")
+            self.status.set(tr("No se pudo guardar: {0}").format(exc))
 
     def load(self):
         if self.busy:
@@ -465,7 +514,7 @@ class VisualStudio(ctk.CTkToplevel):
         try:
             refs, fields = load_project(path)
         except Exception as exc:
-            self.status.set(f"No se pudo abrir: {exc}")
+            self.status.set(tr("No se pudo abrir: {0}").format(exc))
             return
         other = VisualStudio(self.app)
         other.refs = refs
@@ -483,7 +532,7 @@ class VisualStudio(ctk.CTkToplevel):
             getattr(other, key).insert("1.0", fields.get(key, ""))
         other.analysis_stale = fields.get("analysis_stale", "true") != "false"
         other.render()
-        other.status.set("Proyecto recuperado. Comprueba el modelo de destino del panel.")
+        other.status.set(tr("Proyecto recuperado. Comprueba el modelo de destino del panel."))
 
     def analyze(self):
         if self.busy:
@@ -495,32 +544,32 @@ class VisualStudio(ctk.CTkToplevel):
             return
         if not self.checkpoint():
             return
-        self.status.set("Analizando referencias…")
+        self.status.set(tr("Analizando referencias…"))
 
         def done(result):
             text, provider = result
             if not isinstance(text, str) or not text.strip():
-                raise ValueError("El proveedor devolvió un análisis vacío.")
+                raise ValueError(tr("El proveedor devolvió un análisis vacío."))
             self.analysis.delete("1.0", "end")
             self.analysis.insert("1.0", text)
             self.analysis_stale = False
             if not self.checkpoint():
                 return
-            self.status.set(f"Análisis de {provider}. Revísalo antes de generar.")
+            self.status.set(tr("Análisis de {0}. Revísalo antes de generar.").format(provider))
         self.submit(lambda: self.app.vision.describir_con_prompt(board, request), done)
 
     def generate(self):
         if self.busy:
             return
         if self.analysis_stale:
-            self.status.set("Las referencias han cambiado. Conservamos tu trabajo: vuelve a analizar antes de generar.")
+            self.status.set(tr("Las referencias han cambiado. Conservamos tu trabajo: vuelve a analizar antes de generar."))
             return
         if self.model.get() not in self.catalog.get(self.platform.get(), []):
-            self.status.set("El modelo guardado no está disponible. Elige uno del catálogo; no lo hemos sustituido.")
+            self.status.set(tr("El modelo guardado no está disponible. Elige uno del catálogo; no lo hemos sustituido."))
             return
         mode = self.mode.get()
         if not self.model.get():
-            self.status.set("Selecciona un modelo de destino en este panel.")
+            self.status.set(tr("Selecciona un modelo de destino en este panel."))
             return
         try:
             specs = self.revision_specs()
@@ -539,7 +588,7 @@ class VisualStudio(ctk.CTkToplevel):
             return
         if not self.checkpoint():
             return
-        self.status.set("Generando prompt con el destino seleccionado…")
+        self.status.set(tr("Generando prompt con el destino seleccionado…"))
 
         def done(text):
             prompt, negative, notes = parse_visual_result(text, specs, enforce_limit=False)
@@ -552,7 +601,7 @@ class VisualStudio(ctk.CTkToplevel):
             if isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
                 self.status.set(tr("El borrador supera el límite. Usa Ajustar al límite; el texto se conserva."))
             else:
-                self.status.set("Prompt preparado. Revisa las limitaciones y el uso de las referencias.")
+                self.status.set(tr("Prompt preparado. Revisa las limitaciones y el uso de las referencias."))
         self.submit(lambda: self.app.deepseek.generar_batch(
             VISUAL_SYSTEM, request, temperature=0.4, max_tokens=3500), done)
 
@@ -562,7 +611,7 @@ class VisualStudio(ctk.CTkToplevel):
         raw = self.manual_limit.get().strip()
         if raw:
             if not raw.isdecimal() or not 1 <= int(raw) <= 100000:
-                raise ValueError("Escribe un límite entero entre 1 y 100000 caracteres.")
+                raise ValueError(tr("Escribe un límite entero entre 1 y 100000 caracteres."))
             specs["max_chars"] = int(raw)
         return specs
 
@@ -583,9 +632,9 @@ class VisualStudio(ctk.CTkToplevel):
             return
         try:
             if self.analysis_stale:
-                raise ValueError("Actualiza el análisis de las referencias antes de revisar el prompt.")
+                raise ValueError(tr("Actualiza el análisis de las referencias antes de revisar el prompt."))
             if self.model.get() not in self.catalog.get(self.platform.get(), []):
-                raise ValueError("Selecciona un modelo disponible.")
+                raise ValueError(tr("Selecciona un modelo disponible."))
             specs = self.revision_specs()
             attach = self.reference_use.get() == "Adjuntar imágenes"
             check_attachment(specs, self.mode.get(), len(self.refs), attach, self.attachment_confirmed.get())
@@ -629,7 +678,7 @@ class VisualStudio(ctk.CTkToplevel):
                 self.history.save(self.refs, fields)
             return True
         except Exception as exc:
-            self.status.set(f"No se pudo guardar la recuperación local: {exc}")
+            self.status.set(tr("No se pudo guardar la recuperación local: {0}").format(exc))
             return False
 
     def autosave_tick(self):
@@ -659,7 +708,7 @@ class VisualStudio(ctk.CTkToplevel):
         if text:
             self.clipboard_clear()
             self.clipboard_append(text)
-            self.status.set("Negativo copiado por separado.")
+            self.status.set(tr("Negativo copiado por separado."))
 
     def check_prompt(self):
         try:
@@ -670,22 +719,22 @@ class VisualStudio(ctk.CTkToplevel):
         prompt = self.output.get("1.0", "end").strip()
         issues = []
         if not prompt:
-            issues.append("Falta el prompt positivo.")
+            issues.append(tr("Falta el prompt positivo."))
         if self.analysis_stale:
-            issues.append("El análisis está pendiente de actualizar.")
+            issues.append(tr("El análisis está pendiente de actualizar."))
         if self.model.get() not in self.catalog.get(self.platform.get(), []):
-            issues.append("El modelo no está disponible en el catálogo.")
+            issues.append(tr("El modelo no está disponible en el catálogo."))
         limit = specs.get("max_chars")
         if isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
-            issues.append(f"Supera el límite: {len(prompt)}/{limit} caracteres.")
+            issues.append(tr("Supera el límite: {0}/{1} caracteres.").format(len(prompt), limit))
         if self.negative.get("1.0", "end").strip() and specs.get("has_negative") is not True:
-            issues.append("No está confirmado que el destino acepte un negativo separado.")
+            issues.append(tr("No está confirmado que el destino acepte un negativo separado."))
         try:
             check_attachment(specs, self.mode.get(), len(self.refs),
                              self.reference_use.get() == "Adjuntar imágenes", self.attachment_confirmed.get())
         except ValueError as exc:
             issues.append(str(exc))
-        result = "\n".join(issues) if issues else f"Sin incidencias en las comprobaciones disponibles. {len(prompt)} caracteres."
+        result = "\n".join(issues) if issues else tr("Sin incidencias en las comprobaciones disponibles. {0} caracteres.").format(len(prompt))
         messagebox.showinfo(tr("Revisión del prompt"), result + tr("\n\nRevisa también acción, identidad, cambios e idioma: esta comprobación no verifica el significado ni garantiza compatibilidad."), parent=self)
 
     def combined_result(self):
@@ -709,13 +758,13 @@ class VisualStudio(ctk.CTkToplevel):
         if text:
             self.clipboard_clear()
             self.clipboard_append(text)
-            self.status.set("Resultado copiado.")
+            self.status.set(tr("Resultado copiado."))
 
     def apply(self):
         text = self.combined_result()
         if text:
             self.app.dialogs.actualizar_salida(text)
-            self.status.set("Resultado enviado a la salida principal. Tu idea no se ha modificado.")
+            self.status.set(tr("Resultado enviado a la salida principal. Tu idea no se ha modificado."))
 
 
 def open_visual_studio(app):

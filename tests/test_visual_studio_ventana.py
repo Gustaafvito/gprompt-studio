@@ -15,6 +15,8 @@ esto lo dice en dos segundos en vez de en un issue.
 trae al frente en vez de abrir otra. Eso sí es comportamiento, y va aquí
 porque no se puede comprobar sin una ventana real.
 """
+import inspect
+
 import pytest
 
 ctk = pytest.importorskip("customtkinter")
@@ -88,3 +90,72 @@ class TestNoSeDuplica:
         assert segunda is not primera
         assert segunda.winfo_exists()
         segunda.destroy()
+
+
+class TestLaVistaPreviaSaleDelante:
+    """22-sep-2026, punto 1 del repaso de ChatGPT sobre `fd9df53`.
+
+    `preview_reference()` abría un `ctk.CTkToplevel` pelado y lo subía con un
+    `lift()` suelto. Eso NO basta en Windows, y está medido en
+    `tests/test_ventana_al_frente.py`: CustomTkinter hace withdraw()+deiconify()
+    para pintar la barra de título, y ese deiconify llega ~800 ms DESPUÉS del
+    lift, así que la ventana acaba detrás de la que tiene el foco.
+
+    La cura del proyecto es `GPromptWindow`, que vuelve a subirla tras cada
+    deiconify, pone el topmost 250 ms y lo suelta —prioridad temporal, no
+    permanente— y deja intactos los botones de minimizar y maximizar: su
+    `transient()` es un no-op a propósito, porque en Windows transient los
+    esconde.
+    """
+
+    def test_la_vista_previa_usa_la_ventana_del_proyecto(self):
+        from modules.gprompt_window import GPromptWindow as GW
+        fuente = inspect.getsource(VisualStudio.preview_reference)
+        assert "GPromptWindow(" in fuente, (
+            "con un CTkToplevel pelado la vista previa se abre DETRÁS")
+        assert "ctk.CTkToplevel(" not in fuente
+        assert GW is not None
+
+    def test_ya_no_se_apoya_en_un_lift_suelto(self):
+        fuente = inspect.getsource(VisualStudio.preview_reference)
+        assert "window.lift()" not in fuente, (
+            "el lift() suelto llega antes que el deiconify de CTk y no sirve")
+
+    def test_el_topmost_es_temporal(self):
+        # Una ventana clavada encima de todo es peor que una detrás: no puedes
+        # trabajar con la app mientras la miras.
+        from modules.gprompt_window import GPromptWindow as GW
+        fuente = inspect.getsource(GW._bring_to_front)
+        assert '"-topmost", True' in fuente
+        assert "after(250" in fuente and '"-topmost", False' in fuente
+
+    def test_conserva_minimizar_y_maximizar(self):
+        # transient() en Windows esconde esos botones; GPromptWindow lo
+        # neutraliza a propósito.
+        from modules.gprompt_window import GPromptWindow as GW
+        fuente = inspect.getsource(GW.transient)
+        assert '"-toolwindow", False' in fuente
+
+
+class TestLaVistaPreviaEnUnaVentanaDeVerdad:
+
+    def test_se_abre_y_es_una_gprompt_window(self, root, tmp_path):
+        from PIL import Image
+
+        from modules.gprompt_window import GPromptWindow as GW
+        from modules.visual_brief import MODES, ROLES, Reference
+
+        v = VisualStudio(root)
+        _bombear(root)
+        v.refs.append(Reference(Image.new("RGB", (40, 30), "blue"),
+                                ROLES[0], "prueba.png"))
+        v.preview_reference(0)
+        _bombear(root, 200)
+
+        previas = [w for w in v.winfo_children() if isinstance(w, GW)]
+        assert previas, "no se abrió ninguna ventana de vista previa"
+        assert previas[0].winfo_exists()
+        assert MODES  # el módulo sigue exponiendo sus identificadores
+        for w in previas:
+            w.destroy()
+        v.destroy()

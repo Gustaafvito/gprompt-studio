@@ -10,6 +10,18 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageOps
 
+# Este modulo es logica pura y no toca Tk, pero sus ValueError SI los lee el
+# usuario: visual_studio los pinta tal cual en el panel de estado. Por eso
+# importa tr().
+#
+# Lo que NO se traduce, y es deliberado: el texto que viaja al LLM
+# (VISUAL_SYSTEM y los constructores de instrucciones) es carga util escrita
+# en espanol a proposito, y traducirla cambiaria lo que hace el modelo.
+# Tampoco MODES ni ROLES, que son identificadores y se guardan DENTRO de los
+# proyectos: si cambiara su valor, un proyecto guardado dejaria de abrirse.
+# Se conserva el valor y se traduce solo al pintarlo.
+from modules.i18n import tr
+
 MODES = ("Imagen → prompt", "Animar imagen", "Inicio → final", "Varias referencias")
 ROLES = ("Personaje", "Producto", "Escenario", "Estilo", "Iluminación", "Composición")
 
@@ -36,9 +48,9 @@ def check_attachment(specs, mode, count, attach, confirmed):
         return
     supported = reference_capability(specs, mode, count)
     if supported is False:
-        raise ValueError("El catálogo indica que este flujo no admite esas imágenes. Usa solo texto o cambia de modelo.")
+        raise ValueError(tr("El catálogo indica que este flujo no admite esas imágenes. Usa solo texto o cambia de modelo."))
     if supported is None and not confirmed:
-        raise ValueError("Compatibilidad sin confirmar. Comprueba el modo de entrada en tu generador y marca la casilla, o elige Solo texto.")
+        raise ValueError(tr("Compatibilidad sin confirmar. Comprueba el modo de entrada en tu generador y marca la casilla, o elige Solo texto."))
 
 
 def parse_visual_result(text, specs, enforce_limit=True):
@@ -47,17 +59,17 @@ def parse_visual_result(text, specs, enforce_limit=True):
     try:
         data = json.loads(raw)
     except (ValueError, TypeError):
-        raise ValueError("La IA no entregó un prompt estructurado válido. Vuelve a generar; no se ha copiado la respuesta incompleta.") from None
+        raise ValueError(tr("La IA no entregó un prompt estructurado válido. Vuelve a generar; no se ha copiado la respuesta incompleta.")) from None
     if not isinstance(data, dict) or not isinstance(data.get("prompt"), str) or not data["prompt"].strip():
-        raise ValueError("La IA devolvió notas sin un prompt. Vuelve a generar.")
+        raise ValueError(tr("La IA devolvió notas sin un prompt. Vuelve a generar."))
     prompt = data["prompt"].strip()
     limit = (specs or {}).get("max_chars")
     if enforce_limit and isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
-        raise ValueError(f"El prompt supera el límite del modelo ({len(prompt)}/{limit} caracteres). No se ha truncado; vuelve a generar.")
+        raise ValueError(tr("El prompt supera el límite del modelo ({0}/{1} caracteres). No se ha truncado; vuelve a generar.").format(len(prompt), limit))
     notes = data.get("notes", "")
     negative = data.get("negative", "")
     if not isinstance(notes, str) or not isinstance(negative, str):
-        raise ValueError("Formato de notas o negativo no válido.")
+        raise ValueError(tr("Formato de notas o negativo no válido."))
     if (specs or {}).get("has_negative") is True and negative.strip():
         negative = negative.strip()
     else:
@@ -76,9 +88,9 @@ def duration_seconds(value):
     try:
         number = float(str(value).strip().replace(",", "."))
     except (ValueError, TypeError):
-        raise ValueError("Escribe una duración válida en segundos (por ejemplo, 12).") from None
+        raise ValueError(tr("Escribe una duración válida en segundos (por ejemplo, 12).")) from None
     if not 0 < number <= 600:
-        raise ValueError("La duración debe ser mayor que 0 y como máximo 600 segundos.")
+        raise ValueError(tr("La duración debe ser mayor que 0 y como máximo 600 segundos."))
     return f"{number:g}"
 
 
@@ -119,33 +131,33 @@ def load_project(path):
     """Read bounded members without extracting archive paths to disk."""
     with zipfile.ZipFile(path) as archive:
         if len(archive.infolist()) > 5 or sum(x.file_size for x in archive.infolist()) > 50_000_000:
-            raise ValueError("Proyecto demasiado grande.")
+            raise ValueError(tr("Proyecto demasiado grande."))
         if archive.getinfo("project.json").file_size > 1_000_000:
-            raise ValueError("Texto del proyecto demasiado grande.")
+            raise ValueError(tr("Texto del proyecto demasiado grande."))
         data = json.loads(archive.read("project.json"))
         if not isinstance(data, dict) or data.get("version") != 1:
-            raise ValueError("Formato de proyecto no compatible.")
+            raise ValueError(tr("Formato de proyecto no compatible."))
         fields = data["fields"]
         options = {"mode": MODES, "aspect": ("9:16", "16:9", "1:1", "4:5"),
                    "language": ("Inglés", "Español")}
         if not isinstance(fields, dict) or any(not isinstance(v, str) for v in fields.values()):
-            raise ValueError("Campos del proyecto no válidos.")
+            raise ValueError(tr("Campos del proyecto no válidos."))
         if any(fields.get(key) not in values for key, values in options.items()):
-            raise ValueError("Opciones del proyecto no válidas.")
+            raise ValueError(tr("Opciones del proyecto no válidas."))
         # Drafts may contain an unfinished duration; generation validates it.
         fields.setdefault("duration", "5")
         if fields.get("target", "Imagen") not in ("", "Imagen", "Vídeo"):
-            raise ValueError("Tipo de salida no válido.")
+            raise ValueError(tr("Tipo de salida no válido."))
         refs = []
         items = data["references"]
         if not isinstance(items, list) or len(items) > 4:
-            raise ValueError("Máximo cuatro referencias.")
+            raise ValueError(tr("Máximo cuatro referencias."))
         for i, item in enumerate(items):
             if item["file"] != f"image-{i}.png" or item["role"] not in ROLES or not isinstance(item["name"], str):
-                raise ValueError("Referencia no válida.")
+                raise ValueError(tr("Referencia no válida."))
             with Image.open(io.BytesIO(archive.read(item["file"]))) as image:
                 if image.width * image.height > 2_560_000:
-                    raise ValueError("Imagen de proyecto demasiado grande.")
+                    raise ValueError(tr("Imagen de proyecto demasiado grande."))
                 refs.append(Reference(image.convert("RGB"), item["role"], item["name"]))
         if "negative" not in fields and "\n\nNEGATIVE:\n" in fields.get("output", ""):
             fields["output"], fields["negative"] = fields["output"].split("\n\nNEGATIVE:\n", 1)
@@ -163,10 +175,10 @@ def load_image(path):
     """Decode bounded images, apply camera orientation and flatten transparency."""
     path = Path(path)
     if path.stat().st_size > 25 * 1024 * 1024:
-        raise ValueError("La imagen supera 25 MB.")
+        raise ValueError(tr("La imagen supera 25 MB."))
     with Image.open(path) as source:
         if source.width * source.height > 40_000_000:
-            raise ValueError("La imagen supera 40 megapíxeles.")
+            raise ValueError(tr("La imagen supera 40 megapíxeles."))
         image = ImageOps.exif_transpose(source).convert("RGBA")
         image.thumbnail((1600, 1600))
         background = Image.new("RGBA", image.size, "white")
@@ -175,16 +187,16 @@ def load_image(path):
 
 def validate(mode, refs):
     if mode not in MODES:
-        raise ValueError("Selecciona un modo válido.")
+        raise ValueError(tr("Selecciona un modo válido."))
     count = len(refs)
     if mode in MODES[:2] and count != 1:
-        raise ValueError("Este modo necesita exactamente una imagen.")
+        raise ValueError(tr("Este modo necesita exactamente una imagen."))
     if mode == MODES[2] and count != 2:
-        raise ValueError("Añade dos imágenes: primero inicio y después final.")
+        raise ValueError(tr("Añade dos imágenes: primero inicio y después final."))
     if mode == MODES[3] and not 2 <= count <= 4:
-        raise ValueError("Añade entre dos y cuatro referencias.")
+        raise ValueError(tr("Añade entre dos y cuatro referencias."))
     if any(ref.role not in ROLES for ref in refs):
-        raise ValueError("Función de referencia no válida.")
+        raise ValueError(tr("Función de referencia no válida."))
 
 
 def labels(mode, refs):
@@ -239,9 +251,9 @@ def generation_request(mode, refs, analysis, idea, preserve, change, duration,
     if video:
         duration = duration_seconds(duration)
     if not analysis.strip():
-        raise ValueError("Analiza las imágenes y revisa el resultado primero.")
+        raise ValueError(tr("Analiza las imágenes y revisa el resultado primero."))
     if video and not idea.strip():
-        raise ValueError("Escribe la acción o transición que quieres conseguir.")
+        raise ValueError(tr("Escribe la acción o transición que quieres conseguir."))
     task = {
         MODES[0]: "Crea un prompt de imagen basado en la referencia y la idea.",
         MODES[1]: "Crea un prompt de vídeo que anime la imagen inicial.",
@@ -301,9 +313,9 @@ def filter_models(models, query=""):
 
 def revision_request(brief, positive, negative, instruction, limit, shorten=False):
     if not positive.strip():
-        raise ValueError("Primero genera o pega un prompt positivo.")
+        raise ValueError(tr("Primero genera o pega un prompt positivo."))
     if shorten and (not isinstance(limit, (int, float)) or limit <= 0):
-        raise ValueError("El catálogo no indica un límite. Escribe el máximo de tu generador en Límite manual.")
+        raise ValueError(tr("El catálogo no indica un límite. Escribe el máximo de tu generador en Límite manual."))
     target = max(1, int(limit * .9)) if isinstance(limit, (int, float)) and limit > 0 else None
     return (brief + "\n\nREVISIÓN DEL PROMPT EXISTENTE (no crear otra escena):\n" +
             json.dumps({"positive": positive, "negative": negative, "instructions": instruction}, ensure_ascii=False) +
