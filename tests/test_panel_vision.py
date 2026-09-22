@@ -251,21 +251,61 @@ class TestLaSeleccionViajaConElProyecto:
             "el desplegable no refleja lo guardado: " + abierto.vision_menu.get())
         abierto.destroy()
 
+    @staticmethod
+    def _quitar_clave_del_archivo(ruta, clave):
+        """Reescribe el .gprompt sin esa clave en su project.json.
+
+        Hay que tocar el ARCHIVO, no el diccionario que devuelve
+        load_project(): open_project() relee el fichero, asi que quitar la
+        clave de una copia en memoria no prueba nada. La primera version de
+        este test hacia justo eso y pasaba siempre.
+
+        Asi se fabrica un .gprompt como los anteriores al 22-sep-2026, que es
+        el caso real: proyectos guardados antes de que existiera el selector.
+        """
+        import json
+        import zipfile
+        from pathlib import Path
+
+        ruta = Path(ruta)
+        with zipfile.ZipFile(ruta) as viejo:
+            contenido = {n: viejo.read(n) for n in viejo.namelist()}
+        datos = json.loads(contenido["project.json"].decode("utf-8"))
+        datos["fields"].pop(clave, None)
+        contenido["project.json"] = json.dumps(datos, ensure_ascii=False).encode("utf-8")
+        with zipfile.ZipFile(ruta, "w", zipfile.ZIP_DEFLATED) as nuevo:
+            for nombre, bytes_ in contenido.items():
+                nuevo.writestr(nombre, bytes_)
+
     def test_un_proyecto_viejo_sin_la_clave_se_queda_en_la_cadena(self, panel, tmp_path):
         """Los .gprompt anteriores no traen la clave; no deben romper nada."""
         from modules.visual_brief import load_project
+
+        # Se guarda CON proveedor elegido y despues se le quita la clave al
+        # archivo: si el panel no aplicara el valor por defecto, aqui se veria,
+        # porque lo guardado no era la cadena automatica.
+        panel.vision_provider_changed(i18n.tr("Ollama"))
         destino = tmp_path / "viejo.gprompt"
         self._guardar(panel, destino)
+        self._quitar_clave_del_archivo(destino, "vision_provider")
+
         _refs, campos = load_project(str(destino))
-        campos.pop("vision_provider", None)
-        assert campos.get("vision_provider", "") == ""
+        assert campos.get("vision_provider", "") == "", (
+            "el archivo de prueba todavia trae la clave: " + repr(campos.get("vision_provider")))
 
         antes = set(panel.app.winfo_children())
         panel.open_project(str(destino))
         _bombear(panel.app, 250)
-        abierto = [w for w in panel.app.winfo_children()
-                   if w not in antes and isinstance(w, VisualStudio)][0]
-        assert abierto.vision_provider.get() == CADENA_AUTOMATICA
+        abiertos = [w for w in panel.app.winfo_children()
+                    if w not in antes and isinstance(w, VisualStudio)]
+        assert abiertos, "un proyecto sin la clave no llego a abrirse"
+        abierto = abiertos[0]
+        assert abierto.vision_provider.get() == CADENA_AUTOMATICA, (
+            "sin la clave deberia quedarse en la cadena, y esta en "
+            + repr(abierto.vision_provider.get()))
+        assert abierto.vision_menu.get() == i18n.tr(CADENA_AUTOMATICA)
+        # Y el resto del proyecto tiene que haber llegado entero.
+        assert len(abierto.refs) == len(panel.refs)
         abierto.destroy()
 
     def test_si_el_guardado_ya_no_esta_se_dice_y_NO_se_sustituye(self, root, tmp_path):
