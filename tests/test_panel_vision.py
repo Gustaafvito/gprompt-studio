@@ -208,3 +208,130 @@ class TestLaConstanteCuadraConElMotor:
 
     def test_la_etiqueta_tiene_traduccion(self):
         assert CADENA_AUTOMATICA in i18n.TRADUCCIONES
+
+
+class TestLaSeleccionViajaConElProyecto:
+    """Elegir Ollama y que al reabrir vuelva «Cadena automática» es peor que
+    no poder elegir: pulsas «Analizar» convencido de que no vas a gastar.
+
+    Estos tests recorren guardar y reabrir de verdad, y el último cierra el
+    circulo: tras reabrir, se simula que el proveedor falla y se comprueba que
+    NINGUN otro recibe una llamada.
+    """
+
+    def _guardar(self, panel, destino):
+        from PIL import Image
+
+        from modules.visual_brief import ROLES, Reference, save_project
+        panel.refs.append(Reference(Image.new("RGB", (32, 24), "red"),
+                                    ROLES[0], "a.png"))
+        save_project(str(destino), panel.refs, panel.fields())
+
+    def test_se_guarda_en_el_proyecto(self, panel, tmp_path):
+        panel.vision_provider_changed(i18n.tr("Ollama"))
+        assert panel.fields()["vision_provider"] == "Ollama"
+
+    def test_se_restaura_al_reabrir(self, panel, tmp_path):
+        from modules.visual_brief import load_project
+        panel.vision_provider_changed(i18n.tr("Ollama"))
+        destino = tmp_path / "p.gprompt"
+        self._guardar(panel, destino)
+
+        _refs, campos = load_project(str(destino))
+        assert campos["vision_provider"] == "Ollama"
+
+        antes = set(panel.app.winfo_children())
+        panel.open_project(str(destino))
+        _bombear(panel.app, 250)
+        abierto = [w for w in panel.app.winfo_children()
+                   if w not in antes and isinstance(w, VisualStudio)][0]
+        assert abierto.vision_provider.get() == "Ollama", (
+            "al reabrir volvio a " + repr(abierto.vision_provider.get()))
+        assert abierto.vision_menu.get() == i18n.tr("Ollama"), (
+            "el desplegable no refleja lo guardado: " + abierto.vision_menu.get())
+        abierto.destroy()
+
+    def test_un_proyecto_viejo_sin_la_clave_se_queda_en_la_cadena(self, panel, tmp_path):
+        """Los .gprompt anteriores no traen la clave; no deben romper nada."""
+        from modules.visual_brief import load_project
+        destino = tmp_path / "viejo.gprompt"
+        self._guardar(panel, destino)
+        _refs, campos = load_project(str(destino))
+        campos.pop("vision_provider", None)
+        assert campos.get("vision_provider", "") == ""
+
+        antes = set(panel.app.winfo_children())
+        panel.open_project(str(destino))
+        _bombear(panel.app, 250)
+        abierto = [w for w in panel.app.winfo_children()
+                   if w not in antes and isinstance(w, VisualStudio)][0]
+        assert abierto.vision_provider.get() == CADENA_AUTOMATICA
+        abierto.destroy()
+
+    def test_si_el_guardado_ya_no_esta_se_dice_y_NO_se_sustituye(self, root, tmp_path):
+        """Lo importante es que no se cambie por la cadena en silencio.
+
+        Sustituirlo seria justo lo que el usuario pidio evitar: creeria seguir
+        con su proveedor local y estaria encadenando.
+        """
+        root.vision = _VisionFalsa(nombres=("Gemini", "Ollama"))
+        root._executor = _EjecutorSincrono()
+        origen = VisualStudio(root)
+        _bombear(root)
+        origen.vision_provider_changed(i18n.tr("Ollama"))
+        destino = tmp_path / "sin-ollama.gprompt"
+        self._guardar(origen, destino)
+
+        # Ahora Ollama ya no esta: se apago entre guardar y reabrir.
+        root.vision = _VisionFalsa(nombres=("Gemini",))
+        antes = set(root.winfo_children())
+        origen.open_project(str(destino))
+        _bombear(root, 250)
+        abierto = [w for w in root.winfo_children()
+                   if w not in antes and isinstance(w, VisualStudio)][0]
+
+        assert abierto.vision_provider.get() == "Ollama", (
+            "se sustituyo por " + repr(abierto.vision_provider.get()))
+        assert "no est" in abierto.vision_hint.cget("text"), (
+            "no avisa de que el proveedor guardado falta: "
+            + abierto.vision_hint.cget("text"))
+        abierto.destroy()
+        origen.destroy()
+
+    def test_recorrido_entero_elegir_guardar_reabrir_y_fallar(self, root, tmp_path):
+        """El recorrido completo, que es lo que de verdad hay que garantizar.
+
+        Elegir Ollama, guardar, reabrir, simular que falla, y comprobar que la
+        cadena NO llama a ningun otro proveedor. Si la seleccion no se hubiera
+        restaurado, aqui habria una llamada con proveedor=None y el fallo se
+        habria pagado con cuota de Gemini.
+        """
+        root.vision = _VisionFalsa(nombres=("Gemini", "Ollama", "OpenRouter"))
+        root._executor = _EjecutorSincrono()
+        origen = VisualStudio(root)
+        _bombear(root)
+        origen.vision_provider_changed(i18n.tr("Ollama"))
+        destino = tmp_path / "recorrido.gprompt"
+        self._guardar(origen, destino)
+
+        antes = set(root.winfo_children())
+        origen.open_project(str(destino))
+        _bombear(root, 250)
+        abierto = [w for w in root.winfo_children()
+                   if w not in antes and isinstance(w, VisualStudio)][0]
+        assert abierto.vision_provider.get() == "Ollama"
+
+        # A partir de aqui, el proveedor falla.
+        fallona = _VisionFalsa(nombres=("Gemini", "Ollama", "OpenRouter"),
+                               fallo=ConnectionError("Ollama no responde"))
+        root.vision = fallona
+        abierto.analyze()
+        _bombear(root, 300)
+
+        assert fallona.peticiones == ["Ollama"], (
+            "tras reabrir y fallar se pidio " + str(fallona.peticiones)
+            + "; cualquier otro nombre ahi es saldo gastado sin querer")
+        assert "Ollama no responde" in abierto.status.get(), (
+            "el error del proveedor no llega al usuario: " + abierto.status.get())
+        abierto.destroy()
+        origen.destroy()

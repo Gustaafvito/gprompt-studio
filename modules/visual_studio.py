@@ -421,9 +421,15 @@ class VisualStudio(ctk.CTkToplevel):
         """
         for menu, variable in ((getattr(self, "mode_menu", None), self.mode),
                                (getattr(self, "aspect_menu", None), self.aspect),
-                               (getattr(self, "language_menu", None), self.language)):
+                               (getattr(self, "language_menu", None), self.language),
+                               (getattr(self, "vision_menu", None), self.vision_provider)):
             if menu is not None:
                 menu.set(tr(variable.get()))
+        # El de vision ademas puede apuntar a algo que ya no existe —se
+        # guardo con Ollama levantado y ahora no lo esta—. NO se sustituye
+        # por la cadena en silencio: eso es exactamente lo que el usuario
+        # pidio evitar al elegir un proveedor. Se dice y se queda elegido.
+        self.refresh_vision_hint()
 
     def mode_changed(self, value):
         # value llega en el idioma de la interfaz; self.mode SIEMPRE guarda
@@ -718,6 +724,10 @@ class VisualStudio(ctk.CTkToplevel):
         other.refs = refs
         for key in ("mode", "aspect", "duration", "language"):
             getattr(other, key).set(fields[key])
+        # El proveedor de vision tambien viaja con el proyecto. Un .gprompt
+        # anterior al 22-sep-2026 no lo trae: entonces se queda la cadena,
+        # que es lo que tenia cuando se guardo.
+        other.vision_provider.set(fields.get("vision_provider") or CADENA_AUTOMATICA)
         other.target.set(fields.get("target") or "Imagen")
         other.platform.set(fields.get("platform", ""))
         other.model.set(fields.get("model", ""))
@@ -877,7 +887,7 @@ class VisualStudio(ctk.CTkToplevel):
 
     def fields(self):
         fields = {key: getattr(self, key).get() for key in
-                  ("mode", "preserve", "change", "aspect", "duration", "language", "target", "platform", "model", "reference_use", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction")}
+                  ("mode", "preserve", "change", "aspect", "duration", "language", "target", "platform", "model", "reference_use", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction", "vision_provider")}
         fields.update({key: getattr(self, key).get("1.0", "end").strip()
                        for key in ("idea", "analysis", "output", "negative", "notes")})
         fields["analysis_stale"] = "true" if self.analysis_stale else "false"
@@ -900,7 +910,11 @@ class VisualStudio(ctk.CTkToplevel):
         self.after(15000, self.autosave_tick)
 
     def recover(self):
-        window = ctk.CTkToplevel(self)
+        # GPromptWindow y no un CTkToplevel pelado: mismo motivo que la vista
+        # previa —el deiconify tardio de CustomTkinter deja la ventana detras—
+        # y aqui SI interesa su deduplicacion por titulo, porque el titulo es
+        # constante y solo debe haber una lista de versiones abierta.
+        window = GPromptWindow(self)
         window.title(tr("Versiones locales — abrir sin reemplazar el trabajo actual"))
         window.geometry("700x450")
         body = ctk.CTkScrollableFrame(window)
@@ -913,7 +927,6 @@ class VisualStudio(ctk.CTkToplevel):
         for path in versions[:100]:
             ctk.CTkButton(body, text=version_label(path),
                           command=lambda p=path: self.open_project(p)).pack(fill="x", pady=3)
-        window.lift()
 
     def copy_negative(self):
         text = self.negative.get("1.0", "end").strip()

@@ -110,7 +110,11 @@ def save_project(path, refs, fields):
     os.close(descriptor)
     allowed = {key: str(fields.get(key, "")) for key in
                ("mode", "idea", "preserve", "change", "analysis", "output", "aspect", "duration", "language",
-                "target", "platform", "model", "reference_use", "notes", "negative", "analysis_stale", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction")}
+                "target", "platform", "model", "reference_use", "notes", "negative", "analysis_stale", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction",
+                # Desde el 22-sep-2026: el proveedor de vision elegido.
+                # Un .gprompt anterior no lo trae y load_project devuelve ""
+                # para esta clave, que el panel interpreta como "la cadena".
+                "vision_provider")}
     try:
         with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
             metadata = []
