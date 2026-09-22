@@ -113,8 +113,9 @@ LLM_PROVIDERS = {
             "accounts/fireworks/models/gpt-oss-120b",             # (3,6s)
             # visión + 1M de contexto ($0,15/$0,50)               (15,7s)
             "accounts/fireworks/models/glm-5p3-flash",
-            # visión ($0,22/$0,66)                                (5,1s)
-            "accounts/fireworks/models/deepseek-v4-flash-vision-exp",
+            # visión ($0,22/$0,66) — sustituye a v4-flash-vision-exp, retirado
+            # el 25-sep-2026 (tiempo sin remedir tras el cambio de ID)
+            "accounts/fireworks/models/deepseek-v4p1-flash",
             # tope de gama ($1,40/$4,40)                          (11,8s)
             "accounts/fireworks/models/glm-5p3",
         ],
@@ -1927,6 +1928,10 @@ class APIClients:
         # Sin esto, a quien tuviera Flash elegido se le queda un ID muerto
         # guardado en active_models.json y la app falla al generar.
         "deepseek-v4-flash": "deepseek-flash",      # renombrado 11-sep-2026
+        # Fireworks retira deepseek-v4-flash-vision-exp el 25-sep-2026;
+        # V4.1 Flash ya estaba publicado el 22-sep con la misma tarifa.
+        "accounts/fireworks/models/deepseek-v4-flash-vision-exp":
+            "accounts/fireworks/models/deepseek-v4p1-flash",
     }
 
     def _cargar_modelos_activos(self) -> dict:
