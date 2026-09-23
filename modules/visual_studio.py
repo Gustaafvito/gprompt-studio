@@ -28,6 +28,7 @@ from modules.visual_brief import (
     parse_visual_result,
     revision_request,
     save_project,
+    shortfilm_context,
     validate,
     video_direction,
 )
@@ -245,6 +246,8 @@ class VisualStudio(ctk.CTkToplevel):
         ctk.CTkButton(actions, text=tr("Copiar positivo"), command=self.copy_positive).pack(side="left", padx=5)
         ctk.CTkButton(actions, text=tr("Copiar negativo"), command=self.copy_negative).pack(side="left", padx=5)
         ctk.CTkButton(body, text=tr("Comprobar prompt"), command=self.check_prompt).pack(anchor="w", pady=5)
+        ctk.CTkButton(body, text=tr("Crear cortometraje con estas referencias"),
+                      command=self.shortfilm).pack(anchor="w", pady=5)
         project_bar = ctk.CTkFrame(body)
         project_bar.pack(fill="x", pady=5)
         ctk.CTkButton(project_bar, text=tr("Nuevo proyecto"), command=lambda: VisualStudio(self.app)).pack(side="left", padx=5)
@@ -990,6 +993,31 @@ class VisualStudio(ctk.CTkToplevel):
         if text:
             self.app.dialogs.actualizar_salida(text)
             self.status.set(tr("Resultado enviado a la salida principal. Tu idea no se ha modificado."))
+
+    def shortfilm(self):
+        """Lleva las referencias, sus funciones y el análisis revisado al
+        Cortometraje, sin volver a describir las imágenes a mano.
+
+        La premisa es la IDEA de este panel, no la caja de la ventana
+        principal: quien está aquí ha escrito su idea aquí. Tampoco hace falta
+        cambiar el modo a VÍDEO antes: esa entrada lo resuelve sola.
+        """
+        idea = self.idea.get("1.0", "end").strip()
+        if len(idea) < 10:
+            self.status.set(tr("Escribe la premisa del cortometraje en «Tu idea» (1-2 frases)."))
+            return
+        try:
+            contexto = shortfilm_context(self.refs, self.analysis.get("1.0", "end"),
+                                         self.preserve.get(), self.change.get())
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        multi = getattr(self.app, "multi", None)
+        if multi is None:
+            self.status.set(tr("El Cortometraje no está disponible desde esta ventana."))
+            return
+        multi.cmd_cortometraje(premisa=idea, contexto=contexto)
+        self.status.set(tr("Cortometraje: van tus referencias, sus funciones y el análisis revisado."))
 
 
 def open_visual_studio(app):

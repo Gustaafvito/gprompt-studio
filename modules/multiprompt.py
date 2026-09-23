@@ -585,15 +585,24 @@ class MultiPromptService:
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     # ── Cortometraje (guion multi-escena para vídeo reference-to-video) ──
-    def _cmd_cortometraje(self):
+    def _cmd_cortometraje(self, premisa=None, contexto=None):
         """Genera un GUION de cortometraje de N escenas (flujo SeaArt
         reference-to-video): bloque de personajes con prompts de imagen +
         N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
+
+        Con `premisa` llega desde «Crear desde imágenes»: la idea y el contexto
+        de personajes vienen del panel, ya con las funciones de las referencias
+        y el análisis revisado. Ese camino NO pasa por el candado de modo: un
+        guion de cortometraje es vídeo por definición, y obligar a cerrar el
+        panel para cambiar el desplegable del modo era el tropiezo que había
+        que evitar. Sin `premisa` todo se comporta igual que siempre.
         """
-        if self.app.modo_var.get() != "video":
+        desde_panel = premisa is not None
+        if not desde_panel and self.app.modo_var.get() != "video":
             return self.app.dialogs.set_estado(
                 tr("⚠️ El Cortometraje solo está disponible en modo VÍDEO."), P.TXT_AVISO)
-        idea = self.app.txt_idea.get("1.0", "end").strip()
+        idea = (premisa if desde_panel
+                else self.app.txt_idea.get("1.0", "end")).strip()
         if not idea or len(idea) < 10:
             return self.app.dialogs.set_estado(
                 tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), P.TXT_AVISO)
@@ -607,10 +616,15 @@ class MultiPromptService:
             return
 
         pers_ctx = ""
-        try:
-            pers_ctx = self.app.footer.personaje_activo() or ""
-        except Exception as _e:
-            logger.debug(f"[silent personaje] {_e}")
+        if desde_panel:
+            # Las referencias del panel YA definen el reparto. Mezclarlas con el
+            # personaje activo del pie daria dos repartos distintos al guionista.
+            pers_ctx = contexto or ""
+        else:
+            try:
+                pers_ctx = self.app.footer.personaje_activo() or ""
+            except Exception as _e:
+                logger.debug(f"[silent personaje] {_e}")
 
         peticion = construir_peticion_cortometraje(idea, pers_ctx, n, get_idioma())
 

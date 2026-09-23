@@ -3039,6 +3039,15 @@ TRADUCCIONES = {
     'Respondió: {0}': 'Answered: {0}',
     'El proveedor de visión «{0}» no está disponible. Elige otro o usa la cadena automática.': 'Vision provider “{0}” is not available. Pick another one or use the automatic chain.',
     '{0} devolvió un análisis vacío.': '{0} returned an empty analysis.',
+
+    # Puente entre «Crear desde imágenes» y el Cortometraje: el panel pasa
+    # las referencias con sus funciones y el análisis ya revisado, para no
+    # tener que volver a describir las imágenes a mano.
+    'Añade al menos una referencia antes de crear el cortometraje.': 'Add at least one reference before creating the short film.',
+    'Crear cortometraje con estas referencias': 'Create short film from these references',
+    'Escribe la premisa del cortometraje en «Tu idea» (1-2 frases).': 'Write the short film premise in “Your idea” (1-2 sentences).',
+    'El Cortometraje no está disponible desde esta ventana.': 'Short film is not available from this window.',
+    'Cortometraje: van tus referencias, sus funciones y el análisis revisado.': 'Short film: your references, their roles and the revised analysis are included.',
 }
 
 
