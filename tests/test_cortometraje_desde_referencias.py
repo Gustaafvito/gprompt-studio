@@ -394,3 +394,157 @@ class TestElBotonDelPanel:
         panel.analysis_stale = False
         panel.shortfilm()
         panel.app.multi.cmd_cortometraje.assert_called_once()
+
+
+# ───────────────── idioma, formato y cancelación ─────────────────
+
+
+class TestElMapaDeRefs:
+    """Las letras cuentan todas las imágenes; los @ref solo los personajes."""
+
+    def test_un_personaje_detras_de_un_escenario_es_ref1(self):
+        from modules.visual_brief import shortfilm_ref_map
+        refs = [_ref("Escenario", "estacion.png"), _ref("Personaje", "chica.png")]
+        assert shortfilm_ref_map(refs) == [("@ref1", "chica.png")]
+
+    def test_solo_los_personajes_entran(self):
+        from modules.visual_brief import shortfilm_ref_map
+        refs = [_ref("Personaje", "a.png"), _ref("Estilo", "c.png"),
+                _ref("Personaje", "b.png")]
+        assert shortfilm_ref_map(refs) == [("@ref1", "a.png"), ("@ref2", "b.png")]
+
+    def test_sin_personajes_no_hay_mapa(self):
+        from modules.visual_brief import shortfilm_ref_map
+        assert shortfilm_ref_map([_ref("Escenario"), _ref("Estilo")]) == []
+
+
+class TestElFormatoLlegaAlGuion:
+
+    def test_apaisado_cambia_la_formula_entera(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es", "16:9")
+        assert "drama apaisado" in p, "sigue pidiendo un corto vertical"
+        assert "FORMATO: 16:9 (apaisado)" in p
+        assert "Encuadra todos los planos para 16:9" in p
+
+    def test_vertical_sigue_siendo_vertical(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es", "9:16")
+        assert "drama vertical" in p
+        assert "FORMATO: 9:16 (vertical)" in p
+
+    def test_cuadrado_tiene_su_palabra(self):
+        assert "drama cuadrado" in construir_peticion_cortometraje(
+            "premisa", "ctx", 4, "es", "1:1")
+
+    def test_sin_formato_la_peticion_es_la_de_siempre(self):
+        """La entrada clásica no puede cambiar por un parámetro que no usa."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es")
+        assert "drama vertical estilo Netflix/redes" in p
+        assert "FORMATO:" not in p
+        assert "Encuadra todos los planos" not in p
+
+
+class TestElPanelMandaSusOpciones:
+    """Lo que pidió ChatGPT: comprobar la petición FINAL que recibe el
+    proveedor simulado, no solo los argumentos de la llamada intermedia."""
+
+    def _puente_real(self, panel, modo="imagen"):
+        from modules.components import MultiPromptComponent
+        visto = {}
+
+        def _generar(peticion, **_k):
+            visto["peticion"] = peticion
+            return "=== PERSONAJES ==="
+
+        host = SimpleNamespace(
+            modo_var=_var(modo),
+            txt_idea=_txt("caja principal sin usar"),
+            deepseek=SimpleNamespace(generar=_generar),
+            footer=SimpleNamespace(personaje_activo=MagicMock(return_value="")),
+            dialogs=SimpleNamespace(set_estado=MagicMock(), toggle_botones=MagicMock(),
+                                    _sonar_completado=MagicMock()),
+            after=lambda _ms, fn=None, *a: fn() if callable(fn) else None,
+            _pedir_n_modal=lambda *a, **k: 4,
+            _sesion_log=MagicMock(),
+            _executor=_SyncExec(),
+        )
+        componente = MultiPromptComponent(host)
+        componente._service._mostrar_guion_cortometraje = MagicMock()
+        panel.app.multi = componente
+        return visto
+
+    def test_interfaz_espanola_con_prompt_ingles_y_16_9(self, panel):
+        """El caso que estaba roto: la interfaz en español imponía el idioma
+        del guion aunque el panel pidiera inglés."""
+        previo = i18n.get_idioma()
+        try:
+            i18n.set_idioma("es")
+            visto = self._puente_real(panel)
+            _preparar(panel)
+            panel.language.set("Inglés")
+            panel.aspect.set("16:9")
+            panel.shortfilm()
+            peticion = visto["peticion"]
+            assert "INGLÉS" in peticion, "el guion se pidió en el idioma de la interfaz"
+            assert "FORMATO: 16:9 (apaisado)" in peticion
+            assert "drama apaisado" in peticion
+        finally:
+            i18n.set_idioma(previo)
+
+    def test_prompt_espanol_con_interfaz_inglesa(self, panel):
+        previo = i18n.get_idioma()
+        try:
+            i18n.set_idioma("en")
+            visto = self._puente_real(panel)
+            _preparar(panel)
+            panel.language.set("Español")
+            panel.aspect.set("9:16")
+            panel.shortfilm()
+            assert "ESPAÑOL" in visto["peticion"]
+        finally:
+            i18n.set_idioma(previo)
+
+    def test_el_contexto_completo_llega_al_proveedor(self, panel):
+        visto = self._puente_real(panel)
+        _preparar(panel)
+        panel.preserve.insert(0, "el rostro de A")
+        panel.shortfilm()
+        peticion = visto["peticion"]
+        assert ANALISIS in peticion
+        assert "@ref1" in peticion
+        assert "CONSERVAR: el rostro de A" in peticion
+        assert "SOLO estetica" in peticion
+
+    def test_el_estado_dice_que_imagen_subir(self, panel):
+        self._puente_real(panel)
+        _preparar(panel)
+        panel.shortfilm()
+        assert "@ref1 = chica.png" in panel.status.get(), panel.status.get()
+
+
+class TestCancelarNoMiente:
+
+    def test_cancelar_el_numero_de_escenas_no_dice_que_va(self, panel):
+        """Antes se anunciaba «van tus referencias» aunque no se generara nada."""
+        panel.app.multi = SimpleNamespace(cmd_cortometraje=MagicMock(return_value=None))
+        _preparar(panel)
+        panel.shortfilm()
+        assert "cancel" in panel.status.get().lower(), panel.status.get()
+
+    def test_el_servicio_avisa_de_que_arranco(self):
+        h = _host(modo="imagen")
+        arrancado = h._cmd_cortometraje(premisa="La mujer de A espera en la estacion.",
+                                        contexto="ctx")
+        assert arrancado is True
+
+    def test_el_servicio_no_lo_dice_si_cancelan(self):
+        h = _host(modo="imagen")
+        h.app._pedir_n_modal = lambda *a, **k: None
+        assert not h._cmd_cortometraje(premisa="La mujer de A espera en la estacion.",
+                                       contexto="ctx")
+
+    def test_la_fachada_reenvia_las_cuatro_opciones(self):
+        from modules.components import MultiPromptComponent
+        componente = MultiPromptComponent(SimpleNamespace())
+        componente._service = SimpleNamespace(_cmd_cortometraje=MagicMock())
+        componente.cmd_cortometraje(premisa="p", contexto="c", idioma="en", aspecto="16:9")
+        componente._service._cmd_cortometraje.assert_called_once_with("p", "c", "en", "16:9")

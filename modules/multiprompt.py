@@ -39,25 +39,34 @@ from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
 
+# El formato decide como se encuadra: un corto 16:9 no se rueda como uno 9:16.
+ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
+                     "1:1": "cuadrado", "16:9": "apaisado"}
+
 
 def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
-                                    n: int, idioma: str = "es") -> str:
+                                    n: int, idioma: str = "es",
+                                    aspecto: str = None) -> str:
     """Petición al LLM para un guion de cortometraje de N escenas en el formato
     del flujo SeaArt reference-to-video: bloque PERSONAJES (con prompt de imagen
     + etiqueta @ref) + N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
     Función pura (sin estado) para testearla aislada."""
     idioma_txt = "INGLÉS" if (idioma or "es").startswith("en") else "ESPAÑOL"
+    # Sin aspecto se mantiene la formula de siempre, palabra por palabra: la
+    # entrada clasica no cambia de comportamiento por este parametro nuevo.
+    orientacion = ORIENTACION_CORTO.get(aspecto or "", "vertical")
+    formato_txt = f"\nFORMATO: {aspecto} ({orientacion})" if aspecto else ""
     pers = (contexto_personajes or "").strip() or \
         "Inventa 1-2 protagonistas coherentes a partir de la premisa."
     return (
-        "Eres un director de cortometrajes virales de IA (drama vertical estilo "
+        "Eres un director de cortometrajes virales de IA (drama " + orientacion + " estilo "
         "Netflix/redes). A partir de la PREMISA escribe un guion para generar el "
         "corto ESCENA POR ESCENA con un modelo de vídeo por REFERENCIA (Vidu/Kling): "
         "se suben imágenes de los personajes y se etiqueta cada uno con @ref para "
         "mantener la coherencia del rostro.\n\n"
         f"PREMISA: {logline}\n"
         f"PERSONAJES: {pers}\n"
-        f"NÚMERO DE ESCENAS: {n}\n\n"
+        f"NÚMERO DE ESCENAS: {n}{formato_txt}\n\n"
         f"Devuelve TODO en {idioma_txt}, con EXACTAMENTE este formato (sin texto extra):\n\n"
         "=== PERSONAJES ===\n"
         "[Nombre1] @ref1: <prompt de IMAGEN para diseñar al personaje — edad, etnia, "
@@ -80,6 +89,7 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
         "- Cada escena es un clip independiente de 5-12s.\n"
         "- Diálogos cortos y con punch; describe SIEMPRE la acción visual.\n"
         "- Mantén una paleta y atmósfera coherentes entre escenas."
+        + (f"\n- Encuadra todos los planos para {aspecto} ({orientacion})." if aspecto else "")
     )
 
 logger = logging.getLogger(__name__)
@@ -585,10 +595,14 @@ class MultiPromptService:
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     # ── Cortometraje (guion multi-escena para vídeo reference-to-video) ──
-    def _cmd_cortometraje(self, premisa=None, contexto=None):
+    def _cmd_cortometraje(self, premisa=None, contexto=None, idioma=None,
+                          aspecto=None):
         """Genera un GUION de cortometraje de N escenas (flujo SeaArt
         reference-to-video): bloque de personajes con prompts de imagen +
         N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
+
+        Devuelve True solo si el guion ha llegado a pedirse, para que quien
+        llama pueda distinguir «en marcha» de «el usuario canceló».
 
         Con `premisa` llega desde «Crear desde imágenes»: la idea y el contexto
         de personajes vienen del panel, ya con las funciones de las referencias
@@ -626,7 +640,11 @@ class MultiPromptService:
             except Exception as _e:
                 logger.debug(f"[silent personaje] {_e}")
 
-        peticion = construir_peticion_cortometraje(idea, pers_ctx, n, get_idioma())
+        # El idioma y el formato los manda el panel cuando viene de ahi: son
+        # opciones que el usuario ya eligio y que antes se ignoraban. Sin ellos
+        # se usa el idioma de la interfaz, como siempre.
+        peticion = construir_peticion_cortometraje(
+            idea, pers_ctx, n, idioma or get_idioma(), aspecto)
 
         try: self.app._sesion_log(f"🎬 Cortometraje: guion de {n} escenas")
         except Exception as e:
@@ -654,6 +672,7 @@ class MultiPromptService:
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+        return True
 
     def _mostrar_guion_cortometraje(self, texto: str, n: int):
         """Ventana con el guion del cortometraje + copiar/exportar."""

@@ -29,6 +29,7 @@ from modules.visual_brief import (
     revision_request,
     save_project,
     shortfilm_context,
+    shortfilm_ref_map,
     validate,
     video_direction,
 )
@@ -1022,8 +1023,21 @@ class VisualStudio(ctk.CTkToplevel):
         if multi is None:
             self.status.set(tr("El Cortometraje no está disponible desde esta ventana."))
             return
-        multi.cmd_cortometraje(premisa=idea, contexto=contexto)
-        self.status.set(tr("Cortometraje: van tus referencias, sus funciones y el análisis revisado."))
+        # «Inglés»/«Español» son los valores guardados del panel; el
+        # constructor espera el codigo corto.
+        idioma = "en" if self.language.get() == "Inglés" else "es"
+        if not multi.cmd_cortometraje(premisa=idea, contexto=contexto,
+                                      idioma=idioma, aspecto=self.aspect.get()):
+            # Cancelar la pregunta del numero de escenas no genera nada: decir
+            # «van tus referencias» ahi seria mentir.
+            self.status.set(tr("Cortometraje cancelado. No se ha generado nada."))
+            return
+        mapa = shortfilm_ref_map(self.refs)
+        if mapa:
+            self.status.set(tr("Cortometraje en marcha. Sube al generador: {0}").format(
+                " · ".join(f"{etiqueta} = {nombre}" for etiqueta, nombre in mapa)))
+        else:
+            self.status.set(tr("Cortometraje en marcha. Sin referencias de personaje: el guion los inventará."))
 
 
 def open_visual_studio(app):

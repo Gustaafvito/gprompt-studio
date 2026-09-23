@@ -391,6 +391,22 @@ def shortfilm_context(refs, analysis, preserve="", change=""):
     )
 
 
+def shortfilm_ref_map(refs):
+    """Que archivo corresponde a cada @ref, para saber cual subir al generador.
+
+    Las letras A/B/C numeran TODAS las referencias, pero @ref1, @ref2 solo
+    cuentan los personajes: si A es escenario y B es personaje, B lleva @ref1.
+    Esa diferencia es invisible mirando el guion, y subir la imagen equivocada
+    arruina la coherencia de cara en todas las escenas.
+    """
+    mapa, n = [], 0
+    for ref in refs:
+        if ref.role == "Personaje":
+            n += 1
+            mapa.append((f"@ref{n}", ref.name))
+    return mapa
+
+
 def filter_models(models, query=""):
     """Sorted catalog names, with all search words matched case-insensitively."""
     words = query.casefold().split()
