@@ -331,17 +331,26 @@ def generation_request(mode, refs, analysis, idea, preserve, change, duration,
 # siendo reconocible, y de una referencia de estilo solo puede viajar el
 # acabado. Sin esto el guionista recibe el analisis como un bloque plano y
 # vuelve a inventar unos protagonistas que el usuario ya tiene preparados.
+# El destino admite hasta 7 imagenes de referencia —personajes, objetos,
+# escenas y efectos— y todas se etiquetan con @. Por eso la etiqueta va por
+# POSICION y cubre las seis funciones: la referencia A es @ref1, la B @ref2 y
+# asi. Que la letra y el numero coincidan evita el desfase que habria si solo
+# se numeraran los personajes (con A escenario y B personaje, B seria @ref1).
 SHORTFILM_ROLES = {
-    "Personaje": ("protagonista. Disenale una ficha en === PERSONAJES === y etiquetalo "
-                  "como Nombre@ref{n} en TODAS las escenas donde aparezca"),
-    "Producto": ("objeto de la historia. NO es un personaje y no lleva @ref; "
-                 "describelo separado de soportes, superficies y atrezo"),
-    "Escenario": ("localizacion del corto. Manten sus rasgos reconocibles entre escenas; "
-                  "no la conviertas en otro sitio a mitad del guion"),
-    "Estilo": ("SOLO estetica: paleta, acabado, textura y atmosfera. No traslades su "
-               "personaje, su ropa, sus accesorios ni sus objetos a ninguna escena"),
-    "Iluminación": "SOLO iluminacion: direccion, temperatura y contraste",
-    "Composición": "SOLO encuadre: tipo de plano, angulo y colocacion del sujeto",
+    "Personaje": ("protagonista. Disenale una ficha en el bloque de personajes y "
+                  "etiquetalo como Nombre@ref{n} en TODAS las escenas donde aparezca"),
+    "Producto": ("objeto de la historia, no un personaje. Etiquetalo @ref{n} donde "
+                 "aparezca y describelo separado de soportes, superficies y atrezo"),
+    "Escenario": ("localizacion del corto, etiquetada @ref{n}. Manten sus rasgos "
+                  "reconocibles entre escenas; no la conviertas en otro sitio a "
+                  "mitad del guion"),
+    "Estilo": ("referencia de acabado, etiquetada @ref{n}. De ella viaja SOLO la "
+               "estetica: paleta, textura y atmosfera. No traslades su personaje, "
+               "su ropa, sus accesorios ni sus objetos a ninguna escena"),
+    "Iluminación": ("referencia de luz, etiquetada @ref{n}. SOLO direccion, "
+                    "temperatura y contraste"),
+    "Composición": ("referencia de encuadre, etiquetada @ref{n}. SOLO tipo de plano, "
+                    "angulo y colocacion del sujeto"),
 }
 
 
@@ -364,13 +373,11 @@ def shortfilm_context(refs, analysis, preserve="", change=""):
     if not (analysis or "").strip():
         raise ValueError(tr("Analiza las imágenes y revisa el resultado primero."))
 
-    lineas, personajes = [], 0
+    lineas = []
+    personajes = sum(1 for ref in refs if ref.role == "Personaje")
     for i, ref in enumerate(refs):
-        papel = SHORTFILM_ROLES[ref.role]
-        if ref.role == "Personaje":
-            personajes += 1
-            papel = papel.format(n=personajes)
-        lineas.append(f"{chr(65 + i)} · {ref.role} — {ref.name}: {papel}")
+        papel = SHORTFILM_ROLES[ref.role].format(n=i + 1)
+        lineas.append(f"{chr(65 + i)} · @ref{i + 1} · {ref.role} — {ref.name}: {papel}")
 
     if personajes:
         reparto = (f"Hay {personajes} personaje(s) con referencia real. Usa esos y NO "
@@ -394,17 +401,11 @@ def shortfilm_context(refs, analysis, preserve="", change=""):
 def shortfilm_ref_map(refs):
     """Que archivo corresponde a cada @ref, para saber cual subir al generador.
 
-    Las letras A/B/C numeran TODAS las referencias, pero @ref1, @ref2 solo
-    cuentan los personajes: si A es escenario y B es personaje, B lleva @ref1.
-    Esa diferencia es invisible mirando el guion, y subir la imagen equivocada
-    arruina la coherencia de cara en todas las escenas.
+    Una entrada por referencia y en su orden, porque el destino acepta
+    personajes, objetos, escenas y efectos como imagenes etiquetadas. La letra
+    y el numero coinciden a proposito: A es @ref1.
     """
-    mapa, n = [], 0
-    for ref in refs:
-        if ref.role == "Personaje":
-            n += 1
-            mapa.append((f"@ref{n}", ref.name))
-    return mapa
+    return [(f"@ref{i + 1}", ref.name) for i, ref in enumerate(refs)]
 
 
 def filter_models(models, query=""):

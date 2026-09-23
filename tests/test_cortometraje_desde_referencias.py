@@ -51,16 +51,17 @@ class TestElContextoLlevaLasFunciones:
         assert "@ref1" in t and "@ref2" in t, t
         assert "Hay 2 personaje(s)" in t
 
-    def test_el_escenario_no_lleva_ref(self):
-        """Etiquetar un escenario con @ref lo convertiria en un personaje."""
-        t = shortfilm_context([_ref("Escenario")], ANALISIS)
-        assert "@ref" not in t
+    def test_el_escenario_tambien_lleva_ref(self):
+        """El destino acepta escenas como imagen de referencia etiquetada
+        —«hasta 7 imagenes (personajes, objetos, escenas, efectos)» dice su
+        ficha—, asi que el escenario tiene su @ref como cualquier otra."""
+        assert "@ref1" in shortfilm_context([_ref("Escenario")], ANALISIS)
 
     def test_de_estilo_solo_viaja_la_estetica(self):
         """Es la fuga que costo dos pruebas manuales localizar: el personaje de
         la referencia de estilo colandose en la escena."""
         t = shortfilm_context([_ref("Estilo", "cyber.png")], ANALISIS)
-        assert "SOLO estetica" in t
+        assert "SOLO la estetica" in t
         for prohibido in ("su ropa", "sus accesorios", "sus objetos"):
             assert prohibido in t, "el aviso no cubre " + prohibido
 
@@ -80,9 +81,11 @@ class TestElContextoLlevaLasFunciones:
         assert "CONSERVAR:" not in t and "CAMBIAR:" not in t
 
     def test_sin_personajes_pide_inventarlos(self):
+        """Sin personaje real hay que inventarlo, pero el escenario y el estilo
+        siguen teniendo su etiqueta: son imagenes que el usuario si tiene."""
         t = shortfilm_context([_ref("Escenario"), _ref("Estilo")], ANALISIS)
         assert "inventa" in t.lower()
-        assert "@ref" not in t
+        assert "@ref1" in t and "@ref2" in t
 
     def test_sin_referencias_avisa(self):
         with pytest.raises(ValueError):
@@ -402,20 +405,29 @@ class TestElBotonDelPanel:
 class TestElMapaDeRefs:
     """Las letras cuentan todas las imágenes; los @ref solo los personajes."""
 
-    def test_un_personaje_detras_de_un_escenario_es_ref1(self):
+    def test_la_letra_y_el_numero_coinciden(self):
+        """Numerar solo los personajes creaba un desfase invisible: con A
+        escenario y B personaje, B era @ref1 mientras la letra decia B."""
         from modules.visual_brief import shortfilm_ref_map
         refs = [_ref("Escenario", "estacion.png"), _ref("Personaje", "chica.png")]
-        assert shortfilm_ref_map(refs) == [("@ref1", "chica.png")]
+        assert shortfilm_ref_map(refs) == [("@ref1", "estacion.png"),
+                                           ("@ref2", "chica.png")]
 
-    def test_solo_los_personajes_entran(self):
+    def test_entran_todas_y_en_orden(self):
         from modules.visual_brief import shortfilm_ref_map
         refs = [_ref("Personaje", "a.png"), _ref("Estilo", "c.png"),
                 _ref("Personaje", "b.png")]
-        assert shortfilm_ref_map(refs) == [("@ref1", "a.png"), ("@ref2", "b.png")]
+        assert shortfilm_ref_map(refs) == [("@ref1", "a.png"), ("@ref2", "c.png"),
+                                           ("@ref3", "b.png")]
 
-    def test_sin_personajes_no_hay_mapa(self):
+    def test_sin_referencias_no_hay_mapa(self):
         from modules.visual_brief import shortfilm_ref_map
-        assert shortfilm_ref_map([_ref("Escenario"), _ref("Estilo")]) == []
+        assert shortfilm_ref_map([]) == []
+
+    def test_sin_personajes_sigue_habiendo_imagenes_que_subir(self):
+        from modules.visual_brief import shortfilm_ref_map
+        mapa = shortfilm_ref_map([_ref("Escenario", "e.png"), _ref("Estilo", "s.png")])
+        assert mapa == [("@ref1", "e.png"), ("@ref2", "s.png")]
 
 
 class TestElFormatoLlegaAlGuion:
@@ -512,13 +524,27 @@ class TestElPanelMandaSusOpciones:
         assert ANALISIS in peticion
         assert "@ref1" in peticion
         assert "CONSERVAR: el rostro de A" in peticion
-        assert "SOLO estetica" in peticion
+        assert "SOLO la estetica" in peticion
+        # Las tres imagenes con su etiqueta, no solo el personaje.
+        for etiqueta in ("@ref1", "@ref2", "@ref3"):
+            assert etiqueta in peticion, "falta " + etiqueta
 
     def test_el_estado_dice_que_imagen_subir(self, panel):
         self._puente_real(panel)
         _preparar(panel)
         panel.shortfilm()
         assert "@ref1 = chica.png" in panel.status.get(), panel.status.get()
+
+    def test_el_estado_lista_las_tres_imagenes(self, panel):
+        """La barra decia «@ref1 = chica.png» y el guion usaba @ref2 y @ref3:
+        seguirla al pie de la letra dejaba dos imagenes sin subir."""
+        TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.shortfilm()
+        estado = panel.status.get()
+        for esperado in ("@ref1 = chica.png", "@ref2 = estacion.png",
+                         "@ref3 = cyber.png"):
+            assert esperado in estado, "falta " + esperado + " en: " + estado
 
 
 class TestCancelarNoMiente:
