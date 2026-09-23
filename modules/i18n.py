@@ -3052,6 +3052,10 @@ TRADUCCIONES = {
     'Cortometraje cancelado. No se ha generado nada.': 'Short film cancelled. Nothing was generated.',
     'Cortometraje en marcha. Sube al generador: {0}': 'Short film running. Upload to the generator: {0}',
     'Cortometraje en marcha. Sin referencias de personaje: el guion los inventará.': 'Short film running. No character references: the script will invent them.',
+    'Segundos por escena': 'Seconds per scene',
+    'Duración total: {0} × {1} s = {2} s': 'Total length: {0} × {1} s = {2} s',
+    '🎬 Cortometraje — escenas y duración': '🎬 Short film — scenes and length',
+    '¿Cuántas escenas y cuánto dura cada una?\nCada escena es un clip de vídeo independiente.': 'How many scenes, and how long is each one?\nEach scene is a separate video clip.',
 }
 
 

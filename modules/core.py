@@ -28,6 +28,10 @@ import pyperclip
 from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger("gprompt")
+
+# Segundos por escena del Cortometraje. Por debajo de 3s no cabe una accion y
+# por encima de 15s el clip se descontrola en los modelos por referencia.
+SEG_MIN_CORTO, SEG_MAX_CORTO, SEG_DEFAULT_CORTO = 3, 15, 8
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -912,15 +916,21 @@ class CoreMixin:
         self._executor.submit(self.workers.worker_prompt_quick, idea).add_done_callback(log_future_exc)
 
     def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
-                        key_pref=None):
+                        key_pref=None, segundos=None, segundos_key=None):
         """Modal pequeño con slider para elegir N. Devuelve int o None
         si el usuario cancela.
 
         - `key_pref`: si se pasa, recuerda la última N usada en
           `preferencias[key_pref]`.
+        - `segundos`: si se pasa (los segundos por defecto), el modal añade un
+          segundo slider «Segundos por escena» con la duración total calculada,
+          y devuelve la tupla `(n, segundos)` en vez de `n`. Así el
+          Cortometraje se prepara entero desde aquí, sin salir a cambiar el
+          destino del panel. Cancelar sigue devolviendo None en los dos casos.
         - El método bloquea con `wait_window()` para devolver el valor
           sincrónicamente, permitiendo usar `if n is None: return`.
         """
+        pide_segundos = segundos is not None
         # Cargar última N de preferencias si key_pref existe
         if key_pref:
             try:
@@ -929,10 +939,20 @@ class CoreMixin:
             except Exception as _e:
                 logger.debug(f"[silent _pedir_n cargar] {_e}")
         default = max(n_min, min(n_max, default))
+        if pide_segundos and segundos_key:
+            try:
+                prefs = self.store.cargar_preferencias()
+                segundos = int(prefs.get(segundos_key, segundos))
+            except Exception as _e:
+                logger.debug(f"[silent _pedir_n cargar seg] {_e}")
+        try:
+            segundos = max(SEG_MIN_CORTO, min(SEG_MAX_CORTO, int(float(segundos))))
+        except (TypeError, ValueError):
+            segundos = SEG_DEFAULT_CORTO
 
         sel = GPromptWindow(self)
         sel.title(titulo)
-        sel.geometry("440x240")
+        sel.geometry("440x380" if pide_segundos else "440x240")
         sel.transient(self)
         sel.grab_set()
 
@@ -964,10 +984,49 @@ class CoreMixin:
                      font=ctk.CTkFont(size=P.FUENTE_HINT),
                      text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 8))
 
+        seg_var = ctk.IntVar(value=segundos)
+        if pide_segundos:
+            lbl_total = ctk.CTkLabel(sel, text="", text_color=P.TXT_MUTED,
+                                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA))
+
+            def _refrescar_total():
+                lbl_total.configure(text=tr('Duración total: {0} × {1} s = {2} s').format(
+                    n_var.get(), seg_var.get(), n_var.get() * seg_var.get()))
+
+            ctk.CTkLabel(sel, text=tr('Segundos por escena'),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION)).pack(pady=(4, 0))
+            lbl_seg = ctk.CTkLabel(sel, text=str(segundos),
+                                   font=ctk.CTkFont(size=18, weight="bold"),
+                                   text_color=P.TXT_OK)
+            lbl_seg.pack()
+
+            def _on_slide_seg(v):
+                s = int(round(float(v)))
+                seg_var.set(s)
+                lbl_seg.configure(text=str(s))
+                _refrescar_total()
+
+            slider_seg = ctk.CTkSlider(sel, from_=SEG_MIN_CORTO, to=SEG_MAX_CORTO,
+                                       number_of_steps=SEG_MAX_CORTO - SEG_MIN_CORTO,
+                                       command=_on_slide_seg, width=320)
+            slider_seg.set(segundos)
+            slider_seg.pack(pady=(0, 4))
+            lbl_total.pack(pady=(0, 8))
+            _refrescar_total()
+            # El total tambien cambia al mover N.
+            slider.configure(command=lambda v: (_on_slide(v), _refrescar_total()))
+
         resultado = {"n": None}
 
         def _aceptar():
             n = n_var.get()
+            if pide_segundos and segundos_key:
+                try:
+                    prefs_s = self.store.cargar_preferencias()
+                    prefs_s[segundos_key] = seg_var.get()
+                    self.store.guardar_preferencias(prefs_s)
+                except Exception as _e:
+                    logger.debug(f"[silent _pedir_n guardar seg] {_e}")
             if key_pref:
                 try:
                     prefs_g = self.store.cargar_preferencias()
@@ -990,7 +1049,11 @@ class CoreMixin:
 
         sel.bind("<Return>", lambda _e: _aceptar())
         sel.wait_window()
-        return resultado["n"]
+        if not pide_segundos:
+            return resultado["n"]
+        if resultado["n"] is None:
+            return None
+        return resultado["n"], seg_var.get()
 
     def cmd_variaciones(self):
         self._ocultar_ideas()

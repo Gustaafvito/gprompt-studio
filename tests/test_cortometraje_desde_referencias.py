@@ -145,6 +145,11 @@ def _host(modo="imagen", idea="una idea bastante larga", personaje="Emma del pie
         visto["peticion"] = peticion
         return "=== PERSONAJES ==="
 
+    def _modal(*_a, **kw):
+        """Imita al modal real: tupla si se le piden segundos, int si no."""
+        visto.setdefault("modal", []).append(kw)
+        return (4, 8) if "segundos" in kw else 4
+
     app = SimpleNamespace(
         modo_var=_var(modo),
         txt_idea=_txt(idea),
@@ -153,7 +158,7 @@ def _host(modo="imagen", idea="una idea bastante larga", personaje="Emma del pie
         dialogs=SimpleNamespace(set_estado=MagicMock(), toggle_botones=MagicMock(),
                                 _sonar_completado=MagicMock()),
         after=lambda _ms, fn=None, *a: fn() if callable(fn) else None,
-        _pedir_n_modal=lambda *a, **k: 4,
+        _pedir_n_modal=_modal,
         _sesion_log=MagicMock(),
         _executor=_SyncExec(),
     )
@@ -467,6 +472,10 @@ class TestElPanelMandaSusOpciones:
             visto["peticion"] = peticion
             return "=== PERSONAJES ==="
 
+        def _modal(*_a, **kw):
+            visto.setdefault("modal", []).append(kw)
+            return (4, 8) if "segundos" in kw else 4
+
         host = SimpleNamespace(
             modo_var=_var(modo),
             txt_idea=_txt("caja principal sin usar"),
@@ -475,7 +484,7 @@ class TestElPanelMandaSusOpciones:
             dialogs=SimpleNamespace(set_estado=MagicMock(), toggle_botones=MagicMock(),
                                     _sonar_completado=MagicMock()),
             after=lambda _ms, fn=None, *a: fn() if callable(fn) else None,
-            _pedir_n_modal=lambda *a, **k: 4,
+            _pedir_n_modal=_modal,
             _sesion_log=MagicMock(),
             _executor=_SyncExec(),
         )
@@ -680,25 +689,45 @@ class TestLaDuracionPorEscena:
 
 class TestElPanelYLaDuracion:
 
-    def test_en_salida_de_video_manda_sus_segundos(self, panel):
+    def test_los_segundos_del_modal_llegan_a_la_peticion(self, panel):
         visto = TestElPanelMandaSusOpciones()._puente_real(panel)
         _preparar(panel)
-        panel.target.set("Vídeo")
-        panel.mode.set("Animar imagen")
-        panel.duration.set("8")
         panel.shortfilm()
         assert "EXACTAMENTE 8 segundos" in visto["peticion"]
 
-    def test_en_salida_de_imagen_no_fija_duracion(self, panel):
-        """El campo «Segundos» está oculto ahí: su valor es un resto de otra
-        configuración y fijar con él una duración sería inventarse tu elección.
-        """
+    def test_en_salida_de_imagen_el_modal_pregunta_igual(self, panel):
+        """Preparar un corto no debe obligar a cambiar el destino del panel a
+        vídeo solo para que aparezca el campo «Segundos»."""
         visto = TestElPanelMandaSusOpciones()._puente_real(panel)
         _preparar(panel)
         panel.target.set("Imagen")
         panel.shortfilm()
-        assert "5-12s" in visto["peticion"]
-        assert "dura EXACTAMENTE" not in visto["peticion"]
+        assert "segundos" in visto["modal"][0], "el modal no pidió la duración"
+        assert "EXACTAMENTE 8 segundos" in visto["peticion"]
+        assert "5-12s" not in visto["peticion"]
+
+    def test_el_panel_prerrellena_el_modal_con_su_duracion(self, panel):
+        """Si el panel ya tiene una duración elegida, el modal parte de ella."""
+        visto = TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.target.set("Vídeo")
+        panel.mode.set("Animar imagen")
+        panel.duration.set("11")
+        panel.shortfilm()
+        assert visto["modal"][0]["segundos"] == "11"
+
+    def test_el_cortometraje_clasico_no_pregunta_segundos(self):
+        """Candado: la entrada de la ventana principal conserva su modal."""
+        h = _host(modo="video")
+        h._cmd_cortometraje()
+        assert "segundos" not in h._visto["modal"][0]
+        assert "5-12s" in h._visto["peticion"]
+
+    def test_cancelar_el_modal_con_segundos_no_genera(self):
+        h = _host(modo="imagen")
+        h.app._pedir_n_modal = lambda *a, **k: None
+        assert not h._cmd_cortometraje(premisa="La mujer de A espera en la estacion.",
+                                       contexto="ctx")
 
     def test_una_duracion_invalida_avisa_y_no_gasta(self, panel):
         visto = TestElPanelMandaSusOpciones()._puente_real(panel)

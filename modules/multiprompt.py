@@ -133,6 +133,14 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
         f"=== {E['escena']} 2 ===\n... (continúa hasta === {E['escena']} {n} ===)\n\n"
         "REGLAS:\n"
         "- Coherencia: usa el MISMO @ref para cada personaje en TODAS las escenas.\n"
+        "- UNA sola acción principal y UN solo movimiento de cámara por escena. "
+        "Cada escena se genera como un clip aparte: acumular entrada, paso, ráfaga "
+        "y primer plano en la misma produce un clip incontrolable. Si la idea "
+        "necesita más, repártela entre escenas.\n"
+        "- Fija en el bloque de personajes el vestuario y los objetos recurrentes "
+        "—abrigo, bufanda, mochila, teléfono— y descríbelos IGUAL en todas las "
+        "escenas donde aparezcan. Lo que no quede fijado ahí, cada clip lo "
+        "generará distinto.\n"
         "- Arco narrativo: gancho inicial → desarrollo → giro → clímax → cierre potente.\n"
         + regla_duracion +
         "- Diálogos cortos y con punch; describe SIEMPRE la acción visual.\n"
@@ -669,13 +677,29 @@ class MultiPromptService:
             return self.app.dialogs.set_estado(
                 tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), P.TXT_AVISO)
 
-        n = self.app._pedir_n_modal(
-            tr("🎬 Cortometraje — número de escenas"),
-            tr("¿Cuántas escenas? Cada una es un clip de vídeo independiente."),
-            n_min=3, n_max=12, default=6, key_pref="corto_n",
-        )
-        if n is None:
-            return
+        if desde_panel:
+            # Escenas y duración en la misma ventana: preparar un corto no
+            # debería obligar a cerrar el panel para cambiarle el destino solo
+            # para que aparezca el campo «Segundos». La cadena vacía significa
+            # «usa el valor recordado, o el de por defecto del modal».
+            elegido = self.app._pedir_n_modal(
+                tr("🎬 Cortometraje — escenas y duración"),
+                tr("¿Cuántas escenas y cuánto dura cada una?\n"
+                   "Cada escena es un clip de vídeo independiente."),
+                n_min=3, n_max=12, default=6, key_pref="corto_n",
+                segundos=segundos or "", segundos_key="corto_segundos",
+            )
+            if elegido is None:
+                return
+            n, segundos = elegido[0], str(elegido[1])
+        else:
+            n = self.app._pedir_n_modal(
+                tr("🎬 Cortometraje — número de escenas"),
+                tr("¿Cuántas escenas? Cada una es un clip de vídeo independiente."),
+                n_min=3, n_max=12, default=6, key_pref="corto_n",
+            )
+            if n is None:
+                return
 
         pers_ctx = ""
         if desde_panel:
