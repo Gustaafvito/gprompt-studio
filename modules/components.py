@@ -519,8 +519,9 @@ class MultiPromptComponent(_Component):
         return self._service._cmd_storyboard_imagen()
 
     def cmd_cortometraje(self, premisa=None, contexto=None, idioma=None,
-                         aspecto=None):
-        return self._service._cmd_cortometraje(premisa, contexto, idioma, aspecto)
+                         aspecto=None, segundos=None):
+        return self._service._cmd_cortometraje(premisa, contexto, idioma,
+                                               aspecto, segundos)
 
     def cmd_random_walk(self) -> None:
         return self._service._cmd_random_walk()

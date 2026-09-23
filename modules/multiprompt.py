@@ -46,6 +46,19 @@ ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
 # Etiquetas del formato de salida del guion, por idioma. Ver el comentario en
 # construir_peticion_cortometraje(): en español se mantienen exactamente las de
 # siempre, asi que la entrada clasica no nota este cambio.
+def _total_corto(segundos, n):
+    """Duracion total, o cadena vacia si los segundos no son un numero.
+
+    El campo del panel es texto libre, asi que puede traer cualquier cosa; en
+    ese caso se prefiere no decir nada antes que inventarse un total.
+    """
+    try:
+        total = float(str(segundos).strip().replace(",", ".")) * n
+    except (TypeError, ValueError):
+        return ""
+    return f"{total:g}"
+
+
 ETIQUETAS_CORTO = {
     "es": {"personajes": "PERSONAJES", "escena": "ESCENA", "tiempo": "Tiempo",
            "plano": "Plano", "tema": "Tema", "accion": "Acción",
@@ -58,7 +71,8 @@ ETIQUETAS_CORTO = {
 
 def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
                                     n: int, idioma: str = "es",
-                                    aspecto: str = None) -> str:
+                                    aspecto: str = None,
+                                    segundos: str = None) -> str:
     """Petición al LLM para un guion de cortometraje de N escenas en el formato
     del flujo SeaArt reference-to-video: bloque PERSONAJES (con prompt de imagen
     + etiqueta @ref) + N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
@@ -75,6 +89,20 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
     # entrada clasica no cambia de comportamiento por este parametro nuevo.
     orientacion = ORIENTACION_CORTO.get(aspecto or "", "vertical")
     formato_txt = f"\nFORMATO: {aspecto} ({orientacion})" if aspecto else ""
+    # Sin duracion se mantiene la banda 5-12s de siempre. Con ella, el reparto
+    # deja de ser una sugerencia: un «5-12s» sin objetivo concreto produce
+    # escenas que se van de la banda, y los clips hay que generarlos uno a uno.
+    duracion_txt = ""
+    regla_duracion = "- Cada escena es un clip independiente de 5-12s.\n"
+    if segundos:
+        total = _total_corto(segundos, n)
+        duracion_txt = f"\nDURACIÓN POR ESCENA: {segundos} segundos"
+        if total:
+            duracion_txt += f" (duración total del corto: {total} segundos)"
+        regla_duracion = (
+            f"- Cada escena dura EXACTAMENTE {segundos} segundos.\n"
+            f"- Los tramos de tiempo se encadenan sin huecos ni solapes, "
+            f"empezando en 0.\n")
     pers = (contexto_personajes or "").strip() or \
         "Inventa 1-2 protagonistas coherentes a partir de la premisa."
     return (
@@ -85,7 +113,7 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
         "mantener la coherencia del rostro.\n\n"
         f"PREMISA: {logline}\n"
         f"PERSONAJES: {pers}\n"
-        f"NÚMERO DE ESCENAS: {n}{formato_txt}\n\n"
+        f"NÚMERO DE ESCENAS: {n}{formato_txt}{duracion_txt}\n\n"
         f"Devuelve TODO en {idioma_txt} —incluidas las etiquetas del formato—, "
         "con EXACTAMENTE este formato (sin texto extra):\n\n"
         f"=== {E['personajes']} ===\n"
@@ -106,7 +134,7 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
         "REGLAS:\n"
         "- Coherencia: usa el MISMO @ref para cada personaje en TODAS las escenas.\n"
         "- Arco narrativo: gancho inicial → desarrollo → giro → clímax → cierre potente.\n"
-        "- Cada escena es un clip independiente de 5-12s.\n"
+        + regla_duracion +
         "- Diálogos cortos y con punch; describe SIEMPRE la acción visual.\n"
         "- Mantén una paleta y atmósfera coherentes entre escenas."
         + (f"\n- Encuadra todos los planos para {aspecto} ({orientacion})." if aspecto else "")
@@ -616,7 +644,7 @@ class MultiPromptService:
 
     # ── Cortometraje (guion multi-escena para vídeo reference-to-video) ──
     def _cmd_cortometraje(self, premisa=None, contexto=None, idioma=None,
-                          aspecto=None):
+                          aspecto=None, segundos=None):
         """Genera un GUION de cortometraje de N escenas (flujo SeaArt
         reference-to-video): bloque de personajes con prompts de imagen +
         N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
@@ -664,7 +692,7 @@ class MultiPromptService:
         # opciones que el usuario ya eligio y que antes se ignoraban. Sin ellos
         # se usa el idioma de la interfaz, como siempre.
         peticion = construir_peticion_cortometraje(
-            idea, pers_ctx, n, idioma or get_idioma(), aspecto)
+            idea, pers_ctx, n, idioma or get_idioma(), aspecto, segundos)
 
         try: self.app._sesion_log(f"🎬 Cortometraje: guion de {n} escenas")
         except Exception as e:

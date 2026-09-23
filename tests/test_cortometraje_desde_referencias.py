@@ -568,12 +568,14 @@ class TestCancelarNoMiente:
         assert not h._cmd_cortometraje(premisa="La mujer de A espera en la estacion.",
                                        contexto="ctx")
 
-    def test_la_fachada_reenvia_las_cuatro_opciones(self):
+    def test_la_fachada_reenvia_todas_las_opciones(self):
         from modules.components import MultiPromptComponent
         componente = MultiPromptComponent(SimpleNamespace())
         componente._service = SimpleNamespace(_cmd_cortometraje=MagicMock())
-        componente.cmd_cortometraje(premisa="p", contexto="c", idioma="en", aspecto="16:9")
-        componente._service._cmd_cortometraje.assert_called_once_with("p", "c", "en", "16:9")
+        componente.cmd_cortometraje(premisa="p", contexto="c", idioma="en",
+                                    aspecto="16:9", segundos="8")
+        componente._service._cmd_cortometraje.assert_called_once_with(
+            "p", "c", "en", "16:9", "8")
 
 
 class TestLasEtiquetasSiguenAlIdioma:
@@ -634,3 +636,76 @@ class TestLasEtiquetasSiguenAlIdioma:
         assert "=== SCENE 1 ===" in peticion
         assert "Shot:" in peticion and "Theme:" in peticion
         assert "Plano:" not in peticion and "Tema:" not in peticion
+
+
+class TestLaDuracionPorEscena:
+    """El primer guion se fue a 13s en una escena con la banda «5-12s». Sin un
+    objetivo concreto el reparto es una sugerencia, y cada escena se genera
+    como un clip aparte: pasarse significa un clip que hay que repetir.
+    """
+
+    def test_con_segundos_la_regla_es_exacta(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es", None, "8")
+        assert "EXACTAMENTE 8 segundos" in p
+        assert "5-12s" not in p, "sigue la banda ancha junto a la regla exacta"
+
+    def test_se_dice_la_duracion_total(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 6, "es", None, "8")
+        assert "DURACIÓN POR ESCENA: 8 segundos" in p
+        assert "total del corto: 48 segundos" in p
+
+    def test_se_pide_encadenar_los_tramos(self):
+        """El guion traia 0-9s, 9-20s, 20-32s, 32-45s: tramos que no cuadraban
+        con ninguna duracion fija."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es", None, "8")
+        assert "sin huecos ni solapes" in p
+
+    def test_sin_segundos_la_regla_es_la_de_siempre(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es")
+        assert "- Cada escena es un clip independiente de 5-12s." in p
+        assert "DURACIÓN POR ESCENA" not in p
+        # «EXACTAMENTE» a secas ya sale en «con EXACTAMENTE este formato».
+        assert "dura EXACTAMENTE" not in p
+
+    def test_una_duracion_ilegible_no_inventa_un_total(self):
+        """El campo del panel es texto libre; antes de mentir, callar."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es", None, "ocho")
+        assert "EXACTAMENTE ocho segundos" in p
+        assert "total del corto" not in p
+
+    def test_decimales(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 3, "es", None, "7.5")
+        assert "total del corto: 22.5 segundos" in p
+
+
+class TestElPanelYLaDuracion:
+
+    def test_en_salida_de_video_manda_sus_segundos(self, panel):
+        visto = TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.target.set("Vídeo")
+        panel.mode.set("Animar imagen")
+        panel.duration.set("8")
+        panel.shortfilm()
+        assert "EXACTAMENTE 8 segundos" in visto["peticion"]
+
+    def test_en_salida_de_imagen_no_fija_duracion(self, panel):
+        """El campo «Segundos» está oculto ahí: su valor es un resto de otra
+        configuración y fijar con él una duración sería inventarse tu elección.
+        """
+        visto = TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.target.set("Imagen")
+        panel.shortfilm()
+        assert "5-12s" in visto["peticion"]
+        assert "dura EXACTAMENTE" not in visto["peticion"]
+
+    def test_una_duracion_invalida_avisa_y_no_gasta(self, panel):
+        visto = TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.target.set("Vídeo")
+        panel.mode.set("Animar imagen")
+        panel.duration.set("-3")
+        panel.shortfilm()
+        assert "peticion" not in visto, "se pidio el guion con una duracion invalida"
+        assert panel.status.get()

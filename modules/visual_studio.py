@@ -20,6 +20,7 @@ from modules.visual_brief import (
     Reference,
     analysis_input,
     check_attachment,
+    duration_seconds,
     filter_models,
     generation_request,
     load_image,
@@ -1026,8 +1027,20 @@ class VisualStudio(ctk.CTkToplevel):
         # «Inglés»/«Español» son los valores guardados del panel; el
         # constructor espera el codigo corto.
         idioma = "en" if self.language.get() == "Inglés" else "es"
+        # «Segundos» solo esta a la vista cuando la salida del panel es vídeo.
+        # Si esta oculto, su valor es un resto de otra configuración y mandarlo
+        # seria fijar una duración que no has elegido: mejor dejar la banda
+        # ancha de siempre.
+        segundos = None
+        if output_kind(self.mode.get(), self.target.get()) == "video":
+            try:
+                segundos = duration_seconds(self.duration.get())
+            except ValueError as exc:
+                self.status.set(str(exc))
+                return
         if not multi.cmd_cortometraje(premisa=idea, contexto=contexto,
-                                      idioma=idioma, aspecto=self.aspect.get()):
+                                      idioma=idioma, aspecto=self.aspect.get(),
+                                      segundos=segundos):
             # Cancelar la pregunta del numero de escenas no genera nada: decir
             # «van tus referencias» ahi seria mentir.
             self.status.set(tr("Cortometraje cancelado. No se ha generado nada."))
