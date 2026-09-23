@@ -787,11 +787,17 @@ class TestLaRevisionLocalDelGuion:
         texto = self.GUION_OK + "Action: Mara@ref1 en Station@ref2\n"
         assert revisar_guion_cortometraje(texto, 2, "8", 3) == []
 
-    def test_sin_duracion_no_se_juzgan_los_tramos(self):
-        """La entrada clásica no fija duración: no hay nada contra qué medir."""
+    def test_sin_duracion_se_mide_contra_la_banda_de_la_plantilla(self):
+        """Este test afirmaba lo contrario —«sin duración no hay nada que
+        medir»— y esa premisa era el propio fallo: la plantilla sigue pidiendo
+        5-12s, así que la escena de 13s del guion real tenía que avisar y no
+        avisaba. Lo encontró ChatGPT ejecutando la función aislada.
+        """
         from modules.multiprompt import revisar_guion_cortometraje
         avisos = revisar_guion_cortometraje(self.GUION_REAL, 4, None)
-        assert not any("dura" in a for a in avisos), avisos
+        assert any("13s" in a for a in avisos), avisos
+        # Pero no se inventa una duración exacta que nadie fijó.
+        assert not any("en vez de" in a for a in avisos), avisos
 
     def test_entiende_los_dos_idiomas_de_etiqueta(self):
         from modules.multiprompt import revisar_guion_cortometraje
@@ -814,3 +820,56 @@ class TestLaRevisionLocalDelGuion:
         h._mostrar_guion_cortometraje.assert_called_once()
         avisos = h._mostrar_guion_cortometraje.call_args[0][2]
         assert avisos, "la ventana no recibio ningun aviso"
+
+
+class TestLosTresCasosQueSeEscapaban:
+    """Los encontró ChatGPT ejecutando la función aislada. El patrón común es
+    el peor posible en un comprobador: cuanto MENOS información traía el
+    guion, menos avisaba. Un guion sin tiempos pasaba limpio.
+    """
+
+    def test_escenas_sin_campo_de_tiempo(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        texto = "=== SCENE 1 ===\nAction: x\n=== SCENE 2 ===\nAction: y\n"
+        avisos = revisar_guion_cortometraje(texto, 2, "8")
+        assert avisos, "un guion sin tiempos pasaba limpio"
+        assert any("tiempo legible" in a for a in avisos), avisos
+
+    def test_dos_escenas_con_el_mismo_numero(self):
+        """Parece un guion entero y al montarlo te falta un clip."""
+        from modules.multiprompt import revisar_guion_cortometraje
+        texto = "=== SCENE 1 ===\nTime: 0-8s\n=== SCENE 1 ===\nTime: 8-16s\n"
+        avisos = revisar_guion_cortometraje(texto, 2, "8")
+        assert any("numeradas" in a for a in avisos), avisos
+
+    def test_numeracion_saltada(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        texto = "=== ESCENA 1 ===\nTiempo: 0-8s\n=== ESCENA 3 ===\nTiempo: 8-16s\n"
+        assert any("numeradas" in a
+                   for a in revisar_guion_cortometraje(texto, 2, "8"))
+
+    def test_la_banda_de_la_plantilla_se_mide_sin_duracion_fija(self):
+        """El recorrido clásico no fija duración, pero la plantilla sigue
+        pidiendo 5-12s: hay contra qué medir."""
+        from modules.multiprompt import revisar_guion_cortometraje
+        avisos = revisar_guion_cortometraje("=== ESCENA 1 ===\nTiempo: 0-13s\n", 1, None)
+        assert any("5-12s" in a for a in avisos), avisos
+
+    def test_dentro_de_la_banda_no_avisa(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        assert revisar_guion_cortometraje("=== ESCENA 1 ===\nTiempo: 0-9s\n", 1, None) == []
+
+    def test_demasiado_corta_tambien_avisa(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        assert any("5-12s" in a for a in
+                   revisar_guion_cortometraje("=== ESCENA 1 ===\nTiempo: 0-3s\n", 1, None))
+
+    def test_la_banda_sale_de_la_constante_que_usa_la_plantilla(self):
+        """Candado: si la plantilla cambia de banda y el comprobador no, este
+        mide contra algo que ya nadie pidió."""
+        from modules.multiprompt import (
+            BANDA_CORTO,
+            construir_peticion_cortometraje,
+        )
+        peticion = construir_peticion_cortometraje("premisa", "ctx", 4, "es")
+        assert f"{BANDA_CORTO[0]}-{BANDA_CORTO[1]}s" in peticion

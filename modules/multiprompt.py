@@ -47,6 +47,10 @@ ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
 # Etiquetas del formato de salida del guion, por idioma. Ver el comentario en
 # construir_peticion_cortometraje(): en español se mantienen exactamente las de
 # siempre, asi que la entrada clasica no nota este cambio.
+# La banda que la plantilla pide cuando no se fija una duracion exacta. Si
+# cambia ahi, cambia aqui: el comprobador mide contra lo que se pidio.
+BANDA_CORTO = (5, 12)
+
 _RE_ESCENA = re.compile(r"^===\s*(?:ESCENA|SCENE)\s+(\d+)\s*===",
                         re.MULTILINE | re.IGNORECASE)
 _RE_TIEMPO = re.compile(r"^(?:Tiempo|Time)\s*:\s*([\d.,]+)\s*[-\u2013\u2014]\s*([\d.,]+)",
@@ -75,23 +79,44 @@ def revisar_guion_cortometraje(texto, n, segundos=None, n_refs=None):
     texto = texto or ""
     avisos = []
 
-    escenas = _RE_ESCENA.findall(texto)
+    escenas = [int(x) for x in _RE_ESCENA.findall(texto)]
     if len(escenas) != n:
         avisos.append(tr("Pediste {0} escenas y el guion trae {1}.").format(
             n, len(escenas)))
+    # Numerar dos veces la misma escena pasaba desapercibido: el guion parece
+    # entero y al montarlo te faltan clips.
+    if escenas and escenas != list(range(1, len(escenas) + 1)):
+        avisos.append(tr("Las escenas no van numeradas 1, 2, 3…: {0}.").format(
+            ", ".join(str(e) for e in escenas)))
+
+    tramos = []
+    for ini_txt, fin_txt in _RE_TIEMPO.findall(texto):
+        ini, fin = _num(ini_txt), _num(fin_txt)
+        if ini is not None and fin is not None:
+            tramos.append((ini, fin))
+    # Sin campo de tiempo no hay nada que medir, y antes eso se traducia en
+    # silencio: cuantos menos tramos, menos avisos. Justo al reves de lo que
+    # tiene que pasar.
+    if escenas and len(tramos) != len(escenas):
+        avisos.append(tr("{0} escenas y solo {1} con un tiempo legible.").format(
+            len(escenas), len(tramos)))
 
     objetivo = _num(segundos) if segundos else None
     fin_anterior = 0.0
-    for i, (ini_txt, fin_txt) in enumerate(_RE_TIEMPO.findall(texto), 1):
-        ini, fin = _num(ini_txt), _num(fin_txt)
-        if ini is None or fin is None:
-            continue
+    for i, (ini, fin) in enumerate(tramos, 1):
         if abs(ini - fin_anterior) > 0.01:
             avisos.append(tr("La escena {0} empieza en {1}s, pero la anterior acababa en {2}s.").format(
                 i, f"{ini:g}", f"{fin_anterior:g}"))
-        if objetivo and abs((fin - ini) - objetivo) > 0.01:
-            avisos.append(tr("La escena {0} dura {1}s en vez de {2}s.").format(
-                i, f"{fin - ini:g}", f"{objetivo:g}"))
+        duracion = fin - ini
+        if objetivo:
+            if abs(duracion - objetivo) > 0.01:
+                avisos.append(tr("La escena {0} dura {1}s en vez de {2}s.").format(
+                    i, f"{duracion:g}", f"{objetivo:g}"))
+        elif not (BANDA_CORTO[0] - 0.01 <= duracion <= BANDA_CORTO[1] + 0.01):
+            # Sin duracion fija la plantilla sigue pidiendo 5-12s, asi que hay
+            # contra que medir. El recorrido clasico se quedaba sin revisar.
+            avisos.append(tr("La escena {0} dura {1}s, fuera de los {2}-{3}s que pide la plantilla.").format(
+                i, f"{duracion:g}", BANDA_CORTO[0], BANDA_CORTO[1]))
         fin_anterior = fin
 
     if n_refs:

@@ -3060,6 +3060,9 @@ TRADUCCIONES = {
     'La escena {0} empieza en {1}s, pero la anterior acababa en {2}s.': 'Scene {0} starts at {1}s, but the previous one ended at {2}s.',
     'La escena {0} dura {1}s en vez de {2}s.': 'Scene {0} runs {1}s instead of {2}s.',
     'El guion usa {0}, y solo tienes {1} referencia(s).': 'The script uses {0}, and you only have {1} reference(s).',
+    'Las escenas no van numeradas 1, 2, 3…: {0}.': 'The scenes are not numbered 1, 2, 3…: {0}.',
+    '{0} escenas y solo {1} con un tiempo legible.': '{0} scenes and only {1} with a readable time.',
+    'La escena {0} dura {1}s, fuera de los {2}-{3}s que pide la plantilla.': 'Scene {0} runs {1}s, outside the {2}-{3}s the template asks for.',
 }
 
 
