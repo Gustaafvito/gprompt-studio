@@ -256,13 +256,16 @@ LLM_PROVIDERS = {
         # familia 5.x/6 no esta en PRECIOS_USD_1M_MODELO, asi que el contador
         # de gasto les aplica el respaldo del proveedor (el de gpt-4o). Es una
         # aproximacion, no un dato: hay que leerlos del panel y rellenarlos.
-        "model_default": "gpt-4o-mini",
+        # El default pasa de gpt-4o-mini a gpt-6-luna el 24-sep-2026: es mas
+        # barato en LAS DOS dimensiones ($0,10/$0,50 frente a $0,15/$0,60) y dos
+        # generaciones mas nuevo. El candado que exige que el default sea el mas
+        # barato no cambia nada por si solo —falla y obliga a decidir—, y esta
+        # es la decision.
+        "model_default": "gpt-6-luna",
         "modelos": [
             "gpt-6-astra",     # la generacion nueva
-            # gpt-6-sol y gpt-6-luna existen y la key los sirve (verificado
-            # contra /v1/models el 23-sep-2026), pero OpenAI no publica sus
-            # precios ahi y el candado de esta lista exige precio. Faltan por
-            # leer del panel de facturacion antes de curarlos.
+            "gpt-6-sol",       # flagship de la 6
+            "gpt-6-luna",      # el mas barato de toda la lista: el default
             "gpt-5.6-sol",     # flagship de la 5.6
             "gpt-5.6-terra",   # coste menor, rinde como 5.5
             "gpt-5.6-luna",    # el mas rapido de la 5.6
@@ -494,6 +497,12 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     # (08-sep-2026). Sirven para que el contador de gasto de un orden de
     # magnitud razonable en vez de aplicar el respaldo de gpt-4o a todos;
     # si alguna vez cuadran mal contra el panel de facturacion, el panel manda.
+    # gpt-6-sol y gpt-6-luna: precios del changelog oficial de OpenAI,
+    # entrada del 22-sep-2026, verificado el 24-sep. Tarifa estandar para
+    # peticiones de hasta 272.000 tokens de entrada; por encima, y para cache
+    # writes, OpenAI publica tramos aparte que aqui NO se modelan.
+    "gpt-6-sol":                 (2.00, 10.00),
+    "gpt-6-luna":                (0.10,  0.50),
     "gpt-6-astra":               (10.00, 50.00),
     "gpt-5.6-sol":               (5.00, 30.00),
     "gpt-5.6-terra":             (2.00, 12.00),
