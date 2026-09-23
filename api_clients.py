@@ -60,7 +60,8 @@ LLM_PROVIDERS = {
         "model_default": "claude-sonnet-5",
         "modelos": [
             "claude-fable-5-1",    # tope de gama ($10/$50)
-            "claude-opus-5",       # Opus actual ($5/$25)
+            "claude-opus-5-5",     # Opus nuevo, y MAS BARATO ($4/$20)
+            "claude-opus-5",       # Opus anterior ($5/$25)
             "claude-sonnet-5",     # equilibrio ($2/$10) — default
             "claude-haiku-4-5",    # rápido y barato ($1/$5)
             "claude-opus-4-8",     # generación anterior ($5/$25)
@@ -258,6 +259,10 @@ LLM_PROVIDERS = {
         "model_default": "gpt-4o-mini",
         "modelos": [
             "gpt-6-astra",     # la generacion nueva
+            # gpt-6-sol y gpt-6-luna existen y la key los sirve (verificado
+            # contra /v1/models el 23-sep-2026), pero OpenAI no publica sus
+            # precios ahi y el candado de esta lista exige precio. Faltan por
+            # leer del panel de facturacion antes de curarlos.
             "gpt-5.6-sol",     # flagship de la 5.6
             "gpt-5.6-terra",   # coste menor, rinde como 5.5
             "gpt-5.6-luna",    # el mas rapido de la 5.6
@@ -455,6 +460,11 @@ IMAGE_PROVIDERS = {
 PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "claude-fable-5-1":          (10.00, 50.00),
     "claude-fable-5":            (10.00, 50.00),
+    # Opus 5.5 baja de precio respecto a Opus 5, no sube: $4/$20 frente a
+    # $5/$25. Verificado el 23-sep-2026 contra la referencia oficial de la API,
+    # y la key del usuario lo sirve. Rechaza sampling como el resto de la
+    # familia 5, pero modelo_acepta_temperature() ya lo cubre por startswith.
+    "claude-opus-5-5":           (4.00, 20.00),
     "claude-opus-5":             (5.00, 25.00),
     "claude-sonnet-5":           (2.00, 10.00),   # más barato que Sonnet 4.6
     "claude-opus-4-8":           (5.00, 25.00),
