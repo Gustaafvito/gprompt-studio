@@ -3048,6 +3048,7 @@ TRADUCCIONES = {
     'Escribe la premisa del cortometraje en «Tu idea» (1-2 frases).': 'Write the short film premise in “Your idea” (1-2 sentences).',
     'El Cortometraje no está disponible desde esta ventana.': 'Short film is not available from this window.',
     'Cortometraje: van tus referencias, sus funciones y el análisis revisado.': 'Short film: your references, their roles and the revised analysis are included.',
+    'Las referencias han cambiado. Vuelve a analizar antes de crear el cortometraje.': 'The references have changed. Analyse them again before creating the short film.',
 }
 
 

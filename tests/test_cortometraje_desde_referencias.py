@@ -368,3 +368,29 @@ class TestElBotonDelPanel:
         delattr(panel.app, "multi")
         panel.shortfilm()
         assert panel.status.get()
+
+    def test_analisis_caducado_bloquea(self, panel):
+        """El agujero que ChatGPT vio antes que yo: cambiar una referencia tras
+        analizar deja las letras del analisis apuntando a otras imagenes, y el
+        guion saldria con @ref1 sobre la imagen equivocada."""
+        _preparar(panel)
+        panel.invalidate()
+        panel.shortfilm()
+        panel.app.multi.cmd_cortometraje.assert_not_called()
+        assert "analizar" in panel.status.get().lower(), panel.status.get()
+
+    def test_reordenar_las_referencias_tambien_bloquea(self, panel):
+        """Reordenar no cambia QUE imagenes hay, pero si a que letra
+        corresponde cada una, que es justo lo que lee el guionista."""
+        _preparar(panel)
+        panel.refs.reverse()
+        panel.invalidate()
+        panel.shortfilm()
+        panel.app.multi.cmd_cortometraje.assert_not_called()
+
+    def test_tras_volver_a_analizar_deja_pasar(self, panel):
+        _preparar(panel)
+        panel.invalidate()
+        panel.analysis_stale = False
+        panel.shortfilm()
+        panel.app.multi.cmd_cortometraje.assert_called_once()

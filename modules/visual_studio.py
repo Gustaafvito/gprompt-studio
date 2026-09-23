@@ -1002,6 +1002,12 @@ class VisualStudio(ctk.CTkToplevel):
         principal: quien está aquí ha escrito su idea aquí. Tampoco hace falta
         cambiar el modo a VÍDEO antes: esa entrada lo resuelve sola.
         """
+        if self.analysis_stale:
+            # Mismo candado que generate(): con el analisis caducado, las letras
+            # A/B/C describen unas referencias que ya no son estas, y el guion
+            # saldria con @ref1 apuntando a otra imagen.
+            self.status.set(tr("Las referencias han cambiado. Vuelve a analizar antes de crear el cortometraje."))
+            return
         idea = self.idea.get("1.0", "end").strip()
         if len(idea) < 10:
             self.status.set(tr("Escribe la premisa del cortometraje en «Tu idea» (1-2 frases)."))
