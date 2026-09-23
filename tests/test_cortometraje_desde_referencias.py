@@ -738,3 +738,79 @@ class TestElPanelYLaDuracion:
         panel.shortfilm()
         assert "peticion" not in visto, "se pidio el guion con una duracion invalida"
         assert panel.status.get()
+
+
+class TestLaRevisionLocalDelGuion:
+    """Pedirle algo al modelo no garantiza que lo cumpla. Esto se comprueba en
+    local, sin ninguna llamada, así que se mira siempre.
+    """
+
+    GUION_REAL = (
+        "=== SCENE 1 ===\nTime: 0-9s\n"
+        "=== SCENE 2 ===\nTime: 9-20s\n"
+        "=== SCENE 3 ===\nTime: 20-32s\n"
+        "=== SCENE 4 ===\nTime: 32-45s\n"
+    )
+    GUION_OK = ("=== ESCENA 1 ===\nTiempo: 0-8s\n"
+                "=== ESCENA 2 ===\nTiempo: 8-16s\n")
+
+    def test_un_guion_que_cuadra_no_genera_avisos(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        assert revisar_guion_cortometraje(self.GUION_OK, 2, "8") == []
+
+    def test_caza_la_escena_de_13_segundos(self):
+        """El caso real: banda 5-12s y una escena de 13."""
+        from modules.multiprompt import revisar_guion_cortometraje
+        avisos = revisar_guion_cortometraje(self.GUION_REAL, 4, "8")
+        assert any("13s" in a for a in avisos), avisos
+
+    def test_caza_que_falten_escenas(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        avisos = revisar_guion_cortometraje(self.GUION_OK, 6, None)
+        assert any("6" in a and "2" in a for a in avisos), avisos
+
+    def test_caza_un_hueco_entre_escenas(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        hueco = "=== ESCENA 1 ===\nTiempo: 0-8s\n=== ESCENA 2 ===\nTiempo: 12-20s\n"
+        avisos = revisar_guion_cortometraje(hueco, 2, "8")
+        assert any("empieza en 12s" in a for a in avisos), avisos
+
+    def test_caza_una_referencia_que_no_existe(self):
+        """@ref7 con tres imágenes es un guion imposible de montar."""
+        from modules.multiprompt import revisar_guion_cortometraje
+        texto = self.GUION_OK + "Action: Mara@ref1 y Ghost@ref7\n"
+        avisos = revisar_guion_cortometraje(texto, 2, "8", 3)
+        assert any("@ref7" in a for a in avisos), avisos
+
+    def test_las_referencias_validas_no_avisan(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        texto = self.GUION_OK + "Action: Mara@ref1 en Station@ref2\n"
+        assert revisar_guion_cortometraje(texto, 2, "8", 3) == []
+
+    def test_sin_duracion_no_se_juzgan_los_tramos(self):
+        """La entrada clásica no fija duración: no hay nada contra qué medir."""
+        from modules.multiprompt import revisar_guion_cortometraje
+        avisos = revisar_guion_cortometraje(self.GUION_REAL, 4, None)
+        assert not any("dura" in a for a in avisos), avisos
+
+    def test_entiende_los_dos_idiomas_de_etiqueta(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        assert revisar_guion_cortometraje(self.GUION_OK, 2, "8") == []
+        ingles = "=== SCENE 1 ===\nTime: 0-8s\n=== SCENE 2 ===\nTime: 8-16s\n"
+        assert revisar_guion_cortometraje(ingles, 2, "8") == []
+
+    def test_un_guion_vacio_no_revienta(self):
+        from modules.multiprompt import revisar_guion_cortometraje
+        assert revisar_guion_cortometraje("", 4, "8", 3)
+        assert revisar_guion_cortometraje(None, 4, "8", 3)
+
+    def test_los_avisos_llegan_a_la_ventana(self):
+        """De nada sirve detectarlo si no se ve antes de copiar el guion."""
+        h = _host(modo="imagen")
+        h.app.deepseek = SimpleNamespace(
+            generar=lambda *a, **k: TestLaRevisionLocalDelGuion.GUION_REAL)
+        h._cmd_cortometraje(premisa="La mujer de A espera en la estacion.",
+                            contexto="A · @ref1 · Personaje — chica.png")
+        h._mostrar_guion_cortometraje.assert_called_once()
+        avisos = h._mostrar_guion_cortometraje.call_args[0][2]
+        assert avisos, "la ventana no recibio ningun aviso"

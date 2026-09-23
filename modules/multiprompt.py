@@ -28,6 +28,7 @@ Dependencias self (provistas por ArquitectoApp y demás mixins):
 """
 import datetime
 import logging
+import re
 import tkinter as tk
 
 import customtkinter as ctk
@@ -46,6 +47,63 @@ ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
 # Etiquetas del formato de salida del guion, por idioma. Ver el comentario en
 # construir_peticion_cortometraje(): en español se mantienen exactamente las de
 # siempre, asi que la entrada clasica no nota este cambio.
+_RE_ESCENA = re.compile(r"^===\s*(?:ESCENA|SCENE)\s+(\d+)\s*===",
+                        re.MULTILINE | re.IGNORECASE)
+_RE_TIEMPO = re.compile(r"^(?:Tiempo|Time)\s*:\s*([\d.,]+)\s*[-\u2013\u2014]\s*([\d.,]+)",
+                        re.MULTILINE | re.IGNORECASE)
+_RE_REF = re.compile(r"@ref(\d+)", re.IGNORECASE)
+
+
+def _num(texto):
+    try:
+        return float(str(texto).strip().replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def revisar_guion_cortometraje(texto, n, segundos=None, n_refs=None):
+    """Avisos sobre el guion RECIBIDO. Devuelve una lista de textos, vacia si
+    todo cuadra.
+
+    Pedirle algo al modelo no garantiza que lo cumpla: el primer guion real
+    traia una escena de 13s con una banda de 5-12s. Esto se comprueba en local
+    y no cuesta ninguna llamada, asi que se mira siempre.
+
+    No corrige nada: avisa. Un guion con un tramo raro puede seguir sirviendo,
+    y quien decide es el usuario.
+    """
+    texto = texto or ""
+    avisos = []
+
+    escenas = _RE_ESCENA.findall(texto)
+    if len(escenas) != n:
+        avisos.append(tr("Pediste {0} escenas y el guion trae {1}.").format(
+            n, len(escenas)))
+
+    objetivo = _num(segundos) if segundos else None
+    fin_anterior = 0.0
+    for i, (ini_txt, fin_txt) in enumerate(_RE_TIEMPO.findall(texto), 1):
+        ini, fin = _num(ini_txt), _num(fin_txt)
+        if ini is None or fin is None:
+            continue
+        if abs(ini - fin_anterior) > 0.01:
+            avisos.append(tr("La escena {0} empieza en {1}s, pero la anterior acababa en {2}s.").format(
+                i, f"{ini:g}", f"{fin_anterior:g}"))
+        if objetivo and abs((fin - ini) - objetivo) > 0.01:
+            avisos.append(tr("La escena {0} dura {1}s en vez de {2}s.").format(
+                i, f"{fin - ini:g}", f"{objetivo:g}"))
+        fin_anterior = fin
+
+    if n_refs:
+        usadas = {int(x) for x in _RE_REF.findall(texto)}
+        sobran = sorted(usadas - set(range(1, n_refs + 1)))
+        if sobran:
+            avisos.append(tr("El guion usa {0}, y solo tienes {1} referencia(s).").format(
+                ", ".join("@ref" + str(s) for s in sobran), n_refs))
+
+    return avisos
+
+
 def _total_corto(segundos, n):
     """Duracion total, o cadena vacia si los segundos no son un numero.
 
@@ -731,8 +789,15 @@ class MultiPromptService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.85, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
+                # Cuantas referencias hay se deduce del contexto, que las
+                # enumera: asi la entrada clasica —que no trae @ref— no dispara
+                # este aviso.
+                usadas = [int(x) for x in _RE_REF.findall(pers_ctx)]
+                avisos = revisar_guion_cortometraje(
+                    resp, n, segundos, max(usadas) if usadas else None)
+
                 def _mostrar():
-                    self._mostrar_guion_cortometraje(resp, n)
+                    self._mostrar_guion_cortometraje(resp, n, avisos)
                     self.app.dialogs.set_estado(
                         tr('🎬 Guion de {0} escenas listo').format(n), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
@@ -746,8 +811,12 @@ class MultiPromptService:
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
         return True
 
-    def _mostrar_guion_cortometraje(self, texto: str, n: int):
-        """Ventana con el guion del cortometraje + copiar/exportar."""
+    def _mostrar_guion_cortometraje(self, texto: str, n: int, avisos=None):
+        """Ventana con el guion del cortometraje + copiar/exportar.
+
+        `avisos` son los de revisar_guion_cortometraje(): se muestran arriba,
+        donde se ven antes de copiar el guion.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         v = GPromptWindow(self.app)
@@ -760,6 +829,13 @@ class MultiPromptService:
         ctk.CTkLabel(
             v, text=tr("Genera cada escena en SeaArt; etiqueta los personajes con @ref para mantener la cara."),
             font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        if avisos:
+            ctk.CTkLabel(
+                v, text="⚠️ " + "  ·  ".join(avisos), wraplength=700,
+                justify="left", text_color=P.TXT_AVISO,
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(
+                    fill="x", padx=12, pady=(0, 6))
 
         txt = ctk.CTkTextbox(v, wrap="word",
                              font=ctk.CTkFont(family="Consolas", size=P.FUENTE_SECCION))

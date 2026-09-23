@@ -3056,6 +3056,10 @@ TRADUCCIONES = {
     'Duración total: {0} × {1} s = {2} s': 'Total length: {0} × {1} s = {2} s',
     '🎬 Cortometraje — escenas y duración': '🎬 Short film — scenes and length',
     '¿Cuántas escenas y cuánto dura cada una?\nCada escena es un clip de vídeo independiente.': 'How many scenes, and how long is each one?\nEach scene is a separate video clip.',
+    'Pediste {0} escenas y el guion trae {1}.': 'You asked for {0} scenes and the script has {1}.',
+    'La escena {0} empieza en {1}s, pero la anterior acababa en {2}s.': 'Scene {0} starts at {1}s, but the previous one ended at {2}s.',
+    'La escena {0} dura {1}s en vez de {2}s.': 'Scene {0} runs {1}s instead of {2}s.',
+    'El guion usa {0}, y solo tienes {1} referencia(s).': 'The script uses {0}, and you only have {1} reference(s).',
 }
 
 
