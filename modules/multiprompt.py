@@ -43,6 +43,18 @@ from workers import limpiar_marcadores, log_future_exc
 ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
                      "1:1": "cuadrado", "16:9": "apaisado"}
 
+# Etiquetas del formato de salida del guion, por idioma. Ver el comentario en
+# construir_peticion_cortometraje(): en español se mantienen exactamente las de
+# siempre, asi que la entrada clasica no nota este cambio.
+ETIQUETAS_CORTO = {
+    "es": {"personajes": "PERSONAJES", "escena": "ESCENA", "tiempo": "Tiempo",
+           "plano": "Plano", "tema": "Tema", "accion": "Acción",
+           "camara": "Cámara", "dialogo": "Diálogo", "sfx": "SFX"},
+    "en": {"personajes": "CHARACTERS", "escena": "SCENE", "tiempo": "Time",
+           "plano": "Shot", "tema": "Theme", "accion": "Action",
+           "camara": "Camera", "dialogo": "Dialogue", "sfx": "SFX"},
+}
+
 
 def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
                                     n: int, idioma: str = "es",
@@ -51,7 +63,14 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
     del flujo SeaArt reference-to-video: bloque PERSONAJES (con prompt de imagen
     + etiqueta @ref) + N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
     Función pura (sin estado) para testearla aislada."""
-    idioma_txt = "INGLÉS" if (idioma or "es").startswith("en") else "ESPAÑOL"
+    ingles = (idioma or "es").startswith("en")
+    idioma_txt = "INGLÉS" if ingles else "ESPAÑOL"
+    # Las etiquetas de la PLANTILLA van en el idioma pedido. Con la plantilla
+    # siempre en español, el modelo copiaba esas etiquetas y arrastraba a
+    # español los campos cortos —Plano y Tema— aunque el guion se pidiera en
+    # inglés: salía un guion mezclado. El resto de la petición sigue en
+    # español, como todos los constructores: es carga para el LLM, no interfaz.
+    E = ETIQUETAS_CORTO["en" if ingles else "es"]
     # Sin aspecto se mantiene la formula de siempre, palabra por palabra: la
     # entrada clasica no cambia de comportamiento por este parametro nuevo.
     orientacion = ORIENTACION_CORTO.get(aspecto or "", "vertical")
@@ -67,22 +86,23 @@ def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
         f"PREMISA: {logline}\n"
         f"PERSONAJES: {pers}\n"
         f"NÚMERO DE ESCENAS: {n}{formato_txt}\n\n"
-        f"Devuelve TODO en {idioma_txt}, con EXACTAMENTE este formato (sin texto extra):\n\n"
-        "=== PERSONAJES ===\n"
+        f"Devuelve TODO en {idioma_txt} —incluidas las etiquetas del formato—, "
+        "con EXACTAMENTE este formato (sin texto extra):\n\n"
+        f"=== {E['personajes']} ===\n"
         "[Nombre1] @ref1: <prompt de IMAGEN para diseñar al personaje — edad, etnia, "
         "pelo, ojos, complexión, vestuario, atmósfera, iluminación cinematográfica, "
         "8K, ultra-detallado, retrato>\n"
         "[Nombre2] @ref2: <igual, si la premisa tiene 2 protagonistas>\n\n"
-        "=== ESCENA 1 ===\n"
-        "Tiempo: 0-Xs\n"
-        "Plano: <tipo de plano (primer plano, plano medio, general, contrapicado…)>\n"
-        "Tema: <gancho/emoción central de la escena>\n"
-        "Acción: <descripción visual detallada de lo que ocurre; etiqueta a los "
+        f"=== {E['escena']} 1 ===\n"
+        f"{E['tiempo']}: 0-Xs\n"
+        f"{E['plano']}: <tipo de plano (primer plano, plano medio, general, contrapicado…)>\n"
+        f"{E['tema']}: <gancho/emoción central de la escena>\n"
+        f"{E['accion']}: <descripción visual detallada de lo que ocurre; etiqueta a los "
         "personajes como Nombre@ref donde aparezcan>\n"
-        "Cámara: <movimiento de cámara concreto>\n"
-        "Diálogo: <Nombre: \"línea breve\">  (usa \"—\" si no hay)\n"
-        "SFX: <efectos de sonido>\n\n"
-        f"=== ESCENA 2 ===\n... (continúa hasta === ESCENA {n} ===)\n\n"
+        f"{E['camara']}: <movimiento de cámara concreto>\n"
+        f"{E['dialogo']}: <Nombre: \"línea breve\">  (usa \"—\" si no hay)\n"
+        f"{E['sfx']}: <efectos de sonido>\n\n"
+        f"=== {E['escena']} 2 ===\n... (continúa hasta === {E['escena']} {n} ===)\n\n"
         "REGLAS:\n"
         "- Coherencia: usa el MISMO @ref para cada personaje en TODAS las escenas.\n"
         "- Arco narrativo: gancho inicial → desarrollo → giro → clímax → cierre potente.\n"

@@ -548,3 +548,63 @@ class TestCancelarNoMiente:
         componente._service = SimpleNamespace(_cmd_cortometraje=MagicMock())
         componente.cmd_cortometraje(premisa="p", contexto="c", idioma="en", aspecto="16:9")
         componente._service._cmd_cortometraje.assert_called_once_with("p", "c", "en", "16:9")
+
+
+class TestLasEtiquetasSiguenAlIdioma:
+    """El guion salía mezclado: acción y diálogo en inglés, pero «Plano» y
+    «Tema» en español. La plantilla tenía las etiquetas a fuego en español y
+    el modelo las copiaba, arrastrando con ellas los campos cortos.
+    """
+
+    ES = ("Tiempo:", "Plano:", "Tema:", "Acción:", "Cámara:", "Diálogo:")
+    EN = ("Time:", "Shot:", "Theme:", "Action:", "Camera:", "Dialogue:")
+
+    def test_en_ingles_las_etiquetas_van_en_ingles(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "en")
+        for etiqueta in self.EN:
+            assert etiqueta in p, "falta " + etiqueta
+        assert "=== CHARACTERS ===" in p
+        assert "=== SCENE 1 ===" in p
+
+    def test_en_ingles_no_se_cuela_ninguna_etiqueta_espanola(self):
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "en")
+        for etiqueta in self.ES:
+            assert etiqueta not in p, "se cuela " + etiqueta
+        assert "=== ESCENA" not in p
+        assert "=== PERSONAJES ===" not in p
+
+    def test_la_ultima_escena_tambien_se_traduce(self):
+        """El «continúa hasta === ESCENA n ===» es donde mas facil se olvida."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 7, "en")
+        assert "=== SCENE 7 ===" in p
+
+    def test_en_espanol_la_plantilla_es_la_de_siempre(self):
+        """Candado de la entrada clásica: ni una etiqueta cambiada."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "es")
+        for etiqueta in self.ES:
+            assert etiqueta in p, "falta " + etiqueta
+        assert "=== PERSONAJES ===" in p
+        assert "=== ESCENA 1 ===" in p
+        for etiqueta in self.EN:
+            assert etiqueta not in p, "se cuela " + etiqueta
+
+    def test_sfx_es_igual_en_los_dos(self):
+        for idioma in ("es", "en"):
+            assert "SFX:" in construir_peticion_cortometraje("p", "c", 3, idioma)
+
+    def test_se_pide_explicitamente_traducir_las_etiquetas(self):
+        """Traducir la plantilla no basta si la orden no lo menciona: el modelo
+        puede «corregirla» de vuelta al idioma en que esta escrito el resto."""
+        p = construir_peticion_cortometraje("premisa", "ctx", 4, "en")
+        assert "incluidas las etiquetas" in p
+
+    def test_desde_el_panel_en_ingles_llegan_etiquetas_inglesas(self, panel):
+        """El recorrido entero, que es donde se vio el fallo."""
+        visto = TestElPanelMandaSusOpciones()._puente_real(panel)
+        _preparar(panel)
+        panel.language.set("Inglés")
+        panel.shortfilm()
+        peticion = visto["peticion"]
+        assert "=== SCENE 1 ===" in peticion
+        assert "Shot:" in peticion and "Theme:" in peticion
+        assert "Plano:" not in peticion and "Tema:" not in peticion
