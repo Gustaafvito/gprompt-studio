@@ -1,6 +1,6 @@
 # Estado: «Crear desde imágenes» → Cortometraje
 
-Última actualización: **24-sep-2026, tarde**. Escrito como traspaso entre
+Última actualización: **24-sep-2026, noche**. Escrito como traspaso entre
 sesiones: si abres una sesión nueva sobre este repo, lee esto primero. También
 sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 
@@ -11,15 +11,16 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `d763fd2` |
+| Último commit publicado | `e46eef1` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
-Publicado el 24-sep, hasta `d763fd2`: el arreglo de Tcl y su bitácora, los
+Publicado el 24-sep, hasta `e46eef1`: el arreglo de Tcl y su bitácora, los
 guardados, Aprender (tutorial, glosario, atajos, Ctrl+K), los rótulos del
-panel y el resultado visible. **Sin publicar**, pendientes del visto bueno:
-los cuelgues de los tests (`0de5038`), el panel por pasos (`e0188b6`), su
-botón a la vista (`80aa6a5`) y este documento.
+panel, el resultado visible, los cuelgues de los tests, el panel por pasos y
+su botón a la vista. **Sin publicar**, pendientes del visto bueno: los
+botones que se escondían al estrechar (`9465f48`) y Seedream 5.0 Flash con
+la preparación de la 1.1.0 (§5e).
 
 La rama del worktree sigue existiendo con el commit original. Está limpia, no
 hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
@@ -38,6 +39,7 @@ está «en la botonera». Ahora está junto a la caja de la idea (`80aa6a5`).
 | Rama `feat/visual-studio` | todo lo de septiembre | sí, con `python main.py` |
 | `main` y la release v1.0.2 | 18-sep | no |
 | App instalada (`AppData\Local\Programs\G-Prompt Studio`) y distribuible del escritorio | v1.0.2 | no |
+| Escritorio: `GPromptStudio-Prueba-Crear-desde-imagenes\GPromptStudio-Prueba.exe` | portable de prueba de `e46eef1` (24-sep) | hasta el panel por pasos; sin §5e |
 | Escritorio: `GPromptStudio-Visual-Beta` y `GPromptStudio-candidato-codigo` | copias del 19 al 21-sep | obsoletas; no se tocan |
 
 Para que llegue a la app instalada: fusionar el PR, compilar y publicar (1.1.0).
@@ -262,8 +264,6 @@ Salió de una revisión crítica con capturas de la app real (el usuario pidió
   resultado; la app avisa de Ctrl+H. Arreglarlo de verdad pide rediseñar la
   ventana principal (por ejemplo, el resultado a la derecha en pantallas
   anchas).
-- A tamaño por defecto, el menú «UI» de arriba y el botón «Preview» de la
-  botonera salen cortados por la derecha.
 - «Marcar como completado» del tutorial enseña dos casillas (la real y un
   emoji ✅ en el texto).
 - Dos tests fallaron una vez cada uno en la suite completa y nunca aislados:
@@ -279,6 +279,41 @@ Cortometraje en una barra fija abajo, jerarquía de colores, bajada
 automática al resultado, análisis sin markdown, estado vacío y sin «Beta 9».
 Su botón está ahora en la fila de «Describe tu idea» de la ventana
 principal, a la vista sin abrir ninguna pestaña.
+
+## 5e. Nada se esconde al estrechar, Seedream 5.0 Flash y la 1.1.0
+
+**Los botones que desaparecían (`9465f48`).** Medido a 1382 de ancho, el de
+la ventana por defecto: Reset, Última, Setup y Cargar setup no se veían,
+«Preview» quedaba en 34 px, el menú «UI» en 37 y «Workflow» no aparecía.
+Tk no avisa: con `pack(side="left")` encoge los últimos hasta dejarlos en
+nada. Ahora los botones miden lo que su texto, las dos filas de la botonera
+son `FilaFluida` (`modules/fila_fluida.py`: lo que no cabe baja de línea
+entero) y la cabecera se compacta a solo iconos según el hueco real, no con
+un «< 1180» de cuando había 7 menús. La ficha del modelo tenía el ajuste de
+línea fijo en 1800 y se salía por la derecha: ahora sigue a la ventana y se
+queda en dos líneas con «…».
+
+**Trampa cazada:** escuchar el `<Configure>` de la propia etiqueta de la
+ficha **cuelga la app al 100 % de CPU**. Cada ajuste cambia su ancho
+(1310 → 1322 → 1304) y una `CTkScrollbar` se queda redibujándose sin fin. Se
+vio porque un pytest llevaba 12 minutos vivo sin volcado; `faulthandler`
+con `dump_traceback_later` en un guion aparte dio la pila en 25 s.
+
+**Seedream 5.0 Flash** (anunciado el 24-sep). Datos del esquema oficial vía
+el MCP de SeaArt (`get_model_params`, modelo `daqedfle878c73d0emlg`): prompt
+hasta 2000, 8 formatos (con 21:9), 1K/1,5K/2K, hasta 6 imágenes para editar
+y 8 por tanda, sin negativo. El catálogo pasa a **272**.
+
+**La 1.1.0, preparada y sin publicar.** Añadir un modelo rompe los candados
+que atan la cifra a las notas del release de la versión vigente. Cambiar las
+de la 1.0.2 sería falsearlas (salió con 271), así que, con el visto bueno
+del usuario, se subió la versión a 1.1.0 (config, pyproject, installer.iss)
+y se empezó `docs/RELEASE-v1.1.0.md`. Su comentario de cabecera lista lo que
+falta antes de publicar: build, hashes (los del bloque son aún los de la
+1.0.2), VirusTotal, tamaños (marcados PENDIENTE; `build_release.py` avisa
+mientras quede alguno) y fusionar. **El PR no se fusiona antes de publicar:**
+los README ya apuntan a `releases/download/v1.1.0/…`, que dará 404 hasta
+entonces.
 
 ---
 
@@ -353,7 +388,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1734 passed, 1 skipped
+python -m pytest -q      1762 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
