@@ -9,7 +9,9 @@ from config import (
     MODELOS_POR_PLATAFORMA_VIDEO,
     get_image_model_specs,
     get_model_specs,
+    get_theme_colors,
 )
+from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr, tr_es
 from modules.visual_brief import (
@@ -31,6 +33,7 @@ from modules.visual_brief import (
     save_project,
     shortfilm_context,
     shortfilm_ref_map,
+    texto_sin_markdown,
     validate,
     video_direction,
 )
@@ -44,6 +47,9 @@ CADENA_AUTOMATICA = "Cadena automática"
 # Ancho común de los rótulos de las cajas de una línea, para que queden en
 # columna. Cabe el más largo en inglés («What to improve»).
 ANCHO_ROTULO = 130
+# Ancho del nombre de cada referencia, para que su desplegable de función
+# quede en columna. Caben la letra y los 45 caracteres que se enseñan.
+ANCHO_NOMBRE_REF = 360
 
 
 class _VentanaPrevia(GPromptWindow):
@@ -82,7 +88,7 @@ class VisualStudio(ctk.CTkToplevel):
         # A transient dialog loses minimize/maximize controls on Windows.
         # The delayed bring_forward() handles focus without changing its style.
         self.resizable(True, True)
-        self.title(tr("Crear desde imágenes · G-Prompt Studio") + " · Beta 9")
+        self.title(tr("Crear desde imágenes · G-Prompt Studio"))
         self.geometry("1000x820")
         self.minsize(760, 620)
         # Identidad del panel. open_project() abre un VisualStudio NUEVO por
@@ -115,66 +121,116 @@ class VisualStudio(ctk.CTkToplevel):
         self.reference_use = ctk.StringVar(value="Solo texto")
         self.attachment_confirmed = ctk.BooleanVar(value=False)
         self.status = ctk.StringVar(value=tr("Añade imágenes; el análisis se podrá revisar antes de generar."))
+
+        # ── Abajo y fijos: el estado y las acciones principales ─────────
+        # Antes, «1. Analizar» y «2. Generar» estaban a mitad de un
+        # formulario de cuatro pantallas y «Crear cortometraje» al final del
+        # todo. Ahora siempre están a la vista. Se empaquetan ANTES que el
+        # cuerpo: con pack, lo último es lo primero que se encoge, y así
+        # cede el cuerpo, que se desplaza, y no la barra.
+        ctk.CTkLabel(self, textvariable=self.status, wraplength=730, justify="left").pack(
+            side="bottom", fill="x", padx=12, pady=(0, 8))
+        self.action_bar = ctk.CTkFrame(self, fg_color="transparent")
+        self.action_bar.pack(side="bottom", fill="x", padx=12, pady=(6, 2))
+        self.analyze_button = ctk.CTkButton(self.action_bar, text=tr("1. Analizar imágenes"),
+                                            command=self.analyze, **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
+        self.analyze_button.pack(side="left", padx=(0, 6))
+        self.generate_button = ctk.CTkButton(self.action_bar, text=tr("2. Generar prompt"),
+                                             command=self.generate, **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
+        self.generate_button.pack(side="left", padx=6)
+        ctk.CTkButton(self.action_bar, text=tr("Copiar resultado"), command=self.copy,
+                      **P.estilo_boton(P.BTN_PRIMARIO)).pack(side="left", padx=6)
+        ctk.CTkButton(self.action_bar, text=tr("Crear cortometraje con estas referencias"),
+                      command=self.shortfilm, **P.estilo_boton(P.BTN_ACENTO, primario=True)).pack(side="right")
+
         body = ctk.CTkScrollableFrame(self)
         self.body = body
-        body.pack(fill="both", expand=True, padx=12, pady=10)
+        body.pack(fill="both", expand=True, padx=12, pady=(10, 0))
+        secundario = P.estilo_boton(P.BTN_PRIMARIO)
+        discreto = P.estilo_boton(P.BTN_GRIS)
+
+        # ── Cabecera: el título y todo lo del proyecto en una fila ───────
         ctk.CTkLabel(body, text=tr("Crear desde imágenes"), font=ctk.CTkFont(size=22, weight="bold")).pack(anchor="w")
+        self.project_name = self.entry(body, "Proyecto", "nombre para reconocerlo en «Recuperar versiones»")
+        fila_proyecto = self.project_name.master
+        for texto, orden in (("Abrir proyecto", self.load), ("Guardar proyecto", self.save),
+                             ("Recuperar versiones", self.recover),
+                             ("Nuevo proyecto", lambda: VisualStudio(self.app))):
+            ctk.CTkButton(fila_proyecto, text=tr(texto), command=orden, width=110,
+                          **discreto).pack(side="left", padx=(6, 0))
+
+        # ── Imágenes ─────────────────────────────────────────────────────
+        imagenes = self.seccion(body, "Imágenes")
         # Sin variable=: CTkOptionMenu escribiria el texto MOSTRADO dentro de
         # self.mode y en ingles reventaria cada self.mode.get() == MODES[n].
         # Se pinta traducido y mode_changed() guarda el identificador.
-        self.mode_menu = ctk.CTkOptionMenu(body, values=[tr(m) for m in MODES],
+        self.mode_menu = ctk.CTkOptionMenu(imagenes, values=[tr(m) for m in MODES],
                           command=self.mode_changed, width=260)
         self.mode_menu.set(tr(self.mode.get()))
-        self.mode_menu.pack(anchor="w", pady=8)
-        self.help_label = ctk.CTkLabel(body, text=tr(MODE_HELP[self.mode.get()]),
+        self.mode_menu.pack(anchor="w", pady=(0, 6))
+        self.help_label = ctk.CTkLabel(imagenes, text=tr(MODE_HELP[self.mode.get()]),
                                      wraplength=700, justify="left")
         self.help_label.pack(anchor="w")
-        bar = ctk.CTkFrame(body)
+        bar = ctk.CTkFrame(imagenes, fg_color="transparent")
         bar.pack(fill="x", pady=6)
-        ctk.CTkButton(bar, text=tr("Añadir imágenes"), command=self.add).pack(side="left", padx=5, pady=5)
-        ctk.CTkButton(bar, text=tr("Usar imagen cargada"), command=self.use_current).pack(side="left", padx=5)
-        self.swap_button = ctk.CTkButton(bar, text=tr("Intercambiar A / B"), command=self.swap)
-        self.cards = ctk.CTkFrame(body)
+        # Añadir es el primer paso de todo: relleno. El resto, sobrio.
+        ctk.CTkButton(bar, text=tr("Añadir imágenes"), command=self.add,
+                      **P.estilo_boton(P.BTN_PRIMARIO, primario=True)).pack(side="left", padx=(0, 5), pady=5)
+        ctk.CTkButton(bar, text=tr("Usar imagen cargada"), command=self.use_current,
+                      **secundario).pack(side="left", padx=5)
+        self.swap_button = ctk.CTkButton(bar, text=tr("Intercambiar A / B"), command=self.swap, **secundario)
+        self.cards = ctk.CTkFrame(imagenes, fg_color="transparent")
         self.cards.pack(fill="x")
-        self.project_name = self.entry(body, "Proyecto", "nombre para reconocerlo en «Recuperar versiones»")
-        self.idea = self.text_field(body, "Tu idea / acción deseada", 70)
-        self.preserve = self.entry(body, "Conservar", "ej.: rostro, ropa, forma del producto")
-        self.change = self.entry(body, "Cambiar", "ej.: fondo, pose, iluminación")
-        destination = ctk.CTkFrame(body)
-        destination.pack(fill="x", pady=8)
-        self.target_menu = ctk.CTkOptionMenu(destination, values=[tr("Imagen"), tr("Vídeo")],
+
+        # ── Qué quieres crear ────────────────────────────────────────────
+        quieres = self.seccion(body, "Qué quieres crear")
+        self.idea = self.text_field(quieres, "Tu idea / acción deseada", 70)
+        self.preserve = self.entry(quieres, "Conservar", "ej.: rostro, ropa, forma del producto")
+        self.change = self.entry(quieres, "Cambiar", "ej.: fondo, pose, iluminación")
+
+        # ── Destino ──────────────────────────────────────────────────────
+        destination = self.seccion(body, "Destino")
+        # Salida y plataforma en la misma fila: son una sola decisión.
+        fila_destino = ctk.CTkFrame(destination, fg_color="transparent")
+        fila_destino.pack(fill="x", pady=4)
+        self.target_menu = ctk.CTkOptionMenu(fila_destino, values=[tr("Imagen"), tr("Vídeo")],
                                             command=self.target_changed)
-        self.target_menu.pack(anchor="w", padx=5, pady=4)
-        self.platform_menu = ctk.CTkOptionMenu(destination, variable=self.platform, values=[""],
+        self.target_menu.pack(side="left")
+        self.platform_menu = ctk.CTkOptionMenu(fila_destino, variable=self.platform, values=[""],
                                               command=lambda _: self.refresh_models(), width=260)
-        self.platform_menu.pack(anchor="w", padx=5, pady=4)
+        self.platform_menu.pack(side="left", padx=8)
         self.model_search = ctk.StringVar(value="")
-        search_bar = ctk.CTkFrame(destination)
-        search_bar.pack(fill="x", padx=5, pady=4)
+        search_bar = ctk.CTkFrame(destination, fg_color="transparent")
+        search_bar.pack(fill="x", pady=4)
         # Rótulo y no placeholder: con textvariable, CustomTkinter no pinta
         # nunca el placeholder, y la caja salía en blanco.
         ctk.CTkLabel(search_bar, text=tr("Buscar modelo"), width=ANCHO_ROTULO,
                      anchor="w").pack(side="left", padx=(0, 8))
         ctk.CTkEntry(search_bar, textvariable=self.model_search).pack(side="left", fill="x", expand=True)
         ctk.CTkButton(search_bar, text=tr("Limpiar búsqueda"), width=130,
-                      command=lambda: self.model_search.set("")).pack(side="left", padx=5)
+                      command=lambda: self.model_search.set(""), **secundario).pack(side="left", padx=5)
         self.model_matches = ctk.CTkLabel(destination, text="", anchor="w")
-        self.model_matches.pack(fill="x", padx=5)
+        self.model_matches.pack(fill="x")
         self.model_menu = ctk.CTkOptionMenu(destination, variable=self.model, values=[""], width=500,
                                            command=lambda _: self.reset_confirmation())
-        self.model_menu.pack(fill="x", padx=5, pady=4)
-        ctk.CTkLabel(destination, text=tr("Cómo usarás el prompt en el generador")).pack(anchor="w", padx=5)
-        self.reference_menu = ctk.CTkOptionMenu(destination,
+        self.model_menu.pack(fill="x", pady=4)
+        # Marco propio: reference_use_changed() empaqueta y quita la casilla
+        # de confirmación al final de su padre, y tiene que quedar aquí,
+        # debajo de su aviso, no detrás del formato ni de la dirección de vídeo.
+        uso = ctk.CTkFrame(destination, fg_color="transparent")
+        uso.pack(fill="x")
+        ctk.CTkLabel(uso, text=tr("Cómo usarás el prompt en el generador")).pack(anchor="w")
+        self.reference_menu = ctk.CTkOptionMenu(uso,
                                                values=[tr("Solo texto"), tr("Adjuntar imágenes")],
                                                command=self.reference_use_changed, width=260)
-        self.reference_menu.pack(anchor="w", padx=5, pady=4)
-        self.reference_hint = ctk.CTkLabel(destination, text="", wraplength=700, justify="left")
-        self.reference_hint.pack(anchor="w", padx=5)
-        self.confirm_checkbox = ctk.CTkCheckBox(destination,
+        self.reference_menu.pack(anchor="w", pady=4)
+        self.reference_hint = ctk.CTkLabel(uso, text="", wraplength=700, justify="left")
+        self.reference_hint.pack(anchor="w")
+        self.confirm_checkbox = ctk.CTkCheckBox(uso,
             text=tr("He comprobado que este modelo admite estas imágenes en mi panel"),
             variable=self.attachment_confirmed)
         self.reference_use_changed(tr("Solo texto"))
-        options = ctk.CTkFrame(body)
+        options = ctk.CTkFrame(destination, fg_color="transparent")
         options.pack(fill="x", pady=8)
         def _guardar_identificador(variable):
             # Closure con la variable atada: sin esto, las dos entradas del
@@ -208,19 +264,20 @@ class VisualStudio(ctk.CTkToplevel):
                 self.language_menu = menu
         self.duration_label = ctk.CTkLabel(options, text=tr("Segundos"))
         self.duration_entry = ctk.CTkEntry(options, textvariable=self.duration, width=75)
-        ctk.CTkLabel(body, text=tr("Analizar envía las imágenes al proveedor de visión configurado y sus alternativas. "
-                     "Generar envía el análisis y tu idea al proveedor de texto. Puede consumir cuota. "
-                     "Varias imágenes se comparan juntas en un panel reducido."),
-                     wraplength=700, justify="left").pack(anchor="w")
-        self.video_controls = ctk.CTkFrame(body)
-        ctk.CTkLabel(self.video_controls, text=tr("Dirección de vídeo (opcional)")).pack(anchor="w", padx=5)
+        # Al final de Destino, y lo empaqueta refresh_destination() solo con
+        # salida de vídeo: se añade detrás de todo lo de esta sección.
+        self.video_controls = ctk.CTkFrame(destination, fg_color="transparent")
+        ctk.CTkLabel(self.video_controls, text=tr("Dirección de vídeo (opcional)")).pack(anchor="w")
         self.camera = self.entry(self.video_controls, "Cámara", "fija, acercamiento lento, seguimiento…")
         self.environment_motion = self.entry(self.video_controls, "Entorno", "niebla, viento, luces, objetos…")
         self.audio_direction = self.entry(self.video_controls, "Sonido", "ambiente; diálogo literal e idioma si lo necesitas")
         self.transition_direction = self.entry(self.video_controls, "Inicio → final", "cómo pasar de A a B, sin saltos")
-        vision_bar = ctk.CTkFrame(body)
-        vision_bar.pack(fill="x", pady=(8, 0))
-        ctk.CTkLabel(vision_bar, text=tr("Visión")).pack(side="left", padx=5)
+
+        # ── Análisis ─────────────────────────────────────────────────────
+        analisis = self.seccion(body, "Análisis")
+        vision_bar = ctk.CTkFrame(analisis, fg_color="transparent")
+        vision_bar.pack(fill="x")
+        ctk.CTkLabel(vision_bar, text=tr("Visión")).pack(side="left", padx=(0, 5))
         self.vision_menu = ctk.CTkOptionMenu(
             vision_bar, values=[tr(v) for v in self.vision_options()],
             command=self.vision_provider_changed, width=190)
@@ -232,38 +289,37 @@ class VisualStudio(ctk.CTkToplevel):
         self.vision_hint = ctk.CTkLabel(vision_bar, text="", anchor="w")
         self.vision_hint.pack(side="left", padx=8)
         self.refresh_vision_hint()
-        self.analyze_button = ctk.CTkButton(body, text=tr("1. Analizar imágenes"), command=self.analyze)
-        self.analyze_button.pack(anchor="w", pady=8)
-        self.analysis = self.text_field(body, "Análisis editable — corrige lo que la IA haya interpretado mal", 150)
-        self.generate_button = ctk.CTkButton(body, text=tr("2. Generar prompt"), command=self.generate)
-        self.generate_button.pack(anchor="w", pady=8)
-        self.output = self.text_field(body, "Prompt positivo", 200)
-        self.negative = self.text_field(body, "Prompt negativo (solo si el modelo lo admite)", 85)
-        self.notes = self.text_field(body, "Notas de uso (no se copian al prompt)", 85)
-        self.revision_instruction = self.entry(body, "Qué mejorar", "opcional: más cinematográfico, menos adornos…")
-        self.manual_limit = self.entry(body, "Límite manual", "caracteres; vacío = el del catálogo")
-        revision_bar = ctk.CTkFrame(body)
+        ctk.CTkLabel(analisis, text=tr("Analizar envía las imágenes al proveedor de visión configurado y sus alternativas. "
+                     "Generar envía el análisis y tu idea al proveedor de texto. Puede consumir cuota. "
+                     "Varias imágenes se comparan juntas en un panel reducido."),
+                     wraplength=700, justify="left").pack(anchor="w", pady=(4, 0))
+        self.analysis = self.text_field(analisis, "Análisis editable — corrige lo que la IA haya interpretado mal", 150)
+
+        # ── Prompt ───────────────────────────────────────────────────────
+        prompt = self.seccion(body, "Prompt")
+        self.output = self.text_field(prompt, "Prompt positivo", 200)
+        self.negative = self.text_field(prompt, "Prompt negativo (solo si el modelo lo admite)", 85)
+        self.notes = self.text_field(prompt, "Notas de uso (no se copian al prompt)", 85)
+        self.revision_instruction = self.entry(prompt, "Qué mejorar", "opcional: más cinematográfico, menos adornos…")
+        self.manual_limit = self.entry(prompt, "Límite manual", "caracteres; vacío = el del catálogo")
+        revision_bar = ctk.CTkFrame(prompt, fg_color="transparent")
         revision_bar.pack(fill="x", pady=5)
-        ctk.CTkButton(revision_bar, text=tr("Ajustar al límite"), command=lambda: self.revise(True)).pack(side="left", padx=5)
-        ctk.CTkButton(revision_bar, text=tr("Mejorar prompt"), command=self.revise).pack(side="left", padx=5)
-        self.character_count = ctk.CTkLabel(body, text="")
-        self.character_count.pack(anchor="w")
-        actions = ctk.CTkFrame(body)
-        actions.pack(fill="x", pady=6)
-        ctk.CTkButton(actions, text=tr("Copiar resultado"), command=self.copy).pack(side="left", padx=5)
-        ctk.CTkButton(actions, text=tr("Llevar a salida principal"), command=self.apply).pack(side="left", padx=5)
-        ctk.CTkButton(actions, text=tr("Copiar positivo"), command=self.copy_positive).pack(side="left", padx=5)
-        ctk.CTkButton(actions, text=tr("Copiar negativo"), command=self.copy_negative).pack(side="left", padx=5)
-        ctk.CTkButton(body, text=tr("Comprobar prompt"), command=self.check_prompt).pack(anchor="w", pady=5)
-        ctk.CTkButton(body, text=tr("Crear cortometraje con estas referencias"),
-                      command=self.shortfilm).pack(anchor="w", pady=5)
-        project_bar = ctk.CTkFrame(body)
-        project_bar.pack(fill="x", pady=5)
-        ctk.CTkButton(project_bar, text=tr("Nuevo proyecto"), command=lambda: VisualStudio(self.app)).pack(side="left", padx=5)
-        ctk.CTkButton(project_bar, text=tr("Guardar proyecto"), command=self.save).pack(side="left", padx=5)
-        ctk.CTkButton(project_bar, text=tr("Abrir proyecto"), command=self.load).pack(side="left", padx=5)
-        ctk.CTkButton(project_bar, text=tr("Recuperar versiones"), command=self.recover).pack(side="left", padx=5)
-        ctk.CTkLabel(self, textvariable=self.status, wraplength=730, justify="left").pack(fill="x", padx=12, pady=8)
+        ctk.CTkButton(revision_bar, text=tr("Mejorar prompt"), command=self.revise,
+                      **secundario).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(revision_bar, text=tr("Ajustar al límite"), command=lambda: self.revise(True),
+                      **secundario).pack(side="left", padx=5)
+        ctk.CTkButton(revision_bar, text=tr("Comprobar prompt"), command=self.check_prompt,
+                      **secundario).pack(side="left", padx=5)
+        self.character_count = ctk.CTkLabel(revision_bar, text="")
+        self.character_count.pack(side="left", padx=10)
+        actions = ctk.CTkFrame(prompt, fg_color="transparent")
+        actions.pack(fill="x", pady=(0, 4))
+        ctk.CTkButton(actions, text=tr("Llevar a salida principal"), command=self.apply,
+                      **secundario).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(actions, text=tr("Copiar positivo"), command=self.copy_positive,
+                      **secundario).pack(side="left", padx=5)
+        ctk.CTkButton(actions, text=tr("Copiar negativo"), command=self.copy_negative,
+                      **secundario).pack(side="left", padx=5)
         self.model_search.trace_add("write", lambda *_: self.filter_model_menu())
         self.refresh_destination()
         self.render()
@@ -303,11 +359,17 @@ class VisualStudio(ctk.CTkToplevel):
         self.duration_label.pack_forget()
         self.duration_entry.pack_forget()
         self.video_controls.pack_forget()
-        self.transition_direction.pack_forget()
+        # La FILA, no la caja: desde que cada caja lleva su rótulo, ocultar
+        # solo la caja dejaba el rótulo «Inicio → final» suelto en los demás
+        # modos de vídeo.
+        fila_transicion = self.transition_direction.master
+        fila_transicion.pack_forget()
         if mode == MODES[2]:
-            self.transition_direction.pack(fill="x", pady=4)
+            fila_transicion.pack(fill="x", pady=4)
         if kind == "video":
-            self.video_controls.pack(fill="x", pady=8, before=self.analyze_button)
+            # Último de la sección Destino. Antes iba «antes del botón
+            # Analizar», que ahora vive en la barra fija de abajo.
+            self.video_controls.pack(fill="x", pady=8)
             self.duration_label.pack(side="left", padx=5)
             self.duration_entry.pack(side="left", padx=5)
 
@@ -352,6 +414,42 @@ class VisualStudio(ctk.CTkToplevel):
         self.swap_button.pack_forget()
         if self.mode.get() == MODES[2]:
             self.swap_button.pack(side="left", padx=5)
+
+    def mostrar(self, widget):
+        """Baja el cuerpo hasta `widget`, con su rótulo a la vista.
+
+        Analizar y Generar están en la barra fija de abajo, y su resultado
+        aparece en mitad del cuerpo, donde no se estaba mirando. Si algo
+        falla aquí no pasa nada: el resultado ya está escrito.
+        """
+        try:
+            self.update_idletasks()
+            y, w = 0, widget
+            while w is not None and w is not self.body:
+                y += w.winfo_y()
+                w = w.master
+            alto = self.body.winfo_height()
+            if w is self.body and alto > 0:
+                self.body._parent_canvas.yview_moveto(max(0.0, (y - 40) / alto))
+        except Exception:
+            pass
+
+    @staticmethod
+    def seccion(parent, titulo):
+        """Un bloque con su título. El panel era un formulario de cuatro
+        pantallas sin divisiones: no se veía dónde acababa un paso y
+        empezaba el siguiente. tr() aquí, como en text_field."""
+        colores = get_theme_colors(ctk.get_appearance_mode().lower() == "light")
+        # Color y borde de tarjeta del tema: sin ellos la sección tenía el
+        # mismo fondo que el cuerpo y no se veía dónde empezaba ni acababa.
+        marco = ctk.CTkFrame(parent, corner_radius=8, fg_color=colores["card_bg"],
+                             border_width=1, border_color=colores["card_border"])
+        marco.pack(fill="x", pady=(12, 0))
+        ctk.CTkLabel(marco, text=tr(titulo),
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(anchor="w", padx=12, pady=(8, 2))
+        cuerpo = ctk.CTkFrame(marco, fg_color="transparent")
+        cuerpo.pack(fill="x", padx=12, pady=(0, 10))
+        return cuerpo
 
     @staticmethod
     def text_field(parent, label, height):
@@ -538,6 +636,13 @@ class VisualStudio(ctk.CTkToplevel):
         except ValueError as exc:
             count_hint = str(exc)
         self.help_label.configure(text=tr(MODE_HELP[self.mode.get()]) + "\n" + count_hint)
+        if not self.refs:
+            # Estado vacío con contenido: un marco vacío mide 200 px en
+            # CustomTkinter, y el panel abría con un hueco en blanco enorme
+            # justo debajo de «Añadir imágenes».
+            ctk.CTkLabel(self.cards, text=tr("Todavía no hay imágenes. Añádelas, o usa la que tengas cargada en la ventana principal."),
+                         text_color=get_theme_colors(ctk.get_appearance_mode().lower() == "light")["muted_text"],
+                         anchor="w").pack(fill="x", pady=(4, 8))
         for i, ref in enumerate(self.refs):
             row = ctk.CTkFrame(self.cards)
             row.pack(fill="x", pady=3)
@@ -555,7 +660,9 @@ class VisualStudio(ctk.CTkToplevel):
                 label += " · " + (tr("INICIO") if i == 0
                                        else tr("FINAL") if i == 1
                                        else tr("Sobra: quitar"))
-            ctk.CTkLabel(row, text=label).pack(side="left", padx=5)
+            # Ancho fijo: con el del texto, el desplegable de función caía en
+            # otra posición en cada fila según lo largo del nombre.
+            ctk.CTkLabel(row, text=label, width=ANCHO_NOMBRE_REF, anchor="w").pack(side="left", padx=5)
             if self.mode.get() != MODES[2]:
                 # Igual que los modos: se ensena traducido y se guarda el
                 # identificador, porque ref.role se serializa en el proyecto.
@@ -564,9 +671,11 @@ class VisualStudio(ctk.CTkToplevel):
                 menu.set(tr(ref.role))
                 menu.pack(side="left", padx=5)
             ctk.CTkButton(row, text=tr("Ampliar"), width=75,
-                          command=lambda index=i: self.preview_reference(index)).pack(side="right", padx=5)
+                          command=lambda index=i: self.preview_reference(index),
+                          **P.estilo_boton(P.BTN_PRIMARIO)).pack(side="right", padx=5)
             ctk.CTkButton(row, text=tr("Quitar"), width=65,
-                          command=lambda index=i: self.remove(index)).pack(side="right", padx=5)
+                          command=lambda index=i: self.remove(index),
+                          **P.estilo_boton(P.BTN_PELIGRO)).pack(side="right", padx=5)
 
     def preview_reference(self, index):
         # _VentanaPrevia y no un CTkToplevel pelado, porque un Toplevel pelado se
@@ -705,6 +814,9 @@ class VisualStudio(ctk.CTkToplevel):
                 else:
                     visit(widget)
         visit(self.body)
+        # La barra fija de abajo está fuera del cuerpo: sin esto, Analizar y
+        # Generar seguirían pulsables con una petición en marcha.
+        visit(self.action_bar)
         if state == "normal":
             self.filter_model_menu()
         if state == "normal" and self.mode.get() != MODES[3]:
@@ -789,10 +901,11 @@ class VisualStudio(ctk.CTkToplevel):
             if not isinstance(text, str) or not text.strip():
                 raise ValueError(tr("El proveedor devolvió un análisis vacío."))
             self.analysis.delete("1.0", "end")
-            self.analysis.insert("1.0", text)
+            self.analysis.insert("1.0", texto_sin_markdown(text))
             self.analysis_stale = False
             if not self.checkpoint():
                 return
+            self.mostrar(self.analysis)
             self.status.set(tr("Análisis de {0}. Revísalo antes de generar.").format(provider))
             # Quien respondio DE VERDAD. Con la cadena automatica puede no
             # ser el primero, y conviene que se vea sin abrir el log.
@@ -842,6 +955,7 @@ class VisualStudio(ctk.CTkToplevel):
                 getattr(self, key).insert("1.0", value)
             if not self.checkpoint():
                 return
+            self.mostrar(self.output)
             limit = (specs or {}).get("max_chars")
             if isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
                 self.status.set(tr("El borrador supera el límite. Usa Ajustar al límite; el texto se conserva."))

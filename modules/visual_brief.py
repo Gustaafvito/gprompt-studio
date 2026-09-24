@@ -54,6 +54,24 @@ def check_attachment(specs, mode, count, attach, confirmed):
         raise ValueError(tr("Compatibilidad sin confirmar. Comprueba el modo de entrada en tu generador y marca la casilla, o elige Solo texto."))
 
 
+_RE_NEGRITA = re.compile(r"\*\*(.+?)\*\*|__(.+?)__")
+_RE_TITULO_MD = re.compile(r"^[ \t]{0,3}#{1,6}[ \t]+", re.MULTILINE)
+_RE_VINETA_MD = re.compile(r"^([ \t]*)[*+\-][ \t]+", re.MULTILINE)
+
+
+def texto_sin_markdown(texto):
+    """El análisis de visión, legible en una caja de texto plano.
+
+    Los proveedores contestan en markdown y la caja lo enseñaba tal cual:
+    «**A: Personaje**», «*   **Sujeto:** Una mujer joven». Se quitan las
+    negritas y los títulos, y las viñetas pasan a «•». No se pierde nada de
+    lo que dice: el texto sigue viajando igual al paso de generar.
+    """
+    texto = _RE_NEGRITA.sub(lambda m: m.group(1) or m.group(2), texto or "")
+    texto = _RE_TITULO_MD.sub("", texto)
+    return _RE_VINETA_MD.sub(lambda m: m.group(1) + "• ", texto)
+
+
 def parse_visual_result(text, specs, enforce_limit=True):
     """Never report a commentary-only completion as a generated prompt."""
     raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.IGNORECASE)

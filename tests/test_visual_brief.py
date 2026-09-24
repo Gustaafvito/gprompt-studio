@@ -284,7 +284,9 @@ def test_generation_uses_isolated_request_not_main_history(monkeypatch, invalid_
         aspect=widget("9:16"), language=widget("Inglés"), output=widget("", "output"),
         notes=widget("", "notes"), status=SimpleNamespace(set=lambda text: None),
         app=SimpleNamespace(deepseek=SimpleNamespace(generar_batch=batch)),
-        submit=lambda task, done: done(task()))
+        submit=lambda task, done: done(task()),
+        # El panel baja hasta el resultado al terminar: aquí no hay nada que bajar.
+        mostrar=lambda widget: None)
     monkeypatch.setattr(ui, "get_image_model_specs", lambda name: {"has_negative": False})
     if invalid_response:
         with pytest.raises(ValueError):
@@ -476,7 +478,9 @@ def test_revision_only_replaces_original_after_valid_response(answer, success):
         revision_instruction=widget("keep design"), status=SimpleNamespace(set=lambda s: None),
         checkpoint=lambda: checkpoints.append(True) or True,
         app=SimpleNamespace(deepseek=SimpleNamespace(generar_batch=batch)),
-        submit=lambda task, done: done(task()))
+        submit=lambda task, done: done(task()),
+        # El panel baja hasta el resultado al terminar: aquí no hay nada que bajar.
+        mostrar=lambda widget: None)
     if success:
         VisualStudio.revise(fake, True)
         assert "short" in replaced and len(checkpoints) == 2
