@@ -325,6 +325,7 @@ TRADUCCIONES = {
     'Sorpréndeme con una idea aleatoria': 'Surprise me with a random idea',
     'Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close': 'Story Sequence (IMAGE only): 3 shots Wide/Medium/Close',
     'Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre': 'Storyboard (VIDEO only): 4 frames opening/mid/climax/closing',
+    'Cortometraje (solo VÍDEO): guion de N escenas con plano/acción/cámara/diálogo/SFX + @referencias de personaje. Para el flujo reference-to-video (Vidu/Kling)': 'Short film (VIDEO only): N-scene script with shot/action/camera/dialogue/SFX + character @references. For the reference-to-video workflow (Vidu/Kling)',
     'Storyboard cinematográfico (solo IMAGEN): N paneles. Auto-detecta formato: natural (GPT Image/DALL-E/MJ) o tag-based (SD/Comfy)': 'Cinematic storyboard (IMAGE only): N panels. Auto-detects format: natural (GPT Image/DALL-E/MJ) or tag-based (SD/Comfy)',
     'Sugiere el mejor modelo según tu idea': 'Suggests the best model for your idea',
     'Tienes {0} prompts en el historial.\n¿Cuántos quieres analizar?': 'You have {0} prompts in history.\nHow many do you want to analyze?',
