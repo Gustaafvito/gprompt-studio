@@ -172,6 +172,22 @@ Ahora lo que no cabe baja de línea.
   de OpenAI pasa a gpt-6-luna, más barato que el anterior.
 - Al salir del Modo Focus, las pestañas no volvían. Arreglado.
 
+**🔞 NSFW, mejor.** La detección automática no funcionaba: anunciaba que
+activaba el modo NSFW y no lo hacía. Ahora entiende la idea en castellano y
+en inglés, y la app sabe qué modelos filtran el contenido adulto (GPT Image,
+Nano Banana, Veo, Midjourney…): con ellos el prompt se queda en sugerente
+para que no te lo rechacen, y te avisa. Si eliges un modelo para adultos con
+NSFW apagado, también te lo dice. Apagado, el negativo excluye la desnudez.
+
+**⚡ Modo Brief por modo.** Sus reglas eran de anuncio de vídeo y se
+aplicaban igual a una imagen fija. Ahora cada modo tiene las suyas: en
+imagen, producto protagonista y hueco para el titular; en audio, una cuña
+de 15-30 segundos. El interruptor está junto a Destino y, mientras esté
+encendido, lo ves arriba.
+
+**Destino** funciona también con la app en inglés, y ya no pone un formato
+que el modelo no tiene.
+
 Tus claves, tu historial y tus plantillas se conservan al instalar encima:
 viven fuera del programa, en `%USERPROFILE%\.arquitecto_prompts`.
 

@@ -330,11 +330,17 @@ si puedes, mejóralo»).
   ponía formatos que el modelo no tenía. Arreglado.
 - **Tutorial.** La casilla doble era un ✅ en el texto.
 
-**Propuesto, sin hacer (espera al usuario):** el Brief está escrito para
-anuncios de VÍDEO (primer shot, 6-15 s, voz en off) y se pega igual a
-imagen y audio; se recuerda entre sesiones y su interruptor vive en una
-pestaña que puede ir plegada, así que puede quedarse encendido sin que se
-vea.
+**Brief (`22d80b8`, con el visto bueno del usuario).** Estaba escrito para
+anuncios de VÍDEO (primer shot, 6-15 s, voz en off) y se pegaba igual a
+imagen y audio; se recuerda entre sesiones y su interruptor vivía en una
+pestaña que puede ir plegada. Ahora hay reglas por modo
+(`prompts.brief_para_modo`), un interruptor junto a Destino en cada panel y
+un indicador «⚡ Brief» en la fila de modo que lo apaga de un clic. En la
+cabecera, junto al de ADN, no cabía: los 8 menús se compactaban a 1382.
+Glosario con fichas de Brief, Destino y NSFW.
+
+**Sin respuesta del usuario:** si el concurso Anthum sigue vivo o se quita
+de Destino.
 
 ---
 
@@ -409,7 +415,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1809 passed, 1 skipped
+python -m pytest -q      1816 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
