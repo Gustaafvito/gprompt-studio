@@ -40,7 +40,7 @@ from modules import (
     install_components,
 )
 from modules import paleta as P
-from modules.espacio_ventana import geometria_inicial
+from modules.espacio_ventana import geometria_inicial, recortar_a_lineas
 from persistence import DataStore
 from workers import (
     DeepSeekWorker,
@@ -371,6 +371,13 @@ class ArquitectoApp(
         self.lbl_img_model_info = ctk.CTkLabel(
             self, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_INFO,
             corner_radius=6, wraplength=1800, justify="left", anchor="w")
+        # El ajuste de línea sigue al ancho de la VENTANA: con 1800 fijo, en
+        # cualquier ventana más estrecha la primera línea se salía por la
+        # derecha. Ojo: escuchar a la propia etiqueta cuelga la app —cada
+        # ajuste cambia su ancho (medido: 1310 → 1322 → 1304) y una barra
+        # de CustomTkinter se queda redibujándose sin fin—.
+        self._ancho_info_modelo = None
+        self.bind("<Configure>", self._ajustar_info_modelo, add="+")
         self.ui._build_tabs_centrales()
         self.ui._build_imagen_ref()
         self.ui._build_entrada()
@@ -381,6 +388,38 @@ class ArquitectoApp(
         self.bind("<Configure>", self.ui.programar_alturas, add="+")
         self.after_idle(self.ui.programar_alturas)
         self.atajos.bind_shortcuts()
+
+    def _ajustar_info_modelo(self, evento):
+        """Ajusta la línea de la ficha del modelo al ancho de la ventana."""
+        if evento.widget is not self or evento.width == self._ancho_info_modelo:
+            return
+        self._ancho_info_modelo = evento.width
+        try:
+            escala = ctk.ScalingTracker.get_widget_scaling(self.lbl_img_model_info)
+            # Sus márgenes (30 a cada lado) y un respiro para el texto.
+            ancho = max(200, int(evento.width / escala) - 80)
+            if ancho != self.lbl_img_model_info.cget("wraplength"):
+                self.lbl_img_model_info.configure(wraplength=ancho)
+                self.pintar_info_modelo()
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def pintar_info_modelo(self, texto=None):
+        """Pone la ficha del modelo, recortada a dos líneas del ancho actual.
+
+        Sin `texto`, repinta la última con el ancho de ahora (al redimensionar).
+        """
+        if texto is not None:
+            self._info_modelo_completo = texto
+        completo = getattr(self, "_info_modelo_completo", "")
+        try:
+            fuente = self.lbl_img_model_info.cget("font")
+            recortado = recortar_a_lineas(
+                completo, fuente.measure, self.lbl_img_model_info.cget("wraplength"))
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+            recortado = completo
+        self.lbl_img_model_info.configure(text=recortado)
 
     def _setup_post_init(self):
         """Datos iniciales, preferencias, atajos, timers y cierre del splash."""

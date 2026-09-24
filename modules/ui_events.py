@@ -273,7 +273,8 @@ class UiEventsService:
             except Exception as _e:
                 logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
-            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}", text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), P.TXT_INFO)
 
@@ -286,7 +287,7 @@ class UiEventsService:
                         specs.get('nota') or '?', specs.get('max_chars', '?'),
                         ', '.join(specs.get('duraciones', [])),
                         ', '.join(specs.get('ratios', [])),
-                        specs.get('best_for', '')[:300],
+                        best_for_display(specs)[:300],  # en inglés, la ficha en inglés
                         specs.get('prompt_formula', '?')[:200],
                         specs.get('prompt_ejemplo', '?')[:250])
                 )
@@ -403,7 +404,7 @@ class UiEventsService:
                        "🎯 Ideal para:\n{2}\n\n📐 Fórmula:\n{3}\n\n"
                        "💡 Ejemplo:\n{4}").format(
                         specs.get('nota') or '?', specs.get('max_chars', '?'),
-                        specs.get('best_for', '')[:300],
+                        best_for_display(specs)[:300],  # en inglés, la ficha en inglés
                         specs.get('prompt_formula', '?')[:200],
                         specs.get('prompt_ejemplo', '?')[:250])
                 )
@@ -436,9 +437,9 @@ class UiEventsService:
                 badges.append(f"🖼×{specs['max_imagenes']}")
 
             badges_str = "  ·  ".join(badges)
-            self.app.lbl_img_model_info.configure(
-                text=tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (best_for_display(specs))),
-                text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(
+                tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (best_for_display(specs))))
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
 
             try:
@@ -471,7 +472,8 @@ class UiEventsService:
         if specs:
             nota_a = specs.get('nota') or 's/n'
             dur_a = specs.get('duracion_max_min') or '?'
-            self.app.lbl_img_model_info.configure(text=tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (best_for_display(specs))), text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (best_for_display(specs))))
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎵 {0}').format(motor_name), "#9b59b6")
         else:

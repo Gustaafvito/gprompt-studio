@@ -80,6 +80,26 @@ def geometria_inicial(pantalla_w, pantalla_h, escala=1.0):
     return w, h, x, y
 
 
+def recortar_a_lineas(texto, mide, ancho, lineas=2):
+    """`texto` recortado por palabras para que quepa en `lineas` de `ancho`.
+
+    `mide(texto)` da el ancho del texto en una sola línea, en las mismas
+    unidades que `ancho`. Se deja un 10 % de holgura: al partir por palabras
+    cada línea desperdicia su final. Si se recorta, acaba en «…».
+
+    Para la ficha del modelo que va encima de las pestañas: con descripciones
+    de 600 caracteres ocupaba 3 líneas, y cada línea que gana es alto que
+    pierde el resultado. La ficha entera sigue en el tooltip del modelo.
+    """
+    cabe = ancho * lineas * 0.9
+    if mide(texto) <= cabe:
+        return texto
+    palabras = texto.split(" ")
+    while palabras and mide(" ".join(palabras) + "…") > cabe:
+        palabras.pop()
+    return " ".join(palabras).rstrip(" ,.;:—-") + "…"
+
+
 def plegar_pestanas(espacio, manual=None):
     """¿Van las pestañas plegadas a su tira de títulos?
 

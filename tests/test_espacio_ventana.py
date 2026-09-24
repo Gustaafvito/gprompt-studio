@@ -82,3 +82,31 @@ class TestPlegar:
     def test_lo_que_decide_el_usuario_manda(self):
         assert plegar_pestanas(10_000, manual=True) is True
         assert plegar_pestanas(10, manual=False) is False
+
+
+class TestRecortarALineas:
+    """La ficha del modelo encima de las pestañas: con descripciones de 600
+    caracteres ocupaba 3 líneas, y cada línea es alto que pierde el
+    resultado. Medido el 24-sep-2026: 149 px, por debajo de los 150."""
+
+    @staticmethod
+    def mide(texto):
+        return 10 * len(texto)
+
+    def test_si_cabe_no_se_toca(self):
+        from modules.espacio_ventana import recortar_a_lineas
+        assert recortar_a_lineas("corto", self.mide, 500) == "corto"
+
+    def test_si_no_cabe_se_corta_por_palabras_con_puntos(self):
+        from modules.espacio_ventana import recortar_a_lineas
+        largo = "palabra " * 100
+        corto = recortar_a_lineas(largo, self.mide, 300, lineas=2)
+        assert corto.endswith("…")
+        assert self.mide(corto) <= 300 * 2 * 0.9
+        # Por palabras: nunca deja media palabra antes de los puntos.
+        assert corto[:-1].split(" ")[-1] == "palabra"
+
+    def test_no_deja_signos_colgando(self):
+        from modules.espacio_ventana import recortar_a_lineas
+        corto = recortar_a_lineas("uno, dos, tres, cuatro, cinco, seis", self.mide, 100, lineas=1)
+        assert not corto[:-1].endswith((",", " "))

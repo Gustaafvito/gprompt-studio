@@ -26,6 +26,7 @@ from modules.espacio_ventana import (
     plegar_pestanas,
     repartir,
 )
+from modules.fila_fluida import FilaFluida, ancho_boton, cabe_completo
 
 logger = logging.getLogger(__name__)
 
@@ -684,10 +685,12 @@ class UIBuildersService:
         frame_menus = ctk.CTkFrame(inner, fg_color="transparent")
         frame_menus.pack(side="right", padx=(16, 0))
 
+        fuente_menu = ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
         for label_grupo, color_borde, items in grupos_menus:
-            btn = ctk.CTkButton(frame_menus, text=label_grupo, width=120, height=28,
+            btn = ctk.CTkButton(frame_menus, text=label_grupo, height=28,
+                                width=ancho_boton(fuente_menu, label_grupo, 120),
                                 **P.estilo_boton(color_borde, primario=True),
-                                corner_radius=6, font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+                                corner_radius=6, font=fuente_menu,
                                 text_color="#ffffff",
                                 command=_make_toggle(label_grupo, items, color_borde),
                                 anchor="w")
@@ -696,37 +699,44 @@ class UIBuildersService:
             self.app._header_menus.append((btn, label_grupo, color_borde, items))
             self.app._header_btns.append(btn)
 
-        # ── Modo compacto responsivo (v1.0) ──
-        # Si la ventana es estrecha (<1180px), reducir labels a solo emoji
-        # para que quepan los 7 menús del header.
+        # ── Modo compacto responsivo ──
+        # Si los menús no caben enteros al lado del cerebro, se quedan en
+        # solo emoji. Se decide con el hueco REAL: antes era «ventana < 1180»,
+        # una cifra de cuando había 7 menús; con 8, a 1382 «UI» salía cortado
+        # y «Workflow» no se veía.
         self.app._header_compacto = False
         self.app._header_labels_originales = {btn: btn.cget("text") for btn in self.app._header_btns}
+        self.app._header_anchos_completos = [
+            ancho_boton(fuente_menu, lbl, 120) for lbl in self.app._header_labels_originales.values()]
 
-        def _on_resize(event=None):
+        def _on_resize(_event=None):
             try:
-                # Fix A1 fase 2: el widget es self.app (ArquitectoApp),
-                # no self (UIBuildersService). Antes el guard siempre era
-                # True → el handler retornaba sin actualizar → los botones
-                # se quedaban en modo compacto (cuadrados) tras el primer
-                # tick del after(200) que dispara con ancho parcial.
-                if event is not None and event.widget is not self.app:
+                escala = ctk.ScalingTracker.get_widget_scaling(inner)
+                if inner.winfo_width() <= 1:
                     return
-                ancho = self.app.winfo_width()
-                debe_compactar = ancho < 1180
+                # Lo que queda a la derecha del cerebro, en unidades lógicas
+                # (los márgenes: 20+20 del cerebro y 16 de los menús).
+                disponible = (inner.winfo_width() - frame_llm.winfo_reqwidth()) / escala - 56
+                debe_compactar = not cabe_completo(
+                    disponible, self.app._header_anchos_completos, hueco=4)
                 if debe_compactar == self.app._header_compacto:
                     return
                 self.app._header_compacto = debe_compactar
-                for btn in self.app._header_btns:
+                for btn, ancho in zip(self.app._header_btns, self.app._header_anchos_completos):
                     label_orig = self.app._header_labels_originales.get(btn, "")
                     if debe_compactar:
                         # Solo emoji (la primera "palabra" antes del espacio)
                         emoji = label_orig.split(" ")[0] if " " in label_orig else label_orig
                         btn.configure(text=emoji, width=42)
                     else:
-                        btn.configure(text=label_orig, width=120)
+                        btn.configure(text=label_orig, width=ancho)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-        self.app.bind("<Configure>", _on_resize, add="+")
+        self.app._header_on_resize = _on_resize
+        # El hueco cambia con la ventana y con el cerebro (el botón 🧬 ADN
+        # aparece y desaparece a su lado).
+        inner.bind("<Configure>", _on_resize, add="+")
+        frame_llm.bind("<Configure>", _on_resize, add="+")
         self.app.after(200, _on_resize)
 
     def _refrescar_indicadores_llm(self):
@@ -1999,21 +2009,15 @@ class UIBuildersService:
         outer = ctk.CTkFrame(self.app, fg_color="transparent")
         outer.pack(pady=2, padx=16, fill="x")
 
-        # Fila 1: generación + análisis
-        row1 = ctk.CTkFrame(outer, fg_color="transparent")
+        # Fila 1: generación + análisis. Filas fluidas: si la ventana se
+        # estrecha, el grupo que no cabe baja entero a otra línea en vez de
+        # encogerse hasta desaparecer (ver modules/fila_fluida.py).
+        row1 = FilaFluida(outer, sep_color)
         row1.pack(fill="x", pady=(0, 3))
+        self.app._botonera_filas = [row1]
 
-        btn_s = {"height": 32, "corner_radius": 6, "font": ctk.CTkFont(size=P.FUENTE_CUERPO)}
-
-        def _sep(parent):
-            """Mini separador vertical entre grupos de botones."""
-            wrap = ctk.CTkFrame(parent, fg_color="transparent",
-                                width=14, height=32)
-            wrap.pack(side="left", padx=2)
-            wrap.pack_propagate(False)
-            line = ctk.CTkFrame(wrap, fg_color=sep_color,
-                                width=1, height=22)
-            line.place(relx=0.5, rely=0.5, anchor="center")
+        fuente_btn = ctk.CTkFont(size=P.FUENTE_CUERPO)
+        btn_s = {"height": 32, "corner_radius": 6, "font": fuente_btn}
 
         # ═══ SISTEMA DE COLORES SEMÁNTICOS ═══
         # 🟢 Verde:   genera output (Ideas, Generar, Quick, Variaciones, Regenerar)
@@ -2096,13 +2100,9 @@ class UIBuildersService:
 
         def _render_grupos(parent, grupos):
             """Render con título visible arriba + botones abajo en cada grupo."""
-            for g_idx, item in enumerate(grupos):
-                titulo, color_tit, grupo = item
-                if g_idx > 0:
-                    _sep(parent)
-                # Mini-frame vertical por grupo: título + botones
-                grp_frame = ctk.CTkFrame(parent, fg_color="transparent")
-                grp_frame.pack(side="left", padx=0)
+            for titulo, color_tit, grupo in grupos:
+                # Cada grupo es una pieza de la fila fluida: título + botones
+                grp_frame = parent.nueva_pieza()
                 # Label del título — pequeño, en color del grupo
                 ctk.CTkLabel(grp_frame, text=tr(titulo),
                               font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
@@ -2128,7 +2128,8 @@ class UIBuildersService:
                         }
                     else:
                         kw = {}
-                    btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
+                    btn = ctk.CTkButton(btn_row, text=tr(text),
+                                        width=ancho_boton(fuente_btn, tr(text), w),
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
                     CTkToolTip(btn, delay=0.5, message=tr(tooltip))
@@ -2147,7 +2148,8 @@ class UIBuildersService:
         _render_grupos(row1, grupos_r1)
 
         # ═══ BADGE DE COSTE (al final de fila 1) ═══
-        self.app.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
+        self.app.lbl_coste = ctk.CTkLabel(row1.nueva_pieza(con_separador=False), text="",
+                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                        text_color="#22c55e", fg_color="transparent")
         self.app.lbl_coste.pack(side="left", padx=(4, 0))
 
@@ -2161,35 +2163,48 @@ class UIBuildersService:
         # Registrar callback para actualizar coste cuando cambie la idea
         self.app.txt_idea.bind("<<Modified>>", self.app.footer._actualizar_coste_estimado)
 
-        row2 = ctk.CTkFrame(outer, fg_color="transparent")
+        row2 = FilaFluida(outer, sep_color)
         row2.pack(fill="x")
+        self.app._botonera_filas.append(row2)
         _render_grupos(row2, grupos_r2)
 
-        btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
-                                   fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
-                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self.app.cmd_reset)
-        btn_reset.pack(side="right", padx=2)
-        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
-
-        btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
-                                       **P.estilo_boton(P.BTN_SECUNDARIO),
-                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._repetir_ultima_config)
-        btn_repeat.pack(side="right", padx=2)
-        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
+        # Setup, Cargar setup, Última y Reset: iban pegados a la derecha de la
+        # fila 2 con side="right" y, al no caber, eran lo primero que
+        # desaparecía —a 1382 de ancho no se veía ninguno—. Ahora son la
+        # última pieza de la fila 1, donde sobraban ~350 px: en la 2 bajaban
+        # a una tercera línea y le quitaban ~40 px al resultado.
+        sesion = row1.nueva_pieza()
+        fuente_peq = ctk.CTkFont(size=P.FUENTE_PEQUENA)
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
-        btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
+        btn_save_setup = ctk.CTkButton(sesion, text=tr("💾 Setup"), height=32, corner_radius=6,
+                                        width=ancho_boton(fuente_peq, tr("💾 Setup"), 85),
                                         fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_cargar_setup)
-        btn_load_setup.pack(side="right", padx=2)
-        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
-
-        btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
-                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_guardar_setup)
-        btn_save_setup.pack(side="right", padx=2)
+                                        font=fuente_peq, command=self.app._cmd_guardar_setup)
+        btn_save_setup.pack(side="left", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
                    message=tr("Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt"))
+
+        btn_load_setup = ctk.CTkButton(sesion, text=tr("📋 Cargar setup"), height=32, corner_radius=6,
+                                        width=ancho_boton(fuente_peq, tr("📋 Cargar setup"), 110),
+                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
+                                        font=fuente_peq, command=self.app._cmd_cargar_setup)
+        btn_load_setup.pack(side="left", padx=2)
+        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
+
+        btn_repeat = ctk.CTkButton(sesion, text=tr("🔁 Última"), height=32, corner_radius=6,
+                                   width=ancho_boton(fuente_peq, tr("🔁 Última"), 85),
+                                   **P.estilo_boton(P.BTN_SECUNDARIO),
+                                   font=fuente_peq, command=self.app._repetir_ultima_config)
+        btn_repeat.pack(side="left", padx=2)
+        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
+
+        btn_reset = ctk.CTkButton(sesion, text=tr("🗑 Reset"), height=32, corner_radius=6,
+                                  width=ancho_boton(fuente_btn, tr("🗑 Reset"), 80),
+                                  fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
+                                  font=fuente_btn, command=self.app.cmd_reset)
+        btn_reset.pack(side="left", padx=2)
+        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
         self.app.frame_ideas = ctk.CTkFrame(self.app, fg_color="transparent")
 

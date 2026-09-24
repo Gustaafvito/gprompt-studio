@@ -19,6 +19,7 @@ from tests._bombeo import bombear
 
 ctk = pytest.importorskip("customtkinter")
 
+from modules.i18n import tr  # noqa: E402
 from tests._arranque_tk import crear_con_reintentos  # noqa: E402
 
 # Ventanas de la app: (módulo, función, argumentos extra además de `app`)
@@ -202,6 +203,71 @@ def _redimensionar(app, alto):
     _esperar(app)
 
 
+def _encogidos(app, botones):
+    """Botones que no se ven enteros: desmapeados, encogidos o fuera."""
+    derecha = app.winfo_rootx() + app.winfo_width()
+    malos = []
+    for b in botones:
+        if (not b.winfo_ismapped()
+                or b.winfo_width() < b.winfo_reqwidth() - 2
+                or b.winfo_rootx() + b.winfo_width() > derecha):
+            malos.append((b.cget("text"), b.winfo_width(), b.winfo_reqwidth()))
+    return malos
+
+
+@pytest.mark.slow
+class TestNadaSeCortaDeAncho:
+    """Medido el 24-sep-2026 a 1382 de ancho (el de 1920×1080): Reset, Última,
+    Setup y Cargar setup no se veían, «Preview» quedaba en 34 px, el menú «UI»
+    en 37 y «Workflow» no aparecía. Ver modules/fila_fluida.py."""
+
+    @pytest.fixture(autouse=True)
+    def _restaurar(self, app):
+        geometria = app.geometry()
+        yield
+        app.geometry(geometria)
+        app.update()
+
+    @pytest.mark.parametrize("ancho", [1600, 1382, 1280, 1100])
+    def test_la_botonera_entera(self, app, ancho):
+        app.geometry(f"{ancho}x958")
+        _esperar(app)
+        botones = [b for fila in app._botonera_filas for b in _descendientes(fila)
+                   if isinstance(b, ctk.CTkButton)]
+        textos = [b.cget("text") for b in botones]
+        for esperado in ("🗑 Reset", "🔁 Última", "💾 Setup", "🖼 Preview"):
+            assert tr(esperado) in textos
+        assert _encogidos(app, botones) == []
+
+    @pytest.mark.parametrize("ancho", [1600, 1382, 1280, 1100])
+    def test_los_ocho_menus_de_la_cabecera(self, app, ancho):
+        app.geometry(f"{ancho}x958")
+        _esperar(app)
+        assert len(app._header_btns) == 8
+        assert _encogidos(app, app._header_btns) == []
+
+    @pytest.mark.parametrize("ancho", [1600, 1280])
+    def test_la_ficha_del_modelo_no_se_sale_y_ocupa_dos_lineas(self, app, ancho):
+        # Llevaba el ajuste de línea fijo en 1800: por debajo de ese ancho,
+        # la primera línea se salía por la derecha (a 1280 acababa en «cu»).
+        etiqueta = app.lbl_img_model_info
+        app.pintar_info_modelo("descripción larga del modelo " * 40)
+        app.geometry(f"{ancho}x958")
+        _esperar(app)
+        derecha = app.winfo_rootx() + app.winfo_width()
+        assert etiqueta.winfo_rootx() + etiqueta.winfo_reqwidth() <= derecha
+        assert etiqueta.cget("text").endswith("…")
+        un_renglon = ctk.CTkFont(size=etiqueta.cget("font").cget("size")).metrics("linespace")
+        escala = ctk.ScalingTracker.get_widget_scaling(etiqueta)
+        assert etiqueta.winfo_reqheight() <= 3 * un_renglon * escala
+
+    def test_con_sitio_los_menus_llevan_su_nombre(self, app):
+        app.geometry("1600x958")
+        _esperar(app)
+        assert app._header_compacto is False
+        assert app._header_btns[-1].cget("text") == tr("⚙️ Workflow")
+
+
 @pytest.mark.slow
 class TestElResultadoSeVe:
     """El «Resultado editable» recibía 30 px de los 240 que pide.
@@ -244,7 +310,9 @@ class TestElResultadoSeVe:
         try:
             _redimensionar(app, 975)
             assert app.ui._service._pestanas_plegadas is False
-            etiqueta.configure(text="línea larga " * 60, wraplength=500)
+            # El ajuste de línea sigue al ancho de la ventana (1382): hace
+            # falta texto para unas ocho líneas.
+            etiqueta.configure(text="línea larga " * 200)
             # Sin tocar la ventana: geometry() ya provoca un recálculo y
             # taparía justo lo que se comprueba.
             _esperar(app)
