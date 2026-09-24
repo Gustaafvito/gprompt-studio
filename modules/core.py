@@ -44,6 +44,7 @@ from config import (
 )
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
+from modules.nsfw import filtra_adultos
 from modules.prompt_helpers import (
     extraer_negative_de_texto as _h_extraer_negative,
 )
@@ -66,6 +67,7 @@ from prompts import (
     NEGATIVE_BASE_NSFW,
     NEGATIVE_BASE_SFW,
     NEGATIVE_BASE_VIDEO,
+    NSFW_MODELO_FILTRADO,
     SYSTEM_AUDIO_SEAART,
     SYSTEM_AUDIO_SUNO,
     SYSTEM_IMAGEN_NSFW,
@@ -85,44 +87,6 @@ if TYPE_CHECKING:
 
 class CoreMixin:
     """Mixin containing all core methods: workers, commands, state management."""
-
-    # ON DESTINO CAMBIO
-
-    def _on_destino_cambio(self, valor=None):
-        """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
-        dest = self.destino_var.get()
-        # Sincronizar todos los combos destino (img/vid/aud)
-        for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
-            if hasattr(self, attr):
-                try: getattr(self, attr).set(dest)
-                except Exception: pass
-
-        auto_ratios = {
-            "Instagram":        "9:16",
-            "TikTok":           "9:16",
-            "YouTube":          "16:9",
-            "YouTube Shorts":   "9:16",
-            "Twitter / X":      "16:9",
-            "Anthum (concurso)":"9:16",
-            "LinkedIn":         "1:1",
-            "Web / Blog":       "16:9",
-        }
-        ratio = auto_ratios.get(dest)
-        if ratio:
-            self.ratio_var.set(ratio)
-            if hasattr(self, 'combo_ratio'):
-                self.combo_ratio.set(ratio)
-            if hasattr(self, 'combo_ratio_v'):
-                self.combo_ratio_v.set(ratio)
-            self.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), P.TXT_INFO)
-
-        # Modo concurso: activar Brief automáticamente
-        if dest == "Anthum (concurso)":
-            self.brief_var.set(True)
-            self.events._on_brief_cambio()
-            self.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), P.TXT_ACENTO)
-
-        self.reiniciar_memoria()
 
     # MODO FOCUS
 
@@ -344,6 +308,15 @@ class CoreMixin:
 
     # LÓGICA CORE
 
+    def _modelo_de_modo(self, modo):
+        """El modelo elegido en el modo dado ('' si su combo aún no existe)."""
+        combo = {"video": "combo_modelo_video", "audio": "combo_modelo_audio"}.get(
+            modo, "combo_modelo_imagen")
+        try:
+            return getattr(self, combo).get()
+        except Exception:
+            return ""
+
     def reiniciar_memoria(self):
         modo    = self.modo_var.get()
         es_nsfw = self.switch_nsfw_var.get()
@@ -368,6 +341,8 @@ class CoreMixin:
             else:
                 sys_p = SYSTEM_NATURAL_SFW
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
+            if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
+                sys_p = sys_p + NSFW_MODELO_FILTRADO
             if brief: sys_p = sys_p + BRIEF_MODIFIER
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
@@ -385,6 +360,8 @@ class CoreMixin:
             neg_final = neg_base + (", " + neg_custom if neg_custom else "")
             sys_p = sys_p.replace("[negative tags]", neg_final)
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
+            if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
+                sys_p = sys_p + NSFW_MODELO_FILTRADO
             if brief: sys_p = sys_p + BRIEF_MODIFIER
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
@@ -877,8 +854,8 @@ class CoreMixin:
         if not idea:
             self.set_estado(tr("⚠️ Escribe o selecciona una idea primero."), P.TXT_AVISO)
             return
-        # Detectar NSFW automáticamente
-        self.analysis.detectar_nsfw_auto(idea)
+        # Si la idea pide contenido explícito, se enciende 🔞 NSFW.
+        nsfw_encendido = self.analysis.detectar_nsfw_auto(idea)
         # Mejora 14: log sesión
         try:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else
@@ -887,7 +864,9 @@ class CoreMixin:
             self.sesion._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.set_estado(tr("⏳ Compilando prompt..."), P.TXT_ACENTO)
+        # El aviso va en el mismo mensaje: uno aparte lo pisaba este al instante.
+        self.set_estado(tr("⏳ Compilando prompt... 🔞 NSFW activado: tu idea lo pide.")
+                        if nsfw_encendido else tr("⏳ Compilando prompt..."), P.TXT_ACENTO)
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_prompt_traduccion, idea).add_done_callback(log_future_exc)
 

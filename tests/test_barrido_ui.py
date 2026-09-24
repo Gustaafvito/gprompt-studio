@@ -269,6 +269,52 @@ class TestNadaSeCortaDeAncho:
 
 
 @pytest.mark.slow
+class TestNsfwEnLaAppReal:
+    """El interruptor 🔞 NSFW con la app de verdad. Nada se guarda en las
+    preferencias del usuario: el interruptor las escribe al cambiar."""
+
+    @pytest.fixture(autouse=True)
+    def _aislar(self, app, monkeypatch):
+        monkeypatch.setattr(app.store, "guardar_preferencias", lambda *a, **k: None)
+        antes = (app.switch_nsfw_var.get(), app.modo_var.get(), app.combo_modelo_imagen.get())
+        yield
+        app.switch_nsfw_var.set(antes[0])
+        app.combo_modelo_imagen.set(antes[2])
+        app._toggle_nsfw_visual()
+        app.update()
+
+    def _elegir(self, app, modelo):
+        app.combo_modelo_imagen.set(modelo)
+        app.events._service._on_modelo_imagen_cambio(modelo)
+
+    def _system(self, app):
+        return app.deepseek.historial[0]["content"]
+
+    def test_la_idea_explicita_enciende_nsfw_de_verdad(self, app):
+        app.switch_nsfw_var.set(False)
+        app._toggle_nsfw_visual()
+        assert app.analysis.detectar_nsfw_auto("una mujer desnuda en la playa") is True
+        assert app.switch_nsfw_var.get() is True
+        # Y el system prompt ya es el NSFW: antes el aviso salía, pero el
+        # prompt se generaba en modo normal.
+        assert "NSFW" in self._system(app)
+
+    def test_nsfw_con_modelo_que_filtra_se_queda_en_sugerente(self, app):
+        app.switch_nsfw_var.set(True)
+        self._elegir(app, "GPT Image 2")
+        assert "MODELO CON FILTRO DE CONTENIDO ADULTO" in self._system(app)
+        assert "GPT Image 2" in app.lbl_estado.cget("text")
+        # Con un checkpoint que no filtra, la regla no está.
+        self._elegir(app, "Juggernaut XL")
+        assert "MODELO CON FILTRO DE CONTENIDO ADULTO" not in self._system(app)
+
+    def test_modelo_para_adultos_con_nsfw_apagado_avisa(self, app):
+        app.switch_nsfw_var.set(False)
+        self._elegir(app, "PornRealistic")
+        assert "PornRealistic" in app.lbl_estado.cget("text")
+
+
+@pytest.mark.slow
 class TestElResultadoSeVe:
     """El «Resultado editable» recibía 30 px de los 240 que pide.
 

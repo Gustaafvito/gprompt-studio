@@ -826,6 +826,13 @@ class UIBuildersService:
                 self.app.switch_nsfw.configure(text_color=nsfw_text_on, border_color=nsfw_border_on)
             else:
                 self.app.switch_nsfw.configure(text_color=nsfw_text_off, border_color=nsfw_border_off)
+            # Si el modelo elegido no casa con el interruptor, se dice ya.
+            try:
+                self.app.events.avisar_nsfw()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+        # La detección automática enciende el interruptor por este mismo camino.
+        self.app._toggle_nsfw_visual = _toggle_nsfw_visual
 
         self.app.switch_nsfw = ctk.CTkSwitch(inner, text=tr("🔞 NSFW"), variable=self.app.switch_nsfw_var,
                                           command=_toggle_nsfw_visual,
@@ -835,7 +842,13 @@ class UIBuildersService:
                                           text_color=nsfw_text_off,
                                           **sw_style)
         self.app.switch_nsfw.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_nsfw, message=tr("Activa contenido adulto en los prompts."), delay=0.5)
+        CTkToolTip(self.app.switch_nsfw, message=tr(
+            "Contenido adulto en los prompts: anatomía y poses precisas, y el "
+            "negativo deja de excluir la desnudez.\n"
+            "Se enciende solo si la idea lo pide (desnudo, erótico, nsfw…).\n"
+            "Con modelos que filtran el contenido adulto (GPT Image, Nano Banana, "
+            "Midjourney…) el prompt se queda en sugerente para que no lo rechacen."),
+            delay=0.5)
 
         def _toggle_trad_visual():
             if self.app.switch_traduccion_var.get():
@@ -1184,12 +1197,12 @@ class UIBuildersService:
 
     def _on_destino_cambio(self, valor=None):
         """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
-        dest = self.app.destino_var.get()
-        # Sincronizar todos los combos destino (img/vid/aud)
-        for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
-            if hasattr(self, attr):
-                try: getattr(self, attr).set(dest)
-                except Exception: pass
+        # Los tres combos (imagen, vídeo, audio) comparten destino_var: ya van
+        # sincronizados. Lo que guarda es el nombre TRADUCIDO; las reglas van
+        # por el castellano. Sin traducir de vuelta, en inglés «Anthum
+        # (contest)» no activaba el Brief ni ponía su formato.
+        dest = {tr(d): d for d in DESTINOS}.get(self.app.destino_var.get(),
+                                                 self.app.destino_var.get())
 
         auto_ratios = {
             "Instagram":        "9:16",
@@ -1202,13 +1215,22 @@ class UIBuildersService:
             "Web / Blog":       "16:9",
         }
         ratio = auto_ratios.get(dest)
-        if ratio:
+        # Solo si el modelo lo tiene: antes lo ponía igual, y el combo
+        # quedaba con un formato que ese modelo no genera.
+        combo = getattr(self.app, 'combo_ratio_v' if self.app.modo_var.get() == "video"
+                        else 'combo_ratio', None)
+        disponibles = list(combo.cget("values")) if combo is not None else []
+        if ratio and disponibles and ratio not in disponibles:
+            self.app.dialogs.set_estado(
+                tr('📐 {0} pide {1}, pero este modelo no lo tiene: se queda en {2}.').format(
+                    tr(dest), ratio, self.app.ratio_var.get()), P.TXT_AVISO)
+        elif ratio:
             self.app.ratio_var.set(ratio)
             if hasattr(self.app, 'combo_ratio'):
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), P.TXT_INFO)
+            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(tr(dest), ratio), P.TXT_INFO)
 
         # Modo concurso: activar Brief automáticamente
         if dest == "Anthum (concurso)":

@@ -1607,14 +1607,25 @@ class ToolsAnalysisService:
                       command=vent.destroy).pack(side="left", padx=4)
 
     def _detectar_nsfw_auto(self, idea: str | None = None) -> bool:
-        """Detecta si el prompt actual tiene elementos NSFW y avisa."""
+        """Si la idea pide contenido explícito y NSFW está apagado, lo enciende.
+
+        Devuelve True si lo ha encendido. Antes escribía en `nsfw_var`, que no
+        existe, y anunciaba el cambio igualmente: el prompt salía en modo
+        normal. Ver modules/nsfw.py.
+        """
+        from modules.nsfw import pide_nsfw
         texto = idea if idea else self.app.txt_salida.get("1.0", "end").strip()
-        actual = texto.lower()
-        nsfw_terms = ["nude", "naked", "nsfw", "explicit", "xxx", "porn", "sex", "boobs", "butt", "ass"]
-        if any(term in actual for term in nsfw_terms):
-            if hasattr(self.app, 'nsfw_var'):
-                self.app.nsfw_var.set(True)
-            self.app.dialogs.set_estado(tr("⚠️ Contenido NSFW detectado — activado modo NSFW"), P.TXT_ERROR)
+        var = getattr(self.app, "switch_nsfw_var", None)
+        if var is None or var.get() or not pide_nsfw(texto):
+            return False
+        var.set(True)
+        # Lo mismo que pulsar el interruptor: color y system prompt NSFW.
+        encender = getattr(self.app, "_toggle_nsfw_visual", None)
+        if encender is not None:
+            encender()
+        else:
+            self.app.reiniciar_memoria()
+        return True
 
     def _guardar_seed_favorito(self) -> None:
         """Guarda la configuración actual como seed favorito."""

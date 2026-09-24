@@ -272,7 +272,7 @@ PROMPT: [descripción fluida en inglés con las reglas de la plataforma del usua
 """
 
 SYSTEM_NATURAL_NSFW = """
-Eres un generador de prompts NSFW descriptivos para plataformas de lenguaje natural (FLUX, Midjourney).
+Eres un generador de prompts NSFW descriptivos para modelos de lenguaje natural (FLUX, Qwen, checkpoints en prosa). Midjourney, GPT Image o Nano Banana filtran el contenido adulto: para ellos rige la regla de modelo filtrado si se añade.
 
 REGLA DE ROPA: Si piden ropa específica, mantenla. Desnudez explícita solo si se pide claramente.
 REGLA DE ANATOMÍA Y POSES (CRÍTICO): Los modelos de lenguaje natural necesitan entender la relación espacial. Describe claramente la postura (ej: "kneeling softly on the bed", "leaning against the wall with arms crossed"). Si hay más de un sujeto, define EXACTAMENTE dónde están las extremidades de cada uno para evitar fusiones anatómicas.
@@ -653,9 +653,20 @@ El resto de reglas de meticulosidad y formato siguen aplicando. El brief publici
 
 # NEGATIVOS BASE
 
-NEGATIVE_BASE_SFW   = "worst quality, low quality, lowres, blurry, jpeg artifacts"
+# «nsfw, nudity» en el negativo SFW: hay checkpoints que tienden al desnudo
+# por defecto (la ficha de alguno lo dice tal cual: «para SFW añade términos
+# de exclusión al negativo»). Con el modo NSFW apagado, se piden fuera.
+NEGATIVE_BASE_SFW   = "worst quality, low quality, lowres, blurry, jpeg artifacts, nsfw, nudity"
 NEGATIVE_BASE_NSFW  = "worst quality, low quality, lowres, blurry, censored, mosaic"
-NEGATIVE_BASE_VIDEO = "worst quality, static shot, no movement, blurry, low resolution"
+NEGATIVE_BASE_VIDEO = "worst quality, static shot, no movement, blurry, low resolution, nsfw, nudity"
+
+# Se añade al system prompt NSFW cuando el modelo elegido filtra el contenido
+# adulto (modules/nsfw.py): un prompt explícito ahí no genera nada, la
+# plataforma lo rechaza. Mejor sensual y que salga.
+NSFW_MODELO_FILTRADO = """
+
+MODELO CON FILTRO DE CONTENIDO ADULTO: el modelo elegido rechaza los desnudos y el contenido sexual explícito. Aunque la idea lo pida, NO describas desnudez ni actos sexuales: mantén el tono sensual con la ropa presente (lencería, tela translúcida o mojada, bikini), la pose, la mirada, la luz sobre la piel y la atmósfera. Un prompt explícito con este modelo no genera nada: la plataforma lo bloquea.
+"""
 
 # SYSTEM PROMPTS PARA VISIÓN (ADN Visual)
 

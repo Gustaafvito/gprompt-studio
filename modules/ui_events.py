@@ -29,6 +29,7 @@ from config import (
     ESTILOS_AUDIO,
     ESTILOS_IMAGEN,
     ESTILOS_VIDEO,
+    GRUPOS_IMAGEN,
     MODELOS_IMAGEN_FLAT,
     MODELOS_POR_PLATAFORMA_IMAGEN,
     MOTOR_DEFAULT,
@@ -46,6 +47,7 @@ from config import (
     get_model_specs,
 )
 from modules import paleta as P
+from modules.nsfw import aviso as aviso_nsfw
 
 logger = logging.getLogger("gprompt")
 
@@ -327,6 +329,7 @@ class UiEventsService:
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
+        self.avisar_nsfw(motor_name)
         try: self.app.dialogs._actualizar_tokens()
         except Exception: pass
 
@@ -452,6 +455,7 @@ class UiEventsService:
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
+        self.avisar_nsfw(modelo_name)
         try: self.app.dialogs._actualizar_tokens()
         except Exception: pass
         try:
@@ -495,6 +499,33 @@ class UiEventsService:
         else:
             self.app.dialogs.set_estado(tr("🎵 Sin filtros de audio adicionales"))
         self.app.reiniciar_memoria()
+
+    def avisar_nsfw(self, modelo: str | None = None) -> str | None:
+        """Avisa si el modelo y el interruptor 🔞 NSFW no casan (modules/nsfw.py).
+
+        Devuelve la clave del aviso ('filtra', 'adulto_apagado') o None.
+        """
+        modo = self.app.modo_var.get()
+        if modo == "audio":
+            return None
+        if modelo is None:
+            modelo = self.app._modelo_de_modo(modo)
+        try:
+            activo = bool(self.app.switch_nsfw_var.get())
+        except Exception:
+            return None
+        clave = aviso_nsfw(modelo, activo, GRUPOS_IMAGEN)
+        if clave == "filtra":
+            self.app.dialogs.set_estado(tr(
+                "⚠️ {0} filtra los desnudos: en modo NSFW el prompt se queda en "
+                "sugerente para que la plataforma no lo rechace. Para desnudos, "
+                "un checkpoint SD o Flux.").format(modelo), P.TXT_AVISO)
+        elif clave == "adulto_apagado":
+            self.app.dialogs.set_estado(tr(
+                "🔞 {0} es un modelo para adultos y el modo NSFW está apagado: "
+                "el prompt saldrá suavizado. Enciéndelo arriba a la derecha.").format(modelo),
+                P.TXT_AVISO)
+        return clave
 
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():

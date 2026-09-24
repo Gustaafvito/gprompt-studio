@@ -489,6 +489,9 @@ class UiEventsComponent(_Component):
     def on_brief_cambio(self) -> None:
         return self._service._on_brief_cambio()
 
+    def avisar_nsfw(self, modelo: str | None = None) -> str | None:
+        return self._service.avisar_nsfw(modelo)
+
     def actualizar_motores_video(self) -> None:
         return self._service._actualizar_motores_video()
 
