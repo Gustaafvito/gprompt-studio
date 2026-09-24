@@ -328,6 +328,8 @@ TRADUCCIONES = {
     'Prompt a partir de tus imágenes: una sola, inicio y final, o varias referencias con su función · Ctrl+Shift+I': 'Prompt from your images: a single one, start and end, or several references with their roles · Ctrl+Shift+I',
     '🖼 Crear desde imágenes': '🖼 Create from images',
     '🎬 Cortometraje (guion por escenas)': '🎬 Short film (scene-by-scene script)',
+    'Plegar o desplegar ajustes, estilos, negativos y tags para dar más sitio al resultado': 'Fold or unfold settings, styles, negatives and tags to give the result more room',
+    '↕ La ventana es baja para ver el resultado: maximízala o pulsa Ctrl+H (Modo Focus)': '↕ The window is too short to see the result: maximise it or press Ctrl+H (Focus mode)',
     'Cortometraje (solo VÍDEO): guion de N escenas con plano/acción/cámara/diálogo/SFX + @referencias de personaje. Para el flujo reference-to-video (Vidu/Kling)': 'Short film (VIDEO only): N-scene script with shot/action/camera/dialogue/SFX + character @references. For the reference-to-video workflow (Vidu/Kling)',
     'Storyboard cinematográfico (solo IMAGEN): N paneles. Auto-detecta formato: natural (GPT Image/DALL-E/MJ) o tag-based (SD/Comfy)': 'Cinematic storyboard (IMAGE only): N panels. Auto-detects format: natural (GPT Image/DALL-E/MJ) or tag-based (SD/Comfy)',
     'Sugiere el mejor modelo según tu idea': 'Suggests the best model for your idea',

@@ -165,6 +165,10 @@ class UiEventsService:
         self._on_plataforma_cambio()
         self.app._ocultar_ideas()
         self.app.reiniciar_memoria()
+        # Cada modo enseña paneles de distinto alto encima del resultado.
+        ui = getattr(self.app, "ui", None)
+        if ui is not None:
+            ui.programar_alturas()
 
     def _set_tabs_visibles(self, tabs: list) -> None:
         """Muestra solo las pestañas indicadas en el CTkTabview."""

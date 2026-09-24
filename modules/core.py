@@ -134,10 +134,15 @@ class CoreMixin:
 
         if not self._modo_focus_activo:
             # ACTIVAR: ocultar todo excepto entrada, acciones, estado, salida
+            # '_tabview_container' y no 'tabview': el contenedor tiene alto
+            # fijo, así que ocultar solo las pestañas dejaba su hueco vacío.
+            # Y la restauración de abajo empaqueta en la ventana principal,
+            # donde las pestañas —que viven dentro del contenedor— no se
+            # pueden empaquetar: al salir de Focus no volvían nunca.
             ocultar = [
                 '_header_frame', '_modo_frame',
                 'frame_modelo_imagen', 'frame_video', 'frame_audio',
-                'frame_destino', 'tabview',
+                'frame_destino', '_tabview_container',
                 'lbl_img_model_info', 'frame_img_ref',
             ]
             self._focus_pack_order = []
@@ -162,6 +167,8 @@ class CoreMixin:
 
             self._modo_focus_activo = True
             self.set_estado(tr("🎯 Modo Focus ACTIVO — pulsa ✕ para salir"), P.BTN_ACENTO)
+            # Cambian las franjas visibles: la idea puede recuperar su alto.
+            self.ui.programar_alturas()
         else:
             # DESACTIVAR: quitar botón flotante
             if self._focus_exit_btn:
@@ -210,6 +217,8 @@ class CoreMixin:
                 self.update_idletasks()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
+            # Vuelven las pestañas: hay que repartir otra vez el alto.
+            self.ui.programar_alturas()
 
             # Repintar colores del tema
             try:

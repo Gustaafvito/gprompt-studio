@@ -40,6 +40,7 @@ from modules import (
     install_components,
 )
 from modules import paleta as P
+from modules.espacio_ventana import geometria_inicial
 from persistence import DataStore
 from workers import (
     DeepSeekWorker,
@@ -376,6 +377,9 @@ class ArquitectoApp(
         self.ui._build_acciones()
         self.ui._build_estado()
         self.ui._build_salida()
+        # El resultado primero: pestañas e idea ceden alto cuando falta.
+        self.bind("<Configure>", self.ui.programar_alturas, add="+")
+        self.after_idle(self.ui.programar_alturas)
         self.atajos.bind_shortcuts()
 
     def _setup_post_init(self):
@@ -653,34 +657,13 @@ class ArquitectoApp(
         - Centra la ventana en la pantalla.
         """
         try:
-            # Tamaño bruto del monitor PRIMARIO
+            # Tamaño bruto del monitor PRIMARIO, en píxeles reales
             screen_w = self.winfo_screenwidth()
             screen_h = self.winfo_screenheight()
-
-            # Restar barra de tareas estimada (Windows: ~40px abajo)
-            usable_h = max(screen_h - 60, 600)
-
-            # Tamaño objetivo según resolución
-            if screen_w <= 1400:           # HD pequeñas (1366x768, 1280x720)
-                w = int(screen_w * 0.95)
-                h = int(usable_h * 0.92)
-            elif screen_w <= 1920:         # Full HD estándar
-                w = int(screen_w * 0.72)
-                h = int(usable_h * 0.88)
-            elif screen_w <= 2560:         # QHD / 2K
-                w = int(screen_w * 0.62)
-                h = int(usable_h * 0.82)
-            else:                          # 4K+
-                w = min(int(screen_w * 0.50), 1600)
-                h = min(int(usable_h * 0.78), 1200)
-
-            # Clamp para garantizar mínimos sensatos
-            w = max(820, w)
-            h = max(620, h)
-
-            # Centrar en la pantalla
-            x = max(0, (screen_w - w) // 2)
-            y = max(0, (usable_h - h) // 2)
+            # CTk.geometry() multiplica por el escalado de Windows: el cálculo
+            # tiene que devolver unidades lógicas. Ver modules/espacio_ventana.
+            escala = ctk.ScalingTracker.get_window_scaling(self)
+            w, h, x, y = geometria_inicial(screen_w, screen_h, escala)
 
             self.geometry(f"{w}x{h}+{x}+{y}")
 

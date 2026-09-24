@@ -164,6 +164,133 @@ class TestVentanaPrincipal:
         assert len(botones) >= 50, f"solo {len(botones)} botones"
 
 
+def _visible(app, widget):
+    """Alto que de verdad se ve dentro de la ventana.
+
+    `winfo_height()` no basta: cuando pack se queda sin sitio, desmapea el
+    widget y su alto se queda con el último valor que tuvo.
+    """
+    if not widget.winfo_ismapped():
+        return 0
+    arriba = widget.winfo_rooty() - app.winfo_rooty()
+    return max(0, min(widget.winfo_height(), app.winfo_height() - arriba))
+
+
+def _esperar(app):
+    for _ in range(6):
+        app.update()
+    # El reparto va agrupado con un after(50) y puede encadenar una segunda
+    # pasada: hay que darle tiempo.
+    app.after(400, app.quit)
+    app.mainloop()
+    app.update()
+
+
+def _redimensionar(app, alto):
+    app.geometry(f"1382x{alto}")
+    _esperar(app)
+
+
+@pytest.mark.slow
+class TestElResultadoSeVe:
+    """El «Resultado editable» recibía 30 px de los 240 que pide.
+
+    Medido el 24-sep-2026 con la ventana a su tamaño por defecto en
+    1920×1080: con pack, lo último que se empaqueta es lo primero que se
+    encoge, y lo último era el resultado. Ver modules/espacio_ventana.py.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _restaurar(self, app):
+        geometria = app.geometry()
+        yield
+        app.ui._service._pestanas_plegadas_manual = None
+        if getattr(app, "_modo_focus_activo", False):
+            app._cmd_modo_focus()
+        app.geometry(geometria)
+        app.update()
+
+    def test_con_la_ventana_por_defecto_en_full_hd(self, app):
+        _redimensionar(app, 958)
+        assert _visible(app, app.txt_salida) >= 150
+
+    def test_con_ventana_baja_las_pestanas_se_pliegan(self, app):
+        # Portátil típico: 1920×1080 al 125 %, unos 760 de alto lógico.
+        # Sin plegar, el resultado desaparecía del todo.
+        _redimensionar(app, 760)
+        assert app.ui._service._pestanas_plegadas is True
+        assert _visible(app, app.txt_salida) >= 100
+        # Y lo que queda encima sigue entero: nada se come la botonera.
+        assert _visible(app, app.frame_entrada) == app.frame_entrada.winfo_height()
+
+    def test_si_algo_de_encima_crece_se_reparte_otra_vez(self, app):
+        # La línea de información del modelo se rellena después de arrancar
+        # y puede ocupar varias líneas. La ventana no cambia de tamaño, así
+        # que sin escuchar al marco del resultado el reparto se quedaba
+        # viejo: medido, el resultado bajaba de 177 a 127 px sin plegar nada.
+        etiqueta = app.lbl_img_model_info
+        texto, ancho = etiqueta.cget("text"), etiqueta.cget("wraplength")
+        try:
+            _redimensionar(app, 975)
+            assert app.ui._service._pestanas_plegadas is False
+            etiqueta.configure(text="línea larga " * 60, wraplength=500)
+            # Sin tocar la ventana: geometry() ya provoca un recálculo y
+            # taparía justo lo que se comprueba.
+            _esperar(app)
+            assert app.ui._service._pestanas_plegadas is True
+            assert _visible(app, app.txt_salida) >= 150
+        finally:
+            etiqueta.configure(text=texto, wraplength=ancho)
+
+    def test_el_aviso_de_ctrl_h_solo_si_ni_plegando_cabe(self, app):
+        servicio = app.ui._service
+        servicio._aviso_focus_dado = False
+        try:
+            # Con sitio no se avisa. Salía también así: al arrancar, la
+            # ventana pasa por un tamaño provisional.
+            _redimensionar(app, 958)
+            app.after(2200, app.quit)
+            app.mainloop()
+            assert servicio._aviso_focus_dado is False
+            # Portátil de 768: ni plegando cabe, y se dice cómo arreglarlo.
+            _redimensionar(app, 640)
+            app.after(2200, app.quit)
+            app.mainloop()
+            assert servicio._aviso_focus_dado is True
+            assert "Ctrl+H" in app.lbl_estado.cget("text")
+        finally:
+            servicio._aviso_focus_dado = False
+
+    def test_pulsar_una_pestana_plegada_la_despliega(self, app):
+        _redimensionar(app, 760)
+        assert app.ui._service._pestanas_plegadas is True
+        app.ui.desplegar_pestanas()
+        app.update()
+        assert app.ui._service._pestanas_plegadas is False
+        # Y es lo que hace el cambio de pestaña, no solo un método suelto.
+        import inspect
+
+        from modules.ui_builders import UIBuildersService
+        fuente = inspect.getsource(UIBuildersService._build_tabs_centrales)
+        cuerpo = fuente[fuente.index("def _on_tab_change"):fuente.index("configure(command=_on_tab_change)")]
+        assert "desplegar_pestanas()" in cuerpo
+
+    def test_el_modo_focus_da_sitio_y_al_salir_vuelven_las_pestanas(self, app):
+        _redimensionar(app, 958)
+        antes = _visible(app, app.txt_salida)
+        app._cmd_modo_focus()
+        _redimensionar(app, 958)
+        # Antes ocultaba las pestañas pero no su contenedor de alto fijo.
+        assert not app._tabview_container.winfo_ismapped()
+        assert _visible(app, app.txt_salida) > antes + 150
+        app._cmd_modo_focus()
+        _redimensionar(app, 958)
+        # Antes no volvían nunca: se re-empaquetaban en la ventana principal,
+        # y Tk no deja empaquetar las pestañas fuera de su contenedor.
+        assert app.tabview.winfo_ismapped(), "al salir de Focus no volvieron las pestañas"
+        assert app._tabview_container.winfo_ismapped()
+
+
 @pytest.mark.slow
 class TestLoQueEnsenaAprender:
     """Lo que el tutorial, la paleta y los atajos prometen, existe de verdad.

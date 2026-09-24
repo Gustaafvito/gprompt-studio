@@ -14,10 +14,18 @@ invisibles sobre el fondo light tras cambiar tema.
 import json
 import logging
 import os
+import re
 
 import customtkinter as ctk
 
 from modules import paleta as P
+from modules.espacio_ventana import (
+    IDEA_MAX,
+    IDEA_MIN,
+    SALIDA_MINIMA,
+    plegar_pestanas,
+    repartir,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +137,158 @@ class UIBuildersService:
 
     def __init__(self, app):
         self.app = app
+        self._alturas_pendiente = False
+        # None: se pliegan solas si no cabe el resultado. True/False: lo ha
+        # decidido el usuario con el botón o pulsando una pestaña.
+        self._pestanas_plegadas_manual = None
+        self._pestanas_plegadas = False
+        self._aviso_focus_dado = False
+        self._aviso_focus_pendiente = False
+
+    # ── Reparto del alto: el resultado primero ────────────────────────────
+    # Ver modules/espacio_ventana.py. Con pack, lo último que se empaqueta es
+    # lo primero que se encoge, y lo último es el resultado: a tamaño por
+    # defecto en 1920x1080 recibía 30 px de los 240 que pide. Aquí las dos
+    # franjas elásticas de encima —pestañas e idea— ceden espacio cuando
+    # falta, y lo recuperan cuando sobra.
+
+    def programar_alturas(self, event=None):
+        """Recalcula el reparto, agrupado: varios avisos seguidos, una pasada.
+
+        Se llama al cambiar de tamaño la ventana y también el marco del
+        resultado. Lo segundo hace falta porque lo de encima cambia de alto
+        sin que la ventana cambie —la línea de información del modelo se
+        rellena después de arrancar, el aviso de Flux aparece y se va— y el
+        resultado, que es lo último, absorbe ese cambio. Sin esto, quedarse
+        con el reparto viejo o el nuevo dependía del orden de los eventos.
+        No hay bucle: el reparto no depende del alto real del resultado,
+        solo de lo que piden los demás.
+        """
+        if event is not None and event.widget is not self.app:
+            # Un bind en la ventana llega también de todos sus hijos.
+            return
+        if self._alturas_pendiente:
+            return
+        self._alturas_pendiente = True
+
+        def _ejecutar():
+            self._alturas_pendiente = False
+            self.ajustar_alturas()
+        self.app.after(50, _ejecutar)
+
+    def ajustar_alturas(self):
+        """Ajusta pestañas e idea al alto actual. Devuelve (pestañas, idea) o None."""
+        app = self.app
+        pestanas_w = getattr(app, "_tabview_container", None)
+        entrada = getattr(app, "frame_entrada", None)
+        salida = getattr(app, "_salida_frame", None)
+        idea_w = getattr(app, "txt_idea", None)
+        if None in (pestanas_w, entrada, salida, idea_w):
+            return None
+        alto = app.winfo_height()
+        if alto < 100:
+            # Aún sin mapear: el <Configure> de cuando aparezca lo arregla.
+            return None
+
+        def _pady(w):
+            return sum(int(n) for n in re.findall(r"\d+", str(w.pack_info().get("pady", 0))))
+
+        # Todo en píxeles reales hasta el final; repartir() trabaja en
+        # unidades lógicas, que son las que entiende configure(height=).
+        escala = ctk.ScalingTracker.get_widget_scaling(salida)
+        esclavos = app.pack_slaves()
+        elasticos = (pestanas_w, entrada, salida)
+        fijo = sum(w.winfo_reqheight() + _pady(w) for w in esclavos if w not in elasticos)
+        if entrada in esclavos:
+            fijo += entrada.winfo_reqheight() - idea_w.winfo_reqheight() + _pady(entrada)
+        visibles = pestanas_w in esclavos   # el Modo Focus las oculta
+        if visibles:
+            fijo += _pady(pestanas_w)
+        pide_salida = (salida.winfo_reqheight() + _pady(salida)) / escala
+        espacio = (alto - fijo) / escala
+        if visibles:
+            plegadas = plegar_pestanas(espacio, self._pestanas_plegadas_manual)
+            self._pestanas_plegadas = plegadas
+            pestanas, idea = repartir(
+                espacio, pide_salida,
+                plegadas=self._alto_tira_pestanas(escala) if plegadas else None)
+            if pestanas_w.cget("height") != pestanas:
+                pestanas_w.configure(height=pestanas)
+            boton = getattr(app, "_btn_plegar_pestanas", None)
+            if boton is not None:
+                boton.configure(text="▾" if plegadas else "▴")
+            if plegadas and espacio - pestanas - idea < SALIDA_MINIMA and not self._aviso_focus_pendiente:
+                # Ni plegando cabe (portátiles de 768 de alto): la salida es el
+                # Modo Focus, y hay que decirlo una vez o nadie lo encuentra.
+                # Se vuelve a mirar pasado un momento: al arrancar, la ventana
+                # pasa por un tamaño provisional y el aviso salía también con
+                # la ventana grande.
+                self._aviso_focus_pendiente = True
+                app.after(1500, self._avisar_ventana_baja)
+        else:
+            # Sin pestañas, solo la idea cede o recupera espacio.
+            pestanas = None
+            idea = int(min(IDEA_MAX, max(IDEA_MIN, espacio - pide_salida)))
+        if idea_w.cget("height") != idea:
+            idea_w.configure(height=idea)
+        return pestanas, idea
+
+    def _avisar_ventana_baja(self, intentos=5):
+        """El aviso de Ctrl+H, una vez por sesión y solo si sigue haciendo falta.
+
+        Al arrancar, la ventana está oculta tras el splash y el reparto puede
+        haberse hecho con un tamaño provisional: se espera a que se vea y se
+        vuelve a repartir antes de decidir. Sin esto, el aviso salía también
+        con la ventana grande.
+        """
+        if self._aviso_focus_dado or getattr(self.app, "_modo_focus_activo", False):
+            self._aviso_focus_pendiente = False
+            return
+        if not self.app.winfo_viewable():
+            if intentos:
+                self.app.after(1000, lambda: self._avisar_ventana_baja(intentos - 1))
+            else:
+                self._aviso_focus_pendiente = False
+            return
+        # Con el aviso aún marcado como pendiente, este reparto no programa
+        # otro aviso.
+        self.app.update_idletasks()
+        self.ajustar_alturas()
+        self.app.update_idletasks()
+        self._aviso_focus_pendiente = False
+        salida = getattr(self.app, "_salida_frame", None)
+        if salida is None or not self._pestanas_plegadas:
+            return
+        visible = 0
+        if salida.winfo_ismapped():
+            arriba = salida.winfo_rooty() - self.app.winfo_rooty()
+            visible = max(0, min(salida.winfo_height(), self.app.winfo_height() - arriba))
+        escala = ctk.ScalingTracker.get_widget_scaling(salida)
+        if visible / escala >= SALIDA_MINIMA:
+            return
+        self._aviso_focus_dado = True
+        self.app.dialogs.set_estado(
+            tr("↕ La ventana es baja para ver el resultado: maximízala o pulsa Ctrl+H (Modo Focus)"),
+            P.TXT_AVISO)
+
+    def _alto_tira_pestanas(self, escala):
+        """Alto lógico de la tira de títulos: lo que queda a la vista plegadas."""
+        try:
+            tira = self.app.tabview._segmented_button
+            return int((tira.winfo_y() + tira.winfo_height()) / escala) + 8
+        except Exception:
+            return 40
+
+    def alternar_pestanas(self):
+        """Botón ▴/▾: pliega o despliega, y esa decisión manda desde ahora."""
+        self._pestanas_plegadas_manual = not self._pestanas_plegadas
+        self.ajustar_alturas()
+
+    def desplegar_pestanas(self):
+        """Al pulsar un título estando plegadas: quien pulsa quiere verlas."""
+        if self._pestanas_plegadas:
+            self._pestanas_plegadas_manual = False
+            self.ajustar_alturas()
 
     def _build_header(self):
         # Colores adaptativos según tema
@@ -1120,8 +1280,22 @@ class UIBuildersService:
             if self.app.tabview.get() == tr("🏷️ Tags") and not self._tags_tab_built:
                 self._tags_tab_built = True
                 self._build_tags_tab(self.app.tabview.tab(tr("🏷️ Tags")))
+            # Plegadas, pulsar un título es pedir verlas.
+            self.desplegar_pestanas()
 
         self.app.tabview.configure(command=_on_tab_change)
+
+        # Plegar a la tira de títulos. Se pliegan solas cuando, desplegadas,
+        # no dejarían sitio al resultado (ver ajustar_alturas); este botón es
+        # para decidirlo a mano. Encima de todo, arriba a la derecha.
+        self.app._btn_plegar_pestanas = ctk.CTkButton(
+            self.app._tabview_container, text="▴", width=26, height=22,
+            fg_color=seg_bg, hover_color=seg_hov, text_color=c["panel_text"],
+            command=self.alternar_pestanas)
+        self.app._btn_plegar_pestanas.place(relx=1.0, x=-6, y=4, anchor="ne")
+        CTkToolTip(self.app._btn_plegar_pestanas,
+                   message=tr("Plegar o desplegar ajustes, estilos, negativos y tags para dar más sitio al resultado"),
+                   delay=0.5)
 
     def _build_ajustes_extra(self, parent):
         is_light = _get_real_is_light()
@@ -2035,6 +2209,11 @@ class UIBuildersService:
         c = get_theme_colors(is_light)
         frame = ctk.CTkFrame(self.app, fg_color="transparent")
         frame.pack(pady=2, padx=16, fill="both", expand=True)
+        # Referencia para el reparto del alto (ajustar_alturas): el resultado
+        # es la franja que manda. Y si cambia su alto sin que cambie la
+        # ventana, es que algo de encima ha crecido: hay que repartir otra vez.
+        self.app._salida_frame = frame
+        frame.bind("<Configure>", lambda _e: self.programar_alturas(), add="+")
         hdr = ctk.CTkFrame(frame, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
         ctk.CTkLabel(hdr, text=tr("Resultado"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
