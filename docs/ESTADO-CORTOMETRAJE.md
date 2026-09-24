@@ -11,17 +11,15 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `206cc93` |
+| Último commit publicado | `d763fd2` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
-Publicado el 24-sep: el arreglo de Tcl (`b04ead2`, traído del worktree
-`claude/youthful-almeida-847f8d`), su bitácora (`81c1bb9`), los guardados
-(`f1712f0`), el inglés de la botonera (`3825315`), Ctrl+Shift+A (`93efa19`) y
-Aprender (`38695d9`, `206cc93`, ver §5c). **Sin publicar**, pendientes del
-visto bueno: los rótulos del panel (`30d044a`), el resultado visible
-(`35c964e`) y el diagnóstico del test del cuelgue (`01cd8a7`), ver §5d, y
-este documento.
+Publicado el 24-sep, hasta `d763fd2`: el arreglo de Tcl y su bitácora, los
+guardados, Aprender (tutorial, glosario, atajos, Ctrl+K), los rótulos del
+panel y el resultado visible. **Sin publicar**, pendientes del visto bueno:
+los cuelgues de los tests (`0de5038`), el panel por pasos (`e0188b6`), su
+botón a la vista (`80aa6a5`) y este documento.
 
 La rama del worktree sigue existiendo con el commit original. Está limpia, no
 hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
@@ -31,7 +29,7 @@ El título y la descripción del PR siguen hablando solo de la beta visual 9.1.
 Hay un borrador nuevo listo para pegar (lo tiene el usuario); desde aquí no se
 puede editar el PR, porque no hay `gh` ni token. El texto actual del PR tiene
 dos errores: fecha `5929aeb` el 25-sep, y es del 22-sep; y dice que el botón
-está «en la botonera», y está en la pestaña ⚙️ Ajustes Extra.
+está «en la botonera». Ahora está junto a la caja de la idea (`80aa6a5`).
 
 **Dónde vive cada versión** (el usuario preguntó por qué no veía nada nuevo):
 
@@ -175,9 +173,18 @@ rompiéndolo: sin reintento caen 3 tests, y con el filtro de traza abierto caen 
 - Su `faulthandler.enable()` no hacía nada, porque el plugin de pytest lo pisa.
   Se comprobó provocando un fallo fatal. Los fallos fatales van a stderr.
 
-**Sigue abierto:** un CUELGUE observado en el mismo punto (22 minutos de reloj,
-45 s de CPU). Hay un cortafuegos de tiempo por test que vuelca la pila y aborta,
-pero la causa de fondo no está identificada.
+**Cuelgues cazados (`0de5038`).** La bitácora dejó tres volcados el 24-sep
+por la tarde, los tres en el mismo sitio: el ayudante de los tests
+`root.after(ms, root.quit); root.mainloop()`. La primera vez que se llama a
+`CTk.mainloop()`, CustomTkinter hace un `update()` para pintar la barra de
+título; si ahí vence el `quit`, se pierde, porque `_tkinter` pone a cero la
+marca de salida al arrancar el bucle, y el bucle no vuelve. Reproducido a
+propósito. Ahora todos los tests bombean con `tests/_bombeo.bombear()`,
+basado en `update()`, y hay un candado contra el patrón viejo.
+
+**Sigue sin volcado** el cuelgue de 22 minutos de la mañana (45 s de CPU), que
+fue creando el intérprete de Tcl: no se puede afirmar que fuera el mismo. Si
+vuelve, la bitácora lo dirá.
 
 ---
 
@@ -257,17 +264,21 @@ Salió de una revisión crítica con capturas de la app real (el usuario pidió
   anchas).
 - A tamaño por defecto, el menú «UI» de arriba y el botón «Preview» de la
   botonera salen cortados por la derecha.
-- Reordenar el panel «Crear desde imágenes» (cuatro pantallas de alto, sin
-  jerarquía entre botones) y darle un botón visible fuera de la pestaña.
-- El análisis se enseña con los asteriscos del markdown; la ventana del
-  panel se titula «Beta 9»; «Marcar como completado» del tutorial enseña dos
-  casillas.
+- «Marcar como completado» del tutorial enseña dos casillas (la real y un
+  emoji ✅ en el texto).
 - Dos tests fallaron una vez cada uno en la suite completa y nunca aislados:
   el de extremo a extremo de la bitácora de cuelgues (ahora enseña la salida
   del subproceso si vuelve a caer) y
-  `test_panel_vision::test_por_defecto_no_fija_proveedor`, que espera 250 ms
-  fijos a un hilo. Con la CPU saturada no se reprodujo: no se ha tocado sin
-  pruebas.
+  `test_panel_vision::test_por_defecto_no_fija_proveedor`. Descartado que
+  fuera esperar a un hilo: su ejecutor es síncrono. Uno de sus cuelgues sí
+  era el de `mainloop()` ya arreglado; el fallo simple, no se sabe.
+
+**Hecho de esa revisión (`e0188b6`, `80aa6a5`):** el panel «Crear desde
+imágenes» va por secciones con título, con Analizar, Generar, Copiar y
+Cortometraje en una barra fija abajo, jerarquía de colores, bajada
+automática al resultado, análisis sin markdown, estado vacío y sin «Beta 9».
+Su botón está ahora en la fila de «Describe tu idea» de la ventana
+principal, a la vista sin abrir ninguna pestaña.
 
 ---
 
@@ -342,7 +353,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1720 passed, 1 skipped
+python -m pytest -q      1734 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
