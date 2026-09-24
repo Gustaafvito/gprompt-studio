@@ -1,7 +1,8 @@
 """Glosario de términos AI — ventana con categorías y acciones clicables.
 
-El contenido vive en data/glosario.json (47 entradas con: titulo, desc,
-categoría, acción opcional). Renderiza agrupado por categoría con
+El contenido vive en data/glosario.json y, en inglés, en data/glosario.en.json
+(entradas con: titulo, desc, categoría, acción opcional; un test vigila que
+los dos vayan a la par). Renderiza agrupado por categoría con
 buscador, filtro y botón "▶ Probar" en las que mapean a funciones reales
 de la app.
 """

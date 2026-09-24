@@ -180,8 +180,13 @@ class TestLoQueEnsenaAprender:
         from modules import windows
         from modules.tutorial import _FREE_FUNCS
 
-        ruta = Path(__file__).resolve().parent.parent / "data" / "tutorial.json"
-        pasos = json.loads(ruta.read_text(encoding="utf-8"))["pasos"]
+        data = Path(__file__).resolve().parent.parent / "data"
+        pasos = json.loads((data / "tutorial.json").read_text(encoding="utf-8"))["pasos"]
+        # El glosario (Modo educativo) tiene su propio «▶ Probar», con el
+        # mismo mecanismo: método de la app o función de modules.windows.
+        glosario = json.loads((data / "glosario.json").read_text(encoding="utf-8"))["entradas"]
+        pasos = pasos + [{"id": f"glosario «{e['titulo']}»", "accion": e["accion"]}
+                         for e in glosario]
         norm = lambda s: "".join(c.lower() for c in s if c.isalnum())
         pestanas = {norm(n) for n in getattr(app.tabview, "_name_list", [])}
         rotas = []

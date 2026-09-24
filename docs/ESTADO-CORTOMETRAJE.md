@@ -11,25 +11,35 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `d2e4ddf` |
+| Último commit publicado | `3825315` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
-**El arreglo de Tcl ya está en la rama, pero sin publicar.** El commit `9d045a5`
-del worktree `claude/youthful-almeida-847f8d` se trajo a `feat/visual-studio`
-como `b04ead2`, y encima va `81c1bb9`, que acota su bitácora de cuelgues (ver
-§5). Después van `8ca6da0` (este documento) y `f1712f0` (guardados que se
-pisaban, ver §5b). Los cuatro están en local, **pendientes del visto bueno
-para el push**.
+Publicado el 24-sep: el arreglo de Tcl (`b04ead2`, traído del worktree
+`claude/youthful-almeida-847f8d`), su bitácora (`81c1bb9`), los guardados
+(`f1712f0`) y el inglés de la botonera (`3825315`). **Sin publicar**, pendientes
+del visto bueno: `93efa19` (Ctrl+Shift+A) y `38695d9` (Aprender, ver §5c).
 
 La rama del worktree sigue existiendo con el commit original. Está limpia, no
 hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
-parche. Se puede retirar sin perder nada **cuando esto esté publicado**.
+parche. Ya se puede retirar sin perder nada.
 
 El título y la descripción del PR siguen hablando solo de la beta visual 9.1.
 Hay un borrador nuevo listo para pegar (lo tiene el usuario); desde aquí no se
 puede editar el PR, porque no hay `gh` ni token. El texto actual del PR tiene
-además un error: fecha `5929aeb` el 25-sep, y es del 22-sep.
+dos errores: fecha `5929aeb` el 25-sep, y es del 22-sep; y dice que el botón
+está «en la botonera», y está en la pestaña ⚙️ Ajustes Extra.
+
+**Dónde vive cada versión** (el usuario preguntó por qué no veía nada nuevo):
+
+| Sitio | Versión | ¿Tiene esto? |
+|---|---|---|
+| Rama `feat/visual-studio` | todo lo de septiembre | sí, con `python main.py` |
+| `main` y la release v1.0.2 | 18-sep | no |
+| App instalada (`AppData\Local\Programs\G-Prompt Studio`) y distribuible del escritorio | v1.0.2 | no |
+| Escritorio: `GPromptStudio-Visual-Beta` y `GPromptStudio-candidato-codigo` | copias del 19 al 21-sep | obsoletas; no se tocan |
+
+Para que llegue a la app instalada: fusionar el PR, compilar y publicar (1.1.0).
 
 ---
 
@@ -188,6 +198,35 @@ versiones seguidas y pasaba solo porque cada guardado tarda más de 15,6 ms.
 
 ---
 
+## 5c. Aprender, atajos e idioma (`3825315`, `93efa19`, `38695d9`)
+
+Nada de lo nuevo estaba en Aprender. Ahora:
+
+- **Tutorial**, en español y en inglés. El paso 43 es «Crear desde imágenes»
+  y el 44 el «Cortometraje», los dos con «Probar ahora». El paso 32 describía
+  cuatro botones narrativos de cinco, y mal (Walk era «un recorrido
+  espacial»); corregido, igual que las ayudas emergentes de esos botones.
+- **Ctrl+K** encuentra las dos herramientas.
+- **Ctrl+Shift+I** abre «Crear desde imágenes». El botón está en la pestaña
+  ⚙️ Ajustes Extra, no en la botonera.
+- **Ctrl+Shift+A** no funcionaba nunca: estaba en minúscula y, con Shift, Tk
+  entrega la letra en mayúscula. Se comprobó con pulsaciones reales, que
+  además capturaron teclas que el usuario estaba escribiendo: **no repetir
+  pruebas con teclado real** con el usuario delante.
+- La ayuda de «🎬 Corto» no tenía inglés. El candado de traducciones solo ve
+  `tr("literal")` y no `tr(variable)`; hay uno nuevo para la botonera.
+
+- **Modo educativo**, que es el glosario (`data/glosario.json` y su `.en`).
+  Tiene fichas nuevas para «Crear desde imágenes», el «Cortometraje» y el
+  concepto de vídeo por referencia. La ficha de narrativa tenía el mismo
+  error que el paso 32. Un test nuevo vigila que los dos idiomas vayan a la
+  par, y el barrido comprueba también sus botones «▶ Probar».
+
+La **guía de estilos** no se tocó: es el catálogo de estilos artísticos
+(`GUIA_ESTILOS.md`), no habla de herramientas.
+
+---
+
 ## 6. Lo que queda abierto
 
 **Bloqueado, esperando al usuario:**
@@ -210,8 +249,8 @@ versiones seguidas y pasaba solo porque cada guardado tarda más de 15,6 ms.
      modo. Si cambia la sintaxis, hay que añadir la nueva ahí sin quitar
      `@ref`.
 
-2. **El push de los cuatro commits** (ver §1), y pegar el borrador nuevo del
-   PR, que hay que ampliar con §5b.
+2. **El push de `93efa19` y `38695d9`** (ver §1), y pegar el borrador nuevo
+   del PR, que ya recoge §5b y §5c.
 
 **No se hace, salvo que el usuario diga otra cosa:**
 
@@ -259,7 +298,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1672 passed, 1 skipped
+python -m pytest -q      1681 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```

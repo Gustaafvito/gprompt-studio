@@ -45,5 +45,28 @@ def test_cubre_features_nuevas():
     """Las features recientes deben tener entrada en el glosario."""
     titulos = " | ".join(e["titulo"] for e in _cargar()["entradas"]).upper()
     for clave in ("OPTIMIZADOR", "COPILOTO", "STORYBOARD", "AVATAR", "DASHBOARD",
-                  "COSTE", "MAX_CHARS", "MODELO ACTIVO"):
+                  "COSTE", "MAX_CHARS", "MODELO ACTIVO", "CREAR DESDE IMÁGENES",
+                  "CORTOMETRAJE", "VÍDEO POR REFERENCIA"):
         assert clave in titulos, f"falta entrada de glosario para: {clave}"
+
+
+def test_espanol_e_ingles_van_a_la_par():
+    """Mismas entradas, en el mismo orden, categoría y acción, y traducidas.
+
+    El glosario inglés es otro fichero: una entrada añadida solo en español
+    no existiría para quien use la interfaz en inglés.
+    """
+    es = _cargar()
+    with open(_PATH.replace("glosario.json", "glosario.en.json"), encoding="utf-8") as f:
+        en = json.load(f)
+    assert len(es["categorias"]) == len(en["categorias"])
+    assert len(es["entradas"]) == len(en["entradas"])
+    for a, b in zip(es["entradas"], en["entradas"]):
+        assert a["accion"] == b["accion"], a["titulo"]
+        assert (es["categorias"].index(a["categoria"])
+                == en["categorias"].index(b["categoria"])), a["titulo"]
+        # Título O descripción pueden coincidir por separado: «CONTROLNET» se
+        # llama igual, y la descripción de los estilos artísticos es una
+        # lista de nombres en inglés. Las dos cosas a la vez, no.
+        assert (a["titulo"], a["descripcion"]) != (b["titulo"], b["descripcion"]), \
+            f"sin traducir: {a['titulo']}"
