@@ -4510,6 +4510,33 @@
   "limitaciones": "Sin negative prompt. Máx 2000 chars. Hasta 16 imágenes de sujeto.",
   "best_for_en": "ByteDance model on SeaArt. Pro version of Seedream 5.0 (the most powerful): natural-language generation with high fidelity and coherence. Accepts up to 16 SUBJECT/reference images for character/style consistency. Standard or Quality mode. 2K output."
  },
+ "Seedream 5.0 Flash": {
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9"
+  ],
+  "modos_gen": [
+   "1K",
+   "1.5K",
+   "2K"
+  ],
+  "max_imagenes": 6,
+  "best_for": "Modelo de ByteDance en SeaArt (24-sep-2026). La variante RÁPIDA y barata de Seedream 5.0: unos 10-20 s por imagen, para sacar muchas seguidas o iterar casi en tiempo real. Edita por instrucciones —cambia algo concreto de un producto o de un asset sin regenerar la imagen entera— con hasta 6 imágenes de referencia. Según SeaArt, además separa el fondo de los elementos en capas y genera con fondo transparente (producto, stickers, material de diseño). Salida 1K, 1,5K o 2K.",
+  "prompt_formula": "Lenguaje natural descriptivo, sin negative. Para GENERAR: sujeto, escena, iluminación y estilo en prosa. Para EDITAR una imagen subida: una instrucción corta que diga qué cambiar y qué conservar («cambia el fondo por blanco liso, mantén el producto y su sombra»). Si quieres fondo transparente, pídelo de forma explícita. Máx 2000 chars.",
+  "prompt_ejemplo": "A glossy red sneaker floating at a slight angle, isolated product shot on a transparent background, soft studio lighting from the top left, crisp clean edges, subtle reflection on the sole, commercial e-commerce style",
+  "limitaciones": "Sin negative prompt. Máx 2000 chars. Hasta 6 imágenes para editar y hasta 8 por tanda. Ficha MAPEADA el 24-sep-2026 desde el esquema oficial de SeaArt: límite, ratios y resoluciones confirmados; la calidad frente a Lite y Pro, POR CONFIRMAR generando.",
+  "best_for_en": "ByteDance model on SeaArt (Sep 24, 2026). The FAST, low-cost variant of Seedream 5.0: roughly 10-20 s per image, for continuous output or near real-time iteration. Edits by instruction — change one specific thing in a product or asset without regenerating the whole image — with up to 6 reference images. According to SeaArt it also separates the background from key elements into layers and outputs transparent backgrounds (products, stickers, design assets). 1K, 1.5K or 2K output."
+ },
  "Kling 3.0 Image": {
   "vigente": true,
   "has_negative": true,

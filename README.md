@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.0.2
+# 🧠 G-Prompt Studio v1.1.0
 
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
@@ -7,13 +7,13 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 **Español** · [English](README.en.md)
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.2/GPromptStudio-Setup-1.0.2.exe">
-    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.0.2-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.0/GPromptStudio-Setup-1.1.0.exe">
+    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.1.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
   </a>
 </p>
 
@@ -64,7 +64,7 @@ es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**271 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
+**272 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
@@ -183,7 +183,7 @@ del catálogo de su proveedor, la app lo oculta sola.
 ### La forma normal: descargar e instalar
 
 Ve a [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-baja `GPromptStudio-Setup-1.0.2.exe` y ábrelo. **No hace falta Python ni
+baja `GPromptStudio-Setup-1.1.0.exe` y ábrelo. **No hace falta Python ni
 instalar dependencias**: va todo dentro.
 
 - Windows 10 u 11 de 64 bits
@@ -324,7 +324,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**271 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**272 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>

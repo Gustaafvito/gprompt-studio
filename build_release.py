@@ -223,6 +223,13 @@ def publicar_hashes():
         (ROOT / "docs" / "RELEASE-CUERPO.md").write_text(
             texto[i:].rstrip() + "\n", encoding="utf-8", newline="\n")
         print("  ✓ docs/RELEASE-CUERPO.md regenerado (listo para pegar)")
+        # Los borradores marcan con PENDIENTE lo que solo se sabe tras el
+        # build (tamaños, VirusTotal). Publicado, ese hueco es peor que no
+        # decir nada: parece que al autor se le olvidó mirar.
+        pendientes = texto[i:].count("PENDIENTE")
+        if pendientes:
+            print(f"  ⚠ el cuerpo del release tiene {pendientes} «PENDIENTE» "
+                  f"sin rellenar — no lo publiques así")
         _avisar_cifra_de_tests(texto)
     except Exception as e:
         print(f"  ⚠ no se pudo regenerar el cuerpo del release: {e}")

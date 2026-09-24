@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.0.2
+# 🧠 G-Prompt Studio v1.1.0
 
 > A desktop prompt-engineering suite for generative AI.
 > Turns a plain idea into precise instructions for **image, video and audio**.
@@ -7,13 +7,13 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 [Español](README.md) · **English**
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.2/GPromptStudio-Setup-1.0.2.exe">
-    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.0.2-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.0/GPromptStudio-Setup-1.1.0.exe">
+    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.1.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
   </a>
 </p>
 
@@ -69,7 +69,7 @@ and it becomes a professional prompt tuned to the exact model you are about
 to use: its rules, its tags, its limits, its recommended sampler and, where
 it applies, its negative prompt.
 
-**271 models across 13 platforms**, each with its own rules:
+**272 models across 13 platforms**, each with its own rules:
 
 | Mode | Models | Platforms |
 |------|--------|-----------|
@@ -160,7 +160,7 @@ without paying anything.
 ### The normal way: download and install
 
 Go to [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-grab `GPromptStudio-Setup-1.0.2.exe` and open it. **No Python, no
+grab `GPromptStudio-Setup-1.1.0.exe` and open it. **No Python, no
 dependencies** — everything ships inside.
 
 - Windows 10 or 11, 64-bit
@@ -260,7 +260,7 @@ pytest tests/ -v   # → 1319 passed
 
 ![The model catalogue with its search box, grouped by family](docs/capturas/02-catalogo-modelos.png)
 
-**271 models with their own spec sheet**, grouped by family and searchable.
+**272 models with their own spec sheet**, grouped by family and searchable.
 If you use ComfyUI, yours show up on their own.
 
 </td>
