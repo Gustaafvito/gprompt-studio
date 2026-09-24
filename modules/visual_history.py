@@ -14,6 +14,7 @@ class VisualHistory:
         self.session = uuid4().hex
         self.keep = keep
         self.digest = None
+        self.seq = 0
 
     def save(self, refs, fields):
         digest = hashlib.sha256(json.dumps(fields, sort_keys=True).encode())
@@ -25,7 +26,14 @@ class VisualHistory:
             return
         folder = self.root / self.session
         folder.mkdir(parents=True, exist_ok=True)
-        name = datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.gprompt'
+        # La hora sola no sirve de nombre: en Windows con Python 3.10 avanza a
+        # saltos de 15,6 ms, y dos guardados en el mismo salto se llamaban
+        # igual, asi que el segundo borraba el primero. El contador de la
+        # sesion va DELANTE porque el recorte de abajo ordena por nombre: asi
+        # quita siempre las versiones mas viejas de la sesion, aunque el reloj
+        # del sistema retroceda por un ajuste de hora.
+        self.seq += 1
+        name = f"{self.seq:06d}-{datetime.now():%Y%m%d-%H%M%S-%f}.gprompt"
         save_project(folder / name, refs, fields)
         self.digest = fingerprint
         for old in sorted(folder.glob('*.gprompt'))[:-self.keep]:
@@ -34,7 +42,10 @@ class VisualHistory:
     def versions(self):
         if not self.root.exists():
             return []
-        return sorted(self.root.glob('*/*.gprompt'), key=lambda p: p.stat().st_mtime, reverse=True)
+        # El nombre desempata: guardados en el mismo salto de reloj tambien
+        # comparten la fecha de modificacion, que el disco toma del mismo reloj.
+        return sorted(self.root.glob('*/*.gprompt'),
+                      key=lambda p: (p.stat().st_mtime, p.name), reverse=True)
 
 
 def version_label(path):
