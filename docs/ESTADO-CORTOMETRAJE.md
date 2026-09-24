@@ -18,9 +18,13 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 **El arreglo de Tcl ya está en la rama, pero sin publicar.** El commit `9d045a5`
 del worktree `claude/youthful-almeida-847f8d` se trajo a `feat/visual-studio`
 como `b04ead2`, y encima va `81c1bb9`, que acota su bitácora de cuelgues (ver
-§5). Los dos están en local, **pendientes del visto bueno para el push**. La
-rama del worktree sigue existiendo con el commit original; se puede retirar
-cuando esto esté publicado.
+§5). Después van `8ca6da0` (este documento) y `f1712f0` (guardados que se
+pisaban, ver §5b). Los cuatro están en local, **pendientes del visto bueno
+para el push**.
+
+La rama del worktree sigue existiendo con el commit original. Está limpia, no
+hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
+parche. Se puede retirar sin perder nada **cuando esto esté publicado**.
 
 El título y la descripción del PR siguen hablando solo de la beta visual 9.1.
 Hay un borrador nuevo listo para pegar (lo tiene el usuario); desde aquí no se
@@ -164,6 +168,26 @@ pero la causa de fondo no está identificada.
 
 ---
 
+## 5b. Guardados que se pisaban (`f1712f0`, sin publicar)
+
+Lo señaló ChatGPT. Redirigir los borradores de los tests a un temporal no
+arreglaba `VisualHistory.save()`, que nombraba cada versión solo con la hora.
+En Windows con Python 3.10 la hora avanza a **saltos de 15,6 ms**: 200.000
+llamadas seguidas dieron 495 valores distintos. Dos `checkpoint()` en el mismo
+salto se llamaban igual y el segundo borraba el primero. Con la hora congelada,
+de cuatro guardados sobrevivía uno.
+
+Al escribir el test salió un segundo fallo. Si el reloj retrocedía, el recorte
+a 12 borraba las versiones **más nuevas**, porque ordena por nombre y el nombre
+empezaba por la hora.
+
+Ahora el nombre empieza por un contador de la sesión
+(`000007-20260924-173000-123456.gprompt`), y «Recuperar» desempata por nombre.
+Los borradores viejos siguen apareciendo. Un test que ya existía guardaba tres
+versiones seguidas y pasaba solo porque cada guardado tarda más de 15,6 ms.
+
+---
+
 ## 6. Lo que queda abierto
 
 **Bloqueado, esperando al usuario:**
@@ -186,22 +210,23 @@ pero la causa de fondo no está identificada.
      modo. Si cambia la sintaxis, hay que añadir la nueva ahí sin quitar
      `@ref`.
 
-2. **El push de `b04ead2` y `81c1bb9`** (ver §1), y pegar el borrador nuevo
-   del PR.
+2. **El push de los cuatro commits** (ver §1), y pegar el borrador nuevo del
+   PR, que hay que ampliar con §5b.
 
-**Propuesto y en duda:**
+**No se hace, salvo que el usuario diga otra cosa:**
 
 3. Que el formato (9:16) llegue a los prompts de imagen del bloque de
-   personajes. Hay tres motivos para no hacerlo tal cual:
+   personajes. ChatGPT y esta sesión coinciden: una referencia de personaje y
+   un clip pueden necesitar encuadres distintos. Tampoco se cambia ahora a
+   fondo neutro de forma automática. Los motivos:
    - El formato solo existe en la entrada desde el panel, porque la clásica no
      pasa `aspecto`. Y ahí los personajes suelen tener ya su imagen real.
    - En el vídeo por referencia, el encuadre del clip lo fija un parámetro
      aparte: `seaart reference2video` tiene su propio `--aspect-ratio`. No
      depende de la forma de la imagen de referencia.
    - Una ficha de personaje a 16:9 es un retrato con media imagen vacía.
-   Lo que sí podría ayudar, si se quiere tocar, es pedir que esos prompts sean
-   de **retrato de referencia**: fondo neutro, cara y vestuario bien visibles.
-   Pendiente de decidir.
+   Si algún día se toca, la idea sería pedir que esos prompts sean de
+   **retrato de referencia**, con cara y vestuario bien visibles.
 
 **Propuesto y no hecho:**
 
@@ -234,7 +259,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1666 passed, 1 skipped
+python -m pytest -q      1672 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
