@@ -97,11 +97,14 @@ class TestDeExtremoAExtremo:
             def test_colgado():
                 time.sleep(60)
         """, limite=1)
-        assert r.returncode != 0, "el cortafuegos no abortó el proceso"
+        # La salida del subproceso va en cada mensaje: sin ella, un fallo
+        # aquí no dice nada de lo que pasó al otro lado.
+        salida = f"\n--- rc={r.returncode}\n--- stdout:\n{r.stdout[-2000:]}\n--- stderr:\n{r.stderr[-2000:]}"
+        assert r.returncode != 0, "el cortafuegos no abortó el proceso" + salida
         quedan = _bitacoras(tmp_path / ".arquitecto_prompts")
-        assert len(quedan) == 1, quedan
+        assert len(quedan) == 1, f"bitácoras: {quedan}" + salida
         texto = quedan[0].read_text(encoding="utf-8", errors="replace")
         # Qué test era y dónde estaba parado: lo que hace legible un cuelgue.
-        assert "test_suelto.py::test_colgado" in texto
-        assert bitacora.FIRMA_DE_VOLCADO in texto
-        assert "in test_colgado" in texto
+        for esperado in ("test_suelto.py::test_colgado", bitacora.FIRMA_DE_VOLCADO,
+                         "in test_colgado"):
+            assert esperado in texto, f"falta {esperado!r} en la bitácora:\n{texto[-2000:]}" + salida
