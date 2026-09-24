@@ -11,14 +11,17 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `3825315` |
+| Último commit publicado | `206cc93` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
 Publicado el 24-sep: el arreglo de Tcl (`b04ead2`, traído del worktree
 `claude/youthful-almeida-847f8d`), su bitácora (`81c1bb9`), los guardados
-(`f1712f0`) y el inglés de la botonera (`3825315`). **Sin publicar**, pendientes
-del visto bueno: `93efa19` (Ctrl+Shift+A) y `38695d9` (Aprender, ver §5c).
+(`f1712f0`), el inglés de la botonera (`3825315`), Ctrl+Shift+A (`93efa19`) y
+Aprender (`38695d9`, `206cc93`, ver §5c). **Sin publicar**, pendientes del
+visto bueno: los rótulos del panel (`30d044a`), el resultado visible
+(`35c964e`) y el diagnóstico del test del cuelgue (`01cd8a7`), ver §5d, y
+este documento.
 
 La rama del worktree sigue existiendo con el commit original. Está limpia, no
 hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
@@ -143,7 +146,7 @@ modelo que REDACTA el prompt no evita eso; son dos modelos distintos.
 
 ---
 
-## 5. El parpadeo de Tk, resuelto (`b04ead2` + `81c1bb9`, sin publicar)
+## 5. El parpadeo de Tk, resuelto (`b04ead2` + `81c1bb9`)
 
 La suite fallaba a veces con 62 errores de setup. **No era una cascada**: 62 es
 exactamente el número de tests que cuelgan de la fixture de sesión `tk_root`, y
@@ -178,7 +181,7 @@ pero la causa de fondo no está identificada.
 
 ---
 
-## 5b. Guardados que se pisaban (`f1712f0`, sin publicar)
+## 5b. Guardados que se pisaban (`f1712f0`)
 
 Lo señaló ChatGPT. Redirigir los borradores de los tests a un temporal no
 arreglaba `VisualHistory.save()`, que nombraba cada versión solo con la hora.
@@ -224,6 +227,47 @@ Nada de lo nuevo estaba en Aprender. Ahora:
 
 La **guía de estilos** no se tocó: es el catálogo de estilos artísticos
 (`GUIA_ESTILOS.md`), no habla de herramientas.
+
+---
+
+## 5d. El resultado se ve, y las cajas dicen qué son (`30d044a`, `35c964e`)
+
+Salió de una revisión crítica con capturas de la app real (el usuario pidió
+«que sea una herramienta que la gente quiera tener»).
+
+- **Resultado visible.** Recibía 30 px de los 240 que pide a tamaño por
+  defecto en 1920×1080: se empaqueta el último y pack encoge primero lo
+  último. Ahora pestañas e idea ceden alto, y si ni así cabe, las pestañas
+  se pliegan a su tira de títulos (▴/▾; pulsar un título despliega). Cálculo
+  en `modules/espacio_ventana.py`. Medido: 30 → 160 px por defecto, 142 →
+  211 maximizada, 0 → 113 a 760 de alto.
+- **Tamaño inicial con escalado de Windows.** `CTk.geometry()` multiplica
+  por la escala y la app le pasaba píxeles reales: al 125 % la ventana
+  pedía más alto que la pantalla. Probado solo con cálculo; esta máquina
+  está al 100 %.
+- **Modo Focus.** Al salir, las pestañas no volvían nunca. Arreglado.
+- **Rótulos del panel.** Las cajas de una línea usaban el texto gris como
+  único rótulo, y se perdía al escribir, al abrir un proyecto (se escribía
+  "" en cada caja) y siempre en el buscador de modelos.
+
+**Queda abierto de esa revisión:**
+- Por debajo de ~680 de alto (portátiles de 1366×768) ni plegando cabe el
+  resultado; la app avisa de Ctrl+H. Arreglarlo de verdad pide rediseñar la
+  ventana principal (por ejemplo, el resultado a la derecha en pantallas
+  anchas).
+- A tamaño por defecto, el menú «UI» de arriba y el botón «Preview» de la
+  botonera salen cortados por la derecha.
+- Reordenar el panel «Crear desde imágenes» (cuatro pantallas de alto, sin
+  jerarquía entre botones) y darle un botón visible fuera de la pestaña.
+- El análisis se enseña con los asteriscos del markdown; la ventana del
+  panel se titula «Beta 9»; «Marcar como completado» del tutorial enseña dos
+  casillas.
+- Dos tests fallaron una vez cada uno en la suite completa y nunca aislados:
+  el de extremo a extremo de la bitácora de cuelgues (ahora enseña la salida
+  del subproceso si vuelve a caer) y
+  `test_panel_vision::test_por_defecto_no_fija_proveedor`, que espera 250 ms
+  fijos a un hilo. Con la CPU saturada no se reprodujo: no se ha tocado sin
+  pruebas.
 
 ---
 
@@ -298,7 +342,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1681 passed, 1 skipped
+python -m pytest -q      1720 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
