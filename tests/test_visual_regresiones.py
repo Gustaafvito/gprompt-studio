@@ -27,6 +27,8 @@ import inspect
 import pytest
 from PIL import Image
 
+from tests._bombeo import bombear
+
 ctk = pytest.importorskip("customtkinter")
 
 from modules import i18n
@@ -36,8 +38,7 @@ from modules.visual_studio import VisualStudio
 
 
 def _bombear(root, ms=120):
-    root.after(ms, root.quit)
-    root.mainloop()
+    bombear(root, ms)
 
 
 @pytest.fixture()

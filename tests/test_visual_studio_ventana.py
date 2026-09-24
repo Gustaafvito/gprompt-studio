@@ -19,6 +19,8 @@ import inspect
 
 import pytest
 
+from tests._bombeo import bombear
+
 ctk = pytest.importorskip("customtkinter")
 
 from modules.visual_studio import VisualStudio, open_visual_studio
@@ -26,8 +28,7 @@ from modules.visual_studio import VisualStudio, open_visual_studio
 
 def _bombear(root, ms=120):
     """Deja correr los callbacks diferidos antes de mirar el resultado."""
-    root.after(ms, root.quit)
-    root.mainloop()
+    bombear(root, ms)
 
 
 @pytest.fixture()

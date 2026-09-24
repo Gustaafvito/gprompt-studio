@@ -15,6 +15,8 @@ from tkinter import filedialog, messagebox
 
 import pytest
 
+from tests._bombeo import bombear
+
 ctk = pytest.importorskip("customtkinter")
 
 from tests._arranque_tk import crear_con_reintentos  # noqa: E402
@@ -181,9 +183,7 @@ def _esperar(app):
         app.update()
     # El reparto va agrupado con un after(50) y puede encadenar una segunda
     # pasada: hay que darle tiempo.
-    app.after(400, app.quit)
-    app.mainloop()
-    app.update()
+    bombear(app, 400)
 
 
 def _redimensionar(app, alto):
@@ -249,13 +249,11 @@ class TestElResultadoSeVe:
             # Con sitio no se avisa. Salía también así: al arrancar, la
             # ventana pasa por un tamaño provisional.
             _redimensionar(app, 958)
-            app.after(2200, app.quit)
-            app.mainloop()
+            bombear(app, 2200)
             assert servicio._aviso_focus_dado is False
             # Portátil de 768: ni plegando cabe, y se dice cómo arreglarlo.
             _redimensionar(app, 640)
-            app.after(2200, app.quit)
-            app.mainloop()
+            bombear(app, 2200)
             assert servicio._aviso_focus_dado is True
             assert "Ctrl+H" in app.lbl_estado.cget("text")
         finally:

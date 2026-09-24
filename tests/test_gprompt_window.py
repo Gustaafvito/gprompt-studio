@@ -5,6 +5,8 @@ Crea ventanas reales de CustomTkinter; si el entorno no tiene display
 """
 import pytest
 
+from tests._bombeo import bombear
+
 ctk = pytest.importorskip("customtkinter")
 from modules.gprompt_window import GPromptWindow
 
@@ -34,8 +36,7 @@ def root(_root):
 
 def _bombear(root, ms=120):
     """Deja correr los callbacks diferidos (incluido el autocierre a 60ms)."""
-    root.after(ms, root.quit)
-    root.mainloop()
+    bombear(root, ms)
 
 
 def test_segunda_ventana_mismo_titulo_se_cierra(root):

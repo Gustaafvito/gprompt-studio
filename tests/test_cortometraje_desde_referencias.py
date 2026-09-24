@@ -16,6 +16,7 @@ from PIL import Image
 
 from modules.multiprompt import MultiPromptService, construir_peticion_cortometraje
 from modules.visual_brief import ROLES, SHORTFILM_ROLES, Reference, shortfilm_context
+from tests._bombeo import bombear
 
 ANALISIS = ("A: pelo largo castano y auriculares con aro azul.\n"
             "B: anden de estacion con niebla densa, de noche.\n"
@@ -279,8 +280,7 @@ class _VisionFalsa:
 
 
 def _bombear(root, ms=120):
-    root.after(ms, root.quit)
-    root.mainloop()
+    bombear(root, ms)
 
 
 @pytest.fixture()

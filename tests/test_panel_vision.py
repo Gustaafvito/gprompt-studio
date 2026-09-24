@@ -13,6 +13,8 @@ import inspect
 
 import pytest
 
+from tests._bombeo import bombear
+
 ctk = pytest.importorskip("customtkinter")
 
 from modules import i18n
@@ -37,8 +39,7 @@ class _VisionFalsa:
 
 
 def _bombear(root, ms=120):
-    root.after(ms, root.quit)
-    root.mainloop()
+    bombear(root, ms)
 
 
 @pytest.fixture()
