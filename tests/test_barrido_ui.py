@@ -162,3 +162,65 @@ class TestVentanaPrincipal:
         botones = [w for w in _descendientes(app)
                    if isinstance(w, ctk.CTkButton)]
         assert len(botones) >= 50, f"solo {len(botones)} botones"
+
+
+@pytest.mark.slow
+class TestLoQueEnsenaAprender:
+    """Lo que el tutorial, la paleta y los atajos prometen, existe de verdad.
+
+    Se comprueba con la app montada porque la mayoría de las acciones se
+    resuelven en tiempo de ejecución, a través de los servicios de la app.
+    NO se ejecutan: abrirían ventanas o llamarían a la API.
+    """
+
+    def test_cada_probar_ahora_del_tutorial_existe(self, app):
+        import json
+        from pathlib import Path
+
+        from modules import windows
+        from modules.tutorial import _FREE_FUNCS
+
+        ruta = Path(__file__).resolve().parent.parent / "data" / "tutorial.json"
+        pasos = json.loads(ruta.read_text(encoding="utf-8"))["pasos"]
+        norm = lambda s: "".join(c.lower() for c in s if c.isalnum())
+        pestanas = {norm(n) for n in getattr(app.tabview, "_name_list", [])}
+        rotas = []
+        for p in pasos:
+            accion = p["accion"]
+            if not accion or accion == "focus_modelo":
+                continue
+            if accion.startswith("focus:"):
+                ok = getattr(app, accion.split(":", 1)[1], None) is not None
+            elif accion.startswith("mode:"):
+                ok = accion.split(":", 1)[1] in ("imagen", "video", "audio")
+            elif accion.startswith("tab:"):
+                ok = norm(accion.split(":", 1)[1]) in pestanas
+            elif accion in _FREE_FUNCS:
+                ok = callable(getattr(windows, accion, None))
+            else:
+                ok = callable(getattr(app, accion, None))
+            if not ok:
+                rotas.append(f"paso {p['id']}: {accion}")
+        assert not rotas, "«Probar ahora» apunta a algo que no existe: " + "; ".join(rotas)
+
+    def test_la_paleta_encuentra_las_herramientas_nuevas(self, app):
+        comandos = [c for _, _, c in app._paleta_comandos]
+        assert app.cmd_crear_desde_imagenes in comandos, \
+            "Ctrl+K no encuentra «Crear desde imágenes»"
+        # El Cortometraje va en un lambda (difiere `multi`): se mira a quién llama.
+        assert any("cmd_cortometraje" in getattr(getattr(c, "__code__", None), "co_names", ())
+                   for c in comandos), "Ctrl+K no encuentra el Cortometraje"
+
+    def test_ctrl_shift_i_esta_registrado_en_la_app_viva(self, app):
+        # Registrado en la ventana y en la caja de idea, como el resto de
+        # atajos. No se simula la pulsación: sin el foco del sistema, Tk no
+        # entrega el evento, y en una tirada de tests la ventana no lo tiene.
+        # Que la mayúscula es la forma correcta se comprobó aparte con
+        # pulsaciones reales (ver tests/test_atajos_teclado.py).
+        for widget in (app, app.txt_idea._textbox):
+            assert widget.bind("<Control-Shift-I>"), f"sin Ctrl+Shift+I en {widget}"
+        from pathlib import Path
+        fuente = (Path(__file__).resolve().parent.parent / "modules"
+                  / "atajos_ayuda.py").read_text(encoding="utf-8")
+        linea = next(l for l in fuente.splitlines() if '"<Control-Shift-I>"' in l)
+        assert "cmd_crear_desde_imagenes" in linea

@@ -80,6 +80,9 @@ class AtajosAyudaService:
             widget.bind("<Control-Shift-D>",      lambda e: (self.app.dashboard.cmd_abrir(), "break")[1])
             widget.bind("<Control-Shift-B>",      lambda e: (self.app.multi.cmd_storyboard_imagen(), "break")[1])
             widget.bind("<Control-Shift-M>",      lambda e: (self.app.analysis.cmd_coste_sesion(), "break")[1])
+            # I de «imágenes»: el botón vive en la pestaña Ajustes Extra y sin
+            # atajo había que ir a buscarlo.
+            widget.bind("<Control-Shift-I>",      lambda e: (self.app.cmd_crear_desde_imagenes(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
@@ -303,6 +306,7 @@ class AtajosAyudaService:
                 ("Ctrl+Shift+C", tr("Sugerencias de claridad (palabras polisémicas)")),
                 ("Ctrl+Shift+D", tr("Abrir Dashboard")),
                 ("Ctrl+Shift+M", tr("Coste de sesión")),
+                ("Ctrl+Shift+I", tr("Crear desde imágenes")),
             ]),
             (tr("⚖️ Comparador (dentro de la ventana)"), [
                 ("Ctrl+G", tr("Abrir Grid Pollinations (previews de TODAS)")),

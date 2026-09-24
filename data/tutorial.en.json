@@ -123,7 +123,7 @@
     {
       "id": 21,
       "titulo": "⌨️ 21. KEYBOARD SHORTCUTS — Work faster",
-      "descripcion": "The most useful ones:\n\n• Ctrl+Enter — Generate prompt\n• Ctrl+S — Save favorite\n• Ctrl+Shift+S — Save star\n• Ctrl+I — Creative ideas\n• Ctrl+F — Global search\n• Ctrl+T — This tutorial\n• Ctrl+L — Open LoRAs\n• Ctrl+P — Character group\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Preview\n• F11 — Full screen\n• Alt+1/2/3 — Switch mode",
+      "descripcion": "The most useful ones:\n\n• Ctrl+Enter — Generate prompt\n• Ctrl+S — Save favorite\n• Ctrl+Shift+S — Save star\n• Ctrl+I — Creative ideas\n• Ctrl+Shift+I — Create from images\n• Ctrl+F — Global search\n• Ctrl+T — This tutorial\n• Ctrl+L — Open LoRAs\n• Ctrl+P — Character group\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Preview\n• F11 — Full screen\n• Alt+1/2/3 — Switch mode",
       "accion": "_cmd_mostrar_atajos"
     },
     {
@@ -188,8 +188,8 @@
     },
     {
       "id": 32,
-      "titulo": "🎭 32. NARRATIVE: MOOD · STORY · BOARD · WALK",
-      "descripcion": "Four narrative generators:\n• Mood — explores tone and atmosphere.\n• Story — a sequence with beginning, middle and end.\n• Board — a board of related scenes.\n• Walk — a spatial tour through an environment.",
+      "titulo": "🎭 32. NARRATIVE: MOOD · STORY · BOARD · SHORT · WALK",
+      "descripcion": "Five narrative generators in the button bar:\n• Mood — 4 to 10 prompts with the same atmosphere and different subjects.\n• Story — several shots of the same scene (wide, medium, close-up, POV…). Pick the types or let the AI choose them. IMAGE only.\n• Board — 3 to 8 key frames for video: opening, development, climax and closing. VIDEO only.\n• Short — a short film script, scene by scene. VIDEO only. See step 44.\n• Walk — a tree grown from your prompt: each branch generates 3 variants and you can keep branching. Needs a generated prompt.",
       "accion": null
     },
     {
@@ -251,6 +251,18 @@
       "titulo": "🛠 42. EXTRAS THAT MAKE THE DIFFERENCE",
       "descripcion": "More tools worth knowing:\n• 🧰 Negative builder (Ctrl+Shift+N) · 📐 Formulas · 🏷 Snippets / Quick expansion\n• 🎯 Focus mode (Ctrl+H) · ⚡ Brief mode · 💡 Clarity suggestions (Ctrl+Shift+C)\n• ⏰ Cron prompts · 👥 Character group (Ctrl+P)",
       "accion": null
+    },
+    {
+      "id": 43,
+      "titulo": "🖼 43. CREATE FROM IMAGES — From your images to a prompt",
+      "descripcion": "Start from your own images instead of describing them by hand. The «Create from images · Start/end · References» button in the ⚙️ Extra Settings tab, or Ctrl+Shift+I.\n\nFour modes:\n• Image → prompt — a prompt faithful to the image, or reinterpreted with your idea.\n• Animate image — the image is the start and you describe the action.\n• Start → end — A is the first frame and B the last.\n• Multiple references — 2 to 4 images, each with its role: Character, Product, Scene, Style, Lighting or Composition.\n\nHow to use it: «1. Analyze images», fix the analysis if the AI got something wrong, then «2. Generate prompt». Afterwards you can improve it, fit it to the model's limit and send it to the main output.\n\n💡 «Vision» picks who analyzes the images. If you pick a provider, ONLY that one is used: if it fails, no other provider that might charge you is tried.\n💡 «Recover versions» keeps the last 12 of each session on your computer.",
+      "accion": "cmd_crear_desde_imagenes"
+    },
+    {
+      "id": 44,
+      "titulo": "🎬 44. SHORT FILM — Scene-by-scene script",
+      "descripcion": "Writes the script of a short film with 3 to 12 scenes, to generate it clip by clip with a reference-to-video model (Vidu, Kling…).\n\nThe script comes with a CHARACTERS block, with an image prompt and an @ref tag for each one, and every scene with time, shot, theme, action, camera, dialogue and sound. If something doesn't add up (missing scenes, times that don't fit, an @ref that doesn't exist), it warns you at the top before you copy it.\n\nTwo ways to launch it:\n• From the main window: VIDEO mode, write the premise in the idea box and press 🎬 Short. It uses the active character.\n• From «Create from images»: analyze your references, write the premise in «Your idea» and press «Create short film from these references». You choose scenes and seconds per scene in the same window. Each reference is tagged by its letter (A is @ref1, B is @ref2…) and the status bar tells you which image to upload for each.",
+      "accion": "focus:btn_corto"
     }
   ]
 }

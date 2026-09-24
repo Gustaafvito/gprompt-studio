@@ -413,6 +413,12 @@ class UIBuildersService:
             (tr("⚡ Acciones"), tr("🔄 Variaciones"), self.app.cmd_variaciones),
             (tr("⚡ Acciones"), tr("📦 Batch"), self.app.cmd_batch),
             (tr("⚡ Acciones"), tr("🎨 Previsualizar"), self.app.cmd_previsualizar),
+            # Las dos viven fuera de los menús de arriba —una en la pestaña
+            # Ajustes Extra y otra en la botonera—, así que Ctrl+K no las
+            # encontraba. El lambda difiere `multi`, que puede no existir aún.
+            (tr("⚡ Acciones"), tr("🖼 Crear desde imágenes"), self.app.cmd_crear_desde_imagenes),
+            (tr("⚡ Acciones"), tr("🎬 Cortometraje (guion por escenas)"),
+             lambda: self.app.multi.cmd_cortometraje()),
         ]
 
         self.app._header_menus = []
@@ -1242,9 +1248,11 @@ class UIBuildersService:
         CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
         self.app._sw_brief_callback = _toggle_brief_visual
 
-        ctk.CTkButton(parent, text=tr("Crear desde imágenes · Inicio/final · Referencias"),
-                      command=self.app.cmd_crear_desde_imagenes,
-                      height=30).pack(fill="x", pady=5)
+        btn_visual = ctk.CTkButton(parent, text=tr("Crear desde imágenes · Inicio/final · Referencias"),
+                                   command=self.app.cmd_crear_desde_imagenes,
+                                   height=30)
+        btn_visual.pack(fill="x", pady=5)
+        CTkToolTip(btn_visual, message=tr("Prompt a partir de tus imágenes: una sola, inicio y final, o varias referencias con su función · Ctrl+Shift+I"), delay=0.5)
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
         self.app.frame_imgref_inner = ctk.CTkFrame(parent, fg_color=tab_bg)
@@ -1886,12 +1894,12 @@ class UIBuildersService:
                 ("🤖 Sugerir",         85, NARANJA_VAR,  self.app._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             ]),
             ("🎬 NARRATIVA", ROSA_NARR, [
-                ("🎭 Mood",            70, ROSA_NARR,    self.app.multi.cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
-                ("🎞 Story",           70, ROSA_NARR,    self.app.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("🎭 Mood",            70, ROSA_NARR,    self.app.multi.cmd_moodboard,         "Moodboard: de 4 a 10 prompts con el mismo mood y sujetos distintos"),
+                ("🎞 Story",           70, ROSA_NARR,    self.app.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): varios planos de una escena; eliges los tipos o los elige la IA"),
                 ("🖼 Storyboard",      85, ROSA_NARR,    self.app.multi.cmd_storyboard_imagen, "Storyboard cinematográfico (solo IMAGEN): N paneles. Auto-detecta formato: natural (GPT Image/DALL-E/MJ) o tag-based (SD/Comfy)"),
-                ("📽 Board",           70, ROSA_NARR,    self.app.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("📽 Board",           70, ROSA_NARR,    self.app.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): de 3 a 8 frames apertura/mid/climax/cierre"),
                 ("🎬 Corto",           70, ROSA_NARR,    self.app.multi.cmd_cortometraje,     "Cortometraje (solo VÍDEO): guion de N escenas con plano/acción/cámara/diálogo/SFX + @referencias de personaje. Para el flujo reference-to-video (Vidu/Kling)"),
-                ("🌀 Walk",            70, ROSA_NARR,    self.app.multi.cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+                ("🌀 Walk",            70, ROSA_NARR,    self.app.multi.cmd_random_walk,       "Walk: árbol de variantes a partir de tu prompt, 3 por rama"),
             ]),
             ("🎬 CONVERSIÓN", CYAN_CONV, [
                 ("🎬 →Vídeo",          85, CYAN_CONV,    self.app._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
