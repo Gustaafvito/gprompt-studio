@@ -1,8 +1,8 @@
 # Estado: «Crear desde imágenes» → Cortometraje
 
-Última actualización: **24-sep-2026**. Escrito como traspaso entre sesiones: si
-abres una sesión nueva sobre este repo, lee esto primero. También sirve para
-pegárselo a ChatGPT, que viene revisando cada entrega.
+Última actualización: **24-sep-2026, tarde**. Escrito como traspaso entre
+sesiones: si abres una sesión nueva sobre este repo, lee esto primero. También
+sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 
 ---
 
@@ -11,18 +11,21 @@ pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `658f308` |
+| Último commit publicado | `d2e4ddf` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
-**Hay trabajo sin publicar.** El commit `9d045a5` (arranque de Tcl, ver §5) vive
-solo en local, en la rama `claude/youthful-almeida-847f8d`, dentro de un
-worktree. No está en ningún remoto y **no está fusionado** en
-`feat/visual-studio`. Decidir qué se hace con él es lo primero.
+**El arreglo de Tcl ya está en la rama, pero sin publicar.** El commit `9d045a5`
+del worktree `claude/youthful-almeida-847f8d` se trajo a `feat/visual-studio`
+como `b04ead2`, y encima va `81c1bb9`, que acota su bitácora de cuelgues (ver
+§5). Los dos están en local, **pendientes del visto bueno para el push**. La
+rama del worktree sigue existiendo con el commit original; se puede retirar
+cuando esto esté publicado.
 
-El título y la descripción del PR siguen hablando solo de la beta visual 9.1 y
-no mencionan el Cortometraje. Quien tenga permiso de escritura en GitHub puede
-actualizarlos; desde aquí no se puede sin un token.
+El título y la descripción del PR siguen hablando solo de la beta visual 9.1.
+Hay un borrador nuevo listo para pegar (lo tiene el usuario); desde aquí no se
+puede editar el PR, porque no hay `gh` ni token. El texto actual del PR tiene
+además un error: fecha `5929aeb` el 25-sep, y es del 22-sep.
 
 ---
 
@@ -126,7 +129,7 @@ modelo que REDACTA el prompt no evita eso; son dos modelos distintos.
 
 ---
 
-## 5. El parpadeo de Tk, resuelto (commit `9d045a5`, sin publicar)
+## 5. El parpadeo de Tk, resuelto (`b04ead2` + `81c1bb9`, sin publicar)
 
 La suite fallaba a veces con 62 errores de setup. **No era una cascada**: 62 es
 exactamente el número de tests que cuelgan de la fixture de sesión `tk_root`, y
@@ -141,6 +144,20 @@ Descartado con medidas, no con opiniones: los `after` huérfanos de un panel
 destruido son inofensivos (`Misc.destroy()` los neutraliza con `deletecommand`),
 y no es agotamiento de handles (120 paneles → 392 GDI de 10000).
 
+Ya traído a esta rama, el reintento **salvó una tirada real** en la primera
+pasada completa: `tcl_findLibrary` al arrancar el `ArquitectoApp()` de
+`test_barrido_ui`. Es la segunda vez que se le ve actuar. Comprobado además
+rompiéndolo: sin reintento caen 3 tests, y con el filtro de traza abierto caen 2.
+
+**`81c1bb9` corrige dos cosas del propio arreglo:**
+
+- Su bitácora de cuelgues era un único `tests_colgados.log` en modo "a", con
+  una línea por test: 687 KB y ningún volcado tras unas pocas tiradas. Ahora es
+  una por proceso y se borra sola si no hubo cuelgue. **Si ves una, hubo
+  cuelgue.** El fichero viejo ya no lo escribe nadie y se puede borrar a mano.
+- Su `faulthandler.enable()` no hacía nada, porque el plugin de pytest lo pisa.
+  Se comprobó provocando un fallo fatal. Los fallos fatales van a stderr.
+
 **Sigue abierto:** un CUELGUE observado en el mismo punto (22 minutos de reloj,
 45 s de CPU). Hay un cortafuegos de tiempo por test que vuelca la pila y aborta,
 pero la causa de fondo no está identificada.
@@ -154,16 +171,41 @@ pero la causa de fondo no está identificada.
 1. **La sintaxis real de SeaArt.** El constructor escribe `@ref1`; la ficha del
    catálogo dice `Nombre@imagenN`. Una de las dos está mal y solo se resuelve
    con una captura de la pantalla de generación, con el modelo elegido y las
-   imágenes cargadas. No hace falta generar nada. Mientras tanto, conviene
-   separar la numeración interna de cómo se escribe en cada generador.
+   imágenes cargadas. No hace falta generar nada.
+   - El 24-sep por la tarde se buscó por otras vías, y ninguna lo resuelve.
+     Drama Reference no sale en el `list_models` del MCP de SeaArt. La ayuda de
+     `seaart reference2video` dice que las referencias van «ligadas al prompt»
+     sin decir cómo. El binario está comprimido con UPX y no se abrió. Además,
+     el propio catálogo ya usa tres formas: `@ref1`, `@imagen1` en las
+     fórmulas en español y `@image1` en los ejemplos en inglés.
+   - Separar la numeración interna de la sintaxis de cada generador **se deja
+     para cuando haya una sintaxis confirmada**. Sin ninguna, el mapa por
+     generador se diseñaría a ciegas. `@ref` aparece 27 veces en 6 ficheros
+     de `modules/`, varias en comentarios. Ojo con la de
+     `prompts_inyeccion.py`: es una regla que PROHÍBE esas etiquetas en otro
+     modo. Si cambia la sintaxis, hay que añadir la nueva ahí sin quitar
+     `@ref`.
 
-2. **Qué se hace con `9d045a5`** (ver §1).
+2. **El push de `b04ead2` y `81c1bb9`** (ver §1), y pegar el borrador nuevo
+   del PR.
+
+**Propuesto y en duda:**
+
+3. Que el formato (9:16) llegue a los prompts de imagen del bloque de
+   personajes. Hay tres motivos para no hacerlo tal cual:
+   - El formato solo existe en la entrada desde el panel, porque la clásica no
+     pasa `aspecto`. Y ahí los personajes suelen tener ya su imagen real.
+   - En el vídeo por referencia, el encuadre del clip lo fija un parámetro
+     aparte: `seaart reference2video` tiene su propio `--aspect-ratio`. No
+     depende de la forma de la imagen de referencia.
+   - Una ficha de personaje a 16:9 es un retrato con media imagen vacía.
+   Lo que sí podría ayudar, si se quiere tocar, es pedir que esos prompts sean
+   de **retrato de referencia**: fondo neutro, cara y vestuario bien visibles.
+   Pendiente de decidir.
 
 **Propuesto y no hecho:**
 
-3. El formato (9:16) no llega a los prompts de imagen del bloque de personajes.
 4. El cuelgue de Tk (§5).
-5. Título y descripción del PR (§1).
 
 **Prueba pendiente del usuario:** personaje + escenario + estilo con sus propias
 imágenes, comprobando que el personaje se mantiene entre escenas y que el
@@ -192,7 +234,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1635 passed, 1 skipped
+python -m pytest -q      1666 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
