@@ -17,6 +17,8 @@ import pytest
 
 ctk = pytest.importorskip("customtkinter")
 
+from tests._arranque_tk import crear_con_reintentos  # noqa: E402
+
 # Ventanas de la app: (módulo, función, argumentos extra además de `app`)
 VENTANAS = [
     ("avatar_ui", "abrir_avatar_window", ()),
@@ -40,7 +42,17 @@ def app(monkeypatch_module, exige_tk):
     # Se salta SOLO si el entorno no tiene Tk (CI headless). Si Tk funciona,
     # que la app no arranque es un FALLO y tiene que verse: cazarlo aqui
     # convertia una regresion de arranque en un salto silencioso.
-    a = ArquitectoApp()
+    #
+    # Con reintentos porque ArquitectoApp ES un root de Tk (hereda de ctk.CTk)
+    # y por tanto arranca su propio interprete de Tcl. Es el TERCERO que crea
+    # cada proceso de pytest —el sondeo de conftest, este y el root
+    # compartido—, y los tres leen el mismo init.tcl: tres tiradas de dado por
+    # suite. Si le toca a este, no salen 62 errores sino los 24 de este
+    # fichero, que es la misma averia disfrazada. Ver tests/_arranque_tk.py:
+    # solo se reintentan los TclError, asi que una regresion de arranque de la
+    # app (AttributeError, un import que falta) sigue fallando a la primera y
+    # se ve, que es lo que dice el parrafo de arriba.
+    a = crear_con_reintentos(ArquitectoApp)
     a.update()
     a.update_idletasks()
     yield a
