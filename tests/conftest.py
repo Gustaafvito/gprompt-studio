@@ -6,6 +6,7 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from tests import _bitacora_cuelgues as bitacora  # noqa: E402
 from tests._arranque_tk import crear_con_reintentos  # noqa: E402
 
 # ── Cortafuegos de tiempo: un test colgado no puede comerse la tarde ───
@@ -20,29 +21,43 @@ from tests._arranque_tk import crear_con_reintentos  # noqa: E402
 # EJECUCIÓN y no para la sesión entera.
 #
 # Esto no arregla el cuelgue, que sigue sin causa identificada: lo convierte
-# en una traza que se puede leer.
+# en una traza que se puede leer. Dónde queda, y por qué el fichero
+# desaparece cuando no hubo cuelgue: tests/_bitacora_cuelgues.py.
+#
+# Los fallos FATALES (una violación de acceso, por ejemplo) no pasan por
+# aquí: los vuelca en stderr el faulthandler del propio pytest. Llamar aquí a
+# `faulthandler.enable()` no servía de nada, porque el plugin de pytest
+# configura después y lo pisa. Medido provocando un fallo fatal: el volcado
+# salió por stderr y el fichero se quedó vacío.
 _LIMITE_POR_TEST = float(os.environ.get("GPROMPT_LIMITE_TEST", "300"))
-_BITACORA_CUELGUES = os.path.join(
-    os.path.expanduser("~"), ".arquitecto_prompts", "tests_colgados.log")
-_VOLCADO = {"fh": None}
+_VOLCADO = {"fh": None, "ruta": None}
 
 
 def _fichero_de_volcado():
-    """Abierto y SIN cerrar: faulthandler escribe en él desde el temporizador."""
+    """Abierto hasta el final: faulthandler escribe en él desde el temporizador."""
     if _VOLCADO["fh"] is None:
         try:
-            os.makedirs(os.path.dirname(_BITACORA_CUELGUES), exist_ok=True)
-            _VOLCADO["fh"] = open(_BITACORA_CUELGUES, "a", encoding="utf-8")
+            os.makedirs(bitacora.CARPETA, exist_ok=True)
+            ruta = bitacora.ruta_nueva()
+            _VOLCADO["fh"] = open(ruta, "w", encoding="utf-8")
+            _VOLCADO["ruta"] = ruta
         except Exception:
             _VOLCADO["fh"] = sys.stderr
     return _VOLCADO["fh"]
 
 
-def pytest_configure(config):
-    if _LIMITE_POR_TEST <= 0:
+def pytest_unconfigure(config):
+    """Sin cuelgue no queda nada en casa del usuario.
+
+    Un cuelgue aborta el proceso antes de llegar aquí, así que su volcado se
+    queda en disco.
+    """
+    if _VOLCADO["ruta"] is None:
         return
     import faulthandler
-    faulthandler.enable(file=_fichero_de_volcado())
+    faulthandler.cancel_dump_traceback_later()
+    bitacora.cerrar(_VOLCADO["fh"], _VOLCADO["ruta"])
+    _VOLCADO["fh"] = _VOLCADO["ruta"] = None
 
 
 def pytest_runtest_protocol(item, nextitem):

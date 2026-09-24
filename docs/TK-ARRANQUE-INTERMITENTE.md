@@ -103,7 +103,10 @@ espera creciente).
 **Arregla** los arranques que fallan con excepción. Comprobado inyectando las
 dos trazas reales: con un fallo la tirada se recupera y deja un
 `RuntimeWarning` visible; con fallo persistente sigue reventando y deja el
-log. Se vio además actuar **en real** una vez, salvando la tirada.
+log. Se vio además actuar **en real** dos veces, salvando la tirada. La
+segunda, ya traído a `feat/visual-studio`, fue con `tcl_findLibrary` al
+arrancar el `ArquitectoApp()` de `test_barrido_ui`: el intérprete número 2
+de la tabla de abajo.
 
 **NO arregla el cuelgue.** También se observó una tirada **bloqueada 22
 minutos** en este mismo punto (45 s de CPU en 22 minutos de reloj: esperando
@@ -117,10 +120,21 @@ en una traza legible; **el cuelgue en sí sigue abierto**.
 | Fichero | Qué guarda |
 | --- | --- |
 | `~/.arquitecto_prompts/tk_root_fallido.log` | Por qué no se pudo crear el root: versiones, `_default_root` y la traza completa. |
-| `~/.arquitecto_prompts/tests_colgados.log` | La pila de un test que se pasó del límite, con su nodeid. |
+| `~/.arquitecto_prompts/tests_colgados-<fecha>-<pid>.log` | La pila de un test que se pasó del límite, con su nodeid. |
 
 El límite por test son 300 s, ajustable con `GPROMPT_LIMITE_TEST` (0 lo
 desactiva).
+
+La bitácora de cuelgues es **una por proceso** y se **borra sola** al acabar
+una tirada sin volcado: si ves una, es que hubo cuelgue. Antes era un único
+`tests_colgados.log` en modo "a" que crecía unas 1660 líneas por tirada sin
+guardar nada útil (687 KB y ningún volcado, medido el 24-sep). Ese fichero
+viejo ya no lo escribe nadie y se puede borrar a mano.
+
+Los fallos **fatales** (una violación de acceso, por ejemplo) no van a esa
+bitácora sino a stderr: los vuelca el faulthandler del propio pytest, que
+configura después del `conftest` y pisaba el `faulthandler.enable()` que había
+ahí. Medido provocando uno.
 
 ## Los tres intérpretes por proceso
 
