@@ -45,7 +45,10 @@ def _literales_pasados(nombre):
             f.id if isinstance(f, ast.Name) else "")
         if llamada != nombre:
             continue
-        for arg in nodo.args[1:2]:
+        # Todos los textos tras el padre: entry() recibe rótulo Y ejemplo
+        # desde el 24-sep-2026, y mirar solo el primero dejaba los ejemplos
+        # sin vigilar.
+        for arg in nodo.args[1:]:
             if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
                 textos.append(arg.value)
     return textos
@@ -60,8 +63,9 @@ class TestLosAyudantesTraducen:
 
     def test_entry_aplica_tr(self):
         fuente = inspect.getsource(VisualStudio.entry)
-        assert "tr(placeholder)" in fuente, (
-            "entry volvería a pintar el marcador en español con la app en inglés")
+        for parte in ("tr(label)", "tr(example)"):
+            assert parte in fuente, (
+                "entry volvería a pintar su rótulo o su ejemplo en español con la app en inglés")
 
 
 class TestTodoLoQuePasaPorEllosTieneIngles:

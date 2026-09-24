@@ -41,6 +41,10 @@ from modules.visual_history import VisualHistory
 # tr_es(). Un candado comprueba que sigue cuadrando con VisionChain.
 CADENA_AUTOMATICA = "Cadena automática"
 
+# Ancho común de los rótulos de las cajas de una línea, para que queden en
+# columna. Cabe el más largo en inglés («What to improve»).
+ANCHO_ROTULO = 130
+
 
 class _VentanaPrevia(GPromptWindow):
     """La ventana de «Ampliar»: el foco de GPromptWindow, sin su
@@ -132,10 +136,10 @@ class VisualStudio(ctk.CTkToplevel):
         self.swap_button = ctk.CTkButton(bar, text=tr("Intercambiar A / B"), command=self.swap)
         self.cards = ctk.CTkFrame(body)
         self.cards.pack(fill="x")
-        self.project_name = self.entry(body, "Nombre del proyecto (para reconocerlo en versiones)")
+        self.project_name = self.entry(body, "Proyecto", "nombre para reconocerlo en «Recuperar versiones»")
         self.idea = self.text_field(body, "Tu idea / acción deseada", 70)
-        self.preserve = self.entry(body, "Conservar (ej.: rostro, ropa, forma del producto)")
-        self.change = self.entry(body, "Cambiar (ej.: fondo, pose, iluminación)")
+        self.preserve = self.entry(body, "Conservar", "ej.: rostro, ropa, forma del producto")
+        self.change = self.entry(body, "Cambiar", "ej.: fondo, pose, iluminación")
         destination = ctk.CTkFrame(body)
         destination.pack(fill="x", pady=8)
         self.target_menu = ctk.CTkOptionMenu(destination, values=[tr("Imagen"), tr("Vídeo")],
@@ -147,8 +151,11 @@ class VisualStudio(ctk.CTkToplevel):
         self.model_search = ctk.StringVar(value="")
         search_bar = ctk.CTkFrame(destination)
         search_bar.pack(fill="x", padx=5, pady=4)
-        ctk.CTkEntry(search_bar, textvariable=self.model_search,
-                     placeholder_text=tr("Buscar modelo… (ej.: flux, z-image, kling)")).pack(side="left", fill="x", expand=True)
+        # Rótulo y no placeholder: con textvariable, CustomTkinter no pinta
+        # nunca el placeholder, y la caja salía en blanco.
+        ctk.CTkLabel(search_bar, text=tr("Buscar modelo"), width=ANCHO_ROTULO,
+                     anchor="w").pack(side="left", padx=(0, 8))
+        ctk.CTkEntry(search_bar, textvariable=self.model_search).pack(side="left", fill="x", expand=True)
         ctk.CTkButton(search_bar, text=tr("Limpiar búsqueda"), width=130,
                       command=lambda: self.model_search.set("")).pack(side="left", padx=5)
         self.model_matches = ctk.CTkLabel(destination, text="", anchor="w")
@@ -207,10 +214,10 @@ class VisualStudio(ctk.CTkToplevel):
                      wraplength=700, justify="left").pack(anchor="w")
         self.video_controls = ctk.CTkFrame(body)
         ctk.CTkLabel(self.video_controls, text=tr("Dirección de vídeo (opcional)")).pack(anchor="w", padx=5)
-        self.camera = self.entry(self.video_controls, "Cámara: fija, acercamiento lento, seguimiento…")
-        self.environment_motion = self.entry(self.video_controls, "Entorno: niebla, viento, luces, objetos…")
-        self.audio_direction = self.entry(self.video_controls, "Sonido: ambiente; diálogo literal e idioma si lo necesitas")
-        self.transition_direction = self.entry(self.video_controls, "Inicio → final: cómo pasar de A a B, sin saltos")
+        self.camera = self.entry(self.video_controls, "Cámara", "fija, acercamiento lento, seguimiento…")
+        self.environment_motion = self.entry(self.video_controls, "Entorno", "niebla, viento, luces, objetos…")
+        self.audio_direction = self.entry(self.video_controls, "Sonido", "ambiente; diálogo literal e idioma si lo necesitas")
+        self.transition_direction = self.entry(self.video_controls, "Inicio → final", "cómo pasar de A a B, sin saltos")
         vision_bar = ctk.CTkFrame(body)
         vision_bar.pack(fill="x", pady=(8, 0))
         ctk.CTkLabel(vision_bar, text=tr("Visión")).pack(side="left", padx=5)
@@ -233,8 +240,8 @@ class VisualStudio(ctk.CTkToplevel):
         self.output = self.text_field(body, "Prompt positivo", 200)
         self.negative = self.text_field(body, "Prompt negativo (solo si el modelo lo admite)", 85)
         self.notes = self.text_field(body, "Notas de uso (no se copian al prompt)", 85)
-        self.revision_instruction = self.entry(body, "Qué mejorar (opcional: más cinematográfico, menos adornos…)")
-        self.manual_limit = self.entry(body, "Límite manual de caracteres (vacío = catálogo)")
+        self.revision_instruction = self.entry(body, "Qué mejorar", "opcional: más cinematográfico, menos adornos…")
+        self.manual_limit = self.entry(body, "Límite manual", "caracteres; vacío = el del catálogo")
         revision_bar = ctk.CTkFrame(body)
         revision_bar.pack(fill="x", pady=5)
         ctk.CTkButton(revision_bar, text=tr("Ajustar al límite"), command=lambda: self.revise(True)).pack(side="left", padx=5)
@@ -359,10 +366,18 @@ class VisualStudio(ctk.CTkToplevel):
         return widget
 
     @staticmethod
-    def entry(parent, placeholder):
-        # Mismo caso que text_field: el placeholder llegaba sin traducir.
-        widget = ctk.CTkEntry(parent, placeholder_text=tr(placeholder))
-        widget.pack(fill="x", pady=4)
+    def entry(parent, label, example):
+        # Rótulo propio a la izquierda y el texto gris SOLO como ejemplo. El
+        # texto gris era el único rótulo de la caja, y CustomTkinter lo quita
+        # en cuanto hay algo escrito, o al abrir un proyecto: quedaban cajas
+        # en blanco sin forma de saber qué era cada una. En la misma fila
+        # para no alargar un panel que ya ocupa varias pantallas.
+        # tr() aquí, como en text_field: llegan variables, no literales.
+        row = ctk.CTkFrame(parent, fg_color="transparent")
+        row.pack(fill="x", pady=4)
+        ctk.CTkLabel(row, text=tr(label), width=ANCHO_ROTULO, anchor="w").pack(side="left", padx=(0, 8))
+        widget = ctk.CTkEntry(row, placeholder_text=tr(example))
+        widget.pack(side="left", fill="x", expand=True)
         return widget
 
     def close(self):
@@ -740,7 +755,10 @@ class VisualStudio(ctk.CTkToplevel):
         other.refresh_destination(preserve_missing=True)
         other.reference_use_changed(tr(fields.get("reference_use") or "Solo texto"))
         for key in ("preserve", "change", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction"):
-            getattr(other, key).insert(0, fields.get(key, ""))
+            # Solo si hay algo: insertar "" también quita el texto de
+            # ejemplo, y la caja vacía se quedaba sin él.
+            if fields.get(key):
+                getattr(other, key).insert(0, fields[key])
         for key in ("idea", "analysis", "output", "negative", "notes"):
             getattr(other, key).insert("1.0", fields.get(key, ""))
         other.analysis_stale = fields.get("analysis_stale", "true") != "false"
