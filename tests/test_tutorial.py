@@ -69,3 +69,17 @@ def test_las_herramientas_nuevas_estan_en_el_tutorial():
             assert texto in titulos, f"{nombre}: falta el paso de {texto}"
     narrativa = next(p for p in _pasos("tutorial.json") if p["id"] == 32)
     assert "Corto" in narrativa["descripcion"]
+
+
+def test_la_casilla_de_completado_no_lleva_otra_casilla_en_el_texto():
+    # «✅ Marcar como completado» junto a la casilla real se veía como dos
+    # casillas, la segunda siempre marcada.
+    import ast
+    from pathlib import Path
+    fuente = (Path(__file__).resolve().parent.parent / "modules" / "tutorial.py").read_text(encoding="utf-8")
+    for nodo in ast.walk(ast.parse(fuente)):
+        if (isinstance(nodo, ast.Call) and getattr(nodo.func, "attr", "") == "CTkCheckBox"):
+            for kw in nodo.keywords:
+                if kw.arg == "text" and isinstance(kw.value, ast.Call):
+                    texto = kw.value.args[0].value
+                    assert not texto.startswith(("✅", "☑", "✔")), texto

@@ -1452,7 +1452,7 @@ TRADUCCIONES = {
     '✅ Importar': '✅ Import',
     '✅ JSON copiado al portapapeles': '✅ JSON copied to clipboard',
     '✅ JSON válido (parsea correctamente)': '✅ Valid JSON (parses correctly)',
-    '✅ Marcar como completado': '✅ Mark as completed',
+    'Marcar como completado': 'Mark as completed',
     '✅ OK': '✅ OK',
     '✅ Puntos fuertes': '✅ Strong points',
     '✅ Usar': '✅ Use',

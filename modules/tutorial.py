@@ -166,7 +166,9 @@ def abrir_tutorial(app):
     btn_probar.pack(side="left")
 
     btn_completado_var = ctk.BooleanVar(value=False)
-    chk_completado = ctk.CTkCheckBox(acciones, text=tr("✅ Marcar como completado"),
+    # Sin el ✅ delante: al lado de la casilla parecía una segunda casilla,
+    # y marcada, aunque el paso no lo estuviera.
+    chk_completado = ctk.CTkCheckBox(acciones, text=tr("Marcar como completado"),
                                      variable=btn_completado_var,
                                      command=lambda: on_toggle_completado())
     chk_completado.pack(side="left", padx=14)
