@@ -42,7 +42,6 @@ TRADUCCIONES = {
     'Añade una imagen inicial y describe la acción que quieres animar.': 'Add a starting image and describe the action you want to animate.',
     'Añade dos imágenes: A es el inicio y B el final. Puedes intercambiar su orden.': 'Add two images: A is the start and B is the end. You can swap their order.',
     'Añade de dos a cuatro referencias y asigna una función a cada una. Elige salida de imagen o vídeo.': 'Add two to four references and assign a role to each. Choose image or video output.',
-    'Crear desde imágenes · Inicio/final · Referencias': 'Create from images · Start/end · References',
     'Crear desde imágenes · G-Prompt Studio': 'Create from images · G-Prompt Studio',
     'Ajustar al límite': 'Fit to limit',
     'Mejorar prompt': 'Improve prompt',

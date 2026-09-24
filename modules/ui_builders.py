@@ -1422,11 +1422,6 @@ class UIBuildersService:
         CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
         self.app._sw_brief_callback = _toggle_brief_visual
 
-        btn_visual = ctk.CTkButton(parent, text=tr("Crear desde imágenes · Inicio/final · Referencias"),
-                                   command=self.app.cmd_crear_desde_imagenes,
-                                   height=30)
-        btn_visual.pack(fill="x", pady=5)
-        CTkToolTip(btn_visual, message=tr("Prompt a partir de tus imágenes: una sola, inicio y final, o varias referencias con su función · Ctrl+Shift+I"), delay=0.5)
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
         self.app.frame_imgref_inner = ctk.CTkFrame(parent, fg_color=tab_bg)
@@ -1759,6 +1754,17 @@ class UIBuildersService:
                                     text_color=c["muted_text"],
                                     command=lambda: self.app.txt_idea.delete("1.0", "end"))
         btn_clear.pack(side="right")
+        # «Crear desde imágenes» junto a la idea: es la otra forma de empezar,
+        # partiendo de imágenes en vez de describirlas. Antes vivía dentro de
+        # la pestaña Ajustes Extra y solo se veía con esa pestaña abierta.
+        self.app.btn_crear_desde_imagenes = ctk.CTkButton(
+            hdr, text=tr("🖼 Crear desde imágenes"), height=22,
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+            command=self.app.cmd_crear_desde_imagenes, **P.estilo_boton(P.BTN_ACENTO))
+        self.app.btn_crear_desde_imagenes.pack(side="right", padx=(0, 8))
+        CTkToolTip(self.app.btn_crear_desde_imagenes,
+                   message=tr("Prompt a partir de tus imágenes: una sola, inicio y final, o varias referencias con su función · Ctrl+Shift+I"),
+                   delay=0.5)
         CTkToolTip(btn_clear, delay=0.3, message=tr("Limpiar campo idea"))
 
         self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=P.FUENTE_SECCION),

@@ -159,6 +159,17 @@ class TestVentanaPrincipal:
         sin = _botones_sin_accion(app)
         assert not sin, f"botones sin acción en la ventana principal: {sin}"
 
+    def test_crear_desde_imagenes_se_ve_sin_abrir_ninguna_pestana(self, app):
+        # Vivía dentro de la pestaña Ajustes Extra: con otra pestaña abierta,
+        # o plegadas, no había forma de verlo.
+        boton = app.btn_crear_desde_imagenes
+        assert boton.winfo_ismapped()
+        w = boton
+        while w is not None:
+            assert w is not app._tabview_container, "sigue dentro de las pestañas"
+            w = w.master
+        assert boton._command == app.cmd_crear_desde_imagenes
+
     def test_tiene_una_cantidad_razonable_de_botones(self, app):
         """Si esto cae en picado es que media UI dejó de construirse."""
         botones = [w for w in _descendientes(app)
