@@ -264,8 +264,6 @@ Salió de una revisión crítica con capturas de la app real (el usuario pidió
   resultado; la app avisa de Ctrl+H. Arreglarlo de verdad pide rediseñar la
   ventana principal (por ejemplo, el resultado a la derecha en pantallas
   anchas).
-- «Marcar como completado» del tutorial enseña dos casillas (la real y un
-  emoji ✅ en el texto).
 - Dos tests fallaron una vez cada uno en la suite completa y nunca aislados:
   el de extremo a extremo de la bitácora de cuelgues (ahora enseña la salida
   del subproceso si vuelve a caer) y
@@ -314,6 +312,29 @@ falta antes de publicar: build, hashes (los del bloque son aún los de la
 mientras quede alguno) y fusionar. **El PR no se fusiona antes de publicar:**
 los README ya apuntan a `releases/download/v1.1.0/…`, que dará 404 hasta
 entonces.
+
+## 5f. NSFW, Destino y el tutorial (`e3eb5a0`, `c090a98`)
+
+El usuario pidió opinión sobre Brief, Destino y NSFW («NSFW no lo quites;
+si puedes, mejóralo»).
+
+- **NSFW.** La detección automática no había funcionado nunca: escribía en
+  `nsfw_var`, que no existe, y anunciaba el cambio igualmente. Ahora
+  `modules/nsfw.py` detecta palabras enteras en inglés y castellano, y
+  conoce los modelos cuyo fabricante filtra el contenido adulto (GPT Image,
+  Nano Banana, Veo, Midjourney…). Con NSFW encendido y uno de ellos, el
+  prompt se queda en sugerente para que no lo rechacen, y se avisa. Con un
+  modelo para adultos y NSFW apagado, también se avisa. El negativo SFW
+  excluye «nsfw, nudity».
+- **Destino.** En inglés no activaba nada (comparaba el nombre traducido) y
+  ponía formatos que el modelo no tenía. Arreglado.
+- **Tutorial.** La casilla doble era un ✅ en el texto.
+
+**Propuesto, sin hacer (espera al usuario):** el Brief está escrito para
+anuncios de VÍDEO (primer shot, 6-15 s, voz en off) y se pega igual a
+imagen y audio; se recuerda entre sesiones y su interruptor vive en una
+pestaña que puede ir plegada, así que puede quedarse encendido sin que se
+vea.
 
 ---
 
@@ -388,7 +409,7 @@ escenario sigue siendo reconocible.
 ## 8. Verificación al día de hoy
 
 ```
-python -m pytest -q      1762 passed, 1 skipped
+python -m pytest -q      1809 passed, 1 skipped
 python -m ruff check .   All checks passed!
 timeout 25 python main.py  exit 124 (sigue viva), 0 errores en el log
 ```
