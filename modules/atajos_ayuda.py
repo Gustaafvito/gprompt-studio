@@ -46,7 +46,9 @@ class AtajosAyudaService:
             widget.bind("<Control-i>",            lambda e: self.app.cmd_ideas())
             widget.bind("<Control-1>",            lambda e: self.app._copiar("positivo"))
             widget.bind("<Control-2>",            lambda e: self.app._copiar("negativo"))
-            widget.bind("<Control-Shift-a>",      lambda e: self.app.cmd_vision())
+            # Con Shift, Tk entrega la letra en MAYÚSCULA: «<Control-Shift-a>»
+            # no se disparaba nunca (comprobado con pulsaciones reales).
+            widget.bind("<Control-Shift-A>",      lambda e: (self.app.cmd_vision(), "break")[1])
             widget.bind("<Control-r>",            lambda e: self.app._idea_aleatoria_historial())
             # ── MEJORA 4: Ctrl+D = duplicar prompt actual al historial ──
             widget.bind("<Control-d>",            lambda e: self.app._cmd_duplicar_a_historial())
