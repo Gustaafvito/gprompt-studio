@@ -11,7 +11,7 @@ sirve para pegárselo a ChatGPT, que viene revisando cada entrega.
 | | |
 |---|---|
 | Rama | `feat/visual-studio` |
-| Último commit publicado | `92e7e50` |
+| Último commit publicado | `c48176c` |
 | PR | [#1](https://github.com/Gustaafvito/gprompt-studio/pull/1) — abierto, **sin fusionar**, no es borrador |
 | Base | `main` en `5929aeb` |
 
@@ -19,9 +19,8 @@ Publicado el 24-sep, hasta `92e7e50`: el arreglo de Tcl y su bitácora, los
 guardados, Aprender (tutorial, glosario, atajos, Ctrl+K), los rótulos del
 panel, el resultado visible, los cuelgues de los tests, el panel por pasos y
 su botón a la vista, los botones que se escondían, Seedream 5.0 Flash con la
-preparación de la 1.1.0 (§5e) y NSFW/Destino/tutorial (§5f). **Sin
-publicar**, pendientes del visto bueno: el Brief por modo (`22d80b8`) y la
-documentación que lo recoge.
+preparación de la 1.1.0 (§5e), NSFW/Destino/tutorial y el Brief por modo
+(§5f).
 
 La rama del worktree sigue existiendo con el commit original. Está limpia, no
 hay nada en el stash y `git range-diff` confirma que `b04ead2` es el mismo
@@ -40,7 +39,7 @@ está «en la botonera». Ahora está junto a la caja de la idea (`80aa6a5`).
 | Rama `feat/visual-studio` | todo lo de septiembre | sí, con `python main.py` |
 | `main` y la release v1.0.2 | 18-sep | no |
 | App instalada (`AppData\Local\Programs\G-Prompt Studio`) y distribuible del escritorio | v1.0.2 | no |
-| Escritorio: `GPromptStudio-Prueba-Crear-desde-imagenes\GPromptStudio-Prueba.exe` | portable de prueba de `7de84ec` (24-sep, título v1.1.0) | hasta §5e; sin NSFW ni Brief |
+| Escritorio: `GPromptStudio-Prueba-Crear-desde-imagenes\GPromptStudio-Prueba.exe` | portable de prueba de `c48176c` (24-sep, título v1.1.0) | todo, hasta el Brief por modo |
 | Escritorio: `GPromptStudio-Visual-Beta` y `GPromptStudio-candidato-codigo` | copias del 19 al 21-sep | obsoletas; no se tocan |
 
 Para que llegue a la app instalada: fusionar el PR, compilar y publicar (1.1.0).
