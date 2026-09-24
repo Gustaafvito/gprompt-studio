@@ -315,6 +315,59 @@ class TestNsfwEnLaAppReal:
 
 
 @pytest.mark.slow
+class TestBriefEnLaAppReal:
+    """El interruptor ⚡ Brief vivía en Ajustes Extra, una pestaña que puede
+    ir plegada, y se recuerda entre sesiones: podía quedarse encendido sin
+    verse y convertir cada prompt en un anuncio."""
+
+    @pytest.fixture(autouse=True)
+    def _aislar(self, app, monkeypatch):
+        monkeypatch.setattr(app.store, "guardar_preferencias", lambda *a, **k: None)
+        antes = app.brief_var.get()
+        yield
+        app.brief_var.set(antes)
+        app.events.on_brief_cambio()
+        app.update()
+
+    def test_uno_junto_a_cada_destino_y_ninguno_en_las_pestanas(self, app):
+        paneles = [app.frame_modelo_imagen, app.frame_video, app.frame_audio]
+        assert len(app._switches_brief) == 3
+        encontrados = []
+        for sw in app._switches_brief:
+            w = sw
+            while w is not None:
+                assert w is not app._tabview_container, "sigue en las pestañas"
+                if any(w is p for p in paneles):
+                    encontrados.append(w)
+                w = w.master
+        # Uno en cada panel, ninguno repetido.
+        assert len(encontrados) == 3
+        assert all(any(e is p for e in encontrados) for p in paneles)
+
+    def test_encendido_se_ve_arriba_y_un_clic_lo_apaga(self, app):
+        app.geometry("1382x958")
+        app.brief_var.set(True)
+        app.events.on_brief_cambio()
+        _esperar(app)
+        assert app._btn_brief.winfo_ismapped()
+        # Y sin quitarle sitio a la cabecera: junto al de ADN, los 8 menús
+        # dejaban de caber a 1382 y se quedaban solo con el icono.
+        assert app._header_compacto is False
+        app._btn_brief.invoke()
+        _esperar(app)
+        assert app.brief_var.get() is False
+        assert not app._btn_brief.winfo_ismapped()
+
+    def test_en_imagen_van_las_reglas_de_imagen(self, app):
+        app.modo_var.set("imagen")
+        app.brief_var.set(True)
+        app.events.on_brief_cambio()
+        system = app.deepseek.historial[0]["content"]
+        assert "MODO BRIEF PUBLICITARIO ACTIVO — IMAGEN" in system
+        assert "PRIMEROS 2 SEGUNDOS" not in system
+
+
+@pytest.mark.slow
 class TestElResultadoSeVe:
     """El «Resultado editable» recibía 30 px de los 240 que pide.
 

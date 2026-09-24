@@ -46,7 +46,8 @@ def test_cubre_features_nuevas():
     titulos = " | ".join(e["titulo"] for e in _cargar()["entradas"]).upper()
     for clave in ("OPTIMIZADOR", "COPILOTO", "STORYBOARD", "AVATAR", "DASHBOARD",
                   "COSTE", "MAX_CHARS", "MODELO ACTIVO", "CREAR DESDE IMÁGENES",
-                  "CORTOMETRAJE", "VÍDEO POR REFERENCIA"):
+                  "CORTOMETRAJE", "VÍDEO POR REFERENCIA",
+                  "MODO BRIEF", "DESTINO", "MODO NSFW"):
         assert clave in titulos, f"falta entrada de glosario para: {clave}"
 
 

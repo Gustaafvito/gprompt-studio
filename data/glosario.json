@@ -360,6 +360,24 @@
       "descripcion": "Modelos de vídeo (Vidu, Kling…) a los que subes imágenes de personajes, objetos o escenarios y las citas en el prompt con una etiqueta @. Así la misma cara y el mismo sitio se mantienen en clips generados por separado.",
       "categoria": "Conceptos avanzados",
       "accion": null
+    },
+    {
+      "titulo": "⚡ MODO BRIEF",
+      "descripcion": "Convierte el prompt en un anuncio. En imagen: un solo punto focal, el producto protagonista y hueco limpio para el titular. En vídeo: gancho en los primeros segundos, tres beats y cierre con llamada a la acción. En audio: una cuña de 15-30 segundos que nombra la marca. El interruptor está junto a Destino; se queda encendido entre sesiones y, mientras lo esté, aparece «⚡ Brief» arriba (pulsarlo lo apaga).",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 DESTINO",
+      "descripcion": "Dónde vas a publicar: Instagram, TikTok, YouTube, LinkedIn, un cliente… Pone el formato típico de esa red, si el modelo lo tiene, y le da al prompt la regla de estilo de ese sitio. «Anthum (concurso)» enciende además el Modo Brief.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🔞 MODO NSFW",
+      "descripcion": "Prompts de contenido adulto: anatomía y poses precisas para evitar deformaciones. Se enciende solo si la idea lo pide (desnudo, erótico, nsfw…). Ojo: GPT Image, Nano Banana, Veo, Midjourney o Ideogram filtran los desnudos; con ellos el prompt se queda en sugerente para que no lo rechacen. Para desnudos, un checkpoint SD o Flux. Apagado, el negativo excluye la desnudez.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
     }
   ]
 }

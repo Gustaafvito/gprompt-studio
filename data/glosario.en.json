@@ -360,6 +360,24 @@
       "descripcion": "Video models (Vidu, Kling…) where you upload images of characters, objects or locations and cite them in the prompt with an @ tag. That keeps the same face and the same place across clips generated separately.",
       "categoria": "Advanced concepts",
       "accion": null
+    },
+    {
+      "titulo": "⚡ BRIEF MODE",
+      "descripcion": "Turns the prompt into an ad. For images: a single focal point, the product as the hero and clean space for the headline. For video: a hook in the first seconds, three beats and a closing call to action. For audio: a 15-30 second spot that names the brand. The switch sits next to Destination; it stays on between sessions and, while it is on, «⚡ Brief» shows at the top (click it to turn it off).",
+      "categoria": "G-Prompt Tools",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 DESTINATION",
+      "descripcion": "Where you will publish: Instagram, TikTok, YouTube, LinkedIn, a client… It sets that network's usual format, if the model offers it, and gives the prompt that site's style rule. «Anthum (contest)» also turns on Brief mode.",
+      "categoria": "G-Prompt Tools",
+      "accion": null
+    },
+    {
+      "titulo": "🔞 NSFW MODE",
+      "descripcion": "Adult-content prompts: precise anatomy and poses to avoid deformations. It turns on by itself when the idea asks for it (nude, erotic, nsfw…). Note: GPT Image, Nano Banana, Veo, Midjourney and Ideogram filter nudity; with them the prompt stays suggestive so it isn't rejected. For nudity, use an SD or Flux checkpoint. When off, the negative excludes nudity.",
+      "categoria": "G-Prompt Tools",
+      "accion": null
     }
   ]
 }

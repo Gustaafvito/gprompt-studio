@@ -651,6 +651,48 @@ Este prompt es para un ANUNCIO, NO arte libre. Aplica estas reglas ADICIONALES s
 El resto de reglas de meticulosidad y formato siguen aplicando. El brief publicitario es una CAPA ADICIONAL, no un reemplazo.
 """
 
+# Las reglas de arriba son de ANUNCIO DE VÍDEO (primer shot, 6-15 s, voz en
+# off). Hasta el 24-sep-2026 se pegaban igual a imagen y audio: a una imagen
+# fija se le pedía «gancho en los 2 primeros segundos» y «último shot».
+BRIEF_MODIFIER_IMAGEN = """
+
+══════════════════════════════════════════════════════════════════
+⚡ MODO BRIEF PUBLICITARIO ACTIVO — IMAGEN ⚡
+══════════════════════════════════════════════════════════════════
+Esta imagen es para un ANUNCIO o una pieza de marca, NO arte libre. Aplica estas reglas ADICIONALES sobre las anteriores:
+
+1. UN SOLO PUNTO FOCAL: el producto o el mensaje se entiende de un vistazo, en menos de un segundo de feed. Nada compite con él.
+2. PRODUCTO/MARCA PROTAGONISTA: si el brief menciona un producto, va en el centro de la composición, nítido y bien iluminado, con sus materiales y colores fieles. No inventes logos ni textos de marca que el usuario no haya dado.
+3. HUECO PARA EL TEXTO: deja espacio negativo limpio (cielo, pared, fondo liso) donde el diseñador pueda poner el titular y la llamada a la acción. No escribas el titular dentro de la imagen salvo que se pida.
+4. ACABADO DE CAMPAÑA: luz de estudio o comercial controlada, colores coherentes con la marca, acabado limpio de fotografía publicitaria.
+5. BENEFICIO VISIBLE: enseña qué gana quien compra (una sensación, un resultado, un momento), no solo el objeto.
+6. COMPOSICIÓN PARA EL FORMATO ELEGIDO: en vertical, el producto en el tercio central y el hueco de texto arriba o abajo; en horizontal, el producto a un lado y el hueco al otro.
+
+El resto de reglas de meticulosidad y formato siguen aplicando. El brief publicitario es una CAPA ADICIONAL, no un reemplazo.
+"""
+
+BRIEF_MODIFIER_AUDIO = """
+
+══════════════════════════════════════════════════════════════════
+⚡ MODO BRIEF PUBLICITARIO ACTIVO — AUDIO ⚡
+══════════════════════════════════════════════════════════════════
+Esta pieza es para un ANUNCIO (cuña o jingle), NO una canción libre. Aplica estas reglas ADICIONALES sobre las anteriores:
+
+1. DURACIÓN DE CUÑA: 15-30 segundos. Estructura corta: gancho → mensaje → cierre con la marca. Nada de estrofas largas ni puentes.
+2. GANCHO EN LOS 3 PRIMEROS SEGUNDOS: un motivo melódico o una frase que se quede.
+3. LA MARCA O EL PRODUCTO se nombra en el estribillo o en el cierre, si el brief lo menciona. No inventes marcas.
+4. LETRA CORTA Y MEMORABLE: frases breves, una sola idea, el mensaje clave repetido. En CASTELLANO por defecto.
+5. LLAMADA A LA ACCIÓN al final, implícita o explícita.
+6. PRODUCCIÓN LIMPIA Y PEGADIZA, que funcione debajo de una voz en off.
+
+El resto de reglas de formato siguen aplicando. El brief publicitario es una CAPA ADICIONAL, no un reemplazo.
+"""
+
+
+def brief_para_modo(modo):
+    """Las reglas del Brief que tocan a este modo ('imagen', 'video', 'audio')."""
+    return {"imagen": BRIEF_MODIFIER_IMAGEN, "audio": BRIEF_MODIFIER_AUDIO}.get(modo, BRIEF_MODIFIER)
+
 # NEGATIVOS BASE
 
 # «nsfw, nudity» en el negativo SFW: hay checkpoints que tienden al desnudo

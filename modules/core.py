@@ -63,7 +63,6 @@ from modules.prompt_helpers import (
 from modules.theme import apply_theme_colors
 from modules.windows import abrir_batch, abrir_batch_variables
 from prompts import (
-    BRIEF_MODIFIER,
     NEGATIVE_BASE_NSFW,
     NEGATIVE_BASE_SFW,
     NEGATIVE_BASE_VIDEO,
@@ -78,6 +77,7 @@ from prompts import (
     SYSTEM_NATURAL_VIDEO_NSFW,
     SYSTEM_VIDEO,
     SYSTEM_VIDEO_NSFW,
+    brief_para_modo,
 )
 from workers import limpiar_marcadores, log_future_exc
 
@@ -328,7 +328,7 @@ class CoreMixin:
             motor = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "Suno v5"
             sys_p = SYSTEM_AUDIO_SUNO if motor.startswith("Suno") else SYSTEM_AUDIO_SEAART
             sys_p = self.prompts.inyectar_specs_audio(sys_p)
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
             return
@@ -343,7 +343,7 @@ class CoreMixin:
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
             if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
                 sys_p = sys_p + NSFW_MODELO_FILTRADO
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
         else:
@@ -362,7 +362,7 @@ class CoreMixin:
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
             if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
                 sys_p = sys_p + NSFW_MODELO_FILTRADO
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
 

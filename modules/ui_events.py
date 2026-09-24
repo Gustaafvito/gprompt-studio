@@ -533,3 +533,6 @@ class UiEventsService:
         else:
             self.app.dialogs.set_estado(tr("Modo Brief desactivado — prompts artísticos libres"))
         self.app.reiniciar_memoria()
+        pintar = getattr(self.app, "_pintar_brief", None)
+        if pintar is not None:
+            pintar()

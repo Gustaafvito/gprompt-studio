@@ -800,6 +800,23 @@ class UIBuildersService:
                                                  command=self.app.events.on_plataforma_cambio)
         self.app.combo_plataforma.pack(side="left", padx=(0, 10))
 
+        # ── Indicador de Brief activo ──
+        # El Brief cambia TODOS los prompts y se recuerda entre sesiones, así
+        # que mientras esté encendido tiene que verse. Va aquí y no en la
+        # cabecera, junto al de ADN: allí sus 78 px hacían que los 8 menús
+        # ya no cupieran a 1382 de ancho y se quedaran solo con el icono.
+        self.app._btn_brief = ctk.CTkButton(
+            inner, text=tr("⚡ Brief"), width=70, height=28,
+            fg_color="#d97706", hover_color="#b45309", text_color="#ffffff",
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+            command=self._apagar_brief,
+        )
+        try:
+            CTkToolTip(self.app._btn_brief,
+                       message=tr("Modo Brief activo: cada prompt sale como anuncio.\nPulsa para desactivarlo."))
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
         # Dimensiones tipo "iOS pill" — pelota más pequeña que el body para
         # que se vea claramente la diferencia entre encendido/apagado.
         sw_style = {
@@ -1004,6 +1021,7 @@ class UIBuildersService:
         self.app.combo_destino_vid = ctk.CTkComboBox(self.app.frame_video, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_vid.pack(side="left", padx=5)
+        self._crear_switch_brief(self.app.frame_video).pack(side="left", padx=(10, 5))
 
     def _build_audio_panel(self):
         is_light = _get_real_is_light()
@@ -1033,6 +1051,7 @@ class UIBuildersService:
         self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_aud.pack(side="left", padx=5)
+        self._crear_switch_brief(row1).pack(side="left", padx=(10, 5))
 
         self.app.switch_instrumental_var = ctk.BooleanVar(value=False)
 
@@ -1177,6 +1196,69 @@ class UIBuildersService:
         self.app.combo_destino_img = ctk.CTkComboBox(f0, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140, height=28,
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_img.pack()
+
+        f_brief = ctk.CTkFrame(inner, fg_color="transparent")
+        f_brief.pack(side="left", padx=(12, 0))
+        ctk.CTkLabel(f_brief, text=tr("Anuncio"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+                     fg_color="transparent", text_color=lbl_color).pack(anchor="w")
+        self.app.switch_brief = self._crear_switch_brief(f_brief)
+        self.app.switch_brief.pack(anchor="w", pady=(4, 0))
+
+    def _crear_switch_brief(self, parent):
+        """Interruptor ⚡ Brief junto a Destino: los dos dicen para quién es el
+        prompt. Hay uno por panel (imagen, vídeo, audio) y los tres comparten
+        brief_var, así que van siempre a la par."""
+        is_light = _get_real_is_light()
+        if not hasattr(self.app, "_switches_brief"):
+            self.app._switches_brief = []
+            self.app._pintar_brief = self._pintar_brief
+        sw = ctk.CTkSwitch(
+            parent, text=tr("⚡ Brief"), variable=self.app.brief_var,
+            command=self.app.events.on_brief_cambio,
+            progress_color="#d97706",
+            fg_color="#f3f4f6" if is_light else "#1f2937",
+            border_width=1,
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+            height=20, width=42, corner_radius=10, button_length=8,
+            button_color="#374151" if is_light else "#e5e7eb",
+            button_hover_color="#1f2937" if is_light else "#f3f4f6")
+        CTkToolTip(sw, message=tr(
+            "Anuncio: el prompt sigue las reglas de un brief publicitario "
+            "(producto protagonista, gancho y llamada a la acción), adaptadas "
+            "a imagen, vídeo o audio.\n"
+            "Se queda encendido entre sesiones; mientras lo esté, lo verás arriba."),
+            delay=0.5)
+        self.app._switches_brief.append(sw)
+        self._pintar_brief()
+        return sw
+
+    def _pintar_brief(self):
+        """Colores de los interruptores ⚡ Brief e indicador de la cabecera."""
+        activo = bool(self.app.brief_var.get())
+        for sw in getattr(self.app, "_switches_brief", []):
+            try:
+                if activo:
+                    sw.configure(text_color=P.TXT_AVISO, border_color=P.TXT_AVISO)
+                else:
+                    sw.configure(text_color=("#6b7280", "#9ca3af"),
+                                 border_color=("#d1d5db", "#374151"))
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+        badge = getattr(self.app, "_btn_brief", None)
+        if badge is None:
+            return
+        try:
+            if activo and not badge.winfo_ismapped():
+                badge.pack(side="left", padx=(8, 0))
+            elif not activo and badge.winfo_ismapped():
+                badge.pack_forget()
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def _apagar_brief(self):
+        """El indicador de la cabecera: un clic lo apaga."""
+        self.app.brief_var.set(False)
+        self.app.events.on_brief_cambio()
 
     def _aplicar_ratio_rapido(self, ratio):
         """Aplica un ratio rápido si está disponible para el modelo actual."""
@@ -1425,34 +1507,9 @@ class UIBuildersService:
                       fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER, text_color="#ffffff",
                       command=self.app._cmd_borrar_plantilla).pack(side="left", padx=2)
 
-        def _toggle_brief_visual():
-            self.app.events.on_brief_cambio()
-            if self.app.brief_var.get():
-                self.app.switch_brief.configure(text_color="#fcd34d", border_color="#f59e0b")
-            else:
-                col_off = "#6b7280" if is_light else "#9ca3af"
-                bord_off = "#d1d5db" if is_light else "#374151"
-                self.app.switch_brief.configure(text_color=col_off, border_color=bord_off)
-
-        sw_text_off = "#6b7280" if is_light else "#9ca3af"
-        sw_bord_off = "#d1d5db" if is_light else "#374151"
-        sw_fg_off = "#f3f4f6" if is_light else "#1f2937"
-        self.app.switch_brief = ctk.CTkSwitch(
-            self.app.frame_plantilla_brief, text=tr("⚡ Modo Brief"), variable=self.app.brief_var,
-            command=_toggle_brief_visual,
-            progress_color="#d97706",
-            fg_color=sw_fg_off,
-            border_color=sw_bord_off,
-            text_color=sw_text_off,
-            border_width=1,
-            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
-            height=20, width=42, corner_radius=10,
-            button_length=8,
-            button_color="#374151" if is_light else "#e5e7eb",
-            button_hover_color="#1f2937" if is_light else "#f3f4f6")
-        self.app.switch_brief.pack(side="right", padx=15)
-        CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
-        self.app._sw_brief_callback = _toggle_brief_visual
+        # El interruptor ⚡ Brief ya no vive aquí: está junto a Destino en cada
+        # panel (ver _crear_switch_brief). Aquí, en una pestaña que puede ir
+        # plegada, podía quedarse encendido sin que se viera.
 
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
