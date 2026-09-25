@@ -339,8 +339,9 @@ un indicador «⚡ Brief» en la fila de modo que lo apaga de un clic. En la
 cabecera, junto al de ADN, no cabía: los 8 menús se compactaban a 1382.
 Glosario con fichas de Brief, Destino y NSFW.
 
-**Sin respuesta del usuario:** si el concurso Anthum sigue vivo o se quita
-de Destino.
+**Anthum, fuera** (`bed6370`, 25-sep, pedido por el usuario): de Destino,
+de las reglas, de la plantilla de ejemplo y de las traducciones. Era lo
+único que encendía el Brief sin que el usuario lo pidiera.
 
 **Probado por el usuario con el portable de `c48176c` (24-sep, noche):**
 Seedream Flash, Brief de imagen (con GPT Image 2.5 Sunburst: cumple las seis
@@ -348,11 +349,10 @@ reglas; salió ilustración porque tenía Estilo «Illustration»), Destino, y
 los avisos de NSFW con modelo que filtra y con modelo adulto, bien. Falta
 «Crear desde imágenes» (paso 7).
 
-**Pendiente de esa prueba:** al encenderse NSFW solo, el aviso «🔞 NSFW
-activado: tu idea lo pide» va en el mensaje de «Compilando…», y los mensajes
-de progreso lo pisan enseguida: el usuario vio el interruptor encendido pero
-no el porqué. Hay que dejarlo visible cuando llegue el prompt (repetirlo al
-terminar o un toast).
+**Arreglado tras esa prueba** (`eaa0f61`): al encenderse NSFW solo, el
+aviso iba únicamente en el mensaje de «Compilando…» y los mensajes de
+progreso lo pisaban; el usuario vio el interruptor encendido pero no el
+porqué. Ahora sale también flotando, 6 segundos.
 
 ---
 

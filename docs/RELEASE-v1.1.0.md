@@ -185,8 +185,8 @@ imagen, producto protagonista y hueco para el titular; en audio, una cuña
 de 15-30 segundos. El interruptor está junto a Destino y, mientras esté
 encendido, lo ves arriba.
 
-**Destino** funciona también con la app en inglés, y ya no pone un formato
-que el modelo no tiene.
+**Destino** ya no pone un formato que el modelo no tiene. El concurso Anthum
+sale de la lista.
 
 Tus claves, tu historial y tus plantillas se conservan al instalar encima:
 viven fuera del programa, en `%USERPROFILE%\.arquitecto_prompts`.
