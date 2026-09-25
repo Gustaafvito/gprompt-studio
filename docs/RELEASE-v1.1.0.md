@@ -1,24 +1,12 @@
 <!--
-BORRADOR — empezado el 24-sep-2026 en la rama feat/visual-studio (PR #1).
-Nada de esto está publicado. Antes de publicar, en este orden:
+Build definitivo del 25-sep-2026 (build_release.py desde 777f1ba): hashes,
+tamaños y VirusTotal ya son los de ESTOS dos ficheros. Si se regeneran, todo
+eso cambia: hay que volver a analizarlos y rehacer los enlaces.
 
-1. Commit de todo y `python build_release.py --yes` (construye desde HEAD
-   limpio: lo que no esté en commit no va dentro).
-2. HASHES: los dos del bloque de abajo son TODAVÍA LOS DE LA 1.0.2, puestos
-   para que los candados de la web sigan cuadrando mientras tanto.
-   `build_release.py` imprime los nuevos y avisa mientras no se cambien.
-   Cambiarlos también en docs/WEB-descarga.md, docs/WEB-descarga.en.md y
-   docs/LEEME-PRIMERO.txt.
-3. VirusTotal: analizar los DOS .exe nuevos y rehacer la sección marcada
-   PENDIENTE (enlaces y resultados). Son ficheros nuevos: los números de la
-   1.0.2 no valen. `build_release.py` avisa mientras quede un «PENDIENTE».
-4. Tamaños de la tabla de descarga y del LEEME (el build avisa si no cuadran).
-5. README.md y README.en.md YA apuntan a v1.1.0 (lo exige
-   tests/test_readme_descarga.py). Por eso el PR NO se fusiona antes de
-   publicar: en main, el botón de descarga daría 404 hasta entonces.
-6. Fusionar el PR #1 en main, etiqueta `v1.1.0` («+ Create new tag», no
-   basta con escribirla) y subir los dos *assets*:
-   `GPromptStudio-Setup-1.1.0.exe` y `GPromptStudio-Portable-Onefile.exe`.
+Falta, en este orden: fusionar el PR #1 en main, etiqueta `v1.1.0` («+ Create
+new tag», no basta con escribirla), pegar `docs/RELEASE-CUERPO.md` y subir los
+dos *assets*: `GPromptStudio-Setup-1.1.0.exe` y
+`GPromptStudio-Portable-Onefile.exe`. Después, la página de descarga de la web.
 -->
 
 ---
@@ -48,8 +36,8 @@ proveedores soportados.
 
 | | |
 |---|---|
-| **[GPromptStudio-Setup-1.1.0.exe]** · PENDIENTE MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
-| **[GPromptStudio-Portable-Onefile.exe]** · PENDIENTE MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
+| **[GPromptStudio-Setup-1.1.0.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Portable-Onefile.exe]** · 187 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
 
 Las dos opciones son el mismo ejecutable: el instalador se limita a
 colocarlo, crear los accesos directos y registrar la desinstalación. Tardan
@@ -62,8 +50,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
 ```
 
 ```
-da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb  GPromptStudio-Setup-1.1.0.exe
-614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc  GPromptStudio-Portable-Onefile.exe
+e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9  GPromptStudio-Setup-1.1.0.exe
+95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -80,17 +68,28 @@ el fichero es exactamente el que se publicó aquí.
 
 ### Sobre los avisos de los antivirus
 
-PENDIENTE: resultados de VirusTotal de los dos .exe de la 1.1.0, con sus
-enlaces. Referencia: la 1.0.2 salió 0/67 el instalador y 1/66 el portable,
-sin Microsoft en ninguno.
+Te lo cuento yo antes de que lo encuentres tú: el instalador sale
+**[1 de 60](https://www.virustotal.com/gui/file/e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9)** y el portable
+**[2 de 64](https://www.virustotal.com/gui/file/95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+Ninguna de las tres detecciones encuentra código malicioso. Arctic Wolf da un
+veredicto genérico, «Unsafe», sin nombrar nada. Bkav Pro pone
+`W32.Malware.A6C4837A`, una etiqueta derivada del propio fichero. Y Zillya
+dice `Backdoor.XWorm.Win32.3294`: XWorm sí es un malware real, y justo por
+eso lo explico abajo.
+
+Fíjate además en el reparto: Arctic Wolf solo marca el instalador, y Bkav y
+Zillya solo el portable. Es el mismo programa en dos envoltorios, y cada
+motor puntúa el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 
 Estos ejecutables se construyen con **PyInstaller**, y su componente de
 arranque —el mismo binario precompilado que viene con la herramienta— lo
 comparten muchas muestras de malware reales. Hay motores que reconocen ese
-componente y no el código: por eso una de las etiquetas que aparece a veces
-es literalmente `XWorm`, que es un malware que también se empaqueta así.
+componente y no el código: por eso una de las etiquetas que aparece es
+literalmente `XWorm`, que es un malware que también se empaqueta así.
 
 Cuando un veredicto acaba en **`!ml`**, como el `Trojan:Win32/Wacatac.C!ml`
 de Microsoft, es la propia marca del fabricante para decir que lo ha dicho
