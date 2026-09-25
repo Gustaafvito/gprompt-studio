@@ -795,7 +795,7 @@ class ModoClienteService:
                 w.destroy()
             prefs_l = self.app.store.cargar_preferencias()
             estilos = prefs_l.get("estilos_moodboard", []) or []
-            cont_var.set(f"{len(estilos)} estilo(s) guardado(s)")
+            cont_var.set(tr('{0} estilo(s) guardado(s)').format(len(estilos)))
             if not estilos:
                 ctk.CTkLabel(
                     scroll,

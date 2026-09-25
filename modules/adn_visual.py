@@ -56,7 +56,7 @@ class AdnVisualService:
         hdr.pack(fill="x", padx=10, pady=10)
         ctk.CTkLabel(hdr, text=tr("🧬 ADNs Guardados"),
                      font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(side="left", padx=10)
-        contador_var = ctk.StringVar(value=f"{len(adns)} guardado(s)")
+        contador_var = ctk.StringVar(value=tr('{0} guardado(s)').format(len(adns)))
         ctk.CTkLabel(hdr, textvariable=contador_var,
                      text_color=c["muted_text"]).pack(side="right", padx=10)
 
@@ -108,7 +108,7 @@ class AdnVisualService:
                 visibles.append((idx, item))
 
             sufijo = "" if not termino else f" ({len(visibles)} resultados)"
-            contador_var.set(f"{len(adns_act)} guardado(s){sufijo}")
+            contador_var.set(tr('{0} guardado(s)').format(len(adns_act)) + sufijo)
 
             if not visibles:
                 msg = (tr("Sin resultados para '{0}'").format(termino) if termino

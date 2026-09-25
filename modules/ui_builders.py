@@ -513,10 +513,10 @@ class UIBuildersService:
                 (tr("📂  Restaurar backup"), self.app.backup.cmd_restore_completo),
             ]),
             (tr("📁 Datos"), "#3d7a9c", [
-                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
+                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", tr("🌟 Prompts Estrella"), "#4a2800")),
                 (tr("📤  Exportar como JSON pro (Veo/Sora/Kling)"), self.app.json.cmd_exportar),
-                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
-                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
+                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", tr("⭐ Prompts Favoritos"), "#3a3000")),
+                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", tr("📋 Historial de Prompts"), "#1a2a3a")),
                 (tr("📥  Importar prompt JSON pro"), self.app.json.cmd_importar),
                 (tr("🔗  LoRAs"), lambda: abrir_loras(self.app)),
                 (tr("🧑  Personajes"), lambda: abrir_personajes(self.app)),

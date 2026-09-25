@@ -359,7 +359,7 @@ class DashboardService:
                          fg_color="transparent", text_color=text_primary).pack(pady=(8, 2))
             ctk.CTkLabel(card, text=val, font=ctk.CTkFont(size=18, weight="bold"),
                          fg_color="transparent", text_color=col_acc).pack()
-            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=P.FUENTE_HINT),
+            ctk.CTkLabel(card, text=tr(label), font=ctk.CTkFont(size=P.FUENTE_HINT),
                          fg_color="transparent", text_color=text_secondary).pack(pady=(0, 6))
         for ci in range(len(stats)):
             stats_frame.grid_columnconfigure(ci, weight=1)
@@ -462,7 +462,9 @@ class DashboardService:
                 emoji_modo = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(modo_n, "•")
                 row = ctk.CTkFrame(modo_card, fg_color="transparent")
                 row.pack(fill="x", padx=12, pady=2)
-                ctk.CTkLabel(row, text=f"{emoji_modo} {modo_n.capitalize()}",
+                nombre_modo = tr({"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}.get(
+                    modo_n, modo_n.capitalize()))
+                ctk.CTkLabel(row, text=f"{emoji_modo} {nombre_modo}",
                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), width=100, anchor="w",
                              fg_color="transparent", text_color=text_primary).pack(side="left")
                 ctk.CTkLabel(row, text=f"{count} ({pct}%)",

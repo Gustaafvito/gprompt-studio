@@ -796,7 +796,9 @@ class ToolsWorkflowService:
                 card.pack(fill="x", pady=3)
                 ctk.CTkLabel(card, text=f"  ⚡ {m.get('nombre', '?')}",
                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
-                pasos_str = " → ".join(m.get("pasos", []))
+                # Los pasos se guardan por su clave en castellano: traducirlos
+                # al mostrarlos, o en inglés la lista salía en castellano.
+                pasos_str = " → ".join(tr(p) for p in m.get("pasos", []))
                 ctk.CTkLabel(card, text=f"  {pasos_str}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"], wraplength=620, justify="left", anchor="w").pack(fill="x", padx=8, pady=(0, 2))
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -1266,7 +1268,7 @@ class ToolsWorkflowService:
 
         # Indicador del proyecto activo
         activo = prefs.get("proyecto_activo", "")
-        lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or '(ninguno)'),
+        lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or tr('(ninguno)')),
                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                     text_color=P.TXT_OK if activo else c["muted_text"])
         lbl_activo.pack(pady=5)
