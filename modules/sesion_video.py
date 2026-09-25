@@ -195,7 +195,9 @@ class SesionVideoService:
                     # Ventana de selección
                     sel = GPromptWindow(self.app)
                     sel.title(tr("🎬 Tipo de grabación"))
-                    sel.geometry("350x180")
+                    # Con 350x180 el tercer botón («Sin vídeo») quedaba fuera
+                    # de la ventana (barrido del 25-sep-2026).
+                    sel.geometry("350x260")
                     sel.transient(self.app)
                     sel.grab_set()
 

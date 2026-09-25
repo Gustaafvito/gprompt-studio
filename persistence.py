@@ -13,6 +13,12 @@ from modules.i18n import tr
 logger = logging.getLogger("gprompt")
 
 
+# Entradas que guarda el historial; al pasar de aquí se descartan las más
+# antiguas. El Dashboard avisa cerca del límite (antes decía «/100», de
+# cuando el límite era otro, y salía «500/100»).
+HISTORIAL_MAX = 500
+
+
 class DataStore:
     """Almacén centralizado con escrituras atómicas (temp + os.replace)."""
 
@@ -115,7 +121,7 @@ class DataStore:
     @log_operation("historial.agregar")
     def agregar_historial(self, entrada: dict):
         self.historial.insert(0, entrada)
-        if len(self.historial) > 500:
+        if len(self.historial) > HISTORIAL_MAX:
             self.historial.pop()
         self._guardar("historial")
 

@@ -409,9 +409,9 @@ class DashboardService:
             bar_container = ctk.CTkFrame(col_frame, fg_color="transparent", height=38)
             bar_container.pack(fill="x")
             bar_container.pack_propagate(False)
-            # Spacer para alinear barras al fondo del contenedor
-            spacer = ctk.CTkFrame(bar_container, fg_color="transparent")
-            spacer.pack(fill="both", expand=True)
+            # Pegada al fondo con side="bottom", sin espaciador: el que había
+            # era un CTkFrame, que pide 200 px de alto por defecto, y se
+            # comía los 38 del contenedor. Las barras no se vieron nunca.
             bar = ctk.CTkFrame(bar_container,
                                 fg_color=accent_blue if val > 0 else bar_bg,
                                 height=altura_barra, corner_radius=2)
@@ -707,7 +707,9 @@ class DashboardService:
             def _abrir_keys():
                 v.destroy()
                 try:
-                    self.app._cmd_api_keys()
+                    # Llamaba a app._cmd_api_keys, que no existe: el botón
+                    # solo decía «configura tu key» en vez de abrir el gestor.
+                    self.app.dialogs._cmd_configurar_api_keys()
                 except Exception:
                     self.app.dialogs.set_estado(tr("Configura tu key en 🔑 (header)"), accent_amber)
             ctk.CTkButton(estado_row, text=tr("🔑 Configurar"), width=100, height=22,
@@ -718,8 +720,10 @@ class DashboardService:
         avisos = []
         if not disponible:
             avisos.append(("⚠️", tr("Sin LLM configurado"), accent_red))
-        if len(historial) >= 90:
-            avisos.append(("📋", tr("Historial casi lleno ({0}/100)").format(len(historial)), accent_amber))
+        from persistence import HISTORIAL_MAX
+        if len(historial) >= HISTORIAL_MAX * 0.9:
+            avisos.append(("📋", tr("Historial al límite ({0}/{1}): se descartan los más antiguos").format(
+                len(historial), HISTORIAL_MAX), accent_amber))
         if not personajes:
             avisos.append(("🧑", tr("No tienes personajes guardados"), text_muted))
         if not plantillas:

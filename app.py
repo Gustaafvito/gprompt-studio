@@ -1404,7 +1404,10 @@ class ArquitectoApp(
                      text_color=c["muted_text"]).pack(side="left", padx=10)
 
         # Slot para el botón de restaurar — recreado por _refrescar_restaurar_btn
-        restaurar_slot = ctk.CTkFrame(hdr_frame, fg_color="transparent")
+        # height explícito: un CTkFrame vacío pide 200 px por defecto, y esta
+        # ranura (casi siempre vacía) estiraba la cabecera dejando un hueco
+        # enorme encima y debajo del título (barrido del 25-sep-2026).
+        restaurar_slot = ctk.CTkFrame(hdr_frame, fg_color="transparent", height=28)
         restaurar_slot.pack(side="right")
 
         def _restaurar_borradas():
@@ -2513,12 +2516,19 @@ class ArquitectoApp(
     def cmd_preferencias(self):
         ventana = GPromptWindow(self)
         ventana.title(tr("⚙️ Ajustes del Sistema"))
-        ventana.geometry("500x400")
+        ventana.geometry("520x600")
         ventana.transient(self)
         ventana.grab_set()
 
-        # --- Sin tabs, solo un panel directo (API Keys ya están en 🔑 del header) ---
-        tab_gen = ventana
+        # «Guardar» va PRIMERO y abajo, y el resto en un panel con
+        # desplazamiento. Con la ventana a 500x400 el contenido no cabía:
+        # «💾 Guardar Preferencias» y la ruta de ComfyUI quedaban fuera de la
+        # vista, y no había forma de guardar sin agrandarla a mano (barrido
+        # del 25-sep-2026).
+        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color=P.TXT_OK, hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
+        btn_guardar.pack(side="bottom", pady=(8, 16))
+        tab_gen = ctk.CTkScrollableFrame(ventana, fg_color="transparent")
+        tab_gen.pack(fill="both", expand=True)
 
         # Cerebro por defecto (dinámico desde LLM_PROVIDERS)
         try:
@@ -2589,7 +2599,8 @@ class ArquitectoApp(
                       border_width=1).pack(anchor="w", padx=10, pady=(5, 2))
         ctk.CTkLabel(tab_gen,
                      text=tr("    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]"),
-                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED).pack(anchor="w", padx=10)
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED,
+                     wraplength=440, justify="left").pack(anchor="w", padx=10)
 
         ctk.CTkLabel(tab_gen, text=tr("📁 Ruta de ComfyUI (opcional, para auto-discovery):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
@@ -2615,11 +2626,8 @@ class ArquitectoApp(
 
         ctk.CTkLabel(tab_gen,
                      text=tr("    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente."),
-                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED).pack(anchor="w", padx=10)
-
-        # Botón Guardar Abajo
-        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color=P.TXT_OK, hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
-        btn_guardar.pack(pady=(0, 20))
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED,
+                     wraplength=440, justify="left").pack(anchor="w", padx=10)
 
     def _guardar_y_cerrar_preferencias(self, ventana):
         nuevo_llm = self.combo_default_llm.get()

@@ -2359,10 +2359,3 @@ class UIBuildersService:
         self.app.txt_salida.bind("<Double-Button-1>", self.app.dialogs._on_doble_click_salida)
         self.app.txt_salida.bind("<Button-3>", self.app.footer._mostrar_menu_contextual)
 
-        # ── MEJORA 9 (inline): franja de compatibilidad rápida con plataformas top ──
-        self.app.lbl_compat_inline = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
-                                               fg_color="transparent",
-                                               text_color=c["muted_text"], anchor="w", justify="left",
-                                               cursor="hand2")
-        self.app.lbl_compat_inline.pack(fill="x", pady=(2, 0))
-        self.app.lbl_compat_inline.bind("<Button-1>", lambda e: self.app.analysis.cmd_modal_compatibilidad())

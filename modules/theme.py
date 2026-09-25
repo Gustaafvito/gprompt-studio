@@ -337,7 +337,7 @@ def apply_theme_colors(app):
     mt = c["muted_text"] if c else ("#4b5563" if is_light else "#9ca3af")
     pl = c["panel_label"] if c else ("#1f2937" if is_light else "#9ca3af")
     pt = c["panel_text"] if c else ("#111827" if is_light else "#e5e7eb")
-    for attr in ("lbl_estado", "lbl_tokens", "lbl_idea_counter", "lbl_compat_inline"):
+    for attr in ("lbl_estado", "lbl_tokens", "lbl_idea_counter"):
         try:
             w = getattr(app, attr, None)
             if w and w.winfo_exists():

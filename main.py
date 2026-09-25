@@ -52,9 +52,11 @@ if install_strict_silent_guard():
         "se re-lanzarán en lugar de silenciarse."
     )
 
+from modules.cursiva import instalar_margen_cursiva
 from modules.tooltip import install_ctk_tooltip_patches
 
 install_ctk_tooltip_patches(logger)
+instalar_margen_cursiva()
 
 # ─── Validación y recuperación de preferencias ─────────────
 

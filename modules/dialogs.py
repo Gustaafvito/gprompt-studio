@@ -376,31 +376,6 @@ class DialogsService:
     # CoreMixin) haría que esta versión tomara precedencia.
 
 
-    def _close_menu_if_open(self, event=None):
-        """Cierra menú del header si el click fue fuera del popup y botones."""
-        popup = getattr(self.app, '_active_menu_popup', None)
-        if not popup or not popup.winfo_exists():
-            return
-        if event:
-            try:
-                px, py = popup.winfo_rootx(), popup.winfo_rooty()
-                pw, ph = popup.winfo_width(), popup.winfo_height()
-                if px <= event.x_root <= px + pw and py <= event.y_root <= py + ph:
-                    return
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-            for btn in getattr(self.app, '_header_menu_btns', []):
-                try:
-                    bx, by, bw, bh = btn.winfo_rootx(), btn.winfo_rooty(), btn.winfo_width(), btn.winfo_height()
-                    if bx <= event.x_root <= bx + bw and by <= event.y_root <= by + bh:
-                        return
-                except Exception as _e:
-                    logger.debug(f"[silent] {_e}")
-        try:
-            popup.destroy()
-        except Exception as _e:
-            logger.debug(f"[silent] {_e}")
-        self.app._active_menu_popup = None
 
     def _cmd_acerca_de(self) -> None:
         """Modal 'Acerca de' con info de la app, versión, autor y enlaces."""
@@ -423,13 +398,19 @@ class DialogsService:
                      text_color=c["muted_text"]).pack(pady=(0, 16))
 
         # Descripción
+        # La cifra sale de la lista real: decía «14+ LLMs» y son 13.
+        try:
+            from api_clients import LLM_PROVIDERS
+            n_cerebros = len(LLM_PROVIDERS)
+        except Exception:
+            n_cerebros = 13
         descripcion = tr(
             "Suite profesional de ingeniería de prompts para IA generativa\n"
-            "(imagen, vídeo, audio) con 14+ LLMs como motores.\n\n"
+            "(imagen, vídeo, audio) con {0} proveedores de IA como motores.\n\n"
             "Incluye comparador de modelos, A/B testing, ADN visual,\n"
             "import/export JSON pro (Veo/Sora/Kling), dashboard,\n"
             "atajos de teclado y mucho más."
-        )
+        ).format(n_cerebros)
         ctk.CTkLabel(v, text=descripcion, font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                      text_color=c["panel_text"], justify="center",
                      wraplength=460).pack(pady=(0, 24))
@@ -449,8 +430,10 @@ class DialogsService:
             ("📺 YouTube", "https://www.youtube.com/@GustaafvitocreadorIA"),
             ("🐦 X / Twitter", "https://x.com/gustaafvito"),
         ]
+        # 110 y no 140: cuatro de 140 más márgenes eran 600 px en una ventana
+        # de 520, y «X / Twitter» salía cortado.
         for label, url in enlaces:
-            ctk.CTkButton(links_frame, text=label, width=140, height=30,
+            ctk.CTkButton(links_frame, text=label, width=110, height=30,
                           fg_color=c["fg_dark"],
                           font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                           command=lambda u=url: abrir_url(u)).pack(side="left", padx=5)

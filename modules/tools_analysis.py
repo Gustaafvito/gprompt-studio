@@ -258,6 +258,11 @@ def ejecutar_loop_optimizacion(texto_inicial: str, puntuar, mejorar,
             "iteraciones": iteracion}
 
 
+
+def pct_del_total(count, total):
+    """Porcentaje de `count` sobre `total`, redondeado; 0 si no hay total."""
+    return round(count * 100 / total) if total else 0
+
 class ToolsAnalysisService:
     """23 herramientas de análisis: crítica, automejora, stats, scoring,
     seeds, autocompletado tags, traducción, etc.
@@ -773,17 +778,20 @@ class ToolsAnalysisService:
             ctk.CTkLabel(parent, text=titulo, font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                          text_color=c_accent).pack(pady=(15, 8), anchor="w", padx=5)
 
-        def _barra(parent, texto, count, max_val, color="#58a6ff"):
+        def _barra(parent, texto, count, max_val, color="#58a6ff", total=None):
             bar_frame = ctk.CTkFrame(parent, fg_color=c_card, corner_radius=6)
             bar_frame.pack(fill="x", pady=2, padx=2)
-            pct = int(count / max_val * 100) if max_val else 0
+            # La barra, relativa al más largo (así se lee de un vistazo); la
+            # cifra, sobre el TOTAL. Antes también era relativa al más
+            # largo: «SeaArt 316x (100%)» cuando era el 63 % de los prompts.
+            pct = pct_del_total(count, total if total else max_val)
             ctk.CTkLabel(bar_frame, text=f"  {texto}",
                          font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c_text,
                          anchor="w").pack(side="left", padx=5, pady=5)
             barra = ctk.CTkProgressBar(bar_frame, width=150, height=6,
                                        progress_color=color)
             barra.pack(side="left", padx=(5, 5), pady=5)
-            barra.set(pct / 100)
+            barra.set(count / max_val if max_val else 0)
             ctk.CTkLabel(bar_frame, text=tr('{0}x ({1}%)').format((count), (pct)),
                          font=ctk.CTkFont(size=P.FUENTE_HINT), text_color=c_muted).pack(side="right", padx=(0, 8))
 
@@ -863,21 +871,21 @@ class ToolsAnalysisService:
                 top_m = modelos.most_common(8)
                 max_m = top_m[0][1] if top_m else 1
                 for modelo, count in top_m:
-                    _barra(scroll, modelo, count, max_m, "#58a6ff")
+                    _barra(scroll, modelo, count, max_m, "#58a6ff", sum(modelos.values()))
 
             if plataformas:
                 _seccion(scroll, tr("🌐 Top plataformas"))
                 top_p = plataformas.most_common(6)
                 max_p = top_p[0][1] if top_p else 1
                 for plat, count in top_p:
-                    _barra(scroll, plat, count, max_p, "#3fb950")
+                    _barra(scroll, plat, count, max_p, "#3fb950", sum(plataformas.values()))
 
             if ratios:
                 _seccion(scroll, tr("📐 Ratios más usados"))
                 top_r = ratios.most_common(8)
                 max_r = top_r[0][1] if top_r else 1
                 for r_lbl, count in top_r:
-                    _barra(scroll, r_lbl, count, max_r, "#f78166")
+                    _barra(scroll, r_lbl, count, max_r, "#f78166", sum(ratios.values()))
 
             # Top estilos (antes omitido, ahora útil para identificar tendencias)
             if estilos_count:
@@ -885,7 +893,7 @@ class ToolsAnalysisService:
                 top_e = estilos_count.most_common(10)
                 max_e = top_e[0][1] if top_e else 1
                 for est_lbl, count in top_e:
-                    _barra(scroll, est_lbl, count, max_e, "#a78bfa")
+                    _barra(scroll, est_lbl, count, max_e, "#a78bfa", len(hist))
 
             if largos:
                 _seccion(scroll, tr("📏 Longitud de prompts (palabras)"))
@@ -910,7 +918,7 @@ class ToolsAnalysisService:
                 top_mes = sorted(meses.items(), reverse=True)[:12]
                 max_mes = max(v for _, v in top_mes) if top_mes else 1
                 for mes, count in top_mes:
-                    _barra(scroll, mes, count, max_mes, "#ffa657")
+                    _barra(scroll, mes, count, max_mes, "#ffa657", sum(meses.values()))
 
             # ── Top seeds aplicados ──
             if seeds:
@@ -924,7 +932,7 @@ class ToolsAnalysisService:
                     top_s = seed_usage.most_common(5)
                     max_s = top_s[0][1] if top_s else 1
                     for nombre, count in top_s:
-                        _barra(scroll, nombre, count, max_s, "#9b59b6")
+                        _barra(scroll, nombre, count, max_s, "#9b59b6", sum(seed_usage.values()))
                 else:
                     ctk.CTkLabel(scroll,
                                  text=tr("  Sin datos de uso de seeds en este rango"),
@@ -1520,7 +1528,7 @@ class ToolsAnalysisService:
                              text=tr("Aún no hay llamadas LLM en esta sesión."),
                              font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                              text_color=c["muted_text"]).pack(pady=20)
-                lbl_total.configure(text=tr("Total estimado: 0.0000 $"))
+                lbl_total.configure(text=tr("Total de esta sesión: 0.0000 $"))
             else:
                 # Cabecera
                 head = ctk.CTkFrame(cuerpo, fg_color="transparent")
@@ -1547,7 +1555,7 @@ class ToolsAnalysisService:
                         ctk.CTkLabel(row, text=texto, width=ancho, anchor="w",
                                      font=ctk.CTkFont(size=P.FUENTE_CUERPO),
                                      text_color=c["panel_text"]).pack(side="left", padx=2, pady=3)
-                lbl_total.configure(text=tr('Total estimado: {0:.4f} $').format(usage_tracker.total_usd()))
+                lbl_total.configure(text=tr('Total de esta sesión: {0:.4f} $').format(usage_tracker.total_usd()))
 
             # ── Histórico persistente (últimos 14 días) ──
             try:
@@ -1642,8 +1650,10 @@ class ToolsAnalysisService:
             "nombre": nombre,
             "estilos": list(self.app.footer.estilos_seleccionados()),
             "plataforma": self.app.plataforma_var.get() if hasattr(self.app, 'plataforma_var') else "",
-            "modelo_img": self.app.modelo_img_var.get() if hasattr(self.app, 'modelo_img_var') else "",
-            "modelo_vid": self.app.modelo_vid_var.get() if hasattr(self.app, 'modelo_vid_var') else "",
+            # Leía app.modelo_img_var y app.modelo_vid_var, que no existen:
+            # todos los seeds se guardaban SIN modelo.
+            "modelo_img": self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else "",
+            "modelo_vid": self.app.combo_modelo_video.get() if hasattr(self.app, 'combo_modelo_video') else "",
             "ratio": self.app.ratio_var.get() if hasattr(self.app, 'ratio_var') else "",
         }
         seeds.append(seed)
@@ -1801,7 +1811,9 @@ class ToolsAnalysisService:
         if seed.get("modelo_img") and hasattr(self.app, 'combo_modelo_imagen'):
             valores_modelo = list(self.app.combo_modelo_imagen.cget("values") or [])
             if seed["modelo_img"] in valores_modelo:
-                self.app.modelo_img_var.set(seed["modelo_img"])
+                # modelo_img_var no existe: con un seed que SÍ trajera modelo,
+                # esto reventaba el botón «Aplicar».
+                self.app.combo_modelo_imagen.set(seed["modelo_img"])
                 if hasattr(self.app, '_on_modelo_imagen_cambio'):
                     try: self.app.events.on_modelo_imagen_cambio()
                     except Exception: pass
@@ -2223,31 +2235,5 @@ class ToolsAnalysisService:
             consejo = random.choice(consejos)
             self.app.dialogs.set_estado(consejo, P.TXT_INFO)
 
-    def _validar_compatibilidad_modelo(self) -> None:
-        """Valida la compatibilidad del modelo con la configuración actual."""
-        modelo = self.app.modelo_img_var.get() if hasattr(self.app, 'modelo_img_var') else ""
-        if not modelo:
-            return True, ""
-        # Aquí iría la lógica de validación
-        return True, ""
 
-    def _actualizar_compat_inline(self) -> None:
-        """Actualiza la compatibilidad inline en la UI."""
-        valido, msg = self._validar_compatibilidad_modelo()
-        if hasattr(self.app, 'lbl_compat'):
-            if valido:
-                self.app.lbl_compat.configure(text=tr("✅ Compatible"), text_color=P.TXT_OK)
-            else:
-                self.app.lbl_compat.configure(text=f"⚠️ {msg}", text_color=P.TXT_AVISO)
 
-    def _cmd_modal_compatibilidad(self) -> None:
-        """Abre modal de compatibilidad de modelos."""
-        vent = GPromptWindow(self.app)
-        vent.title(tr("🔍 Compatibilidad de modelos"))
-        vent.geometry("600x400")
-        vent.transient(self.app)
-        ctk.CTkLabel(vent, text=tr("🔍 Compatibilidad de modelos"), font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 5))
-        ctk.CTkLabel(vent, text=tr("Información de compatibilidad entre modelos y configuraciones"),
-                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED).pack(pady=(0, 10))
-        # Aquí iría la tabla de compatibilidad
-        ctk.CTkButton(vent, text=tr("Cerrar"), width=120, height=30, command=vent.destroy).pack(pady=15)

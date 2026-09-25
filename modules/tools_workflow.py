@@ -601,7 +601,9 @@ class ToolsWorkflowService:
         vent.geometry("700x500")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr('📜 {0} versiones en esta sesión').format(len(self.app._versiones_prompt)),
+        n_versiones = len(self.app._versiones_prompt)
+        ctk.CTkLabel(vent, text=tr('📜 1 versión en esta sesión') if n_versiones == 1
+                     else tr('📜 {0} versiones en esta sesión').format(n_versiones),
                      font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Click en una versión para restaurarla"),
                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
@@ -1130,6 +1132,9 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     tr('⚠️ Error adaptando: {0}').format(e), P.TXT_ERROR))
 
+        # Sin esto, durante los segundos que tarda la IA no se veía nada y
+        # parecía que el clic no había hecho efecto (barrido del 25-sep).
+        self.app.dialogs.set_estado(tr("⏳ Adaptando el prompt al modelo activo…"), P.TXT_ACENTO)
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_optimizar_1pasada(self):
@@ -1182,6 +1187,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     tr('⚠️ Error optimizando: {0}').format(e), P.TXT_ERROR))
 
+        self.app.dialogs.set_estado(tr("⏳ Optimizando el prompt en una pasada…"), P.TXT_ACENTO)
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_idea_auto_en_macro(self):

@@ -811,11 +811,3 @@ class BackupExportService:
             _busqueda_pendiente["after_id"] = vent.after(250, buscar)
         ent.bind("<KeyRelease>", _disparar_busqueda)
 
-    def _close_menu_if_open(self, event=None) -> None:
-        """Cierra el menú desplegable si está abierto."""
-        if hasattr(self.app, '_menu_activo') and self.app._menu_activo:
-            try:
-                self.app._menu_activo.destroy()
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-            self.app._menu_activo = None

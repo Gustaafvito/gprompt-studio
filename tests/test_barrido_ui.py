@@ -271,6 +271,89 @@ class TestNadaSeCortaDeAncho:
         assert app._header_btns[-1].cget("text") == tr("⚙️ Workflow")
 
 
+_INTERACTIVOS = (ctk.CTkButton, ctk.CTkEntry, ctk.CTkComboBox, ctk.CTkOptionMenu,
+                 ctk.CTkCheckBox, ctk.CTkSwitch, ctk.CTkTextbox, ctk.CTkSegmentedButton,
+                 ctk.CTkSlider, ctk.CTkRadioButton)
+
+
+def _en_desplazable(w):
+    while w is not None:
+        if isinstance(w, ctk.CTkScrollableFrame):
+            return True
+        w = getattr(w, "master", None)
+    return False
+
+
+def _recortes(ventana):
+    """Controles sin sitio o fuera de la ventana, y textos que no caben."""
+    vx, vy = ventana.winfo_rootx(), ventana.winfo_rooty()
+    vw, vh = ventana.winfo_width(), ventana.winfo_height()
+    malos = []
+    for h in _descendientes(ventana):
+        try:
+            texto = str(h.cget("text"))[:50]
+        except Exception:
+            texto = type(h).__name__
+        if isinstance(h, _INTERACTIVOS) and not _en_desplazable(h):
+            # Así «desaparece» en Tk lo que no cabe: pack/grid lo desmapea.
+            if (not h.winfo_ismapped() and h.winfo_manager() in ("pack", "grid")
+                    and h.master.winfo_ismapped()):
+                malos.append(f"sin sitio: {type(h).__name__} «{texto}»")
+                continue
+            if h.winfo_ismapped() and (h.winfo_rooty() + h.winfo_height() > vy + vh + 2
+                                       or h.winfo_rootx() + h.winfo_width() > vx + vw + 2):
+                malos.append(f"fuera: {type(h).__name__} «{texto}»")
+        if (isinstance(h, (ctk.CTkLabel, ctk.CTkButton)) and h.winfo_ismapped()
+                and texto.strip() and h.winfo_width() > 1
+                and h.winfo_reqwidth() > h.winfo_width() + 3):
+            malos.append(f"texto cortado: {type(h).__name__} «{texto}» "
+                         f"({h.winfo_reqwidth()} > {h.winfo_width()})")
+    return malos
+
+
+# Las que al abrirse llaman a la IA, lanzan algo o no abren ventana.
+_NO_ABRIR = ("Exportar como JSON", "Adaptar al modelo", "Grabar sesión", "Backup completo",
+             "Restaurar backup", "Cambiar tema", "Idioma", "Modo Focus", "Panel lateral",
+             "Anclaje rasgos", "Negative builder", "Paleta colores")
+
+
+@pytest.mark.slow
+class TestNadaSeCortaEnLasVentanasDeLosMenus:
+    """Revisión del 25-sep-2026 con la app real: Ajustes escondía «Guardar» y
+    la ruta de ComfyUI (500x400 para bastante más contenido), la ventana de
+    grabación escondía «Sin vídeo», «X / Twitter» salía cortado en Acerca de,
+    y en Historial y Favoritos se perdía la fecha."""
+
+    def test_ningun_control_ni_texto_cortado(self, app):
+        from modules.i18n import tr as _tr
+        menus = {_tr(m) for m in ("📊 Análisis", "📚 Aprender", "💾 Backup", "📁 Datos",
+                                  "🛠 Herramientas", "📝 Plantillas", "🎨 UI", "⚙️ Workflow")}
+        _esperar(app)
+        problemas = {}
+        for grupo, etiqueta, cmd in app._paleta_comandos:
+            if grupo not in menus or any(n in etiqueta for n in _NO_ABRIR):
+                continue
+            antes = {id(w) for w in app.winfo_children() if isinstance(w, tkinter.Toplevel)}
+            try:
+                cmd()
+                bombear(app, 700)
+                for w in app.winfo_children():
+                    if (isinstance(w, tkinter.Toplevel) and id(w) not in antes
+                            and w.state() != "withdrawn"):
+                        malos = _recortes(w)
+                        if malos:
+                            problemas[f"{etiqueta} › {w.title()}"] = malos
+            finally:
+                for w in app.winfo_children():
+                    if isinstance(w, tkinter.Toplevel) and id(w) not in antes:
+                        try:
+                            w.destroy()
+                        except Exception:
+                            pass
+                app.update()
+        assert problemas == {}
+
+
 @pytest.mark.slow
 class TestNsfwEnLaAppReal:
     """El interruptor 🔞 NSFW con la app de verdad. Nada se guarda en las

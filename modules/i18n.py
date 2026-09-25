@@ -410,6 +410,7 @@ TRADUCCIONES = {
     '📌 {0} resultado(s)': '📌 {0} result(s)',
     '📐 Aplicar plantilla: {0}': '📐 Apply template: {0}',
     '📜 {0} versiones en esta sesión': '📜 {0} versions in this session',
+    '📜 1 versión en esta sesión': '📜 1 version in this session',
     "📝 Rellenar variables de '{0}'": "📝 Fill in variables of '{0}'",
     '📝 Tus snippets ({0})': '📝 Your snippets ({0})',
     '📥 Pegar': '📥 Paste',
@@ -537,7 +538,7 @@ TRADUCCIONES = {
     'Ruta: {0}': 'Path: {0}',
     'Score objetivo: {0}/100': 'Target score: {0}/100',
     'Seleccionadas: {0} (máx 2)': 'Selected: {0} (max 2)',
-    'Total estimado: {0:.4f} $': 'Estimated total: {0:.4f} $',
+    'Total de esta sesión: {0:.4f} $': 'This session total: {0:.4f} $',
     'T{0}: {1:.2f}': 'T{0}: {1:.2f}',
     '{0}  ({1}×{2})': '{0}  ({1}×{2})',
     '{0} / {1} chars': '{0} / {1} chars',
@@ -1321,7 +1322,6 @@ TRADUCCIONES = {
     'Idea base:': 'Base idea:',
     'Idioma:': 'Language:',
     'Incluir negative prompt': 'Include negative prompt',
-    'Información de compatibilidad entre modelos y configuraciones': 'Compatibility info between models and configurations',
     'Iniciando...': 'Starting...',
     'Instrucción personalizada (opcional):': 'Custom instruction (optional):',
     'Interpretaciones posibles: ': 'Possible interpretations: ',
@@ -1373,7 +1373,7 @@ TRADUCCIONES = {
     'Tipo de LoRA:': 'LoRA type:',
     'Todas las combis (máx 20)': 'All combos (max 20)',
     'Tokens reales reportados por cada API × precio del modelo usado.': 'Real tokens reported by each API × price of the model used.',
-    'Total estimado: 0.0000 $': 'Estimated total: 0.0000 $',
+    'Total de esta sesión: 0.0000 $': 'This session total: 0.0000 $',
     'Trigger (sin ;):': 'Trigger (without ;):',
     'Trigger:': 'Trigger:',
     'Tu app puede usar varios proveedores. Cada uno tiene su API key.': 'Your app can use several providers. Each one has its own API key.',
@@ -1673,7 +1673,6 @@ TRADUCCIONES = {
     '🔄 Regenerar': '🔄 Regenerate',
     '🔍 Análisis de tus patrones creativos': '🔍 Analysis of your creative patterns',
     '🔍 Análisis inverso: imagen vs prompt': '🔍 Reverse analysis: image vs prompt',
-    '🔍 Compatibilidad de modelos': '🔍 Model compatibility',
     '🔍 Consistencia entre prompts': '🔍 Consistency between prompts',
     '🔎  Ningún ejemplo coincide con los filtros.': '🔎  No example matches the filters.',
     '🔎 Búsqueda en todas las colecciones': '🔎 Search across all collections',
@@ -1755,7 +1754,9 @@ TRADUCCIONES = {
     'Sin key': 'No key',
     'Sin nombre': 'No name',
     'Sin LLM configurado': 'No LLM configured',
-    'Historial casi lleno ({0}/100)': 'History almost full ({0}/100)',
+    '⏳ Adaptando el prompt al modelo activo…': '⏳ Adapting the prompt to the active model…',
+    '⏳ Optimizando el prompt en una pasada…': '⏳ Optimising the prompt in one pass…',
+    'Historial al límite ({0}/{1}): se descartan los más antiguos': 'History at its limit ({0}/{1}): the oldest entries are dropped',
     'No tienes personajes guardados': 'No saved characters',
     'No tienes plantillas guardadas': 'No saved templates',
     'Último backup hace {0} días': 'Last backup {0} days ago',
@@ -1849,8 +1850,8 @@ TRADUCCIONES = {
     '{0} de {1} atajos': '{0} of {1} shortcuts',
     " (filtrando '{0}')": " (filtering '{0}')",
     # --- Acerca de ---
-    'Suite profesional de ingeniería de prompts para IA generativa\n(imagen, vídeo, audio) con 14+ LLMs como motores.\n\nIncluye comparador de modelos, A/B testing, ADN visual,\nimport/export JSON pro (Veo/Sora/Kling), dashboard,\natajos de teclado y mucho más.': (
-        'Professional prompt engineering suite for generative AI\n(image, video, audio) with 14+ LLMs as engines.\n\nIncludes model comparator, A/B testing, visual DNA,\npro JSON import/export (Veo/Sora/Kling), dashboard,\nkeyboard shortcuts and much more.'
+    'Suite profesional de ingeniería de prompts para IA generativa\n(imagen, vídeo, audio) con {0} proveedores de IA como motores.\n\nIncluye comparador de modelos, A/B testing, ADN visual,\nimport/export JSON pro (Veo/Sora/Kling), dashboard,\natajos de teclado y mucho más.': (
+        'Professional prompt engineering suite for generative AI\n(image, video, audio) with {0} AI providers as engines.\n\nIncludes model comparator, A/B testing, visual DNA,\npro JSON import/export (Veo/Sora/Kling), dashboard,\nkeyboard shortcuts and much more.'
     ),
     # --- API key status ---
     '⚠️ sin configurar': '⚠️ not configured',

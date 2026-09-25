@@ -258,8 +258,6 @@ class AnalysisComponent(_Component):
     def mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:
         return self._service._mostrar_consejo_contextual(modelo_name, specs)
 
-    def cmd_modal_compatibilidad(self) -> None:
-        return self._service._cmd_modal_compatibilidad()
 
 
 class DataComponent(_Component):
