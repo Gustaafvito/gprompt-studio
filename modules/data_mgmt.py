@@ -4,7 +4,7 @@ import logging
 
 import pyperclip
 
-from modules.i18n import tr
+from modules.i18n import al_idioma_actual, tr
 
 logger = logging.getLogger(__name__)
 import tkinter.filedialog as filedialog
@@ -206,11 +206,13 @@ class DataMgmtService:
             if pn in self.app.preset_btns:
                 fg = PRESET_COLORES.get(pn, ("#333", "#555"))[0]
                 self.app.preset_btns[pn].configure(fg_color=P.TXT_OK if activo else fg, text=f"✓ {pn}" if activo else pn)
-        self.app.combo_personaje.set(p.get("personaje", tr("— Sin personaje —")))
-        self.app.combo_lora.set(p.get("lora", tr("— Sin LoRA —")))
+        # Guardados tal como se veían: en otro idioma no casaban (ver
+        # i18n.al_idioma_actual).
+        self.app.combo_personaje.set(al_idioma_actual(p.get("personaje", tr("— Sin personaje —"))))
+        self.app.combo_lora.set(al_idioma_actual(p.get("lora", tr("— Sin LoRA —"))))
         self.app.duracion_var.set(p.get("duracion", "10s"))
         self.app.switch_traduccion_var.set(p.get("traduccion", True))
-        dest = p.get("destino", tr("— Personal —"))
+        dest = al_idioma_actual(p.get("destino", tr("— Personal —")), DESTINOS)
         if dest in [tr(d) for d in DESTINOS]: self.app.destino_var.set(dest)
         self.app.brief_var.set(p.get("brief", False))
         self.app.events._on_brief_cambio()
@@ -553,7 +555,7 @@ class DataMgmtService:
 
             # Ratio, destino, NSFW, brief
             if cfg.get("ratio"): self.app.ratio_var.set(cfg["ratio"])
-            if cfg.get("destino"): self.app.destino_var.set(cfg["destino"])
+            if cfg.get("destino"): self.app.destino_var.set(al_idioma_actual(cfg["destino"], DESTINOS))
             self.app.switch_nsfw_var.set(cfg.get("nsfw", False))
             self.app.brief_var.set(cfg.get("brief", False))
 
@@ -1445,10 +1447,10 @@ class DataMgmtService:
             self.app.switch_nsfw_var.set(prefs.get("nsfw", False))
             self.app.switch_traduccion_var.set(prefs.get("traduccion", True))
 
-            pers = prefs.get("personaje", "")
+            pers = al_idioma_actual(prefs.get("personaje", ""))
             if pers: self.app.combo_personaje.set(pers)
 
-            lora = prefs.get("lora", "")
+            lora = al_idioma_actual(prefs.get("lora", ""))
             if lora: self.app.combo_lora.set(lora)
 
             dur = prefs.get("duracion", "")
@@ -1472,7 +1474,7 @@ class DataMgmtService:
 
             # El combo muestra los destinos traducidos; aceptar el valor guardado
             # si coincide con un destino (en el idioma activo).
-            dest = prefs.get("destino", tr("— Personal —"))
+            dest = al_idioma_actual(prefs.get("destino", tr("— Personal —")), DESTINOS)
             if dest in [tr(d) for d in DESTINOS]: self.app.destino_var.set(dest)
 
             self.app.brief_var.set(prefs.get("brief", False))

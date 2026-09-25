@@ -3147,3 +3147,21 @@ def tr_es(texto: str) -> str:
     if _INVERSA is None:
         _INVERSA = {v: k for k, v in TRADUCCIONES.items()}
     return _INVERSA.get(texto, texto)
+
+
+# Valores de desplegable que se guardan tal como se VEN, en el idioma de ese
+# momento. Probado el 25-sep-2026 con la app en inglés: las preferencias
+# traían «— Sin personaje —» y «— Sin LoRA —» de cuando estaba en castellano,
+# la app las comparaba con «— No character —» y las tomaba por un personaje
+# y un LoRA de verdad («Active sources: 1 LoRA»).
+NINGUNOS = ("— Sin personaje —", "— Sin LoRA —", "— Sin plantilla —")
+
+
+def al_idioma_actual(valor, claves=NINGUNOS):
+    """`valor`, guardado en cualquier idioma, en el idioma de ahora.
+
+    Solo si es una de `claves` (en castellano o traducida); cualquier otra
+    cosa —el nombre de un personaje, por ejemplo— se devuelve tal cual.
+    """
+    clave = tr_es(valor) if isinstance(valor, str) else valor
+    return tr(clave) if clave in claves else valor

@@ -5,7 +5,7 @@ import re
 
 import pyperclip
 
-from modules.i18n import tr, tr_es
+from modules.i18n import al_idioma_actual, tr, tr_es
 
 logger = logging.getLogger(__name__)
 from tkinter import messagebox
@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
+from config import DESTINOS
 from config import get_theme_colors as _get_tc
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
@@ -193,17 +194,19 @@ class ToolsWorkflowService:
             # Ratio, destino
             for key, attr in [("ratio", "ratio_var"), ("destino", "destino_var")]:
                 v = setup.get(key)
+                if key == "destino":
+                    v = al_idioma_actual(v, DESTINOS)
                 if v and hasattr(self.app, attr):
                     try: getattr(self.app, attr).set(v)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Personaje y LoRA (son combos directos)
             if setup.get("personaje") and hasattr(self.app, "combo_personaje"):
-                try: self.app.combo_personaje.set(setup["personaje"])
+                try: self.app.combo_personaje.set(al_idioma_actual(setup["personaje"]))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             if setup.get("lora") and hasattr(self.app, "combo_lora"):
-                try: self.app.combo_lora.set(setup["lora"])
+                try: self.app.combo_lora.set(al_idioma_actual(setup["lora"]))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             if "nsfw" in setup and hasattr(self.app, "switch_nsfw_var"):
