@@ -678,12 +678,13 @@ BRIEF_MODIFIER_AUDIO = """
 ══════════════════════════════════════════════════════════════════
 Esta pieza es para un ANUNCIO (cuña o jingle), NO una canción libre. Aplica estas reglas ADICIONALES sobre las anteriores:
 
-1. DURACIÓN DE CUÑA: 15-30 segundos. Estructura corta: gancho → mensaje → cierre con la marca. Nada de estrofas largas ni puentes.
+0. ¿CANTADA O PARA LOCUTAR? Lo decide la idea. Si pide un jingle o una canción: JINGLE CANTADO, con letra. Si pide una cuña de radio, una locución o música de fondo: instrumental, con hueco para la voz en off. Si la idea no lo dice: jingle cantado.
+1. DURACIÓN: 15-30 segundos. Estructura corta: gancho → mensaje → cierre con la marca. Nada de estrofas largas ni puentes.
 2. GANCHO EN LOS 3 PRIMEROS SEGUNDOS: un motivo melódico o una frase que se quede.
-3. LA MARCA O EL PRODUCTO se nombra en el estribillo o en el cierre, si el brief lo menciona. No inventes marcas.
-4. LETRA CORTA Y MEMORABLE: frases breves, una sola idea, el mensaje clave repetido. En CASTELLANO por defecto.
+3. LA MARCA O EL PRODUCTO: si es cantado, en el estribillo o en el cierre; si es instrumental, un remate final reconocible (sting) sobre el que la voz dirá la marca. Si el brief no da un nombre, usa el tipo de negocio o de producto («tu café de cada mañana»). No inventes marcas.
+4. SI ES CANTADO, LETRA CORTA Y MEMORABLE: frases breves, una sola idea, el mensaje clave repetido. En CASTELLANO por defecto.
 5. LLAMADA A LA ACCIÓN al final, implícita o explícita.
-6. PRODUCCIÓN LIMPIA Y PEGADIZA, que funcione debajo de una voz en off.
+6. PRODUCCIÓN LIMPIA Y PEGADIZA.
 
 El resto de reglas de formato siguen aplicando. El brief publicitario es una CAPA ADICIONAL, no un reemplazo.
 """

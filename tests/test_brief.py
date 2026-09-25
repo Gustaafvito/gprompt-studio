@@ -24,6 +24,17 @@ class TestUnBriefPorModo:
         texto = BRIEF_MODIFIER_AUDIO.lower()
         assert "cuña" in texto and "shot" not in texto
 
+    def test_cantada_o_para_locutar_lo_decide_la_idea(self):
+        # Probado de verdad el 25-sep con Suno: las reglas pedían letra y
+        # marca cantada Y «que funcione debajo de una voz en off»; el modelo
+        # hizo una base instrumental, sin letra ni marca. Ahora las dos
+        # salidas son válidas y cada una trae su forma de decir la marca.
+        texto = BRIEF_MODIFIER_AUDIO
+        assert "JINGLE CANTADO" in texto
+        assert "Si la idea no lo dice: jingle cantado" in texto
+        assert "sting" in texto
+        assert "debajo de una voz en off" not in texto
+
     def test_los_tres_son_capa_adicional(self):
         for texto in (BRIEF_MODIFIER, BRIEF_MODIFIER_IMAGEN, BRIEF_MODIFIER_AUDIO):
             assert "CAPA ADICIONAL" in texto
