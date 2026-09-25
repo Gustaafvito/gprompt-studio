@@ -880,6 +880,7 @@ TRADUCCIONES = {
     '⚠️ Carga una imagen primero (panel imagen ref).': '⚠️ Load an image first (ref image panel).',
     '⚠️ Carga una imagen primero.': '⚠️ Load an image first.',
     '⏳ Compilando prompt... 🔞 NSFW activado: tu idea lo pide.': '⏳ Compiling prompt... 🔞 NSFW on: your idea asks for it.',
+    '🔞 NSFW activado: tu idea lo pide': '🔞 NSFW on: your idea asks for it',
     '⚠️ {0} filtra los desnudos: en modo NSFW el prompt se queda en sugerente para que la plataforma no lo rechace. Para desnudos, un checkpoint SD o Flux.': '⚠️ {0} filters nudity: in NSFW mode the prompt stays suggestive so the platform does not reject it. For nudity, use an SD or Flux checkpoint.',
     '🔞 {0} es un modelo para adultos y el modo NSFW está apagado: el prompt saldrá suavizado. Enciéndelo arriba a la derecha.': '🔞 {0} is an adult model and NSFW mode is off: the prompt will come out toned down. Turn it on at the top right.',
     '📐 {0} pide {1}, pero este modelo no lo tiene: se queda en {2}.': '📐 {0} calls for {1}, but this model does not offer it: staying at {2}.',

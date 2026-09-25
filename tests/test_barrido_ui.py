@@ -163,6 +163,9 @@ class TestVentanaPrincipal:
     def test_crear_desde_imagenes_se_ve_sin_abrir_ninguna_pestana(self, app):
         # Vivía dentro de la pestaña Ajustes Extra: con otra pestaña abierta,
         # o plegadas, no había forma de verlo.
+        # Con la app recién creada la ventana aún no se ha mostrado: sin esta
+        # espera, el test solo pasaba si otros le habían dado tiempo antes.
+        _esperar(app)
         boton = app.btn_crear_desde_imagenes
         assert boton.winfo_ismapped()
         w = boton
@@ -298,6 +301,27 @@ class TestNsfwEnLaAppReal:
         # Y el system prompt ya es el NSFW: antes el aviso salía, pero el
         # prompt se generaba en modo normal.
         assert "NSFW" in self._system(app)
+
+    def test_al_generar_el_aviso_no_se_pierde(self, app, monkeypatch):
+        # Probado por el usuario el 24-sep: el aviso iba solo en la barra de
+        # estado y los mensajes de progreso lo pisaban. Se ve flotando. La
+        # petición no sale: el envío está simulado, no gasta nada.
+        from unittest.mock import MagicMock
+        enviado = MagicMock()
+        monkeypatch.setattr(app, "_executor", MagicMock(submit=enviado))
+        avisos = MagicMock()
+        monkeypatch.setattr(app, "show_toast", avisos)
+        app.switch_nsfw_var.set(False)
+        app._toggle_nsfw_visual()
+        app.txt_idea.delete("1.0", "end")
+        app.txt_idea.insert("1.0", "retrato erótico en blanco y negro")
+        try:
+            app.cmd_prompt()
+            assert enviado.called
+            assert any("NSFW" in str(c.args[0]) for c in avisos.call_args_list)
+        finally:
+            app.txt_idea.delete("1.0", "end")
+            app.toggle_botones(True)
 
     def test_nsfw_con_modelo_que_filtra_se_queda_en_sugerente(self, app):
         app.switch_nsfw_var.set(True)

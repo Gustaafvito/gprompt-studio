@@ -867,6 +867,11 @@ class CoreMixin:
         # El aviso va en el mismo mensaje: uno aparte lo pisaba este al instante.
         self.set_estado(tr("⏳ Compilando prompt... 🔞 NSFW activado: tu idea lo pide.")
                         if nsfw_encendido else tr("⏳ Compilando prompt..."), P.TXT_ACENTO)
+        if nsfw_encendido:
+            # Y también flotando: probado por el usuario el 24-sep, los
+            # mensajes de progreso lo pisaban enseguida y solo se veía el
+            # interruptor encendido, sin saber por qué.
+            self.show_toast(tr("🔞 NSFW activado: tu idea lo pide"), "#dc2626", 6000)
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_prompt_traduccion, idea).add_done_callback(log_future_exc)
 
