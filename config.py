@@ -398,16 +398,88 @@ def _resolver_junction(carpeta: Path):
     return real
 
 
+def _leer_extra_model_paths(texto: str) -> list:
+    """Secciones del `extra_model_paths.yaml` de ComfyUI, sin depender de PyYAML.
+
+    Devuelve [{"base_path": str, "claves": {clave: [rutas]}}]. Entiende el
+    formato que documenta ComfyUI: una sección por instalación, `clave: ruta`
+    y bloques `clave: |` con una ruta por línea.
+    """
+    secciones, actual = [], None
+    multi, sangria_multi = None, 0
+    for cruda in texto.splitlines():
+        linea = cruda.rstrip()
+        if not linea.strip() or linea.lstrip().startswith("#"):
+            continue
+        sangria = len(linea) - len(linea.lstrip())
+        contenido = linea.strip()
+        if multi is not None:
+            if sangria > sangria_multi:
+                actual["claves"].setdefault(multi, []).append(contenido.strip("\"'"))
+                continue
+            multi = None
+        if sangria == 0:
+            actual = {"base_path": "", "claves": {}} if contenido.endswith(":") else None
+            if actual is not None:
+                secciones.append(actual)
+            continue
+        if actual is None or ":" not in contenido:
+            continue
+        # La primera «:» separa la clave: «base_path: D:\ComfyUI\» lleva otra
+        # dentro del valor.
+        clave, valor = (s.strip() for s in contenido.split(":", 1))
+        if valor == "|":
+            multi, sangria_multi = clave, sangria
+        elif clave == "base_path":
+            actual["base_path"] = valor.strip("\"'")
+        elif valor:
+            actual["claves"].setdefault(clave, []).append(valor.strip("\"'"))
+    return secciones
+
+
+def _carpetas_extra_comfy(ruta_comfyui: Path) -> list:
+    """Carpetas de checkpoints/diffusion_models/unet de `extra_model_paths.yaml`.
+
+    Es como ComfyUI permite tener los modelos fuera de su carpeta (otro disco,
+    varias instalaciones). El 25-sep-2026 el equipo del autor los tenía en
+    D:\\ComfyUI declarados ahí, y C:\\IA\\ComfyUI\\models no tenía ni
+    `checkpoints`: el escaneo encontraba CERO modelos y la app vivía de una
+    caché antigua, sin ver los modelos nuevos.
+    """
+    fichero = ruta_comfyui / "extra_model_paths.yaml"
+    try:
+        texto = fichero.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+    carpetas = []
+    for seccion in _leer_extra_model_paths(texto):
+        base = Path(seccion["base_path"]) if seccion["base_path"] else ruta_comfyui
+        if not base.is_absolute():
+            base = ruta_comfyui / base
+        for clave in _COMFY_SUBDIRS:
+            for rel in seccion["claves"].get(clave, []):
+                ruta = Path(rel)
+                carpetas.append(ruta if ruta.is_absolute() else base / ruta)
+    return carpetas
+
+
 def _escanear_comfy_root(ruta_comfyui: Path) -> dict:
-    """Escanea models/{checkpoints,diffusion_models,unet} de forma recursiva.
+    """Escanea models/{checkpoints,diffusion_models,unet} de forma recursiva,
+    y también las carpetas que declare `extra_model_paths.yaml`.
 
     Returns:
         dict {'imagen': [...], 'video': [...], 'audio': [...]} con los stems
         ordenados (case-insensitive) y sin duplicados entre carpetas.
     """
     hallados = {"imagen": set(), "video": set(), "audio": set()}
-    for sub in _COMFY_SUBDIRS:
-        carpeta = ruta_comfyui / "models" / sub
+    carpetas = [ruta_comfyui / "models" / sub for sub in _COMFY_SUBDIRS]
+    carpetas += _carpetas_extra_comfy(ruta_comfyui)
+    vistas = set()
+    for carpeta in carpetas:
+        clave_vista = os.path.normcase(str(carpeta)).rstrip("\\/")
+        if clave_vista in vistas:
+            continue
+        vistas.add(clave_vista)
         # exists() normalmente devuelve False ante un error, pero solo se traga
         # los de "no encontrado": un [WinError 448] "punto de montaje no
         # confiable" LO PROPAGA y antes tumbaba el escaneo COMPLETO, dejando al
