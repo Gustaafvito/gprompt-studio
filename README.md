@@ -136,7 +136,7 @@ del catálogo de su proveedor, la app lo oculta sola.
 
 - **Por modelo**: cada modelo tiene specs (sampler, CFG, steps, max_chars, negative) que se inyectan automáticamente al LLM. Si usas Kling 3.0, el LLM SABE las reglas de Kling 3.0.
 - **Por formato**: detecta si el modelo usa tags SD o lenguaje natural y fuerza el formato correcto.
-- **Por destino**: Instagram, TikTok, YouTube, Anthum, Freepik, etc. — cada destino adapta el prompt (ratio, estilo, gancho).
+- **Por destino**: Instagram, TikTok, YouTube, LinkedIn, Freepik, etc. — cada destino adapta el prompt (ratio, estilo, gancho).
 - **ComfyUI + Turbo**: detecta automáticamente y elimina pesos numéricos `(tag:1.2)` que rompen los modelos Turbo.
 - **Negative inteligente**: añade NEGATIVE PROMPT solo si el modelo lo soporta.
 

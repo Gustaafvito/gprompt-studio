@@ -369,7 +369,7 @@
     },
     {
       "titulo": "🎯 DESTINO",
-      "descripcion": "Dónde vas a publicar: Instagram, TikTok, YouTube, LinkedIn, un cliente… Pone el formato típico de esa red, si el modelo lo tiene, y le da al prompt la regla de estilo de ese sitio. «Anthum (concurso)» enciende además el Modo Brief.",
+      "descripcion": "Dónde vas a publicar: Instagram, TikTok, YouTube, LinkedIn, un cliente… Pone el formato típico de esa red, si el modelo lo tiene, y le da al prompt la regla de estilo de ese sitio.",
       "categoria": "Herramientas G-Prompt",
       "accion": null
     },

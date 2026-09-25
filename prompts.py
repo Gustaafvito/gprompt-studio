@@ -6,7 +6,7 @@ Filosofía de los system prompts:
 - METICULOSIDAD ante todo: descripción visual/sonora detallada por capas.
 - APROVECHAR EL BUDGET del modelo cuando es grande (Seedance 5000, Suno 5000).
 - CASTELLANO en diálogos y letras cuando el usuario lo pide.
-- MODO BRIEF PUBLICITARIO cuando el destino es un concurso (Anthum).
+- MODO BRIEF PUBLICITARIO cuando el usuario lo enciende (reglas de anuncio por modo).
 """
 
 # REGLAS COMUNES DE METICULOSIDAD (se reusan en varios prompts)
@@ -630,7 +630,7 @@ FILTROS:
 """
 
 # MODIFICADOR: MODO BRIEF PUBLICITARIO (NUEVO)
-# Se concatena al system prompt cuando Destino = Anthum u otra marca
+# Se concatena al system prompt cuando el Modo Brief está encendido
 
 BRIEF_MODIFIER = """
 
@@ -642,7 +642,7 @@ Este prompt es para un ANUNCIO, NO arte libre. Aplica estas reglas ADICIONALES s
 1. GANCHO EN LOS PRIMEROS 2 SEGUNDOS: el primer shot debe ser visualmente impactante, inesperado, o emocionalmente resonante. Nada de "establishing shot genérico".
 2. MARCA/PRODUCTO VISIBLE: si el brief menciona un producto o marca, debe aparecer claramente en al menos 1 shot (no enterrado, bien iluminado, con foco).
 3. CALL-TO-ACTION IMPLÍCITO: el último shot debe generar deseo/curiosidad/FOMO — un beat emocional que empuja al espectador a querer más.
-4. FORMATO VERTICAL POR DEFECTO: si el destino es concurso o redes sociales (Anthum, Instagram, TikTok, YouTube Shorts), usa 9:16 salvo que se pida explícitamente otro.
+4. FORMATO VERTICAL POR DEFECTO: si el destino son redes sociales (Instagram, TikTok, YouTube Shorts), usa 9:16 salvo que se pida explícitamente otro.
 5. DURACIÓN CORTA Y PRECISA: ajusta al rango 6-15s. Cada segundo cuenta. No hay tiempo para contemplación lenta.
 6. NARRATIVA EN 3 BEATS CLAROS: problema/tensión → descubrimiento/producto → resolución/deseo. Estructura de ad clásica.
 7. EMOCIÓN POR ENCIMA DE TÉCNICA: el anuncio que conecta emocionalmente gana. Técnica impecable sin corazón no gana concursos.

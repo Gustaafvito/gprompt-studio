@@ -402,7 +402,6 @@ class DataStore:
             {"nombre": "🎬 Cinematic video Kling", "modo": "video", "plataforma": "SeaArt Video", "modelo_vid": "Kling 3.0", "ratio": "16:9", "estilos": ["Cinematográfico", "Épico"], "nsfw": False, "destino": "YouTube"},
             {"nombre": "🌸 Anime ColorPop", "modo": "imagen", "plataforma": "SeaArt / Tensor.Art", "modelo_img": "NiwaStyle - Animax ColorPop", "ratio": "1:1", "estilos": ["Anime/Manga", "Vibrant Colors"], "nsfw": False, "destino": "— Personal —"},
             {"nombre": "🎵 Spanish Pop Suno", "modo": "audio", "plataforma": "Suno", "modelo_aud": "Suno v5", "estilos": ["Pop", "Latino"], "nsfw": False, "destino": "TikTok"},
-            {"nombre": "🏆 Anthum Contest 9:16", "modo": "imagen", "plataforma": "SeaArt / Tensor.Art", "modelo_img": "FLUX.1 [dev]", "ratio": "9:16", "estilos": ["Arte Digital", "Concept Art"], "nsfw": False, "destino": "Anthum (concurso)", "brief": True},
         ]
         self.plantillas = ejemplos
         self._guardar("plantillas")

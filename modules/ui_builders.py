@@ -1280,9 +1280,8 @@ class UIBuildersService:
     def _on_destino_cambio(self, valor=None):
         """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
         # Los tres combos (imagen, vídeo, audio) comparten destino_var: ya van
-        # sincronizados. Lo que guarda es el nombre TRADUCIDO; las reglas van
-        # por el castellano. Sin traducir de vuelta, en inglés «Anthum
-        # (contest)» no activaba el Brief ni ponía su formato.
+        # sincronizados. Lo que guarda es el nombre TRADUCIDO («Client» en
+        # inglés) y las reglas van por el castellano: se traduce de vuelta.
         dest = {tr(d): d for d in DESTINOS}.get(self.app.destino_var.get(),
                                                  self.app.destino_var.get())
 
@@ -1292,7 +1291,6 @@ class UIBuildersService:
             "YouTube":          "16:9",
             "YouTube Shorts":   "9:16",
             "Twitter / X":      "16:9",
-            "Anthum (concurso)":"9:16",
             "LinkedIn":         "1:1",
             "Web / Blog":       "16:9",
         }
@@ -1313,12 +1311,6 @@ class UIBuildersService:
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
             self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(tr(dest), ratio), P.TXT_INFO)
-
-        # Modo concurso: activar Brief automáticamente
-        if dest == "Anthum (concurso)":
-            self.app.brief_var.set(True)
-            self.app.events.on_brief_cambio()
-            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), P.TXT_ACENTO)
 
         self.app.reiniciar_memoria()
 

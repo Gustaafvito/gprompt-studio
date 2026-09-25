@@ -2017,7 +2017,6 @@ DESTINOS = ["— Personal —"] + sorted([
     "YouTube",
     "YouTube Shorts",
     "Twitter / X",
-    "Anthum (concurso)",
     "Freepik community",
     "Reddit",
     "LinkedIn",

@@ -4,7 +4,7 @@ Construye el system_prompt enriquecido que se pasa al LLM, combinando:
   • Reglas base por modo (vídeo / imagen / audio)
   • Specs del modelo concreto (max_chars, sampler, formato tag vs natural,
     soporte de audio/negative, trigger words, plantillas)
-  • Reglas adaptadas al destino (Instagram, TikTok, YouTube, Anthum…)
+  • Reglas adaptadas al destino (Instagram, TikTok, YouTube, LinkedIn…)
 
 Métodos:
   • _inyectar_specs_modelo   — dispatcher por modo (video / imagen)
@@ -1088,7 +1088,6 @@ class PromptsInyeccionService:
         "YouTube": "DESTINO YOUTUBE: Formato horizontal 16:9. Composición cinematográfica, thumbnail-friendly (sujeto claro, contraste alto). Calidad profesional.",
         "YouTube Shorts": "DESTINO YOUTUBE SHORTS: Formato vertical 9:16. Similar a TikTok: gancho rápido, movimiento, energía. Corto e impactante.",
         "Twitter / X": "DESTINO TWITTER/X: Formato 16:9 o 1:1. Imagen que destaque en el feed. Alto contraste, composición limpia, mensaje visual claro.",
-        "Anthum (concurso)": "DESTINO CONCURSO ANTHUM: Formato 9:16 vertical. PRIORIDADES DE UN JUEZ DE CONCURSO: 1) ORIGINALIDAD — concepto único que nadie haya visto, evita clichés. 2) CALIDAD TÉCNICA — composición de galería, iluminación de estudio fotográfico. 3) IMPACTO EMOCIONAL — la imagen debe provocar una reacción inmediata. 4) COHERENCIA VISUAL — todos los elementos deben encajar perfectamente. 5) DETALLE — texturas, materiales, reflejos ultra-detallados. NO hagas: paisajes genéricos, retratos simples, escenas cliché. SÍ haz: conceptos surrealistas, composiciones inusuales, mezcla de estilos inesperada.",
         "Freepik community": "DESTINO FREEPIK: Imagen versátil para stock. Composición limpia con espacio para texto. Colores equilibrados, uso comercial, sin marcas.",
         "Reddit": "DESTINO REDDIT: Calidad técnica alta, detalle extremo. La comunidad valora originalidad y ejecución impecable.",
         "LinkedIn": "DESTINO LINKEDIN: Profesional y corporativo. Composición limpia, tonos sobrios, estilo editorial de negocios. Formato 1:1 o 16:9.",

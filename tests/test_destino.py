@@ -1,17 +1,12 @@
-"""El combo Destino: formato automático y Brief del concurso.
+"""El combo Destino: el formato automático.
 
-Revisado el 24-sep-2026:
-  • destino_var guarda el nombre TRADUCIDO y las reglas iban por el
-    castellano: en inglés, «Anthum (contest)» no activaba el Brief ni ponía su
-    formato 9:16.
-  • El formato se ponía aunque el modelo no lo tuviera.
+Revisado el 24-sep-2026: el formato se ponía aunque el modelo no lo tuviera.
+El 25-sep-2026 se quitó el concurso Anthum, que además encendía el Brief.
 """
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-import pytest
-
-from modules import i18n
+import config
 
 
 class _Var:
@@ -51,27 +46,24 @@ def _servicio(destino, ratios=("1:1", "9:16", "16:9"), modo="imagen"):
     return servicio, app
 
 
-@pytest.fixture()
-def en_ingles():
-    i18n.set_idioma("en")
-    yield
-    i18n.set_idioma("es")
-
-
 class TestDestino:
 
-    def test_el_concurso_activa_el_brief_y_su_formato(self):
-        servicio, app = _servicio("Anthum (concurso)")
+    def test_pone_el_formato_de_la_red(self):
+        servicio, app = _servicio("TikTok")
         servicio._on_destino_cambio()
-        assert app.brief_var.get() is True
         assert app.ratio_var.get() == "9:16"
 
-    def test_tambien_en_ingles(self, en_ingles):
-        servicio, app = _servicio(i18n.tr("Anthum (concurso)"))
-        assert app.destino_var.get() == "Anthum (contest)"
-        servicio._on_destino_cambio()
-        assert app.brief_var.get() is True
-        assert app.ratio_var.get() == "9:16"
+    def test_ningun_destino_enciende_el_brief(self):
+        # Solo lo hacía el concurso Anthum. El Brief lo decide el usuario.
+        for destino in config.DESTINOS:
+            servicio, app = _servicio(destino)
+            servicio._on_destino_cambio()
+            assert app.brief_var.get() is False, destino
+
+    def test_anthum_ya_no_esta(self):
+        from modules.prompts_inyeccion import PromptsInyeccionService
+        assert not any("Anthum" in d for d in config.DESTINOS)
+        assert not any("Anthum" in d for d in PromptsInyeccionService.REGLAS_POR_DESTINO)
 
     def test_no_pone_un_formato_que_el_modelo_no_tiene(self):
         servicio, app = _servicio("TikTok", ratios=("1:1", "16:9"))

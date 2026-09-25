@@ -124,12 +124,6 @@ class TestInyectarDestino:
         assert out.startswith("base\n\n📢 ")
         assert "INSTAGRAM" in out
 
-    def test_destino_anthum_concurso_añade_regla_extensa(self):
-        h = _host(destino_var=_var("Anthum (concurso)"))
-        out = h._inyectar_destino("X")
-        assert "ANTHUM" in out
-        assert "ORIGINALIDAD" in out
-
     def test_destino_desconocido_no_cambia(self):
         h = _host(destino_var=_var("PlataformaInexistente"))
         assert h._inyectar_destino("base") == "base"

@@ -178,7 +178,6 @@ TRADUCCIONES = {
     'Portugués': 'Portuguese',
     # Destinos de publicación (combo Destination). El valor se mapea de vuelta a
     # la clave ES en _inyectar_destino (reglas keyed). Solo cambian estos:
-    'Anthum (concurso)': 'Anthum (contest)',
     'Cliente': 'Client',
     # Cabeceras de grupo del Style guide / picker de estilos (ESTILOS_GRUPOS).
     '📸 Fotografía': '📸 Photography',
@@ -1010,7 +1009,6 @@ TRADUCCIONES = {
     '🎲 Idea sorpresa generada — pulsa ✨ Generar para crear el prompt': '🎲 Surprise idea generated — press ✨ Generate to create the prompt',
     '🎲 Pensando algo creativo...': '🎲 Thinking of something creative...',
     '🎵 Sin filtros de audio adicionales': '🎵 No additional audio filters',
-    '🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad': '🏆 Anthum Contest Mode — Brief enabled, 9:16 ratio, maximum quality',
     '🏷️ Analizando idea para sugerir tags...': '🏷️ Analyzing idea to suggest tags...',
     '👁 Analizando imagen...': '👁 Analyzing image...',
     '💡 Idea generada (macro)': '💡 Idea generated (macro)',
