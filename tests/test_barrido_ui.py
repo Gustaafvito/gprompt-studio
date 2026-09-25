@@ -574,6 +574,74 @@ class TestElResultadoSeVe:
         assert app._tabview_container.winfo_ismapped()
 
 
+class TestBusquedaGlobalEnLaAppReal:
+    """Revisión del 25-sep-2026 de 🔎 Búsqueda global, con la app real:
+    buscaba los personajes en un campo que no existe («rasgos»), el «✅
+    Aplicado: …» nombraba siempre el ÚLTIMO resultado y, al aplicar un
+    personaje, «Fuentes activas» seguía enseñando el anterior."""
+
+    PERSONAJES = [{"nombre": "Nora Prueba", "descripcion": "mujer de 30 años, pelo rojo"},
+                  {"nombre": "Otro Prueba", "descripcion": "hombre mayor con barba"}]
+
+    @pytest.fixture(autouse=True)
+    def _aislar(self, app, monkeypatch):
+        monkeypatch.setattr(app.store, "personajes", [dict(p) for p in self.PERSONAJES])
+        antes = app.combo_personaje.get()
+        yield
+        for w in app.winfo_children():
+            if isinstance(w, tkinter.Toplevel):
+                w.destroy()
+        app.combo_personaje.set(antes)
+        bombear(app)
+
+    def _abrir(self, app):
+        antes = set(app.winfo_children())
+        app.backup.cmd_busqueda_global()
+        bombear(app)
+        return next(w for w in app.winfo_children() if w not in antes)
+
+    def _buscar(self, app, vent, termino):
+        ent = next(w for w in _descendientes(vent) if isinstance(w, ctk.CTkEntry))
+        ent.insert(0, termino)
+        # Sin foco del sistema Tk no entrega teclas: cada filtro relanza la
+        # búsqueda igual que una tecla. Se quita «Historial» (datos del usuario).
+        next(w for w in _descendientes(vent) if isinstance(w, ctk.CTkCheckBox)).toggle()
+        bombear(app, 400)
+
+    def _textos(self, vent):
+        return [w.cget("text") for w in _descendientes(vent) if isinstance(w, ctk.CTkLabel)]
+
+    def _aplicar(self, vent):
+        return [b for b in _descendientes(vent)
+                if isinstance(b, ctk.CTkButton) and b.cget("text") == tr("✅ Aplicar")]
+
+    def test_al_abrir_dice_que_escribir(self, app):
+        vent = self._abrir(app)
+        assert tr("Escribe al menos 2 caracteres para buscar.") in self._textos(vent)
+
+    def test_encuentra_el_personaje_por_su_descripcion(self, app):
+        vent = self._abrir(app)
+        self._buscar(app, vent, "pelo rojo")
+        assert "mujer de 30 años, pelo rojo" in self._textos(vent)
+        assert len(self._aplicar(vent)) == 1
+
+    def test_aplicar_nombra_el_que_pulsas_y_refresca_las_fuentes(self, app):
+        app.combo_personaje.set("Otro Prueba")
+        bombear(app)
+        vent = self._abrir(app)
+        self._buscar(app, vent, "prueba")
+        botones = self._aplicar(vent)
+        assert len(botones) == 2
+        botones[0].invoke()          # el primero: Nora
+        bombear(app)
+        assert app.combo_personaje.get() == "Nora Prueba"
+        assert "Nora Prueba" in app.lbl_estado.cget("text")
+        chips = [w.cget("text") for w in _descendientes(app.frame_fuentes_chips)
+                 if isinstance(w, ctk.CTkButton)]
+        assert any("Nora Prueba" in c for c in chips), chips
+        assert not any("Otro Prueba" in c for c in chips), chips
+
+
 @pytest.mark.slow
 class TestLoQueEnsenaAprender:
     """Lo que el tutorial, la paleta y los atajos prometen, existe de verdad.

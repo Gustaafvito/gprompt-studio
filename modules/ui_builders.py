@@ -1433,6 +1433,8 @@ class UIBuildersService:
                                                 self.app.footer._actualizar_lora_trigger_visible()
                                             ))
         self.app.combo_lora.pack(side="left", padx=5)
+        self.app.footer.refrescar_al_poner(self.app.combo_personaje)
+        self.app.footer.refrescar_al_poner(self.app.combo_lora)
 
         # Botón "🔗+" — abre modal de multi-LoRA con checkboxes para
         # combinar varios LoRAs en el mismo prompt (sesión 16). El combo

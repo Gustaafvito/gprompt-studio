@@ -1771,6 +1771,8 @@ TRADUCCIONES = {
     'estrellas': 'stars',
     'personajes': 'characters',
     'LoRAs': 'LoRAs',
+    '⚠️ familia distinta': '⚠️ different family',
+    'Modelo: {0}, Estilos: {1}': 'Model: {0}, Styles: {1}',
     'Historial al límite ({0}/{1}): se descartan los más antiguos': 'History at its limit ({0}/{1}): the oldest entries are dropped',
     'No tienes personajes guardados': 'No saved characters',
     'No tienes plantillas guardadas': 'No saved templates',
