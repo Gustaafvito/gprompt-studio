@@ -268,22 +268,22 @@ gprompt-studio/
 ├── modules/             # 40 servicios: UI, IA, datos, Avatar, i18n…
 │   ├── core.py          # Workers, comandos, estado
 │   ├── ui_builders.py   # Construcción UI
-│   ├── i18n.py          # Bilingüe ES/EN (~1400 traducciones)
+│   ├── i18n.py          # Bilingüe ES/EN (~2950 traducciones)
 │   ├── dashboard.py     # Panel de estadísticas y logros
 │   ├── avatar_*.py      # Generador de datasets LoRA (4 módulos)
 │   └── …               # (ver docs/ESTRUCTURA.md para el árbol completo)
 ├── data/                # JSONs: specs de modelos, estilos, plantillas
-└── tests/               # 1319 tests pytest
+└── tests/               # 1876 tests pytest
 ```
 
 ## 🧪 Tests
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v   # → 1319 passed
+pytest tests/ -v   # → 1875 passed, 1 skipped
 ```
 
-## ⌨ Atajos de teclado (29 registrados — `Ctrl+?` muestra la lista completa)
+## ⌨ Atajos de teclado (39 registrados — `Ctrl+?` muestra la lista completa)
 
 | Atajo | Acción |
 |-------|--------|

@@ -53,3 +53,16 @@ def test_cada_atajo_anunciado_esta_registrado():
     faltan = [f"{f} (esperaba {_secuencia_tk(f)})" for f in filas
               if _secuencia_tk(f) not in registrados]
     assert not faltan, "la ventana anuncia atajos que no existen: " + "; ".join(faltan)
+
+
+def test_el_readme_dice_cuantos_atajos_hay():
+    # Decía 29 y la ventana de Ctrl+? lista 39 (revisión del 26-sep-2026).
+    import re
+    from pathlib import Path
+    raiz = Path(__file__).resolve().parent.parent
+    fuente = (raiz / "modules" / "atajos_ayuda.py").read_text(encoding="utf-8")
+    i = fuente.index("        atajos = [")
+    bloque = fuente[i:fuente.index("\n        ]\n", i)]
+    n = len(re.findall(r'^\s*\("[^"]+", tr\(', bloque, re.M))
+    assert f"({n} registrados" in (raiz / "README.md").read_text(encoding="utf-8")
+    assert f"{n} registered" in (raiz / "README.en.md").read_text(encoding="utf-8")

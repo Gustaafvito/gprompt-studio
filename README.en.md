@@ -217,12 +217,12 @@ ollama pull llava       # for vision
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v   # → 1319 passed
+pytest tests/ -v   # → 1875 passed, 1 skipped
 ```
 
 ## ⌨ Keyboard shortcuts
 
-29 registered — `Ctrl+?` shows the full list.
+39 registered — `Ctrl+?` shows the full list.
 
 | Shortcut | Action |
 |----------|--------|
