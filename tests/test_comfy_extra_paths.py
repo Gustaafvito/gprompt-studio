@@ -49,10 +49,17 @@ class TestLeerElYaml:
 class TestCarpetasYEscaneo:
 
     def test_las_carpetas_que_declara(self, tmp_path):
-        (tmp_path / "extra_model_paths.yaml").write_text(YAML, encoding="utf-8")
+        # La base del YAML real es «D:\ComfyUI\», que solo es absoluta en
+        # Windows: en el CI (Linux) se pegaba detrás de la carpeta de ComfyUI
+        # y el test fallaba sin que la app tuviera nada mal. Se sustituye por
+        # una ruta absoluta en cualquier sistema.
+        base = tmp_path / "Disco2"
+        yaml = YAML.replace("base_path: D:\\ComfyUI\\", f"base_path: {base}")
+        assert yaml != YAML
+        (tmp_path / "extra_model_paths.yaml").write_text(yaml, encoding="utf-8")
         carpetas = [str(p) for p in config._carpetas_extra_comfy(tmp_path)]
-        assert str(Path("D:/ComfyUI/models/checkpoints")) in carpetas
-        assert str(Path("D:/ComfyUI/models/unet")) in carpetas
+        assert str(base / "models" / "checkpoints") in carpetas
+        assert str(base / "models" / "unet") in carpetas
         # Solo las que escanea la app: loras y clip_vision no son modelos base.
         assert not any("loras" in c or "clip_vision" in c for c in carpetas)
 
