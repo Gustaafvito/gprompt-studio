@@ -145,3 +145,59 @@ class TestSueloDelReintento:
         prov = _proveedor([_respuesta("", "length"), _respuesta("ok", "stop")])
         prov.completar([{"role": "user", "content": "hola"}], max_tokens=9000)
         assert prov._cliente.presupuestos[1] <= prov._TECHO_REINTENTO
+
+
+class TestRespuestaCortadaAMedias:
+    """La respuesta llega CON texto pero cortada (finish_reason='length'):
+    el razonador empezó a escribir y se le acabó el presupuesto. Se daba por
+    buena y el usuario copiaba un prompt a medias (26-sep-2026, MiniMax H3:
+    «…size and silhouette of <Picture 2> are»)."""
+
+    def test_reintenta_y_se_queda_con_la_completa(self):
+        prov = _proveedor([
+            _respuesta("PROMPT: integrated_multimodal_description: [Shot 1] a baker", "length"),
+            _respuesta("PROMPT: integrated_multimodal_description: [Shot 1] a baker opens up.", "stop"),
+        ])
+        res = prov.completar([{"role": "user", "content": "hola"}], max_tokens=2500)
+        assert res.endswith("opens up.")
+        assert prov._cliente.presupuestos[1] > 2500
+
+    def test_si_el_reintento_sale_peor_se_queda_la_primera(self):
+        prov = _proveedor([_respuesta("texto largo pero cortado", "length"),
+                           _respuesta("", "length")])
+        assert prov.completar([{"role": "user", "content": "hola"}],
+                              max_tokens=2500) == "texto largo pero cortado"
+
+    def test_una_respuesta_completa_no_reintenta(self):
+        prov = _proveedor([_respuesta("completa.", "stop")])
+        prov.completar([{"role": "user", "content": "hola"}], max_tokens=2500)
+        assert len(prov._cliente.presupuestos) == 1
+
+
+class TestCortadaEnClaudeYGemini:
+    """Mismo síntoma en los otros dos SDK: stop_reason 'max_tokens' en
+    Claude y finish_reason MAX_TOKENS en Gemini (2.5 también piensa)."""
+
+    def test_claude(self):
+        pedidos = []
+
+        def create(**kw):
+            pedidos.append(kw["max_tokens"])
+            corta = len(pedidos) == 1
+            return SimpleNamespace(
+                stop_reason="max_tokens" if corta else "end_turn",
+                content=[SimpleNamespace(type="text", text="a medias" if corta else "entera.")],
+                usage=SimpleNamespace(input_tokens=1, output_tokens=1))
+        prov = api_clients.ClaudeProvider.__new__(api_clients.ClaudeProvider)
+        prov.model = "claude-sonnet-5"
+        prov._cliente = SimpleNamespace(messages=SimpleNamespace(create=create))
+        prov._registrar_uso = lambda *a, **k: None
+        assert prov.completar([{"role": "user", "content": "hola"}], max_tokens=2000) == "entera."
+        assert pedidos[1] > pedidos[0]
+
+    def test_gemini_detecta_max_tokens(self):
+        cortada = SimpleNamespace(candidates=[SimpleNamespace(finish_reason="FinishReason.MAX_TOKENS")])
+        entera = SimpleNamespace(candidates=[SimpleNamespace(finish_reason="FinishReason.STOP")])
+        assert api_clients._gemini_cortada(cortada) is True
+        assert api_clients._gemini_cortada(entera) is False
+        assert api_clients._gemini_cortada(SimpleNamespace()) is False
