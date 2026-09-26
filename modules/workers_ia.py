@@ -171,7 +171,10 @@ class WorkersIaService:
             specs = self.app.get_current_model_specs()
             max_c = specs.get("max_chars") or specs.get("max_chars_letra") or 0 if specs else 0
             max_c_neg = specs.get("max_chars_negative") if specs else None
-            max_tok = 2500 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
+            # ≥4000 chars (Veo, MiniMax H3…): 4000 tokens. Los razonadores
+            # (DeepSeek V4) gastan cientos pensando antes de escribir, y con
+            # 2500 el prompt largo salía cortado. Solo se paga lo que se usa.
+            max_tok = 4000 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
 
             cerebro_elegido = self.app.llm_var.get()
             texto = self.app.deepseek.generar(peticion, max_tokens=max_tok)
@@ -182,8 +185,10 @@ class WorkersIaService:
             # del POSITIVE (convención SeaArt: los LoRAs van primero).
             texto = self._mover_lora_al_inicio_si_pref(texto, es_ideas=es_ideas)
 
-            # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta
-            if max_c and not es_ideas and not es_variaciones:
+            # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta.
+            # Salvo en formatos por campos (MiniMax H3): el recorte por comas
+            # los junta en una línea y el modelo ya no los reconoce.
+            if max_c and not es_ideas and not es_variaciones and not (specs or {}).get("sin_recorte"):
                 texto_original_len = len(texto)
                 texto = self.app._recortar_si_excede(texto, max_c, max_chars_negative=max_c_neg)
                 if len(texto) < texto_original_len:

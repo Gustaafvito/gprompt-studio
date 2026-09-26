@@ -659,11 +659,42 @@ class TestConstruirModeloInfo:
         info = h.construir_modelo_info()
         assert "Destino" not in info
 
-    def test_cache_hit_devuelve_mismo_objeto(self):
-        h = self._host_imagen()
-        info1 = h.construir_modelo_info()
-        info2 = h.construir_modelo_info()
-        assert info1 is info2  # mismo objeto, viene de cache
+    def test_cambiar_solo_la_duracion_se_nota(self):
+        # Había una caché cuya clave no incluía la duración: de 10 s a 6 s
+        # con el mismo modelo, la petición seguía diciendo «Duración: 10s»
+        # (26-sep-2026, generando para MiniMax H3). Igual con la voz.
+        h = _host(
+            modo_var=_var("video"),
+            modelo_imagen_valido=lambda: "",
+            modelo_video_valido=lambda: "Kling 3.0",
+            combo_modelo_audio=_var(""),
+            ratio_actual=lambda: "",
+            personaje_activo=lambda: "",
+            lora_activo=lambda: "",
+            destino_var=_var("— Personal —"),
+            duracion_var=_var("10s"),
+        )
+        assert "Duración: 10s" in h.construir_modelo_info()
+        h.app.duracion_var = _var("6s")
+        assert "Duración: 6s" in h.construir_modelo_info()
+
+    def test_cambiar_solo_la_voz_se_nota(self):
+        h = _host(
+            modo_var=_var("audio"),
+            modelo_imagen_valido=lambda: "",
+            modelo_video_valido=lambda: "",
+            combo_modelo_audio=_var("Suno"),
+            ratio_actual=lambda: "",
+            personaje_activo=lambda: "",
+            lora_activo=lambda: "",
+            destino_var=_var("— Personal —"),
+            emocion_var=_var("— Emoción —"),
+            voz_var=_var("Femenina media"),
+            idioma_audio_var=_var("— Idioma —"),
+        )
+        assert "Voz: Femenina media" in h.construir_modelo_info()
+        h.app.voz_var = _var("Masculina grave")
+        assert "Voz: Masculina grave" in h.construir_modelo_info()
 
     def test_cache_invalida_al_cambiar_modelo(self):
         h = self._host_imagen()

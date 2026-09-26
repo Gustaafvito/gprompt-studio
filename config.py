@@ -260,6 +260,8 @@ def guardar_comfyui_path(ruta: str, store) -> bool:
 _COMFY_TOKENS_AUDIO = (
     "musicgen", "stable_audio",
     "stableaudio", "audioldm", "mmaudio",
+    # MiniMax Music 3: va ANTES que vídeo, que casa con 'minimax'.
+    "minimax_music",
 )
 _COMFY_TOKENS_VIDEO = (
     "wan", "ltx", "ltxv", "svd", "i2v", "t2v", "video", "stable_video",
@@ -1072,21 +1074,47 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
         "vigente": True,
     },
     "minimax": {
-        # MiniMax/Hailuo H3 local (minimax_h3_fl2va…). El usuario lo clasifica
-        # como vídeo. Lenguaje natural, buena coherencia de movimiento; base
-        # sin audio nativo (conservador). Fuerte en image-to-video.
-        "is_natural": True, "has_negative": True, "has_audio": False, "audio_desc": "",
-        "duraciones": ["5s", "6s"],
-        "ratios": ["1:1", "9:16", "16:9"],
-        "modos_gen": ["720p"],
-        "max_chars": 1200, "max_imagenes": 1, "nota": None,
-        "best_for": "MiniMax/Hailuo H3 (local): lenguaje natural cinematográfico con muy buena coherencia de movimiento y físicas. Excelente en image-to-video: sube una imagen y describe la acción y el movimiento de cámara. Soporta negative.",
-        "best_for_en": "MiniMax/Hailuo H3 (local): cinematic natural language with very good motion coherence and physics. Excellent at image-to-video: upload an image and describe the action and camera move. Supports negative.",
-        "prompt_formula": "Sujeto + acción + movimiento de cámara + iluminación + estilo, en prosa presente. En i2v deja que la imagen ancle la escena y describe solo el movimiento.",
-        "prompt_ejemplo": "A woman in a flowing red dress turns slowly toward the camera as wind lifts her hair, slow dolly-in, warm sunset backlight, cinematic shallow depth of field.",
-        "limitaciones": "Clips cortos. Sin audio nativo en la base. Evita acciones extremas en i2v (puede alucinar).",
+        # MiniMax H3 local (minimax_h3_fl2va…, pesos abiertos de MiniMaxAI).
+        # Fuente: ficha y guía oficiales en huggingface.co/MiniMaxAI/MiniMax-H3
+        # (25-sep-2026): vídeo CON audio estéreo nativo, 4-15 s, 768p (2K
+        # regenerando), 24 fps, diálogo en 11 idiomas (español incluido). Los
+        # pesos son CFG-distilled → el negative no hace nada. MiniMax avisa de
+        # que la calidad depende de reescribir la idea a su formato (lo que su
+        # «H3-Context-IR» hace en la nube y NO viene en la versión abierta):
+        # eso es justo lo que genera la app (formato_bloques).
+        "is_natural": True, "has_negative": False, "has_audio": True,
+        "audio_desc": "Audio estéreo nativo: diálogo con hablantes (S1), (S2), ambiente, efectos y música, cada cosa en su campo del formato",
+        "duraciones": ["4s", "5s", "6s", "8s", "10s", "12s", "15s"],
+        "ratios": ["1:1", "3:4", "4:3", "9:16", "16:9"],
+        "modos_gen": ["768p", "2K"],
+        "max_chars": 5000, "max_imagenes": 2, "nota": None,
+        "formato_bloques": "minimax_h3",
+        # El formato va en campos y planos: el recorte por comas del cortador
+        # de seguridad lo destrozaría. El texto largo no es un problema (el
+        # codificador es Qwen3-VL; los ejemplos oficiales pasan de 3000 chars).
+        "sin_recorte": True,
+        "best_for": "MiniMax H3 (local, texto/imagen inicial/imagen final → vídeo con audio): escribe el prompt en su formato oficial de tres campos (descripción audiovisual por planos, ambiente sonoro y música), con diálogos por hablante y cortes con tiempo. Sin negative.",
+        "best_for_en": "MiniMax H3 (local, text/first frame/last frame → video with audio): writes the prompt in its official three-field format (shot-by-shot audiovisual description, soundscape and music), with per-speaker dialogue and timed cuts. No negative.",
+        "prompt_formula": "integrated_multimodal_description: [Shot 1] estilo + composición inicial + sujetos + acción + cámara + diálogo (S1) <d>[Idioma] …</d>; [Shot 2] At 00:0X.XXX, the camera cuts to… · overall_soundscape: ambiente y sonidos físicos · non_diegetic_music: instrumentos, tempo y dinámica (o N/A).",
+        "prompt_ejemplo": "integrated_multimodal_description: [Shot 1] Live-action, cinematic, a medium shot frames a fisherman mending a net on a wooden pier at dawn. The camera trucks left with small amplitude at slow speed as the weathered old man with a low, gravelly voice (S1) looks up and says: <d>[Spanish] Hoy el mar está tranquilo.</d> [Shot 2] At 00:05.000, the camera cuts to a close-up of his hands tying a final knot.\n\noverall_soundscape: Gentle waves lap against the pier posts while gulls call in the distance and the rope creaks under his fingers.\n\nnon_diegetic_music: A slow solo accordion line that fades out in the last seconds.",
+        "limitaciones": "4-15 s por clip. Respeta EXACTAMENTE los nombres de campo, las etiquetas [Shot N], (S1) y <d>…</d>: el modelo se entrenó con ese formato. Todo en inglés salvo diálogos y texto visible en pantalla.",
         "vigente": True,
     },
+}
+
+# MiniMax H3 en modo referencia (minimax_h3_ref2va…): hasta 9 imágenes, 3
+# vídeos y 3 audios de referencia. Su guía oficial es otra: seis secciones con
+# etiquetas <Subject N>/<Picture N>/<Video N>/<Audio N>. Se aplica encima de la
+# ficha base cuando el nombre del fichero lo delata.
+_COMFY_MINIMAX_REF_TOKENS = ("ref2va", "r2v")
+_COMFY_SPECS_MINIMAX_REF = {
+    "formato_bloques": "minimax_h3_ref",
+    "max_chars": 6000, "max_imagenes": 9,
+    "best_for": "MiniMax H3 Ref2VA (local, modo referencia: hasta 9 imágenes, 3 vídeos y 3 audios): escribe el prompt en sus seis secciones oficiales, con cada referencia etiquetada (<Subject 1>, <Picture 1>, <Video 1>, <Audio 1>) y qué se conserva de cada una. Sin negative.",
+    "best_for_en": "MiniMax H3 Ref2VA (local, reference mode: up to 9 images, 3 videos and 3 audios): writes the prompt in its six official sections, with every reference labelled (<Subject 1>, <Picture 1>, <Video 1>, <Audio 1>) and what is kept from each. No negative.",
+    "prompt_formula": "subject_definitions · summary ([reference generation]…) · retention_analysis (fully_preserved…) · detailed_description (estilo + [Shot N] con las etiquetas) · overall_soundscape · non_diegetic_music.",
+    "prompt_ejemplo": "subject_definitions:\n<Subject 1> is the young woman in <Picture 1>, with short black hair and a yellow raincoat.\n\nsummary:\n[reference generation] <Subject 1> walks through a rainy market at night and stops at a fruit stall.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - her face, short black hair and yellow raincoat are kept.\n\ndetailed_description:\nThe target video is in a realistic, cinematic style with wet neon reflections.\n[Shot 1] A tracking shot follows <Subject 1> between the stalls…\n\noverall_soundscape:\nSteady rain on canvas awnings and distant market chatter.\n\nnon_diegetic_music:\nN/A",
+    "limitaciones": "Las etiquetas deben coincidir con las referencias que conectes en ComfyUI y en el mismo orden. Todo en inglés salvo diálogos y texto visible.",
 }
 
 
@@ -1095,11 +1123,37 @@ _COMFY_SPECS_FAMILIA_VIDEO = {
 # indexa: nota, best_for, duracion_max_min, usa_tags_estructurales,
 # has_instrumental_toggle, prompt_ejemplo_estilo, limitaciones.
 # NOTA: ACE-Step NO está aquí — el fine-tune del usuario genera imagen (ver
-# familia 'ace' de imagen). Vacío por ahora; se rellena si aparece un modelo
-# de audio local real (MusicGen, Stable Audio…).
-_COMFY_FAMILIAS_AUDIO = ()
+# familia 'ace' de imagen).
+# MiniMax Music 3 (minimax_music3_dit…, sep-2026): hasta ahora caía en VÍDEO
+# por el token 'minimax' y le tocaban las reglas de MiniMax H3. Fuente:
+# huggingface.co/MiniMaxAI/MiniMax-Music3 y su skill oficial
+# music-caption-rewriter: letra con etiquetas de sección + una descripción
+# en tres apartados (Global Metadata, Vocal Details, Arrangement).
+_COMFY_FAMILIAS_AUDIO = (
+    ("minimax_music", ("minimax_music",)),
+)
 
-_COMFY_SPECS_FAMILIA_AUDIO = {}
+_COMFY_SPECS_FAMILIA_AUDIO = {
+    "minimax_music": {
+        "nota": None, "has_negative": False, "has_lyrics": True,
+        "has_instrumental_toggle": False, "usa_tags_estructurales": True,
+        "duracion_max_min": 5,
+        # Límite oficial: 5000 tokens de texto entre descripción y letra
+        # (~20000 chars). El cortador de seguridad mide la respuesta ENTERA
+        # (estilo + letra) contra max_chars_letra y cortaría la letra: fuera.
+        "max_chars_letra": 4000, "max_chars_estilo": 3200, "sin_recorte": True,
+        "formato": "minimax_music3",
+        "best_for": "MiniMax Music 3 (local, pesos abiertos): canciones completas de hasta 5 minutos con voz, estructura coherente y arreglos que evolucionan. Dos entradas: letra con etiquetas de sección y una descripción musical en tres apartados.",
+        "best_for_en": "MiniMax Music 3 (local, open weights): complete songs up to 5 minutes with vocals, coherent structure and evolving arrangements. Two inputs: lyrics with section tags and a three-part music description.",
+        "prompt_formula": "Descripción (en inglés): Global Metadata (género, tempo, arco emocional, producción) · Vocal Details (voz, timbre, interpretación, coros) · Arrangement (sección a sección: qué entra, cambia y sale). Letra aparte, con [Verse], [Chorus]… en su propia línea.",
+        "prompt_ejemplo_estilo": "Global Metadata: acoustic pop, around 96 BPM, warm and intimate, building gently into the chorus, close and natural production. Vocal Details: soft female lead, breathy mid-register, light stacked harmonies in the chorus. Arrangement: [Intro] fingerpicked guitar alone; [Verse] soft piano joins; [Chorus] brushed drums and upright bass enter and the harmonies open up; [Outro] back to guitar and a held piano chord.",
+        "prompt_ejemplo_letra": "[Verse]\nLa luz entra despacio por la ventana\n[Chorus]\nY el día empieza a respirar",
+        "estructura_tags": ["[Intro]", "[Verse]", "[Pre-Chorus]", "[Chorus]", "[Post-Chorus]",
+                             "[Bridge]", "[Instrumental]", "[Solo]", "[Outro]"],
+        "limitaciones": "Hasta 5 min (9000 frames de audio). Texto total limitado a 5000 tokens. Tempo, tonalidad y estructura orientan pero no se garantizan al 100 %. Sin negative.",
+        "vigente": True,
+    },
+}
 
 
 def comfy_audio_specs(nombre: str) -> dict | None:
@@ -1132,6 +1186,8 @@ def comfy_video_specs(nombre: str) -> dict | None:
     if not fam:
         return None
     specs = dict(_COMFY_SPECS_FAMILIA_VIDEO[fam])
+    if fam == "minimax" and any(t in (nombre or "").lower() for t in _COMFY_MINIMAX_REF_TOKENS):
+        specs.update(_COMFY_SPECS_MINIMAX_REF)
     specs["_comfy_familia"] = fam
     return _aplicar_desc_local(nombre, specs)
 

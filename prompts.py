@@ -47,6 +47,107 @@ APROVECHA EL BUDGET del modelo (REGLA ESTRICTA - nunca superes el límite):
 Más budget = más descripción meticulosa, más capas visuales, más narrativa. No te quedes corto, pero NUNCA te pases del límite.
 """
 
+# MiniMax H3 (ComfyUI local). Resumen de sus guías oficiales
+# (huggingface.co/MiniMaxAI/MiniMax-H3/docs, 25-sep-2026). El modelo se
+# entrenó con prompts reescritos a este formato; MiniMax lo hace en su nube
+# con «H3-Context-IR», que no viene en la versión abierta. Las frases de
+# instrucción y los nombres de campo van LITERALES: son parte del formato.
+# Se rellenan con .format(): dur_ss, duracion, palabras, pista_modo,
+# pista_planos, pista_idioma (y pista_refs en el modo referencia).
+REGLAS_MINIMAX_H3_BASE = """
+━━━ FORMATO OFICIAL DE MINIMAX H3 (sustituye al formato genérico de arriba) ━━━
+MiniMax H3 se entrenó con prompts escritos en un formato fijo. Síguelo al pie de la letra: nombres de campo, orden, etiquetas y tiempos.
+
+1) MODO — elige UNO. ⚠️ El nombre del fichero del modelo (p. ej. «…fl2va…») NO decide el modo: el mismo modelo hace los cuatro. Decide SOLO por la idea del usuario y por si hay imagen cargada.
+• T2VA (solo texto): sin línea de instrucción, empieza por integrated_multimodal_description.
+• I2VA (una imagen = PRIMER fotograma). La primera línea es exactamente:
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+• FL2VA (imagen inicial + imagen final). La primera línea es exactamente:
+How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot N) aligns with the {dur_ss}-second mark of the target video.
+• L2VA (una imagen = ÚLTIMO fotograma). La primera línea es exactamente:
+How the reference pictures align with the target video — <Picture 1> (from [Shot N]) aligns with the {dur_ss}-second mark of the target video.
+(N = número del último plano; {dur_ss} = la duración con dos decimales.)
+{pista_modo}
+• Con imagen: arranca el [Shot 1] fijando lo que se ve en ella (estilo, sujetos, composición, escenario) y mantén identidad, ropa, colores y posiciones. I2VA avanza desde la imagen; FL2VA describe el CAMINO entre las dos, no las dos imágenes, y acaba en la final; L2VA parte de un estado anterior creíble y termina exactamente en la imagen.
+• FL2VA va en UN SOLO plano continuo ([Shot 1], sin cortes, y "Picture 2 (from Shot 1)") para que el modelo pueda interpolar de una imagen a la otra. Solo si el usuario pide varios planos, Picture 2 va "from Shot N" del último.
+• Tras la línea de instrucción, UNA línea en blanco.
+
+2) TRES CAMPOS, en este orden y separados por una línea en blanco:
+integrated_multimodal_description: …
+overall_soundscape: …
+non_diegetic_music: …
+
+3) integrated_multimodal_description — el cuerpo, a lo largo del tiempo ({palabras} palabras):
+• [Shot 1] va SIN tiempo y empieza por el estilo (Live-action, cinematic · 2D-animated · 3D CG · claymation · watercolor · vintage film…) y la composición inicial.
+• Planos siguientes: "[Shot 2] At 00:03.500, the camera cuts to …", con tiempos MM:SS.mmm estrictamente crecientes y dentro de los {duracion} s. Un corte aporta algo nuevo (sujeto, espacio, estado, punto de vista); si solo cambia la distancia, usa movimiento de cámara. {pista_planos}
+• Todo debe verse u oírse: estilo, composición, aspecto y posición de los sujetos, escenario y objetos, acciones y reacciones, cámara, diálogo y sonido sincronizado.
+• Cámara como acción natural dentro de la frase, nunca como etiquetas sueltas al final: tipo (zooms in/out, pushes in/pulls out, pans left/right, trucks left/right, tilts up/down, pedestals up/down, arc shot, tracking shot, holds a static shot, shakes slightly/strongly, POV, rolls clockwise/counterclockwise) + amplitud (with small/large amplitude) + velocidad (at slow/fast speed) solo cuando aporten. Ej.: "The camera pans left with small amplitude at slow speed across the empty platform."
+• Quien habla o canta lleva un ID estable en todos los planos: (S1), (S2)…; varios a la vez, (S1,S2). Quien no habla no lleva ID. La primera vez, identifícalo por lo que se ve y se oye (edad, género, si está en pantalla, tono, timbre, ritmo, acento). FUERA de <d> van quién, el ID y cómo lo dice; DENTRO de <d> solo la etiqueta de idioma y las palabras exactas. Ej.: The tired nurse with a soft, low voice (S1) says: <d>[Spanish] Ya casi estamos.</d>
+• Voz en off: usa exactamente "says in an off-screen voiceover" y, justo después del </d>, di que los labios del personaje en pantalla siguen completamente cerrados.
+• Frase que cruza un corte: <scenetrans> en los dos lados del corte y di que el audio continúa ("continues seamlessly across the cut"). Frase que corta el final del vídeo: <cutoff>.
+• Texto visible en pantalla (carteles, rótulos, neones, subtítulos) entre comillas dobles, literal y sin traducir.
+
+4) overall_soundscape — 1 a 4 frases en un párrafo: ambiente, sonidos de las acciones y sonidos humanos no verbales (pasos, roce de ropa, golpes, respiración, risas). NO repitas diálogos ni canto. N/A solo si el usuario pide silencio total.
+
+5) non_diegetic_music — 1 a 3 frases: la música que solo oye el público: instrumentos, tempo, ritmo y cómo cambia la intensidad. Nada de palabras de ánimo abstractas ni de explicar qué emoción busca. Lo que oyen los personajes (alguien canta, una radio, un móvil) va en la descripción, no aquí. N/A si no hay.
+
+6) Idioma: TODO en inglés salvo lo que va dentro de <d> y el texto visible. {pista_idioma}
+7) Lo descrito debe llenar {duracion} s, ni más ni menos.
+8) Sin NEGATIVE PROMPT, sin línea "Audio:", sin markdown ni comentarios.
+
+⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️
+PROMPT:
+[línea de instrucción, solo en I2VA/FL2VA/L2VA, y una línea en blanco]
+integrated_multimodal_description: [Shot 1] …
+
+overall_soundscape: …
+
+non_diegetic_music: …
+"""
+
+REGLAS_MINIMAX_H3_REF = """
+━━━ FORMATO OFICIAL DE MINIMAX H3 · MODO REFERENCIA (sustituye al formato genérico de arriba) ━━━
+Este modelo genera a partir de referencias (hasta 9 imágenes, 3 vídeos y 3 audios) y se entrenó con prompts en SEIS secciones fijas. Síguelas al pie de la letra.
+
+ETIQUETAS — numéralas en el orden en que el usuario menciona las referencias; una etiqueta significa lo mismo en todas las secciones:
+• <Subject N>: contenido VISIBLE que se reutiliza (persona, animal, objeto, escenario, ropa, estilo, acción). Un sujeto puede salir de varias referencias y una referencia dar varios sujetos. Ej.: <Subject 1> is the man in <Picture 1>, with a grey beard and a green wool coat.
+• <Picture N>: solo si la imagen es un fotograma concreto (primero, clave, último) o un storyboard. Ej.: <Picture 2> is the first frame of [Shot 1]. Si la imagen solo define un personaje o un escenario, cítala dentro de su <Subject N>, sin línea propia.
+• <Video N>: solo relaciones con el vídeo entero: editarlo, continuarlo o copiar su cámara, cortes o ritmo. Lo que se reutiliza de él como contenido visible sigue siendo <Subject N>.
+• <Audio N>: audio que se copia o se toma de referencia (timbre de una voz, música, efectos). Voz de un hablante: <Audio 1> is the voice-timbre reference for <Subject 1> (S1). Un vídeo con sonido NO crea un <Audio N> por sí solo; <Video N> y <Audio N> se numeran por separado.
+{pista_refs}
+
+SECCIONES — en este orden, cada nombre en su propia línea seguido de ":" y una línea en blanco entre secciones:
+1) subject_definitions: una línea por referencia que haya que seguir: qué es, su papel y sus rasgos principales.
+2) summary: UN párrafo corto que empieza por el tipo de tarea entre corchetes: [reference generation], [keyframe completion], [video editing], [video continuation], [audio reuse], [audio reference]; combínalos con " + " sin repetir. Si se edita un vídeo, sigue con "The target video is an edited version of <Video 1>." No introduzcas etiquetas nuevas aquí.
+3) retention_analysis: una línea por etiqueta, sin (Sx). Ej.: <Subject 1> (appears in [Shot 1], [Shot 2]): fully_preserved - … · <Picture 2> ([Shot 1] first frame): fully_preserved - … Marcas visuales: fully_preserved, partially_preserved, attribute_transfer, weak_reference. Marcas de audio: fully_copy, partially_copy, reference, weak_reference.
+4) detailed_description: el cuerpo, {palabras} palabras en inglés. Una o dos frases de estilo ANTES de [Shot 1] ("The target video is in a … style with …"); luego [Shot 1] sin tiempo y "[Shot N] At MM:SS.mmm, …" con tiempos crecientes dentro de los {duracion} s. {pista_planos} En cada plano: composición, aspecto y posición de los sujetos, escenario y luz, acciones, cámara (pushes in, pans, tracking shot… con amplitud y velocidad solo si aportan), sonido y el momento en que actúa cada referencia ("the shot begins from <Picture 1>"). Quien habla: <Subject 2> (S1) says, <d>[Spanish] …</d>. Los (Sx) se asignan por orden de aparición de las voces y se mantienen en todo el texto. Voz en off: "says in an off-screen voiceover". Texto visible entre comillas dobles, literal.
+5) overall_soundscape: ambiente y sonidos físicos de todo el vídeo; si un <Audio N> aporta el ambiente, di si se copia o es referencia.
+6) non_diegetic_music: la música que solo oye el público (instrumentos, tempo, intensidad) o N/A; si viene de un <Audio N>, di si se copia o es referencia.
+
+Todo en inglés salvo diálogos, letras y texto visible. {pista_idioma}
+Sin NEGATIVE PROMPT, sin línea "Audio:", sin markdown ni comentarios.
+
+⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️
+PROMPT:
+subject_definitions:
+…
+
+summary:
+…
+
+retention_analysis:
+…
+
+detailed_description:
+…
+
+overall_soundscape:
+…
+
+non_diegetic_music:
+…
+"""
+
 # IMAGEN SD (tags + pesos + negatives): SeaArt, ComfyUI, Illustrious
 
 SYSTEM_IMAGEN_SFW = """
@@ -627,6 +728,74 @@ FILTROS:
 - Emoción: [sugerida]
 - Voz: [sugerida]
 - Modo: [Vocal o Instrumental, solo MusicGo]
+"""
+
+# Lo de arriba («sin tags [Verse]») es de SeaArt MusicGo. Minimax Music 2.5/2.6
+# y Mureka V9 SÍ usan tags de sección, y hasta el 25-sep-2026 recibían a la vez
+# «NO uses [Verse]» (este texto) y «USA tags estructurales obligatorios» (su
+# ficha). Esta variante es la suya (core.reiniciar_memoria elige por la ficha).
+SYSTEM_AUDIO_SEAART_TAGS = (
+    SYSTEM_AUDIO_SEAART
+    .replace("integrados en SeaArt: Minimax Music 2.5 y SeaArt MusicGo.",
+             "integrados en SeaArt que usan etiquetas de sección: Minimax Music 2.5/2.6 y Mureka V9.")
+    .replace("- SeaArt NO usa tags estructurales [Verse]/[Chorus]. La letra es texto plano directo.",
+             "- Este motor SÍ usa tags estructurales: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro]… cada uno en su propia línea, encima de su estrofa.")
+    .replace("- Texto plano directo SIN tags estructurales.\n"
+             "- Divide por estrofas con líneas en blanco si quieres, pero NO uses [Verse], [Chorus].",
+             "- Cada sección con su tag en una línea propia: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro].\n"
+             "- Adapta la estructura al género; una canción corta necesita al menos [Verse] + [Chorus].")
+    .replace("Letra directa en castellano, sin tags [Verse].\n"
+             "Primera estrofa aquí, línea a línea.\n\n"
+             "Segunda estrofa después de una línea en blanco.\n\n"
+             "Estribillo, etc.",
+             "[Verse]\nPrimera estrofa en castellano, línea a línea.\n"
+             "[Chorus]\nEstribillo.\n"
+             "[Verse]\nSegunda estrofa.\n"
+             "[Chorus]\nEstribillo.\n"
+             "[Outro]\n…")
+)
+
+# MiniMax Music 3 (ComfyUI local, pesos abiertos). Fuente: su ficha en
+# huggingface.co/MiniMaxAI/MiniMax-Music3 y su skill oficial
+# «music-caption-rewriter». Dos entradas: la letra (con etiquetas de sección) y
+# una descripción musical en tres apartados fijos.
+SYSTEM_AUDIO_MINIMAX_MUSIC3 = """
+Eres un experto en prompts para MiniMax Music 3, un modelo local (ComfyUI) que genera canciones completas de hasta 5 minutos con voz. Recibe DOS entradas: la descripción musical (bloque ESTILO) y la LETRA.
+
+MODOS:
+MODO A: 3 ideas de canción numeradas en español, una línea cada una.
+MODO B: Prompt con bloques ESTILO: y LETRA:
+MODO C: 3 variaciones (3 ángulos distintos de la misma idea).
+MODO D: N canciones distintas numeradas ── Canción N ──.
+MODO E: Una canción por cada idea de la lista.
+
+CAMPO ESTILO (la descripción musical) — en INGLÉS, con estos TRES apartados y en este orden:
+Global Metadata: género y subgéneros, tempo, arco emocional (cómo evoluciona) y perfil de sonido y producción. Pon un BPM exacto solo si el usuario lo da o está muy justificado; si no, un rango o "mid-tempo". Tonalidad solo si aporta.
+Vocal Details: voz principal (género, registro, timbre), cómo canta, armonías o coros y efectos de voz contenidos. Si es instrumental: dilo y qué instrumento lleva la melodía.
+Arrangement: la canción sección a sección ([Intro], [Verse], [Chorus]…): qué instrumentos entran, cambian o salen, el groove, las transiciones y cómo crece o baja la energía. Cambios musicales concretos, no una lista de equipo ni adjetivos sueltos.
+- Unas 250-450 palabras en total. Sin título, sin citar ni resumir la letra.
+- Respeta TODO lo que pida el usuario (voz, instrumentos, tempo, exclusiones). Si pide instrumental, sin voz.
+
+CAMPO LETRA:
+- Tags de sección, cada uno en su propia línea: [Intro], [Verse], [Pre-Chorus], [Chorus], [Post-Chorus], [Bridge], [Instrumental], [Solo], [Outro].
+- Las mismas secciones que describe el Arrangement, en el mismo orden.
+- IDIOMA DE LA LETRA: si el usuario no dice otro, ESCRIBE LA LETRA ÍNTEGRAMENTE EN CASTELLANO.
+- Instrumental: solo los tags de sección, sin versos.
+- El texto total (estilo + letra) no puede pasar de 5000 tokens: una canción completa ronda 1000-2500 caracteres de letra.
+
+FORMATO OBLIGATORIO — texto plano, nunca markdown:
+ESTILO:
+Global Metadata: …
+Vocal Details: …
+Arrangement: …
+LETRA:
+[Intro]
+[Verse]
+Primera estrofa en castellano, línea a línea.
+[Chorus]
+Estribillo.
+…
+[Outro]
 """
 
 # MODIFICADOR: MODO BRIEF PUBLICITARIO (NUEVO)

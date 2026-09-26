@@ -45,7 +45,16 @@ def _seleccionables():
     vid = set().union(*[_limpio(l)
                         for p, l in config.MODELOS_POR_PLATAFORMA_VIDEO.items()
                         if "ComfyUI" not in p])
-    return len(img), len(vid), len(_limpio(config.MODELOS_AUDIO_FLAT))
+    # Audio no va por plataforma: se salta lo que cuelga de «── ComfyUI Audio
+    # ──», que aparece si en el proceso ya corrió el autodiscovery y el equipo
+    # tiene modelos de audio locales (MiniMax Music 3 desde el 26-sep-2026).
+    aud, grupo = set(), ""
+    for m in config.MODELOS_AUDIO_FLAT:
+        if m.startswith("──"):
+            grupo = m
+        elif "ComfyUI" not in grupo:
+            aud.add(m)
+    return len(img), len(vid), len(aud)
 
 
 class TestLasCifrasCuadranConElCatalogo:
@@ -107,14 +116,9 @@ class TestElReadmeNoInflaLasCifras:
         return (RAIZ / "README.md").read_text(encoding="utf-8")
 
     def test_la_cifra_coincide_con_lo_seleccionable(self):
-        import config
-        def cuenta(flat):
-            return len([m for m in flat if not m.startswith("──")])
-        img = {m for p, l in config.MODELOS_POR_PLATAFORMA_IMAGEN.items()
-               if "ComfyUI" not in p for m in l if not m.startswith("──")}
-        vid = {m for p, l in config.MODELOS_POR_PLATAFORMA_VIDEO.items()
-               if "ComfyUI" not in p for m in l if not m.startswith("──")}
-        real = len(img) + len(vid) + cuenta(config.MODELOS_AUDIO_FLAT)
+        # Mismo contador que las notas del release: tenía uno propio y se le
+        # colaban los modelos de audio locales (MiniMax Music 3).
+        real = sum(_seleccionables())
         anunciados = {int(n) for n in re.findall(r"\*\*(\d{3}) modelos", self._readme())}
         assert anunciados == {real}, (
             f"el README anuncia {anunciados} y son {real} seleccionables")

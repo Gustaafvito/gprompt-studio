@@ -67,7 +67,9 @@ from prompts import (
     NEGATIVE_BASE_SFW,
     NEGATIVE_BASE_VIDEO,
     NSFW_MODELO_FILTRADO,
+    SYSTEM_AUDIO_MINIMAX_MUSIC3,
     SYSTEM_AUDIO_SEAART,
+    SYSTEM_AUDIO_SEAART_TAGS,
     SYSTEM_AUDIO_SUNO,
     SYSTEM_IMAGEN_NSFW,
     SYSTEM_IMAGEN_SFW,
@@ -83,6 +85,23 @@ from workers import limpiar_marcadores, log_future_exc
 
 if TYPE_CHECKING:
     pass
+
+
+def system_audio_para(motor: str) -> str:
+    """System prompt de audio según el motor.
+
+    Hasta el 25-sep-2026 era «Suno o SeaArt»: Minimax Music 2.5/2.6 y Mureka
+    V9 recibían el de SeaArt («NO uses [Verse]», que es de MusicGo) y a la vez
+    su ficha decía «USA tags estructurales obligatorios».
+    """
+    specs = get_audio_model_specs(motor) or {}
+    if motor.startswith("Suno"):
+        return SYSTEM_AUDIO_SUNO
+    if specs.get("formato") == "minimax_music3":
+        return SYSTEM_AUDIO_MINIMAX_MUSIC3
+    if specs.get("usa_tags_estructurales"):
+        return SYSTEM_AUDIO_SEAART_TAGS
+    return SYSTEM_AUDIO_SEAART
 
 
 class CoreMixin:
@@ -326,7 +345,7 @@ class CoreMixin:
 
         if modo == "audio":
             motor = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "Suno v5"
-            sys_p = SYSTEM_AUDIO_SUNO if motor.startswith("Suno") else SYSTEM_AUDIO_SEAART
+            sys_p = system_audio_para(motor)
             sys_p = self.prompts.inyectar_specs_audio(sys_p)
             if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
