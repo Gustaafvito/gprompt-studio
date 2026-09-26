@@ -642,6 +642,37 @@ class TestBusquedaGlobalEnLaAppReal:
         assert not any("Otro Prueba" in c for c in chips), chips
 
 
+class TestCronEnLaAppReal:
+    """⏰ Cron prompts (revisión del 26-sep-2026): un segundo clic en «▶
+    Iniciar» arrancaba otra cadena en paralelo —el doble de llamadas a la
+    API— y «⏹ Detener» sin nada en marcha decía «detenido en variante 0/5».
+    La generación no sale: el envío está simulado."""
+
+    def test_no_arranca_dos_veces_y_detener_sin_cron_lo_dice(self, app, monkeypatch):
+        from unittest.mock import MagicMock
+        envio = MagicMock()
+        monkeypatch.setattr(app, "_executor", MagicMock(submit=envio))
+        app.txt_idea.delete("1.0", "end")
+        app.txt_idea.insert("1.0", "un faro en un acantilado")  # el cron parte de la idea
+        antes = set(app.winfo_children())
+        app.workflow.cmd_cron_prompts()
+        bombear(app)
+        vent = next(w for w in app.winfo_children() if w not in antes)
+        try:
+            boton = {b.cget("text"): b for b in _descendientes(vent) if isinstance(b, ctk.CTkButton)}
+            boton[tr("▶ Iniciar cron")].invoke()
+            boton[tr("▶ Iniciar cron")].invoke()
+            assert envio.call_count == 1, "el segundo clic lanzó otra cadena"
+            assert tr("⏲ El cron ya está en marcha: detenlo antes de lanzar otro.") in app.lbl_estado.cget("text")
+            boton[tr("⏹ Detener")].invoke()
+            boton[tr("⏹ Detener")].invoke()
+            assert app.lbl_estado.cget("text") == tr("⏹ No hay ningún cron en marcha.")
+        finally:
+            vent.destroy()
+            app.txt_idea.delete("1.0", "end")
+            bombear(app)
+
+
 @pytest.mark.slow
 class TestLoQueEnsenaAprender:
     """Lo que el tutorial, la paleta y los atajos prometen, existe de verdad.

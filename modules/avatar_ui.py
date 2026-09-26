@@ -241,8 +241,10 @@ class AvatarFrame(ctk.CTkFrame):
         fila_auto = ctk.CTkFrame(form, fg_color="transparent")
         fila_auto.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
         fila_auto.grid_columnconfigure(0, weight=1)
+        # Corto a propósito: comparte fila con dos botones y el ejemplo largo
+        # se cortaba en «ej: guerrera élfica, volc».
         self.entry_tema = ctk.CTkEntry(
-            fila_auto, placeholder_text=tr("ej: guerrera élfica, volcán japonés, reloj steampunk…"))
+            fila_auto, placeholder_text=tr("ej: guerrera élfica…"))
         self.entry_tema.grid(row=0, column=0, sticky="ew", padx=(0, 6))
         self.boton_auto = ctk.CTkButton(
             fila_auto, text=tr("🎲 Generar ficha"), width=130,
@@ -265,6 +267,9 @@ class AvatarFrame(ctk.CTkFrame):
             font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED)
         self.label_imagen_ref.grid(row=fila, column=0, sticky="w",
                                    padx=8, pady=(0, 4)); fila += 1
+        # Vacía dejaba un hueco de ~40 px bajo la ficha automática: se ve
+        # solo al cargar una imagen (grid() recuerda su sitio).
+        self.label_imagen_ref.grid_remove()
 
         # Trigger word
         ctk.CTkLabel(form, text=tr(cfg["label_trigger"])).grid(
@@ -418,6 +423,7 @@ class AvatarFrame(ctk.CTkFrame):
         nombre = os.path.basename(ruta)
         self.boton_imagen.configure(state="disabled")
         # Feedback INMEDIATO de que la imagen está cargada y en análisis
+        self.label_imagen_ref.grid()
         self.label_imagen_ref.configure(
             text=tr('  📷 {0} — ⏳ analizando con IA de visión…').format(nombre), image=None)
         self.label_estado.configure(text=tr("📷 Analizando la imagen de referencia…"))

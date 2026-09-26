@@ -441,6 +441,11 @@ class ToolsWorkflowService:
         vent.protocol("WM_DELETE_WINDOW", _on_cerrar)
 
         def _ejecutar_cron():
+            # Un segundo clic arrancaba OTRA cadena en paralelo: dos variantes
+            # a la vez y el doble de llamadas a la API.
+            if cron_state["activo"]:
+                self.app.dialogs.set_estado(tr("⏲ El cron ya está en marcha: detenlo antes de lanzar otro."), P.TXT_AVISO)
+                return
             try:
                 cantidad = int(ent_cantidad.get())
                 intervalo = float(ent_intervalo.get())
@@ -547,6 +552,10 @@ class ToolsWorkflowService:
             self.app.dialogs.set_estado(tr('⏲ Cron iniciado: {0} variantes cada {1}min').format((cantidad), (intervalo)), P.TXT_OK)
 
         def _detener():
+            # Sin nada en marcha decía «Cron detenido en variante 0/5».
+            if not cron_state["activo"]:
+                self.app.dialogs.set_estado(tr("⏹ No hay ningún cron en marcha."))
+                return
             cron_state["activo"] = False
             if cron_state["after_id"]:
                 try: vent.after_cancel(cron_state["after_id"])
