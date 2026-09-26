@@ -100,24 +100,23 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    e08a66d7652d38f998d5d7a190f5e416
-    f4cd80ff19e9cef47414e085ff225ef9   GPromptStudio-Setup-1.1.0.exe
+    4104cb2257165e4c4819e1ee4e3be897
+    0f98b712ca270b684889fd6e2f4e3aba   GPromptStudio-Setup-1.1.0.exe
 
-    95d8896656c8ff6f471b98501d44a8fd
-    a199eb03ebba999fb7c703e342cfe626   GPromptStudio-Portable-Onefile.exe
+    0ae8f89a69b83f069c689325ef74d250
+    b81a0f39e4fe7a9dcaf215da49d4622b   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... 1 de 60: Arctic Wolf.
-    - Opción 2, el onefile ........ 2 de 64: Bkav Pro y Zillya.
+    - Opción 1, el instalador ..... 0 de 67: limpio.
+    - Opción 2, el onefile ........ 2 de 68: Bkav Pro y Zillya.
 
   Microsoft Defender no marca ninguno de los dos.
 
-  Ninguna encuentra código malicioso. Arctic Wolf da un veredicto
-  genérico ("Unsafe"); Bkav Pro, una etiqueta derivada del propio
-  fichero; y Zillya nombra XWorm, un malware que también se
-  empaqueta con PyInstaller. Y cada motor marca un envoltorio
-  distinto del MISMO programa: Arctic Wolf solo el instalador, Bkav
-  y Zillya solo el onefile.
+  Ninguna de las dos encuentra código malicioso: Bkav Pro da una
+  etiqueta derivada del propio fichero, y Zillya nombra XWorm, un
+  malware que también se empaqueta con PyInstaller. Y el instalador
+  lleva dentro el MISMO programa sin que nadie lo marque: lo que
+  puntúan es el envoltorio.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el

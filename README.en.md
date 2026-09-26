@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <sub>118 MB &middot; 64-bit Windows 10 or 11 &middot; no Python, no administrator rights<br>
+  <sub>188 MB &middot; 64-bit Windows 10 or 11 &middot; no Python, no administrator rights<br>
   Rather not install anything? <a href="https://github.com/Gustaafvito/gprompt-studio/releases/latest">Portable build and SHA-256 hashes</a></sub>
 </p>
 

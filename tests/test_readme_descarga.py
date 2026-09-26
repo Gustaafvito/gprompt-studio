@@ -78,3 +78,18 @@ class TestElNombreDelFicheroEsElQueSeConstruye:
 
     def test_la_version_del_instalador_sale_de_config(self):
         assert config.PUBLIC_VERSION in INSTALADOR
+
+
+def test_el_tamano_del_boton_es_el_del_instalador_publicado():
+    # El README decía «118 MB» (el instalador de la 1.0.0 y 1.0.1) desde
+    # la 1.0.2, que pesa 188 MB: el instalador lleva ahora el programa en
+    # un solo fichero. Se ata a la tabla de descarga de las notas, que
+    # build_release.py comprueba contra el fichero real.
+    import re
+    notas = (RAIZ / "docs" / f"RELEASE-v{config.PUBLIC_VERSION}.md").read_text(encoding="utf-8")
+    m = re.search(re.escape(INSTALADOR) + r"\]\*\* · (\d+) MB", notas)
+    assert m, "no encuentro el tamaño del instalador en las notas"
+    for nombre in READMES:
+        texto = (RAIZ / nombre).read_text(encoding="utf-8")
+        tamanos = re.findall(r"<sub>(\d+) MB", texto)
+        assert tamanos == [m.group(1)], f"{nombre} anuncia {tamanos} MB y el instalador pesa {m.group(1)} MB"

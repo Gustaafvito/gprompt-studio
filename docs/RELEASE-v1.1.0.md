@@ -1,5 +1,5 @@
 <!--
-Build definitivo del 25-sep-2026 (build_release.py desde 777f1ba): hashes,
+Build definitivo del 26-sep-2026 (build_release.py desde d74504d): hashes,
 tamaños y VirusTotal ya son los de ESTOS dos ficheros. Si se regeneran, todo
 eso cambia: hay que volver a analizarlos y rehacer los enlaces.
 
@@ -50,8 +50,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
 ```
 
 ```
-e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9  GPromptStudio-Setup-1.1.0.exe
-95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626  GPromptStudio-Portable-Onefile.exe
+4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
+0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -69,18 +69,17 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**[1 de 60](https://www.virustotal.com/gui/file/e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9)** y el portable
-**[2 de 64](https://www.virustotal.com/gui/file/95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626)**.
+**[0 de 67](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba)**, limpio, y el portable
+**[2 de 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b)**.
 **Microsoft Defender no marca ninguno de los dos.**
 
-Ninguna de las tres detecciones encuentra código malicioso. Arctic Wolf da un
-veredicto genérico, «Unsafe», sin nombrar nada. Bkav Pro pone
-`W32.Malware.A6C4837A`, una etiqueta derivada del propio fichero. Y Zillya
+Ninguna de las dos detecciones encuentra código malicioso. Bkav Pro pone
+`W32.Malware.C1C732E6`, una etiqueta derivada del propio fichero. Y Zillya
 dice `Backdoor.XWorm.Win32.3294`: XWorm sí es un malware real, y justo por
 eso lo explico abajo.
 
-Fíjate además en el reparto: Arctic Wolf solo marca el instalador, y Bkav y
-Zillya solo el portable. Es el mismo programa en dos envoltorios, y cada
+Fíjate además en el reparto: las dos solo marcan el portable, y el
+instalador lleva dentro el mismo programa sin que nadie lo marque. Cada
 motor puntúa el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:

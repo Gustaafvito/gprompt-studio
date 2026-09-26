@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <sub>118 MB &middot; Windows 10 u 11 de 64 bits &middot; no necesita Python ni permisos de administrador<br>
+  <sub>188 MB &middot; Windows 10 u 11 de 64 bits &middot; no necesita Python ni permisos de administrador<br>
   &iquest;Prefieres no instalar nada? <a href="https://github.com/Gustaafvito/gprompt-studio/releases/latest">Versi&oacute;n portable y hashes SHA-256</a></sub>
 </p>
 

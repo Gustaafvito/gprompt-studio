@@ -70,8 +70,8 @@ Put this right under the button, visible without expanding anything.
 > ```
 >
 > ```
-> e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9  GPromptStudio-Setup-1.1.0.exe
-> 95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626  GPromptStudio-Portable-Onefile.exe
+> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
+> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,21 +84,20 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [1 of 60 engines](https://www.virustotal.com/gui/file/e08a66d7652d38f998d5d7a190f5e416f4cd80ff19e9cef47414e085ff225ef9) — Arctic Wolf
-> - **Single-file portable:** [2 of 64](https://www.virustotal.com/gui/file/95d8896656c8ff6f471b98501d44a8fda199eb03ebba999fb7c703e342cfe626) — Bkav Pro and Zillya
+> - **Installer:** [0 of 67 engines](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — clean
+> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro and Zillya
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **None of the three finds malicious code**, which matters more than the
-> count. Arctic Wolf gives a generic verdict ("Unsafe"); Bkav Pro, a label
-> derived from the file itself (`W32.Malware.A6C4837A`); and Zillya names
-> XWorm, a real piece of malware that is also packaged with PyInstaller, the
-> tool this program is built with.
+> **Neither detection finds malicious code**, which matters more than the
+> count. Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.C1C732E6`); and Zillya names XWorm, a real piece of malware
+> that is also packaged with PyInstaller, the tool this program is built
+> with.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.1.0 itself: Arctic Wolf only flags the installer, while
-> Bkav and Zillya only flag the portable. Same software, different wrapper,
-> different verdict.
+> proof is inside 1.1.0 itself: the installer carries the very same program
+> and nobody flags it. Same software, different wrapper, different verdict.
 >
 > **If your antivirus complains about one option, try the other** — it's the
 > same program. And check the hash either way.
