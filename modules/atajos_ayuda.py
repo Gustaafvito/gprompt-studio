@@ -46,7 +46,9 @@ class AtajosAyudaService:
             widget.bind("<Control-i>",            lambda e: self.app.cmd_ideas())
             widget.bind("<Control-1>",            lambda e: self.app._copiar("positivo"))
             widget.bind("<Control-2>",            lambda e: self.app._copiar("negativo"))
-            widget.bind("<Control-Shift-a>",      lambda e: self.app.cmd_vision())
+            # Con Shift, Tk entrega la letra en MAYÚSCULA: «<Control-Shift-a>»
+            # no se disparaba nunca (comprobado con pulsaciones reales).
+            widget.bind("<Control-Shift-A>",      lambda e: (self.app.cmd_vision(), "break")[1])
             widget.bind("<Control-r>",            lambda e: self.app._idea_aleatoria_historial())
             # ── MEJORA 4: Ctrl+D = duplicar prompt actual al historial ──
             widget.bind("<Control-d>",            lambda e: self.app._cmd_duplicar_a_historial())
@@ -78,6 +80,9 @@ class AtajosAyudaService:
             widget.bind("<Control-Shift-D>",      lambda e: (self.app.dashboard.cmd_abrir(), "break")[1])
             widget.bind("<Control-Shift-B>",      lambda e: (self.app.multi.cmd_storyboard_imagen(), "break")[1])
             widget.bind("<Control-Shift-M>",      lambda e: (self.app.analysis.cmd_coste_sesion(), "break")[1])
+            # I de «imágenes»: el botón vive en la pestaña Ajustes Extra y sin
+            # atajo había que ir a buscarlo.
+            widget.bind("<Control-Shift-I>",      lambda e: (self.app.cmd_crear_desde_imagenes(), "break")[1])
         # Ctrl+V inteligente (detecta prompt o imagen en clipboard)
         self.app.bind("<Control-v>", self.app._pegar_inteligente_clipboard)
         # Ctrl+? = mostrar atajos
@@ -301,6 +306,7 @@ class AtajosAyudaService:
                 ("Ctrl+Shift+C", tr("Sugerencias de claridad (palabras polisémicas)")),
                 ("Ctrl+Shift+D", tr("Abrir Dashboard")),
                 ("Ctrl+Shift+M", tr("Coste de sesión")),
+                ("Ctrl+Shift+I", tr("Crear desde imágenes")),
             ]),
             (tr("⚖️ Comparador (dentro de la ventana)"), [
                 ("Ctrl+G", tr("Abrir Grid Pollinations (previews de TODAS)")),

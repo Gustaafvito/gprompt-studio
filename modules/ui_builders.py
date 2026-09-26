@@ -14,10 +14,19 @@ invisibles sobre el fondo light tras cambiar tema.
 import json
 import logging
 import os
+import re
 
 import customtkinter as ctk
 
 from modules import paleta as P
+from modules.espacio_ventana import (
+    IDEA_MAX,
+    IDEA_MIN,
+    SALIDA_MINIMA,
+    plegar_pestanas,
+    repartir,
+)
+from modules.fila_fluida import FilaFluida, ancho_boton, cabe_completo
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +138,158 @@ class UIBuildersService:
 
     def __init__(self, app):
         self.app = app
+        self._alturas_pendiente = False
+        # None: se pliegan solas si no cabe el resultado. True/False: lo ha
+        # decidido el usuario con el botón o pulsando una pestaña.
+        self._pestanas_plegadas_manual = None
+        self._pestanas_plegadas = False
+        self._aviso_focus_dado = False
+        self._aviso_focus_pendiente = False
+
+    # ── Reparto del alto: el resultado primero ────────────────────────────
+    # Ver modules/espacio_ventana.py. Con pack, lo último que se empaqueta es
+    # lo primero que se encoge, y lo último es el resultado: a tamaño por
+    # defecto en 1920x1080 recibía 30 px de los 240 que pide. Aquí las dos
+    # franjas elásticas de encima —pestañas e idea— ceden espacio cuando
+    # falta, y lo recuperan cuando sobra.
+
+    def programar_alturas(self, event=None):
+        """Recalcula el reparto, agrupado: varios avisos seguidos, una pasada.
+
+        Se llama al cambiar de tamaño la ventana y también el marco del
+        resultado. Lo segundo hace falta porque lo de encima cambia de alto
+        sin que la ventana cambie —la línea de información del modelo se
+        rellena después de arrancar, el aviso de Flux aparece y se va— y el
+        resultado, que es lo último, absorbe ese cambio. Sin esto, quedarse
+        con el reparto viejo o el nuevo dependía del orden de los eventos.
+        No hay bucle: el reparto no depende del alto real del resultado,
+        solo de lo que piden los demás.
+        """
+        if event is not None and event.widget is not self.app:
+            # Un bind en la ventana llega también de todos sus hijos.
+            return
+        if self._alturas_pendiente:
+            return
+        self._alturas_pendiente = True
+
+        def _ejecutar():
+            self._alturas_pendiente = False
+            self.ajustar_alturas()
+        self.app.after(50, _ejecutar)
+
+    def ajustar_alturas(self):
+        """Ajusta pestañas e idea al alto actual. Devuelve (pestañas, idea) o None."""
+        app = self.app
+        pestanas_w = getattr(app, "_tabview_container", None)
+        entrada = getattr(app, "frame_entrada", None)
+        salida = getattr(app, "_salida_frame", None)
+        idea_w = getattr(app, "txt_idea", None)
+        if None in (pestanas_w, entrada, salida, idea_w):
+            return None
+        alto = app.winfo_height()
+        if alto < 100:
+            # Aún sin mapear: el <Configure> de cuando aparezca lo arregla.
+            return None
+
+        def _pady(w):
+            return sum(int(n) for n in re.findall(r"\d+", str(w.pack_info().get("pady", 0))))
+
+        # Todo en píxeles reales hasta el final; repartir() trabaja en
+        # unidades lógicas, que son las que entiende configure(height=).
+        escala = ctk.ScalingTracker.get_widget_scaling(salida)
+        esclavos = app.pack_slaves()
+        elasticos = (pestanas_w, entrada, salida)
+        fijo = sum(w.winfo_reqheight() + _pady(w) for w in esclavos if w not in elasticos)
+        if entrada in esclavos:
+            fijo += entrada.winfo_reqheight() - idea_w.winfo_reqheight() + _pady(entrada)
+        visibles = pestanas_w in esclavos   # el Modo Focus las oculta
+        if visibles:
+            fijo += _pady(pestanas_w)
+        pide_salida = (salida.winfo_reqheight() + _pady(salida)) / escala
+        espacio = (alto - fijo) / escala
+        if visibles:
+            plegadas = plegar_pestanas(espacio, self._pestanas_plegadas_manual)
+            self._pestanas_plegadas = plegadas
+            pestanas, idea = repartir(
+                espacio, pide_salida,
+                plegadas=self._alto_tira_pestanas(escala) if plegadas else None)
+            if pestanas_w.cget("height") != pestanas:
+                pestanas_w.configure(height=pestanas)
+            boton = getattr(app, "_btn_plegar_pestanas", None)
+            if boton is not None:
+                boton.configure(text="▾" if plegadas else "▴")
+            if plegadas and espacio - pestanas - idea < SALIDA_MINIMA and not self._aviso_focus_pendiente:
+                # Ni plegando cabe (portátiles de 768 de alto): la salida es el
+                # Modo Focus, y hay que decirlo una vez o nadie lo encuentra.
+                # Se vuelve a mirar pasado un momento: al arrancar, la ventana
+                # pasa por un tamaño provisional y el aviso salía también con
+                # la ventana grande.
+                self._aviso_focus_pendiente = True
+                app.after(1500, self._avisar_ventana_baja)
+        else:
+            # Sin pestañas, solo la idea cede o recupera espacio.
+            pestanas = None
+            idea = int(min(IDEA_MAX, max(IDEA_MIN, espacio - pide_salida)))
+        if idea_w.cget("height") != idea:
+            idea_w.configure(height=idea)
+        return pestanas, idea
+
+    def _avisar_ventana_baja(self, intentos=5):
+        """El aviso de Ctrl+H, una vez por sesión y solo si sigue haciendo falta.
+
+        Al arrancar, la ventana está oculta tras el splash y el reparto puede
+        haberse hecho con un tamaño provisional: se espera a que se vea y se
+        vuelve a repartir antes de decidir. Sin esto, el aviso salía también
+        con la ventana grande.
+        """
+        if self._aviso_focus_dado or getattr(self.app, "_modo_focus_activo", False):
+            self._aviso_focus_pendiente = False
+            return
+        if not self.app.winfo_viewable():
+            if intentos:
+                self.app.after(1000, lambda: self._avisar_ventana_baja(intentos - 1))
+            else:
+                self._aviso_focus_pendiente = False
+            return
+        # Con el aviso aún marcado como pendiente, este reparto no programa
+        # otro aviso.
+        self.app.update_idletasks()
+        self.ajustar_alturas()
+        self.app.update_idletasks()
+        self._aviso_focus_pendiente = False
+        salida = getattr(self.app, "_salida_frame", None)
+        if salida is None or not self._pestanas_plegadas:
+            return
+        visible = 0
+        if salida.winfo_ismapped():
+            arriba = salida.winfo_rooty() - self.app.winfo_rooty()
+            visible = max(0, min(salida.winfo_height(), self.app.winfo_height() - arriba))
+        escala = ctk.ScalingTracker.get_widget_scaling(salida)
+        if visible / escala >= SALIDA_MINIMA:
+            return
+        self._aviso_focus_dado = True
+        self.app.dialogs.set_estado(
+            tr("↕ La ventana es baja para ver el resultado: maximízala o pulsa Ctrl+H (Modo Focus)"),
+            P.TXT_AVISO)
+
+    def _alto_tira_pestanas(self, escala):
+        """Alto lógico de la tira de títulos: lo que queda a la vista plegadas."""
+        try:
+            tira = self.app.tabview._segmented_button
+            return int((tira.winfo_y() + tira.winfo_height()) / escala) + 8
+        except Exception:
+            return 40
+
+    def alternar_pestanas(self):
+        """Botón ▴/▾: pliega o despliega, y esa decisión manda desde ahora."""
+        self._pestanas_plegadas_manual = not self._pestanas_plegadas
+        self.ajustar_alturas()
+
+    def desplegar_pestanas(self):
+        """Al pulsar un título estando plegadas: quien pulsa quiere verlas."""
+        if self._pestanas_plegadas:
+            self._pestanas_plegadas_manual = False
+            self.ajustar_alturas()
 
     def _build_header(self):
         # Colores adaptativos según tema
@@ -352,10 +513,10 @@ class UIBuildersService:
                 (tr("📂  Restaurar backup"), self.app.backup.cmd_restore_completo),
             ]),
             (tr("📁 Datos"), "#3d7a9c", [
-                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", "🌟 Prompts Estrella", "#4a2800")),
+                (tr("🌟  Estrellas"), lambda: abrir_lista(self.app, "estrellas", tr("🌟 Prompts Estrella"), "#4a2800")),
                 (tr("📤  Exportar como JSON pro (Veo/Sora/Kling)"), self.app.json.cmd_exportar),
-                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", "⭐ Prompts Favoritos", "#3a3000")),
-                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", "📋 Historial de Prompts", "#1a2a3a")),
+                (tr("⭐  Favoritos"), lambda: abrir_lista(self.app, "favoritos", tr("⭐ Prompts Favoritos"), "#3a3000")),
+                (tr("📋  Historial"), lambda: abrir_lista(self.app, "historial", tr("📋 Historial de Prompts"), "#1a2a3a")),
                 (tr("📥  Importar prompt JSON pro"), self.app.json.cmd_importar),
                 (tr("🔗  LoRAs"), lambda: abrir_loras(self.app)),
                 (tr("🧑  Personajes"), lambda: abrir_personajes(self.app)),
@@ -413,6 +574,12 @@ class UIBuildersService:
             (tr("⚡ Acciones"), tr("🔄 Variaciones"), self.app.cmd_variaciones),
             (tr("⚡ Acciones"), tr("📦 Batch"), self.app.cmd_batch),
             (tr("⚡ Acciones"), tr("🎨 Previsualizar"), self.app.cmd_previsualizar),
+            # Las dos viven fuera de los menús de arriba —una en la pestaña
+            # Ajustes Extra y otra en la botonera—, así que Ctrl+K no las
+            # encontraba. El lambda difiere `multi`, que puede no existir aún.
+            (tr("⚡ Acciones"), tr("🖼 Crear desde imágenes"), self.app.cmd_crear_desde_imagenes),
+            (tr("⚡ Acciones"), tr("🎬 Cortometraje (guion por escenas)"),
+             lambda: self.app.multi.cmd_cortometraje()),
         ]
 
         self.app._header_menus = []
@@ -518,10 +685,12 @@ class UIBuildersService:
         frame_menus = ctk.CTkFrame(inner, fg_color="transparent")
         frame_menus.pack(side="right", padx=(16, 0))
 
+        fuente_menu = ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
         for label_grupo, color_borde, items in grupos_menus:
-            btn = ctk.CTkButton(frame_menus, text=label_grupo, width=120, height=28,
+            btn = ctk.CTkButton(frame_menus, text=label_grupo, height=28,
+                                width=ancho_boton(fuente_menu, label_grupo, 120),
                                 **P.estilo_boton(color_borde, primario=True),
-                                corner_radius=6, font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+                                corner_radius=6, font=fuente_menu,
                                 text_color="#ffffff",
                                 command=_make_toggle(label_grupo, items, color_borde),
                                 anchor="w")
@@ -530,37 +699,44 @@ class UIBuildersService:
             self.app._header_menus.append((btn, label_grupo, color_borde, items))
             self.app._header_btns.append(btn)
 
-        # ── Modo compacto responsivo (v1.0) ──
-        # Si la ventana es estrecha (<1180px), reducir labels a solo emoji
-        # para que quepan los 7 menús del header.
+        # ── Modo compacto responsivo ──
+        # Si los menús no caben enteros al lado del cerebro, se quedan en
+        # solo emoji. Se decide con el hueco REAL: antes era «ventana < 1180»,
+        # una cifra de cuando había 7 menús; con 8, a 1382 «UI» salía cortado
+        # y «Workflow» no se veía.
         self.app._header_compacto = False
         self.app._header_labels_originales = {btn: btn.cget("text") for btn in self.app._header_btns}
+        self.app._header_anchos_completos = [
+            ancho_boton(fuente_menu, lbl, 120) for lbl in self.app._header_labels_originales.values()]
 
-        def _on_resize(event=None):
+        def _on_resize(_event=None):
             try:
-                # Fix A1 fase 2: el widget es self.app (ArquitectoApp),
-                # no self (UIBuildersService). Antes el guard siempre era
-                # True → el handler retornaba sin actualizar → los botones
-                # se quedaban en modo compacto (cuadrados) tras el primer
-                # tick del after(200) que dispara con ancho parcial.
-                if event is not None and event.widget is not self.app:
+                escala = ctk.ScalingTracker.get_widget_scaling(inner)
+                if inner.winfo_width() <= 1:
                     return
-                ancho = self.app.winfo_width()
-                debe_compactar = ancho < 1180
+                # Lo que queda a la derecha del cerebro, en unidades lógicas
+                # (los márgenes: 20+20 del cerebro y 16 de los menús).
+                disponible = (inner.winfo_width() - frame_llm.winfo_reqwidth()) / escala - 56
+                debe_compactar = not cabe_completo(
+                    disponible, self.app._header_anchos_completos, hueco=4)
                 if debe_compactar == self.app._header_compacto:
                     return
                 self.app._header_compacto = debe_compactar
-                for btn in self.app._header_btns:
+                for btn, ancho in zip(self.app._header_btns, self.app._header_anchos_completos):
                     label_orig = self.app._header_labels_originales.get(btn, "")
                     if debe_compactar:
                         # Solo emoji (la primera "palabra" antes del espacio)
                         emoji = label_orig.split(" ")[0] if " " in label_orig else label_orig
                         btn.configure(text=emoji, width=42)
                     else:
-                        btn.configure(text=label_orig, width=120)
+                        btn.configure(text=label_orig, width=ancho)
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
-        self.app.bind("<Configure>", _on_resize, add="+")
+        self.app._header_on_resize = _on_resize
+        # El hueco cambia con la ventana y con el cerebro (el botón 🧬 ADN
+        # aparece y desaparece a su lado).
+        inner.bind("<Configure>", _on_resize, add="+")
+        frame_llm.bind("<Configure>", _on_resize, add="+")
         self.app.after(200, _on_resize)
 
     def _refrescar_indicadores_llm(self):
@@ -624,6 +800,23 @@ class UIBuildersService:
                                                  command=self.app.events.on_plataforma_cambio)
         self.app.combo_plataforma.pack(side="left", padx=(0, 10))
 
+        # ── Indicador de Brief activo ──
+        # El Brief cambia TODOS los prompts y se recuerda entre sesiones, así
+        # que mientras esté encendido tiene que verse. Va aquí y no en la
+        # cabecera, junto al de ADN: allí sus 78 px hacían que los 8 menús
+        # ya no cupieran a 1382 de ancho y se quedaran solo con el icono.
+        self.app._btn_brief = ctk.CTkButton(
+            inner, text=tr("⚡ Brief"), width=70, height=28,
+            fg_color="#d97706", hover_color="#b45309", text_color="#ffffff",
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+            command=self._apagar_brief,
+        )
+        try:
+            CTkToolTip(self.app._btn_brief,
+                       message=tr("Modo Brief activo: cada prompt sale como anuncio.\nPulsa para desactivarlo."))
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
         # Dimensiones tipo "iOS pill" — pelota más pequeña que el body para
         # que se vea claramente la diferencia entre encendido/apagado.
         sw_style = {
@@ -650,6 +843,13 @@ class UIBuildersService:
                 self.app.switch_nsfw.configure(text_color=nsfw_text_on, border_color=nsfw_border_on)
             else:
                 self.app.switch_nsfw.configure(text_color=nsfw_text_off, border_color=nsfw_border_off)
+            # Si el modelo elegido no casa con el interruptor, se dice ya.
+            try:
+                self.app.events.avisar_nsfw()
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+        # La detección automática enciende el interruptor por este mismo camino.
+        self.app._toggle_nsfw_visual = _toggle_nsfw_visual
 
         self.app.switch_nsfw = ctk.CTkSwitch(inner, text=tr("🔞 NSFW"), variable=self.app.switch_nsfw_var,
                                           command=_toggle_nsfw_visual,
@@ -659,7 +859,13 @@ class UIBuildersService:
                                           text_color=nsfw_text_off,
                                           **sw_style)
         self.app.switch_nsfw.pack(side="right", padx=6)
-        CTkToolTip(self.app.switch_nsfw, message=tr("Activa contenido adulto en los prompts."), delay=0.5)
+        CTkToolTip(self.app.switch_nsfw, message=tr(
+            "Contenido adulto en los prompts: anatomía y poses precisas, y el "
+            "negativo deja de excluir la desnudez.\n"
+            "Se enciende solo si la idea lo pide (desnudo, erótico, nsfw…).\n"
+            "Con modelos que filtran el contenido adulto (GPT Image, Nano Banana, "
+            "Midjourney…) el prompt se queda en sugerente para que no lo rechacen."),
+            delay=0.5)
 
         def _toggle_trad_visual():
             if self.app.switch_traduccion_var.get():
@@ -815,6 +1021,7 @@ class UIBuildersService:
         self.app.combo_destino_vid = ctk.CTkComboBox(self.app.frame_video, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_vid.pack(side="left", padx=5)
+        self._crear_switch_brief(self.app.frame_video).pack(side="left", padx=(10, 5))
 
     def _build_audio_panel(self):
         is_light = _get_real_is_light()
@@ -844,6 +1051,7 @@ class UIBuildersService:
         self.app.combo_destino_aud = ctk.CTkComboBox(row1, values=[tr(d) for d in DESTINOS], variable=self.app.destino_var, width=140,
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_aud.pack(side="left", padx=5)
+        self._crear_switch_brief(row1).pack(side="left", padx=(10, 5))
 
         self.app.switch_instrumental_var = ctk.BooleanVar(value=False)
 
@@ -989,6 +1197,69 @@ class UIBuildersService:
                                                    font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self._on_destino_cambio)
         self.app.combo_destino_img.pack()
 
+        f_brief = ctk.CTkFrame(inner, fg_color="transparent")
+        f_brief.pack(side="left", padx=(12, 0))
+        ctk.CTkLabel(f_brief, text=tr("Anuncio"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+                     fg_color="transparent", text_color=lbl_color).pack(anchor="w")
+        self.app.switch_brief = self._crear_switch_brief(f_brief)
+        self.app.switch_brief.pack(anchor="w", pady=(4, 0))
+
+    def _crear_switch_brief(self, parent):
+        """Interruptor ⚡ Brief junto a Destino: los dos dicen para quién es el
+        prompt. Hay uno por panel (imagen, vídeo, audio) y los tres comparten
+        brief_var, así que van siempre a la par."""
+        is_light = _get_real_is_light()
+        if not hasattr(self.app, "_switches_brief"):
+            self.app._switches_brief = []
+            self.app._pintar_brief = self._pintar_brief
+        sw = ctk.CTkSwitch(
+            parent, text=tr("⚡ Brief"), variable=self.app.brief_var,
+            command=self.app.events.on_brief_cambio,
+            progress_color="#d97706",
+            fg_color="#f3f4f6" if is_light else "#1f2937",
+            border_width=1,
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
+            height=20, width=42, corner_radius=10, button_length=8,
+            button_color="#374151" if is_light else "#e5e7eb",
+            button_hover_color="#1f2937" if is_light else "#f3f4f6")
+        CTkToolTip(sw, message=tr(
+            "Anuncio: el prompt sigue las reglas de un brief publicitario "
+            "(producto protagonista, gancho y llamada a la acción), adaptadas "
+            "a imagen, vídeo o audio.\n"
+            "Se queda encendido entre sesiones; mientras lo esté, lo verás arriba."),
+            delay=0.5)
+        self.app._switches_brief.append(sw)
+        self._pintar_brief()
+        return sw
+
+    def _pintar_brief(self):
+        """Colores de los interruptores ⚡ Brief e indicador de la cabecera."""
+        activo = bool(self.app.brief_var.get())
+        for sw in getattr(self.app, "_switches_brief", []):
+            try:
+                if activo:
+                    sw.configure(text_color=P.TXT_AVISO, border_color=P.TXT_AVISO)
+                else:
+                    sw.configure(text_color=("#6b7280", "#9ca3af"),
+                                 border_color=("#d1d5db", "#374151"))
+            except Exception as _e:
+                logger.debug(f"[silent] {_e}")
+        badge = getattr(self.app, "_btn_brief", None)
+        if badge is None:
+            return
+        try:
+            if activo and not badge.winfo_ismapped():
+                badge.pack(side="left", padx=(8, 0))
+            elif not activo and badge.winfo_ismapped():
+                badge.pack_forget()
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def _apagar_brief(self):
+        """El indicador de la cabecera: un clic lo apaga."""
+        self.app.brief_var.set(False)
+        self.app.events.on_brief_cambio()
+
     def _aplicar_ratio_rapido(self, ratio):
         """Aplica un ratio rápido si está disponible para el modelo actual."""
         ratios_dispo = self.app.combo_ratio.cget("values")
@@ -1008,12 +1279,11 @@ class UIBuildersService:
 
     def _on_destino_cambio(self, valor=None):
         """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
-        dest = self.app.destino_var.get()
-        # Sincronizar todos los combos destino (img/vid/aud)
-        for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
-            if hasattr(self, attr):
-                try: getattr(self, attr).set(dest)
-                except Exception: pass
+        # Los tres combos (imagen, vídeo, audio) comparten destino_var: ya van
+        # sincronizados. Lo que guarda es el nombre TRADUCIDO («Client» en
+        # inglés) y las reglas van por el castellano: se traduce de vuelta.
+        dest = {tr(d): d for d in DESTINOS}.get(self.app.destino_var.get(),
+                                                 self.app.destino_var.get())
 
         auto_ratios = {
             "Instagram":        "9:16",
@@ -1021,24 +1291,26 @@ class UIBuildersService:
             "YouTube":          "16:9",
             "YouTube Shorts":   "9:16",
             "Twitter / X":      "16:9",
-            "Anthum (concurso)":"9:16",
             "LinkedIn":         "1:1",
             "Web / Blog":       "16:9",
         }
         ratio = auto_ratios.get(dest)
-        if ratio:
+        # Solo si el modelo lo tiene: antes lo ponía igual, y el combo
+        # quedaba con un formato que ese modelo no genera.
+        combo = getattr(self.app, 'combo_ratio_v' if self.app.modo_var.get() == "video"
+                        else 'combo_ratio', None)
+        disponibles = list(combo.cget("values")) if combo is not None else []
+        if ratio and disponibles and ratio not in disponibles:
+            self.app.dialogs.set_estado(
+                tr('📐 {0} pide {1}, pero este modelo no lo tiene: se queda en {2}.').format(
+                    tr(dest), ratio, self.app.ratio_var.get()), P.TXT_AVISO)
+        elif ratio:
             self.app.ratio_var.set(ratio)
             if hasattr(self.app, 'combo_ratio'):
                 self.app.combo_ratio.set(ratio)
             if hasattr(self.app, 'combo_ratio_v'):
                 self.app.combo_ratio_v.set(ratio)
-            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), P.TXT_INFO)
-
-        # Modo concurso: activar Brief automáticamente
-        if dest == "Anthum (concurso)":
-            self.app.brief_var.set(True)
-            self.app.events.on_brief_cambio()
-            self.app.dialogs.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), P.TXT_ACENTO)
+            self.app.dialogs.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(tr(dest), ratio), P.TXT_INFO)
 
         self.app.reiniciar_memoria()
 
@@ -1114,8 +1386,22 @@ class UIBuildersService:
             if self.app.tabview.get() == tr("🏷️ Tags") and not self._tags_tab_built:
                 self._tags_tab_built = True
                 self._build_tags_tab(self.app.tabview.tab(tr("🏷️ Tags")))
+            # Plegadas, pulsar un título es pedir verlas.
+            self.desplegar_pestanas()
 
         self.app.tabview.configure(command=_on_tab_change)
+
+        # Plegar a la tira de títulos. Se pliegan solas cuando, desplegadas,
+        # no dejarían sitio al resultado (ver ajustar_alturas); este botón es
+        # para decidirlo a mano. Encima de todo, arriba a la derecha.
+        self.app._btn_plegar_pestanas = ctk.CTkButton(
+            self.app._tabview_container, text="▴", width=26, height=22,
+            fg_color=seg_bg, hover_color=seg_hov, text_color=c["panel_text"],
+            command=self.alternar_pestanas)
+        self.app._btn_plegar_pestanas.place(relx=1.0, x=-6, y=4, anchor="ne")
+        CTkToolTip(self.app._btn_plegar_pestanas,
+                   message=tr("Plegar o desplegar ajustes, estilos, negativos y tags para dar más sitio al resultado"),
+                   delay=0.5)
 
     def _build_ajustes_extra(self, parent):
         is_light = _get_real_is_light()
@@ -1147,6 +1433,8 @@ class UIBuildersService:
                                                 self.app.footer._actualizar_lora_trigger_visible()
                                             ))
         self.app.combo_lora.pack(side="left", padx=5)
+        self.app.footer.refrescar_al_poner(self.app.combo_personaje)
+        self.app.footer.refrescar_al_poner(self.app.combo_lora)
 
         # Botón "🔗+" — abre modal de multi-LoRA con checkboxes para
         # combinar varios LoRAs en el mismo prompt (sesión 16). El combo
@@ -1213,34 +1501,10 @@ class UIBuildersService:
                       fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER, text_color="#ffffff",
                       command=self.app._cmd_borrar_plantilla).pack(side="left", padx=2)
 
-        def _toggle_brief_visual():
-            self.app.events.on_brief_cambio()
-            if self.app.brief_var.get():
-                self.app.switch_brief.configure(text_color="#fcd34d", border_color="#f59e0b")
-            else:
-                col_off = "#6b7280" if is_light else "#9ca3af"
-                bord_off = "#d1d5db" if is_light else "#374151"
-                self.app.switch_brief.configure(text_color=col_off, border_color=bord_off)
+        # El interruptor ⚡ Brief ya no vive aquí: está junto a Destino en cada
+        # panel (ver _crear_switch_brief). Aquí, en una pestaña que puede ir
+        # plegada, podía quedarse encendido sin que se viera.
 
-        sw_text_off = "#6b7280" if is_light else "#9ca3af"
-        sw_bord_off = "#d1d5db" if is_light else "#374151"
-        sw_fg_off = "#f3f4f6" if is_light else "#1f2937"
-        self.app.switch_brief = ctk.CTkSwitch(
-            self.app.frame_plantilla_brief, text=tr("⚡ Modo Brief"), variable=self.app.brief_var,
-            command=_toggle_brief_visual,
-            progress_color="#d97706",
-            fg_color=sw_fg_off,
-            border_color=sw_bord_off,
-            text_color=sw_text_off,
-            border_width=1,
-            font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"),
-            height=20, width=42, corner_radius=10,
-            button_length=8,
-            button_color="#374151" if is_light else "#e5e7eb",
-            button_hover_color="#1f2937" if is_light else "#f3f4f6")
-        self.app.switch_brief.pack(side="right", padx=15)
-        CTkToolTip(self.app.switch_brief, message=tr("Activa reglas de ANUNCIO PUBLICITARIO: gancho 2s, vertical 9:16, 3 beats narrativos."), delay=0.5)
-        self.app._sw_brief_callback = _toggle_brief_visual
 
         # ─── Imagen referencia DENTRO de Ajustes Extra (debajo de Plantilla) ───
         self.app.frame_imgref_inner = ctk.CTkFrame(parent, fg_color=tab_bg)
@@ -1573,6 +1837,17 @@ class UIBuildersService:
                                     text_color=c["muted_text"],
                                     command=lambda: self.app.txt_idea.delete("1.0", "end"))
         btn_clear.pack(side="right")
+        # «Crear desde imágenes» junto a la idea: es la otra forma de empezar,
+        # partiendo de imágenes en vez de describirlas. Antes vivía dentro de
+        # la pestaña Ajustes Extra y solo se veía con esa pestaña abierta.
+        self.app.btn_crear_desde_imagenes = ctk.CTkButton(
+            hdr, text=tr("🖼 Crear desde imágenes"), height=22,
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
+            command=self.app.cmd_crear_desde_imagenes, **P.estilo_boton(P.BTN_ACENTO))
+        self.app.btn_crear_desde_imagenes.pack(side="right", padx=(0, 8))
+        CTkToolTip(self.app.btn_crear_desde_imagenes,
+                   message=tr("Prompt a partir de tus imágenes: una sola, inicio y final, o varias referencias con su función · Ctrl+Shift+I"),
+                   delay=0.5)
         CTkToolTip(btn_clear, delay=0.3, message=tr("Limpiar campo idea"))
 
         self.app.txt_idea = ctk.CTkTextbox(self.app.frame_entrada, height=90, font=ctk.CTkFont(size=P.FUENTE_SECCION),
@@ -1807,21 +2082,15 @@ class UIBuildersService:
         outer = ctk.CTkFrame(self.app, fg_color="transparent")
         outer.pack(pady=2, padx=16, fill="x")
 
-        # Fila 1: generación + análisis
-        row1 = ctk.CTkFrame(outer, fg_color="transparent")
+        # Fila 1: generación + análisis. Filas fluidas: si la ventana se
+        # estrecha, el grupo que no cabe baja entero a otra línea en vez de
+        # encogerse hasta desaparecer (ver modules/fila_fluida.py).
+        row1 = FilaFluida(outer, sep_color)
         row1.pack(fill="x", pady=(0, 3))
+        self.app._botonera_filas = [row1]
 
-        btn_s = {"height": 32, "corner_radius": 6, "font": ctk.CTkFont(size=P.FUENTE_CUERPO)}
-
-        def _sep(parent):
-            """Mini separador vertical entre grupos de botones."""
-            wrap = ctk.CTkFrame(parent, fg_color="transparent",
-                                width=14, height=32)
-            wrap.pack(side="left", padx=2)
-            wrap.pack_propagate(False)
-            line = ctk.CTkFrame(wrap, fg_color=sep_color,
-                                width=1, height=22)
-            line.place(relx=0.5, rely=0.5, anchor="center")
+        fuente_btn = ctk.CTkFont(size=P.FUENTE_CUERPO)
+        btn_s = {"height": 32, "corner_radius": 6, "font": fuente_btn}
 
         # ═══ SISTEMA DE COLORES SEMÁNTICOS ═══
         # 🟢 Verde:   genera output (Ideas, Generar, Quick, Variaciones, Regenerar)
@@ -1882,12 +2151,12 @@ class UIBuildersService:
                 ("🤖 Sugerir",         85, NARANJA_VAR,  self.app._cmd_sugerir_modelo,    "Sugiere el mejor modelo según tu idea"),
             ]),
             ("🎬 NARRATIVA", ROSA_NARR, [
-                ("🎭 Mood",            70, ROSA_NARR,    self.app.multi.cmd_moodboard,         "Moodboard: 6 prompts mismo mood, distintos sujetos"),
-                ("🎞 Story",           70, ROSA_NARR,    self.app.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): 3 shots Wide/Medium/Close"),
+                ("🎭 Mood",            70, ROSA_NARR,    self.app.multi.cmd_moodboard,         "Moodboard: de 4 a 10 prompts con el mismo mood y sujetos distintos"),
+                ("🎞 Story",           70, ROSA_NARR,    self.app.multi.cmd_story_sequence,    "Story Sequence (solo IMAGEN): varios planos de una escena; eliges los tipos o los elige la IA"),
                 ("🖼 Storyboard",      85, ROSA_NARR,    self.app.multi.cmd_storyboard_imagen, "Storyboard cinematográfico (solo IMAGEN): N paneles. Auto-detecta formato: natural (GPT Image/DALL-E/MJ) o tag-based (SD/Comfy)"),
-                ("📽 Board",           70, ROSA_NARR,    self.app.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): 4 frames apertura/mid/climax/cierre"),
+                ("📽 Board",           70, ROSA_NARR,    self.app.multi.cmd_storyboard_video,  "Storyboard (solo VÍDEO): de 3 a 8 frames apertura/mid/climax/cierre"),
                 ("🎬 Corto",           70, ROSA_NARR,    self.app.multi.cmd_cortometraje,     "Cortometraje (solo VÍDEO): guion de N escenas con plano/acción/cámara/diálogo/SFX + @referencias de personaje. Para el flujo reference-to-video (Vidu/Kling)"),
-                ("🌀 Walk",            70, ROSA_NARR,    self.app.multi.cmd_random_walk,       "Random walk: 5 derivaciones evolutivas"),
+                ("🌀 Walk",            70, ROSA_NARR,    self.app.multi.cmd_random_walk,       "Walk: árbol de variantes a partir de tu prompt, 3 por rama"),
             ]),
             ("🎬 CONVERSIÓN", CYAN_CONV, [
                 ("🎬 →Vídeo",          85, CYAN_CONV,    self.app._cmd_convertir_a_video, "Convierte prompt de imagen a vídeo"),
@@ -1904,13 +2173,9 @@ class UIBuildersService:
 
         def _render_grupos(parent, grupos):
             """Render con título visible arriba + botones abajo en cada grupo."""
-            for g_idx, item in enumerate(grupos):
-                titulo, color_tit, grupo = item
-                if g_idx > 0:
-                    _sep(parent)
-                # Mini-frame vertical por grupo: título + botones
-                grp_frame = ctk.CTkFrame(parent, fg_color="transparent")
-                grp_frame.pack(side="left", padx=0)
+            for titulo, color_tit, grupo in grupos:
+                # Cada grupo es una pieza de la fila fluida: título + botones
+                grp_frame = parent.nueva_pieza()
                 # Label del título — pequeño, en color del grupo
                 ctk.CTkLabel(grp_frame, text=tr(titulo),
                               font=ctk.CTkFont(size=P.FUENTE_HINT, weight="bold"),
@@ -1936,7 +2201,8 @@ class UIBuildersService:
                         }
                     else:
                         kw = {}
-                    btn = ctk.CTkButton(btn_row, text=tr(text), width=w,
+                    btn = ctk.CTkButton(btn_row, text=tr(text),
+                                        width=ancho_boton(fuente_btn, tr(text), w),
                                         command=cmd, **btn_s, **kw)
                     btn.pack(side="left", padx=2)
                     CTkToolTip(btn, delay=0.5, message=tr(tooltip))
@@ -1955,7 +2221,8 @@ class UIBuildersService:
         _render_grupos(row1, grupos_r1)
 
         # ═══ BADGE DE COSTE (al final de fila 1) ═══
-        self.app.lbl_coste = ctk.CTkLabel(row1, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
+        self.app.lbl_coste = ctk.CTkLabel(row1.nueva_pieza(con_separador=False), text="",
+                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA, weight="bold"),
                                        text_color="#22c55e", fg_color="transparent")
         self.app.lbl_coste.pack(side="left", padx=(4, 0))
 
@@ -1969,35 +2236,48 @@ class UIBuildersService:
         # Registrar callback para actualizar coste cuando cambie la idea
         self.app.txt_idea.bind("<<Modified>>", self.app.footer._actualizar_coste_estimado)
 
-        row2 = ctk.CTkFrame(outer, fg_color="transparent")
+        row2 = FilaFluida(outer, sep_color)
         row2.pack(fill="x")
+        self.app._botonera_filas.append(row2)
         _render_grupos(row2, grupos_r2)
 
-        btn_reset = ctk.CTkButton(row2, text=tr("🗑 Reset"), width=80, height=32, corner_radius=6,
-                                   fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
-                                   font=ctk.CTkFont(size=P.FUENTE_CUERPO), command=self.app.cmd_reset)
-        btn_reset.pack(side="right", padx=2)
-        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
-
-        btn_repeat = ctk.CTkButton(row2, text=tr("🔁 Última"), width=85, height=32, corner_radius=6,
-                                       **P.estilo_boton(P.BTN_SECUNDARIO),
-                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._repetir_ultima_config)
-        btn_repeat.pack(side="right", padx=2)
-        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
+        # Setup, Cargar setup, Última y Reset: iban pegados a la derecha de la
+        # fila 2 con side="right" y, al no caber, eran lo primero que
+        # desaparecía —a 1382 de ancho no se veía ninguno—. Ahora son la
+        # última pieza de la fila 1, donde sobraban ~350 px: en la 2 bajaban
+        # a una tercera línea y le quitaban ~40 px al resultado.
+        sesion = row1.nueva_pieza()
+        fuente_peq = ctk.CTkFont(size=P.FUENTE_PEQUENA)
 
         # ── MEJORA 8: Guardar/Cargar setup (configuración sin idea ni prompt) ──
-        btn_load_setup = ctk.CTkButton(row2, text=tr("📋 Cargar setup"), width=110, height=32, corner_radius=6,
+        btn_save_setup = ctk.CTkButton(sesion, text=tr("💾 Setup"), height=32, corner_radius=6,
+                                        width=ancho_boton(fuente_peq, tr("💾 Setup"), 85),
                                         fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_cargar_setup)
-        btn_load_setup.pack(side="right", padx=2)
-        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
-
-        btn_save_setup = ctk.CTkButton(row2, text=tr("💾 Setup"), width=85, height=32, corner_radius=6,
-                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
-                                        font=ctk.CTkFont(size=P.FUENTE_PEQUENA), command=self.app._cmd_guardar_setup)
-        btn_save_setup.pack(side="right", padx=2)
+                                        font=fuente_peq, command=self.app._cmd_guardar_setup)
+        btn_save_setup.pack(side="left", padx=2)
         CTkToolTip(btn_save_setup, delay=0.5,
                    message=tr("Guarda la configuración actual (modelo, plataforma, ratio, estilos, negatives, personaje, LoRA, destino) sin idea ni prompt"))
+
+        btn_load_setup = ctk.CTkButton(sesion, text=tr("📋 Cargar setup"), height=32, corner_radius=6,
+                                        width=ancho_boton(fuente_peq, tr("📋 Cargar setup"), 110),
+                                        fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
+                                        font=fuente_peq, command=self.app._cmd_cargar_setup)
+        btn_load_setup.pack(side="left", padx=2)
+        CTkToolTip(btn_load_setup, delay=0.5, message=tr("Cargar una configuración guardada (modelo, ratio, estilos…)"))
+
+        btn_repeat = ctk.CTkButton(sesion, text=tr("🔁 Última"), height=32, corner_radius=6,
+                                   width=ancho_boton(fuente_peq, tr("🔁 Última"), 85),
+                                   **P.estilo_boton(P.BTN_SECUNDARIO),
+                                   font=fuente_peq, command=self.app._repetir_ultima_config)
+        btn_repeat.pack(side="left", padx=2)
+        CTkToolTip(btn_repeat, delay=0.5, message=tr("Repetir configuración del último prompt generado"))
+
+        btn_reset = ctk.CTkButton(sesion, text=tr("🗑 Reset"), height=32, corner_radius=6,
+                                  width=ancho_boton(fuente_btn, tr("🗑 Reset"), 80),
+                                  fg_color=P.BTN_PELIGRO, hover_color=P.BTN_PELIGRO_HOVER,
+                                  font=fuente_btn, command=self.app.cmd_reset)
+        btn_reset.pack(side="left", padx=2)
+        CTkToolTip(btn_reset, delay=0.5, message=tr("Limpia todo y borra la memoria."))
 
         self.app.frame_ideas = ctk.CTkFrame(self.app, fg_color="transparent")
 
@@ -2023,6 +2303,11 @@ class UIBuildersService:
         c = get_theme_colors(is_light)
         frame = ctk.CTkFrame(self.app, fg_color="transparent")
         frame.pack(pady=2, padx=16, fill="both", expand=True)
+        # Referencia para el reparto del alto (ajustar_alturas): el resultado
+        # es la franja que manda. Y si cambia su alto sin que cambie la
+        # ventana, es que algo de encima ha crecido: hay que repartir otra vez.
+        self.app._salida_frame = frame
+        frame.bind("<Configure>", lambda _e: self.programar_alturas(), add="+")
         hdr = ctk.CTkFrame(frame, fg_color="transparent")
         hdr.pack(fill="x", padx=2, pady=(0, 2))
         ctk.CTkLabel(hdr, text=tr("Resultado"), font=ctk.CTkFont(size=P.FUENTE_PEQUENA), fg_color="transparent", text_color=c["muted_text"]).pack(side="left")
@@ -2076,10 +2361,3 @@ class UIBuildersService:
         self.app.txt_salida.bind("<Double-Button-1>", self.app.dialogs._on_doble_click_salida)
         self.app.txt_salida.bind("<Button-3>", self.app.footer._mostrar_menu_contextual)
 
-        # ── MEJORA 9 (inline): franja de compatibilidad rápida con plataformas top ──
-        self.app.lbl_compat_inline = ctk.CTkLabel(frame, text="", font=ctk.CTkFont(family="Consolas", size=P.FUENTE_HINT),
-                                               fg_color="transparent",
-                                               text_color=c["muted_text"], anchor="w", justify="left",
-                                               cursor="hand2")
-        self.app.lbl_compat_inline.pack(fill="x", pady=(2, 0))
-        self.app.lbl_compat_inline.bind("<Button-1>", lambda e: self.app.analysis.cmd_modal_compatibilidad())

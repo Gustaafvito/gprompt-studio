@@ -1,6 +1,7 @@
 """Tutorial interactivo con índice lateral, progreso persistente y "Probar ahora".
 
-El contenido vive en data/tutorial.json (26 pasos). El progreso ("pasos
+El contenido vive en data/tutorial.json y, en inglés, en data/tutorial.en.json.
+Los dos tienen los mismos pasos y hay un test que lo vigila. El progreso ("pasos
 completados" + "último paso visto") se guarda en preferencias.json bajo
 las claves `tutorial_completados` y `tutorial_ultimo_paso`.
 """
@@ -18,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 _JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "tutorial.json"
 _cache: dict | None = None
+
+# Acciones de «▶ Probar ahora» que son funciones sueltas de modules.windows
+# y no métodos de la app. A nivel de módulo para que los tests puedan
+# comprobar que cada paso apunta a algo que existe.
+_FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
 
 
 def _ruta_idioma() -> Path:
@@ -160,7 +166,9 @@ def abrir_tutorial(app):
     btn_probar.pack(side="left")
 
     btn_completado_var = ctk.BooleanVar(value=False)
-    chk_completado = ctk.CTkCheckBox(acciones, text=tr("✅ Marcar como completado"),
+    # Sin el ✅ delante: al lado de la casilla parecía una segunda casilla,
+    # y marcada, aunque el paso no lo estuviera.
+    chk_completado = ctk.CTkCheckBox(acciones, text=tr("Marcar como completado"),
                                      variable=btn_completado_var,
                                      command=lambda: on_toggle_completado())
     chk_completado.pack(side="left", padx=14)
@@ -222,8 +230,6 @@ def abrir_tutorial(app):
 
         # Persistir último paso visto
         _guardar_progreso(app, completados, idx + 1)
-
-    _FREE_FUNCS = {"abrir_personajes", "abrir_loras", "abrir_batch", "abrir_lista"}
 
     def _flash_widget(w):
         """Resalta un widget con borde azul durante 1.5s. Ultra-defensivo:

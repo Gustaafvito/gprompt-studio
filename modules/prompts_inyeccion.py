@@ -4,7 +4,7 @@ Construye el system_prompt enriquecido que se pasa al LLM, combinando:
   • Reglas base por modo (vídeo / imagen / audio)
   • Specs del modelo concreto (max_chars, sampler, formato tag vs natural,
     soporte de audio/negative, trigger words, plantillas)
-  • Reglas adaptadas al destino (Instagram, TikTok, YouTube, Anthum…)
+  • Reglas adaptadas al destino (Instagram, TikTok, YouTube, LinkedIn…)
 
 Métodos:
   • _inyectar_specs_modelo   — dispatcher por modo (video / imagen)
@@ -32,7 +32,7 @@ from config import (
     get_prompt_template,
 )
 from modules.i18n import tr
-from prompts import REGLAS_APROVECHAR_BUDGET
+from prompts import REGLAS_APROVECHAR_BUDGET, REGLAS_MINIMAX_H3_BASE, REGLAS_MINIMAX_H3_REF
 
 
 class PromptsInyeccionService:
@@ -43,8 +43,6 @@ class PromptsInyeccionService:
 
     def __init__(self, app):
         self.app = app
-        self._cache_modelo_info = None
-        self._cache_modelo_clave = None
 
     # ─── Helpers de duración / shots ───────────────────────────────
     def _duracion_a_segundos(self, dur_str: str) -> float:
@@ -99,6 +97,8 @@ class PromptsInyeccionService:
         if not specs:
             return system_prompt
         motor = self.app.combo_modelo_video.get()
+        if specs.get("formato_bloques") in ("minimax_h3", "minimax_h3_ref"):
+            return system_prompt + self._inyectar_formato_minimax_h3(motor, specs)
         max_c = specs["max_chars"]
 
         if max_c >= 4000:
@@ -165,6 +165,48 @@ class PromptsInyeccionService:
         extra = self._inyectar_template(motor, extra)
         extra += REGLAS_APROVECHAR_BUDGET
         return system_prompt + extra
+
+    def _inyectar_formato_minimax_h3(self, motor: str, specs: dict) -> str:
+        """MiniMax H3 (ComfyUI) no admite la plantilla genérica de vídeo
+        (prosa + línea «Audio:» + NEGATIVE): se entrenó con prompts en su
+        formato oficial de campos y planos. Ver prompts.REGLAS_MINIMAX_H3_*."""
+        dur_str = self.app.duracion_var.get() if hasattr(self.app, "duracion_var") else "10s"
+        dur = self._duracion_a_segundos(dur_str)
+        n_shots = self._calcular_n_shots()
+        manual = hasattr(self.app, "shots_var") and self.app.shots_var.get() not in ("", "Auto")
+        if manual:
+            planos = f"Usa EXACTAMENTE {n_shots} plano{'s' if n_shots != 1 else ''} (lo ha fijado el usuario)."
+        else:
+            planos = (f"Orientativo: unos {n_shots} plano{'s' if n_shots != 1 else ''} para {dur:g} s "
+                      "(~3-5 s por plano); menos si la acción es continua, y UNO solo en FL2VA.")
+        hay_imagen = bool(getattr(self.app, "imagen_cargada", None))
+        idioma = ("Diálogo: si el usuario escribe las frases, cópialas literales en su idioma; si no, "
+                  "escríbelas en castellano. La etiqueta de <d> nombra el idioma en inglés: "
+                  "<d>[Spanish] …</d>, <d>[English] …</d>.")
+        extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
+        extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        extra += f"• Mejor para: {specs['best_for']}\n"
+        if specs["formato_bloques"] == "minimax_h3_ref":
+            refs = ("• El usuario ha cargado una imagen en la app: es <Picture 1>." if hay_imagen else
+                    "• Si la idea no dice qué referencias conectará en ComfyUI, asume UNA imagen del sujeto "
+                    "principal: <Subject 1> is the … in <Picture 1>.")
+            extra += REGLAS_MINIMAX_H3_REF.format(
+                duracion=f"{dur:g}", palabras="350-500", pista_refs=refs,
+                pista_planos=planos, pista_idioma=idioma)
+        else:
+            if hay_imagen:
+                modo = ("• El usuario HA CARGADO una imagen: por defecto es I2VA (primer fotograma), salvo que la "
+                        "idea diga que es el ÚLTIMO fotograma (L2VA) o hable de imagen inicial y final (FL2VA).")
+            else:
+                modo = ("• El usuario NO ha cargado imagen: T2VA, salvo que la idea diga que conectará en ComfyUI "
+                        "una imagen de inicio (I2VA), de final (L2VA) o las dos (FL2VA). FL2VA va en UN plano "
+                        "salvo que el usuario pida más.")
+            extra += REGLAS_MINIMAX_H3_BASE.format(
+                dur_ss=f"{dur:.2f}", duracion=f"{dur:g}",
+                palabras=f"{int(dur * 22)}-{int(dur * 38)}",
+                pista_modo=modo, pista_planos=planos, pista_idioma=idioma)
+        return self._inyectar_estilo_video(extra)
 
     # Mapa estilo visual → orientación de look para el combo "Estilo" de vídeo.
     _VIDEO_ESTILO_HINT = {
@@ -1049,7 +1091,8 @@ class PromptsInyeccionService:
         extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
         extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        extra += f"• Rating del motor: ⭐ {specs['nota']}/5\n"
+        if specs.get("nota"):
+            extra += f"• Rating del motor: ⭐ {specs['nota']}/5\n"
         extra += f"• Mejor para: {specs['best_for']}\n"
         extra += f"• Duración máxima: {specs['duracion_max_min']} minutos\n"
 
@@ -1088,7 +1131,6 @@ class PromptsInyeccionService:
         "YouTube": "DESTINO YOUTUBE: Formato horizontal 16:9. Composición cinematográfica, thumbnail-friendly (sujeto claro, contraste alto). Calidad profesional.",
         "YouTube Shorts": "DESTINO YOUTUBE SHORTS: Formato vertical 9:16. Similar a TikTok: gancho rápido, movimiento, energía. Corto e impactante.",
         "Twitter / X": "DESTINO TWITTER/X: Formato 16:9 o 1:1. Imagen que destaque en el feed. Alto contraste, composición limpia, mensaje visual claro.",
-        "Anthum (concurso)": "DESTINO CONCURSO ANTHUM: Formato 9:16 vertical. PRIORIDADES DE UN JUEZ DE CONCURSO: 1) ORIGINALIDAD — concepto único que nadie haya visto, evita clichés. 2) CALIDAD TÉCNICA — composición de galería, iluminación de estudio fotográfico. 3) IMPACTO EMOCIONAL — la imagen debe provocar una reacción inmediata. 4) COHERENCIA VISUAL — todos los elementos deben encajar perfectamente. 5) DETALLE — texturas, materiales, reflejos ultra-detallados. NO hagas: paisajes genéricos, retratos simples, escenas cliché. SÍ haz: conceptos surrealistas, composiciones inusuales, mezcla de estilos inesperada.",
         "Freepik community": "DESTINO FREEPIK: Imagen versátil para stock. Composición limpia con espacio para texto. Colores equilibrados, uso comercial, sin marcas.",
         "Reddit": "DESTINO REDDIT: Calidad técnica alta, detalle extremo. La comunidad valora originalidad y ejecución impecable.",
         "LinkedIn": "DESTINO LINKEDIN: Profesional y corporativo. Composición limpia, tonos sobrios, estilo editorial de negocios. Formato 1:1 o 16:9.",
@@ -1110,22 +1152,11 @@ class PromptsInyeccionService:
         return system_prompt
 
     def construir_modelo_info(self) -> str:
-        # Cacheo simple: si no cambió la config, devolver cache
-        clave_cache = (
-            self.app.modo_var.get(),
-            self.app.footer.modelo_imagen_valido() if self.app.modo_var.get() == "imagen" else "",
-            self.app.footer.modelo_video_valido() if self.app.modo_var.get() == "video" else "",
-            self.app.combo_modelo_audio.get() if self.app.modo_var.get() == "audio" and hasattr(self.app, "combo_modelo_audio") else "",
-            self.app.footer.ratio_actual(),
-            self.app.footer.personaje_activo(),
-            self.app.footer.lora_activo(),
-            self.app.destino_var.get(),
-        )
-
-        # Si no ha cambiado, devolver cache
-        if hasattr(self, "_cache_modelo_info") and getattr(self, "_cache_modelo_clave", None) == clave_cache:
-            return self._cache_modelo_info
-
+        # Sin caché. La había, y su clave no incluía la duración, la voz, la
+        # emoción, el idioma de la letra ni los LoRAs extra del 🔗+: al cambiar
+        # solo la duración de 10 s a 6 s, la petición seguía diciendo
+        # «Duración: 10s» (visto el 26-sep-2026 generando para MiniMax H3).
+        # Montar este texto cuesta microsegundos.
         info = ""
         modo = self.app.modo_var.get()
         if modo == "video":
@@ -1184,8 +1215,4 @@ class PromptsInyeccionService:
             id_a = self.app.idioma_audio_var.get() if hasattr(self.app, "idioma_audio_var") else ""
             if id_a and id_a != tr("— Idioma —"):
                 info += f" Idioma letra: {id_a}."
-
-        # Guardar en cache
-        self._cache_modelo_info = info
-        self._cache_modelo_clave = clave_cache
         return info

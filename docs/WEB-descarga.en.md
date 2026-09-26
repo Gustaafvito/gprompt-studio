@@ -66,12 +66,12 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
 > ```
 >
 > ```
-> da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb  GPromptStudio-Setup-1.0.2.exe
-> 614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc  GPromptStudio-Portable-Onefile.exe
+> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
+> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,22 +84,23 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [clean, 0 of 67 engines](https://www.virustotal.com/gui/file/da63460f6ca202638c7b60b0ed205f47a29b11755ecb423d54c383f66e26effb)
-> - **Single-file portable:** [1 of 66](https://www.virustotal.com/gui/file/614fcb74a646c52d2ec3a416e8e6e91045087647ec84d7254f2e0d682d1850cc) — Bkav Pro
+> - **Installer:** [0 of 67 engines](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — clean
+> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro and Zillya
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **The one remaining detection names no actual malware family**, which
-> matters more than the count: Bkav Pro says `W32.Malware.62456B6B`, a
-> generic label derived from the file itself, not a known family.
+> **Neither detection finds malicious code**, which matters more than the
+> count. Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.C1C732E6`); and Zillya names XWorm, a real piece of malware
+> that is also packaged with PyInstaller, the tool this program is built
+> with.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.0.2 itself: the exact same code comes back completely
-> clean wrapped in the installer, and with one detection wrapped in a single
-> file. Same software, different wrapper, different verdict.
+> proof is inside 1.1.0 itself: the installer carries the very same program
+> and nobody flags it. Same software, different wrapper, different verdict.
 >
-> **If your antivirus complains about the portable, grab the installer** —
-> it's the recommended option anyway. And check the hash either way.
+> **If your antivirus complains about one option, try the other** — it's the
+> same program. And check the hash either way.
 
 ---
 

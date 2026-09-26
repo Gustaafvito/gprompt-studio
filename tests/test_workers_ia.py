@@ -134,6 +134,15 @@ class TestWorkerIa:
         assert any("recortado" in str(c.args[0]).lower()
                    for c in h.app.set_estado.call_args_list)
 
+    def test_formato_por_campos_no_se_recorta(self):
+        # MiniMax H3: el recorte junta los campos por comas en una línea y
+        # el modelo ya no los reconoce. Su ficha lleva sin_recorte.
+        largo = ("PROMPT:\nintegrated_multimodal_description: [Shot 1] " + "a" * 600
+                 + "\n\noverall_soundscape: rain.\n\nnon_diegetic_music: N/A")
+        h = _host(deepseek_resp=largo, specs={"max_chars": 500, "sin_recorte": True})
+        h._worker_ia("petición")
+        assert h.app.actualizar_salida.call_args[0][0] == largo
+
     def test_no_recorta_si_no_excede(self):
         h = _host(deepseek_resp="corto", specs={"max_chars": 500})
         h._worker_ia("petición")
@@ -224,7 +233,9 @@ class TestWorkerIa:
             capturado.update(k) or "POSITIVE PROMPT: x"
         )
         h._worker_ia("p")
-        assert capturado["max_tokens"] == 2500
+        # 4000 desde el 26-sep-2026: con 2500 los razonadores cortaban los
+        # prompts largos a media frase (MiniMax H3, Veo).
+        assert capturado["max_tokens"] == 4000
 
     def test_max_tokens_medio_si_specs_max_chars_2000(self):
         capturado = {}

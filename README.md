@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.0.2
+# 🧠 G-Prompt Studio v1.1.0
 
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
@@ -7,18 +7,18 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 **Español** · [English](README.en.md)
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.0.2/GPromptStudio-Setup-1.0.2.exe">
-    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.0.2-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.0/GPromptStudio-Setup-1.1.0.exe">
+    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.1.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
   </a>
 </p>
 
 <p align="center">
-  <sub>118 MB &middot; Windows 10 u 11 de 64 bits &middot; no necesita Python ni permisos de administrador<br>
+  <sub>188 MB &middot; Windows 10 u 11 de 64 bits &middot; no necesita Python ni permisos de administrador<br>
   &iquest;Prefieres no instalar nada? <a href="https://github.com/Gustaafvito/gprompt-studio/releases/latest">Versi&oacute;n portable y hashes SHA-256</a></sub>
 </p>
 
@@ -64,7 +64,7 @@ es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**271 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
+**272 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
@@ -136,7 +136,7 @@ del catálogo de su proveedor, la app lo oculta sola.
 
 - **Por modelo**: cada modelo tiene specs (sampler, CFG, steps, max_chars, negative) que se inyectan automáticamente al LLM. Si usas Kling 3.0, el LLM SABE las reglas de Kling 3.0.
 - **Por formato**: detecta si el modelo usa tags SD o lenguaje natural y fuerza el formato correcto.
-- **Por destino**: Instagram, TikTok, YouTube, Anthum, Freepik, etc. — cada destino adapta el prompt (ratio, estilo, gancho).
+- **Por destino**: Instagram, TikTok, YouTube, LinkedIn, Freepik, etc. — cada destino adapta el prompt (ratio, estilo, gancho).
 - **ComfyUI + Turbo**: detecta automáticamente y elimina pesos numéricos `(tag:1.2)` que rompen los modelos Turbo.
 - **Negative inteligente**: añade NEGATIVE PROMPT solo si el modelo lo soporta.
 
@@ -183,7 +183,7 @@ del catálogo de su proveedor, la app lo oculta sola.
 ### La forma normal: descargar e instalar
 
 Ve a [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-baja `GPromptStudio-Setup-1.0.2.exe` y ábrelo. **No hace falta Python ni
+baja `GPromptStudio-Setup-1.1.0.exe` y ábrelo. **No hace falta Python ni
 instalar dependencias**: va todo dentro.
 
 - Windows 10 u 11 de 64 bits
@@ -268,22 +268,22 @@ gprompt-studio/
 ├── modules/             # 40 servicios: UI, IA, datos, Avatar, i18n…
 │   ├── core.py          # Workers, comandos, estado
 │   ├── ui_builders.py   # Construcción UI
-│   ├── i18n.py          # Bilingüe ES/EN (~1400 traducciones)
+│   ├── i18n.py          # Bilingüe ES/EN (~2950 traducciones)
 │   ├── dashboard.py     # Panel de estadísticas y logros
 │   ├── avatar_*.py      # Generador de datasets LoRA (4 módulos)
 │   └── …               # (ver docs/ESTRUCTURA.md para el árbol completo)
 ├── data/                # JSONs: specs de modelos, estilos, plantillas
-└── tests/               # 1319 tests pytest
+└── tests/               # 1876 tests pytest
 ```
 
 ## 🧪 Tests
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v   # → 1319 passed
+pytest tests/ -v   # → 1875 passed, 1 skipped
 ```
 
-## ⌨ Atajos de teclado (29 registrados — `Ctrl+?` muestra la lista completa)
+## ⌨ Atajos de teclado (39 registrados — `Ctrl+?` muestra la lista completa)
 
 | Atajo | Acción |
 |-------|--------|
@@ -324,7 +324,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**271 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**272 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>

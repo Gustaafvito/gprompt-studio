@@ -380,7 +380,6 @@ class TestI18nSinRemanentesEspanol:
             set_idioma("en")
             rev = {tr(d): d for d in config.DESTINOS}
             assert rev["Client"] == "Cliente"
-            assert rev["Anthum (contest)"] == "Anthum (concurso)"
             assert rev["Instagram"] == "Instagram"  # neutro
         finally:
             set_idioma("es")

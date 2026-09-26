@@ -236,3 +236,31 @@ def test_cobertura_todo_tr_literal_esta_traducido():
     assert not faltan, (
         f"{len(faltan)} textos tr() sin traducción EN: "
         + "; ".join(f"{t!r} ({loc})" for t, loc in list(faltan.items())[:10]))
+
+
+def test_cobertura_botonera_traducida():
+    """Etiqueta y descripción emergente de cada botón de la botonera.
+
+    Es uno de esos tr(variable) que el test de arriba no ve: la botonera es
+    una lista de tuplas (texto, ancho, color, comando, descripción) y se
+    traduce con tr(text) y tr(tooltip) al pintarla. La descripción del
+    «🎬 Corto» salió en español en la UI inglesa sin que nada avisara.
+    """
+    src = (ROOT / "modules" / "ui_builders.py").read_text(encoding="utf-8")
+    botones, faltan = 0, []
+    for node in ast.walk(ast.parse(src)):
+        if not (isinstance(node, ast.Tuple) and len(node.elts) == 5):
+            continue
+        texto, ancho, _, _, ayuda = node.elts
+        if not (isinstance(ancho, ast.Constant) and type(ancho.value) is int):
+            continue
+        botones += 1
+        for campo in (texto, ayuda):
+            if (isinstance(campo, ast.Constant) and isinstance(campo.value, str)
+                    and _parece_espanol(campo.value)
+                    and campo.value not in i18n.TRADUCCIONES):
+                faltan.append(f"{campo.value[:60]!r} (ui_builders.py:{node.lineno})")
+    # Si la botonera cambia de forma, este test dejaría de encontrarla y
+    # pasaría sin comprobar nada.
+    assert botones >= 25, f"solo {botones} botones: ¿cambió la forma de la botonera?"
+    assert not faltan, f"{len(faltan)} textos de la botonera sin inglés: " + "; ".join(faltan)

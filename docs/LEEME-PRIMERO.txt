@@ -1,15 +1,29 @@
 ═══════════════════════════════════════════════════════════════════
-  G-Prompt Studio v1.0.2 — Listo para distribuir
+  G-Prompt Studio v1.1.0 — Listo para distribuir
 ═══════════════════════════════════════════════════════════════════
 
-Aquí tienes TRES opciones para usar la app o compartirla.
+Aquí tienes DOS opciones para usar la app o compartirla.
 Son ALTERNATIVAS, no acumulativas: elige una.
+
+
+QUÉ HAY DE NUEVO EN LA 1.1.0
+═══════════════════════════════════════════════════════════════════
+
+  - Crear desde imágenes (botón junto a la idea o Ctrl+Shift+I):
+    le das tus imágenes, las analiza y redacta el prompt; y de ahí,
+    un guion de Cortometraje por escenas.
+  - 272 modelos, con Seedream 5.0 Flash.
+  - NSFW mejorado: detecta la idea en castellano e inglés y avisa
+    cuando el modelo elegido filtra el contenido adulto.
+  - Modo Brief con reglas propias para imagen, vídeo y audio.
+  - El resultado se ve a tamaño normal de ventana, y ningún botón
+    se esconde al estrecharla.
 
 
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.0.2.exe  (188 MB)
+Archivo: GPromptStudio-Setup-1.1.0.exe  (188 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -22,7 +36,7 @@ QUÉ HACE:
     aquella versión (unos 180 MB que ya no sirven).
 
 CÓMO USAR:
-  1. Doble-click en GPromptStudio-Setup-1.0.2.exe
+  1. Doble-click en GPromptStudio-Setup-1.1.0.exe
   2. Acepta la advertencia de Windows SmartScreen
      ("Más info" → "Ejecutar de todas formas")
      [Normal en programas sin certificado de firma. Ver más abajo.]
@@ -81,26 +95,28 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   es el original y no está manipulado, compara su hash SHA-256 con el
   publicado en la página de descarga. En PowerShell:
 
-    Get-FileHash .\GPromptStudio-Setup-1.0.2.exe -Algorithm SHA256
+    Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
 
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    da63460f6ca202638c7b60b0ed205f47
-    a29b11755ecb423d54c383f66e26effb   GPromptStudio-Setup-1.0.2.exe
+    4104cb2257165e4c4819e1ee4e3be897
+    0f98b712ca270b684889fd6e2f4e3aba   GPromptStudio-Setup-1.1.0.exe
 
-    614fcb74a646c52d2ec3a416e8e6e910
-    45087647ec84d7254f2e0d682d1850cc   GPromptStudio-Portable-Onefile.exe
+    0ae8f89a69b83f069c689325ef74d250
+    b81a0f39e4fe7a9dcaf215da49d4622b   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... 0 de 67. Limpio.
-    - Opción 2, el onefile ........ 1 de 66: Bkav Pro.
+    - Opción 1, el instalador ..... 0 de 67: limpio.
+    - Opción 2, el onefile ........ 2 de 68: Bkav Pro y Zillya.
 
   Microsoft Defender no marca ninguno de los dos.
 
-  Esa única detección de Bkav Pro es "W32.Malware.62456B6B", una
-  etiqueta genérica derivada del propio fichero: no nombra ningún
-  malware conocido.
+  Ninguna de las dos encuentra código malicioso: Bkav Pro da una
+  etiqueta derivada del propio fichero, y Zillya nombra XWorm, un
+  malware que también se empaqueta con PyInstaller. Y el instalador
+  lleva dentro el MISMO programa sin que nadie lo marque: lo que
+  puntúan es el envoltorio.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el
@@ -202,7 +218,7 @@ LICENCIA
   Apache License 2.0.
   Copyright 2026 Gustavo Luis Sánchez Escobar («Gustaafvito»).
 
-  El texto completo viaja DENTRO de los tres artefactos, en los
+  El texto completo viaja DENTRO de los dos artefactos, en los
   ficheros LICENSE y NOTICE. El instalador además te la muestra
   antes de instalar.
 
@@ -226,8 +242,8 @@ SOPORTE Y CÓDIGO FUENTE
   Para generar una nueva versión del distribuible completo (desde
   el repositorio):
     python build_release.py
-  Corre los tests, audita CVEs, construye onedir + instalador +
-  onefile y copia los 3 artefactos y este LEEME a la carpeta de
+  Corre los tests, audita CVEs, construye el portable y el
+  instalador y copia los 2 artefactos y este LEEME a la carpeta de
   distribución. Ver docs/BUILD.md para el detalle.
 
 ═══════════════════════════════════════════════════════════════════

@@ -123,7 +123,7 @@
     {
       "id": 21,
       "titulo": "⌨️ 21. ATAJOS DE TECLADO — Trabaja más rápido",
-      "descripcion": "Los más útiles:\n\n• Ctrl+Enter — Generar prompt\n• Ctrl+S — Guardar favorito\n• Ctrl+Shift+S — Guardar estrella\n• Ctrl+I — Ideas creativas\n• Ctrl+F — Búsqueda global\n• Ctrl+T — Este tutorial\n• Ctrl+L — Abrir LoRAs\n• Ctrl+P — Grupo personajes\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Previsualizar\n• F11 — Pantalla completa\n• Alt+1/2/3 — Cambiar modo",
+      "descripcion": "Los más útiles:\n\n• Ctrl+Enter — Generar prompt\n• Ctrl+S — Guardar favorito\n• Ctrl+Shift+S — Guardar estrella\n• Ctrl+I — Ideas creativas\n• Ctrl+Shift+I — Crear desde imágenes\n• Ctrl+F — Búsqueda global\n• Ctrl+T — Este tutorial\n• Ctrl+L — Abrir LoRAs\n• Ctrl+P — Grupo personajes\n• Ctrl+Shift+N — Negative builder\n• Ctrl+Shift+P — Previsualizar\n• F11 — Pantalla completa\n• Alt+1/2/3 — Cambiar modo",
       "accion": "_cmd_mostrar_atajos"
     },
     {
@@ -188,8 +188,8 @@
     },
     {
       "id": 32,
-      "titulo": "🎭 32. NARRATIVA: MOOD · STORY · BOARD · WALK",
-      "descripcion": "Cuatro generadores narrativos:\n• Mood — explora el tono y la atmósfera.\n• Story — una secuencia con principio, desarrollo y final.\n• Board — un tablero de escenas relacionadas.\n• Walk — un recorrido espacial por un entorno.",
+      "titulo": "🎭 32. NARRATIVA: MOOD · STORY · BOARD · CORTO · WALK",
+      "descripcion": "Cinco generadores narrativos en la botonera:\n• Mood — de 4 a 10 prompts con el mismo ambiente y sujetos distintos.\n• Story — varios planos de una misma escena (general, medio, primer plano, POV…). Eliges los tipos o dejas que los elija la IA. Solo IMAGEN.\n• Board — de 3 a 8 fotogramas clave para vídeo: apertura, desarrollo, clímax y cierre. Solo VÍDEO.\n• Corto — el guion de un cortometraje, escena a escena. Solo VÍDEO. Lo tienes en el paso 44.\n• Walk — un árbol a partir de tu prompt: cada rama genera 3 variantes y puedes seguir ramificando. Necesita un prompt generado.",
       "accion": null
     },
     {
@@ -251,6 +251,18 @@
       "titulo": "🛠 42. EXTRAS QUE MARCAN LA DIFERENCIA",
       "descripcion": "Más herramientas que conviene conocer:\n• 🧰 Negative builder (Ctrl+Shift+N) · 📐 Fórmulas · 🏷 Snippets / Expansión rápida\n• 🎯 Modo Focus (Ctrl+H) · ⚡ Modo Brief · 💡 Sugerencias de claridad (Ctrl+Shift+C)\n• ⏰ Cron prompts · 👥 Grupo de personajes (Ctrl+P)",
       "accion": null
+    },
+    {
+      "id": 43,
+      "titulo": "🖼 43. CREAR DESDE IMÁGENES — De tus imágenes al prompt",
+      "descripcion": "Parte de tus propias imágenes en vez de describirlas a mano. Botón «🖼 Crear desde imágenes», encima de la caja de tu idea, o Ctrl+Shift+I.\n\nCuatro modos:\n• Imagen → prompt — un prompt fiel a la imagen, o reinterpretada con tu idea.\n• Animar imagen — la imagen es el inicio y tú describes la acción.\n• Inicio → final — A es el primer fotograma y B el último.\n• Varias referencias — de 2 a 4 imágenes, cada una con su función: Personaje, Producto, Escenario, Estilo, Iluminación o Composición.\n\nCómo se usa: «1. Analizar imágenes», corrige el análisis si la IA se equivocó, y «2. Generar prompt»: los dos están en la barra de abajo, siempre a la vista. Después puedes mejorarlo, ajustarlo al límite del modelo y llevarlo a la salida principal.\n\n💡 «Visión» elige quién analiza las imágenes. Si eliges un proveedor, se usa SOLO ese: si falla, no se prueba otro que te pueda cobrar.\n💡 «Recuperar versiones» guarda en tu equipo las 12 últimas de cada sesión.",
+      "accion": "cmd_crear_desde_imagenes"
+    },
+    {
+      "id": 44,
+      "titulo": "🎬 44. CORTOMETRAJE — Guion escena a escena",
+      "descripcion": "Escribe el guion de un cortometraje de 3 a 12 escenas para generarlo clip a clip con un modelo de vídeo por referencia (Vidu, Kling…).\n\nEl guion trae un bloque de PERSONAJES, con un prompt de imagen y una etiqueta @ref para cada uno, y cada escena con tiempo, plano, tema, acción, cámara, diálogo y sonido. Si algo no cuadra (escenas que faltan, tiempos que no encajan, un @ref que no existe), lo avisa arriba antes de que lo copies.\n\nDos formas de lanzarlo:\n• Desde la ventana principal: modo VÍDEO, escribe la premisa en la idea y pulsa 🎬 Corto. Usa el personaje activo.\n• Desde «Crear desde imágenes»: analiza tus referencias, escribe la premisa en «Tu idea» y pulsa «Crear cortometraje con estas referencias». Eliges escenas y segundos por escena en la misma ventana. Cada referencia se etiqueta por su letra (A es @ref1, B es @ref2…) y la barra de estado te dice qué imagen subir para cada una.",
+      "accion": "focus:btn_corto"
     }
   ]
 }

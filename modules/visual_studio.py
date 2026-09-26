@@ -1,0 +1,1194 @@
+"""Image-based prompt workspace. Tk is accessed only on the main thread."""
+import json
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
+
+from config import (
+    MODELOS_POR_PLATAFORMA_IMAGEN,
+    MODELOS_POR_PLATAFORMA_VIDEO,
+    get_image_model_specs,
+    get_model_specs,
+    get_theme_colors,
+)
+from modules import paleta as P
+from modules.gprompt_window import GPromptWindow
+from modules.i18n import tr, tr_es
+from modules.visual_brief import (
+    MODE_HELP,
+    MODES,
+    ROLES,
+    VISUAL_SYSTEM,
+    Reference,
+    analysis_input,
+    check_attachment,
+    duration_seconds,
+    filter_models,
+    generation_request,
+    load_image,
+    load_project,
+    output_kind,
+    parse_visual_result,
+    revision_request,
+    save_project,
+    shortfilm_context,
+    shortfilm_ref_map,
+    texto_sin_markdown,
+    validate,
+    video_direction,
+)
+from modules.visual_history import VisualHistory
+
+# Clave del modo «encadenar como siempre». Es la etiqueta en espanol, como
+# el resto de identificadores del panel: se pinta con tr() y se recupera con
+# tr_es(). Un candado comprueba que sigue cuadrando con VisionChain.
+CADENA_AUTOMATICA = "Cadena automática"
+
+# Ancho común de los rótulos de las cajas de una línea, para que queden en
+# columna. Cabe el más largo en inglés («What to improve»).
+ANCHO_ROTULO = 130
+# Ancho del nombre de cada referencia, para que su desplegable de función
+# quede en columna. Caben la letra y los 45 caracteres que se enseñan.
+ANCHO_NOMBRE_REF = 360
+
+
+class _VentanaPrevia(GPromptWindow):
+    """La ventana de «Ampliar»: el foco de GPromptWindow, sin su
+    deduplicacion por titulo.
+
+    GPromptWindow evita ventanas duplicadas usando el TITULO como clave, y
+    para los paneles de la app eso esta bien. Aqui no: el titulo lleva el
+    nombre del fichero, y dos imagenes distintas pueden llamarse igual. Peor
+    aun, el titulo cambia de significado al mover las referencias —tras
+    intercambiar A/B, «A {0} imagen.png» ya es otra imagen— asi que la
+    ventana vieja se reutilizaba y ensenaba lo que no era.
+
+    La identidad de una vista previa es su REFERENCIA, y de eso se encarga
+    VisualStudio con `ref.uid`. Aqui solo se hereda el comportamiento que si
+    interesa: salir delante tras el deiconify tardio de CustomTkinter,
+    topmost temporal y conservar minimizar/maximizar.
+    """
+
+    def title(self, string=None):
+        # Se salta GPromptWindow.title() a propositico y va directo al de
+        # CTkToplevel, que es el que solo pone el texto.
+        if string is None:
+            return ctk.CTkToplevel.title(self)
+        return ctk.CTkToplevel.title(self, string)
+
+
+class VisualStudio(ctk.CTkToplevel):
+    # Cuantos paneles se han abierto en esta sesion. Solo sirve para dar a
+    # cada uno un identificador estable con el que titular sus ventanas.
+    _contador_paneles = 0
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.app = app
+        # A transient dialog loses minimize/maximize controls on Windows.
+        # The delayed bring_forward() handles focus without changing its style.
+        self.resizable(True, True)
+        self.title(tr("Crear desde imágenes · G-Prompt Studio"))
+        self.geometry("1000x820")
+        self.minsize(760, 620)
+        # Identidad del panel. open_project() abre un VisualStudio NUEVO por
+        # cada proyecto, asi que puede haber varios a la vez con una
+        # referencia que se llame igual. GPromptWindow deduplica por titulo:
+        # sin esto, la vista previa del segundo panel se cerraria sola y
+        # enfocaria la del primero, ensenando la imagen equivocada.
+        VisualStudio._contador_paneles += 1
+        self.panel_id = VisualStudio._contador_paneles
+        # uid de la referencia -> su ventana de vista previa abierta.
+        self.previews = {}
+        self.history = VisualHistory()
+        self.analysis_stale = False
+        self.refs = []
+        self.busy = False
+        self.closed = False
+        self.future = None
+        self.protocol("WM_DELETE_WINDOW", self.close)
+        self.mode = ctk.StringVar(value=MODES[0])
+        self.language = ctk.StringVar(value="Inglés")
+        # Que proveedor de vision usar al analizar. Por defecto la cadena de
+        # siempre; si se elige uno concreto, es EXCLUSIVO y un fallo no se
+        # cae a otro servicio (ver VisionChain).
+        self.vision_provider = ctk.StringVar(value=CADENA_AUTOMATICA)
+        self.aspect = ctk.StringVar(value="9:16")
+        self.duration = ctk.StringVar(value="5")
+        self.target = ctk.StringVar(value="Imagen")
+        self.platform = ctk.StringVar(value="")
+        self.model = ctk.StringVar(value="")
+        self.reference_use = ctk.StringVar(value="Solo texto")
+        self.attachment_confirmed = ctk.BooleanVar(value=False)
+        self.status = ctk.StringVar(value=tr("Añade imágenes; el análisis se podrá revisar antes de generar."))
+
+        # ── Abajo y fijos: el estado y las acciones principales ─────────
+        # Antes, «1. Analizar» y «2. Generar» estaban a mitad de un
+        # formulario de cuatro pantallas y «Crear cortometraje» al final del
+        # todo. Ahora siempre están a la vista. Se empaquetan ANTES que el
+        # cuerpo: con pack, lo último es lo primero que se encoge, y así
+        # cede el cuerpo, que se desplaza, y no la barra.
+        ctk.CTkLabel(self, textvariable=self.status, wraplength=730, justify="left").pack(
+            side="bottom", fill="x", padx=12, pady=(0, 8))
+        self.action_bar = ctk.CTkFrame(self, fg_color="transparent")
+        self.action_bar.pack(side="bottom", fill="x", padx=12, pady=(6, 2))
+        self.analyze_button = ctk.CTkButton(self.action_bar, text=tr("1. Analizar imágenes"),
+                                            command=self.analyze, **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
+        self.analyze_button.pack(side="left", padx=(0, 6))
+        self.generate_button = ctk.CTkButton(self.action_bar, text=tr("2. Generar prompt"),
+                                             command=self.generate, **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
+        self.generate_button.pack(side="left", padx=6)
+        ctk.CTkButton(self.action_bar, text=tr("Copiar resultado"), command=self.copy,
+                      **P.estilo_boton(P.BTN_PRIMARIO)).pack(side="left", padx=6)
+        ctk.CTkButton(self.action_bar, text=tr("Crear cortometraje con estas referencias"),
+                      command=self.shortfilm, **P.estilo_boton(P.BTN_ACENTO, primario=True)).pack(side="right")
+
+        body = ctk.CTkScrollableFrame(self)
+        self.body = body
+        body.pack(fill="both", expand=True, padx=12, pady=(10, 0))
+        secundario = P.estilo_boton(P.BTN_PRIMARIO)
+        discreto = P.estilo_boton(P.BTN_GRIS)
+
+        # ── Cabecera: el título y todo lo del proyecto en una fila ───────
+        ctk.CTkLabel(body, text=tr("Crear desde imágenes"), font=ctk.CTkFont(size=22, weight="bold")).pack(anchor="w")
+        self.project_name = self.entry(body, "Proyecto", "nombre para reconocerlo en «Recuperar versiones»")
+        fila_proyecto = self.project_name.master
+        for texto, orden in (("Abrir proyecto", self.load), ("Guardar proyecto", self.save),
+                             ("Recuperar versiones", self.recover),
+                             ("Nuevo proyecto", lambda: VisualStudio(self.app))):
+            ctk.CTkButton(fila_proyecto, text=tr(texto), command=orden, width=110,
+                          **discreto).pack(side="left", padx=(6, 0))
+
+        # ── Imágenes ─────────────────────────────────────────────────────
+        imagenes = self.seccion(body, "Imágenes")
+        # Sin variable=: CTkOptionMenu escribiria el texto MOSTRADO dentro de
+        # self.mode y en ingles reventaria cada self.mode.get() == MODES[n].
+        # Se pinta traducido y mode_changed() guarda el identificador.
+        self.mode_menu = ctk.CTkOptionMenu(imagenes, values=[tr(m) for m in MODES],
+                          command=self.mode_changed, width=260)
+        self.mode_menu.set(tr(self.mode.get()))
+        self.mode_menu.pack(anchor="w", pady=(0, 6))
+        self.help_label = ctk.CTkLabel(imagenes, text=tr(MODE_HELP[self.mode.get()]),
+                                     wraplength=700, justify="left")
+        self.help_label.pack(anchor="w")
+        bar = ctk.CTkFrame(imagenes, fg_color="transparent")
+        bar.pack(fill="x", pady=6)
+        # Añadir es el primer paso de todo: relleno. El resto, sobrio.
+        ctk.CTkButton(bar, text=tr("Añadir imágenes"), command=self.add,
+                      **P.estilo_boton(P.BTN_PRIMARIO, primario=True)).pack(side="left", padx=(0, 5), pady=5)
+        ctk.CTkButton(bar, text=tr("Usar imagen cargada"), command=self.use_current,
+                      **secundario).pack(side="left", padx=5)
+        self.swap_button = ctk.CTkButton(bar, text=tr("Intercambiar A / B"), command=self.swap, **secundario)
+        self.cards = ctk.CTkFrame(imagenes, fg_color="transparent")
+        self.cards.pack(fill="x")
+
+        # ── Qué quieres crear ────────────────────────────────────────────
+        quieres = self.seccion(body, "Qué quieres crear")
+        self.idea = self.text_field(quieres, "Tu idea / acción deseada", 70)
+        self.preserve = self.entry(quieres, "Conservar", "ej.: rostro, ropa, forma del producto")
+        self.change = self.entry(quieres, "Cambiar", "ej.: fondo, pose, iluminación")
+
+        # ── Destino ──────────────────────────────────────────────────────
+        destination = self.seccion(body, "Destino")
+        # Salida y plataforma en la misma fila: son una sola decisión.
+        fila_destino = ctk.CTkFrame(destination, fg_color="transparent")
+        fila_destino.pack(fill="x", pady=4)
+        self.target_menu = ctk.CTkOptionMenu(fila_destino, values=[tr("Imagen"), tr("Vídeo")],
+                                            command=self.target_changed)
+        self.target_menu.pack(side="left")
+        self.platform_menu = ctk.CTkOptionMenu(fila_destino, variable=self.platform, values=[""],
+                                              command=lambda _: self.refresh_models(), width=260)
+        self.platform_menu.pack(side="left", padx=8)
+        self.model_search = ctk.StringVar(value="")
+        search_bar = ctk.CTkFrame(destination, fg_color="transparent")
+        search_bar.pack(fill="x", pady=4)
+        # Rótulo y no placeholder: con textvariable, CustomTkinter no pinta
+        # nunca el placeholder, y la caja salía en blanco.
+        ctk.CTkLabel(search_bar, text=tr("Buscar modelo"), width=ANCHO_ROTULO,
+                     anchor="w").pack(side="left", padx=(0, 8))
+        ctk.CTkEntry(search_bar, textvariable=self.model_search).pack(side="left", fill="x", expand=True)
+        ctk.CTkButton(search_bar, text=tr("Limpiar búsqueda"), width=130,
+                      command=lambda: self.model_search.set(""), **secundario).pack(side="left", padx=5)
+        self.model_matches = ctk.CTkLabel(destination, text="", anchor="w")
+        self.model_matches.pack(fill="x")
+        self.model_menu = ctk.CTkOptionMenu(destination, variable=self.model, values=[""], width=500,
+                                           command=lambda _: self.reset_confirmation())
+        self.model_menu.pack(fill="x", pady=4)
+        # Marco propio: reference_use_changed() empaqueta y quita la casilla
+        # de confirmación al final de su padre, y tiene que quedar aquí,
+        # debajo de su aviso, no detrás del formato ni de la dirección de vídeo.
+        uso = ctk.CTkFrame(destination, fg_color="transparent")
+        uso.pack(fill="x")
+        ctk.CTkLabel(uso, text=tr("Cómo usarás el prompt en el generador")).pack(anchor="w")
+        self.reference_menu = ctk.CTkOptionMenu(uso,
+                                               values=[tr("Solo texto"), tr("Adjuntar imágenes")],
+                                               command=self.reference_use_changed, width=260)
+        self.reference_menu.pack(anchor="w", pady=4)
+        self.reference_hint = ctk.CTkLabel(uso, text="", wraplength=700, justify="left")
+        self.reference_hint.pack(anchor="w")
+        self.confirm_checkbox = ctk.CTkCheckBox(uso,
+            text=tr("He comprobado que este modelo admite estas imágenes en mi panel"),
+            variable=self.attachment_confirmed)
+        self.reference_use_changed(tr("Solo texto"))
+        options = ctk.CTkFrame(destination, fg_color="transparent")
+        options.pack(fill="x", pady=8)
+        def _guardar_identificador(variable):
+            # Closure con la variable atada: sin esto, las dos entradas del
+            # bucle compartirian la ultima.
+            return lambda value: variable.set(tr_es(value))
+
+        for title, variable, values in (
+            ("Formato", self.aspect, ["9:16", "16:9", "1:1", "4:5"]),
+            ("Idioma prompt", self.language, ["Inglés", "Español"]),
+        ):
+            # tr(title) y no tr("..."): aqui llega una VARIABLE, que es el
+            # mismo punto ciego del candado que tenian text_field/entry.
+            ctk.CTkLabel(options, text=tr(title)).pack(side="left", padx=5)
+            # Se ensena traducido y se guarda el identificador espanol. El
+            # idioma del prompt viaja al modelo tal cual ("IDIOMA DEL PROMPT:
+            # Ingles"), y el formato es clave de catalogo: si la variable
+            # guardara el texto mostrado, ambos se romperian en ingles.
+            # tr()/tr_es() son la identidad para lo que no conocen, asi que
+            # "9:16" pasa intacto.
+            menu = ctk.CTkOptionMenu(options, values=[tr(v) for v in values],
+                                     command=_guardar_identificador(variable),
+                                     width=100)
+            menu.set(tr(variable.get()))
+            menu.pack(side="left")
+            # Guardados para sync_menus(): al quitar variable= el widget ya
+            # no sigue a la StringVar, asi que hay que ponerlo al dia a mano
+            # cuando el valor cambia desde fuera (abrir un proyecto).
+            if variable is self.aspect:
+                self.aspect_menu = menu
+            else:
+                self.language_menu = menu
+        self.duration_label = ctk.CTkLabel(options, text=tr("Segundos"))
+        self.duration_entry = ctk.CTkEntry(options, textvariable=self.duration, width=75)
+        # Al final de Destino, y lo empaqueta refresh_destination() solo con
+        # salida de vídeo: se añade detrás de todo lo de esta sección.
+        self.video_controls = ctk.CTkFrame(destination, fg_color="transparent")
+        ctk.CTkLabel(self.video_controls, text=tr("Dirección de vídeo (opcional)")).pack(anchor="w")
+        self.camera = self.entry(self.video_controls, "Cámara", "fija, acercamiento lento, seguimiento…")
+        self.environment_motion = self.entry(self.video_controls, "Entorno", "niebla, viento, luces, objetos…")
+        self.audio_direction = self.entry(self.video_controls, "Sonido", "ambiente; diálogo literal e idioma si lo necesitas")
+        self.transition_direction = self.entry(self.video_controls, "Inicio → final", "cómo pasar de A a B, sin saltos")
+
+        # ── Análisis ─────────────────────────────────────────────────────
+        analisis = self.seccion(body, "Análisis")
+        vision_bar = ctk.CTkFrame(analisis, fg_color="transparent")
+        vision_bar.pack(fill="x")
+        ctk.CTkLabel(vision_bar, text=tr("Visión")).pack(side="left", padx=(0, 5))
+        self.vision_menu = ctk.CTkOptionMenu(
+            vision_bar, values=[tr(v) for v in self.vision_options()],
+            command=self.vision_provider_changed, width=190)
+        self.vision_menu.set(tr(self.vision_provider.get()))
+        self.vision_menu.pack(side="left")
+        # Quien va a responder, ANTES de pulsar. Tras analizar pasa a decir
+        # quien respondio de verdad, que no siempre es el mismo si se deja la
+        # cadena automatica.
+        self.vision_hint = ctk.CTkLabel(vision_bar, text="", anchor="w")
+        self.vision_hint.pack(side="left", padx=8)
+        self.refresh_vision_hint()
+        ctk.CTkLabel(analisis, text=tr("Analizar envía las imágenes al proveedor de visión configurado y sus alternativas. "
+                     "Generar envía el análisis y tu idea al proveedor de texto. Puede consumir cuota. "
+                     "Varias imágenes se comparan juntas en un panel reducido."),
+                     wraplength=700, justify="left").pack(anchor="w", pady=(4, 0))
+        self.analysis = self.text_field(analisis, "Análisis editable — corrige lo que la IA haya interpretado mal", 150)
+
+        # ── Prompt ───────────────────────────────────────────────────────
+        prompt = self.seccion(body, "Prompt")
+        self.output = self.text_field(prompt, "Prompt positivo", 200)
+        self.negative = self.text_field(prompt, "Prompt negativo (solo si el modelo lo admite)", 85)
+        self.notes = self.text_field(prompt, "Notas de uso (no se copian al prompt)", 85)
+        self.revision_instruction = self.entry(prompt, "Qué mejorar", "opcional: más cinematográfico, menos adornos…")
+        self.manual_limit = self.entry(prompt, "Límite manual", "caracteres; vacío = el del catálogo")
+        revision_bar = ctk.CTkFrame(prompt, fg_color="transparent")
+        revision_bar.pack(fill="x", pady=5)
+        ctk.CTkButton(revision_bar, text=tr("Mejorar prompt"), command=self.revise,
+                      **secundario).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(revision_bar, text=tr("Ajustar al límite"), command=lambda: self.revise(True),
+                      **secundario).pack(side="left", padx=5)
+        ctk.CTkButton(revision_bar, text=tr("Comprobar prompt"), command=self.check_prompt,
+                      **secundario).pack(side="left", padx=5)
+        self.character_count = ctk.CTkLabel(revision_bar, text="")
+        self.character_count.pack(side="left", padx=10)
+        actions = ctk.CTkFrame(prompt, fg_color="transparent")
+        actions.pack(fill="x", pady=(0, 4))
+        ctk.CTkButton(actions, text=tr("Llevar a salida principal"), command=self.apply,
+                      **secundario).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(actions, text=tr("Copiar positivo"), command=self.copy_positive,
+                      **secundario).pack(side="left", padx=5)
+        ctk.CTkButton(actions, text=tr("Copiar negativo"), command=self.copy_negative,
+                      **secundario).pack(side="left", padx=5)
+        self.model_search.trace_add("write", lambda *_: self.filter_model_menu())
+        self.refresh_destination()
+        self.render()
+        self.bind("<Control-s>", lambda event: self.save())
+        self.after(150, self.bring_forward)
+        self.after(500, self.update_character_count)
+        self.after(15000, self.autosave_tick)
+
+    def bring_forward(self):
+        if self.closed:
+            return
+        self.lift()
+        self.attributes("-topmost", True)
+        self.focus_force()
+        self.after(300, self.release_topmost)
+
+    def release_topmost(self):
+        if not self.closed:
+            self.attributes("-topmost", False)
+
+    def refresh_destination(self, preserve_missing=False):
+        mode = self.mode.get()
+        if mode != MODES[3]:
+            self.target.set("Vídeo" if mode in MODES[1:3] else "Imagen")
+        self.target_menu.configure(state="normal" if mode == MODES[3] else "disabled")
+        self.target_menu.set(tr(self.target.get()))
+        kind = output_kind(mode, self.target.get())
+        self.catalog = MODELOS_POR_PLATAFORMA_VIDEO if kind == "video" else MODELOS_POR_PLATAFORMA_IMAGEN
+        platforms = list(self.catalog)
+        self.platform_menu.configure(values=platforms)
+        if self.platform.get() not in platforms:
+            if preserve_missing:
+                self.platform_menu.configure(values=[self.platform.get()] + platforms)
+            else:
+                self.platform.set(platforms[0])
+        self.refresh_models(preserve_missing)
+        self.duration_label.pack_forget()
+        self.duration_entry.pack_forget()
+        self.video_controls.pack_forget()
+        # La FILA, no la caja: desde que cada caja lleva su rótulo, ocultar
+        # solo la caja dejaba el rótulo «Inicio → final» suelto en los demás
+        # modos de vídeo.
+        fila_transicion = self.transition_direction.master
+        fila_transicion.pack_forget()
+        if mode == MODES[2]:
+            fila_transicion.pack(fill="x", pady=4)
+        if kind == "video":
+            # Último de la sección Destino. Antes iba «antes del botón
+            # Analizar», que ahora vive en la barra fija de abajo.
+            self.video_controls.pack(fill="x", pady=8)
+            self.duration_label.pack(side="left", padx=5)
+            self.duration_entry.pack(side="left", padx=5)
+
+    def target_changed(self, value):
+        self.target.set(tr_es(value))
+        self.refresh_destination()
+
+    def refresh_models(self, preserve_missing=False):
+        models = filter_models(self.catalog.get(self.platform.get(), []))
+        self.model_search.set("")
+        self.model_menu.configure(values=models or [""])
+        if self.model.get() not in models:
+            if preserve_missing:
+                self.model_menu.configure(values=[self.model.get()] + models)
+            else:
+                self.model.set(models[0] if models else "")
+        self.reset_confirmation()
+        self.filter_model_menu()
+
+    def filter_model_menu(self):
+        models = filter_models(self.catalog.get(self.platform.get(), []), self.model_search.get())
+        self.model_menu.configure(values=models or [""],
+                                  state="normal" if models and not self.busy else "disabled")
+        self.model_matches.configure(text=tr("Coincidencias: {count}. Buscar no cambia el modelo seleccionado.").format(count=len(models)))
+
+    def reset_confirmation(self):
+        self.attachment_confirmed.set(False)
+
+    def reference_use_changed(self, value):
+        self.reference_use.set(tr_es(value))
+        self.reference_menu.set(value)
+        self.reset_confirmation()
+        self.confirm_checkbox.pack_forget()
+        if self.reference_use.get() == "Solo texto":
+            self.reference_hint.configure(text=tr("Las imágenes solo sirven para redactar. Copia el texto al generador; no necesita admitir imágenes de entrada."))
+        else:
+            self.reference_hint.configure(text=tr("La carga de referencias depende de la plataforma, modelo y modo. El catálogo no confirma todas esas combinaciones."))
+            self.confirm_checkbox.pack(anchor="w", padx=5, pady=5)
+
+    def refresh_mode_help(self):
+        self.help_label.configure(text=tr(MODE_HELP[self.mode.get()]))
+        self.swap_button.pack_forget()
+        if self.mode.get() == MODES[2]:
+            self.swap_button.pack(side="left", padx=5)
+
+    def mostrar(self, widget):
+        """Baja el cuerpo hasta `widget`, con su rótulo a la vista.
+
+        Analizar y Generar están en la barra fija de abajo, y su resultado
+        aparece en mitad del cuerpo, donde no se estaba mirando. Si algo
+        falla aquí no pasa nada: el resultado ya está escrito.
+        """
+        try:
+            self.update_idletasks()
+            y, w = 0, widget
+            while w is not None and w is not self.body:
+                y += w.winfo_y()
+                w = w.master
+            alto = self.body.winfo_height()
+            if w is self.body and alto > 0:
+                self.body._parent_canvas.yview_moveto(max(0.0, (y - 40) / alto))
+        except Exception:
+            pass
+
+    @staticmethod
+    def seccion(parent, titulo):
+        """Un bloque con su título. El panel era un formulario de cuatro
+        pantallas sin divisiones: no se veía dónde acababa un paso y
+        empezaba el siguiente. tr() aquí, como en text_field."""
+        colores = get_theme_colors(ctk.get_appearance_mode().lower() == "light")
+        # Color y borde de tarjeta del tema: sin ellos la sección tenía el
+        # mismo fondo que el cuerpo y no se veía dónde empezaba ni acababa.
+        marco = ctk.CTkFrame(parent, corner_radius=8, fg_color=colores["card_bg"],
+                             border_width=1, border_color=colores["card_border"])
+        marco.pack(fill="x", pady=(12, 0))
+        ctk.CTkLabel(marco, text=tr(titulo),
+                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold")).pack(anchor="w", padx=12, pady=(8, 2))
+        cuerpo = ctk.CTkFrame(marco, fg_color="transparent")
+        cuerpo.pack(fill="x", padx=12, pady=(0, 10))
+        return cuerpo
+
+    @staticmethod
+    def text_field(parent, label, height):
+        # tr() AQUÍ y no en cada llamada: el candado de i18n solo mira los
+        # literales que van directos a un sink (text=, placeholder_text=…), y
+        # aquí llega una variable, así que catorce rótulos en español se
+        # colaban sin que saltara nada. Traduciendo en el ayudante se arregla
+        # de una vez y quien llama sigue escribiendo el español tal cual.
+        ctk.CTkLabel(parent, text=tr(label)).pack(anchor="w", pady=(6, 0))
+        widget = ctk.CTkTextbox(parent, height=height)
+        widget.pack(fill="x", pady=3)
+        return widget
+
+    @staticmethod
+    def entry(parent, label, example):
+        # Rótulo propio a la izquierda y el texto gris SOLO como ejemplo. El
+        # texto gris era el único rótulo de la caja, y CustomTkinter lo quita
+        # en cuanto hay algo escrito, o al abrir un proyecto: quedaban cajas
+        # en blanco sin forma de saber qué era cada una. En la misma fila
+        # para no alargar un panel que ya ocupa varias pantallas.
+        # tr() aquí, como en text_field: llegan variables, no literales.
+        row = ctk.CTkFrame(parent, fg_color="transparent")
+        row.pack(fill="x", pady=4)
+        ctk.CTkLabel(row, text=tr(label), width=ANCHO_ROTULO, anchor="w").pack(side="left", padx=(0, 8))
+        widget = ctk.CTkEntry(row, placeholder_text=tr(example))
+        widget.pack(side="left", fill="x", expand=True)
+        return widget
+
+    def close(self):
+        if not self.checkpoint() and not messagebox.askyesno(tr("No se pudo guardar"), tr("No se ha guardado la recuperación. ¿Cerrar y perder los cambios?"), parent=self):
+            return
+        self.closed = True
+        if self.future:
+            self.future.cancel()
+        self.destroy()
+
+    def invalidate(self):
+        self.analysis_stale = True
+        self.reset_confirmation()
+        self.status.set(tr("Referencias modificadas. Vuelve a analizar antes de generar."))
+
+    def vision_options(self):
+        """La cadena automatica y, detras, los proveedores vivos.
+
+        Se pregunta a la app, no se adivina: si no hay ninguno configurado,
+        la lista se queda solo con la opcion automatica y el panel lo dice.
+        getattr porque los tests construyen el panel colgando de un root
+        pelado, sin la app real detras.
+        """
+        vision = getattr(self.app, "vision", None)
+        nombres = list(vision.nombres_proveedores()) if vision is not None else []
+        return [CADENA_AUTOMATICA] + nombres
+
+    def vision_provider_changed(self, value):
+        # value llega traducido; la variable guarda el identificador.
+        self.vision_provider.set(tr_es(value))
+        self.refresh_vision_hint()
+
+    def refresh_vision_hint(self):
+        """Dice quien va a responder antes de gastar nada."""
+        elegido = self.vision_provider.get()
+        disponibles = self.vision_options()[1:]
+        if not disponibles:
+            texto = tr("Sin proveedores de visión configurados.")
+        elif elegido == CADENA_AUTOMATICA:
+            texto = tr("Se probarán por orden: {0}").format(", ".join(disponibles))
+        elif elegido in disponibles:
+            texto = tr("Solo {0}. Si falla, no se usa ningún otro.").format(elegido)
+        else:
+            texto = tr("{0} no está disponible ahora mismo.").format(elegido)
+        self.vision_hint.configure(text=texto)
+
+    def sync_menus(self):
+        """Pone los tres desplegables al dia con sus variables.
+
+        Hace falta porque los menus van sin `variable=`: si la tuvieran,
+        CTkOptionMenu escribiria el texto MOSTRADO dentro de la variable y en
+        ingles se romperian las comparaciones con MODES y los proyectos
+        guardados. El precio de esa separacion es este metodo: cuando el
+        valor cambia desde fuera —abrir un proyecto, sobre todo— el widget no
+        se entera solo.
+
+        Sin esto, un proyecto guardado como «Inicio -> final», 16:9 y espanol
+        se abria ensenando «Imagen -> prompt», 9:16 e ingles. Lo peor es que
+        por dentro el valor era el correcto, asi que el usuario creia estar
+        editando algo distinto de lo que iba a generar.
+        """
+        for menu, variable in ((getattr(self, "mode_menu", None), self.mode),
+                               (getattr(self, "aspect_menu", None), self.aspect),
+                               (getattr(self, "language_menu", None), self.language),
+                               (getattr(self, "vision_menu", None), self.vision_provider)):
+            if menu is not None:
+                menu.set(tr(variable.get()))
+        # El de vision ademas puede apuntar a algo que ya no existe —se
+        # guardo con Ollama levantado y ahora no lo esta—. NO se sustituye
+        # por la cadena en silencio: eso es exactamente lo que el usuario
+        # pidio evitar al elegir un proveedor. Se dice y se queda elegido.
+        self.refresh_vision_hint()
+
+    def mode_changed(self, value):
+        # value llega en el idioma de la interfaz; self.mode SIEMPRE guarda
+        # el identificador espanol, que es lo que se escribe en el proyecto.
+        self.mode.set(tr_es(value))
+        if self.busy:
+            self.mode.set(self.running_mode)
+            self.mode_menu.set(tr(self.running_mode))
+            return
+        self.invalidate()
+        self.refresh_mode_help()
+        self.refresh_destination()
+        self.render()
+
+    def add(self):
+        if self.busy:
+            return
+        paths = filedialog.askopenfilenames(parent=self, title=tr("Imágenes en orden A, B, C, D"),
+                                           filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp")])
+        if not paths:
+            return
+        if len(paths) + len(self.refs) > 4:
+            self.status.set(tr("Máximo cuatro imágenes. Quita alguna antes de añadir más."))
+            return
+        try:
+            from pathlib import Path
+            additions = [Reference(load_image(p), ROLES[0], Path(p).name) for p in paths]
+        except Exception as exc:
+            self.status.set(tr("No se pudieron cargar las imágenes: {0}").format(exc))
+            return
+        if not self.checkpoint():
+            return
+        self.refs.extend(additions)
+        self.invalidate()
+        self.render()
+
+    def use_current(self):
+        if self.busy:
+            return
+        image = getattr(self.app, "imagen_cargada", None)
+        if image is None or len(self.refs) >= 4:
+            self.status.set(tr("Carga una imagen en la app o deja espacio entre las cuatro referencias."))
+            return
+        image = image.convert("RGB").copy()
+        image.thumbnail((1600, 1600))
+        if not self.checkpoint():
+            return
+        self.refs.append(Reference(image, ROLES[0], "Imagen de la app"))
+        self.invalidate()
+        self.render()
+
+    def swap(self):
+        if not self.busy and len(self.refs) >= 2 and self.checkpoint():
+            self.refs[0], self.refs[1] = self.refs[1], self.refs[0]
+            self.invalidate()
+            self.render()
+
+    def remove(self, index):
+        if not self.busy and self.checkpoint():
+            self.refs.pop(index)
+            self.invalidate()
+            self.render()
+
+    def role_changed(self, index, role):
+        role = tr_es(role)
+        if self.busy:
+            self.render()
+            return
+        if not self.checkpoint():
+            self.render()
+            return
+        old = self.refs[index]
+        # old.uid a proposito: es la MISMA imagen, solo cambia su funcion.
+        # Sin conservarlo, su vista previa abierta quedaria huerfana y
+        # render() la cerraria en las narices del usuario.
+        self.refs[index] = Reference(old.image, role, old.name, old.uid)
+        self.invalidate()
+
+    def render(self):
+        self.sync_previews()
+        for child in self.cards.winfo_children():
+            child.destroy()
+        try:
+            validate(self.mode.get(), self.refs)
+            count_hint = tr("Referencias listas: {count}").format(count=len(self.refs))
+        except ValueError as exc:
+            count_hint = str(exc)
+        self.help_label.configure(text=tr(MODE_HELP[self.mode.get()]) + "\n" + count_hint)
+        if not self.refs:
+            # Estado vacío con contenido: un marco vacío mide 200 px en
+            # CustomTkinter, y el panel abría con un hueco en blanco enorme
+            # justo debajo de «Añadir imágenes».
+            ctk.CTkLabel(self.cards, text=tr("Todavía no hay imágenes. Añádelas, o usa la que tengas cargada en la ventana principal."),
+                         text_color=get_theme_colors(ctk.get_appearance_mode().lower() == "light")["muted_text"],
+                         anchor="w").pack(fill="x", pady=(4, 8))
+        for i, ref in enumerate(self.refs):
+            row = ctk.CTkFrame(self.cards)
+            row.pack(fill="x", pady=3)
+            ratio = min(64 / ref.image.width, 64 / ref.image.height)
+            thumb = ctk.CTkImage(ref.image, size=(max(1, int(ref.image.width * ratio)), max(1, int(ref.image.height * ratio))))
+            ctk.CTkLabel(row, text="", image=thumb).pack(side="left", padx=6)
+            # tr() sobre el nombre: los de fichero salen intactos y el unico
+            # sintetico ("Imagen de la app") se traduce, sin alterar lo que
+            # queda guardado en el proyecto.
+            label = f"{chr(65+i)} · {tr(ref.name)[:45]}"
+            if self.mode.get() == MODES[2]:
+                # Se escaparon del candado de i18n porque van dentro de un
+                # ternario encadenado y sumadas a una variable, no directas a
+                # un sink; y ningun test construia este modo.
+                label += " · " + (tr("INICIO") if i == 0
+                                       else tr("FINAL") if i == 1
+                                       else tr("Sobra: quitar"))
+            # Ancho fijo: con el del texto, el desplegable de función caía en
+            # otra posición en cada fila según lo largo del nombre.
+            ctk.CTkLabel(row, text=label, width=ANCHO_NOMBRE_REF, anchor="w").pack(side="left", padx=5)
+            if self.mode.get() != MODES[2]:
+                # Igual que los modos: se ensena traducido y se guarda el
+                # identificador, porque ref.role se serializa en el proyecto.
+                menu = ctk.CTkOptionMenu(row, values=[tr(r) for r in ROLES],
+                                         command=lambda value, index=i: self.role_changed(index, value))
+                menu.set(tr(ref.role))
+                menu.pack(side="left", padx=5)
+            ctk.CTkButton(row, text=tr("Ampliar"), width=75,
+                          command=lambda index=i: self.preview_reference(index),
+                          **P.estilo_boton(P.BTN_PRIMARIO)).pack(side="right", padx=5)
+            ctk.CTkButton(row, text=tr("Quitar"), width=65,
+                          command=lambda index=i: self.remove(index),
+                          **P.estilo_boton(P.BTN_PELIGRO)).pack(side="right", padx=5)
+
+    def preview_reference(self, index):
+        # _VentanaPrevia y no un CTkToplevel pelado, porque un Toplevel pelado se
+        # abre DETRÁS: CustomTkinter hace withdraw()+deiconify() para pintar la
+        # barra de título de Windows, y ese deiconify llega ~800 ms después del
+        # lift(), así que subirla una sola vez no sirve — está medido en
+        # tests/test_ventana_al_frente.py. De GPromptWindow hereda volver a
+        # subirla tras CADA deiconify, el topmost temporal de 250 ms y los
+        # botones de minimizar y maximizar intactos.
+        #
+        # Lo que _VentanaPrevia NO hereda es la deduplicación por título: aquí
+        # el título no identifica nada. Dos imágenes pueden llamarse igual, y al
+        # intercambiar A/B el mismo título pasa a designar otra imagen. De la
+        # identidad se encarga `ref.uid`, aquí debajo.
+        ref = self.refs[index]
+        # La identidad es la REFERENCIA, no el titulo ni la posicion. Si ya
+        # hay una ventana para esta imagen, se trae al frente; si no, se abre
+        # una nueva aunque otra referencia se llame igual.
+        abierta = self.previews.get(ref.uid)
+        if abierta is not None and abierta.winfo_exists():
+            abierta._bring_to_front()
+            return abierta
+        window = _VentanaPrevia(self)
+        self.previews[ref.uid] = window
+        # El titulo ya no es clave de nada: es solo lo que lee el usuario en la
+        # barra. Por eso puede repetirse sin consecuencias.
+        window.title(self.titulo_preview(index, ref))
+        window.geometry("850x700")
+        label = ctk.CTkLabel(window, text="")
+        label.pack(fill="both", expand=True, padx=10, pady=10)
+        def resize(event):
+            if event.widget is not window:
+                return
+            ratio = min(max(1, event.width - 30) / ref.image.width,
+                        max(1, event.height - 30) / ref.image.height, 1)
+            picture = ctk.CTkImage(ref.image, size=(max(1, int(ref.image.width * ratio)), max(1, int(ref.image.height * ratio))))
+            label.configure(image=picture)
+            label.image = picture
+        window.bind("<Configure>", resize)
+
+    def titulo_preview(self, index, ref):
+        """Lo que se lee en la barra de una vista previa.
+
+        La letra depende de la POSICION, asi que caduca en cuanto se
+        intercambian o se quitan referencias. Por eso vive aqui y no dentro
+        de preview_reference(): sync_previews() la reaplica a las ventanas
+        que ya estan abiertas.
+
+        Ojo: esto es solo la etiqueta. La identidad es `ref.uid`, y no
+        depende de nada de esto.
+        """
+        return f"{chr(65 + index)} · {tr(ref.name)[:45]} · {self.panel_label()}"
+
+    def sync_previews(self):
+        """Pone al dia las vistas previas abiertas: cierra y retitula.
+
+        Se llama desde render(), que corre tras anadir, quitar, intercambiar
+        y cambiar la funcion.
+
+        CIERRA las de referencias que ya no estan: si no, quedaban abiertas
+        ensenando una imagen que ya no existe en el panel.
+
+        RETITULA las que siguen: la letra del titulo es la posicion, asi que
+        al intercambiar A/B la ventana de la imagen roja seguia diciendo «A»
+        cuando su referencia ya era la B. La imagen que se ve siempre fue la
+        correcta —de eso se encarga el uid— pero la etiqueta despistaba.
+        """
+        vivos = {ref.uid for ref in self.refs}
+        for uid in [u for u in self.previews if u not in vivos]:
+            ventana = self.previews.pop(uid)
+            try:
+                if ventana.winfo_exists():
+                    ventana.destroy()
+            except Exception:
+                pass
+        for index, ref in enumerate(self.refs):
+            ventana = self.previews.get(ref.uid)
+            if ventana is None:
+                continue
+            try:
+                if ventana.winfo_exists():
+                    ventana.title(self.titulo_preview(index, ref))
+            except Exception:
+                pass
+
+    def panel_label(self):
+        """Como se nombra este panel en los titulos de sus ventanas hijas.
+
+        El nombre del proyecto si lo hay, porque es lo que le dice algo al
+        usuario, y el identificador del panel siempre: dos paneles pueden
+        tener el mismo nombre de proyecto (o ninguno) y sus titulos seguirian
+        chocando.
+        """
+        nombre = self.project_name.get().strip()
+        if nombre:
+            return f"{nombre[:30]} #{self.panel_id}"
+        return tr("Panel {0}").format(self.panel_id)
+
+    def direction(self):
+        if output_kind(self.mode.get(), self.target.get()) != "video":
+            return ""
+        return video_direction(self.camera.get(), self.environment_motion.get(),
+                               self.audio_direction.get(), self.transition_direction.get(), self.mode.get() == MODES[2])
+
+    def submit(self, task, on_success):
+        self.busy = True
+        self.running_mode = self.mode.get()
+        self.set_controls("disabled")
+        try:
+            self.future = self.app._executor.submit(task)
+        except RuntimeError as exc:
+            self.busy = False
+            self.set_controls("normal")
+            self.status.set(str(exc))
+            return
+
+        def poll():
+            if self.closed:
+                return
+            if not self.future.done():
+                self.after(100, poll)
+                return
+            self.busy = False
+            self.set_controls("normal")
+            try:
+                on_success(self.future.result())
+            except Exception as exc:
+                self.status.set(tr("No se completó la operación: {0}").format(exc))
+        self.after(100, poll)
+
+    def set_controls(self, state):
+        def visit(parent):
+            for widget in parent.winfo_children():
+                if isinstance(widget, (ctk.CTkButton, ctk.CTkEntry, ctk.CTkTextbox, ctk.CTkOptionMenu, ctk.CTkCheckBox)):
+                    widget.configure(state=state)
+                else:
+                    visit(widget)
+        visit(self.body)
+        # La barra fija de abajo está fuera del cuerpo: sin esto, Analizar y
+        # Generar seguirían pulsables con una petición en marcha.
+        visit(self.action_bar)
+        if state == "normal":
+            self.filter_model_menu()
+        if state == "normal" and self.mode.get() != MODES[3]:
+            self.target_menu.configure(state="disabled")
+
+    def save(self):
+        if self.busy:
+            return
+        path = filedialog.asksaveasfilename(parent=self, defaultextension=".gprompt",
+                                          initialfile="".join(c for c in self.project_name.get() if c.isalnum() or c in " -_")[:90] or "Proyecto-visual",
+                                          filetypes=[("Proyecto visual", "*.gprompt")])
+        if not path:
+            return
+        fields = self.fields()
+        try:
+            save_project(path, self.refs, fields)
+            self.status.set(tr("Proyecto guardado con sus imágenes, idea, análisis y resultado."))
+        except Exception as exc:
+            self.status.set(tr("No se pudo guardar: {0}").format(exc))
+
+    def load(self):
+        if self.busy:
+            return
+        # Open in a separate window so unsaved work is retained.
+        path = filedialog.askopenfilename(parent=self, filetypes=[("Proyecto visual", "*.gprompt")])
+        if not path:
+            return
+        self.open_project(path)
+
+    def open_project(self, path):
+        try:
+            refs, fields = load_project(path)
+        except Exception as exc:
+            self.status.set(tr("No se pudo abrir: {0}").format(exc))
+            return
+        other = VisualStudio(self.app)
+        other.refs = refs
+        for key in ("mode", "aspect", "duration", "language"):
+            getattr(other, key).set(fields[key])
+        # El proveedor de vision tambien viaja con el proyecto. Un .gprompt
+        # anterior al 22-sep-2026 no lo trae: entonces se queda la cadena,
+        # que es lo que tenia cuando se guardo.
+        other.vision_provider.set(fields.get("vision_provider") or CADENA_AUTOMATICA)
+        other.target.set(fields.get("target") or "Imagen")
+        other.platform.set(fields.get("platform", ""))
+        other.model.set(fields.get("model", ""))
+        other.refresh_mode_help()
+        other.refresh_destination(preserve_missing=True)
+        other.reference_use_changed(tr(fields.get("reference_use") or "Solo texto"))
+        for key in ("preserve", "change", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction"):
+            # Solo si hay algo: insertar "" también quita el texto de
+            # ejemplo, y la caja vacía se quedaba sin él.
+            if fields.get(key):
+                getattr(other, key).insert(0, fields[key])
+        for key in ("idea", "analysis", "output", "negative", "notes"):
+            getattr(other, key).insert("1.0", fields.get(key, ""))
+        other.analysis_stale = fields.get("analysis_stale", "true") != "false"
+        # Los desplegables no siguen a sus variables (ver sync_menus): sin
+        # esta llamada ensenarian los valores por defecto del panel recien
+        # construido y no los del proyecto que se acaba de abrir.
+        other.sync_menus()
+        other.render()
+        other.status.set(tr("Proyecto recuperado. Comprueba el modelo de destino del panel."))
+
+    def analyze(self):
+        if self.busy:
+            return
+        try:
+            board, request = analysis_input(self.mode.get(), self.refs)
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        if not self.checkpoint():
+            return
+        elegido = self.vision_provider.get()
+        exclusivo = elegido != CADENA_AUTOMATICA
+        self.status.set(tr("Analizando con {0}…").format(elegido) if exclusivo
+                        else tr("Analizando referencias…"))
+
+        def done(result):
+            text, provider = result
+            if not isinstance(text, str) or not text.strip():
+                raise ValueError(tr("El proveedor devolvió un análisis vacío."))
+            self.analysis.delete("1.0", "end")
+            self.analysis.insert("1.0", texto_sin_markdown(text))
+            self.analysis_stale = False
+            if not self.checkpoint():
+                return
+            self.mostrar(self.analysis)
+            self.status.set(tr("Análisis de {0}. Revísalo antes de generar.").format(provider))
+            # Quien respondio DE VERDAD. Con la cadena automatica puede no
+            # ser el primero, y conviene que se vea sin abrir el log.
+            self.vision_hint.configure(
+                text=tr("Respondió: {0}").format(provider))
+        self.submit(
+            lambda: self.app.vision.describir_con_prompt(
+                board, request, None, None if not exclusivo else elegido),
+            done)
+
+    def generate(self):
+        if self.busy:
+            return
+        if self.analysis_stale:
+            self.status.set(tr("Las referencias han cambiado. Conservamos tu trabajo: vuelve a analizar antes de generar."))
+            return
+        if self.model.get() not in self.catalog.get(self.platform.get(), []):
+            self.status.set(tr("El modelo guardado no está disponible. Elige uno del catálogo; no lo hemos sustituido."))
+            return
+        mode = self.mode.get()
+        if not self.model.get():
+            self.status.set(tr("Selecciona un modelo de destino en este panel."))
+            return
+        try:
+            specs = self.revision_specs()
+            attach = self.reference_use.get() == "Adjuntar imágenes"
+            check_attachment(specs, mode, len(self.refs), attach, self.attachment_confirmed.get())
+            context = (f"Plataforma: {self.platform.get()}\nModelo: {self.model.get()}\n"
+                       + json.dumps(specs or {"compatibilidad": "Por confirmar"}, ensure_ascii=False))
+            request = generation_request(
+                mode, self.refs, self.analysis.get("1.0", "end").strip(),
+                self.idea.get("1.0", "end").strip(), self.preserve.get(), self.change.get(),
+                self.duration.get(), self.aspect.get(), self.language.get(),
+                context, (specs or {}).get("is_natural", True), self.target.get(), attach,
+            ) + self.direction()
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        if not self.checkpoint():
+            return
+        self.status.set(tr("Generando prompt con el destino seleccionado…"))
+
+        def done(text):
+            prompt, negative, notes = parse_visual_result(text, specs, enforce_limit=False)
+            for key, value in (("output", prompt), ("negative", negative), ("notes", notes)):
+                getattr(self, key).delete("1.0", "end")
+                getattr(self, key).insert("1.0", value)
+            if not self.checkpoint():
+                return
+            self.mostrar(self.output)
+            limit = (specs or {}).get("max_chars")
+            if isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
+                self.status.set(tr("El borrador supera el límite. Usa Ajustar al límite; el texto se conserva."))
+            else:
+                self.status.set(tr("Prompt preparado. Revisa las limitaciones y el uso de las referencias."))
+        self.submit(lambda: self.app.deepseek.generar_batch(
+            VISUAL_SYSTEM, request, temperature=0.4, max_tokens=3500), done)
+
+    def revision_specs(self):
+        video = output_kind(self.mode.get(), self.target.get()) == "video"
+        specs = dict((get_model_specs(self.model.get()) if video else get_image_model_specs(self.model.get())) or {})
+        raw = self.manual_limit.get().strip()
+        if raw:
+            if not raw.isdecimal() or not 1 <= int(raw) <= 100000:
+                raise ValueError(tr("Escribe un límite entero entre 1 y 100000 caracteres."))
+            specs["max_chars"] = int(raw)
+        return specs
+
+    def update_character_count(self):
+        if self.closed:
+            return
+        count = len(self.output.get("1.0", "end").strip())
+        try:
+            limit = self.revision_specs().get("max_chars")
+            self.character_count.configure(text=tr("Positivo: {count} caracteres · límite: {limit}").format(
+                count=count, limit=limit or "—"))
+        except ValueError as exc:
+            self.character_count.configure(text=str(exc))
+        self.after(500, self.update_character_count)
+
+    def revise(self, shorten=False):
+        if self.busy:
+            return
+        try:
+            if self.analysis_stale:
+                raise ValueError(tr("Actualiza el análisis de las referencias antes de revisar el prompt."))
+            if self.model.get() not in self.catalog.get(self.platform.get(), []):
+                raise ValueError(tr("Selecciona un modelo disponible."))
+            specs = self.revision_specs()
+            attach = self.reference_use.get() == "Adjuntar imágenes"
+            check_attachment(specs, self.mode.get(), len(self.refs), attach, self.attachment_confirmed.get())
+            brief = generation_request(self.mode.get(), self.refs, self.analysis.get("1.0", "end").strip(),
+                self.idea.get("1.0", "end").strip(), self.preserve.get(), self.change.get(),
+                self.duration.get(), self.aspect.get(), self.language.get(),
+                json.dumps({"platform": self.platform.get(), "model": self.model.get(), "specs": specs}, ensure_ascii=False),
+                specs.get("is_natural", True), self.target.get(), attach) + self.direction()
+            request = revision_request(brief, self.output.get("1.0", "end").strip(),
+                self.negative.get("1.0", "end").strip(), self.revision_instruction.get(), specs.get("max_chars"), shorten)
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        if not self.checkpoint():
+            return
+        self.status.set(tr("Revisando el prompt con IA… Puede consumir cuota."))
+
+        def done(text):
+            # Validate before replacing any text. Failure leaves the original intact.
+            positive, negative, notes = parse_visual_result(text, specs)
+            for key, value in (("output", positive), ("negative", negative), ("notes", notes)):
+                getattr(self, key).delete("1.0", "end")
+                getattr(self, key).insert("1.0", value)
+            if self.checkpoint():
+                self.status.set(tr("Prompt revisado. El original está en Recuperar versiones."))
+        self.submit(lambda: self.app.deepseek.generar_batch(VISUAL_SYSTEM, request,
+                    temperature=0.2, max_tokens=3500), done)
+
+    def fields(self):
+        fields = {key: getattr(self, key).get() for key in
+                  ("mode", "preserve", "change", "aspect", "duration", "language", "target", "platform", "model", "reference_use", "manual_limit", "revision_instruction", "project_name", "camera", "environment_motion", "audio_direction", "transition_direction", "vision_provider")}
+        fields.update({key: getattr(self, key).get("1.0", "end").strip()
+                       for key in ("idea", "analysis", "output", "negative", "notes")})
+        fields["analysis_stale"] = "true" if self.analysis_stale else "false"
+        return fields
+
+    def checkpoint(self):
+        try:
+            fields = self.fields()
+            if self.refs or any(fields[key] for key in ("idea", "analysis", "output", "negative")):
+                self.history.save(self.refs, fields)
+            return True
+        except Exception as exc:
+            self.status.set(tr("No se pudo guardar la recuperación local: {0}").format(exc))
+            return False
+
+    def autosave_tick(self):
+        if self.closed:
+            return
+        self.checkpoint()
+        self.after(15000, self.autosave_tick)
+
+    def recover(self):
+        # GPromptWindow y no un CTkToplevel pelado: mismo motivo que la vista
+        # previa —el deiconify tardio de CustomTkinter deja la ventana detras—
+        # y aqui SI interesa su deduplicacion por titulo, porque el titulo es
+        # constante y solo debe haber una lista de versiones abierta.
+        window = GPromptWindow(self)
+        window.title(tr("Versiones locales — abrir sin reemplazar el trabajo actual"))
+        window.geometry("700x450")
+        body = ctk.CTkScrollableFrame(window)
+        body.pack(fill="both", expand=True)
+        ctk.CTkLabel(body, text=tr("Últimas 12 versiones por sesión. Se guardan en este equipo.")).pack()
+        versions = self.history.versions()
+        if not versions:
+            ctk.CTkLabel(body, text=tr("Todavía no hay versiones guardadas.")).pack()
+        from modules.visual_history import version_label
+        for path in versions[:100]:
+            ctk.CTkButton(body, text=version_label(path),
+                          command=lambda p=path: self.open_project(p)).pack(fill="x", pady=3)
+
+    def copy_negative(self):
+        text = self.negative.get("1.0", "end").strip()
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.status.set(tr("Negativo copiado por separado."))
+
+    def check_prompt(self):
+        try:
+            specs = self.revision_specs()
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        prompt = self.output.get("1.0", "end").strip()
+        issues = []
+        if not prompt:
+            issues.append(tr("Falta el prompt positivo."))
+        if self.analysis_stale:
+            issues.append(tr("El análisis está pendiente de actualizar."))
+        if self.model.get() not in self.catalog.get(self.platform.get(), []):
+            issues.append(tr("El modelo no está disponible en el catálogo."))
+        limit = specs.get("max_chars")
+        if isinstance(limit, (int, float)) and limit > 0 and len(prompt) > limit:
+            issues.append(tr("Supera el límite: {0}/{1} caracteres.").format(len(prompt), limit))
+        if self.negative.get("1.0", "end").strip() and specs.get("has_negative") is not True:
+            issues.append(tr("No está confirmado que el destino acepte un negativo separado."))
+        try:
+            check_attachment(specs, self.mode.get(), len(self.refs),
+                             self.reference_use.get() == "Adjuntar imágenes", self.attachment_confirmed.get())
+        except ValueError as exc:
+            issues.append(str(exc))
+        result = "\n".join(issues) if issues else tr("Sin incidencias en las comprobaciones disponibles. {0} caracteres.").format(len(prompt))
+        messagebox.showinfo(tr("Revisión del prompt"), result + tr("\n\nRevisa también acción, identidad, cambios e idioma: esta comprobación no verifica el significado ni garantiza compatibilidad."), parent=self)
+
+    def combined_result(self):
+        positive = self.output.get("1.0", "end").strip()
+        negative = self.negative.get("1.0", "end").strip()
+        if positive and negative:
+            return f"POSITIVE PROMPT:\n{positive}\n\nNEGATIVE PROMPT:\n{negative}"
+        if negative:
+            return f"NEGATIVE PROMPT:\n{negative}"
+        return positive
+
+    def copy_positive(self):
+        text = self.output.get("1.0", "end").strip()
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.status.set(tr("Positivo copiado por separado."))
+
+    def copy(self):
+        text = self.combined_result()
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.status.set(tr("Resultado copiado."))
+
+    def apply(self):
+        text = self.combined_result()
+        if text:
+            self.app.dialogs.actualizar_salida(text)
+            self.status.set(tr("Resultado enviado a la salida principal. Tu idea no se ha modificado."))
+
+    def shortfilm(self):
+        """Lleva las referencias, sus funciones y el análisis revisado al
+        Cortometraje, sin volver a describir las imágenes a mano.
+
+        La premisa es la IDEA de este panel, no la caja de la ventana
+        principal: quien está aquí ha escrito su idea aquí. Tampoco hace falta
+        cambiar el modo a VÍDEO antes: esa entrada lo resuelve sola.
+        """
+        if self.analysis_stale:
+            # Mismo candado que generate(): con el analisis caducado, las letras
+            # A/B/C describen unas referencias que ya no son estas, y el guion
+            # saldria con @ref1 apuntando a otra imagen.
+            self.status.set(tr("Las referencias han cambiado. Vuelve a analizar antes de crear el cortometraje."))
+            return
+        idea = self.idea.get("1.0", "end").strip()
+        if len(idea) < 10:
+            self.status.set(tr("Escribe la premisa del cortometraje en «Tu idea» (1-2 frases)."))
+            return
+        try:
+            contexto = shortfilm_context(self.refs, self.analysis.get("1.0", "end"),
+                                         self.preserve.get(), self.change.get())
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        multi = getattr(self.app, "multi", None)
+        if multi is None:
+            self.status.set(tr("El Cortometraje no está disponible desde esta ventana."))
+            return
+        # «Inglés»/«Español» son los valores guardados del panel; el
+        # constructor espera el codigo corto.
+        idioma = "en" if self.language.get() == "Inglés" else "es"
+        # «Segundos» solo esta a la vista cuando la salida del panel es vídeo.
+        # Si esta oculto, su valor es un resto de otra configuración y mandarlo
+        # seria fijar una duración que no has elegido: mejor dejar la banda
+        # ancha de siempre.
+        segundos = None
+        if output_kind(self.mode.get(), self.target.get()) == "video":
+            try:
+                segundos = duration_seconds(self.duration.get())
+            except ValueError as exc:
+                self.status.set(str(exc))
+                return
+        if not multi.cmd_cortometraje(premisa=idea, contexto=contexto,
+                                      idioma=idioma, aspecto=self.aspect.get(),
+                                      segundos=segundos):
+            # Cancelar la pregunta del numero de escenas no genera nada: decir
+            # «van tus referencias» ahi seria mentir.
+            self.status.set(tr("Cortometraje cancelado. No se ha generado nada."))
+            return
+        mapa = shortfilm_ref_map(self.refs)
+        if mapa:
+            self.status.set(tr("Cortometraje en marcha. Sube al generador: {0}").format(
+                " · ".join(f"{etiqueta} = {nombre}" for etiqueta, nombre in mapa)))
+        else:
+            self.status.set(tr("Cortometraje en marcha. Sin referencias de personaje: el guion los inventará."))
+
+
+def open_visual_studio(app):
+    previous = getattr(app, "_visual_studio", None)
+    if previous is not None and previous.winfo_exists():
+        previous.bring_forward()
+        return previous
+    app._visual_studio = VisualStudio(app)
+    return app._visual_studio

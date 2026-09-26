@@ -1,7 +1,8 @@
 """Glosario de términos AI — ventana con categorías y acciones clicables.
 
-El contenido vive en data/glosario.json (47 entradas con: titulo, desc,
-categoría, acción opcional). Renderiza agrupado por categoría con
+El contenido vive en data/glosario.json y, en inglés, en data/glosario.en.json
+(entradas con: titulo, desc, categoría, acción opcional; un test vigila que
+los dos vayan a la par). Renderiza agrupado por categoría con
 buscador, filtro y botón "▶ Probar" en las que mapean a funciones reales
 de la app.
 """
@@ -95,8 +96,8 @@ def abrir_glosario(app):
     fila2.pack(fill="x", padx=20, pady=(0, 12))
     ctk.CTkLabel(fila2, text=tr("Categoría:"), text_color=text_muted).pack(side="left", padx=(0, 10))
 
-    opciones_cat = ["📚 Todas"] + categorias
-    filtro_var = ctk.StringVar(value="📚 Todas")
+    opciones_cat = [tr("📚 Todas")] + categorias
+    filtro_var = ctk.StringVar(value=tr("📚 Todas"))
     seg = ctk.CTkSegmentedButton(
         fila2,
         values=opciones_cat,
@@ -183,7 +184,7 @@ def abrir_glosario(app):
             w.destroy()
         f = filtro_texto.strip().lower()
         cat_sel = filtro_var.get()
-        cat_sel_real = None if cat_sel == "📚 Todas" else cat_sel
+        cat_sel_real = None if cat_sel == tr("📚 Todas") else cat_sel
 
         # Filtrar
         filtradas: list[dict] = []

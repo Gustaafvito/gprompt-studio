@@ -258,8 +258,6 @@ class AnalysisComponent(_Component):
     def mostrar_consejo_contextual(self, modelo_name: str, specs: dict) -> None:
         return self._service._mostrar_consejo_contextual(modelo_name, specs)
 
-    def cmd_modal_compatibilidad(self) -> None:
-        return self._service._cmd_modal_compatibilidad()
 
 
 class DataComponent(_Component):
@@ -489,6 +487,9 @@ class UiEventsComponent(_Component):
     def on_brief_cambio(self) -> None:
         return self._service._on_brief_cambio()
 
+    def avisar_nsfw(self, modelo: str | None = None) -> str | None:
+        return self._service.avisar_nsfw(modelo)
+
     def actualizar_motores_video(self) -> None:
         return self._service._actualizar_motores_video()
 
@@ -518,8 +519,10 @@ class MultiPromptComponent(_Component):
     def cmd_storyboard_imagen(self) -> None:
         return self._service._cmd_storyboard_imagen()
 
-    def cmd_cortometraje(self) -> None:
-        return self._service._cmd_cortometraje()
+    def cmd_cortometraje(self, premisa=None, contexto=None, idioma=None,
+                         aspecto=None, segundos=None):
+        return self._service._cmd_cortometraje(premisa, contexto, idioma,
+                                               aspecto, segundos)
 
     def cmd_random_walk(self) -> None:
         return self._service._cmd_random_walk()

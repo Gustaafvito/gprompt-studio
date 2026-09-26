@@ -728,7 +728,8 @@ class BackupExportService:
                     txt = " ".join([s.get("nombre", ""), str(s.get("estilos", [])), s.get("plataforma", ""),
                                      s.get("modelo_img", ""), s.get("modelo_vid", "")]).lower()
                     if termino in txt:
-                        desc = f"Modelo: {s.get('modelo_img') or s.get('modelo_vid', '')}, Estilos: {', '.join(s.get('estilos', [])[:3])}"
+                        desc = tr("Modelo: {0}, Estilos: {1}").format(
+                            s.get('modelo_img') or s.get('modelo_vid', ''), ', '.join(s.get('estilos', [])[:3]))
                         resultados.append((tr("💎 Seed"), s.get("nombre", "?"), desc, lambda seed=s: self.app._aplicar_seed(seed)))
 
             if filtros["snippets"].get():
@@ -752,16 +753,17 @@ class BackupExportService:
 
             if filtros["personajes"].get():
                 for p in (self.app.store.personajes or []):
-                    txt = (p.get("nombre", "") + " " + p.get("rasgos", "")).lower()
+                    txt = (p.get("nombre", "") + " " + (p.get("descripcion") or "")).lower()
                     if termino in txt:
-                        resultados.append((tr("🧑 Personaje"), p.get("nombre", "?"), p.get("rasgos", "")[:200],
+                        resultados.append((tr("🧑 Personaje"), p.get("nombre", "?"), (p.get("descripcion") or "")[:200],
                                             lambda nombre=p.get("nombre", ""): self.app.combo_personaje.set(nombre) if hasattr(self.app, 'combo_personaje') else None))
 
             if filtros["loras"].get():
                 for l in (self.app.store.loras or []):
-                    txt = (l.get("nombre", "") + " " + l.get("descripcion", "")).lower()
+                    txt = " ".join(l.get(k) or "" for k in ("nombre", "trigger", "descripcion", "rasgos_visuales")).lower()
                     if termino in txt:
-                        resultados.append((tr("🔗 LoRA"), l.get("nombre", "?"), l.get("descripcion", "")[:200],
+                        detalle = " · ".join(x for x in (l.get("trigger") or "", l.get("descripcion") or "") if x)
+                        resultados.append((tr("🔗 LoRA"), l.get("nombre", "?"), detalle[:200],
                                             lambda nombre=l.get("nombre", ""): self.app.combo_lora.set(nombre) if hasattr(self.app, 'combo_lora') else None))
 
             if not resultados:
@@ -798,7 +800,7 @@ class BackupExportService:
 
                 btn = ctk.CTkButton(card, text=tr("✅ Aplicar"), width=90, height=22, fg_color=P.BTN_EXITO,
                                       font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
-                                      command=lambda a=accion: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(nombre or tipo), P.TXT_OK)))
+                                      command=lambda a=accion, n=nombre or tipo: (a(), vent.destroy(), self.app.dialogs.set_estado(tr('✅ Aplicado: {0}').format(n), P.TXT_OK)))
                 btn.pack(anchor="e", padx=8, pady=(0, 4))
 
         # Debounce: cada tecla cancela el `after` pendiente y reprograma.
@@ -810,12 +812,5 @@ class BackupExportService:
                 except Exception as _e2: logger.debug(f"[silent] {_e2}")
             _busqueda_pendiente["after_id"] = vent.after(250, buscar)
         ent.bind("<KeyRelease>", _disparar_busqueda)
+        buscar()
 
-    def _close_menu_if_open(self, event=None) -> None:
-        """Cierra el menú desplegable si está abierto."""
-        if hasattr(self.app, '_menu_activo') and self.app._menu_activo:
-            try:
-                self.app._menu_activo.destroy()
-            except Exception as _e:
-                logger.debug(f"[silent] {_e}")
-            self.app._menu_activo = None

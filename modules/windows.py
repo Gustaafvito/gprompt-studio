@@ -504,7 +504,8 @@ def abrir_loras(app):
             hdr.pack(fill="x", padx=5, pady=(5, 2))
             hdr.pack_propagate(False)
             familia = l.get("familia", "")
-            badge_familia = f"  [{familia}]" if familia else ""
+            # Sin repetir la familia si el nombre ya la lleva («… [Z Image] [Z Image]»).
+            badge_familia = f"  [{familia}]" if familia and f"[{familia}]" not in l["nombre"] else ""
             ctk.CTkLabel(hdr,
                          text=tr('  🔗 {0}{1}   →   trigger: "{2}"').format((l['nombre']), (badge_familia), (l['trigger'])),
                          font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
@@ -1355,10 +1356,15 @@ def abrir_lista(app, coleccion, titulo, color_hdr):
         lora_e  = f"  🔗{entrada['lora'][:15]}" if entrada.get("lora") else ""
         plat_e  = f"  [{entrada['plataforma'][:15]}]" if entrada.get("plataforma") else ""
         ratio_t = f"  [{ratio_e}]" if ratio_e and ratio_e != tr("Libre") else ""
+        # Alineada a la izquierda y con los estilos acortados: centrada, al
+        # no caber se recortaba POR LOS DOS LADOS y se perdía la fecha
+        # («08 | IMAGEN…» en vez de «2026-09-25 22:08 | IMAGEN…»).
+        if len(estilos) > 70:
+            estilos = estilos[:67].rstrip(" ,+") + "…"
         ctk.CTkLabel(hdr,
                      text=f"  {fecha}  |  {modo_e.upper()}{nsfw_e}{ratio_t}{plat_e}{pers_e}{lora_e}  |  {estilos}",
-                     font=ctk.CTkFont(size=P.FUENTE_CUERPO),
-                     text_color=cc["card_hdr_text"]).pack(side="left", padx=8)
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO), anchor="w",
+                     text_color=cc["card_hdr_text"]).pack(side="left", padx=8, fill="x", expand=True)
 
         # Nota (solo estrellas). Aparece encima del contenido si existe.
         nota = entrada.get("nota", "") if coleccion == "estrellas" else ""

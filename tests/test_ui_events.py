@@ -57,6 +57,7 @@ def _host(**overrides):
             pack_forget=MagicMock(),
             configure=MagicMock(),
         ),
+        pintar_info_modelo=MagicMock(),
         _safe_pack=MagicMock(),
         _tabview_container=SimpleNamespace(),
         # Estos métodos pertenecen al mixin testeado. Algunos tests los
@@ -249,7 +250,7 @@ class TestOnMotorCambio:
         h._on_motor_cambio("SoloImagen")  # no debe lanzar
         assert h.app.combo_ratio_v._state["values"] == ["16:9", "9:16", "1:1"]
         h.app.ratio_var.set.assert_called_with("16:9")
-        assert h.app.lbl_img_model_info.configure.called  # descripción cargada
+        assert h.app.pintar_info_modelo.called  # descripción cargada
 
     def test_motor_name_por_defecto_lee_del_combo(self, monkeypatch):
         monkeypatch.setattr(
@@ -297,7 +298,7 @@ class TestOnMotorAudioCambio:
         )
         h = _host()
         h._on_motor_audio_cambio("Suno v5")
-        h.app.lbl_img_model_info.configure.assert_called()
+        assert "letras complejas" in h.app.pintar_info_modelo.call_args[0][0]
         msg = h.app.set_estado.call_args[0][0]
         assert "Suno v5" in msg
 

@@ -60,7 +60,8 @@ LLM_PROVIDERS = {
         "model_default": "claude-sonnet-5",
         "modelos": [
             "claude-fable-5-1",    # tope de gama ($10/$50)
-            "claude-opus-5",       # Opus actual ($5/$25)
+            "claude-opus-5-5",     # Opus nuevo, y MAS BARATO ($4/$20)
+            "claude-opus-5",       # Opus anterior ($5/$25)
             "claude-sonnet-5",     # equilibrio ($2/$10) — default
             "claude-haiku-4-5",    # rápido y barato ($1/$5)
             "claude-opus-4-8",     # generación anterior ($5/$25)
@@ -255,9 +256,16 @@ LLM_PROVIDERS = {
         # familia 5.x/6 no esta en PRECIOS_USD_1M_MODELO, asi que el contador
         # de gasto les aplica el respaldo del proveedor (el de gpt-4o). Es una
         # aproximacion, no un dato: hay que leerlos del panel y rellenarlos.
-        "model_default": "gpt-4o-mini",
+        # El default pasa de gpt-4o-mini a gpt-6-luna el 24-sep-2026: es mas
+        # barato en LAS DOS dimensiones ($0,10/$0,50 frente a $0,15/$0,60) y dos
+        # generaciones mas nuevo. El candado que exige que el default sea el mas
+        # barato no cambia nada por si solo —falla y obliga a decidir—, y esta
+        # es la decision.
+        "model_default": "gpt-6-luna",
         "modelos": [
             "gpt-6-astra",     # la generacion nueva
+            "gpt-6-sol",       # flagship de la 6
+            "gpt-6-luna",      # el mas barato de toda la lista: el default
             "gpt-5.6-sol",     # flagship de la 5.6
             "gpt-5.6-terra",   # coste menor, rinde como 5.5
             "gpt-5.6-luna",    # el mas rapido de la 5.6
@@ -455,6 +463,11 @@ IMAGE_PROVIDERS = {
 PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     "claude-fable-5-1":          (10.00, 50.00),
     "claude-fable-5":            (10.00, 50.00),
+    # Opus 5.5 baja de precio respecto a Opus 5, no sube: $4/$20 frente a
+    # $5/$25. Verificado el 23-sep-2026 contra la referencia oficial de la API,
+    # y la key del usuario lo sirve. Rechaza sampling como el resto de la
+    # familia 5, pero modelo_acepta_temperature() ya lo cubre por startswith.
+    "claude-opus-5-5":           (4.00, 20.00),
     "claude-opus-5":             (5.00, 25.00),
     "claude-sonnet-5":           (2.00, 10.00),   # más barato que Sonnet 4.6
     "claude-opus-4-8":           (5.00, 25.00),
@@ -484,6 +497,12 @@ PRECIOS_USD_1M_MODELO: dict[str, tuple[float, float]] = {
     # (08-sep-2026). Sirven para que el contador de gasto de un orden de
     # magnitud razonable en vez de aplicar el respaldo de gpt-4o a todos;
     # si alguna vez cuadran mal contra el panel de facturacion, el panel manda.
+    # gpt-6-sol y gpt-6-luna: precios del changelog oficial de OpenAI,
+    # entrada del 22-sep-2026, verificado el 24-sep. Tarifa estandar para
+    # peticiones de hasta 272.000 tokens de entrada; por encima, y para cache
+    # writes, OpenAI publica tramos aparte que aqui NO se modelan.
+    "gpt-6-sol":                 (2.00, 10.00),
+    "gpt-6-luna":                (0.10,  0.50),
     "gpt-6-astra":               (10.00, 50.00),
     "gpt-5.6-sol":               (5.00, 30.00),
     "gpt-5.6-terra":             (2.00, 12.00),
@@ -800,6 +819,27 @@ def _local_cacheado(clave: str, consultar):
     _CACHE_LOCAL[clave] = (ahora, res)
     return res
 
+
+# Reintento cuando la respuesta se queda sin presupuesto (vacía o cortada a
+# media frase). Los valores y su porqué, en OpenAICompatibleProvider.
+FACTOR_REINTENTO = 3
+TECHO_REINTENTO = 16000
+PISO_REINTENTO = 4000
+
+
+def presupuesto_ampliado(max_tokens: int) -> int:
+    """El max_tokens del reintento: ×3, al menos 4000 y como mucho 16000."""
+    return min(max(max_tokens * FACTOR_REINTENTO, PISO_REINTENTO), TECHO_REINTENTO)
+
+
+def _gemini_cortada(response) -> bool:
+    """True si Gemini paró por el límite de tokens (finish_reason MAX_TOKENS)."""
+    try:
+        return "MAX_TOKENS" in str(response.candidates[0].finish_reason)
+    except Exception:
+        return False
+
+
 class BaseLLMProvider:
     """Interfaz que todos los proveedores deben implementar."""
 
@@ -896,8 +936,8 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     # Cuanto se amplia el presupuesto al reintentar con un razonador, y hasta
     # donde. Un modelo que "piensa" gasta esos tokens del mismo max_tokens: con
     # el presupuesto normal se lo funde razonando y devuelve vacio.
-    _FACTOR_REINTENTO = 3
-    _TECHO_REINTENTO = 16000
+    _FACTOR_REINTENTO = FACTOR_REINTENTO
+    _TECHO_REINTENTO = TECHO_REINTENTO
     # Suelo del reintento. Medido el 06-sep-2026 contra la API de DeepSeek: V4
     # (pro Y flash, los dos razonan) quema entre 263 y 780 tokens pensando ANTES
     # de escribir nada. Con presupuestos pequeños —el boton "Sugerir negative"
@@ -905,7 +945,7 @@ class OpenAICompatibleProvider(BaseLLMProvider):
     # 1500 o menos, que es justo el margen donde unas veces entra y otras no:
     # de ahi que el usuario reportara que "suele" fallar. 4000 responde siempre
     # en la medicion, y solo se gasta cuando el sintoma ya ha ocurrido.
-    _PISO_REINTENTO = 4000
+    _PISO_REINTENTO = PISO_REINTENTO
 
     # Manias por modelo, APRENDIDAS del propio 400 y recordadas para pagar el
     # error una sola vez por modelo y proceso. Se guardan por MODELO y no por
@@ -994,6 +1034,24 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                     f"{modelo}: razonamiento agotó {max_tokens} tokens sin "
                     f"responder; reintentando con {ampliado}")
                 content, fr = self._llamar(messages, temperature, ampliado, modelo)
+
+        elif fr == "length":
+            # Respuesta A MEDIAS: el razonador piensa, empieza a escribir y se
+            # le acaba el max_tokens en mitad de una frase. Llegaba con HTTP
+            # 200 y texto, así que se daba por buena y el usuario copiaba un
+            # prompt cortado (26-sep-2026, MiniMax H3: acababa en «…of
+            # <Picture 2> are»). Mismo remedio que la respuesta vacía.
+            ampliado = min(max(max_tokens * self._FACTOR_REINTENTO,
+                               self._PISO_REINTENTO), self._TECHO_REINTENTO)
+            if ampliado > max_tokens:
+                logger.info(
+                    f"{modelo}: respuesta cortada a {len(content)} chars con "
+                    f"{max_tokens} tokens; reintentando con {ampliado}")
+                otro, fr_otro = self._llamar(messages, temperature, ampliado, modelo)
+                if otro.strip() and (fr_otro != "length" or len(otro) > len(content)):
+                    content, fr = otro, fr_otro
+            if fr == "length":
+                logger.warning(f"{modelo}: la respuesta sigue cortada (finish_reason=length)")
 
         if not content.strip():
             if fr == "length":
@@ -1213,18 +1271,29 @@ class GeminiProvider(BaseLLMProvider):
             system_instruction=system_instruction if system_instruction else None,
         )
 
+        response = self._pedir_gemini(cliente, modelo, contents, config)
+        if _gemini_cortada(response):
+            # Gemini 2.5 también piensa dentro de max_output_tokens: cortada
+            # a media frase, un reintento con más (ver OpenAICompatibleProvider).
+            ampliado = presupuesto_ampliado(max_tokens)
+            if ampliado > max_tokens:
+                logger.info(f"{modelo}: respuesta cortada con {max_tokens} tokens; reintentando con {ampliado}")
+                config.max_output_tokens = ampliado
+                response = self._pedir_gemini(cliente, modelo, contents, config)
+
+        return _limpiar_respuesta_gemini(response.text or "")
+
+    def _pedir_gemini(self, cliente, modelo, contents, config):
         response = cliente.models.generate_content(
             model=modelo,
             contents=contents,
             config=config,
         )
-
         meta = getattr(response, "usage_metadata", None)
         if meta is not None:
             self._registrar_uso(getattr(meta, "prompt_token_count", 0),
                                 getattr(meta, "candidates_token_count", 0))
-
-        return _limpiar_respuesta_gemini(response.text or "")
+        return response
 
 
 # Modelos Claude que RECHAZAN parámetros de sampling (temperature/top_p/
@@ -1308,11 +1377,14 @@ class ClaudeProvider(BaseLLMProvider):
             kwargs_api["temperature"] = temperature
         if system_prompt:
             kwargs_api["system"] = system_prompt
-        res = self._cliente.messages.create(**kwargs_api)
-        usage = getattr(res, "usage", None)
-        if usage is not None:
-            self._registrar_uso(getattr(usage, "input_tokens", 0),
-                                getattr(usage, "output_tokens", 0))
+        res = self._pedir_claude(kwargs_api)
+        if getattr(res, "stop_reason", "") == "max_tokens":
+            # Cortada a media frase por el presupuesto (ver el mismo caso en
+            # OpenAICompatibleProvider.completar): un reintento con más.
+            ampliado = presupuesto_ampliado(max_tokens)
+            if ampliado > max_tokens:
+                logger.info(f"{modelo}: respuesta cortada con {max_tokens} tokens; reintentando con {ampliado}")
+                res = self._pedir_claude({**kwargs_api, "max_tokens": ampliado})
         # `content` puede venir vacío o sin bloques de texto (respuesta
         # filtrada / refusal) — mismo guard que el provider OpenAI, sin él
         # esto revienta con un IndexError críptico.
@@ -1323,6 +1395,14 @@ class ClaudeProvider(BaseLLMProvider):
                 f"{modelo}: respuesta sin texto "
                 f"(stop_reason={getattr(res, 'stop_reason', '?')})")
         return bloques_texto[0]
+
+    def _pedir_claude(self, kwargs_api: dict):
+        res = self._cliente.messages.create(**kwargs_api)
+        usage = getattr(res, "usage", None)
+        if usage is not None:
+            self._registrar_uso(getattr(usage, "input_tokens", 0),
+                                getattr(usage, "output_tokens", 0))
+        return res
 
 
 # FACTORY

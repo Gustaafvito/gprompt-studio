@@ -8,6 +8,7 @@ Cubren la lógica extraída en sesión 19 (sin UI):
 """
 import pytest
 
+from modules import paleta as P
 from modules.tools_analysis import (
     asegurar_etiquetas_prompt,
     color_para_score,
@@ -59,8 +60,8 @@ class TestColorParaScore:
         assert color_para_score(0, 100) == "#e74c3c"
 
     def test_maximo_cero_o_negativo_devuelve_gris(self):
-        assert color_para_score(10, 0) == "#888888"
-        assert color_para_score(10, -5) == "#888888"
+        assert color_para_score(10, 0) == P.TXT_MUTED
+        assert color_para_score(10, -5) == P.TXT_MUTED
 
 
 # ── construir_peticion_scoring ────────────────────────────────────

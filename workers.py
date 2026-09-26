@@ -257,11 +257,25 @@ class DeepSeekWorker:
 
 class VisionChain:
     """
-    Cadena de fallback para análisis de imagen: Gemini → Ollama → OpenRouter.
+    Análisis de imagen, en cadena de fallback o contra un proveedor concreto.
 
-    Si un proveedor falla con 429 (cuota), pasa al siguiente.
-    Si falla con error distinto, lanza excepción.
+    Por defecto encadena Gemini → Ollama → OpenRouter: si uno falla con 429
+    (cuota), pasa al siguiente.
+
+    Pero encadenar no siempre es lo que se quiere. Quien elige Ollama —que
+    corre en local y no cuesta nada— normalmente lo elige PARA no gastar
+    cuota de pago, y una cadena que continúa al fallar hace justo lo contrario:
+    se cae al siguiente y factura sin avisar. Reordenar la cadena no arregla
+    eso, solo cambia a quién se le factura.
+
+    Por eso `describir_con_prompt(..., proveedor="Ollama")` es EXCLUSIVO: si
+    ese proveedor falla, el error se propaga tal cual y no se llama a ningún
+    otro servicio. La cadena automática sigue disponible, pero hay que pedirla
+    (`proveedor=None`), que es lo que hace el resto de la app.
     """
+
+    #: Se usa como valor del desplegable para pedir la cadena completa.
+    AUTOMATICA = "auto"
 
     def __init__(self, clients: "APIClients"):
         self.clients = clients
@@ -289,40 +303,74 @@ class VisionChain:
             nombres = ", ".join(n for n, _ in self.proveedores)
             logger.info(f"VisionChain: cadena activa → {nombres}")
 
+    def nombres_proveedores(self) -> list[str]:
+        """Los proveedores vivos, en el orden en que los probaría la cadena."""
+        return [n for n, _ in self.proveedores]
+
     def describir(
         self,
         imagen_pil,
         modo: str,
-        on_status: Callable[[str], None] | None = None
+        on_status: Callable[[str], None] | None = None,
+        proveedor: str | None = None,
     ) -> tuple[str, str]:
         """
-        Describe una imagen usando la cadena de fallback.
-        Devuelve (descripcion, motor_usado) o lanza excepción.
+        Describe una imagen. Devuelve (descripcion, motor_usado) o lanza.
+
+        `proveedor` None encadena; un nombre usa SOLO ese (ver la clase).
         """
-        return self.describir_con_prompt(imagen_pil, self._prompt_vision(modo), on_status)
+        return self.describir_con_prompt(imagen_pil, self._prompt_vision(modo),
+                                         on_status, proveedor)
 
     def describir_con_prompt(
         self,
         imagen_pil,
         prompt_v: str,
-        on_status: Callable[[str], None] | None = None
+        on_status: Callable[[str], None] | None = None,
+        proveedor: str | None = None,
     ) -> tuple[str, str]:
-        """Misma cadena de fallback pero con un prompt de visión CUSTOM.
+        """Igual que describir() pero con un prompt de visión CUSTOM.
 
         Lo usa el módulo Avatar (ficha desde imagen de referencia,
-        sesión 19) y cualquier caller que necesite un análisis distinto
-        de los modos estándar imagen/vídeo.
+        sesión 19), el panel visual y cualquier caller que necesite un
+        análisis distinto de los modos estándar imagen/vídeo.
+
+        `proveedor=None` (por defecto) encadena, como siempre. Con un nombre,
+        se usa SOLO ese: si falla, el error sube tal cual y NO se llama a
+        ningún otro servicio. Esa es toda la gracia — ver la clase.
         """
+        exclusivo = bool(proveedor) and proveedor != self.AUTOMATICA
+        if exclusivo:
+            candidatos = [(n, f) for n, f in self.proveedores if n == proveedor]
+            if not candidatos:
+                raise RuntimeError(tr(
+                    "El proveedor de visión «{0}» no está disponible. "
+                    "Elige otro o usa la cadena automática.").format(proveedor))
+        else:
+            candidatos = self.proveedores
+
         ultimo_error = None
 
-        for nombre, fn in self.proveedores:
+        for nombre, fn in candidatos:
             if on_status:
-                on_status(f"👁 Probando {nombre}...")
+                on_status(f"👁 {nombre}..." if exclusivo
+                          else f"👁 Probando {nombre}...")
             try:
                 desc, motor = fn(imagen_pil, prompt_v)
                 if desc and len(desc) >= 5:
                     return desc, motor
+                if exclusivo:
+                    # Sin alternativas: una respuesta vacía es un fallo, no un
+                    # motivo para llamar a otro.
+                    raise RuntimeError(tr(
+                        "{0} devolvió un análisis vacío.").format(nombre))
             except Exception as e:
+                if exclusivo:
+                    # Aquí NO se prueba nada más, ni aunque sea un 429: el
+                    # usuario pidió este proveedor y solo este.
+                    logger.warning(
+                        f"VisionChain[{nombre}] falló en modo exclusivo: {e}")
+                    raise
                 ultimo_error = e
                 es_429 = any(x in str(e).lower() for x in ["429", "quota", "resource_exhausted"])
                 logger.warning(f"VisionChain[{nombre}] falló: {e} (rate-limited={es_429})")
@@ -560,7 +608,7 @@ class VisionChain:
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
                         {"type": "text", "text": prompt_v},
                     ]}],
-                    max_tokens=250, temperature=0.1,
+                    max_tokens=1500, temperature=0.1,
                 )
                 desc = res.choices[0].message.content.strip().strip("'\"\n ")
                 if desc and len(desc) >= 5:

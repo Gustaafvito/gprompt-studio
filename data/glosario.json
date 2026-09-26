@@ -332,8 +332,8 @@
       "accion": null
     },
     {
-      "titulo": "🎭 NARRATIVA (MOOD · STORY · BOARD · WALK)",
-      "descripcion": "Cuatro generadores narrativos: Mood (tono/atmósfera), Story (secuencia con principio-desarrollo-final), Board (tablero de escenas) y Walk (recorrido por un entorno).",
+      "titulo": "🎭 NARRATIVA (MOOD · STORY · BOARD · CORTO · WALK)",
+      "descripcion": "Cinco generadores narrativos: Mood (varios prompts con el mismo ambiente y sujetos distintos), Story (planos de una misma escena, solo imagen), Board (fotogramas clave para vídeo), Corto (guion de un cortometraje, solo vídeo) y Walk (árbol de variantes a partir de tu prompt).",
       "categoria": "Herramientas G-Prompt",
       "accion": null
     },
@@ -341,6 +341,42 @@
       "titulo": "📏 MAX_CHARS (LÍMITE DE CARACTERES)",
       "descripcion": "Cada modelo admite un máximo de caracteres en el prompt; pasarse hace que recorte o ignore el final. G-Prompt lo conoce por modelo y avisa o adapta el prompt para respetarlo.",
       "categoria": "Pesos & parámetros",
+      "accion": null
+    },
+    {
+      "titulo": "🖼 CREAR DESDE IMÁGENES",
+      "descripcion": "Crea el prompt a partir de tus propias imágenes: una sola (fiel o reinterpretada), una para animar, un inicio y un final, o de 2 a 4 referencias con su función (personaje, producto, escenario, estilo, iluminación o composición). Analiza, corriges el análisis y genera. Ctrl+Shift+I.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": "cmd_crear_desde_imagenes"
+    },
+    {
+      "titulo": "🎬 CORTOMETRAJE",
+      "descripcion": "Guion de 3 a 12 escenas para generar un corto clip a clip con un modelo de vídeo por referencia. Trae un bloque de personajes con su @ref y, por escena, tiempo, plano, acción, cámara, diálogo y sonido. Avisa si el guion recibido no cuadra.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎞 VÍDEO POR REFERENCIA (REFERENCE-TO-VIDEO)",
+      "descripcion": "Modelos de vídeo (Vidu, Kling…) a los que subes imágenes de personajes, objetos o escenarios y las citas en el prompt con una etiqueta @. Así la misma cara y el mismo sitio se mantienen en clips generados por separado.",
+      "categoria": "Conceptos avanzados",
+      "accion": null
+    },
+    {
+      "titulo": "⚡ MODO BRIEF",
+      "descripcion": "Convierte el prompt en un anuncio. En imagen: un solo punto focal, el producto protagonista y hueco limpio para el titular. En vídeo: gancho en los primeros segundos, tres beats y cierre con llamada a la acción. En audio: una cuña de 15-30 segundos que nombra la marca. El interruptor está junto a Destino; se queda encendido entre sesiones y, mientras lo esté, aparece «⚡ Brief» arriba (pulsarlo lo apaga).",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🎯 DESTINO",
+      "descripcion": "Dónde vas a publicar: Instagram, TikTok, YouTube, LinkedIn, un cliente… Pone el formato típico de esa red, si el modelo lo tiene, y le da al prompt la regla de estilo de ese sitio.",
+      "categoria": "Herramientas G-Prompt",
+      "accion": null
+    },
+    {
+      "titulo": "🔞 MODO NSFW",
+      "descripcion": "Prompts de contenido adulto: anatomía y poses precisas para evitar deformaciones. Se enciende solo si la idea lo pide (desnudo, erótico, nsfw…). Ojo: GPT Image, Nano Banana, Veo, Midjourney o Ideogram filtran los desnudos; con ellos el prompt se queda en sugerente para que no lo rechacen. Para desnudos, un checkpoint SD o Flux. Apagado, el negativo excluye la desnudez.",
+      "categoria": "Herramientas G-Prompt",
       "accion": null
     }
   ]

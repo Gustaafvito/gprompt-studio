@@ -178,10 +178,9 @@ def apply_theme_colors(app):
             fg_color=sw_fg, border_color=trad_border_on if is_trad_on else sw_border_off,
             text_color=trad_text_on if is_trad_on else sw_text_off,
             button_color=sw_button, button_hover_color=sw_button_hover)
-    # switch_brief y switch_instrumental también
-    for sw_attr in ('switch_brief', 'switch_instrumental'):
+    # Los ⚡ Brief (uno por panel) y switch_instrumental también
+    for sw in [*getattr(app, '_switches_brief', []), getattr(app, 'switch_instrumental', None)]:
         try:
-            sw = getattr(app, sw_attr, None)
             if sw and sw.winfo_exists():
                 sw.configure(button_color=sw_button, button_hover_color=sw_button_hover)
         except Exception as _e:
@@ -338,7 +337,7 @@ def apply_theme_colors(app):
     mt = c["muted_text"] if c else ("#4b5563" if is_light else "#9ca3af")
     pl = c["panel_label"] if c else ("#1f2937" if is_light else "#9ca3af")
     pt = c["panel_text"] if c else ("#111827" if is_light else "#e5e7eb")
-    for attr in ("lbl_estado", "lbl_tokens", "lbl_idea_counter", "lbl_compat_inline"):
+    for attr in ("lbl_estado", "lbl_tokens", "lbl_idea_counter"):
         try:
             w = getattr(app, attr, None)
             if w and w.winfo_exists():

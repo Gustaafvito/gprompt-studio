@@ -29,6 +29,7 @@ from config import (
     ESTILOS_AUDIO,
     ESTILOS_IMAGEN,
     ESTILOS_VIDEO,
+    GRUPOS_IMAGEN,
     MODELOS_IMAGEN_FLAT,
     MODELOS_POR_PLATAFORMA_IMAGEN,
     MOTOR_DEFAULT,
@@ -46,6 +47,7 @@ from config import (
     get_model_specs,
 )
 from modules import paleta as P
+from modules.nsfw import aviso as aviso_nsfw
 
 logger = logging.getLogger("gprompt")
 
@@ -165,6 +167,10 @@ class UiEventsService:
         self._on_plataforma_cambio()
         self.app._ocultar_ideas()
         self.app.reiniciar_memoria()
+        # Cada modo enseña paneles de distinto alto encima del resultado.
+        ui = getattr(self.app, "ui", None)
+        if ui is not None:
+            ui.programar_alturas()
 
     def _set_tabs_visibles(self, tabs: list) -> None:
         """Muestra solo las pestañas indicadas en el CTkTabview."""
@@ -269,7 +275,8 @@ class UiEventsService:
             except Exception as _e:
                 logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
-            self.app.lbl_img_model_info.configure(text=f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}", text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), P.TXT_INFO)
 
@@ -282,7 +289,7 @@ class UiEventsService:
                         specs.get('nota') or '?', specs.get('max_chars', '?'),
                         ', '.join(specs.get('duraciones', [])),
                         ', '.join(specs.get('ratios', [])),
-                        specs.get('best_for', '')[:300],
+                        best_for_display(specs)[:300],  # en inglés, la ficha en inglés
                         specs.get('prompt_formula', '?')[:200],
                         specs.get('prompt_ejemplo', '?')[:250])
                 )
@@ -322,6 +329,7 @@ class UiEventsService:
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
+        self.avisar_nsfw(motor_name)
         try: self.app.dialogs._actualizar_tokens()
         except Exception: pass
 
@@ -399,7 +407,7 @@ class UiEventsService:
                        "🎯 Ideal para:\n{2}\n\n📐 Fórmula:\n{3}\n\n"
                        "💡 Ejemplo:\n{4}").format(
                         specs.get('nota') or '?', specs.get('max_chars', '?'),
-                        specs.get('best_for', '')[:300],
+                        best_for_display(specs)[:300],  # en inglés, la ficha en inglés
                         specs.get('prompt_formula', '?')[:200],
                         specs.get('prompt_ejemplo', '?')[:250])
                 )
@@ -432,9 +440,9 @@ class UiEventsService:
                 badges.append(f"🖼×{specs['max_imagenes']}")
 
             badges_str = "  ·  ".join(badges)
-            self.app.lbl_img_model_info.configure(
-                text=tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (best_for_display(specs))),
-                text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(
+                tr('⭐ {0}  ·  📝 {1} chars  ·  {2}  —  {3}').format((specs.get('nota') or 's/n'), (specs['max_chars']), (badges_str), (best_for_display(specs))))
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
 
             try:
@@ -447,6 +455,7 @@ class UiEventsService:
 
         self.app._packear_negative_y_imgref()
         self.app.reiniciar_memoria()
+        self.avisar_nsfw(modelo_name)
         try: self.app.dialogs._actualizar_tokens()
         except Exception: pass
         try:
@@ -467,7 +476,8 @@ class UiEventsService:
         if specs:
             nota_a = specs.get('nota') or 's/n'
             dur_a = specs.get('duracion_max_min') or '?'
-            self.app.lbl_img_model_info.configure(text=tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (best_for_display(specs))), text_color="#8bb4d4")
+            self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
+            self.app.pintar_info_modelo(tr('⭐ {0} | ⏱ {1} min — {2}').format((nota_a), (dur_a), (best_for_display(specs))))
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎵 {0}').format(motor_name), "#9b59b6")
         else:
@@ -490,9 +500,39 @@ class UiEventsService:
             self.app.dialogs.set_estado(tr("🎵 Sin filtros de audio adicionales"))
         self.app.reiniciar_memoria()
 
+    def avisar_nsfw(self, modelo: str | None = None) -> str | None:
+        """Avisa si el modelo y el interruptor 🔞 NSFW no casan (modules/nsfw.py).
+
+        Devuelve la clave del aviso ('filtra', 'adulto_apagado') o None.
+        """
+        modo = self.app.modo_var.get()
+        if modo == "audio":
+            return None
+        if modelo is None:
+            modelo = self.app._modelo_de_modo(modo)
+        try:
+            activo = bool(self.app.switch_nsfw_var.get())
+        except Exception:
+            return None
+        clave = aviso_nsfw(modelo, activo, GRUPOS_IMAGEN)
+        if clave == "filtra":
+            self.app.dialogs.set_estado(tr(
+                "⚠️ {0} filtra los desnudos: en modo NSFW el prompt se queda en "
+                "sugerente para que la plataforma no lo rechace. Para desnudos, "
+                "un checkpoint SD o Flux.").format(modelo), P.TXT_AVISO)
+        elif clave == "adulto_apagado":
+            self.app.dialogs.set_estado(tr(
+                "🔞 {0} es un modelo para adultos y el modo NSFW está apagado: "
+                "el prompt saldrá suavizado. Enciéndelo arriba a la derecha.").format(modelo),
+                P.TXT_AVISO)
+        return clave
+
     def _on_brief_cambio(self) -> None:
         if self.app.brief_var.get():
             self.app.dialogs.set_estado(tr("⚡ Modo Brief ACTIVO — prompts optimizados para anuncios"), P.TXT_ACENTO)
         else:
             self.app.dialogs.set_estado(tr("Modo Brief desactivado — prompts artísticos libres"))
         self.app.reiniciar_memoria()
+        pintar = getattr(self.app, "_pintar_brief", None)
+        if pintar is not None:
+            pintar()

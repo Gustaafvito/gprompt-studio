@@ -28,6 +28,10 @@ import pyperclip
 from modules.i18n import get_idioma, tr
 
 logger = logging.getLogger("gprompt")
+
+# Segundos por escena del Cortometraje. Por debajo de 3s no cabe una accion y
+# por encima de 15s el clip se descontrola en los modelos por referencia.
+SEG_MIN_CORTO, SEG_MAX_CORTO, SEG_DEFAULT_CORTO = 3, 15, 8
 from typing import TYPE_CHECKING
 
 import customtkinter as ctk
@@ -40,6 +44,7 @@ from config import (
 )
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
+from modules.nsfw import filtra_adultos
 from modules.prompt_helpers import (
     extraer_negative_de_texto as _h_extraer_negative,
 )
@@ -58,11 +63,13 @@ from modules.prompt_helpers import (
 from modules.theme import apply_theme_colors
 from modules.windows import abrir_batch, abrir_batch_variables
 from prompts import (
-    BRIEF_MODIFIER,
     NEGATIVE_BASE_NSFW,
     NEGATIVE_BASE_SFW,
     NEGATIVE_BASE_VIDEO,
+    NSFW_MODELO_FILTRADO,
+    SYSTEM_AUDIO_MINIMAX_MUSIC3,
     SYSTEM_AUDIO_SEAART,
+    SYSTEM_AUDIO_SEAART_TAGS,
     SYSTEM_AUDIO_SUNO,
     SYSTEM_IMAGEN_NSFW,
     SYSTEM_IMAGEN_SFW,
@@ -72,6 +79,7 @@ from prompts import (
     SYSTEM_NATURAL_VIDEO_NSFW,
     SYSTEM_VIDEO,
     SYSTEM_VIDEO_NSFW,
+    brief_para_modo,
 )
 from workers import limpiar_marcadores, log_future_exc
 
@@ -79,46 +87,25 @@ if TYPE_CHECKING:
     pass
 
 
+def system_audio_para(motor: str) -> str:
+    """System prompt de audio según el motor.
+
+    Hasta el 25-sep-2026 era «Suno o SeaArt»: Minimax Music 2.5/2.6 y Mureka
+    V9 recibían el de SeaArt («NO uses [Verse]», que es de MusicGo) y a la vez
+    su ficha decía «USA tags estructurales obligatorios».
+    """
+    specs = get_audio_model_specs(motor) or {}
+    if motor.startswith("Suno"):
+        return SYSTEM_AUDIO_SUNO
+    if specs.get("formato") == "minimax_music3":
+        return SYSTEM_AUDIO_MINIMAX_MUSIC3
+    if specs.get("usa_tags_estructurales"):
+        return SYSTEM_AUDIO_SEAART_TAGS
+    return SYSTEM_AUDIO_SEAART
+
+
 class CoreMixin:
     """Mixin containing all core methods: workers, commands, state management."""
-
-    # ON DESTINO CAMBIO
-
-    def _on_destino_cambio(self, valor=None):
-        """Auto-ajustar ratio según destino seleccionado y sincronizar todos los combos."""
-        dest = self.destino_var.get()
-        # Sincronizar todos los combos destino (img/vid/aud)
-        for attr in ['combo_destino_img', 'combo_destino_vid', 'combo_destino_aud']:
-            if hasattr(self, attr):
-                try: getattr(self, attr).set(dest)
-                except Exception: pass
-
-        auto_ratios = {
-            "Instagram":        "9:16",
-            "TikTok":           "9:16",
-            "YouTube":          "16:9",
-            "YouTube Shorts":   "9:16",
-            "Twitter / X":      "16:9",
-            "Anthum (concurso)":"9:16",
-            "LinkedIn":         "1:1",
-            "Web / Blog":       "16:9",
-        }
-        ratio = auto_ratios.get(dest)
-        if ratio:
-            self.ratio_var.set(ratio)
-            if hasattr(self, 'combo_ratio'):
-                self.combo_ratio.set(ratio)
-            if hasattr(self, 'combo_ratio_v'):
-                self.combo_ratio_v.set(ratio)
-            self.set_estado(tr('📐 Destino {0} → Ratio auto: {1}').format(dest, ratio), P.TXT_INFO)
-
-        # Modo concurso: activar Brief automáticamente
-        if dest == "Anthum (concurso)":
-            self.brief_var.set(True)
-            self.events._on_brief_cambio()
-            self.set_estado(tr("🏆 Modo Concurso Anthum — Brief activado, ratio 9:16, máxima calidad"), P.TXT_ACENTO)
-
-        self.reiniciar_memoria()
 
     # MODO FOCUS
 
@@ -130,10 +117,15 @@ class CoreMixin:
 
         if not self._modo_focus_activo:
             # ACTIVAR: ocultar todo excepto entrada, acciones, estado, salida
+            # '_tabview_container' y no 'tabview': el contenedor tiene alto
+            # fijo, así que ocultar solo las pestañas dejaba su hueco vacío.
+            # Y la restauración de abajo empaqueta en la ventana principal,
+            # donde las pestañas —que viven dentro del contenedor— no se
+            # pueden empaquetar: al salir de Focus no volvían nunca.
             ocultar = [
                 '_header_frame', '_modo_frame',
                 'frame_modelo_imagen', 'frame_video', 'frame_audio',
-                'frame_destino', 'tabview',
+                'frame_destino', '_tabview_container',
                 'lbl_img_model_info', 'frame_img_ref',
             ]
             self._focus_pack_order = []
@@ -158,6 +150,8 @@ class CoreMixin:
 
             self._modo_focus_activo = True
             self.set_estado(tr("🎯 Modo Focus ACTIVO — pulsa ✕ para salir"), P.BTN_ACENTO)
+            # Cambian las franjas visibles: la idea puede recuperar su alto.
+            self.ui.programar_alturas()
         else:
             # DESACTIVAR: quitar botón flotante
             if self._focus_exit_btn:
@@ -206,6 +200,8 @@ class CoreMixin:
                 self.update_idletasks()
             except Exception as _e:
                 logger.debug(f"[silent] {_e}")
+            # Vuelven las pestañas: hay que repartir otra vez el alto.
+            self.ui.programar_alturas()
 
             # Repintar colores del tema
             try:
@@ -331,6 +327,15 @@ class CoreMixin:
 
     # LÓGICA CORE
 
+    def _modelo_de_modo(self, modo):
+        """El modelo elegido en el modo dado ('' si su combo aún no existe)."""
+        combo = {"video": "combo_modelo_video", "audio": "combo_modelo_audio"}.get(
+            modo, "combo_modelo_imagen")
+        try:
+            return getattr(self, combo).get()
+        except Exception:
+            return ""
+
     def reiniciar_memoria(self):
         modo    = self.modo_var.get()
         es_nsfw = self.switch_nsfw_var.get()
@@ -340,9 +345,9 @@ class CoreMixin:
 
         if modo == "audio":
             motor = self.combo_modelo_audio.get() if hasattr(self, 'combo_modelo_audio') else "Suno v5"
-            sys_p = SYSTEM_AUDIO_SUNO if motor.startswith("Suno") else SYSTEM_AUDIO_SEAART
+            sys_p = system_audio_para(motor)
             sys_p = self.prompts.inyectar_specs_audio(sys_p)
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
             return
@@ -355,7 +360,9 @@ class CoreMixin:
             else:
                 sys_p = SYSTEM_NATURAL_SFW
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
+                sys_p = sys_p + NSFW_MODELO_FILTRADO
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
         else:
@@ -372,7 +379,9 @@ class CoreMixin:
             neg_final = neg_base + (", " + neg_custom if neg_custom else "")
             sys_p = sys_p.replace("[negative tags]", neg_final)
             sys_p = self.prompts.inyectar_specs_modelo(sys_p)
-            if brief: sys_p = sys_p + BRIEF_MODIFIER
+            if es_nsfw and filtra_adultos(self._modelo_de_modo(modo)):
+                sys_p = sys_p + NSFW_MODELO_FILTRADO
+            if brief: sys_p = sys_p + brief_para_modo(modo)
             sys_p = self.prompts.inyectar_destino(sys_p)
             self.deepseek.reiniciar(sys_p)
 
@@ -864,8 +873,8 @@ class CoreMixin:
         if not idea:
             self.set_estado(tr("⚠️ Escribe o selecciona una idea primero."), P.TXT_AVISO)
             return
-        # Detectar NSFW automáticamente
-        self.analysis.detectar_nsfw_auto(idea)
+        # Si la idea pide contenido explícito, se enciende 🔞 NSFW.
+        nsfw_encendido = self.analysis.detectar_nsfw_auto(idea)
         # Mejora 14: log sesión
         try:
             modelo = (self.combo_modelo_imagen.get() if self.modo_var.get() == "imagen" else
@@ -874,7 +883,14 @@ class CoreMixin:
             self.sesion._sesion_log(f"✨ Generó prompt · idea: \"{idea[:60]}{'…' if len(idea) > 60 else ''}\" · modelo: {modelo}")
         except Exception as e:
             logger.debug(f"[silent] {e}")
-        self.set_estado(tr("⏳ Compilando prompt..."), P.TXT_ACENTO)
+        # El aviso va en el mismo mensaje: uno aparte lo pisaba este al instante.
+        self.set_estado(tr("⏳ Compilando prompt... 🔞 NSFW activado: tu idea lo pide.")
+                        if nsfw_encendido else tr("⏳ Compilando prompt..."), P.TXT_ACENTO)
+        if nsfw_encendido:
+            # Y también flotando: probado por el usuario el 24-sep, los
+            # mensajes de progreso lo pisaban enseguida y solo se veía el
+            # interruptor encendido, sin saber por qué.
+            self.show_toast(tr("🔞 NSFW activado: tu idea lo pide"), "#dc2626", 6000)
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_prompt_traduccion, idea).add_done_callback(log_future_exc)
 
@@ -912,15 +928,21 @@ class CoreMixin:
         self._executor.submit(self.workers.worker_prompt_quick, idea).add_done_callback(log_future_exc)
 
     def _pedir_n_modal(self, titulo, descripcion, n_min, n_max, default,
-                        key_pref=None):
+                        key_pref=None, segundos=None, segundos_key=None):
         """Modal pequeño con slider para elegir N. Devuelve int o None
         si el usuario cancela.
 
         - `key_pref`: si se pasa, recuerda la última N usada en
           `preferencias[key_pref]`.
+        - `segundos`: si se pasa (los segundos por defecto), el modal añade un
+          segundo slider «Segundos por escena» con la duración total calculada,
+          y devuelve la tupla `(n, segundos)` en vez de `n`. Así el
+          Cortometraje se prepara entero desde aquí, sin salir a cambiar el
+          destino del panel. Cancelar sigue devolviendo None en los dos casos.
         - El método bloquea con `wait_window()` para devolver el valor
           sincrónicamente, permitiendo usar `if n is None: return`.
         """
+        pide_segundos = segundos is not None
         # Cargar última N de preferencias si key_pref existe
         if key_pref:
             try:
@@ -929,10 +951,20 @@ class CoreMixin:
             except Exception as _e:
                 logger.debug(f"[silent _pedir_n cargar] {_e}")
         default = max(n_min, min(n_max, default))
+        if pide_segundos and segundos_key:
+            try:
+                prefs = self.store.cargar_preferencias()
+                segundos = int(prefs.get(segundos_key, segundos))
+            except Exception as _e:
+                logger.debug(f"[silent _pedir_n cargar seg] {_e}")
+        try:
+            segundos = max(SEG_MIN_CORTO, min(SEG_MAX_CORTO, int(float(segundos))))
+        except (TypeError, ValueError):
+            segundos = SEG_DEFAULT_CORTO
 
         sel = GPromptWindow(self)
         sel.title(titulo)
-        sel.geometry("440x240")
+        sel.geometry("440x380" if pide_segundos else "440x240")
         sel.transient(self)
         sel.grab_set()
 
@@ -964,10 +996,49 @@ class CoreMixin:
                      font=ctk.CTkFont(size=P.FUENTE_HINT),
                      text_color=P.TXT_MUTED_OSCURO).pack(pady=(0, 8))
 
+        seg_var = ctk.IntVar(value=segundos)
+        if pide_segundos:
+            lbl_total = ctk.CTkLabel(sel, text="", text_color=P.TXT_MUTED,
+                                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA))
+
+            def _refrescar_total():
+                lbl_total.configure(text=tr('Duración total: {0} × {1} s = {2} s').format(
+                    n_var.get(), seg_var.get(), n_var.get() * seg_var.get()))
+
+            ctk.CTkLabel(sel, text=tr('Segundos por escena'),
+                         font=ctk.CTkFont(size=P.FUENTE_SECCION)).pack(pady=(4, 0))
+            lbl_seg = ctk.CTkLabel(sel, text=str(segundos),
+                                   font=ctk.CTkFont(size=18, weight="bold"),
+                                   text_color=P.TXT_OK)
+            lbl_seg.pack()
+
+            def _on_slide_seg(v):
+                s = int(round(float(v)))
+                seg_var.set(s)
+                lbl_seg.configure(text=str(s))
+                _refrescar_total()
+
+            slider_seg = ctk.CTkSlider(sel, from_=SEG_MIN_CORTO, to=SEG_MAX_CORTO,
+                                       number_of_steps=SEG_MAX_CORTO - SEG_MIN_CORTO,
+                                       command=_on_slide_seg, width=320)
+            slider_seg.set(segundos)
+            slider_seg.pack(pady=(0, 4))
+            lbl_total.pack(pady=(0, 8))
+            _refrescar_total()
+            # El total tambien cambia al mover N.
+            slider.configure(command=lambda v: (_on_slide(v), _refrescar_total()))
+
         resultado = {"n": None}
 
         def _aceptar():
             n = n_var.get()
+            if pide_segundos and segundos_key:
+                try:
+                    prefs_s = self.store.cargar_preferencias()
+                    prefs_s[segundos_key] = seg_var.get()
+                    self.store.guardar_preferencias(prefs_s)
+                except Exception as _e:
+                    logger.debug(f"[silent _pedir_n guardar seg] {_e}")
             if key_pref:
                 try:
                     prefs_g = self.store.cargar_preferencias()
@@ -990,7 +1061,11 @@ class CoreMixin:
 
         sel.bind("<Return>", lambda _e: _aceptar())
         sel.wait_window()
-        return resultado["n"]
+        if not pide_segundos:
+            return resultado["n"]
+        if resultado["n"] is None:
+            return None
+        return resultado["n"], seg_var.get()
 
     def cmd_variaciones(self):
         self._ocultar_ideas()
@@ -1034,6 +1109,10 @@ class CoreMixin:
         self.sesion._sesion_log("👁 Analizó imagen de referencia")
         self.toggle_botones(False)
         self._executor.submit(self.workers.worker_vision).add_done_callback(log_future_exc)
+
+    def cmd_crear_desde_imagenes(self):
+        from modules.visual_studio import open_visual_studio
+        open_visual_studio(self)
 
     def cmd_imagen_a_prompt(self):
         if self.modo_var.get() == "audio" or not self.imagen_cargada: return

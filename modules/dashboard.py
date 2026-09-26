@@ -359,7 +359,7 @@ class DashboardService:
                          fg_color="transparent", text_color=text_primary).pack(pady=(8, 2))
             ctk.CTkLabel(card, text=val, font=ctk.CTkFont(size=18, weight="bold"),
                          fg_color="transparent", text_color=col_acc).pack()
-            ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=P.FUENTE_HINT),
+            ctk.CTkLabel(card, text=tr(label), font=ctk.CTkFont(size=P.FUENTE_HINT),
                          fg_color="transparent", text_color=text_secondary).pack(pady=(0, 6))
         for ci in range(len(stats)):
             stats_frame.grid_columnconfigure(ci, weight=1)
@@ -409,9 +409,9 @@ class DashboardService:
             bar_container = ctk.CTkFrame(col_frame, fg_color="transparent", height=38)
             bar_container.pack(fill="x")
             bar_container.pack_propagate(False)
-            # Spacer para alinear barras al fondo del contenedor
-            spacer = ctk.CTkFrame(bar_container, fg_color="transparent")
-            spacer.pack(fill="both", expand=True)
+            # Pegada al fondo con side="bottom", sin espaciador: el que había
+            # era un CTkFrame, que pide 200 px de alto por defecto, y se
+            # comía los 38 del contenedor. Las barras no se vieron nunca.
             bar = ctk.CTkFrame(bar_container,
                                 fg_color=accent_blue if val > 0 else bar_bg,
                                 height=altura_barra, corner_radius=2)
@@ -462,7 +462,9 @@ class DashboardService:
                 emoji_modo = {"imagen": "🖼", "video": "🎬", "audio": "🎵"}.get(modo_n, "•")
                 row = ctk.CTkFrame(modo_card, fg_color="transparent")
                 row.pack(fill="x", padx=12, pady=2)
-                ctk.CTkLabel(row, text=f"{emoji_modo} {modo_n.capitalize()}",
+                nombre_modo = tr({"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}.get(
+                    modo_n, modo_n.capitalize()))
+                ctk.CTkLabel(row, text=f"{emoji_modo} {nombre_modo}",
                              font=ctk.CTkFont(size=P.FUENTE_PEQUENA), width=100, anchor="w",
                              fg_color="transparent", text_color=text_primary).pack(side="left")
                 ctk.CTkLabel(row, text=f"{count} ({pct}%)",
@@ -707,7 +709,9 @@ class DashboardService:
             def _abrir_keys():
                 v.destroy()
                 try:
-                    self.app._cmd_api_keys()
+                    # Llamaba a app._cmd_api_keys, que no existe: el botón
+                    # solo decía «configura tu key» en vez de abrir el gestor.
+                    self.app.dialogs._cmd_configurar_api_keys()
                 except Exception:
                     self.app.dialogs.set_estado(tr("Configura tu key en 🔑 (header)"), accent_amber)
             ctk.CTkButton(estado_row, text=tr("🔑 Configurar"), width=100, height=22,
@@ -718,8 +722,10 @@ class DashboardService:
         avisos = []
         if not disponible:
             avisos.append(("⚠️", tr("Sin LLM configurado"), accent_red))
-        if len(historial) >= 90:
-            avisos.append(("📋", tr("Historial casi lleno ({0}/100)").format(len(historial)), accent_amber))
+        from persistence import HISTORIAL_MAX
+        if len(historial) >= HISTORIAL_MAX * 0.9:
+            avisos.append(("📋", tr("Historial al límite ({0}/{1}): se descartan los más antiguos").format(
+                len(historial), HISTORIAL_MAX), accent_amber))
         if not personajes:
             avisos.append(("🧑", tr("No tienes personajes guardados"), text_muted))
         if not plantillas:

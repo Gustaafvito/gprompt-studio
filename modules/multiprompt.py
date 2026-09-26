@@ -28,6 +28,7 @@ Dependencias self (provistas por ArquitectoApp y demás mixins):
 """
 import datetime
 import logging
+import re
 import tkinter as tk
 
 import customtkinter as ctk
@@ -39,47 +40,195 @@ from modules.gprompt_window import GPromptWindow
 from modules.i18n import get_idioma, tr
 from workers import limpiar_marcadores, log_future_exc
 
+# El formato decide como se encuadra: un corto 16:9 no se rueda como uno 9:16.
+ORIENTACION_CORTO = {"9:16": "vertical", "4:5": "vertical",
+                     "1:1": "cuadrado", "16:9": "apaisado"}
+
+# Etiquetas del formato de salida del guion, por idioma. Ver el comentario en
+# construir_peticion_cortometraje(): en español se mantienen exactamente las de
+# siempre, asi que la entrada clasica no nota este cambio.
+# La banda que la plantilla pide cuando no se fija una duracion exacta. Si
+# cambia ahi, cambia aqui: el comprobador mide contra lo que se pidio.
+BANDA_CORTO = (5, 12)
+
+_RE_ESCENA = re.compile(r"^===\s*(?:ESCENA|SCENE)\s+(\d+)\s*===",
+                        re.MULTILINE | re.IGNORECASE)
+_RE_TIEMPO = re.compile(r"^(?:Tiempo|Time)\s*:\s*([\d.,]+)\s*[-\u2013\u2014]\s*([\d.,]+)",
+                        re.MULTILINE | re.IGNORECASE)
+_RE_REF = re.compile(r"@ref(\d+)", re.IGNORECASE)
+
+
+def _num(texto):
+    try:
+        return float(str(texto).strip().replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def revisar_guion_cortometraje(texto, n, segundos=None, n_refs=None):
+    """Avisos sobre el guion RECIBIDO. Devuelve una lista de textos, vacia si
+    todo cuadra.
+
+    Pedirle algo al modelo no garantiza que lo cumpla: el primer guion real
+    traia una escena de 13s con una banda de 5-12s. Esto se comprueba en local
+    y no cuesta ninguna llamada, asi que se mira siempre.
+
+    No corrige nada: avisa. Un guion con un tramo raro puede seguir sirviendo,
+    y quien decide es el usuario.
+    """
+    texto = texto or ""
+    avisos = []
+
+    escenas = [int(x) for x in _RE_ESCENA.findall(texto)]
+    if len(escenas) != n:
+        avisos.append(tr("Pediste {0} escenas y el guion trae {1}.").format(
+            n, len(escenas)))
+    # Numerar dos veces la misma escena pasaba desapercibido: el guion parece
+    # entero y al montarlo te faltan clips.
+    if escenas and escenas != list(range(1, len(escenas) + 1)):
+        avisos.append(tr("Las escenas no van numeradas 1, 2, 3…: {0}.").format(
+            ", ".join(str(e) for e in escenas)))
+
+    tramos = []
+    for ini_txt, fin_txt in _RE_TIEMPO.findall(texto):
+        ini, fin = _num(ini_txt), _num(fin_txt)
+        if ini is not None and fin is not None:
+            tramos.append((ini, fin))
+    # Sin campo de tiempo no hay nada que medir, y antes eso se traducia en
+    # silencio: cuantos menos tramos, menos avisos. Justo al reves de lo que
+    # tiene que pasar.
+    if escenas and len(tramos) != len(escenas):
+        avisos.append(tr("{0} escenas y solo {1} con un tiempo legible.").format(
+            len(escenas), len(tramos)))
+
+    objetivo = _num(segundos) if segundos else None
+    fin_anterior = 0.0
+    for i, (ini, fin) in enumerate(tramos, 1):
+        if abs(ini - fin_anterior) > 0.01:
+            avisos.append(tr("La escena {0} empieza en {1}s, pero la anterior acababa en {2}s.").format(
+                i, f"{ini:g}", f"{fin_anterior:g}"))
+        duracion = fin - ini
+        if objetivo:
+            if abs(duracion - objetivo) > 0.01:
+                avisos.append(tr("La escena {0} dura {1}s en vez de {2}s.").format(
+                    i, f"{duracion:g}", f"{objetivo:g}"))
+        elif not (BANDA_CORTO[0] - 0.01 <= duracion <= BANDA_CORTO[1] + 0.01):
+            # Sin duracion fija la plantilla sigue pidiendo 5-12s, asi que hay
+            # contra que medir. El recorrido clasico se quedaba sin revisar.
+            avisos.append(tr("La escena {0} dura {1}s, fuera de los {2}-{3}s que pide la plantilla.").format(
+                i, f"{duracion:g}", BANDA_CORTO[0], BANDA_CORTO[1]))
+        fin_anterior = fin
+
+    if n_refs:
+        usadas = {int(x) for x in _RE_REF.findall(texto)}
+        sobran = sorted(usadas - set(range(1, n_refs + 1)))
+        if sobran:
+            avisos.append(tr("El guion usa {0}, y solo tienes {1} referencia(s).").format(
+                ", ".join("@ref" + str(s) for s in sobran), n_refs))
+
+    return avisos
+
+
+def _total_corto(segundos, n):
+    """Duracion total, o cadena vacia si los segundos no son un numero.
+
+    El campo del panel es texto libre, asi que puede traer cualquier cosa; en
+    ese caso se prefiere no decir nada antes que inventarse un total.
+    """
+    try:
+        total = float(str(segundos).strip().replace(",", ".")) * n
+    except (TypeError, ValueError):
+        return ""
+    return f"{total:g}"
+
+
+ETIQUETAS_CORTO = {
+    "es": {"personajes": "PERSONAJES", "escena": "ESCENA", "tiempo": "Tiempo",
+           "plano": "Plano", "tema": "Tema", "accion": "Acción",
+           "camara": "Cámara", "dialogo": "Diálogo", "sfx": "SFX"},
+    "en": {"personajes": "CHARACTERS", "escena": "SCENE", "tiempo": "Time",
+           "plano": "Shot", "tema": "Theme", "accion": "Action",
+           "camara": "Camera", "dialogo": "Dialogue", "sfx": "SFX"},
+}
+
 
 def construir_peticion_cortometraje(logline: str, contexto_personajes: str,
-                                    n: int, idioma: str = "es") -> str:
+                                    n: int, idioma: str = "es",
+                                    aspecto: str = None,
+                                    segundos: str = None) -> str:
     """Petición al LLM para un guion de cortometraje de N escenas en el formato
     del flujo SeaArt reference-to-video: bloque PERSONAJES (con prompt de imagen
     + etiqueta @ref) + N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
     Función pura (sin estado) para testearla aislada."""
-    idioma_txt = "INGLÉS" if (idioma or "es").startswith("en") else "ESPAÑOL"
+    ingles = (idioma or "es").startswith("en")
+    idioma_txt = "INGLÉS" if ingles else "ESPAÑOL"
+    # Las etiquetas de la PLANTILLA van en el idioma pedido. Con la plantilla
+    # siempre en español, el modelo copiaba esas etiquetas y arrastraba a
+    # español los campos cortos —Plano y Tema— aunque el guion se pidiera en
+    # inglés: salía un guion mezclado. El resto de la petición sigue en
+    # español, como todos los constructores: es carga para el LLM, no interfaz.
+    E = ETIQUETAS_CORTO["en" if ingles else "es"]
+    # Sin aspecto se mantiene la formula de siempre, palabra por palabra: la
+    # entrada clasica no cambia de comportamiento por este parametro nuevo.
+    orientacion = ORIENTACION_CORTO.get(aspecto or "", "vertical")
+    formato_txt = f"\nFORMATO: {aspecto} ({orientacion})" if aspecto else ""
+    # Sin duracion se mantiene la banda 5-12s de siempre. Con ella, el reparto
+    # deja de ser una sugerencia: un «5-12s» sin objetivo concreto produce
+    # escenas que se van de la banda, y los clips hay que generarlos uno a uno.
+    duracion_txt = ""
+    regla_duracion = "- Cada escena es un clip independiente de 5-12s.\n"
+    if segundos:
+        total = _total_corto(segundos, n)
+        duracion_txt = f"\nDURACIÓN POR ESCENA: {segundos} segundos"
+        if total:
+            duracion_txt += f" (duración total del corto: {total} segundos)"
+        regla_duracion = (
+            f"- Cada escena dura EXACTAMENTE {segundos} segundos.\n"
+            f"- Los tramos de tiempo se encadenan sin huecos ni solapes, "
+            f"empezando en 0.\n")
     pers = (contexto_personajes or "").strip() or \
         "Inventa 1-2 protagonistas coherentes a partir de la premisa."
     return (
-        "Eres un director de cortometrajes virales de IA (drama vertical estilo "
+        "Eres un director de cortometrajes virales de IA (drama " + orientacion + " estilo "
         "Netflix/redes). A partir de la PREMISA escribe un guion para generar el "
         "corto ESCENA POR ESCENA con un modelo de vídeo por REFERENCIA (Vidu/Kling): "
         "se suben imágenes de los personajes y se etiqueta cada uno con @ref para "
         "mantener la coherencia del rostro.\n\n"
         f"PREMISA: {logline}\n"
         f"PERSONAJES: {pers}\n"
-        f"NÚMERO DE ESCENAS: {n}\n\n"
-        f"Devuelve TODO en {idioma_txt}, con EXACTAMENTE este formato (sin texto extra):\n\n"
-        "=== PERSONAJES ===\n"
+        f"NÚMERO DE ESCENAS: {n}{formato_txt}{duracion_txt}\n\n"
+        f"Devuelve TODO en {idioma_txt} —incluidas las etiquetas del formato—, "
+        "con EXACTAMENTE este formato (sin texto extra):\n\n"
+        f"=== {E['personajes']} ===\n"
         "[Nombre1] @ref1: <prompt de IMAGEN para diseñar al personaje — edad, etnia, "
         "pelo, ojos, complexión, vestuario, atmósfera, iluminación cinematográfica, "
         "8K, ultra-detallado, retrato>\n"
         "[Nombre2] @ref2: <igual, si la premisa tiene 2 protagonistas>\n\n"
-        "=== ESCENA 1 ===\n"
-        "Tiempo: 0-Xs\n"
-        "Plano: <tipo de plano (primer plano, plano medio, general, contrapicado…)>\n"
-        "Tema: <gancho/emoción central de la escena>\n"
-        "Acción: <descripción visual detallada de lo que ocurre; etiqueta a los "
+        f"=== {E['escena']} 1 ===\n"
+        f"{E['tiempo']}: 0-Xs\n"
+        f"{E['plano']}: <tipo de plano (primer plano, plano medio, general, contrapicado…)>\n"
+        f"{E['tema']}: <gancho/emoción central de la escena>\n"
+        f"{E['accion']}: <descripción visual detallada de lo que ocurre; etiqueta a los "
         "personajes como Nombre@ref donde aparezcan>\n"
-        "Cámara: <movimiento de cámara concreto>\n"
-        "Diálogo: <Nombre: \"línea breve\">  (usa \"—\" si no hay)\n"
-        "SFX: <efectos de sonido>\n\n"
-        f"=== ESCENA 2 ===\n... (continúa hasta === ESCENA {n} ===)\n\n"
+        f"{E['camara']}: <movimiento de cámara concreto>\n"
+        f"{E['dialogo']}: <Nombre: \"línea breve\">  (usa \"—\" si no hay)\n"
+        f"{E['sfx']}: <efectos de sonido>\n\n"
+        f"=== {E['escena']} 2 ===\n... (continúa hasta === {E['escena']} {n} ===)\n\n"
         "REGLAS:\n"
         "- Coherencia: usa el MISMO @ref para cada personaje en TODAS las escenas.\n"
+        "- UNA sola acción principal y UN solo movimiento de cámara por escena. "
+        "Cada escena se genera como un clip aparte: acumular entrada, paso, ráfaga "
+        "y primer plano en la misma produce un clip incontrolable. Si la idea "
+        "necesita más, repártela entre escenas.\n"
+        "- Fija en el bloque de personajes el vestuario y los objetos recurrentes "
+        "—abrigo, bufanda, mochila, teléfono— y descríbelos IGUAL en todas las "
+        "escenas donde aparezcan. Lo que no quede fijado ahí, cada clip lo "
+        "generará distinto.\n"
         "- Arco narrativo: gancho inicial → desarrollo → giro → clímax → cierre potente.\n"
-        "- Cada escena es un clip independiente de 5-12s.\n"
+        + regla_duracion +
         "- Diálogos cortos y con punch; describe SIEMPRE la acción visual.\n"
         "- Mantén una paleta y atmósfera coherentes entre escenas."
+        + (f"\n- Encuadra todos los planos para {aspecto} ({orientacion})." if aspecto else "")
     )
 
 logger = logging.getLogger(__name__)
@@ -585,34 +734,72 @@ class MultiPromptService:
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     # ── Cortometraje (guion multi-escena para vídeo reference-to-video) ──
-    def _cmd_cortometraje(self):
+    def _cmd_cortometraje(self, premisa=None, contexto=None, idioma=None,
+                          aspecto=None, segundos=None):
         """Genera un GUION de cortometraje de N escenas (flujo SeaArt
         reference-to-video): bloque de personajes con prompts de imagen +
         N escenas con Tiempo/Plano/Tema/Acción/Cámara/Diálogo/SFX.
+
+        Devuelve True solo si el guion ha llegado a pedirse, para que quien
+        llama pueda distinguir «en marcha» de «el usuario canceló».
+
+        Con `premisa` llega desde «Crear desde imágenes»: la idea y el contexto
+        de personajes vienen del panel, ya con las funciones de las referencias
+        y el análisis revisado. Ese camino NO pasa por el candado de modo: un
+        guion de cortometraje es vídeo por definición, y obligar a cerrar el
+        panel para cambiar el desplegable del modo era el tropiezo que había
+        que evitar. Sin `premisa` todo se comporta igual que siempre.
         """
-        if self.app.modo_var.get() != "video":
+        desde_panel = premisa is not None
+        if not desde_panel and self.app.modo_var.get() != "video":
             return self.app.dialogs.set_estado(
                 tr("⚠️ El Cortometraje solo está disponible en modo VÍDEO."), P.TXT_AVISO)
-        idea = self.app.txt_idea.get("1.0", "end").strip()
+        idea = (premisa if desde_panel
+                else self.app.txt_idea.get("1.0", "end")).strip()
         if not idea or len(idea) < 10:
             return self.app.dialogs.set_estado(
                 tr("⚠️ Escribe la PREMISA del cortometraje (1-2 frases)."), P.TXT_AVISO)
 
-        n = self.app._pedir_n_modal(
-            tr("🎬 Cortometraje — número de escenas"),
-            tr("¿Cuántas escenas? Cada una es un clip de vídeo independiente."),
-            n_min=3, n_max=12, default=6, key_pref="corto_n",
-        )
-        if n is None:
-            return
+        if desde_panel:
+            # Escenas y duración en la misma ventana: preparar un corto no
+            # debería obligar a cerrar el panel para cambiarle el destino solo
+            # para que aparezca el campo «Segundos». La cadena vacía significa
+            # «usa el valor recordado, o el de por defecto del modal».
+            elegido = self.app._pedir_n_modal(
+                tr("🎬 Cortometraje — escenas y duración"),
+                tr("¿Cuántas escenas y cuánto dura cada una?\n"
+                   "Cada escena es un clip de vídeo independiente."),
+                n_min=3, n_max=12, default=6, key_pref="corto_n",
+                segundos=segundos or "", segundos_key="corto_segundos",
+            )
+            if elegido is None:
+                return
+            n, segundos = elegido[0], str(elegido[1])
+        else:
+            n = self.app._pedir_n_modal(
+                tr("🎬 Cortometraje — número de escenas"),
+                tr("¿Cuántas escenas? Cada una es un clip de vídeo independiente."),
+                n_min=3, n_max=12, default=6, key_pref="corto_n",
+            )
+            if n is None:
+                return
 
         pers_ctx = ""
-        try:
-            pers_ctx = self.app.footer.personaje_activo() or ""
-        except Exception as _e:
-            logger.debug(f"[silent personaje] {_e}")
+        if desde_panel:
+            # Las referencias del panel YA definen el reparto. Mezclarlas con el
+            # personaje activo del pie daria dos repartos distintos al guionista.
+            pers_ctx = contexto or ""
+        else:
+            try:
+                pers_ctx = self.app.footer.personaje_activo() or ""
+            except Exception as _e:
+                logger.debug(f"[silent personaje] {_e}")
 
-        peticion = construir_peticion_cortometraje(idea, pers_ctx, n, get_idioma())
+        # El idioma y el formato los manda el panel cuando viene de ahi: son
+        # opciones que el usuario ya eligio y que antes se ignoraban. Sin ellos
+        # se usa el idioma de la interfaz, como siempre.
+        peticion = construir_peticion_cortometraje(
+            idea, pers_ctx, n, idioma or get_idioma(), aspecto, segundos)
 
         try: self.app._sesion_log(f"🎬 Cortometraje: guion de {n} escenas")
         except Exception as e:
@@ -627,8 +814,15 @@ class MultiPromptService:
                 resp = self.app.deepseek.generar(peticion, temperature=0.85, max_tokens=max_tok)
                 resp = limpiar_marcadores(resp)
 
+                # Cuantas referencias hay se deduce del contexto, que las
+                # enumera: asi la entrada clasica —que no trae @ref— no dispara
+                # este aviso.
+                usadas = [int(x) for x in _RE_REF.findall(pers_ctx)]
+                avisos = revisar_guion_cortometraje(
+                    resp, n, segundos, max(usadas) if usadas else None)
+
                 def _mostrar():
-                    self._mostrar_guion_cortometraje(resp, n)
+                    self._mostrar_guion_cortometraje(resp, n, avisos)
                     self.app.dialogs.set_estado(
                         tr('🎬 Guion de {0} escenas listo').format(n), P.TXT_OK)
                     self.app.dialogs.toggle_botones(True)
@@ -640,9 +834,14 @@ class MultiPromptService:
                 self.app.after(0, lambda: self.app.dialogs.toggle_botones(True))
 
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
+        return True
 
-    def _mostrar_guion_cortometraje(self, texto: str, n: int):
-        """Ventana con el guion del cortometraje + copiar/exportar."""
+    def _mostrar_guion_cortometraje(self, texto: str, n: int, avisos=None):
+        """Ventana con el guion del cortometraje + copiar/exportar.
+
+        `avisos` son los de revisar_guion_cortometraje(): se muestran arriba,
+        donde se ven antes de copiar el guion.
+        """
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
         v = GPromptWindow(self.app)
@@ -655,6 +854,13 @@ class MultiPromptService:
         ctk.CTkLabel(
             v, text=tr("Genera cada escena en SeaArt; etiqueta los personajes con @ref para mantener la cara."),
             font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 8))
+
+        if avisos:
+            ctk.CTkLabel(
+                v, text="⚠️ " + "  ·  ".join(avisos), wraplength=700,
+                justify="left", text_color=P.TXT_AVISO,
+                font=ctk.CTkFont(size=P.FUENTE_PEQUENA)).pack(
+                    fill="x", padx=12, pady=(0, 6))
 
         txt = ctk.CTkTextbox(v, wrap="word",
                              font=ctk.CTkFont(family="Consolas", size=P.FUENTE_SECCION))

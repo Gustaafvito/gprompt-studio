@@ -40,6 +40,7 @@ from modules import (
     install_components,
 )
 from modules import paleta as P
+from modules.espacio_ventana import geometria_inicial, recortar_a_lineas
 from persistence import DataStore
 from workers import (
     DeepSeekWorker,
@@ -370,13 +371,55 @@ class ArquitectoApp(
         self.lbl_img_model_info = ctk.CTkLabel(
             self, text="", font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_INFO,
             corner_radius=6, wraplength=1800, justify="left", anchor="w")
+        # El ajuste de línea sigue al ancho de la VENTANA: con 1800 fijo, en
+        # cualquier ventana más estrecha la primera línea se salía por la
+        # derecha. Ojo: escuchar a la propia etiqueta cuelga la app —cada
+        # ajuste cambia su ancho (medido: 1310 → 1322 → 1304) y una barra
+        # de CustomTkinter se queda redibujándose sin fin—.
+        self._ancho_info_modelo = None
+        self.bind("<Configure>", self._ajustar_info_modelo, add="+")
         self.ui._build_tabs_centrales()
         self.ui._build_imagen_ref()
         self.ui._build_entrada()
         self.ui._build_acciones()
         self.ui._build_estado()
         self.ui._build_salida()
+        # El resultado primero: pestañas e idea ceden alto cuando falta.
+        self.bind("<Configure>", self.ui.programar_alturas, add="+")
+        self.after_idle(self.ui.programar_alturas)
         self.atajos.bind_shortcuts()
+
+    def _ajustar_info_modelo(self, evento):
+        """Ajusta la línea de la ficha del modelo al ancho de la ventana."""
+        if evento.widget is not self or evento.width == self._ancho_info_modelo:
+            return
+        self._ancho_info_modelo = evento.width
+        try:
+            escala = ctk.ScalingTracker.get_widget_scaling(self.lbl_img_model_info)
+            # Sus márgenes (30 a cada lado) y un respiro para el texto.
+            ancho = max(200, int(evento.width / escala) - 80)
+            if ancho != self.lbl_img_model_info.cget("wraplength"):
+                self.lbl_img_model_info.configure(wraplength=ancho)
+                self.pintar_info_modelo()
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+
+    def pintar_info_modelo(self, texto=None):
+        """Pone la ficha del modelo, recortada a dos líneas del ancho actual.
+
+        Sin `texto`, repinta la última con el ancho de ahora (al redimensionar).
+        """
+        if texto is not None:
+            self._info_modelo_completo = texto
+        completo = getattr(self, "_info_modelo_completo", "")
+        try:
+            fuente = self.lbl_img_model_info.cget("font")
+            recortado = recortar_a_lineas(
+                completo, fuente.measure, self.lbl_img_model_info.cget("wraplength"))
+        except Exception as _e:
+            logger.debug(f"[silent] {_e}")
+            recortado = completo
+        self.lbl_img_model_info.configure(text=recortado)
 
     def _setup_post_init(self):
         """Datos iniciales, preferencias, atajos, timers y cierre del splash."""
@@ -653,34 +696,13 @@ class ArquitectoApp(
         - Centra la ventana en la pantalla.
         """
         try:
-            # Tamaño bruto del monitor PRIMARIO
+            # Tamaño bruto del monitor PRIMARIO, en píxeles reales
             screen_w = self.winfo_screenwidth()
             screen_h = self.winfo_screenheight()
-
-            # Restar barra de tareas estimada (Windows: ~40px abajo)
-            usable_h = max(screen_h - 60, 600)
-
-            # Tamaño objetivo según resolución
-            if screen_w <= 1400:           # HD pequeñas (1366x768, 1280x720)
-                w = int(screen_w * 0.95)
-                h = int(usable_h * 0.92)
-            elif screen_w <= 1920:         # Full HD estándar
-                w = int(screen_w * 0.72)
-                h = int(usable_h * 0.88)
-            elif screen_w <= 2560:         # QHD / 2K
-                w = int(screen_w * 0.62)
-                h = int(usable_h * 0.82)
-            else:                          # 4K+
-                w = min(int(screen_w * 0.50), 1600)
-                h = min(int(usable_h * 0.78), 1200)
-
-            # Clamp para garantizar mínimos sensatos
-            w = max(820, w)
-            h = max(620, h)
-
-            # Centrar en la pantalla
-            x = max(0, (screen_w - w) // 2)
-            y = max(0, (usable_h - h) // 2)
+            # CTk.geometry() multiplica por el escalado de Windows: el cálculo
+            # tiene que devolver unidades lógicas. Ver modules/espacio_ventana.
+            escala = ctk.ScalingTracker.get_window_scaling(self)
+            w, h, x, y = geometria_inicial(screen_w, screen_h, escala)
 
             self.geometry(f"{w}x{h}+{x}+{y}")
 
@@ -1382,7 +1404,10 @@ class ArquitectoApp(
                      text_color=c["muted_text"]).pack(side="left", padx=10)
 
         # Slot para el botón de restaurar — recreado por _refrescar_restaurar_btn
-        restaurar_slot = ctk.CTkFrame(hdr_frame, fg_color="transparent")
+        # height explícito: un CTkFrame vacío pide 200 px por defecto, y esta
+        # ranura (casi siempre vacía) estiraba la cabecera dejando un hueco
+        # enorme encima y debajo del título (barrido del 25-sep-2026).
+        restaurar_slot = ctk.CTkFrame(hdr_frame, fg_color="transparent", height=28)
         restaurar_slot.pack(side="right")
 
         def _restaurar_borradas():
@@ -2491,12 +2516,19 @@ class ArquitectoApp(
     def cmd_preferencias(self):
         ventana = GPromptWindow(self)
         ventana.title(tr("⚙️ Ajustes del Sistema"))
-        ventana.geometry("500x400")
+        ventana.geometry("520x600")
         ventana.transient(self)
         ventana.grab_set()
 
-        # --- Sin tabs, solo un panel directo (API Keys ya están en 🔑 del header) ---
-        tab_gen = ventana
+        # «Guardar» va PRIMERO y abajo, y el resto en un panel con
+        # desplazamiento. Con la ventana a 500x400 el contenido no cabía:
+        # «💾 Guardar Preferencias» y la ruta de ComfyUI quedaban fuera de la
+        # vista, y no había forma de guardar sin agrandarla a mano (barrido
+        # del 25-sep-2026).
+        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color=P.TXT_OK, hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
+        btn_guardar.pack(side="bottom", pady=(8, 16))
+        tab_gen = ctk.CTkScrollableFrame(ventana, fg_color="transparent")
+        tab_gen.pack(fill="both", expand=True)
 
         # Cerebro por defecto (dinámico desde LLM_PROVIDERS)
         try:
@@ -2567,7 +2599,8 @@ class ArquitectoApp(
                       border_width=1).pack(anchor="w", padx=10, pady=(5, 2))
         ctk.CTkLabel(tab_gen,
                      text=tr("    Captura toda la pantalla a 5 FPS (MP4 H.264). Requiere: pip install mss imageio[ffmpeg]"),
-                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED).pack(anchor="w", padx=10)
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED,
+                     wraplength=440, justify="left").pack(anchor="w", padx=10)
 
         ctk.CTkLabel(tab_gen, text=tr("📁 Ruta de ComfyUI (opcional, para auto-discovery):"),
                      font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(15, 2), padx=20)
@@ -2593,11 +2626,8 @@ class ArquitectoApp(
 
         ctk.CTkLabel(tab_gen,
                      text=tr("    Si seleccionas tu carpeta de ComfyUI, los modelos se detectan automáticamente."),
-                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED).pack(anchor="w", padx=10)
-
-        # Botón Guardar Abajo
-        btn_guardar = ctk.CTkButton(ventana, text=tr("💾 Guardar Preferencias"), fg_color=P.TXT_OK, hover_color="#27ae60", command=lambda: self._guardar_y_cerrar_preferencias(ventana))
-        btn_guardar.pack(pady=(0, 20))
+                     font=ctk.CTkFont(size=P.FUENTE_HINT, slant="italic"), text_color=P.TXT_MUTED,
+                     wraplength=440, justify="left").pack(anchor="w", padx=10)
 
     def _guardar_y_cerrar_preferencias(self, ventana):
         nuevo_llm = self.combo_default_llm.get()

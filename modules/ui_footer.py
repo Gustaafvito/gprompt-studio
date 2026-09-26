@@ -901,6 +901,29 @@ class UiFooterService:
                       fg_color=c["fg_dark"],
                       command=vent.destroy).pack(side="left", padx=4)
 
+    def refrescar_al_poner(self, combo) -> None:
+        """Un .set() por código no llama al command del combo: al poner un
+        personaje o un LoRA desde la Biblioteca, la Búsqueda global o un Setup,
+        «Fuentes activas» y el trigger del LoRA seguían enseñando el anterior.
+        Ahora cada .set() programa un refresco (uno solo aunque lleguen varios)."""
+        set_original = combo.set
+
+        def set_y_refrescar(valor):
+            set_original(valor)
+            if getattr(self, "_refresco_pendiente", False):
+                return
+            self._refresco_pendiente = True
+
+            def refrescar():
+                self._refresco_pendiente = False
+                for paso in (self._actualizar_lora_trigger_visible, self.actualizar_fuentes_activas):
+                    try:
+                        paso()
+                    except Exception as e:
+                        logger.debug(f"[silent refresco fuentes] {e}")
+            self.app.after_idle(refrescar)
+        combo.set = set_y_refrescar
+
     def _actualizar_lora_trigger_visible(self):
         """Muestra el trigger del LoRA seleccionado al lado del combo (Mejora LoRAs)."""
         if not hasattr(self.app, "lbl_lora_trigger"): return
@@ -918,7 +941,7 @@ class UiFooterService:
         # Verificar compatibilidad con modelo actual
         compatible = self._es_lora_compatible(familia)
         if compatible is False:
-            warning = "  ⚠️ familia distinta"
+            warning = "  " + tr("⚠️ familia distinta")
             color = "#f39c12"
         elif compatible is True:
             warning = "  ✓"

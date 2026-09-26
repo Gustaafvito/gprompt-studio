@@ -5,7 +5,7 @@ import re
 
 import pyperclip
 
-from modules.i18n import tr, tr_es
+from modules.i18n import al_idioma_actual, tr, tr_es
 
 logger = logging.getLogger(__name__)
 from tkinter import messagebox
@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import customtkinter as ctk
 
+from config import DESTINOS
 from config import get_theme_colors as _get_tc
 from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
@@ -193,17 +194,19 @@ class ToolsWorkflowService:
             # Ratio, destino
             for key, attr in [("ratio", "ratio_var"), ("destino", "destino_var")]:
                 v = setup.get(key)
+                if key == "destino":
+                    v = al_idioma_actual(v, DESTINOS)
                 if v and hasattr(self.app, attr):
                     try: getattr(self.app, attr).set(v)
                     except Exception as e:
                         logger.debug(f"[silent] {e}")
             # Personaje y LoRA (son combos directos)
             if setup.get("personaje") and hasattr(self.app, "combo_personaje"):
-                try: self.app.combo_personaje.set(setup["personaje"])
+                try: self.app.combo_personaje.set(al_idioma_actual(setup["personaje"]))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             if setup.get("lora") and hasattr(self.app, "combo_lora"):
-                try: self.app.combo_lora.set(setup["lora"])
+                try: self.app.combo_lora.set(al_idioma_actual(setup["lora"]))
                 except Exception as e:
                     logger.debug(f"[silent] {e}")
             if "nsfw" in setup and hasattr(self.app, "switch_nsfw_var"):
@@ -438,6 +441,11 @@ class ToolsWorkflowService:
         vent.protocol("WM_DELETE_WINDOW", _on_cerrar)
 
         def _ejecutar_cron():
+            # Un segundo clic arrancaba OTRA cadena en paralelo: dos variantes
+            # a la vez y el doble de llamadas a la API.
+            if cron_state["activo"]:
+                self.app.dialogs.set_estado(tr("⏲ El cron ya está en marcha: detenlo antes de lanzar otro."), P.TXT_AVISO)
+                return
             try:
                 cantidad = int(ent_cantidad.get())
                 intervalo = float(ent_intervalo.get())
@@ -544,6 +552,10 @@ class ToolsWorkflowService:
             self.app.dialogs.set_estado(tr('⏲ Cron iniciado: {0} variantes cada {1}min').format((cantidad), (intervalo)), P.TXT_OK)
 
         def _detener():
+            # Sin nada en marcha decía «Cron detenido en variante 0/5».
+            if not cron_state["activo"]:
+                self.app.dialogs.set_estado(tr("⏹ No hay ningún cron en marcha."))
+                return
             cron_state["activo"] = False
             if cron_state["after_id"]:
                 try: vent.after_cancel(cron_state["after_id"])
@@ -598,7 +610,9 @@ class ToolsWorkflowService:
         vent.geometry("700x500")
         vent.transient(self.app)
 
-        ctk.CTkLabel(vent, text=tr('📜 {0} versiones en esta sesión').format(len(self.app._versiones_prompt)),
+        n_versiones = len(self.app._versiones_prompt)
+        ctk.CTkLabel(vent, text=tr('📜 1 versión en esta sesión') if n_versiones == 1
+                     else tr('📜 {0} versiones en esta sesión').format(n_versiones),
                      font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(10, 3))
         ctk.CTkLabel(vent, text=tr("Click en una versión para restaurarla"),
                      font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"]).pack(pady=(0, 10))
@@ -791,7 +805,9 @@ class ToolsWorkflowService:
                 card.pack(fill="x", pady=3)
                 ctk.CTkLabel(card, text=f"  ⚡ {m.get('nombre', '?')}",
                              font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold"), text_color=c["hdr_text"]).pack(anchor="w", padx=8, pady=(4, 0))
-                pasos_str = " → ".join(m.get("pasos", []))
+                # Los pasos se guardan por su clave en castellano: traducirlos
+                # al mostrarlos, o en inglés la lista salía en castellano.
+                pasos_str = " → ".join(tr(p) for p in m.get("pasos", []))
                 ctk.CTkLabel(card, text=f"  {pasos_str}", font=ctk.CTkFont(size=P.FUENTE_PEQUENA),
                              text_color=c["muted_text"], wraplength=620, justify="left", anchor="w").pack(fill="x", padx=8, pady=(0, 2))
                 btn_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -1127,6 +1143,9 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     tr('⚠️ Error adaptando: {0}').format(e), P.TXT_ERROR))
 
+        # Sin esto, durante los segundos que tarda la IA no se veía nada y
+        # parecía que el clic no había hecho efecto (barrido del 25-sep).
+        self.app.dialogs.set_estado(tr("⏳ Adaptando el prompt al modelo activo…"), P.TXT_ACENTO)
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_optimizar_1pasada(self):
@@ -1179,6 +1198,7 @@ class ToolsWorkflowService:
                 self.app.after(0, lambda e=e: self.app.dialogs.set_estado(
                     tr('⚠️ Error optimizando: {0}').format(e), P.TXT_ERROR))
 
+        self.app.dialogs.set_estado(tr("⏳ Optimizando el prompt en una pasada…"), P.TXT_ACENTO)
         self.app._executor.submit(_worker).add_done_callback(log_future_exc)
 
     def _cmd_idea_auto_en_macro(self):
@@ -1257,7 +1277,7 @@ class ToolsWorkflowService:
 
         # Indicador del proyecto activo
         activo = prefs.get("proyecto_activo", "")
-        lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or '(ninguno)'),
+        lbl_activo = ctk.CTkLabel(vent, text=tr('📌 Proyecto activo: {0}').format(activo or tr('(ninguno)')),
                                     font=ctk.CTkFont(size=P.FUENTE_SECCION, weight="bold"),
                                     text_color=P.TXT_OK if activo else c["muted_text"])
         lbl_activo.pack(pady=5)
