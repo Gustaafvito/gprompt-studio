@@ -149,6 +149,15 @@ de versiones.
 variante rápida de Seedream 5.0, unos 10-20 segundos por imagen, pensada
 para iterar y para editar por instrucciones.
 
+**MiniMax H3 y MiniMax Music 3, en ComfyUI.** H3 genera vídeo con audio
+(diálogo, ambiente y música) y rinde de verdad cuando el prompt sigue el
+formato con el que se entrenó: la app ahora lo escribe tal cual lo pide su
+guía oficial, con planos, cortes con tiempo, diálogos por personaje y la
+línea de imagen inicial o final cuando la usas. El modelo de referencias
+(Ref2VA) tiene el suyo, con cada imagen, vídeo o audio etiquetado. Music 3,
+que antes aparecía como modelo de vídeo, pasa a audio con su formato: letra
+con secciones y una descripción musical en tres partes.
+
 **El resultado se ve.** Con la ventana a su tamaño por defecto, el prompt
 generado tenía una línea de alto: 30 píxeles de los 240 que necesita. Ahora
 las pestañas y la caja de la idea ceden sitio, y si ni así cabe, las
@@ -170,6 +179,21 @@ Ahora lo que no cabe baja de línea.
 - Claude Opus 5.5, y gpt-6-sol y gpt-6-luna de OpenAI. El modelo por defecto
   de OpenAI pasa a gpt-6-luna, más barato que el anterior.
 - Al salir del Modo Focus, las pestañas no volvían. Arreglado.
+- Los prompts largos podían llegar cortados a media frase sin ningún aviso
+  (pasaba con DeepSeek, que piensa antes de escribir). Ahora la app lo
+  detecta y lo vuelve a pedir con más margen.
+- En SeaArt, Minimax Music y Mureka recibían órdenes contradictorias sobre
+  las etiquetas de la letra ([Verse], [Chorus]…). Ahora las usan.
+- La Búsqueda global encuentra los personajes por su descripción, y
+  «Aplicar» aplica el que pulsas.
+- Revisados los 8 menús, uno a uno: el botón Guardar de Ajustes no se veía,
+  las barras del Dashboard no salían, Estadísticas daba porcentajes mal
+  calculados y varios textos se cortaban. Arreglado.
+- Los modelos que ComfyUI tiene en otra carpeta (`extra_model_paths.yaml`)
+  ya aparecen.
+- Si cambias el idioma de la app, lo que tenías elegido («Sin personaje»,
+  «Sin LoRA», el destino) ya no se cuela como si fuera un personaje o un
+  LoRA de verdad.
 
 **🔞 NSFW, mejor.** La detección automática no funcionaba: anunciaba que
 activaba el modo NSFW y no lo hacía. Ahora entiende la idea en castellano y
@@ -180,9 +204,9 @@ NSFW apagado, también te lo dice. Apagado, el negativo excluye la desnudez.
 
 **⚡ Modo Brief por modo.** Sus reglas eran de anuncio de vídeo y se
 aplicaban igual a una imagen fija. Ahora cada modo tiene las suyas: en
-imagen, producto protagonista y hueco para el titular; en audio, una cuña
-de 15-30 segundos. El interruptor está junto a Destino y, mientras esté
-encendido, lo ves arriba.
+imagen, producto protagonista y hueco para el titular; en audio, un jingle
+cantado o una cuña para locutar encima, según lo que pidas. El interruptor
+está junto a Destino y, mientras esté encendido, lo ves arriba.
 
 **Destino** ya no pone un formato que el modelo no tiene. El concurso Anthum
 sale de la lista.
