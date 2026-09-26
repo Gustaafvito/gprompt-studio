@@ -17,7 +17,7 @@ falta Python ni instalar dependencias.
 **Gemini** (Google) y **Groq** regalan key sin tarjeta y con límites
 generosos; con cualquiera de las dos la app funciona al completo. Groq
 responde en menos de un segundo, y es el más rápido de los once
-proveedores soportados.
+proveedores en la nube.
 
 ### Descarga
 
