@@ -1,11 +1,9 @@
 <!--
 BORRADOR de la 1.1.1 (01-oct-2026). Nada publicado.
 
-Lo que todavía es de la 1.1.0 y se rehace con el build:
-- Los dos hashes del bloque de PowerShell. Se quedan los de la 1.1.0 porque
-  la web los sigue publicando y los candados exigen que cuadren con este
-  texto; build_release.py avisa mientras no se cambien.
-- Los tamaños (188 y 187 MB). build_release.py los compara con los ficheros.
+Estado del borrador:
+- Hashes y tamaños: ya son los del build del 01-oct-2026 (build_release.py
+  desde c170d2e, urllib3 2.8.0 y pip-audit limpio). Si se recompila, cambian.
 - VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
 
 Falta, en este orden:
@@ -62,8 +60,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 ```
 
 ```
-4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.1.exe
-0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff  GPromptStudio-Setup-1.1.1.exe
+6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)

@@ -71,12 +71,12 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > exactamente el que publiqué, sin manipular:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
-> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+> dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff  GPromptStudio-Setup-1.1.1.exe
+> 6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > Y si te gusta mirar el código, está entero
@@ -91,8 +91,8 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** [0 de 67 motores](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — limpio
-> - **Portable de un solo fichero:** [2 de 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro y Zillya
+> - **Instalador:** [PENDIENTE](https://www.virustotal.com/gui/file/dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff)
+> - **Portable de un solo fichero:** [PENDIENTE](https://www.virustotal.com/gui/file/6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2)
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
@@ -103,7 +103,7 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 > construye este programa.
 >
 > Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
-> prueba está en la propia 1.1.0: el instalador lleva dentro el mismo
+> prueba está en la propia 1.1.1: el instalador lleva dentro el mismo
 > programa y no lo marca nadie. Mismo software, distinto envoltorio,
 > distinto veredicto.
 >

@@ -37,8 +37,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 ```
 
 ```
-4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.1.exe
-0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff  GPromptStudio-Setup-1.1.1.exe
+6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -115,6 +115,11 @@ Estándar y Calidad, hasta 8 imágenes por tanda y su muestreo por defecto
 (Euler, 25 pasos, CFG 1). Un detalle que conviene saber: con CFG 1, que es
 el valor por defecto, el negativo no hace nada. Si lo usas, sube el CFG a 2
 o 3 en SeaArt.
+
+**Seguridad.** La auditoría que pasa cada build encontró tres
+vulnerabilidades en `urllib3`, una librería que la app usa por debajo para
+parte de sus conexiones, publicadas después de la 1.1.0. Va actualizada a la
+2.8.0, que las corrige.
 
 **Lo demás no cambia** respecto a la
 [1.1.0](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.0):

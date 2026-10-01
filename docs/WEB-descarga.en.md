@@ -66,12 +66,12 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
-> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+> dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff  GPromptStudio-Setup-1.1.1.exe
+> 6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,8 +84,8 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [0 of 67 engines](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — clean
-> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro and Zillya
+> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff)
+> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2)
 >
 > **Microsoft Defender flags neither of them.**
 >
@@ -96,7 +96,7 @@ Put this right under the button, visible without expanding anything.
 > with.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.1.0 itself: the installer carries the very same program
+> proof is inside 1.1.1 itself: the installer carries the very same program
 > and nobody flags it. Same software, different wrapper, different verdict.
 >
 > **If your antivirus complains about one option, try the other** — it's the
