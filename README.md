@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.1.0
+# 🧠 G-Prompt Studio v1.1.1
 
 > Suite profesional de ingeniería de prompts para IA generativa.
 > Convierte ideas en instrucciones técnicas de alta precisión para **imagen, vídeo y audio**.
@@ -7,13 +7,13 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.1.1-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 **Español** · [English](README.en.md)
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.0/GPromptStudio-Setup-1.1.0.exe">
-    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.1.0-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.1/GPromptStudio-Setup-1.1.1.exe">
+    <img src="https://img.shields.io/badge/Descargar%20para%20Windows-v1.1.1-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar G-Prompt Studio para Windows">
   </a>
 </p>
 
@@ -64,18 +64,18 @@ es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**272 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
+**273 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
-| 🖼 **Imagen** | **164** | SeaArt/Tensor.Art (127) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🖼 **Imagen** | **166** | SeaArt/Tensor.Art (129) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
 | 🎬 **Vídeo** | **99** | SeaArt Video (91) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
 | 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
 
 Y **encima de esos, los tuyos**: si usas ComfyUI no cuentan aquí porque son
 distintos en cada ordenador.
 
-Entre ellos: FLUX.1, Z-Image, Qwen Image 3.0 / 3.0 Pro, Illustrious, Pony, Nano Banana,
+Entre ellos: FLUX.1, Z-Image, Qwen Image 2.1 / 3.0 / 3.0 Pro, Illustrious, Pony, Nano Banana,
 Wan 3.0 y Wan 3.0 Prime, Kling, Seedance, Hailuo, PixVerse, Vidu, Sora 2, Veo, Suno v5.5…
 Y **333 estilos** agrupados por familia.
 
@@ -140,9 +140,11 @@ del catálogo de su proveedor, la app lo oculta sola.
 - **ComfyUI + Turbo**: detecta automáticamente y elimina pesos numéricos `(tag:1.2)` que rompen los modelos Turbo.
 - **Negative inteligente**: añade NEGATIVE PROMPT solo si el modelo lo soporta.
 
-## 🆕 Novedades (septiembre 2026)
+## 🆕 Novedades (septiembre y octubre de 2026)
 
 **Modelos y plataformas**
+- Qwen Image 2.1 (1.1.1): crea y edita en un solo modelo y, según SeaArt,
+  con fondo transparente. Seedream 5.0 Flash (1.1.0).
 - Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).
 - Alta de Pollo AI y Higgsfield; modelos que faltaban, enganchados a su plataforma.
 - +75 estilos para equilibrar los grupos más flacos (hasta 333).
@@ -183,7 +185,7 @@ del catálogo de su proveedor, la app lo oculta sola.
 ### La forma normal: descargar e instalar
 
 Ve a [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-baja `GPromptStudio-Setup-1.1.0.exe` y ábrelo. **No hace falta Python ni
+baja `GPromptStudio-Setup-1.1.1.exe` y ábrelo. **No hace falta Python ni
 instalar dependencias**: va todo dentro.
 
 - Windows 10 u 11 de 64 bits
@@ -324,7 +326,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**272 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**273 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>

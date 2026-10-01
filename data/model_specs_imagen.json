@@ -4455,6 +4455,43 @@
   "limitaciones": "Prompt positivo hasta 1500 chars. Negative hasta 2000 chars.",
   "best_for_en": "Alibaba Qwen image model available on SeaArt. Pro version with high quality. Natural language, good composition understanding, portraits, detailed scenes and design. Top rating 5.0."
  },
+ "Qwen Image 2.1": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": true,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "9:21"
+  ],
+  "modos_gen": [
+   "Estándar",
+   "Calidad"
+  ],
+  "magia_sugerencia": [
+   "Automático",
+   "Abrir",
+   "Cerrar"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 3,
+  "pasos": 25,
+  "cfg": 1.0,
+  "sampler_recomendado": "euler / simple (25 pasos, CFG 1; con negative, CFG 2-3)",
+  "best_for": "Qwen Image 2.1 (Alibaba, en SeaArt desde el 21-sep-2026): el Qwen ligero —7B en la parte que genera— que une crear y editar en un solo modelo. Edita por instrucciones con hasta 3 imágenes de referencia. Según SeaArt, genera y edita imágenes con fondo transparente y recorta el sujeto de una foto, y mejora la tipografía dentro de la imagen, la luz en retratos y el detalle fino.",
+  "prompt_formula": "Lenguaje natural descriptivo. Para GENERAR: sujeto, escena, iluminación y estilo en prosa; si la imagen lleva texto, escríbelo entre comillas tal cual debe salir. Para EDITAR una imagen subida: una instrucción corta que diga qué cambiar y qué conservar. Si quieres fondo transparente, pídelo de forma explícita. Negative opcional, solo para lo que quieras evitar. Máx 2000 chars.",
+  "prompt_ejemplo": "A minimalist coffee shop poster, a steaming ceramic cup on a warm beige background, soft morning window light from the left, the headline \"SLOW MORNINGS\" in bold serif type at the top, clean editorial layout, subtle film grain",
+  "limitaciones": "Máx 2000 chars. Hasta 3 imágenes para editar y hasta 8 por tanda. Pasos 20-40 (25 por defecto) y CFG 1-5 (1 por defecto): con CFG 1 el negative no actúa, así que si lo usas sube el CFG a 2-3. Ficha MAPEADA el 01-oct-2026 desde el esquema oficial de SeaArt (modelo dao8nqte878c73cbibpg); la calidad frente a Qwen Image 3.0, POR CONFIRMAR generando.",
+  "best_for_en": "Qwen Image 2.1 (Alibaba, on SeaArt since Sep 21, 2026): the lightweight Qwen — 7B in its generation component — that unifies creating and editing in a single model. Edits by instruction with up to 3 reference images. According to SeaArt, it generates and edits images with transparent backgrounds and extracts the subject from a photo, with better in-image typography, portrait lighting and fine detail."
+ },
  "Seedream 5.0 Lite": {
   "nota": 3.7,
   "vigente": true,
