@@ -141,6 +141,11 @@ Estándar y Calidad, hasta 8 imágenes por tanda y su muestreo por defecto
 el valor por defecto, el negativo no hace nada. Si lo usas, sube el CFG a 2
 o 3 en SeaArt.
 
+**Seguridad.** La auditoría que pasa cada build encontró tres
+vulnerabilidades en `urllib3`, una librería que la app usa por debajo para
+parte de sus conexiones, publicadas después de la 1.1.0. Va actualizada a la
+2.8.0, que las corrige.
+
 **Lo demás no cambia** respecto a la
 [1.1.0](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.0):
 mismo programa, mismos proveedores y mismas funciones. Si vienes de la
