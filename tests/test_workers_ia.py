@@ -143,6 +143,27 @@ class TestWorkerIa:
         h._worker_ia("petición")
         assert h.app.actualizar_salida.call_args[0][0] == largo
 
+    def test_tags_con_espacios_si_la_ficha_lo_pide(self):
+        # Anima (09-oct-2026): el LLM escribió «@mika_pikazo» aunque la ficha
+        # pedía espacios. Los score_ y el trigger del LoRA se quedan como van.
+        h = _host(
+            deepseek_resp=("POSITIVE PROMPT: brass_ruin, score_7, @mika_pikazo, long_hair\n"
+                           "NEGATIVE PROMPT: score_1, bad_hands"),
+            specs={"max_chars": 2000, "tags_con_espacios": True},
+            triggers_loras_activos=lambda: ["brass_ruin"],
+        )
+        h._worker_ia("petición")
+        texto = h.app.actualizar_salida.call_args[0][0]
+        assert "brass_ruin, score_7, @mika pikazo, long hair" in texto
+        assert "score_1, bad hands" in texto
+
+    def test_sin_la_marca_los_guiones_bajos_se_quedan(self):
+        # El resto de modelos de tags (Pony, Illustrious…) no se tocan.
+        h = _host(deepseek_resp="POSITIVE PROMPT: long_hair, score_9",
+                  specs={"max_chars": 2000})
+        h._worker_ia("petición")
+        assert "long_hair" in h.app.actualizar_salida.call_args[0][0]
+
     def test_no_recorta_si_no_excede(self):
         h = _host(deepseek_resp="corto", specs={"max_chars": 500})
         h._worker_ia("petición")

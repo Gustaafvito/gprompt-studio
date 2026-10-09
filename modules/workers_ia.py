@@ -27,7 +27,7 @@ import re
 
 from modules import paleta as P
 from modules.i18n import tr
-from modules.prompt_helpers import mover_trigger_al_inicio
+from modules.prompt_helpers import guiones_bajos_a_espacios, mover_trigger_al_inicio
 from workers import limpiar_marcadores, parsear_ideas
 
 logger = logging.getLogger("gprompt")
@@ -184,6 +184,15 @@ class WorkersIaService:
             # Opcional (pref "LoRA al inicio"): mover el trigger al principio
             # del POSITIVE (convención SeaArt: los LoRAs van primero).
             texto = self._mover_lora_al_inicio_si_pref(texto, es_ideas=es_ideas)
+            # Tags con espacios (Anima): el LLM escribe «@mika_pikazo» o
+            # «long_hair» aunque la ficha diga que no. Los triggers de los
+            # LoRA activos no se tocan.
+            if (specs or {}).get("tags_con_espacios") and not es_ideas:
+                try:
+                    triggers = self.app.footer.triggers_loras_activos() or []
+                except Exception:
+                    triggers = []
+                texto = guiones_bajos_a_espacios(texto, conservar=triggers)
 
             # CORTADOR DE SEGURIDAD: si el prompt excede el límite del modelo, lo recorta.
             # Salvo en formatos por campos (MiniMax H3): el recorte por comas

@@ -490,6 +490,25 @@ class TestInyectarSpecsFormato:
         assert "POSITIVE PROMPT:" in out
         assert "NEGATIVE PROMPT:" in out
 
+    def test_peso_enfasis_de_la_ficha_manda_sobre_el_general(self):
+        # Anima (09-oct-2026): con la regla general el LLM ponía 1.2-1.4, que
+        # en ese modelo apenas actúa. La ficha dice cuánto hace falta.
+        specs = {**self.SPECS_TAGS, "peso_enfasis": "1.5-2"}
+        h = _host(plataforma_var=_var("SeaArt"),
+                  _es_comfyui_turbo=lambda *_: False)
+        out = h._inyectar_specs_formato("Anima", specs, "")
+        assert "de 1.5-2" in out
+        assert "(chibi:2)" in out
+        assert "Puedes usar pesos (tag:1.2)" not in out
+
+    def test_comfyui_turbo_sigue_sin_pesos_aunque_la_ficha_los_pida(self):
+        specs = {**self.SPECS_TAGS, "peso_enfasis": "1.5-2"}
+        h = _host(plataforma_var=_var("ComfyUI"),
+                  _es_comfyui_turbo=lambda *_: True)
+        out = h._inyectar_specs_formato("modelo", specs, "")
+        assert "NO USES PESOS NUMÉRICOS" in out
+        assert "1.5-2" not in out
+
     def test_comfyui_turbo_prohibe_pesos_y_negative(self):
         h = _host(plataforma_var=_var("ComfyUI"),
                   _es_comfyui_turbo=lambda *_: True)

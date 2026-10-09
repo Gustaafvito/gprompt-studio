@@ -113,6 +113,8 @@ Cosas que necesitas tener a mano del modelo:
 | **`max_chars_negative`** | Cortador específico del NEGATIVE. Si omites, usa `max_chars` | Omitir salvo que difiera |
 | **`formato_bloques`** | Activa plantilla narrativa especial. Solo `"z_image"` por ahora | Solo Z-Image-Base |
 | **`no_weights`** | Si es `true`, la app elimina pesos numéricos `(tag:1.2)` | Turbo puro en ComfyUI |
+| **`peso_enfasis`** | Rango de pesos que pide el modelo; sustituye al «(tag:1.2)» general, que en algunos no actúa | `"1.5-2"` en Anima |
+| **`tags_con_espacios`** | Si es `true`, la app pasa a espacios los guiones bajos de los tags (`long_hair` → `long hair`), salvo los `score_N` y los triggers de los LoRA activos | Anima |
 | **`ratios`** | Lista de ratios disponibles del modelo en la UI | `["1:1","9:16",...]` |
 
 ### Campos informativos (van al tooltip / dashboard / ayuda al LLM)
