@@ -257,6 +257,14 @@ def abrir_personajes(app):
 
 # LORAS
 
+# Familias del gestor de LoRAs, en orden alfabético. Las de G-Entrena Studio
+# (Anima, Krea 2, LTX, MiniMax H3, Qwen Image y Z Image) se escriben como las
+# reconoce ui_footer.familia_modelo_para_lora: si no, el LoRA sale siempre
+# con «familia distinta».
+FAMILIAS_LORA = ("Anima", "Flux", "Illustrious", "Krea 2", "LTX", "MiniMax H3",
+                 "Pony", "Qwen Image", "SD15", "SD3.5", "SDXL", "Z Image")
+
+
 def abrir_loras(app):
     """Gestor de LoRAs con buscador, filtro por familia y edición inline."""
     cc = _card_colors()
@@ -265,8 +273,7 @@ def abrir_loras(app):
     ventana.geometry("840x640")
     ventana.grab_set()
 
-    FAMILIAS = [tr("Todas"), "SDXL", "SD15", "Pony", "Illustrious",
-                "Flux", "SD3.5", "Z Image", tr("Otra")]
+    FAMILIAS = [tr("Todas"), *FAMILIAS_LORA, tr("Otra")]
 
     # ── Cabecera ──
     head = ctk.CTkFrame(ventana, fg_color="transparent")
@@ -330,7 +337,7 @@ def abrir_loras(app):
 
     ctk.CTkLabel(frame_nuevo, text=tr("Familia:"),
                  font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(10, 5))
-    combo_familia_form = ctk.CTkComboBox(frame_nuevo, width=100,
+    combo_familia_form = ctk.CTkComboBox(frame_nuevo, width=120,
                                          values=["—"] + FAMILIAS[1:])
     combo_familia_form.set("—")
     combo_familia_form.pack(side="left", padx=5)

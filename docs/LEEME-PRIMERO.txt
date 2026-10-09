@@ -13,6 +13,8 @@ QUÉ HAY DE NUEVO EN LA 1.1.2
     con sus reglas: tags de Danbooru, artistas con @ delante y
     los ajustes de cada versión (Turbo, Aesthetic y Base). El
     catálogo pasa a 277.
+  - Gestor de LoRAs: cinco familias nuevas (Anima, Krea 2, LTX,
+    MiniMax H3 y Qwen Image), y la app ya las reconoce.
 
   Y lo que trajeron la 1.1.1 y la 1.1.0:
 

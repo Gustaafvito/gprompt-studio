@@ -144,7 +144,8 @@ del catálogo de su proveedor, la app lo oculta sola.
 
 **Modelos y plataformas**
 - En la 1.1.2: Anima, el modelo de anime de CircleStone Labs y Comfy Org,
-  con los ajustes de cada versión (Turbo, Aesthetic y Base).
+  con los ajustes de cada versión (Turbo, Aesthetic y Base). Y el gestor de
+  LoRAs suma Anima, Krea 2, LTX, MiniMax H3 y Qwen Image.
 - En la 1.1.1: Qwen Image 2.1 y Nano Banana 2.1 en imagen, y Vidu Q4
   Preview y SeaArt Opera 2.0 Preview en vídeo. Seedream 5.0 Flash (1.1.0).
 - Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).

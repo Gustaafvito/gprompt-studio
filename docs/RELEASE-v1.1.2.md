@@ -150,6 +150,14 @@ tengas que adivinarlo.
 
 Un aviso: la licencia de Anima, la del modelo, es **no comercial**.
 
+**Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
+Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
+un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre
+de «familia distinta» porque tampoco sabía reconocer un modelo Anima. Ahora
+lo reconoce, también en tus modelos de ComfyUI. Y los LoRA de vídeo (LTX y
+MiniMax H3) se comprueban también en el modo vídeo, que antes no miraba
+ninguno.
+
 **Lo demás no cambia** respecto a la
 [1.1.1](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.1):
 mismo programa, mismos proveedores y mismas funciones. Si vienes de antes,
