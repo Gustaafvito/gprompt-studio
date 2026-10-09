@@ -198,7 +198,8 @@ class TestElEnsambladoDejaLasPiezas:
             angulos_seleccionados=list(cfg["angles"])[:3],
             estilo_sufijo="", fondo=None)
         for it in r["dataset"]:
-            assert set(it["partes_descripcion"]) == {"encuadre", "fondo", "luz"}
+            assert set(it["partes_descripcion"]) == {
+                "encuadre", "expresion", "ropa", "fondo", "luz"}
             assert it["partes_descripcion"]["encuadre"]
 
 

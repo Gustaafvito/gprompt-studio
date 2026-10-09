@@ -62,6 +62,7 @@ def generar_dataset_avatar(
     estilo_sufijo: str,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> dict:
     """Pipeline completo. Devuelve dict con la descripción canónica y el dataset.
 
@@ -75,6 +76,7 @@ def generar_dataset_avatar(
         estilo_sufijo=estilo_sufijo,
         fondo=fondo,
         incluir_negative=incluir_negative,
+        variar=variar,
     )
     return {
         "trigger_word": trigger_word.strip(),
@@ -94,6 +96,7 @@ def generar_dataset_lora(
     estilo_sufijo: str,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> dict:
     """Pipeline completo para cualquier tipo de LoRA (Personaje/Paisaje/Objeto/Estilo).
 
@@ -111,6 +114,7 @@ def generar_dataset_lora(
             estilo_sufijo=estilo_sufijo,
             fondo=fondo,
             incluir_negative=incluir_negative,
+            variar=variar,
         )
 
     cfg = LORA_TYPES[tipo]
@@ -132,6 +136,7 @@ def generar_dataset_lora(
         lighting=cfg["lighting"],
         negative_base=cfg["negative"],
         incluir_negative=incluir_negative,
+        variar=variar,
     )
 
     return {

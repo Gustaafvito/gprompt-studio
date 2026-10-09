@@ -148,7 +148,8 @@ del catálogo de su proveedor, la app lo oculta sola.
   ComfyUI con grupo propio. Y el gestor de LoRAs suma Anima, Krea 2, LTX,
   MiniMax H3 y Qwen Image.
 - Generador de Dataset LoRA (1.1.2): eliges dónde vas a entrenar (G-Entrena,
-  SeaArt, Higgsfield o Magnific) y las descripciones salen en su formato.
+  SeaArt, Higgsfield o Magnific) y las descripciones salen en su formato; en
+  cada imagen cambian la ropa, el escenario, la expresión y la luz.
 - En la 1.1.1: Qwen Image 2.1 y Nano Banana 2.1 en imagen, y Vidu Q4
   Preview y SeaArt Opera 2.0 Preview en vídeo. Seedream 5.0 Flash (1.1.0).
 - Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).

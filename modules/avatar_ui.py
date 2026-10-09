@@ -97,6 +97,7 @@ class AvatarFrame(ctk.CTkFrame):
             self._destinos = []
         self._destino_disp2id = {}
         self._destino_manual = False
+        self._checks_variar = {}       # clave → (checkbox, valores a rotar)
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -399,6 +400,20 @@ class AvatarFrame(ctk.CTkFrame):
             self.menu_fondo = None
             self.check_variar_fondos = None
 
+        # Variedad de lo que NO es el sujeto (ropa, escenario, expresión,
+        # luz): si todo es igual en el dataset, el LoRA se lo aprende como
+        # parte del sujeto. Lo que se varía va también en las descripciones.
+        self._checks_variar = {}
+        if cfg.get("variaciones"):
+            ctk.CTkLabel(form, text=tr("Variar en cada imagen")).grid(
+                row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+            for clave, etiqueta, valores, defecto in cfg["variaciones"]:
+                chk = ctk.CTkCheckBox(form, text=tr(etiqueta))
+                if defecto:
+                    chk.select()
+                chk.grid(row=fila, column=0, sticky="w", padx=8, pady=(0, 6)); fila += 1
+                self._checks_variar[clave] = (chk, valores)
+
         self.check_negative = ctk.CTkCheckBox(form, text=tr("Incluir negative prompt"))
         self.check_negative.select()
         self.check_negative.grid(row=fila, column=0, sticky="w", padx=8, pady=(4, 12))
@@ -634,21 +649,25 @@ class AvatarFrame(ctk.CTkFrame):
         # Se leen aquí, en el hilo de Tk, y viajan al worker como datos.
         destino = self._destino_actual()
         estilo_visual = self.menu_estilo.get()
+        variar = {clave: valores
+                  for clave, (chk, valores) in self._checks_variar.items()
+                  if chk.get()}
         if self._executor is not None:
             self._executor.submit(
                 self._worker_generar, form_data, trigger, seleccionados,
-                carpeta, modelo_sel, plataforma_sel, destino, estilo_visual
+                carpeta, modelo_sel, plataforma_sel, destino, estilo_visual,
+                variar
             ).add_done_callback(log_future_exc)
         else:
             threading.Thread(
                 target=self._worker_generar,
                 args=(form_data, trigger, seleccionados, carpeta, modelo_sel,
-                      plataforma_sel, destino, estilo_visual),
+                      plataforma_sel, destino, estilo_visual, variar),
                 daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
                         modelo_sel="", plataforma_sel="", destino=None,
-                        estilo_visual=""):
+                        estilo_visual="", variar=None):
         try:
             cfg = LORA_TYPES[self._tipo_lora]
             # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
@@ -684,6 +703,7 @@ class AvatarFrame(ctk.CTkFrame):
                 estilo_sufijo=estilo_sufijo,
                 fondo=fondo,
                 incluir_negative=bool(self.check_negative.get()),
+                variar=variar,
             )
             # Si hay imagen de referencia → generar TAMBIÉN los prompts
             # de edición img2img (la identidad la aporta la imagen).
@@ -694,6 +714,7 @@ class AvatarFrame(ctk.CTkFrame):
                     angulos_seleccionados=seleccionados,
                     fondo=fondo,
                     incluir_negative=bool(self.check_negative.get()),
+                    variar=variar,
                 )
             # Adaptación al modelo destino elegido (specs SeaArt) ANTES
             # de exportar

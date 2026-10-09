@@ -438,7 +438,7 @@ AVATAR_FORM_FIELDS = [
      "placeholder": "ej: pecas, cicatriz en ceja, hoyuelos, gafas..."},
     {"key": "complexion", "label": "Complexión", "type": "option",
      "options": ["Delgada", "Atlética", "Media", "Robusta", "Curvy"]},
-    {"key": "ropa", "label": "Ropa (idéntica en todo el dataset)", "type": "entry",
+    {"key": "ropa", "label": "Ropa (solo si NO se varía la ropa)", "type": "entry",
      "placeholder": "ej: camiseta blanca lisa y vaqueros azules"},
 ]
 
@@ -566,6 +566,109 @@ AVATAR_NEGATIVE_EDIT_ROTACION = (
 
 # Iluminación fija para coherencia entre tomas
 AVATAR_LIGHTING = "soft even studio lighting, no harsh shadows, neutral color temperature"
+
+
+# ---------------------------------------------------------------------------
+# VARIEDAD DE LO QUE NO ES EL SUJETO (fase 2, 09-oct-2026)
+# Guía de SeaArt para un LoRA de personaje: imágenes «variadas en pose,
+# ángulo, expresión, ropa y fondo». Con la ropa y la luz iguales en todo el
+# dataset, el LoRA se las aprende como parte del personaje. El dataset del
+# LoRA Lyra (G-Entrena) variaba todo eso y su trigger salió limpio: solo
+# cara y pelo. Cada valor que se rota va también en la descripción (.txt),
+# para que el modelo sepa que NO es parte del trigger.
+#
+# Las longitudes son distintas a propósito (11, 10, 9, 7…): rotando por
+# índice, la misma ropa no cae siempre con el mismo escenario ni con la
+# misma luz.
+# ---------------------------------------------------------------------------
+AVATAR_ROPA_ROTACION = [
+    "a white t-shirt and blue jeans",
+    "a black leather jacket",
+    "a denim jacket over a white shirt",
+    "a beige trench coat",
+    "a green bomber jacket",
+    "a red flannel shirt",
+    "a cream turtleneck sweater",
+    "a black hoodie",
+    "a dark formal suit",
+    "a blue knitted sweater",
+    "a yellow raincoat",
+]
+AVATAR_ESCENARIOS_ROTACION = [
+    "city street at night",
+    "cozy cafe interior",
+    "forest trail",
+    "beach at sunset",
+    "library with bookshelves",
+    "rooftop at dusk",
+    "modern office",
+    "snowy street",
+    "home kitchen",
+    "train station platform",
+]
+AVATAR_EXPRESIONES_ROTACION = [
+    "neutral expression",
+    "gentle smile",
+    "laughing",
+    "serious expression",
+    "thoughtful expression",
+    "calm closed-mouth smile",
+    "confident smirk",
+    "surprised expression",
+    "relaxed expression",
+]
+AVATAR_LUCES_ROTACION = [
+    "soft even studio lighting",
+    "golden hour sunlight",
+    "overcast daylight",
+    "warm indoor light",
+    "cool blue evening light",
+    "colorful rim light",
+    "soft window light",
+]
+# Paisaje: la «luz» es la hora y el tiempo que hace.
+LANDSCAPE_HORAS_ROTACION = [
+    "at sunrise",
+    "at golden hour",
+    "at midday under a clear sky",
+    "under an overcast sky",
+    "at blue hour",
+    "at night under moonlight",
+    "in light morning fog",
+    "after rain",
+]
+OBJECT_LUCES_ROTACION = [
+    "soft diffused studio lighting",
+    "natural window light",
+    "dramatic side lighting",
+    "warm backlight",
+    "bright high-key lighting",
+    "low-key moody lighting",
+    "golden hour sunlight",
+]
+
+# Qué se puede variar en cada tipo: (clave, etiqueta del checkbox, valores,
+# marcado por defecto). El orden es el de la ventana. Estilo no lleva nada:
+# su variedad son los temas, que ya cambian en cada ángulo.
+VARIACIONES_PERSONAJE = [
+    ("ropa", "Variar ropa (el LoRA aprende solo la cara y el pelo)", AVATAR_ROPA_ROTACION, True),
+    ("escenario", "Escenarios reales en vez de fondos de estudio", AVATAR_ESCENARIOS_ROTACION, True),
+    ("expresion", "Variar expresión", AVATAR_EXPRESIONES_ROTACION, True),
+    ("luz", "Variar luz", AVATAR_LUCES_ROTACION, True),
+]
+VARIACIONES_NSFW = [
+    ("expresion", "Variar expresión", AVATAR_EXPRESIONES_ROTACION, True),
+    ("luz", "Variar luz", AVATAR_LUCES_ROTACION, True),
+]
+VARIACIONES_PAISAJE = [
+    ("luz", "Variar hora del día y tiempo", LANDSCAPE_HORAS_ROTACION, True),
+]
+# Objeto no lleva escenarios: 28 de sus ángulos ya fijan su propio fondo
+# («product shot on a pure white seamless background», «on a dark dramatic
+# backdrop»…), así que ya varían, y un escenario encima chocaría con ellos.
+VARIACIONES_OBJETO = [
+    ("luz", "Variar luz", OBJECT_LUCES_ROTACION, True),
+]
 
 
 # ===========================================================================
@@ -2311,6 +2414,7 @@ LORA_TYPES = {
         "backgrounds_rotacion": AVATAR_BACKGROUNDS_ROTACION,
         "negative": AVATAR_NEGATIVE_PROMPT,
         "lighting": AVATAR_LIGHTING,
+        "variaciones": VARIACIONES_PERSONAJE,
         "label_form": "Ficha del personaje",
         "label_angles": "Ángulos del dataset",
         "label_trigger": "Trigger word (LoRA)",
@@ -2331,6 +2435,7 @@ LORA_TYPES = {
         "backgrounds_rotacion": None,
         "negative": LANDSCAPE_NEGATIVE_PROMPT,
         "lighting": "natural outdoor lighting, realistic atmosphere",
+        "variaciones": VARIACIONES_PAISAJE,
         "label_form": "Descripción del paisaje",
         "label_angles": "Encuadres del dataset",
         "label_trigger": "Trigger word (LoRA)",
@@ -2351,6 +2456,7 @@ LORA_TYPES = {
         "backgrounds_rotacion": AVATAR_BACKGROUNDS_ROTACION,
         "negative": OBJECT_NEGATIVE_PROMPT,
         "lighting": "professional studio lighting, soft shadows, clean setup",
+        "variaciones": VARIACIONES_OBJETO,
         "label_form": "Descripción del objeto",
         "label_angles": "Vistas del dataset",
         "label_trigger": "Trigger word (LoRA)",
@@ -2371,6 +2477,7 @@ LORA_TYPES = {
         "backgrounds_rotacion": None,
         "negative": STYLE_NEGATIVE_PROMPT,
         "lighting": "",
+        "variaciones": [],
         "label_form": "Descripción del estilo",
         "label_angles": "Sujetos de muestra",
         "label_trigger": "Trigger word (LoRA)",
@@ -2394,6 +2501,7 @@ LORA_TYPES = {
         "negative": NSFW_NEGATIVE_PROMPT,
         # La luz también va por toma (claroscuro, ventana, contraluz).
         "lighting": "",
+        "variaciones": VARIACIONES_NSFW,
         "label_form": "Ficha del personaje (adulto 18+)",
         "label_angles": "Tomas del dataset",
         "label_trigger": "Trigger word (LoRA)",

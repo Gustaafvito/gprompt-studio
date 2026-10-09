@@ -8,8 +8,8 @@ separados por comas; Higgsfield y Magnific no usan descripciones. El catálogo
 vive en data/destinos_entrenamiento.json.
 
 Qué va en la descripción (guía de SeaArt, la misma que sigue el resto del
-módulo): lo que el LoRA NO debe absorber —encuadre, fondo, luz— y la palabra
-de clase («a woman», «1girl»). La identidad no se describe: la absorbe el
+módulo): lo que el LoRA NO debe absorber —encuadre, expresión, ropa, fondo,
+luz— y la palabra de clase («a woman», «1girl»). La identidad no se describe: la absorbe el
 trigger. En un LoRA de estilo, al revés: se describe el contenido y nunca el
 estilo, que es lo que debe aprender el trigger.
 
@@ -122,12 +122,14 @@ def redactar_descripcion(partes: dict, estilo: str, tipo: str, trigger: str,
                          clase=None, medio: str = "An image of") -> str:
     """La descripción (.txt) de UNA imagen en el formato del destino.
 
-    `partes`: {"encuadre", "fondo", "luz"} en inglés; los vacíos se omiten.
+    `partes`: {"encuadre", "expresion", "ropa", "fondo", "luz"} en inglés; los
+    vacíos se omiten. La ropa llega ya como «wearing …».
     """
     if estilo == "ninguna":
         return ""
     trigger = (trigger or "").strip()
-    resto = [partes.get(k, "").strip() for k in ("encuadre", "fondo", "luz")]
+    orden = ("encuadre", "expresion", "ropa", "fondo", "luz")
+    resto = [(partes.get(k) or "").strip() for k in orden]
     resto = [r for r in resto if r]
     if estilo == "etiquetas":
         trozos = [trigger] + ([clase[0]] if clase else []) + resto

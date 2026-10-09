@@ -168,6 +168,16 @@ named…», como recomienda SeaArt—, y ahora llevan la palabra de clase («a
 woman», «1girl»). Si el destino no usa descripciones, no se exportan. Y avisa
 cuando el número de imágenes se sale de lo que recomienda.
 
+**Y variedad en cada imagen.** Hasta ahora, un dataset de personaje repetía la
+misma ropa y la misma luz de estudio en todas las imágenes, con cuatro fondos
+lisos, y el LoRA acababa aprendiéndose la ropa y la luz como si fueran parte
+del personaje. Ahora, en cada imagen cambian la ropa, el escenario (lugares
+reales en vez de fondos de estudio), la expresión y la luz, y cada descripción
+lo nombra para que el LoRA aprenda solo la cara y el pelo. Si la ropa es
+parte del personaje, desmarcas «Variar ropa» y se queda la de la ficha. En
+los paisajes cambian la hora del día y el tiempo; en los objetos, la luz; en
+NSFW, la expresión y la luz.
+
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
 un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre
