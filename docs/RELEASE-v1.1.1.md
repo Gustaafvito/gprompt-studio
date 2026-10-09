@@ -2,8 +2,8 @@
 BORRADOR de la 1.1.1 (01-oct-2026; +3 modelos el 09-oct). Nada publicado.
 
 Estado del borrador:
-- Hashes y tamaños: ya son los del build del 01-oct-2026 (build_release.py
-  desde c170d2e, urllib3 2.8.0 y pip-audit limpio). Si se recompila, cambian.
+- Hashes y tamaños: ya son los del build del 09-oct-2026 (build_release.py
+  desde 9cf96ef, urllib3 2.8.0 y pip-audit limpio). Si se recompila, cambian.
 - VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
 
 Falta, en este orden:
@@ -60,8 +60,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 ```
 
 ```
-dd626530a561bea3770a4e1b76d0202465832bed4a9d5d0578d2e111f8e4e5ff  GPromptStudio-Setup-1.1.1.exe
-6a8ce077d33886a53a9916a69d0d0aad2af1044b477abd2f2bd9d527731cf5b2  GPromptStudio-Portable-Onefile.exe
+771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c  GPromptStudio-Setup-1.1.1.exe
+5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)

@@ -107,11 +107,11 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    dd626530a561bea3770a4e1b76d02024
-    65832bed4a9d5d0578d2e111f8e4e5ff   GPromptStudio-Setup-1.1.1.exe
+    771bee4b26b9a33290a99bccad01bcb3
+    48d87f719c3bace16eaf986cd04f425c   GPromptStudio-Setup-1.1.1.exe
 
-    6a8ce077d33886a53a9916a69d0d0aad
-    2af1044b477abd2f2bd9d527731cf5b2   GPromptStudio-Portable-Onefile.exe
+    5c9d80f4fcff6175f8d4f1aa0d39dcfc
+    1c7304daafb3a4107a8f2204f211b8e9   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
     - Opción 1, el instalador ..... PENDIENTE
