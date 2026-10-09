@@ -1,4 +1,4 @@
-# 🧠 G-Prompt Studio v1.1.1
+# 🧠 G-Prompt Studio v1.1.2
 
 > A desktop prompt-engineering suite for generative AI.
 > Turns a plain idea into precise instructions for **image, video and audio**.
@@ -7,13 +7,13 @@
 [![CI](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustaafvito/gprompt-studio/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.1-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
+[![Version](https://img.shields.io/badge/version-1.1.2-brightgreen.svg)](https://github.com/Gustaafvito/gprompt-studio)
 
 [Español](README.md) · **English**
 
 <p align="center">
-  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.1/GPromptStudio-Setup-1.1.1.exe">
-    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.1.1-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
+  <a href="https://github.com/Gustaafvito/gprompt-studio/releases/download/v1.1.2/GPromptStudio-Setup-1.1.2.exe">
+    <img src="https://img.shields.io/badge/Download%20for%20Windows-v1.1.2-0c9ee6?style=for-the-badge&logo=windows&logoColor=white" alt="Download G-Prompt Studio for Windows">
   </a>
 </p>
 
@@ -69,18 +69,18 @@ and it becomes a professional prompt tuned to the exact model you are about
 to use: its rules, its tags, its limits, its recommended sampler and, where
 it applies, its negative prompt.
 
-**276 models across 13 platforms**, each with its own rules:
+**277 models across 13 platforms**, each with its own rules:
 
 | Mode | Models | Platforms |
 |------|--------|-----------|
-| 🖼 **Image** | **167** | SeaArt/Tensor.Art (130) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🖼 **Image** | **168** | SeaArt/Tensor.Art (131) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
 | 🎬 **Video** | **101** | SeaArt Video (93) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
 | 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — lyrics, style, mood, voice and language |
 
 **And your own on top of those**: ComfyUI checkpoints aren't counted here
 because they differ on every machine.
 
-Among them: FLUX.1, Z-Image, Qwen Image 2.1 / 3.0 / 3.0 Pro, Illustrious, Pony,
+Among them: FLUX.1, Z-Image, Qwen Image 2.1 / 3.0 / 3.0 Pro, Illustrious, Anima, Pony,
 Nano Banana, Wan 3.0 and Wan 3.0 Prime, Kling, Seedance, Hailuo, PixVerse,
 Vidu, Sora 2, Veo, Suno v5.5… plus **333 styles** grouped by family.
 
@@ -160,7 +160,7 @@ without paying anything.
 ### The normal way: download and install
 
 Go to [**Releases**](https://github.com/Gustaafvito/gprompt-studio/releases),
-grab `GPromptStudio-Setup-1.1.1.exe` and open it. **No Python, no
+grab `GPromptStudio-Setup-1.1.2.exe` and open it. **No Python, no
 dependencies** — everything ships inside.
 
 - Windows 10 or 11, 64-bit
@@ -260,7 +260,7 @@ pytest tests/ -v   # → 1875 passed, 1 skipped
 
 ![The model catalogue with its search box, grouped by family](docs/capturas/02-catalogo-modelos.png)
 
-**276 models with their own spec sheet**, grouped by family and searchable.
+**277 models with their own spec sheet**, grouped by family and searchable.
 If you use ComfyUI, yours show up on their own.
 
 </td>

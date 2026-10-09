@@ -4220,6 +4220,40 @@
   "vigente": true,
   "best_for_en": "Robo-Diffusion (nousr). 970 likes. SD 1.5 dreambooth specialized in robots and mechs. Generates robots with great detail in metallic parts and a sci-fi aesthetic. Trigger 'nousr robot'."
  },
+ "Anima": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": true,
+  "is_natural": false,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "1:2",
+   "2:1",
+   "4:5",
+   "5:4"
+  ],
+  "max_chars": 2000,
+  "modos_gen": [
+   "Estándar",
+   "Calidad"
+  ],
+  "max_imagenes": 8,
+  "pasos": "8-12 (Turbo) · 30-50 (Base y Aesthetic)",
+  "cfg": "1 (Turbo) · 4-6 (Base) · 3-5 (Aesthetic)",
+  "sampler_recomendado": "er_sde / simple (el de SeaArt por defecto: estilo neutro, colores planos, línea nítida); euler con Turbo y Aesthetic; euler_a para líneas más finas y suaves",
+  "negative_sugerido": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, chromatic aberration",
+  "best_for": "Anima (CircleStone Labs y Comfy Org; en SeaArt como modelo oficial): 2.000 millones de parámetros sobre NVIDIA Cosmos-Predict2, centrado en anime —personajes, series y estilos de artista— y capaz también de otro arte no fotográfico. Entrenado con varios millones de imágenes de anime (hasta septiembre de 2025) y unas 800.000 de arte no anime, sin datos sintéticos. En SeaArt tiene ocho versiones: Turbo (la que sale por defecto, rápida y estable), Aesthetic (estilo por defecto más pulido) y Base (neutra y la más flexible).",
+  "prompt_formula": "Tags estilo Danbooru en minúsculas y con espacios, no guiones bajos (solo los score_ los llevan). Orden: [calidad / año / meta / seguridad] [1girl, 1boy…] [personaje] [serie] [@artista] [tags generales]. Prefijo recomendado: 'masterpiece, best quality, score_7, safe,'; la etiqueta de seguridad (safe, sensitive, nsfw o explicit) según la idea. Artistas SIEMPRE con @ delante ('@nombre'): sin la @ apenas actúan. Se pueden mezclar tags y frases en inglés; en prosa, al menos dos frases. Si nombras un personaje, describe su aspecto, sobre todo si hay varios. Los pesos necesitan más que en SDXL: (chibi:2). No hace falta poner todos los tags. Máx 2000 chars.",
+  "prompt_ejemplo": "masterpiece, best quality, score_7, safe, newest, 1girl, solo, silver hair, long hair, blue eyes, witch hat, dark cloak, holding staff, glowing runes, enchanted forest, fireflies, night, moonlight, looking at viewer, smile, upper body",
+  "limitaciones": "No hace fotorrealismo, a propósito: anime, ilustración y arte. El texto dentro de la imagen, flojo (una palabra, a veces una frase corta). Con prompts cortos o sin etiqueta de seguridad puede salir contenido no deseado: ponla en el positivo y, si hace falta, en el negativo. Turbo: CFG 1 y 8-12 pasos (con CFG 1 el negative no actúa); más estable, menos variedad. Base: estilo plano y neutro si no lleva tags de calidad o de artista. Aesthetic: sin score_ ni en el positivo ni en el negativo, y tolera CFG 3. Resolución entre 512×512 y 1536×1536. Licencia NO comercial (CircleStone Labs Non-Commercial License; derivado de Cosmos-Predict2-2B, bajo la NVIDIA Open Model License). Ficha MAPEADA el 09-oct-2026 desde el esquema oficial de SeaArt (modelo f9a464529b70438a9d738b44f78660f0, versión por defecto turbo-v1.1) y la ficha del autor; la calidad frente a Illustrious o NoobAI, POR CONFIRMAR generando.",
+  "best_for_en": "Anima (CircleStone Labs and Comfy Org; on SeaArt as an official model): 2 billion parameters on NVIDIA Cosmos-Predict2, focused on anime —characters, series and artist styles— and also capable of other non-photographic art. Trained on several million anime images (up to September 2025) and about 800,000 non-anime artworks, with no synthetic data. On SeaArt it has eight versions: Turbo (the default, fast and stable), Aesthetic (a more polished default style) and Base (neutral and the most flexible)."
+ },
  "anima_pencil-XL": {
   "nota": 4.7,
   "has_negative": true,
