@@ -101,3 +101,25 @@ class TestLosBorradoresNoVanACasaDelUsuario:
         escritos = list(Path(historia.root).rglob("*.gprompt"))
         assert escritos, "no escribió nada donde dice"
         assert self.CARPETA_DEL_USUARIO not in escritos[0].parents
+
+
+class TestLaSuiteNoTocaLosDatosDelUsuario:
+    """Ni las preferencias, ni el historial, ni las keys.
+
+    La app real que levantan los tests de interfaz guarda sus preferencias al
+    cambiar de modo, de modelo o de estilo. Hasta el 09-oct-2026 lo hacía en
+    la carpeta del usuario: una tirada le dejó en modo vídeo y sin sus estilos
+    marcados, y la siguiente fallaba porque la app arrancaba en vídeo.
+    conftest.py cambia la casa (USERPROFILE / HOME) a un temporal antes de que
+    nadie importe config.
+    """
+
+    def test_los_datos_de_la_app_van_a_una_casa_temporal(self):
+        import config
+        casa = config.CARPETA_APP.parent
+        assert casa.name.startswith("gprompt-tests-casa-"), (
+            f"los tests escriben en la carpeta de datos real: {config.CARPETA_APP}")
+
+    def test_las_preferencias_tambien(self):
+        import config
+        assert config.ARCHIVOS["preferencias"].parent == config.CARPETA_APP

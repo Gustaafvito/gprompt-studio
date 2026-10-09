@@ -123,6 +123,19 @@ def _abrir(app, modname, fname, extra):
 @pytest.mark.slow
 class TestVentanas:
 
+    @pytest.fixture(autouse=True)
+    def _un_favorito(self, app, monkeypatch):
+        # Con la lista vacía, abrir_lista no abre nada: avisa de que no hay
+        # entradas y vuelve. Estos dos tests pasaban porque leían los
+        # favoritos REALES del usuario; desde que la suite trabaja en una
+        # casa temporal (conftest.py) el favorito lo trae el test.
+        monkeypatch.setattr(app.store, "favoritos", [{
+            "fecha": "2026-10-09 12:00", "modo": "imagen",
+            "plataforma": "SeaArt / Tensor.Art", "estilos": "", "ratio": "1:1",
+            "nsfw": False, "personaje": "", "lora": "", "destino": "",
+            "brief": False, "contenido": "PROMPT: a quiet lake at dawn",
+        }])
+
     @pytest.mark.parametrize("modname,fname,extra", VENTANAS,
                              ids=[v[1] for v in VENTANAS])
     def test_la_ventana_abre_sin_romperse(self, app, modname, fname, extra):

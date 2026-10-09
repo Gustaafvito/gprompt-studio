@@ -1,6 +1,8 @@
 """Configuración compartida para pytest."""
 import os
+import shutil
 import sys
+import tempfile
 
 import pytest
 
@@ -8,6 +10,46 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from tests import _bitacora_cuelgues as bitacora  # noqa: E402
 from tests._arranque_tk import crear_con_reintentos  # noqa: E402
+
+# ── La suite trabaja en una casa de mentira, nunca en la del usuario ───
+# config fija CARPETA_APP = Path.home() / ".arquitecto_prompts" al
+# importarse, y la app real que levantan los tests de interfaz guarda ahí
+# sus preferencias cada vez que cambia de modo, de modelo o de estilo. El
+# 09-oct-2026 una tirada dejó al usuario en modo vídeo, con otro modelo y
+# otro ratio, y sin sus seis estilos marcados; y la tirada siguiente fallaba
+# porque la app arrancaba en vídeo. Con la casa en un temporal, cada tirada
+# empieza limpia, igual que en el CI, y no toca nada del usuario.
+#
+# Tiene que ir ANTES de que nadie importe config. Lo que debe sobrevivir a
+# la tirada a propósito —la bitácora de cuelgues, ya importada arriba, y el
+# diagnóstico de Tk— sigue en la casa real: por eso se apunta antes.
+_PREFIJO_CASA = "gprompt-tests-casa-"
+
+
+def _barrer_casas_viejas(horas=24):
+    """Una tirada abortada no llega a pytest_unconfigure y deja su casa.
+
+    El test de extremo a extremo del cortafuegos aborta su subproceso a
+    propósito, así que cada suite deja una. Solo se barren las de más de un
+    día: una más reciente puede ser la de otra tirada que sigue en marcha
+    (ese mismo subproceso corre mientras la suite que lo lanzó sigue viva).
+    """
+    import glob
+    import time
+    limite = time.time() - horas * 3600
+    for casa in glob.glob(os.path.join(tempfile.gettempdir(), _PREFIJO_CASA + "*")):
+        try:
+            if os.path.getmtime(casa) < limite:
+                shutil.rmtree(casa, ignore_errors=True)
+        except OSError:
+            pass
+
+
+_barrer_casas_viejas()
+_CASA_REAL = os.path.expanduser("~")
+_CASA_TESTS = tempfile.mkdtemp(prefix=_PREFIJO_CASA)
+os.environ["USERPROFILE"] = _CASA_TESTS  # Windows
+os.environ["HOME"] = _CASA_TESTS         # Linux (el CI)
 
 # ── Cortafuegos de tiempo: un test colgado no puede comerse la tarde ───
 # El 24-sep-2026 una tirada se quedó BLOQUEADA 22 minutos creando el
@@ -52,6 +94,7 @@ def pytest_unconfigure(config):
     Un cuelgue aborta el proceso antes de llegar aquí, así que su volcado se
     queda en disco.
     """
+    shutil.rmtree(_CASA_TESTS, ignore_errors=True)
     if _VOLCADO["ruta"] is None:
         return
     import faulthandler
@@ -176,7 +219,7 @@ def exige_tk():
 # carpeta del repo a propósito: sobrevive a un `git clean` y no ensucia el
 # árbol de trabajo.
 _DIAGNOSTICO = os.path.join(
-    os.path.expanduser("~"), ".arquitecto_prompts", "tk_root_fallido.log")
+    _CASA_REAL, ".arquitecto_prompts", "tk_root_fallido.log")
 
 
 def _dejar_prueba_del_fallo():
