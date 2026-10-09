@@ -1,5 +1,5 @@
 {
- "_comentario": "Destinos de entrenamiento del Generador de Dataset LoRA (09-oct-2026). Cada destino dice cómo se escriben las descripciones (.txt) que acompañan a cada imagen: 'etiquetas' (tags tipo Danbooru), 'frases' (trigger + trozos separados por comas, como el dataset del LoRA Lyra), 'natural' (una frase: «A photo of a woman named <trigger>…») o 'ninguna' (la plataforma no usa descripciones). 'familia' es la del gestor de LoRAs (ui_footer.familia_modelo_para_lora) y sirve para proponer el destino según el modelo elegido. 'imagenes' es el rango recomendado [mín, máx]; 'imagenes_por_tipo' lo afina por tipo de LoRA. Fuentes: el código de G-Entrena Studio, el entrenador de SeaArt (grabación del usuario, 09-oct-2026) y su guía docs.seaart.ai, la ayuda de Higgsfield y las páginas de Magnific. Una copia en ~/.arquitecto_prompts/data/ manda sobre esta.",
+ "_comentario": "Destinos de entrenamiento del Generador de Dataset LoRA (09-oct-2026). Cada destino dice cómo se escriben las descripciones (.txt) que acompañan a cada imagen: 'etiquetas' (tags tipo Danbooru), 'frases' (trigger + trozos separados por comas, como el dataset del LoRA Lyra), 'natural' (una frase: «A photo of a woman named <trigger>…») o 'ninguna' (la plataforma no usa descripciones). 'familia' es la del gestor de LoRAs (ui_footer.familia_modelo_para_lora) y sirve para proponer el destino según el modelo elegido. 'imagenes' es el rango recomendado [mín, máx]; 'imagenes_por_tipo' lo afina por tipo de LoRA. LTX y MiniMax H3 son modelos de vídeo, pero G-Entrena entrena sus LoRA con imágenes (H3 admite también vídeos). Fuentes: el código de G-Entrena Studio, el entrenador de SeaArt (grabación del usuario, 09-oct-2026) y su guía docs.seaart.ai, la ayuda de Higgsfield y las páginas de Magnific. Una copia en ~/.arquitecto_prompts/data/ manda sobre esta.",
  "destinos": [
   {
    "id": "g-entrena-anima",
@@ -76,6 +76,44 @@
     40
    ],
    "nota": "Descripciones en frases completas. G-Entrena lee cada imagen con su .txt del mismo nombre."
+  },
+  {
+   "id": "g-entrena-ltx",
+   "plataforma": "G-Entrena",
+   "base": "LTX 2.3",
+   "familia": "ltx",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "LoRA para el modelo de vídeo LTX, entrenado con imágenes: G-Entrena lee cada imagen con su .txt del mismo nombre. Para entrenar con vídeos, un proyecto H3."
+  },
+  {
+   "id": "g-entrena-h3",
+   "plataforma": "G-Entrena",
+   "base": "MiniMax H3",
+   "familia": "minimax h3",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "LoRA para el modelo de vídeo MiniMax H3, en un proyecto H3 de G-Entrena: admite imágenes y vídeos como referencias, y cada una necesita su .txt."
   },
   {
    "id": "seaart-anima",

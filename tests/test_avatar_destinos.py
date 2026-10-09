@@ -47,9 +47,19 @@ class TestElCatalogo:
             assert destinos_para_tipo(tipo, DESTINOS), tipo
 
     def test_estan_las_bases_de_g_entrena(self):
-        # Las cuatro de imagen que entrena G-Entrena (LTX y H3 son de vídeo).
+        # Las seis que entrena G-Entrena. LTX y MiniMax H3 son modelos de
+        # vídeo, pero sus LoRA se entrenan con imágenes (H3 admite también
+        # vídeos): un dataset de esta ventana les sirve.
         g = {d["base"] for d in DESTINOS if d["plataforma"] == "G-Entrena"}
-        assert {"Anima", "Krea 2", "Qwen Image 2.1", "Z-Image"} <= g
+        assert {"Anima", "Krea 2", "Qwen Image 2.1", "Z-Image",
+                "LTX 2.3", "MiniMax H3"} <= g
+
+    def test_los_de_g_entrena_van_juntos(self):
+        # En el desplegable salen seguidos, no mezclados con SeaArt.
+        plataformas = [d["plataforma"] for d in DESTINOS]
+        primero = plataformas.index("G-Entrena")
+        n = plataformas.count("G-Entrena")
+        assert plataformas[primero:primero + n] == ["G-Entrena"] * n
 
     def test_higgsfield_y_magnific_no_usan_descripciones(self):
         for d in DESTINOS:

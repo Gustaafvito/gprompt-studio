@@ -159,7 +159,8 @@ modelo de difusión, el codificador `qwen_3_06b_base` y el VAE de Qwen-Image.
 
 **Generador de Dataset LoRA: dónde vas a entrenar.** Un desplegable nuevo,
 «Entrenar en», con los destinos reales: G-Entrena (Anima, Krea 2, Qwen Image
-2.1 y Z-Image), el entrenador de SeaArt (Anima, Krea 2, Flux.2, FLUX, Z
+2.1 y Z-Image, y también LTX 2.3 y MiniMax H3, que son de vídeo pero se
+entrenan con imágenes), el entrenador de SeaArt (Anima, Krea 2, Flux.2, FLUX, Z
 Image, Qwen Image, Wan 2.2, SDXL, Illustrious, Pony y SD 1.5), Higgsfield y
 Magnific. Las descripciones de cada imagen se escriben como las pide ese
 destino: tags, frases o una frase en lenguaje natural —«A photo of a woman
