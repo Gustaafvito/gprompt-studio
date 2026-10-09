@@ -150,6 +150,13 @@ tengas que adivinarlo.
 
 Un aviso: la licencia de Anima, la del modelo, es **no comercial**.
 
+**Y si tienes Anima en ComfyUI**, ahora tiene su propio grupo. Antes se
+trataba como un Illustrious más: el prompt no seguía sus reglas, y el
+workflow del botón «🔧 Comfy» lo cargaba como un checkpoint de SDXL, así que
+no funcionaba. Ahora lleva sus mismas reglas de prompt, los ajustes de la
+versión Base (er_sde, 30 pasos, CFG 5) y un workflow con sus piezas: el
+modelo de difusión, el codificador `qwen_3_06b_base` y el VAE de Qwen-Image.
+
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
 un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre

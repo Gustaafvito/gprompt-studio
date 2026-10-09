@@ -596,6 +596,7 @@ _COMFY_FAMILIA_LABELS = {
     # desincronizado y el usuario veia tres cabeceras "Otros" seguidas.
     # test_comfy_familias_etiquetadas lo vigila.
     "edit": "Edición de imagen", "hidream": "HiDream",
+    "anima": "Anima",
     "": "Otros",
 }
 _COMFY_FAMILIA_LABELS_VIDEO = {
@@ -635,6 +636,8 @@ _COMFY_DESC_LOCAL = {
     "wan22i2vlownoise14bfp8scaled": ("Wan 2.2 i2v 14B — etapa low noise", "Wan 2.2 i2v 14B — low-noise stage"),
     "ltx2322bdev": ("LTX 2.3 22B: vídeo con audio nativo", "LTX 2.3 22B: video with native audio"),
     "uberrealisticpornmergeponyxlponyxlhybridv1": ("Pony XL fotorrealista NSFW", "Photoreal NSFW Pony XL"),
+    "animabasev10": ("Anima Base v1.0: la base de tus LoRA de Anima", "Anima Base v1.0: the base for your Anima LoRAs"),
+    "animapreview3base": ("Anima preview 3, anterior a la v1.0", "Anima preview 3, before v1.0"),
 }
 
 
@@ -783,6 +786,25 @@ _COMFY_SPECS_FAMILIA = {
         "best_for": "SDXL Pony con tags Danbooru. Trigger obligatorio al inicio: score_9, score_8_up, score_7_up, score_6_up, score_5_up. euler/karras, 25 pasos, CFG 5.0. Para NSFW activa el toggle 🔞.",
         "best_for_en": "SDXL Pony with Danbooru tags. Required trigger at start: score_9, score_8_up, score_7_up, score_6_up, score_5_up. euler/karras, 25 steps, CFG 5.0. For NSFW enable the 🔞 toggle.",
     },
+    "anima": {
+        # Anima LOCAL (anima-base-v1.0, anima-preview3-base). Mismas reglas de
+        # prompt que la ficha de SeaArt («Anima» en model_specs_imagen.json),
+        # pero con los ajustes de la Base, no los de la Turbo que SeaArt usa
+        # por defecto. Fuente: guía del autor en la página del modelo.
+        "is_natural": False, "has_negative": True,
+        "max_chars": 1500,  # Qwen3 0.6B: el autor da ejemplos de ~700 chars
+        "negative_sugerido": ("worst quality, low quality, score_1, score_2, "
+                              "score_3, artist name, blurry, jpeg artifacts, "
+                              "chromatic aberration"),
+        "peso_enfasis": "1.5-2",
+        "tags_con_espacios": True,
+        "sampler_recomendado": "er_sde / simple (30-50 pasos, CFG 4-6); euler_a para líneas más suaves",
+        "best_for": "Anima (CircleStone Labs y Comfy Org, 2B sobre NVIDIA Cosmos): anime e ilustración, no fotorrealismo. Tags de Danbooru con espacios, artistas con @ delante y pesos altos. Base: 30-50 pasos, CFG 4-6, er_sde/simple. Encoder qwen_3_06b_base y VAE de Qwen-Image.",
+        "best_for_en": "Anima (CircleStone Labs and Comfy Org, 2B on NVIDIA Cosmos): anime and illustration, not photorealism. Danbooru tags with spaces, artists with a leading @ and high weights. Base: 30-50 steps, CFG 4-6, er_sde/simple. qwen_3_06b_base encoder and the Qwen-Image VAE.",
+        "prompt_formula": "Tags estilo Danbooru en minúsculas y con espacios, no guiones bajos (solo los score_ los llevan). Orden: [calidad / año / meta / seguridad] [1girl, 1boy…] [personaje] [serie] [@artista] [tags generales]. Prefijo: 'masterpiece, best quality, score_7, safe,'; la etiqueta de seguridad (safe, sensitive, nsfw o explicit) según la idea. Artistas SIEMPRE con @ delante. Se pueden mezclar frases en inglés. La Base es neutra: sin tags de calidad o de artista sale plana.",
+        "prompt_ejemplo": "masterpiece, best quality, score_7, safe, newest, 1girl, solo, silver hair, long hair, blue eyes, witch hat, dark cloak, holding staff, glowing runes, enchanted forest, fireflies, night, moonlight, looking at viewer, smile, upper body",
+        "limitaciones": "No hace fotorrealismo, a propósito. Texto en imagen flojo. Resolución entre 512×512 y 1536×1536. Los LoRA de Anima se entrenan sobre la Base. Licencia NO comercial (CircleStone Labs Non-Commercial License).",
+    },
     "illustrious": {
         "is_natural": False, "has_negative": True,
         "sampler_recomendado": "Euler a (~28 pasos, CFG 5-6)",
@@ -845,11 +867,7 @@ _COMFY_FAMILIA_OVERRIDE = {
     # ── Altas ago-2026 (guiadas una a una por el usuario) ──
     # snofs sobre Flux.2 Klein 9B: snofs ya es Flux; 'klein' delata Flux.2 → flux.
     "snofsklein9bdistilledfp8": "flux",
-    # 'Anima' (base/preview) → el usuario confirma que es ANIME (Illustrious).
-    # Va por override, NO por token: 'anima' colisiona con anima_pencil-XL (SDXL)
-    # y con animatediff/revAnimated.
-    "animabasev10": "illustrious",
-    "animapreview3base": "illustrious",
+    # (Anima ya no va por override: tiene familia propia, ver _RE_ANIMA_COMFY.)
     # Modelos de EDICIÓN por instrucciones → familia 'edit' (prosa + imagen ref,
     # sin negative). Por override para no chocar con qwen_image_edit.
     "fireredimageedit11q3km": "edit",
@@ -858,12 +876,23 @@ _COMFY_FAMILIA_OVERRIDE = {
 }
 
 
+# Anima (CircleStone Labs): sus ficheros oficiales empiezan por «anima-» y la
+# versión (base, preview, turbo, aesthetic). Por patrón y no por token: el
+# token 'anima' casaría con anima_pencil-XL (SDXL), Wan2.2-Animate o
+# revAnimated. Hasta el 09-oct-2026 iba como Illustrious, y el exportador le
+# montaba un CheckpointLoaderSimple cuando Anima es un modelo de difusión
+# suelto, con su encoder y su VAE aparte.
+_RE_ANIMA_COMFY = re.compile(r"^anima[-_ ]?(base|preview|turbo|aesthetic)")
+
+
 def detectar_familia_comfy(nombre: str) -> str:
     """Familia ComfyUI ('flux'|'sdxl'|'pony'…) por nombre, o '' si no se reconoce."""
     override = _COMFY_FAMILIA_OVERRIDE.get(_norm_nombre_comfy(nombre))
     if override:
         return override
     n = (nombre or "").lower()
+    if _RE_ANIMA_COMFY.match(n):
+        return "anima"
     for clave, tokens in _COMFY_FAMILIAS:
         if any(_token_en_nombre(t, n) for t in tokens):
             return clave
@@ -929,6 +958,12 @@ _COMFY_WORKFLOW = {
     # "stable_diffusion" por defecto → el usuario ajusta el loader al pegar.
     "edit":        {"arch": "unet", "cfg": 4.0, "steps": 25, "sampler": "euler", "scheduler": "simple",
                     "clip": "", "vae": ""},
+    # Anima: diffusion_models + encoder Qwen3 0.6B + VAE de Qwen-Image (los
+    # ficheros que indica el autor y que el usuario tiene). ComfyUI reconoce
+    # el encoder por sus pesos, así que el tipo de CLIPLoader es el estándar.
+    "anima":       {"arch": "unet", "cfg": 5.0, "steps": 30, "sampler": "er_sde", "scheduler": "simple",
+                    "clip": "qwen_3_06b_base.safetensors", "vae": "qwen_image_vae.safetensors",
+                    "clip_type": "stable_diffusion"},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
     "pony":        {"arch": "checkpoint", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "karras"},
