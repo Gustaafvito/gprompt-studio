@@ -29,6 +29,14 @@ from modules import paleta as P
 from modules.avatar_config import (
     LORA_TYPES,
 )
+from modules.avatar_destinos import (
+    aplicar_destino,
+    cargar_destinos,
+    destino_por_defecto,
+    destinos_para_tipo,
+    etiqueta_destino,
+    rango_imagenes,
+)
 from modules.avatar_generator import exportar_dataset, generar_dataset_lora
 from modules.avatar_prompts import (
     PROMPT_VISION_FICHA,
@@ -81,6 +89,14 @@ class AvatarFrame(ctk.CTkFrame):
         self._tipo_lora = "Personaje"  # tipo activo
         self._frame_form = None        # ref al scrollable de formulario
         self._frame_angulos = None     # ref al scrollable de ángulos
+        # Dónde se va a entrenar (data/destinos_entrenamiento.json). Mientras
+        # el usuario no lo elija a mano, sigue al modelo y al tipo de LoRA.
+        try:
+            self._destinos = cargar_destinos()
+        except Exception:
+            self._destinos = []
+        self._destino_disp2id = {}
+        self._destino_manual = False
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -154,6 +170,7 @@ class AvatarFrame(ctk.CTkFrame):
                          else (modelos_ini[0] if modelos_ini else ""))
             self.menu_modelo = ctk.CTkOptionMenu(
                 fila_modelo, values=modelos_ini or [""], width=220,
+                command=self._on_modelo_change,
                 font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             self.menu_modelo.set(inicial_m)
             self.menu_modelo.pack(side="left")
@@ -169,7 +186,8 @@ class AvatarFrame(ctk.CTkFrame):
                        if self.modelo_destino in self.modelos_destino
                        else self.modelos_destino[0])
             self.menu_modelo = ctk.CTkOptionMenu(
-                fila_modelo, values=self.modelos_destino, width=260)
+                fila_modelo, values=self.modelos_destino, width=260,
+                command=self._on_modelo_change)
             self.menu_modelo.set(inicial)
             self.menu_modelo.pack(side="left", padx=(0, 6))
             ctk.CTkLabel(
@@ -202,9 +220,21 @@ class AvatarFrame(ctk.CTkFrame):
         self.label_estado = ctk.CTkLabel(pie, text=tr("Listo."))
         self.label_estado.grid(row=0, column=0, sticky="w")
 
+        # Dónde se va a entrenar: decide cómo se escriben las descripciones
+        # (.txt) y cuántas imágenes se recomiendan.
+        ctk.CTkLabel(pie, text=tr("🎓 Entrenar en:"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
+                     ).grid(row=0, column=1, padx=(8, 4))
+        self.menu_destino = ctk.CTkOptionMenu(
+            pie, values=[""], width=230, command=self._on_destino_manual,
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO))
+        self.menu_destino.grid(row=0, column=2)
+        self._tip_destino = CTkToolTip(self.menu_destino, message=" ")
+
         self.boton_generar = ctk.CTkButton(
             pie, text=tr("⚡ Generar dataset"), command=self._on_generar)
-        self.boton_generar.grid(row=0, column=1, padx=(8, 0))
+        self.boton_generar.grid(row=0, column=3, padx=(8, 0))
+        self._refrescar_destinos()
 
     # ----------------------------------------------------------- tipo LoRA
     def _on_tipo_change(self, valor: str) -> None:
@@ -228,6 +258,60 @@ class AvatarFrame(ctk.CTkFrame):
             w.destroy()
         self._angulo_vars = {}
         self._poblar_angulos(cfg)
+        # Cada tipo admite sus destinos (Higgsfield, solo personaje).
+        self._refrescar_destinos()
+
+    # ------------------------------------------------- destino de entrenamiento
+    def _destino_actual(self):
+        """El destino elegido en el desplegable, o None."""
+        menu = getattr(self, "menu_destino", None)
+        id_destino = self._destino_disp2id.get(menu.get()) if menu else None
+        return next((d for d in self._destinos if d.get("id") == id_destino), None)
+
+    def _refrescar_destinos(self) -> None:
+        """Rellena «Entrenar en» con los destinos del tipo activo.
+
+        Conserva la elección manual si sigue valiendo para el tipo; si no,
+        propone el destino del modelo con el que se va a generar."""
+        menu = getattr(self, "menu_destino", None)
+        if menu is None:
+            return
+        candidatos = destinos_para_tipo(self._tipo_lora, self._destinos)
+        self._destino_disp2id = {etiqueta_destino(d): d["id"] for d in candidatos}
+        menu.configure(values=list(self._destino_disp2id) or [""])
+        actual = self._destino_actual()
+        if not (self._destino_manual and actual in candidatos):
+            self._destino_manual = False
+            modelo = self.menu_modelo.get() if self.menu_modelo else ""
+            plataforma = (self.menu_plataforma.get()
+                          if getattr(self, "menu_plataforma", None) else "")
+            actual = destino_por_defecto(modelo, plataforma, self._tipo_lora,
+                                         self._destinos)
+        menu.set(etiqueta_destino(actual) if actual else "")
+        self._describir_destino(actual)
+
+    def _describir_destino(self, destino) -> None:
+        """Pone la nota del destino en el tooltip del desplegable."""
+        if not destino:
+            return
+        rango = rango_imagenes(destino, self._tipo_lora)
+        texto = tr(destino.get("nota", ""))
+        if rango:
+            minimo, maximo = rango
+            texto += "\n\n" + tr("Imágenes recomendadas: {0}").format(
+                minimo if minimo == maximo else f"{minimo}-{maximo}")
+        try:
+            self._tip_destino.configure(message=texto)
+        except Exception:
+            pass  # sin CTkToolTip instalado, no hay tooltip que actualizar
+
+    def _on_destino_manual(self, _valor: str) -> None:
+        self._destino_manual = True
+        self._describir_destino(self._destino_actual())
+
+    def _on_modelo_change(self, _modelo: str = "") -> None:
+        # Cambiar de modelo vuelve a proponer destino, salvo elección manual.
+        self._refrescar_destinos()
 
     def _poblar_form(self, form, cfg: dict) -> None:
         """Rellena el scrollable frame del formulario según el cfg del tipo."""
@@ -547,20 +631,24 @@ class AvatarFrame(ctk.CTkFrame):
         modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
         plataforma_sel = (self.menu_plataforma.get()
                           if getattr(self, "menu_plataforma", None) else "")
+        # Se leen aquí, en el hilo de Tk, y viajan al worker como datos.
+        destino = self._destino_actual()
+        estilo_visual = self.menu_estilo.get()
         if self._executor is not None:
             self._executor.submit(
                 self._worker_generar, form_data, trigger, seleccionados,
-                carpeta, modelo_sel, plataforma_sel
+                carpeta, modelo_sel, plataforma_sel, destino, estilo_visual
             ).add_done_callback(log_future_exc)
         else:
             threading.Thread(
                 target=self._worker_generar,
                 args=(form_data, trigger, seleccionados, carpeta, modelo_sel,
-                      plataforma_sel),
+                      plataforma_sel, destino, estilo_visual),
                 daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
-                        modelo_sel="", plataforma_sel=""):
+                        modelo_sel="", plataforma_sel="", destino=None,
+                        estilo_visual=""):
         try:
             cfg = LORA_TYPES[self._tipo_lora]
             # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
@@ -611,6 +699,9 @@ class AvatarFrame(ctk.CTkFrame):
             # de exportar
             avisos = (self.adaptador(resultado, modelo_sel)
                       if self.adaptador else [])
+            # Descripciones (.txt) en el formato de donde se va a entrenar.
+            avisos += aplicar_destino(resultado, destino, self._tipo_lora,
+                                      form_data, estilo_visual)
             ruta = exportar_dataset(resultado, carpeta)
             # Destino ComfyUI local → exportar TAMBIÉN workflows/ con un
             # .json por toma (formato UI), cableados al modelo elegido:
@@ -674,6 +765,8 @@ class AvatarFrame(ctk.CTkFrame):
         modelos = self._get_modelos_grupo(plat, grupo)
         self.menu_modelo.configure(values=modelos or [""])
         self.menu_modelo.set(modelos[0] if modelos else "")
+        # set() no dispara el command del desplegable.
+        self._on_modelo_change()
 
     def _fin_ok(self, resultado, ruta, avisos=None):
         self.boton_generar.configure(state="normal")

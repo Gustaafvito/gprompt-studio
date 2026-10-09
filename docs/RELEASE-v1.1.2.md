@@ -157,6 +157,16 @@ no funcionaba. Ahora lleva sus mismas reglas de prompt, los ajustes de la
 versión Base (er_sde, 30 pasos, CFG 5) y un workflow con sus piezas: el
 modelo de difusión, el codificador `qwen_3_06b_base` y el VAE de Qwen-Image.
 
+**Generador de Dataset LoRA: dónde vas a entrenar.** Un desplegable nuevo,
+«Entrenar en», con los destinos reales: G-Entrena (Anima, Krea 2, Qwen Image
+2.1 y Z-Image), el entrenador de SeaArt (Anima, Krea 2, Flux.2, FLUX, Z
+Image, Qwen Image, Wan 2.2, SDXL, Illustrious, Pony y SD 1.5), Higgsfield y
+Magnific. Las descripciones de cada imagen se escriben como las pide ese
+destino: tags, frases o una frase en lenguaje natural —«A photo of a woman
+named…», como recomienda SeaArt—, y ahora llevan la palabra de clase («a
+woman», «1girl»). Si el destino no usa descripciones, no se exportan. Y avisa
+cuando el número de imágenes se sale de lo que recomienda.
+
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
 un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre

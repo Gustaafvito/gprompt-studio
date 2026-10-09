@@ -223,8 +223,12 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     )
     dir_prompts = os.path.join(base, "prompts")
     dir_captions = os.path.join(base, "captions")
+    # Higgsfield, Magnific o el estilo rápido de Qwen en SeaArt no leen
+    # descripciones: una carpeta captions/ ahí solo despistaría.
+    con_captions = not resultado.get("sin_descripciones")
     os.makedirs(dir_prompts, exist_ok=True)
-    os.makedirs(dir_captions, exist_ok=True)
+    if con_captions:
+        os.makedirs(dir_captions, exist_ok=True)
 
     # dataset.json completo
     with open(os.path.join(base, "dataset.json"), "w", encoding="utf-8") as f:
@@ -243,8 +247,9 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         with open(os.path.join(dir_prompts, f"{nombre}.txt"), "w", encoding="utf-8") as f:
             f.write(contenido)
 
-        with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
-            f.write(item["caption"])
+        if con_captions:
+            with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
+                f.write(item["caption"])
 
         cab_ratio = f"  [ratio {ratio}]" if ratio else ""
         bloque = f"=== {nombre} | {item['label']}{cab_ratio} ===\n{item['prompt']}\n"
@@ -324,8 +329,15 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
             "   (captions/ son los .txt emparejados para el entrenamiento LoRA.)\n\n"
             "===================================================================\n\n"
         )
+    # Lo propio de la plataforma donde se va a entrenar, arriba del todo.
+    destino_txt = ""
+    if resultado.get("destino_entrenamiento"):
+        from modules.avatar_destinos import cargar_destinos, consejo_destino
+        id_destino = resultado["destino_entrenamiento"].get("id")
+        destino = next((d for d in cargar_destinos() if d.get("id") == id_destino), None)
+        destino_txt = consejo_destino(destino, tipo)
     with open(os.path.join(base, "CONSEJOS_SEAART.txt"), "w", encoding="utf-8") as f:
-        f.write(cabecera + consejo)
+        f.write(destino_txt + cabecera + consejo)
 
     return base
 

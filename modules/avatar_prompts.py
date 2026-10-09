@@ -117,6 +117,20 @@ def fondo_para_indice(fondo, i: int) -> str:
     return fondo or ""
 
 
+def _partes_descripcion(angulo: dict, fondo_i: str, luz: str) -> dict:
+    """Piezas de la descripción (.txt) de una imagen, sin unir.
+
+    Las mismas que la caption de siempre (encuadre, primer trozo del fondo y
+    de la luz), pero sueltas: avatar_destinos las redacta en el formato de la
+    plataforma donde se vaya a entrenar (tags, frases o una frase natural).
+    """
+    return {
+        "encuadre": angulo.get("framing", ""),
+        "fondo": fondo_i.split(",")[0].strip() if fondo_i else "",
+        "luz": luz.split(",")[0].strip() if luz else "",
+    }
+
+
 def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
     """Negative del ángulo: base + términos de recorte según el encuadre.
 
@@ -350,6 +364,7 @@ def ensamblar_dataset(
             "prompt": prompt,
             "negative": negativo_para_angulo(angulo, incluir_negative),
             "caption": caption,
+            "partes_descripcion": _partes_descripcion(angulo, fondo_i, AVATAR_LIGHTING),
             "ratio": ratio_sugerido(angulo),
         })
 
@@ -708,6 +723,7 @@ def ensamblar_dataset_generico(
             "prompt": prompt,
             "negative": negative,
             "caption": caption,
+            "partes_descripcion": _partes_descripcion(angulo, fondo_i, lighting),
             "ratio": ratio_sugerido(angulo),
         })
 
@@ -787,6 +803,7 @@ def ensamblar_dataset_edicion(
             "prompt": prompt,
             "negative": negative,
             "caption": ", ".join(partes_caption),
+            "partes_descripcion": _partes_descripcion(angulo, fondo_i, AVATAR_LIGHTING),
             "ratio": ratio_sugerido(angulo),
         })
     return dataset
