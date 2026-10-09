@@ -38,6 +38,7 @@ from modules.avatar_destinos import (
     rango_imagenes,
 )
 from modules.avatar_generator import exportar_dataset, generar_dataset_lora
+from modules.avatar_montar import leer_dataset, montar_dataset, resumen_montaje
 from modules.avatar_prompts import (
     PROMPT_VISION_FICHA,
     construir_user_prompt_ficha,
@@ -98,6 +99,7 @@ class AvatarFrame(ctk.CTkFrame):
         self._destino_disp2id = {}
         self._destino_manual = False
         self._checks_variar = {}       # clave → (checkbox, valores a rotar)
+        self._ultima_ruta = ""         # carpeta del último dataset exportado
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -235,6 +237,17 @@ class AvatarFrame(ctk.CTkFrame):
         self.boton_generar = ctk.CTkButton(
             pie, text=tr("⚡ Generar dataset"), command=self._on_generar)
         self.boton_generar.grid(row=0, column=3, padx=(8, 0))
+
+        # Después de generar las imágenes: juntarlas con sus descripciones
+        # (000.png + 000.txt), listas para G-Entrena o SeaArt.
+        self.boton_montar = ctk.CTkButton(
+            pie, text=tr("📦 Montar dataset"), width=130,
+            **P.estilo_boton(P.BTN_SECUNDARIO), command=self._on_montar)
+        self.boton_montar.grid(row=0, column=4, padx=(6, 0))
+        CTkToolTip(self.boton_montar, message=tr(
+            "Cuando ya tengas las imágenes: elige la carpeta del dataset y las "
+            "imágenes descargadas, y quedan como 000.png + 000.txt, listas "
+            "para entrenar."))
         self._refrescar_destinos()
 
     # ----------------------------------------------------------- tipo LoRA
@@ -789,7 +802,49 @@ class AvatarFrame(ctk.CTkFrame):
         # set() no dispara el command del desplegable.
         self._on_modelo_change()
 
+    # ------------------------------------------------------- montar dataset
+    def _on_montar(self):
+        """Junta las imágenes generadas con sus descripciones (fase 3)."""
+        import os
+        from pathlib import Path
+
+        carpeta = filedialog.askdirectory(
+            title=tr("Carpeta del dataset (la que creó «Generar dataset»)"),
+            initialdir=self._ultima_ruta or self.carpeta_salida)
+        if not carpeta:
+            return
+        try:
+            leer_dataset(carpeta)
+        except ValueError as e:
+            messagebox.showerror(tr("Montar dataset"), str(e))
+            return
+
+        descargas = Path.home() / "Downloads"
+        imagenes = filedialog.askopenfilenames(
+            title=tr("Imágenes generadas para este dataset"),
+            initialdir=str(descargas) if descargas.is_dir() else carpeta,
+            filetypes=[(tr("Imágenes"), "*.png *.jpg *.jpeg *.webp"),
+                       (tr("Todos los archivos"), "*.*")])
+        if not imagenes:
+            return
+        try:
+            r = montar_dataset(carpeta, list(imagenes))
+        except Exception as e:
+            messagebox.showerror(tr("Montar dataset"), str(e))
+            return
+
+        self.label_estado.configure(
+            text=tr("📦 Dataset montado: {0} imágenes.").format(r["copiadas"]))
+        if messagebox.askyesno(
+                tr("Dataset montado"),
+                resumen_montaje(r) + "\n\n" + tr("¿Abrir la carpeta?")):
+            try:
+                os.startfile(r["carpeta"])
+            except Exception:
+                pass  # abrir la carpeta es un extra (y no existe fuera de Windows)
+
     def _fin_ok(self, resultado, ruta, avisos=None):
+        self._ultima_ruta = ruta
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
             text=tr('✅ {0} prompts exportados.').format(resultado['total_prompts']))
@@ -802,6 +857,9 @@ class AvatarFrame(ctk.CTkFrame):
                 "pega esos prompts — la identidad la ancla tu imagen.")
         if avisos:
             mensaje += "\n\n" + "\n\n".join(avisos)
+        mensaje += "\n\n" + tr(
+            "Cuando tengas las imágenes, pulsa «📦 Montar dataset» para "
+            "juntarlas con sus descripciones.")
         messagebox.showinfo(tr("Dataset generado"), mensaje)
 
     def _fin_error(self, mensaje):

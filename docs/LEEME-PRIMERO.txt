@@ -19,7 +19,8 @@ QUÉ HAY DE NUEVO EN LA 1.1.2
     (G-Entrena, SeaArt, Higgsfield o Magnific) y las descripciones
     salen como las pide esa plataforma. Y en cada imagen cambian la
     ropa, el escenario, la expresión y la luz, para que el LoRA
-    aprenda solo al personaje.
+    aprenda solo al personaje. «Montar dataset» junta después tus
+    imágenes con sus descripciones (000.png + 000.txt).
   - Gestor de LoRAs: cinco familias nuevas (Anima, Krea 2, LTX,
     MiniMax H3 y Qwen Image), y la app ya las reconoce.
 

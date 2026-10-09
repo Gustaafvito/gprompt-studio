@@ -94,6 +94,7 @@ hiddenimports = [
     'modules.avatar_generator',
     'modules.avatar_ui',
     'modules.avatar_destinos',
+    'modules.avatar_montar',
     # Keyring backends por plataforma (PyInstaller suele perder éstos)
     'keyring.backends.Windows',
     'keyring.backends.SecretService',

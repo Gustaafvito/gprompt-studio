@@ -178,6 +178,13 @@ parte del personaje, desmarcas «Variar ropa» y se queda la de la ficha. En
 los paisajes cambian la hora del día y el tiempo; en los objetos, la luz; en
 NSFW, la expresión y la luz.
 
+**Y un botón para montarlo.** Cuando ya tienes las imágenes, «📦 Montar
+dataset» las junta con sus descripciones como `000.png` + `000.txt`, que es
+lo que leen G-Entrena y el «Subir conjunto de datos» de SeaArt. Las de
+ComfyUI se emparejan solas por el nombre de su toma; las que descargas de
+SeaArt, por el orden en que las bajaste. Copia sin tocar lo descargado y te
+dice qué falta o qué sobra.
+
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
 un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre

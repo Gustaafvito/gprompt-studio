@@ -149,7 +149,8 @@ del catálogo de su proveedor, la app lo oculta sola.
   MiniMax H3 y Qwen Image.
 - Generador de Dataset LoRA (1.1.2): eliges dónde vas a entrenar (G-Entrena,
   SeaArt, Higgsfield o Magnific) y las descripciones salen en su formato; en
-  cada imagen cambian la ropa, el escenario, la expresión y la luz.
+  cada imagen cambian la ropa, el escenario, la expresión y la luz; y
+  «Montar dataset» deja tus imágenes listas para entrenar (000.png + 000.txt).
 - En la 1.1.1: Qwen Image 2.1 y Nano Banana 2.1 en imagen, y Vidu Q4
   Preview y SeaArt Opera 2.0 Preview en vídeo. Seedream 5.0 Flash (1.1.0).
 - Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).
