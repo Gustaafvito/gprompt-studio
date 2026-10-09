@@ -84,16 +84,14 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c)
-> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9)
+> - **Installer:** [0 of 68 engines](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c) — clean
+> - **Single-file portable:** [1 of 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9) — Bkav Pro
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **Neither detection finds malicious code**, which matters more than the
-> count. Bkav Pro gives a label derived from the file itself
-> (`W32.Malware.C1C732E6`); and Zillya names XWorm, a real piece of malware
-> that is also packaged with PyInstaller, the tool this program is built
-> with.
+> **The only detection finds no malicious code**, which matters more than
+> the count. Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.8616AD83`), without naming any known malware.
 >
 > What antivirus engines score is the **packaging**, not the program. The
 > proof is inside 1.1.1 itself: the installer carries the very same program

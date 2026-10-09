@@ -1,21 +1,18 @@
 <!--
-BORRADOR de la 1.1.1 (01-oct-2026; +3 modelos el 09-oct). Nada publicado.
-
-Estado del borrador:
-- Hashes y tamaños: ya son los del build del 09-oct-2026 (build_release.py
-  desde 9cf96ef, urllib3 2.8.0 y pip-audit limpio). Si se recompila, cambian.
-- VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
+Build definitivo del 09-oct-2026 (`py -3.10 build_release.py --yes` desde
+9cf96ef, urllib3 2.8.0 y pip-audit limpio): hashes, tamaños y VirusTotal ya
+son los de ESTOS dos ficheros (instalador 0/68, portable 1/65 con Bkav Pro;
+Microsoft, Undetected en los dos). Si se regeneran, todo eso cambia: hay que
+volver a analizarlos y rehacer los enlaces.
 
 Falta, en este orden:
-1. `python build_release.py --yes` desde el último commit de esta rama.
-2. Hashes, tamaños y VirusTotal aquí, en docs/LEEME-PRIMERO.txt y en
-   docs/WEB-descarga.md / .en.md (los dos con los mismos hashes).
-3. Borrador de release en GitHub con la etiqueta `v1.1.1` («create on
+1. Push de la rama y PR a main.
+2. Borrador de release en GitHub con la etiqueta `v1.1.1` («create on
    publish»), el cuerpo de docs/RELEASE-CUERPO.md y los dos assets:
    `GPromptStudio-Setup-1.1.1.exe` y `GPromptStudio-Portable-Onefile.exe`.
-4. Fusionar el PR en main y publicar enseguida: el botón del README apunta
+3. Fusionar el PR en main y publicar enseguida: el botón del README apunta
    ya a v1.1.1 y da 404 hasta que la release exista.
-5. Web (gprompt-studio.html y datos/proyectos.json: 276 = 167 + 101 + 8),
+4. Web (gprompt-studio.html y datos/proyectos.json: 276 = 167 + 101 + 8),
    About del repo, perfil y el aviso «Versión antigua» en la 1.1.0.
 -->
 
@@ -79,7 +76,14 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[0 de 68](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c)**, limpio, y el portable
+**[1 de 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+La única detección, `W32.Malware.8616AD83` de Bkav Pro, es una etiqueta
+derivada del propio fichero: no nombra ningún malware conocido. Y el
+instalador lleva dentro el mismo programa sin que nadie lo marque: el motor
+puntúa el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 

@@ -91,16 +91,14 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** [PENDIENTE](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c)
-> - **Portable de un solo fichero:** [PENDIENTE](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9)
+> - **Instalador:** [0 de 68 motores](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c) — limpio
+> - **Portable de un solo fichero:** [1 de 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9) — Bkav Pro
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
-> **Ninguna de las dos encuentra código malicioso**, y eso importa más que
-> el número. Bkav Pro da una etiqueta derivada del propio fichero
-> (`W32.Malware.C1C732E6`); y Zillya nombra XWorm, un malware real que
-> también se empaqueta con PyInstaller, la herramienta con la que se
-> construye este programa.
+> **La única detección no encuentra código malicioso**, y eso importa más
+> que el número. Bkav Pro da una etiqueta derivada del propio fichero
+> (`W32.Malware.8616AD83`), sin nombrar ningún malware conocido.
 >
 > Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
 > prueba está en la propia 1.1.1: el instalador lleva dentro el mismo

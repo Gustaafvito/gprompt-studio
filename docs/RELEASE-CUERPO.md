@@ -56,7 +56,14 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[0 de 68](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c)**, limpio, y el portable
+**[1 de 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+La única detección, `W32.Malware.8616AD83` de Bkav Pro, es una etiqueta
+derivada del propio fichero: no nombra ningún malware conocido. Y el
+instalador lleva dentro el mismo programa sin que nadie lo marque: el motor
+puntúa el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 
