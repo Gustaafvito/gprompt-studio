@@ -1,3 +1,23 @@
+<!--
+Build definitivo del 09-oct-2026 (`py -3.10 build_release.py --yes` desde
+9cf96ef, urllib3 2.8.0 y pip-audit limpio): hashes, tamaños y VirusTotal ya
+son los de ESTOS dos ficheros (instalador 0/68, portable 1/65 con Bkav Pro;
+Microsoft, Undetected en los dos). Si se regeneran, todo eso cambia: hay que
+volver a analizarlos y rehacer los enlaces.
+
+Falta, en este orden:
+1. Push de la rama y PR a main.
+2. Borrador de release en GitHub con la etiqueta `v1.1.1` («create on
+   publish»), el cuerpo de docs/RELEASE-CUERPO.md y los dos assets:
+   `GPromptStudio-Setup-1.1.1.exe` y `GPromptStudio-Portable-Onefile.exe`.
+3. Fusionar el PR en main y publicar enseguida: el botón del README apunta
+   ya a v1.1.1 y da 404 hasta que la release exista.
+4. Web (gprompt-studio.html y datos/proyectos.json: 276 = 167 + 101 + 8),
+   About del repo, perfil y el aviso «Versión antigua» en la 1.1.0.
+-->
+
+---
+
 ## G-Prompt Studio v1.1.1
 
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y

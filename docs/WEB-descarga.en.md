@@ -66,12 +66,12 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
-> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+> 771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c  GPromptStudio-Setup-1.1.1.exe
+> 5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,19 +84,17 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [0 of 67 engines](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — clean
-> - **Single-file portable:** [2 of 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro and Zillya
+> - **Installer:** [0 of 68 engines](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c) — clean
+> - **Single-file portable:** [1 of 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9) — Bkav Pro
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **Neither detection finds malicious code**, which matters more than the
-> count. Bkav Pro gives a label derived from the file itself
-> (`W32.Malware.C1C732E6`); and Zillya names XWorm, a real piece of malware
-> that is also packaged with PyInstaller, the tool this program is built
-> with.
+> **The only detection finds no malicious code**, which matters more than
+> the count. Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.8616AD83`), without naming any known malware.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.1.0 itself: the installer carries the very same program
+> proof is inside 1.1.1 itself: the installer carries the very same program
 > and nobody flags it. Same software, different wrapper, different verdict.
 >
 > **If your antivirus complains about one option, try the other** — it's the

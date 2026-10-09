@@ -97,6 +97,7 @@
     "SeaArt Magic Star",
     "SeaArt Muse",
     "SeaArt Opera",
+    "SeaArt Opera 2.0 Preview",
     "SeaArt Opera Lite",
     "SeaArt Plus",
     "SeaArt Pony",
@@ -152,7 +153,8 @@
    "── Vidu ──",
    [
     "Vidu Q3 Pro",
-    "Vidu Q3 Turbo"
+    "Vidu Q3 Turbo",
+    "Vidu Q4 Preview"
    ]
   ],
   [
@@ -302,6 +304,7 @@
     "Nano Banana",
     "Nano Banana 2",
     "Nano Banana 2 Lite",
+    "Nano Banana 2.1",
     "Nano Banana Pro Image"
    ]
   ],
@@ -319,6 +322,7 @@
    "── Qwen (Alibaba en SeaArt) ──",
    [
     "Qwen Image 2.0 Pro",
+    "Qwen Image 2.1",
     "Qwen Image 3.0",
     "Qwen Image 3.0 Pro",
     "Qwen-Image"

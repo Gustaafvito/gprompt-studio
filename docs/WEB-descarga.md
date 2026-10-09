@@ -71,12 +71,12 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > exactamente el que publiqué, sin manipular:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba  GPromptStudio-Setup-1.1.0.exe
-> 0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b  GPromptStudio-Portable-Onefile.exe
+> 771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c  GPromptStudio-Setup-1.1.1.exe
+> 5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > Y si te gusta mirar el código, está entero
@@ -91,19 +91,17 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** [0 de 67 motores](https://www.virustotal.com/gui/file/4104cb2257165e4c4819e1ee4e3be8970f98b712ca270b684889fd6e2f4e3aba) — limpio
-> - **Portable de un solo fichero:** [2 de 68](https://www.virustotal.com/gui/file/0ae8f89a69b83f069c689325ef74d250b81a0f39e4fe7a9dcaf215da49d4622b) — Bkav Pro y Zillya
+> - **Instalador:** [0 de 68 motores](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c) — limpio
+> - **Portable de un solo fichero:** [1 de 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9) — Bkav Pro
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
-> **Ninguna de las dos encuentra código malicioso**, y eso importa más que
-> el número. Bkav Pro da una etiqueta derivada del propio fichero
-> (`W32.Malware.C1C732E6`); y Zillya nombra XWorm, un malware real que
-> también se empaqueta con PyInstaller, la herramienta con la que se
-> construye este programa.
+> **La única detección no encuentra código malicioso**, y eso importa más
+> que el número. Bkav Pro da una etiqueta derivada del propio fichero
+> (`W32.Malware.8616AD83`), sin nombrar ningún malware conocido.
 >
 > Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
-> prueba está en la propia 1.1.0: el instalador lleva dentro el mismo
+> prueba está en la propia 1.1.1: el instalador lleva dentro el mismo
 > programa y no lo marca nadie. Mismo software, distinto envoltorio,
 > distinto veredicto.
 >

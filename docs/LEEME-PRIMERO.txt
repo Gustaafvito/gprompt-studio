@@ -1,18 +1,25 @@
 ═══════════════════════════════════════════════════════════════════
-  G-Prompt Studio v1.1.0 — Listo para distribuir
+  G-Prompt Studio v1.1.1 — Listo para distribuir
 ═══════════════════════════════════════════════════════════════════
 
 Aquí tienes DOS opciones para usar la app o compartirla.
 Son ALTERNATIVAS, no acumulativas: elige una.
 
 
-QUÉ HAY DE NUEVO EN LA 1.1.0
+QUÉ HAY DE NUEVO EN LA 1.1.1
 ═══════════════════════════════════════════════════════════════════
+
+  - Cuatro modelos nuevos de SeaArt: Qwen Image 2.1 y Nano
+    Banana 2.1 en imagen, y Vidu Q4 Preview y SeaArt Opera 2.0
+    Preview en vídeo. El catálogo pasa a 276.
+  - Seguridad: urllib3 actualizado a la 2.8.0.
+
+  Y lo que trajo la 1.1.0:
 
   - Crear desde imágenes (botón junto a la idea o Ctrl+Shift+I):
     le das tus imágenes, las analiza y redacta el prompt; y de ahí,
     un guion de Cortometraje por escenas.
-  - 272 modelos, con Seedream 5.0 Flash.
+  - Seedream 5.0 Flash.
   - NSFW mejorado: detecta la idea en castellano e inglés y avisa
     cuando el modelo elegido filtra el contenido adulto.
   - Modo Brief con reglas propias para imagen, vídeo y audio.
@@ -23,7 +30,7 @@ QUÉ HAY DE NUEVO EN LA 1.1.0
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.1.0.exe  (188 MB)
+Archivo: GPromptStudio-Setup-1.1.1.exe  (188 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -36,7 +43,7 @@ QUÉ HACE:
     aquella versión (unos 180 MB que ya no sirven).
 
 CÓMO USAR:
-  1. Doble-click en GPromptStudio-Setup-1.1.0.exe
+  1. Doble-click en GPromptStudio-Setup-1.1.1.exe
   2. Acepta la advertencia de Windows SmartScreen
      ("Más info" → "Ejecutar de todas formas")
      [Normal en programas sin certificado de firma. Ver más abajo.]
@@ -95,28 +102,27 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   es el original y no está manipulado, compara su hash SHA-256 con el
   publicado en la página de descarga. En PowerShell:
 
-    Get-FileHash .\GPromptStudio-Setup-1.1.0.exe -Algorithm SHA256
+    Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
 
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    4104cb2257165e4c4819e1ee4e3be897
-    0f98b712ca270b684889fd6e2f4e3aba   GPromptStudio-Setup-1.1.0.exe
+    771bee4b26b9a33290a99bccad01bcb3
+    48d87f719c3bace16eaf986cd04f425c   GPromptStudio-Setup-1.1.1.exe
 
-    0ae8f89a69b83f069c689325ef74d250
-    b81a0f39e4fe7a9dcaf215da49d4622b   GPromptStudio-Portable-Onefile.exe
+    5c9d80f4fcff6175f8d4f1aa0d39dcfc
+    1c7304daafb3a4107a8f2204f211b8e9   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... 0 de 67: limpio.
-    - Opción 2, el onefile ........ 2 de 68: Bkav Pro y Zillya.
+    - Opción 1, el instalador ..... 0 de 68: limpio.
+    - Opción 2, el onefile ........ 1 de 65: Bkav Pro.
 
   Microsoft Defender no marca ninguno de los dos.
 
-  Ninguna de las dos encuentra código malicioso: Bkav Pro da una
-  etiqueta derivada del propio fichero, y Zillya nombra XWorm, un
-  malware que también se empaqueta con PyInstaller. Y el instalador
-  lleva dentro el MISMO programa sin que nadie lo marque: lo que
-  puntúan es el envoltorio.
+  La única detección no encuentra código malicioso: Bkav Pro da una
+  etiqueta derivada del propio fichero, sin nombrar ningún malware.
+  Y el instalador lleva dentro el MISMO programa sin que nadie lo
+  marque: lo que puntúan es el envoltorio.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el
