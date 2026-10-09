@@ -166,7 +166,9 @@ Magnific. Las descripciones de cada imagen se escriben como las pide ese
 destino: tags, frases o una frase en lenguaje natural —«A photo of a woman
 named…», como recomienda SeaArt—, y ahora llevan la palabra de clase («a
 woman», «1girl»). Si el destino no usa descripciones, no se exportan. Y avisa
-cuando el número de imágenes se sale de lo que recomienda.
+cuando el número de imágenes se sale de lo que recomienda. Con un modelo de
+anime, como Anima o Illustrious, el estilo visual se pone solo en Anime: con
+«Fotorrealista», el dataset le pedía a Anima fotos, que no hace.
 
 **Y variedad en cada imagen.** Hasta ahora, un dataset de personaje repetía la
 misma ropa y la misma luz de estudio en todas las imágenes, con cuatro fondos

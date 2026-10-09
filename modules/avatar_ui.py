@@ -100,6 +100,7 @@ class AvatarFrame(ctk.CTkFrame):
         self._destino_manual = False
         self._checks_variar = {}       # clave → (checkbox, valores a rotar)
         self._ultima_ruta = ""         # carpeta del último dataset exportado
+        self._estilo_manual = False    # ¿eligió el usuario el estilo a mano?
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -324,8 +325,40 @@ class AvatarFrame(ctk.CTkFrame):
         self._describir_destino(self._destino_actual())
 
     def _on_modelo_change(self, _modelo: str = "") -> None:
-        # Cambiar de modelo vuelve a proponer destino, salvo elección manual.
+        # Cambiar de modelo vuelve a proponer destino y estilo visual, salvo
+        # que el usuario los haya elegido a mano.
         self._refrescar_destinos()
+        self._sugerir_estilo()
+
+    # ------------------------------------------------------------ estilo
+    def _sugerir_estilo(self) -> None:
+        """Con un modelo que no hace foto (Anima, Illustrious…), el estilo
+        visual se pone solo en el suyo, normalmente Anime.
+
+        Probado el 09-oct-2026: con Anima y «Fotorrealista», los 50 prompts
+        acababan en «photorealistic, 85mm lens», y Anima no hace fotorrealismo
+        a propósito. Mismo criterio que el combo «Estilo» de la ventana
+        principal (ui_footer.estilo_sugerido_para_modelo). Con un modelo de
+        foto vuelve al primero de la lista. Una elección a mano manda."""
+        menu = getattr(self, "menu_estilo", None)
+        if menu is None or getattr(self, "_estilo_manual", False):
+            return
+        estilos = list(LORA_TYPES[self._tipo_lora]["styles"])
+        modelo = self.menu_modelo.get() if self.menu_modelo else ""
+        sugerido = None
+        if modelo:
+            try:
+                from config import get_image_model_specs
+                from modules.ui_footer import estilo_sugerido_para_modelo
+                best_for = (get_image_model_specs(modelo) or {}).get("best_for", "")
+                sugerido = estilo_sugerido_para_modelo(modelo, best_for, estilos)
+            except Exception:
+                sugerido = None  # ante cualquier fallo, el estilo de siempre
+        if estilos:
+            menu.set(tr(sugerido or estilos[0]))
+
+    def _on_estilo_manual(self, _valor: str) -> None:
+        self._estilo_manual = True
 
     def _poblar_form(self, form, cfg: dict) -> None:
         """Rellena el scrollable frame del formulario según el cfg del tipo."""
@@ -393,8 +426,12 @@ class AvatarFrame(ctk.CTkFrame):
         ctk.CTkLabel(form, text=tr("Estilo visual")).grid(
             row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
         self.menu_estilo = ctk.CTkOptionMenu(
-            form, values=[tr(k) for k in cfg["styles"]])
+            form, values=[tr(k) for k in cfg["styles"]],
+            command=self._on_estilo_manual)
         self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+        # Cada ficha nueva (tipo distinto) vuelve a seguir al modelo.
+        self._estilo_manual = False
+        self._sugerir_estilo()
 
         # Fondo — solo si el tipo tiene fondos
         if cfg.get("backgrounds"):
