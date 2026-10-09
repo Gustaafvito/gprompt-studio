@@ -69,6 +69,12 @@ def _pytest_aparte(tmp_path, cuerpo_del_test, limite):
 
     `-p tests.conftest` carga los ganchos reales del cortafuegos; la casa del
     usuario apunta a tmp_path para no escribir en la de verdad.
+
+    `--basetemp` propio porque el reloj se arma ANTES del setup, y el primer
+    `tmp_path_factory` de la sesión (lo pide la fixture autouse de los
+    borradores) crea su carpeta numerada en el temporal del sistema: enlace
+    simbólico `pytest-current` y barrido de las tiradas viejas. Medido el
+    09-oct-2026: un volcado de 1 s salió parado ahí y no en el test.
     """
     (tmp_path / "test_suelto.py").write_text(
         textwrap.dedent(cuerpo_del_test), encoding="utf-8")
@@ -77,6 +83,7 @@ def _pytest_aparte(tmp_path, cuerpo_del_test, limite):
     return subprocess.run(
         [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
          "-p", "tests.conftest", "--rootdir", str(tmp_path),
+         "--basetemp", str(tmp_path / "basetemp"),
          str(tmp_path / "test_suelto.py")],
         cwd=RAIZ, env=entorno, capture_output=True, text=True, timeout=120)
 
@@ -92,11 +99,27 @@ class TestDeExtremoAExtremo:
         assert _bitacoras(tmp_path / ".arquitecto_prompts") == []
 
     def test_un_cuelgue_aborta_y_deja_su_volcado(self, tmp_path):
+        # El reloj corre desde ANTES del setup, y la fixture autouse de los
+        # borradores importa modules/ ahí. Sin .pyc (PYTHONDONTWRITEBYTECODE)
+        # eso es compilar desde el código fuente: 1,1-1,9 s medidos, más que
+        # el límite de 1 s que tenía este test. El volcado salía entonces en
+        # `source_to_code` en vez de en test_colgado (pasaba 3 de cada 8 sin
+        # carga y 0 de 8 con la CPU ocupada), y a veces el propio volcado
+        # reventaba con una violación de acceso, porque faulthandler leía una
+        # pila que se estaba moviendo.
+        #
+        # Por eso la importación se paga en la RECOGIDA, cuando aún no hay
+        # reloj, y el límite deja margen de sobra al setup que queda (ms).
+        # El sleep, muy por encima del límite: tiene que ser el cortafuegos
+        # quien acabe el test, y con el hilo parado ahí el volcado es estable.
         r = _pytest_aparte(tmp_path, """
             import time
+
+            import modules.visual_history  # noqa: F401  (en la recogida, sin reloj)
+
             def test_colgado():
                 time.sleep(60)
-        """, limite=1)
+        """, limite=5)
         # La salida del subproceso va en cada mensaje: sin ella, un fallo
         # aquí no dice nada de lo que pasó al otro lado.
         salida = f"\n--- rc={r.returncode}\n--- stdout:\n{r.stdout[-2000:]}\n--- stderr:\n{r.stderr[-2000:]}"
