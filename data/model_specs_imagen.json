@@ -1706,6 +1706,43 @@
   "vigente": true,
   "best_for_en": "Gemini 3.1 Flash Image engine. Pro-level fidelity with Flash-speed iteration. Strong world knowledge + advanced editing (inpainting, outpainting, style transfer). Upscale up to 4K. Excellent price-performance. Accepts very long prompts (~5200 chars measured)."
  },
+ "Nano Banana 2.1": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "formato_bloques": "nano_banana",
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "4:5",
+   "5:4"
+  ],
+  "max_chars": 5000,
+  "modos_gen": [
+   "1K",
+   "2K",
+   "4K"
+  ],
+  "magia_sugerencia": [
+   "Automático",
+   "Abrir",
+   "Cerrar"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 14,
+  "best_for": "Nano Banana 2.1 (Google, en SeaArt desde octubre de 2026), sobre Gemini 3.6 Flash: la misma rapidez que Nano Banana 2 con mejor diseño visual, edición más precisa y sujetos más coherentes. Hasta 14 imágenes de referencia para mantener personajes y objetos (escenas con varios personajes, ediciones encadenadas, series con el mismo estilo). Producto, personajes y carteles. Salida 1K, 2K o 4K. Según SeaArt, edita por máscara —cambia solo la zona marcada— y deja elegir el nivel de razonamiento para equilibrar velocidad y calidad.",
+  "prompt_formula": "Restricciones como checklist: Subject (quién/qué) + Scene (dónde) + Composition (plano, ángulo) + Lighting + Materials + Output (formato, resolución). Si usas referencias, di qué imagen es cada personaje u objeto. Para EDITAR: describe solo el cambio y lo que se conserva («Keep face identity, keep pose, only change outfit»); con máscara, solo lo que va dentro de la zona marcada. Si el cartel lleva texto, escríbelo entre comillas tal cual. Sin negative. Máx 5000 chars.",
+  "prompt_ejemplo": "A vertical movie poster: the woman from reference 1 and the man from reference 2 stand back to back in a rain-soaked neon alley, low angle, cinematic rim light in teal and magenta, wet asphalt reflections, the title \"LAST SIGNAL\" in bold condensed type at the top, clean credits block at the bottom",
+  "limitaciones": "Sin negative. Máx 5000 chars. Hasta 14 imágenes de referencia y hasta 8 por tanda. Ficha MAPEADA el 09-oct-2026 desde el esquema oficial de SeaArt (modelo db3jua5e878c73ccv6c0): límite, formatos, salida 1K/2K/4K y número de imágenes confirmados. La edición por máscara y el nivel de razonamiento los anuncia SeaArt y el esquema no los expone. La calidad frente a Nano Banana 2, POR CONFIRMAR generando.",
+  "best_for_en": "Nano Banana 2.1 (Google, on SeaArt since October 2026), built on Gemini 3.6 Flash: the same speed as Nano Banana 2 with better visual design, more precise editing and more consistent subjects. Up to 14 reference images to keep characters and objects consistent (multi-character scenes, iterative edits, same-style series). Products, characters and posters. 1K, 2K or 4K output. According to SeaArt, it edits by mask — changing only the selected area — and lets you pick the thinking level to balance speed and quality."
+ },
  "Nano Banana 2 Lite": {
   "nota": 4.8,
   "has_negative": false,

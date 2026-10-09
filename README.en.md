@@ -69,12 +69,12 @@ and it becomes a professional prompt tuned to the exact model you are about
 to use: its rules, its tags, its limits, its recommended sampler and, where
 it applies, its negative prompt.
 
-**273 models across 13 platforms**, each with its own rules:
+**276 models across 13 platforms**, each with its own rules:
 
 | Mode | Models | Platforms |
 |------|--------|-----------|
-| 🖼 **Image** | **166** | SeaArt/Tensor.Art (129) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
-| 🎬 **Video** | **99** | SeaArt Video (91) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
+| 🖼 **Image** | **167** | SeaArt/Tensor.Art (130) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🎬 **Video** | **101** | SeaArt Video (93) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
 | 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — lyrics, style, mood, voice and language |
 
 **And your own on top of those**: ComfyUI checkpoints aren't counted here
@@ -260,7 +260,7 @@ pytest tests/ -v   # → 1875 passed, 1 skipped
 
 ![The model catalogue with its search box, grouped by family](docs/capturas/02-catalogo-modelos.png)
 
-**273 models with their own spec sheet**, grouped by family and searchable.
+**276 models with their own spec sheet**, grouped by family and searchable.
 If you use ComfyUI, yours show up on their own.
 
 </td>

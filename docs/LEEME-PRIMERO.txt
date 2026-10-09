@@ -9,8 +9,10 @@ Son ALTERNATIVAS, no acumulativas: elige una.
 QUÉ HAY DE NUEVO EN LA 1.1.1
 ═══════════════════════════════════════════════════════════════════
 
-  - Qwen Image 2.1: crea y edita en un solo modelo y, según
-    SeaArt, con fondo transparente. El catálogo pasa a 273.
+  - Cuatro modelos nuevos de SeaArt: Qwen Image 2.1 y Nano
+    Banana 2.1 en imagen, y Vidu Q4 Preview y SeaArt Opera 2.0
+    Preview en vídeo. El catálogo pasa a 276.
+  - Seguridad: urllib3 actualizado a la 2.8.0.
 
   Y lo que trajo la 1.1.0:
 

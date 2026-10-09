@@ -1136,6 +1136,51 @@
   "vigente": true,
   "best_for_en": "15s studio-quality visuals: HD/4K resolution with professional CN/JP/EN text output. Free for a limited time. Image-to-Video and Text-to-Video. 4 quality modes."
  },
+ "SeaArt Opera 2.0 Preview": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "has_audio": false,
+  "audio_desc": "",
+  "duraciones": [
+   "3s",
+   "4s",
+   "5s",
+   "6s",
+   "7s",
+   "8s",
+   "9s",
+   "10s",
+   "11s",
+   "12s",
+   "13s",
+   "14s",
+   "15s",
+   "16s"
+  ],
+  "ratios": [
+   "1:1",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "max_chars": 5000,
+  "modos_gen": [
+   "540p",
+   "720p",
+   "1080p",
+   "2K",
+   "4K"
+  ],
+  "max_imagenes": 4,
+  "max_imagenes_referencia": 15,
+  "best_for": "SeaArt Opera 2.0 Preview (SeaArt, 08-oct-2026): la nueva generación de SeaArt Opera, anunciada junto a Vidu Q4 Preview y con su mismo panel. Dos entradas: primer fotograma (imagen a vídeo) y Referencia, con hasta 15 imágenes para mantener personajes y escenarios. De 3 a 16 s, de 540p a 4K.",
+  "prompt_formula": "Escena en prosa: sujeto + acción y expresión + cámara + luz y estética. Con primer fotograma, parte de la imagen y describe lo que pasa después. En Referencia, di qué imagen es cada personaje u objeto. Sin negative. Máx 5000 chars.",
+  "prompt_ejemplo": "A woman in an elegant vintage gown walks slowly through a candlelit opera house, the camera gliding beside her, warm golden light on velvet seats, dust floating in the air, refined cinematic composition.",
+  "limitaciones": "Sin negative. Máx 5000 chars. De 3 a 16 s. Sin texto a vídeo: necesita un primer fotograma o imágenes de referencia (hasta 15). Hasta 4 vídeos por tanda. Ficha MAPEADA el 09-oct-2026 desde el esquema oficial de SeaArt (modelo dauctlle878c739dhiu0). El esquema admite hasta 3 audios en Referencia, pero SeaArt no ha contado qué hace con ellos en este modelo: audio SIN CONFIRMAR.",
+  "best_for_en": "SeaArt Opera 2.0 Preview (SeaArt, Oct 8, 2026): the new generation of SeaArt Opera, announced alongside Vidu Q4 Preview and sharing its panel. Two inputs: first frame (image to video) and Reference, with up to 15 images to keep characters and scenes consistent. 3 to 16 s, 540p to 4K."
+ },
  "SeaArt Opera Lite": {
   "nota": 4.0,
   "has_negative": true,
@@ -1784,6 +1829,51 @@
   "limitaciones": "Máx 15s. max_chars 2000. El panel no expone Sonido (sin audio). has_negative asumido (panel recortado antes de Configuración avanzada).",
   "vigente": true,
   "best_for_en": "Vidu Q3 Turbo engine (via SeaArt). Fast generation. Image-to-Video and Text-to-Video. 720p/1080p modes, suggestion magic."
+ },
+ "Vidu Q4 Preview": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "has_audio": true,
+  "audio_desc": "voz y diálogo: en modo Referencia admite hasta 3 audios y, según SeaArt, el personaje habla con la voz que subas, con mejor coherencia de voz y de emoción",
+  "duraciones": [
+   "3s",
+   "4s",
+   "5s",
+   "6s",
+   "7s",
+   "8s",
+   "9s",
+   "10s",
+   "11s",
+   "12s",
+   "13s",
+   "14s",
+   "15s",
+   "16s"
+  ],
+  "ratios": [
+   "1:1",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9"
+  ],
+  "max_chars": 5000,
+  "modos_gen": [
+   "540p",
+   "720p",
+   "1080p",
+   "2K",
+   "4K"
+  ],
+  "max_imagenes": 4,
+  "max_imagenes_referencia": 15,
+  "best_for": "Vidu Q4 Preview (en SeaArt desde el 08-oct-2026): el modelo insignia de Vidu, pensado para la interpretación: expresiones, emociones y movimiento corporal más finos; cámara con cortes y transiciones complejas; efectos y acción (explosiones, partículas, artes marciales, persecuciones) con menos deformaciones. Dos entradas: primer fotograma (imagen a vídeo) y Referencia, con hasta 15 imágenes y 3 audios para mantener personajes, escenarios y voces. De 3 a 16 s, de 540p a 4K. Microdramas, anuncios, vídeo para redes y planos de cine.",
+  "prompt_formula": "Escena en prosa: sujeto + acción e INTERPRETACIÓN (expresión, emoción, gesto) + cámara y cortes + luz y estética + diálogo entre comillas, diciendo quién lo dice. Con primer fotograma, parte de la imagen y describe lo que pasa después. En Referencia, di qué imagen es cada personaje u objeto y qué audio es la voz de quién. Sin negative. Máx 5000 chars.",
+  "prompt_ejemplo": "A tense rooftop confrontation at dusk: the young detective steps forward, jaw clenched, eyes glistening with anger, and says, \"You lied to me for ten years.\" Slow push-in on her face, then a cut to a low-angle shot of the older man turning away, wind whipping his coat, city lights flickering below, cinematic teal-and-amber grade.",
+  "limitaciones": "Sin negative. Máx 5000 chars. De 3 a 16 s. Sin texto a vídeo: necesita un primer fotograma o imágenes de referencia (hasta 15). Hasta 4 vídeos por tanda. Ficha MAPEADA el 09-oct-2026 desde el esquema oficial de SeaArt (modelo daucjdte878c739cj9ig). El panel no muestra interruptor de Sonido: lo de la voz sale del anuncio de SeaArt, POR CONFIRMAR generando.",
+  "best_for_en": "Vidu Q4 Preview (on SeaArt since Oct 8, 2026): Vidu's flagship model, built for performance: finer expressions, emotions and body movement; camera work with cuts and complex transitions; effects and action (explosions, particles, martial arts, chases) with fewer distortions. Two inputs: first frame (image to video) and Reference, with up to 15 images and 3 audio clips to keep characters, scenes and voices consistent. 3 to 16 s, 540p to 4K. Short dramas, ads, social videos and cinematic shots."
  },
  "Wan 2.2": {
   "nota": 4.2,

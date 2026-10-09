@@ -64,12 +64,12 @@ es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**273 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
+**276 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
-| 🖼 **Imagen** | **166** | SeaArt/Tensor.Art (129) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
-| 🎬 **Vídeo** | **99** | SeaArt Video (91) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
+| 🖼 **Imagen** | **167** | SeaArt/Tensor.Art (130) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🎬 **Vídeo** | **101** | SeaArt Video (93) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
 | 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
 
 Y **encima de esos, los tuyos**: si usas ComfyUI no cuentan aquí porque son
@@ -143,8 +143,8 @@ del catálogo de su proveedor, la app lo oculta sola.
 ## 🆕 Novedades (septiembre y octubre de 2026)
 
 **Modelos y plataformas**
-- Qwen Image 2.1 (1.1.1): crea y edita en un solo modelo y, según SeaArt,
-  con fondo transparente. Seedream 5.0 Flash (1.1.0).
+- En la 1.1.1: Qwen Image 2.1 y Nano Banana 2.1 en imagen, y Vidu Q4
+  Preview y SeaArt Opera 2.0 Preview en vídeo. Seedream 5.0 Flash (1.1.0).
 - Wan 3.0 y Wan 3.0 Prime, Qwen Image 3.0 y 3.0 Pro (SeaArt).
 - Alta de Pollo AI y Higgsfield; modelos que faltaban, enganchados a su plataforma.
 - +75 estilos para equilibrar los grupos más flacos (hasta 333).
@@ -326,7 +326,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**273 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**276 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>

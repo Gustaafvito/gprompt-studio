@@ -1,5 +1,5 @@
 <!--
-BORRADOR de la 1.1.1 (01-oct-2026). Nada publicado.
+BORRADOR de la 1.1.1 (01-oct-2026; +3 modelos el 09-oct). Nada publicado.
 
 Estado del borrador:
 - Hashes y tamaños: ya son los del build del 01-oct-2026 (build_release.py
@@ -15,7 +15,7 @@ Falta, en este orden:
    `GPromptStudio-Setup-1.1.1.exe` y `GPromptStudio-Portable-Onefile.exe`.
 4. Fusionar el PR en main y publicar enseguida: el botón del README apunta
    ya a v1.1.1 y da 404 hasta que la release exista.
-5. Web (gprompt-studio.html y datos/proyectos.json: 273 = 166 + 99 + 8),
+5. Web (gprompt-studio.html y datos/proyectos.json: 276 = 167 + 101 + 8),
    About del repo, perfil y el aviso «Versión antigua» en la 1.1.0.
 -->
 
@@ -26,7 +26,7 @@ Falta, en este orden:
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **273 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **276 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -100,7 +100,7 @@ el código está entero en este repositorio para que lo mires.
 
 ### Qué trae
 
-- **273 modelos con ficha propia** — 166 de imagen, 99 de vídeo, 8 de
+- **276 modelos con ficha propia** — 167 de imagen, 101 de vídeo, 8 de
   audio, en 13 plataformas. Y encima de esos, los tuyos: si usas ComfyUI,
   los detecta y los clasifica solo
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
@@ -124,6 +124,28 @@ Ninguna key mía viaja en el paquete. Está verificado sobre los artefactos
 reales, buscando los prefijos de todos los proveedores.
 
 ### Notas de esta versión
+
+Cuatro modelos nuevos de SeaArt, con la ficha sacada de su esquema oficial.
+Lo que solo cuenta el anuncio y el esquema no confirma va marcado como
+«según SeaArt».
+
+**Nano Banana 2.1**, sobre Gemini 3.6 Flash: igual de rápido que Nano Banana
+2, con mejor diseño, edición más precisa y personajes más coherentes. Admite
+hasta 14 imágenes de referencia, saca 1K, 2K o 4K y acepta prompts de hasta
+5.000 caracteres. Según SeaArt, edita por máscara —solo la zona que marcas— y
+deja elegir cuánto razona antes de generar.
+
+**Vidu Q4 Preview**, el nuevo modelo insignia de Vidu, pensado para que los
+personajes actúen: expresiones, emociones y gestos más finos, cámara con
+cortes y transiciones, y escenas de acción y efectos con menos deformaciones.
+De 3 a 16 segundos, de 540p a 4K. Arranca de un primer fotograma o de hasta
+15 imágenes de referencia, y en ese modo admite 3 audios: según SeaArt, el
+personaje habla con la voz que le subas. La app ya escribe los diálogos
+diciendo quién habla.
+
+**SeaArt Opera 2.0 Preview**, la nueva generación de SeaArt Opera, anunciada
+a la vez que Vidu Q4 y con su mismo panel: las mismas duraciones,
+resoluciones y referencias.
 
 **Qwen Image 2.1**, que SeaArt añadió el 21 de septiembre, justo cuando se
 cerraba la 1.1.0. Es el Qwen ligero de Alibaba —7.000 millones de
