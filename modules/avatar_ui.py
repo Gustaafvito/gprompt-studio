@@ -29,7 +29,16 @@ from modules import paleta as P
 from modules.avatar_config import (
     LORA_TYPES,
 )
+from modules.avatar_destinos import (
+    aplicar_destino,
+    cargar_destinos,
+    destino_por_defecto,
+    destinos_para_tipo,
+    etiqueta_destino,
+    rango_imagenes,
+)
 from modules.avatar_generator import exportar_dataset, generar_dataset_lora
+from modules.avatar_montar import leer_dataset, montar_dataset, resumen_montaje
 from modules.avatar_prompts import (
     PROMPT_VISION_FICHA,
     construir_user_prompt_ficha,
@@ -81,6 +90,20 @@ class AvatarFrame(ctk.CTkFrame):
         self._tipo_lora = "Personaje"  # tipo activo
         self._frame_form = None        # ref al scrollable de formulario
         self._frame_angulos = None     # ref al scrollable de ángulos
+        # Dónde se va a entrenar (data/destinos_entrenamiento.json). Mientras
+        # el usuario no lo elija a mano, sigue al modelo y al tipo de LoRA.
+        try:
+            self._destinos = cargar_destinos()
+        except Exception:
+            self._destinos = []
+        self._destino_disp2id = {}
+        self._destino_manual = False
+        self._checks_variar = {}       # clave → (checkbox, valores a rotar)
+        self._ultima_ruta = ""         # carpeta del último dataset exportado
+        self._estilo_manual = False    # ¿eligió el usuario el estilo a mano?
+        # LoRA de la 1ª ronda (nombre ComfyUI, sin extensión): con él, los
+        # workflows de ComfyUI lo cargan y sale la 2ª ronda, con una sola cara.
+        self._lora_ronda = ""
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -154,6 +177,7 @@ class AvatarFrame(ctk.CTkFrame):
                          else (modelos_ini[0] if modelos_ini else ""))
             self.menu_modelo = ctk.CTkOptionMenu(
                 fila_modelo, values=modelos_ini or [""], width=220,
+                command=self._on_modelo_change,
                 font=ctk.CTkFont(size=P.FUENTE_CUERPO))
             self.menu_modelo.set(inicial_m)
             self.menu_modelo.pack(side="left")
@@ -169,7 +193,8 @@ class AvatarFrame(ctk.CTkFrame):
                        if self.modelo_destino in self.modelos_destino
                        else self.modelos_destino[0])
             self.menu_modelo = ctk.CTkOptionMenu(
-                fila_modelo, values=self.modelos_destino, width=260)
+                fila_modelo, values=self.modelos_destino, width=260,
+                command=self._on_modelo_change)
             self.menu_modelo.set(inicial)
             self.menu_modelo.pack(side="left", padx=(0, 6))
             ctk.CTkLabel(
@@ -202,9 +227,32 @@ class AvatarFrame(ctk.CTkFrame):
         self.label_estado = ctk.CTkLabel(pie, text=tr("Listo."))
         self.label_estado.grid(row=0, column=0, sticky="w")
 
+        # Dónde se va a entrenar: decide cómo se escriben las descripciones
+        # (.txt) y cuántas imágenes se recomiendan.
+        ctk.CTkLabel(pie, text=tr("🎓 Entrenar en:"),
+                     font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
+                     ).grid(row=0, column=1, padx=(8, 4))
+        self.menu_destino = ctk.CTkOptionMenu(
+            pie, values=[""], width=230, command=self._on_destino_manual,
+            font=ctk.CTkFont(size=P.FUENTE_CUERPO))
+        self.menu_destino.grid(row=0, column=2)
+        self._tip_destino = CTkToolTip(self.menu_destino, message=" ")
+
         self.boton_generar = ctk.CTkButton(
             pie, text=tr("⚡ Generar dataset"), command=self._on_generar)
-        self.boton_generar.grid(row=0, column=1, padx=(8, 0))
+        self.boton_generar.grid(row=0, column=3, padx=(8, 0))
+
+        # Después de generar las imágenes: juntarlas con sus descripciones
+        # (000.png + 000.txt), listas para G-Entrena o SeaArt.
+        self.boton_montar = ctk.CTkButton(
+            pie, text=tr("📦 Montar dataset"), width=130,
+            **P.estilo_boton(P.BTN_SECUNDARIO), command=self._on_montar)
+        self.boton_montar.grid(row=0, column=4, padx=(6, 0))
+        CTkToolTip(self.boton_montar, message=tr(
+            "Cuando ya tengas las imágenes: elige la carpeta del dataset y las "
+            "imágenes descargadas, y quedan como 000.png + 000.txt, listas "
+            "para entrenar."))
+        self._refrescar_destinos()
 
     # ----------------------------------------------------------- tipo LoRA
     def _on_tipo_change(self, valor: str) -> None:
@@ -228,6 +276,156 @@ class AvatarFrame(ctk.CTkFrame):
             w.destroy()
         self._angulo_vars = {}
         self._poblar_angulos(cfg)
+        # Cada tipo admite sus destinos (Higgsfield, solo personaje).
+        self._refrescar_destinos()
+
+    # ------------------------------------------------- destino de entrenamiento
+    def _destino_actual(self):
+        """El destino elegido en el desplegable, o None."""
+        menu = getattr(self, "menu_destino", None)
+        id_destino = self._destino_disp2id.get(menu.get()) if menu else None
+        return next((d for d in self._destinos if d.get("id") == id_destino), None)
+
+    def _refrescar_destinos(self) -> None:
+        """Rellena «Entrenar en» con los destinos del tipo activo.
+
+        Conserva la elección manual si sigue valiendo para el tipo; si no,
+        propone el destino del modelo con el que se va a generar."""
+        menu = getattr(self, "menu_destino", None)
+        if menu is None:
+            return
+        candidatos = destinos_para_tipo(self._tipo_lora, self._destinos)
+        self._destino_disp2id = {etiqueta_destino(d): d["id"] for d in candidatos}
+        menu.configure(values=list(self._destino_disp2id) or [""])
+        actual = self._destino_actual()
+        if not (self._destino_manual and actual in candidatos):
+            self._destino_manual = False
+            modelo = self.menu_modelo.get() if self.menu_modelo else ""
+            plataforma = (self.menu_plataforma.get()
+                          if getattr(self, "menu_plataforma", None) else "")
+            actual = destino_por_defecto(modelo, plataforma, self._tipo_lora,
+                                         self._destinos)
+        menu.set(etiqueta_destino(actual) if actual else "")
+        self._describir_destino(actual)
+
+    def _describir_destino(self, destino) -> None:
+        """Pone la nota del destino en el tooltip del desplegable."""
+        if not destino:
+            return
+        rango = rango_imagenes(destino, self._tipo_lora)
+        texto = tr(destino.get("nota", ""))
+        if rango:
+            minimo, maximo = rango
+            texto += "\n\n" + tr("Imágenes recomendadas: {0}").format(
+                minimo if minimo == maximo else f"{minimo}-{maximo}")
+        try:
+            self._tip_destino.configure(message=texto)
+        except Exception:
+            pass  # sin CTkToolTip instalado, no hay tooltip que actualizar
+
+    def _on_destino_manual(self, _valor: str) -> None:
+        self._destino_manual = True
+        self._describir_destino(self._destino_actual())
+
+    def _on_modelo_change(self, _modelo: str = "") -> None:
+        # Cambiar de modelo vuelve a proponer destino y estilo visual, salvo
+        # que el usuario los haya elegido a mano.
+        self._refrescar_destinos()
+        self._sugerir_estilo()
+
+    # ------------------------------------------------------------ estilo
+    def _sugerir_estilo(self) -> None:
+        """Con un modelo que no hace foto (Anima, Illustrious…), el estilo
+        visual se pone solo en el suyo, normalmente Anime.
+
+        Probado el 09-oct-2026: con Anima y «Fotorrealista», los 50 prompts
+        acababan en «photorealistic, 85mm lens», y Anima no hace fotorrealismo
+        a propósito. Mismo criterio que el combo «Estilo» de la ventana
+        principal (ui_footer.estilo_sugerido_para_modelo). Con un modelo de
+        foto vuelve al primero de la lista. Una elección a mano manda."""
+        menu = getattr(self, "menu_estilo", None)
+        if menu is None or getattr(self, "_estilo_manual", False):
+            return
+        estilos = list(LORA_TYPES[self._tipo_lora]["styles"])
+        modelo = self.menu_modelo.get() if self.menu_modelo else ""
+        sugerido = None
+        if modelo:
+            try:
+                from config import get_image_model_specs
+                from modules.ui_footer import estilo_sugerido_para_modelo
+                best_for = (get_image_model_specs(modelo) or {}).get("best_for", "")
+                sugerido = estilo_sugerido_para_modelo(modelo, best_for, estilos)
+            except Exception:
+                sugerido = None  # ante cualquier fallo, el estilo de siempre
+        if estilos:
+            menu.set(tr(sugerido or estilos[0]))
+
+    def _on_estilo_manual(self, _valor: str) -> None:
+        self._estilo_manual = True
+
+    # ------------------------------------------------- 2ª ronda (LoRA)
+    def _refrescar_lora_ronda(self) -> None:
+        etiqueta = getattr(self, "label_lora_ronda", None)
+        if etiqueta is None:
+            return
+        etiqueta.configure(text=(self._lora_ronda + ".safetensors" if self._lora_ronda
+                                 else tr("Ninguno: es la 1ª ronda")))
+
+    def _on_elegir_lora_ronda(self) -> None:
+        import os
+        import shutil
+
+        from config import carpeta_loras_comfy
+        from modules.avatar_generator import nombre_copia_lora
+        from modules.comfy_export import nombre_lora_comfy
+        carpeta = carpeta_loras_comfy()
+        ruta = filedialog.askopenfilename(
+            title=tr("LoRA de la 1ª ronda"),
+            initialdir=carpeta or os.path.expanduser("~"),
+            filetypes=[("LoRA", "*.safetensors")])
+        if not ruta:
+            return
+        nombre, en_loras = nombre_lora_comfy(ruta)
+        aviso = ""
+        if not en_loras:
+            # ComfyUI solo ve los LoRAs de su carpeta models/loras: el de
+            # G-Entrena suele quedarse en la carpeta de su proyecto, y con un
+            # nombre que comparten todos sus LoRA (nombre_copia_lora).
+            trigger = self.entry_trigger.get() if getattr(self, "entry_trigger", None) else ""
+            fichero = nombre_copia_lora(ruta, trigger)
+            if carpeta and messagebox.askyesno(
+                    tr("Copiar a ComfyUI"),
+                    tr("ComfyUI solo ve los LoRAs de su carpeta models/loras, y "
+                       "este no está ahí.\n\n¿Lo copio a {0} como {1}?").format(
+                           carpeta, fichero)):
+                destino = os.path.join(carpeta, fichero)
+                if (not os.path.exists(destino) or messagebox.askyesno(
+                        tr("Ya existe"),
+                        tr("Ya hay un {0} en esa carpeta. ¿Lo sustituyo?").format(
+                            fichero))):
+                    self.label_estado.configure(text=tr("Copiando el LoRA a ComfyUI…"))
+                    self.update_idletasks()
+                    try:
+                        shutil.copy2(ruta, destino)
+                    except OSError as e:
+                        messagebox.showerror(tr("No se pudo copiar"), str(e))
+                        self.label_estado.configure(text=tr("Listo."))
+                        return
+                # El de la carpeta de ComfyUI, con su nombre (si no se
+                # sustituye, el que ya estaba allí).
+                nombre = os.path.splitext(fichero)[0]
+            else:
+                aviso = tr(" Cópialo a la carpeta models/loras de ComfyUI antes de "
+                           "lanzar el workflow, o no lo encontrará.")
+        self._lora_ronda = nombre
+        self._refrescar_lora_ronda()
+        self.label_estado.configure(text=tr(
+            "🔁 2ª ronda: los workflows de ComfyUI cargarán este LoRA. Usa el "
+            "mismo trigger con el que lo entrenaste.") + aviso)
+
+    def _on_quitar_lora_ronda(self) -> None:
+        self._lora_ronda = ""
+        self._refrescar_lora_ronda()
 
     def _poblar_form(self, form, cfg: dict) -> None:
         """Rellena el scrollable frame del formulario según el cfg del tipo."""
@@ -295,8 +493,12 @@ class AvatarFrame(ctk.CTkFrame):
         ctk.CTkLabel(form, text=tr("Estilo visual")).grid(
             row=fila, column=0, sticky="w", padx=8, pady=(12, 0)); fila += 1
         self.menu_estilo = ctk.CTkOptionMenu(
-            form, values=[tr(k) for k in cfg["styles"]])
+            form, values=[tr(k) for k in cfg["styles"]],
+            command=self._on_estilo_manual)
         self.menu_estilo.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 4)); fila += 1
+        # Cada ficha nueva (tipo distinto) vuelve a seguir al modelo.
+        self._estilo_manual = False
+        self._sugerir_estilo()
 
         # Fondo — solo si el tipo tiene fondos
         if cfg.get("backgrounds"):
@@ -314,6 +516,46 @@ class AvatarFrame(ctk.CTkFrame):
         else:
             self.menu_fondo = None
             self.check_variar_fondos = None
+
+        # Variedad de lo que NO es el sujeto (ropa, escenario, expresión,
+        # luz): si todo es igual en el dataset, el LoRA se lo aprende como
+        # parte del sujeto. Lo que se varía va también en las descripciones.
+        self._checks_variar = {}
+        if cfg.get("variaciones"):
+            ctk.CTkLabel(form, text=tr("Variar en cada imagen")).grid(
+                row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+            for clave, etiqueta, valores, defecto in cfg["variaciones"]:
+                chk = ctk.CTkCheckBox(form, text=tr(etiqueta))
+                if defecto:
+                    chk.select()
+                chk.grid(row=fila, column=0, sticky="w", padx=8, pady=(0, 6)); fila += 1
+                self._checks_variar[clave] = (chk, valores)
+
+        # 2ª ronda: sin referencia, cada imagen se dibuja desde cero y la
+        # cara varía. Con un LoRA entrenado con las mejores de la 1ª ronda,
+        # los workflows de ComfyUI lo cargan y salen todas con la misma.
+        ctk.CTkLabel(form, text=tr("🔁 LoRA de la 1ª ronda (opcional, ComfyUI)")).grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+        fila_lora = ctk.CTkFrame(form, fg_color="transparent")
+        fila_lora.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+        fila_lora.grid_columnconfigure(1, weight=1)
+        self.boton_lora_ronda = ctk.CTkButton(
+            fila_lora, text=tr("Elegir LoRA…"), width=110,
+            **P.estilo_boton(P.BTN_SECUNDARIO), command=self._on_elegir_lora_ronda)
+        self.boton_lora_ronda.grid(row=0, column=0)
+        CTkToolTip(self.boton_lora_ronda, message=tr(
+            "Si las imágenes no se parecen entre sí: entrena un primer LoRA con "
+            "las mejores, elígelo aquí y vuelve a generar. Los workflows de "
+            "ComfyUI lo cargan y todas salen con la misma cara. Usa el mismo "
+            "trigger con el que lo entrenaste."))
+        self.label_lora_ronda = ctk.CTkLabel(
+            fila_lora, text="", anchor="w",
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED)
+        self.label_lora_ronda.grid(row=0, column=1, sticky="ew", padx=(6, 0))
+        ctk.CTkButton(fila_lora, text="✕", width=28,
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
+                      command=self._on_quitar_lora_ronda).grid(row=0, column=2, padx=(4, 0))
+        self._refrescar_lora_ronda()
 
         self.check_negative = ctk.CTkCheckBox(form, text=tr("Incluir negative prompt"))
         self.check_negative.select()
@@ -547,20 +789,29 @@ class AvatarFrame(ctk.CTkFrame):
         modelo_sel = self.menu_modelo.get() if self.menu_modelo else ""
         plataforma_sel = (self.menu_plataforma.get()
                           if getattr(self, "menu_plataforma", None) else "")
+        # Se leen aquí, en el hilo de Tk, y viajan al worker como datos.
+        destino = self._destino_actual()
+        estilo_visual = self.menu_estilo.get()
+        variar = {clave: valores
+                  for clave, (chk, valores) in self._checks_variar.items()
+                  if chk.get()}
+        lora_ronda = self._lora_ronda
         if self._executor is not None:
             self._executor.submit(
                 self._worker_generar, form_data, trigger, seleccionados,
-                carpeta, modelo_sel, plataforma_sel
+                carpeta, modelo_sel, plataforma_sel, destino, estilo_visual,
+                variar, lora_ronda
             ).add_done_callback(log_future_exc)
         else:
             threading.Thread(
                 target=self._worker_generar,
                 args=(form_data, trigger, seleccionados, carpeta, modelo_sel,
-                      plataforma_sel),
+                      plataforma_sel, destino, estilo_visual, variar, lora_ronda),
                 daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
-                        modelo_sel="", plataforma_sel=""):
+                        modelo_sel="", plataforma_sel="", destino=None,
+                        estilo_visual="", variar=None, lora_ronda=""):
         try:
             cfg = LORA_TYPES[self._tipo_lora]
             # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
@@ -596,6 +847,7 @@ class AvatarFrame(ctk.CTkFrame):
                 estilo_sufijo=estilo_sufijo,
                 fondo=fondo,
                 incluir_negative=bool(self.check_negative.get()),
+                variar=variar,
             )
             # Si hay imagen de referencia → generar TAMBIÉN los prompts
             # de edición img2img (la identidad la aporta la imagen).
@@ -606,27 +858,45 @@ class AvatarFrame(ctk.CTkFrame):
                     angulos_seleccionados=seleccionados,
                     fondo=fondo,
                     incluir_negative=bool(self.check_negative.get()),
+                    variar=variar,
+                    estilo_sufijo=estilo_sufijo,
                 )
             # Adaptación al modelo destino elegido (specs SeaArt) ANTES
             # de exportar
             avisos = (self.adaptador(resultado, modelo_sel)
                       if self.adaptador else [])
+            # Descripciones (.txt) en el formato de donde se va a entrenar.
+            avisos += aplicar_destino(resultado, destino, self._tipo_lora,
+                                      form_data, estilo_visual)
             ruta = exportar_dataset(resultado, carpeta)
             # Destino ComfyUI local → exportar TAMBIÉN workflows/ con un
             # .json por toma (formato UI), cableados al modelo elegido:
             # arrastrar a ComfyUI y Queue, sin montar nada a mano.
             if modelo_sel and plataforma_sel.startswith("ComfyUI"):
                 try:
-                    from modules.avatar_generator import exportar_workflows_comfy
-                    n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel)
+                    from modules.avatar_generator import (
+                        carpeta_ronda,
+                        exportar_workflows_comfy,
+                    )
+                    n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel,
+                                                    lora=lora_ronda)
                     avisos.append(tr(
                         "🔧 {0} tomas exportadas como workflows ComfyUI en "
                         "workflows/: DATASET_COMPLETO.json (un Queue genera "
                         "TODO) + individuales/ por toma.").format(n_wf))
+                    if lora_ronda:
+                        avisos.append(tr(
+                            "🔁 2ª ronda: los workflows cargan {0} y guardan en "
+                            "output/{1}/ de ComfyUI.").format(
+                                lora_ronda + ".safetensors", carpeta_ronda(trigger)))
                 except Exception as e:
                     avisos.append(tr(
                         "⚠️ No se pudieron exportar los workflows ComfyUI: {0}"
                     ).format(e))
+            elif lora_ronda:
+                avisos.append(tr(
+                    "ℹ️ El LoRA de la 1ª ronda solo va en los workflows de "
+                    "ComfyUI: con este modelo no se usa."))
             # Copiar la imagen de referencia al dataset: en SeaArt se sube
             # como "sujeto" para anclar la identidad en todos los ángulos.
             if self._imagen_referencia:
@@ -674,8 +944,52 @@ class AvatarFrame(ctk.CTkFrame):
         modelos = self._get_modelos_grupo(plat, grupo)
         self.menu_modelo.configure(values=modelos or [""])
         self.menu_modelo.set(modelos[0] if modelos else "")
+        # set() no dispara el command del desplegable.
+        self._on_modelo_change()
+
+    # ------------------------------------------------------- montar dataset
+    def _on_montar(self):
+        """Junta las imágenes generadas con sus descripciones (fase 3)."""
+        import os
+        from pathlib import Path
+
+        carpeta = filedialog.askdirectory(
+            title=tr("Carpeta del dataset (la que creó «Generar dataset»)"),
+            initialdir=self._ultima_ruta or self.carpeta_salida)
+        if not carpeta:
+            return
+        try:
+            leer_dataset(carpeta)
+        except ValueError as e:
+            messagebox.showerror(tr("Montar dataset"), str(e))
+            return
+
+        descargas = Path.home() / "Downloads"
+        imagenes = filedialog.askopenfilenames(
+            title=tr("Imágenes generadas para este dataset"),
+            initialdir=str(descargas) if descargas.is_dir() else carpeta,
+            filetypes=[(tr("Imágenes"), "*.png *.jpg *.jpeg *.webp"),
+                       (tr("Todos los archivos"), "*.*")])
+        if not imagenes:
+            return
+        try:
+            r = montar_dataset(carpeta, list(imagenes))
+        except Exception as e:
+            messagebox.showerror(tr("Montar dataset"), str(e))
+            return
+
+        self.label_estado.configure(
+            text=tr("📦 Dataset montado: {0} imágenes.").format(r["copiadas"]))
+        if messagebox.askyesno(
+                tr("Dataset montado"),
+                resumen_montaje(r) + "\n\n" + tr("¿Abrir la carpeta?")):
+            try:
+                os.startfile(r["carpeta"])
+            except Exception:
+                pass  # abrir la carpeta es un extra (y no existe fuera de Windows)
 
     def _fin_ok(self, resultado, ruta, avisos=None):
+        self._ultima_ruta = ruta
         self.boton_generar.configure(state="normal")
         self.label_estado.configure(
             text=tr('✅ {0} prompts exportados.').format(resultado['total_prompts']))
@@ -688,6 +1002,9 @@ class AvatarFrame(ctk.CTkFrame):
                 "pega esos prompts — la identidad la ancla tu imagen.")
         if avisos:
             mensaje += "\n\n" + "\n\n".join(avisos)
+        mensaje += "\n\n" + tr(
+            "Cuando tengas las imágenes, pulsa «📦 Montar dataset» para "
+            "juntarlas con sus descripciones.")
         messagebox.showinfo(tr("Dataset generado"), mensaje)
 
     def _fin_error(self, mensaje):

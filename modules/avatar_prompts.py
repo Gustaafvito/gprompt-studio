@@ -85,19 +85,56 @@ def requiere_rotacion(angulo: dict) -> bool:
 
 
 def desc_para_angulo(desc: str, angulo: dict) -> str:
-    """Para primeros planos, quita la ropa (', wearing ...') de la descripción.
+    """Para primeros planos, deja solo la ropa de arriba de la descripción.
 
     En un headshot la ropa de cuerpo (falda, botas) no se ve pero hace que el
     modelo se aleje para mostrarla. La identidad (cara, pelo, ojos, rasgos,
     complexión) se mantiene IDÉNTICA en todas las tomas; solo en los primeros
-    planos se omite la ropa. Las tomas de busto y cuerpo conservan la ropa
-    completa (ahí sí se ve y debe ser consistente)."""
-    if angulo.get("prompt", "").startswith("close-up headshot"):
+    planos se recorta la ropa a lo que se ve (ropa_de_primer_plano). Las
+    tomas de busto y cuerpo conservan la ropa completa (ahí sí se ve y debe
+    ser consistente)."""
+    if es_primer_plano(angulo):
         import re as _re
         m = _re.search(r",?\s+wearing\b", desc, _re.IGNORECASE)
         if m:
-            return desc[:m.start()].rstrip(" ,.")
+            arriba = ropa_de_primer_plano(desc[m.end():])
+            base = desc[:m.start()].rstrip(" ,.")
+            return f"{base}, wearing {arriba}" if arriba else base
     return desc
+
+
+def es_primer_plano(angulo: dict) -> bool:
+    """¿Es un primer plano de cara (cara, expresiones)?"""
+    return angulo.get("prompt", "").startswith("close-up headshot")
+
+
+# Prendas que en un primer plano no se ven (de cintura para abajo). Sin \b
+# delante para que cuenten «sweatpants» o «miniskirt».
+_RE_ROPA_DE_ABAJO = None
+
+
+def ropa_de_primer_plano(ropa: str) -> str:
+    """La parte de la ropa que se ve en un primer plano: la de arriba.
+
+    09-oct-2026: el dataset de Einar con Anima salió sin camiseta en 16 de los
+    50 primeros planos. Al primer plano se le quitaba TODA la ropa (para que
+    unos vaqueros o unas botas no alejaran la cámara) y, sin ropa en el
+    prompt, Anima lo dibujaba con el torso al aire; el LoRA habría aprendido
+    que el personaje va así. Ahora se quedan las prendas de arriba y solo se
+    quitan las de abajo:
+    «a white t-shirt and blue jeans» → «a white t-shirt».
+    """
+    import re as _re
+    global _RE_ROPA_DE_ABAJO
+    if _RE_ROPA_DE_ABAJO is None:
+        _RE_ROPA_DE_ABAJO = _re.compile(
+            r"(jeans|trousers|pants|skirt|shorts|boots|shoes|sneakers|heels|"
+            r"stockings|socks|leggings|tights|sandals|slippers|loafers|"
+            r"joggers|belt)\b", _re.IGNORECASE)
+    prendas = _re.split(r",\s*(?:and\s+)?|\s+and\s+", (ropa or "").strip(" ,."))
+    arriba = [p.strip() for p in prendas
+              if p.strip() and not _RE_ROPA_DE_ABAJO.search(p)]
+    return " and ".join(arriba)
 
 
 def fondo_para_indice(fondo, i: int) -> str:
@@ -115,6 +152,76 @@ def fondo_para_indice(fondo, i: int) -> str:
             return ""
         return fondos[i % len(fondos)]
     return fondo or ""
+
+
+def _partes_descripcion(angulo: dict, fondo_i: str, luz: str,
+                        expresion: str = "", ropa: str = "") -> dict:
+    """Piezas de la descripción (.txt) de una imagen, sin unir.
+
+    Las mismas que la caption de siempre (encuadre, primer trozo del fondo y
+    de la luz) más lo que se haya variado (expresión, ropa), sueltas:
+    avatar_destinos las redacta en el formato de la plataforma donde se vaya
+    a entrenar (tags, frases o una frase natural).
+    """
+    return {
+        "encuadre": angulo.get("framing", ""),
+        "expresion": expresion,
+        "ropa": ropa,
+        "fondo": fondo_i.split(",")[0].strip() if fondo_i else "",
+        "luz": luz.split(",")[0].strip() if luz else "",
+    }
+
+
+def _caption_por_defecto(trigger: str, partes: dict) -> str:
+    """La caption de siempre (sin destino elegido): trigger + piezas."""
+    orden = ("encuadre", "expresion", "ropa", "fondo", "luz")
+    return ", ".join(p for p in [trigger] + [partes[k] for k in orden] if p)
+
+
+def valor_rotado(variar, clave: str, i: int) -> str:
+    """Valor de la imagen i para lo que se varía (ropa, luz…), o "".
+
+    `variar`: {clave: [valores]} con solo lo que el usuario marcó. Se reparte
+    por índice, como los fondos (fondo_para_indice)."""
+    valores = (variar or {}).get(clave) or []
+    return valores[i % len(valores)] if valores else ""
+
+
+# Ángulos que YA fijan la expresión (los de «Expresión — …») o en los que no
+# se ve la cara (espalda, siluetas): a esos no se les añade una.
+_PISTAS_EXPRESION = (
+    "smil", "laugh", "express", "wink", "blush", "pout", "glance",
+    "eyes closed", "serious", "surprised", "angry", "sad", "thoughtful",
+    "talking", "seductive", "biting",
+)
+_PISTAS_SIN_CARA = (
+    "back view", "bare back", "three-quarter back", "from behind", "silhouette",
+)
+
+
+def admite_expresion(angulo: dict) -> bool:
+    """¿Tiene sentido añadirle una expresión a este ángulo?"""
+    texto = (angulo.get("framing", "") + " " + angulo.get("prompt", "")).lower()
+    if any(p in texto for p in _PISTAS_SIN_CARA):
+        return False
+    return not any(p in texto for p in _PISTAS_EXPRESION)
+
+
+def sin_fondo_fijo(prompt_angulo: str) -> str:
+    """El prompt del ángulo sin su «neutral background».
+
+    Cinco ángulos de personaje lo traen de serie; con un escenario real
+    («beach at sunset») quedaría «neutral background, beach at sunset»."""
+    import re as _re
+    return _re.sub(r",?\s*\b(neutral|plain|simple|clean) background\b", "",
+                   prompt_angulo, flags=_re.IGNORECASE).strip(" ,")
+
+
+def sin_ropa(desc: str) -> str:
+    """La descripción canónica sin su ropa (va al final: «…, wearing …»)."""
+    import re as _re
+    m = _re.search(r",?\s+wearing\b", desc, _re.IGNORECASE)
+    return desc[:m.start()].rstrip(" ,.") if m else desc
 
 
 def negativo_para_angulo(angulo: dict, incluir_negative: bool = True) -> str:
@@ -292,11 +399,17 @@ def ensamblar_dataset(
     estilo_sufijo: str,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> list:
     """Devuelve la lista de prompts del dataset.
 
     `fondo` puede ser un str (mismo fondo en todo el dataset) o una lista de
     fondos a rotar por imagen (ver fondo_para_indice).
+
+    `variar`: {clave: [valores]} de lo que se rota imagen a imagen (ropa,
+    escenario, expresión, luz; ver VARIACIONES_PERSONAJE). Lo que se varía va
+    también en la caption, para que el LoRA no se lo aprenda como parte del
+    personaje.
 
     Cada elemento es un dict:
       {
@@ -317,8 +430,12 @@ def ensamblar_dataset(
         if not angulo:
             continue
 
-        # Fondo de ESTA imagen: rota si `fondo` es una lista (consistencia LoRA).
-        fondo_i = fondo_para_indice(fondo, i)
+        # Fondo de ESTA imagen: un escenario real si se varían, o el de
+        # siempre (rota si `fondo` es una lista: consistencia LoRA).
+        fondo_i = valor_rotado(variar, "escenario", i) or fondo_para_indice(fondo, i)
+        luz_i = valor_rotado(variar, "luz", i) or AVATAR_LIGHTING
+        expresion_i = (valor_rotado(variar, "expresion", i)
+                       if admite_expresion(angulo) else "")
 
         # El ENCUADRE va justo tras el trigger, ANTES de la descripción. Si la
         # descripción (con ropa de cuerpo entero: medias, botas...) va primero,
@@ -327,21 +444,31 @@ def ensamblar_dataset(
         # Además, en primeros planos se omite la ropa de la descripción (ver
         # desc_para_angulo) para que el modelo recorte de verdad a la cara.
         desc_ang = desc_para_angulo(desc, angulo)
-        partes = [trigger, angulo["prompt"], desc_ang, fondo_i, AVATAR_LIGHTING]
+        # Ropa variada: fuera la de la ficha y dentro la de esta imagen (en
+        # los primeros planos, solo la de arriba: la de abajo no se ve y
+        # alejaría la cámara).
+        ropa_i = ""
+        ropa = valor_rotado(variar, "ropa", i)
+        if es_primer_plano(angulo):
+            ropa = ropa_de_primer_plano(ropa)
+        if ropa:
+            desc_ang = sin_ropa(desc_ang)
+            ropa_i = f"wearing {ropa}"
+        prompt_angulo = angulo["prompt"]
+        if valor_rotado(variar, "escenario", i):
+            prompt_angulo = sin_fondo_fijo(prompt_angulo)
+        partes = [trigger, prompt_angulo, desc_ang, ropa_i, expresion_i,
+                  fondo_i, luz_i]
         if estilo_sufijo:
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
 
-        # Caption kohya: trigger + encuadre + fondo + iluminación.
+        # Caption kohya: trigger + encuadre + lo variado + fondo + iluminación.
         # GUÍA OFICIAL SeaArt (datasets LoRA): la caption debe incluir lo
-        # que el LoRA NO debe absorber (fondo, iluminación, pose) — si el
-        # fondo no se etiqueta, el LoRA lo "pega" al personaje. La
+        # que el LoRA NO debe absorber (fondo, iluminación, pose, ropa) — si
+        # el fondo no se etiqueta, el LoRA lo "pega" al personaje. La
         # identidad NO se describe: la absorbe el trigger word.
-        partes_caption = [trigger, angulo["framing"]]
-        if fondo_i:
-            partes_caption.append(fondo_i.split(",")[0].strip())
-        partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
-        caption = ", ".join(partes_caption)
+        piezas = _partes_descripcion(angulo, fondo_i, luz_i, expresion_i, ropa_i)
 
         dataset.append({
             "angle_key": key,
@@ -349,7 +476,8 @@ def ensamblar_dataset(
             "filename": angulo["filename"],
             "prompt": prompt,
             "negative": negativo_para_angulo(angulo, incluir_negative),
-            "caption": caption,
+            "caption": _caption_por_defecto(trigger, piezas),
+            "partes_descripcion": piezas,
             "ratio": ratio_sugerido(angulo),
         })
 
@@ -662,11 +790,15 @@ def ensamblar_dataset_generico(
     lighting: str,
     negative_base: str,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> list:
     """Ensambla un dataset para cualquier tipo de LoRA (Paisaje, Objeto, Estilo).
 
     A diferencia del personaje, no hay lógica de recorte ni de ropa: la
-    descripción canónica va entera en cada prompt sin modificar."""
+    descripción canónica va entera en cada prompt sin modificar.
+
+    `variar`: como en ensamblar_dataset (escenario, luz y, en NSFW, expresión);
+    la «luz» de un paisaje es la hora del día y el tiempo."""
     trigger = trigger_word.strip()
     desc = descripcion_canonica.strip().rstrip(".,")
     dataset = []
@@ -676,8 +808,12 @@ def ensamblar_dataset_generico(
         if not angulo:
             continue
 
-        fondo_i = fondo_para_indice(fondo, i) if fondo else ""
-        partes = [trigger, angulo["prompt"], desc]
+        fondo_i = (valor_rotado(variar, "escenario", i)
+                   or (fondo_para_indice(fondo, i) if fondo else ""))
+        luz_i = valor_rotado(variar, "luz", i) or lighting
+        expresion_i = (valor_rotado(variar, "expresion", i)
+                       if admite_expresion(angulo) else "")
+        partes = [trigger, angulo["prompt"], desc, expresion_i]
         # Refuerzo anti-figura en el POSITIVO para ángulos sin gente: los
         # estilos biomecánicos/cyborg meten un humanoide cromado en el paisaje
         # aunque el negativo lo prohíba. (El "no people" del ángulo no basta.)
@@ -685,18 +821,13 @@ def ensamblar_dataset_generico(
             partes.append("no robots, cyborgs, androids or characters, empty scene")
         if fondo_i:
             partes.append(fondo_i)
-        if lighting:
-            partes.append(lighting)
+        if luz_i:
+            partes.append(luz_i)
         if estilo_sufijo:
             partes.append(estilo_sufijo)
         prompt = ", ".join(p for p in partes if p)
 
-        partes_caption = [trigger, angulo["framing"]]
-        if fondo_i:
-            partes_caption.append(fondo_i.split(",")[0].strip())
-        if lighting:
-            partes_caption.append(lighting.split(",")[0].strip())
-        caption = ", ".join(partes_caption)
+        piezas = _partes_descripcion(angulo, fondo_i, luz_i, expresion_i)
 
         negative = negativo_generico_para_angulo(
             angulo, negative_base, incluir_negative)
@@ -707,11 +838,28 @@ def ensamblar_dataset_generico(
             "filename": angulo["filename"],
             "prompt": prompt,
             "negative": negative,
-            "caption": caption,
+            "caption": _caption_por_defecto(trigger, piezas),
+            "partes_descripcion": piezas,
             "ratio": ratio_sugerido(angulo),
         })
 
     return dataset
+
+
+def conservar_acabado(estilo_sufijo: str = "") -> str:
+    """La última orden de los prompts de edición: qué acabado conservar.
+
+    Era siempre «Preserve photorealistic detail and natural skin texture»:
+    con el estilo en Anime (Anima, Illustrious) le pedía al editor una foto
+    de un personaje dibujado. Con un estilo de dibujo, ahora pide el mismo
+    estilo que la referencia; con uno fotográfico, o sin estilo, lo de
+    siempre.
+    """
+    import re as _re
+    estilo = (estilo_sufijo or "").strip()
+    if not estilo or _re.search(r"photo|realistic", estilo, _re.IGNORECASE):
+        return "Preserve photorealistic detail and natural skin texture"
+    return f"Keep the same art style as the reference image: {estilo}"
 
 
 def ensamblar_dataset_edicion(
@@ -719,8 +867,15 @@ def ensamblar_dataset_edicion(
     angulos_seleccionados: list,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
+    estilo_sufijo: str = "",
 ) -> list:
     """Variante IMG2IMG del dataset: prompts de EDICIÓN por ángulo.
+
+    `variar`: como en ensamblar_dataset. Con ropa variada ya no se pide «la
+    misma ropa» que la referencia, sino cambiarla por la de esa imagen.
+    `estilo_sufijo`: el del estilo visual elegido; decide el acabado que se
+    pide conservar (conservar_acabado).
 
     Para modelos con imagen de sujeto/edición (MAI-Image-2.5, Nano
     Banana, Reve 2.0, SeaArt Film Edit): se sube la imagen de
@@ -734,7 +889,17 @@ def ensamblar_dataset_edicion(
         angulo = AVATAR_ANGLES.get(key)
         if not angulo:
             continue
-        fondo_i = fondo_para_indice(fondo, i)
+        fondo_i = valor_rotado(variar, "escenario", i) or fondo_para_indice(fondo, i)
+        luz_i = valor_rotado(variar, "luz", i) or AVATAR_LIGHTING
+        expresion_i = (valor_rotado(variar, "expresion", i)
+                       if admite_expresion(angulo) else "")
+        ropa = valor_rotado(variar, "ropa", i)
+        if es_primer_plano(angulo):
+            ropa = ropa_de_primer_plano(ropa)
+        # Con ropa variada, la de la referencia NO se conserva.
+        misma_ropa = "" if ropa else ", same clothing"
+        prompt_angulo = (sin_fondo_fijo(angulo["prompt"])
+                         if valor_rotado(variar, "escenario", i) else angulo["prompt"])
 
         if requiere_rotacion(angulo):
             # Tomas de ÁNGULO: lideramos con la rotación y exigimos un punto de
@@ -742,12 +907,12 @@ def ensamblar_dataset_edicion(
             # frontal de la imagen base. La identidad se mantiene, la
             # orientación NO.
             partes = [
-                (f"Rotate the subject to a NEW viewpoint: {angulo['prompt']}. "
+                (f"Rotate the subject to a NEW viewpoint: {prompt_angulo}. "
                  "This is a DIFFERENT camera angle from the reference image: the "
                  "head and body must be physically turned to present this new "
                  "orientation, not the frontal pose of the reference"),
                 ("Keep the SAME person: same face identity, same skin tone, same "
-                 "hairstyle, same facial hair, same clothing, only the "
+                 f"hairstyle, same facial hair{misma_ropa}, only the "
                  "orientation changes"),
             ]
         else:
@@ -756,15 +921,21 @@ def ensamblar_dataset_edicion(
             # identidad y cambiamos solo cámara/expresión.
             partes = [
                 ("Keep the EXACT same person from the reference image: "
-                 "same face identity, same hairstyle, same facial hair, "
-                 "same clothing"),
-                f"Change ONLY the camera and pose to: {angulo['prompt']}",
+                 "same face identity, same hairstyle, same facial hair"
+                 f"{misma_ropa}"),
+                f"Change ONLY the camera and pose to: {prompt_angulo}",
             ]
 
+        ropa_i = ""
+        if ropa:
+            ropa_i = f"wearing {ropa}"
+            partes.append(f"Change the outfit to {ropa}")
+        if expresion_i:
+            partes.append(f"Expression: {expresion_i}")
         if fondo_i:
             partes.append(f"Background: {fondo_i}")
-        partes.append(AVATAR_LIGHTING)
-        partes.append("Preserve photorealistic detail and natural skin texture")
+        partes.append(luz_i)
+        partes.append(conservar_acabado(estilo_sufijo))
         prompt = ". ".join(partes) + "."
 
         # Negative: el base por encuadre + el anti-frontal SOLO en tomas de
@@ -775,10 +946,7 @@ def ensamblar_dataset_edicion(
                         if negative else AVATAR_NEGATIVE_EDIT_ROTACION)
 
         # La caption de entrenamiento es la misma que en el modo texto
-        partes_caption = [trigger, angulo["framing"]]
-        if fondo_i:
-            partes_caption.append(fondo_i.split(",")[0].strip())
-        partes_caption.append(AVATAR_LIGHTING.split(",")[0].strip())
+        piezas = _partes_descripcion(angulo, fondo_i, luz_i, expresion_i, ropa_i)
 
         dataset.append({
             "angle_key": key,
@@ -786,7 +954,8 @@ def ensamblar_dataset_edicion(
             "filename": angulo["filename"],
             "prompt": prompt,
             "negative": negative,
-            "caption": ", ".join(partes_caption),
+            "caption": _caption_por_defecto(trigger, piezas),
+            "partes_descripcion": piezas,
             "ratio": ratio_sugerido(angulo),
         })
     return dataset

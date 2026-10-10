@@ -14,6 +14,7 @@ from modules.prompt_helpers import (
     extraer_negative_de_texto,
     extraer_pos_de_bloque,
     extraer_positive_de_texto,
+    guiones_bajos_a_espacios,
     parsear_variaciones,
     quitar_eco_instrucciones,
     recortar_si_excede,
@@ -495,6 +496,43 @@ class TestMoverTriggerAlInicio:
             # Puede devolver el texto intacto o recortado, pero no debe lanzar
         except Exception as e:
             pytest.fail(f"recortar_si_excede lanzó excepción inesperada: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════
+# guiones_bajos_a_espacios (Anima: «long hair», no «long_hair»)
+# ══════════════════════════════════════════════════════════════════
+
+class TestGuionesBajosAEspacios:
+    """09-oct-2026: el LLM escribió «@mika_pikazo» para Anima aunque la ficha
+    pedía espacios. Solo los score_N llevan guion bajo en ese modelo."""
+
+    def test_el_artista_y_los_tags_pasan_a_espacios(self):
+        assert (guiones_bajos_a_espacios("POSITIVE PROMPT: @mika_pikazo, long_hair")
+                == "POSITIVE PROMPT: @mika pikazo, long hair")
+
+    def test_los_score_se_quedan(self):
+        texto = "POSITIVE PROMPT: score_7, safe\nNEGATIVE PROMPT: score_1, score_9_up"
+        assert guiones_bajos_a_espacios(texto) == texto
+
+    def test_dentro_de_un_peso(self):
+        assert guiones_bajos_a_espacios("(long_hair:1.5)") == "(long hair:1.5)"
+
+    def test_el_trigger_del_lora_no_se_toca(self):
+        out = guiones_bajos_a_espacios("brass_ruin_steampunk, gear_tower",
+                                       conservar=["brass_ruin_steampunk"])
+        assert out == "brass_ruin_steampunk, gear tower"
+
+    def test_trigger_con_varias_partes(self):
+        out = guiones_bajos_a_espacios("Nyra, Amber_Eyes, short_hair",
+                                       conservar=["Nyra, Amber_Eyes"])
+        assert out == "Nyra, Amber_Eyes, short hair"
+
+    def test_sin_guiones_no_cambia_nada(self):
+        texto = "POSITIVE PROMPT: lyr4, 1girl, silver hair"
+        assert guiones_bajos_a_espacios(texto) is texto
+
+    def test_texto_vacio(self):
+        assert guiones_bajos_a_espacios("") == ""
 
 
 if __name__ == "__main__":

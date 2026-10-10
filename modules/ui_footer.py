@@ -57,6 +57,78 @@ def estilo_familia_desde_lora(textos) -> str | None:
     return None
 
 
+# ── Compatibilidad LoRA ↔ modelo ───────────────────────────────────────
+# Familia de un modelo en el vocabulario del gestor de LoRAs
+# (windows.FAMILIAS_LORA, normalizado: minúsculas y sin guiones). Las de
+# G-Entrena Studio van primero porque sus nombres no llevan ninguno de los
+# tokens clásicos, y con cuidado de no confundir:
+#   · Anima con anima_pencil-XL (que es SDXL) ni con Wan2.2-Animate.
+#   · Krea 2 con FLUX.1 Krea dev (que es Flux).
+#   · MiniMax H3 con SeaArt Sparkle H3 (no consta que compartan base).
+_RE_ANIMA = re.compile(r"^anima($|[-_ ](base|preview|turbo|aesthetic))")
+_RE_TOKEN_H3 = re.compile(r"(^|[^a-z0-9])h3([^a-z0-9]|$)")
+_FAMILIAS_LORA_VIDEO = ("ltx", "minimax h3")
+# Pony e Illustrious son SDXL por debajo.
+_PARES_LORA_COMPATIBLES = {
+    ("pony", "sdxl"), ("sdxl", "pony"),
+    ("illustrious", "sdxl"), ("sdxl", "illustrious"),
+    ("pony", "illustrious"), ("illustrious", "pony"),
+}
+
+
+def familia_modelo_para_lora(modelo: str) -> str | None:
+    """Familia de LoRA que admite un modelo, o None si no se reconoce."""
+    m = (modelo or "").lower()
+    if _RE_ANIMA.search(m):
+        return "anima"
+    if any(t in m for t in ("krea2", "krea-2", "krea 2", "krea_2")):
+        return "krea 2"
+    # Z-Image antes que el resto: "z-image" no contiene flux/sdxl/etc.
+    if "z-image" in m or "z image" in m or "z_image" in m:
+        return "z image"
+    if "qwen" in m:
+        return "qwen image"
+    if "ltx" in m:
+        return "ltx"
+    if "minimax" in m and _RE_TOKEN_H3.search(m):
+        return "minimax h3"
+    if "flux" in m:
+        return "flux"
+    if "sd3.5" in m or "sd 3.5" in m:
+        return "sd3.5"
+    if "pony" in m:
+        return "pony"
+    if "illustrious" in m or "noob" in m or "wai " in m:
+        return "illustrious"
+    if "sdxl" in m or "juggernaut" in m or "realvis" in m:
+        return "sdxl"
+    if "1.5" in m or "sd15" in m or "epic" in m:
+        return "sd15"
+    return None
+
+
+def lora_compatible(familia_lora: str, modelo: str, modo: str) -> bool | None:
+    """True/False si el LoRA casa con el modelo; None si no se puede juzgar."""
+    if not familia_lora or familia_lora == "—":
+        return None  # sin info, no juzgamos
+    # Normalizar familia del LoRA: "Z Image" → "z image", quitar guiones.
+    f = familia_lora.lower().replace("-", " ").replace("_", " ").strip()
+    if modo == "video":
+        # En vídeo solo se juzgan los LoRA de vídeo (LTX, MiniMax H3): uno de
+        # imagen sigue sin veredicto, como siempre.
+        if f not in _FAMILIAS_LORA_VIDEO:
+            return None
+        return familia_modelo_para_lora(modelo) == f
+    if modo != "imagen":
+        return None
+    familia_modelo = familia_modelo_para_lora(modelo)
+    if familia_modelo is None:
+        return False  # familia del modelo desconocida → no garantizamos compatibilidad
+    if (f, familia_modelo) in _PARES_LORA_COMPATIBLES:
+        return True
+    return f == familia_modelo
+
+
 # ── Autodetección de ESTILO desde el modelo de imagen ──────────────────
 # Preselecciona el estilo apropiado (Anime/Ilustración/CG/Fantasy/SciFi…)
 # según el modelo, para que un modelo NO-fotorrealista no se quede en 'Auto'
@@ -1043,39 +1115,10 @@ class UiFooterService:
 
     def _es_lora_compatible(self, familia_lora):
         """Devuelve True/False si el LoRA es compatible con el modelo activo. None si no se puede determinar."""
-        if not familia_lora or familia_lora == "—":
-            return None  # sin info, no juzgamos
         modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
-        if modo != "imagen":
-            return None  # LoRAs son cosa de imagen mayormente
-        modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, "combo_modelo_imagen") else ""
-        modelo_l = modelo.lower()
-        # Normalizar familia del LoRA: "Z Image" → "z image", quitar guiones.
-        f = familia_lora.lower().replace("-", " ").replace("_", " ").strip()
-        # Detectar familia del modelo (más casos)
-        modelo_familia = None
-        # Z-Image PRIMERO porque "z-image" no contiene flux/sdxl/etc.
-        # Cubre: "Z-Image-Base", "Z Image Turbo", "z_image", etc.
-        if "z-image" in modelo_l or "z image" in modelo_l or "z_image" in modelo_l:
-            modelo_familia = "z image"
-        elif "flux" in modelo_l: modelo_familia = "flux"
-        elif "sd3.5" in modelo_l or "sd 3.5" in modelo_l: modelo_familia = "sd3.5"
-        elif "pony" in modelo_l: modelo_familia = "pony"
-        elif "illustrious" in modelo_l or "noob" in modelo_l or "wai " in modelo_l: modelo_familia = "illustrious"
-        elif "sdxl" in modelo_l or "juggernaut" in modelo_l or "realvis" in modelo_l: modelo_familia = "sdxl"
-        elif "1.5" in modelo_l or "sd15" in modelo_l or "epic" in modelo_l: modelo_familia = "sd15"
-
-        # Compatibilidades cruzadas: Pony e Illustrious son SDXL-based
-        compatible_pares = {
-            ("pony", "sdxl"), ("sdxl", "pony"),
-            ("illustrious", "sdxl"), ("sdxl", "illustrious"),
-            ("pony", "illustrious"), ("illustrious", "pony"),
-        }
-        if modelo_familia is None:
-            return False  # familia del modelo desconocida → no garantizamos compatibilidad
-        if (f, modelo_familia) in compatible_pares:
-            return True
-        return f == modelo_familia
+        combo = "combo_modelo_video" if modo == "video" else "combo_modelo_imagen"
+        modelo = getattr(self.app, combo).get() if hasattr(self.app, combo) else ""
+        return lora_compatible(familia_lora, modelo, modo)
 
     def _recomendar_loras_para_modelo(self, modelo_name):
         """Cuando cambia el modelo, busca LoRAs guardados compatibles y avisa al usuario."""

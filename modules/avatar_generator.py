@@ -62,6 +62,7 @@ def generar_dataset_avatar(
     estilo_sufijo: str,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> dict:
     """Pipeline completo. Devuelve dict con la descripción canónica y el dataset.
 
@@ -75,6 +76,7 @@ def generar_dataset_avatar(
         estilo_sufijo=estilo_sufijo,
         fondo=fondo,
         incluir_negative=incluir_negative,
+        variar=variar,
     )
     return {
         "trigger_word": trigger_word.strip(),
@@ -94,6 +96,7 @@ def generar_dataset_lora(
     estilo_sufijo: str,
     fondo,
     incluir_negative: bool = True,
+    variar: dict | None = None,
 ) -> dict:
     """Pipeline completo para cualquier tipo de LoRA (Personaje/Paisaje/Objeto/Estilo).
 
@@ -111,6 +114,7 @@ def generar_dataset_lora(
             estilo_sufijo=estilo_sufijo,
             fondo=fondo,
             incluir_negative=incluir_negative,
+            variar=variar,
         )
 
     cfg = LORA_TYPES[tipo]
@@ -132,6 +136,7 @@ def generar_dataset_lora(
         lighting=cfg["lighting"],
         negative_base=cfg["negative"],
         incluir_negative=incluir_negative,
+        variar=variar,
     )
 
     return {
@@ -223,8 +228,12 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
     )
     dir_prompts = os.path.join(base, "prompts")
     dir_captions = os.path.join(base, "captions")
+    # Higgsfield, Magnific o el estilo rápido de Qwen en SeaArt no leen
+    # descripciones: una carpeta captions/ ahí solo despistaría.
+    con_captions = not resultado.get("sin_descripciones")
     os.makedirs(dir_prompts, exist_ok=True)
-    os.makedirs(dir_captions, exist_ok=True)
+    if con_captions:
+        os.makedirs(dir_captions, exist_ok=True)
 
     # dataset.json completo
     with open(os.path.join(base, "dataset.json"), "w", encoding="utf-8") as f:
@@ -243,8 +252,9 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
         with open(os.path.join(dir_prompts, f"{nombre}.txt"), "w", encoding="utf-8") as f:
             f.write(contenido)
 
-        with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
-            f.write(item["caption"])
+        if con_captions:
+            with open(os.path.join(dir_captions, f"{nombre}.txt"), "w", encoding="utf-8") as f:
+                f.write(item["caption"])
 
         cab_ratio = f"  [ratio {ratio}]" if ratio else ""
         bloque = f"=== {nombre} | {item['label']}{cab_ratio} ===\n{item['prompt']}\n"
@@ -324,16 +334,67 @@ def exportar_dataset(resultado: dict, carpeta_salida: str) -> str:
             "   (captions/ son los .txt emparejados para el entrenamiento LoRA.)\n\n"
             "===================================================================\n\n"
         )
+    # Lo propio de la plataforma donde se va a entrenar, arriba del todo.
+    destino_txt = ""
+    if resultado.get("destino_entrenamiento"):
+        from modules.avatar_destinos import cargar_destinos, consejo_destino
+        id_destino = resultado["destino_entrenamiento"].get("id")
+        destino = next((d for d in cargar_destinos() if d.get("id") == id_destino), None)
+        destino_txt = consejo_destino(destino, tipo)
     with open(os.path.join(base, "CONSEJOS_SEAART.txt"), "w", encoding="utf-8") as f:
-        f.write(cabecera + consejo)
+        f.write(destino_txt + cabecera + consejo)
 
     return base
 
 
-def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
+# Peso del LoRA de la 1ª ronda en los workflows de la 2ª: a 1.0 un LoRA
+# entrenado con 15-20 imágenes imprime también su ropa, sus poses y sus
+# fallos; a 0.8 manda la cara y los prompts siguen variando el resto.
+LORA_RONDA_PESO = 0.8
+
+
+def carpeta_ronda(trigger: str) -> str:
+    """Subcarpeta de output/ de ComfyUI para las imágenes de la 2ª ronda.
+
+    Así no se mezclan con las de la 1ª, que llevan los mismos nombres de toma
+    («01_face_front_00001_.png»), y «Montar dataset» las empareja igual: mira
+    solo el nombre del fichero."""
+    import re
+    limpio = re.sub(r"[^\w-]+", "_", trigger or "").strip("_")
+    return f"{limpio or 'dataset'}_ronda2"
+
+
+def nombre_copia_lora(fichero: str, trigger: str) -> str:
+    """Con qué nombre se copia a ComfyUI el LoRA de la 1ª ronda.
+
+    G-Entrena llama igual a todos sus LoRA («G-Entrena_anima_FINAL_LoRA»,
+    «G-Entrena_anima_step_000750»): copiados tal cual a models/loras, el de
+    otro personaje pisaría a este (10-oct-2026, con Einar). Esos se renombran
+    con el trigger: «ohwx_einar_anima_ronda1.safetensors». Los demás
+    conservan su nombre.
+    """
+    import re
+    raiz, ext = os.path.splitext(os.path.basename(fichero))
+    m = re.fullmatch(r"G-Entrena_(?P<motor>.+?)_(?:FINAL_LoRA|step_0*(?P<paso>\d+))",
+                     raiz, re.IGNORECASE)
+    limpio = re.sub(r"[^\w-]+", "_", trigger or "").strip("_")
+    if not m or not limpio:
+        return os.path.basename(fichero)
+    paso = f"_paso{m['paso']}" if m["paso"] else ""
+    return f"{limpio}_{m['motor']}_ronda1{paso}{ext}"
+
+
+def exportar_workflows_comfy(resultado: dict, base: str, modelo: str,
+                             lora: str = "",
+                             lora_peso: float = LORA_RONDA_PESO) -> int:
     """Escribe workflows/ con los .json ComfyUI (formato UI) del dataset,
     cableados al `modelo` local elegido: loader por arquitectura, CFG/pasos/
     sampler de su familia y resolución del latent según el RATIO de cada toma.
+
+    `lora`: el LoRA de la 1ª ronda (nombre ComfyUI, sin extensión; ver
+    comfy_export.nombre_lora_comfy). Con él, todos los workflows lo cargan a
+    `lora_peso` y guardan en output/<trigger>_ronda2/: es la 2ª ronda, con
+    la cara que ese LoRA aprendió de las mejores imágenes de la 1ª.
 
     Salen DOS variantes (se cargan en ComfyUI con Load/arrastrar):
       • DATASET_COMPLETO.json — TODAS las tomas en un canvas: loaders y
@@ -346,36 +407,50 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     Solo tiene sentido con modelos ComfyUI locales (el caller decide, según
     la plataforma destino elegida). Devuelve el nº de tomas exportadas.
     """
-    from config import comfy_workflow_params
+    from config import comfy_workflow_params, nombres_modelos_comfy
     from modules.comfy_export import (
+        ajustar_nombres_comfy,
         construir_workflow_comfy,
         construir_workflow_comfy_todas,
     )
+
+    # Los nombres exactos con que el ComfyUI del usuario lista sus modelos
+    # («LoraLab-D\anima-base-v1.0.safetensors»): sin ellos, el workflow falla
+    # con «Value not in list» y hay que elegir cada cargador a mano.
+    try:
+        nombres = nombres_modelos_comfy()
+    except Exception:
+        nombres = {}
 
     dir_wf = os.path.join(base, "workflows")
     dir_ind = os.path.join(dir_wf, "individuales")
     os.makedirs(dir_ind, exist_ok=True)
 
+    subcarpeta = (carpeta_ronda(resultado.get("trigger_word", "")) + "/") if lora else ""
     n = 0
     todas: list = []
     for item in resultado.get("dataset", []):
         ratio = (item.get("ratio") or "").strip()
+        prefijo = subcarpeta + (item.get("filename") or "G-Prompt-Studio")
         wf = construir_workflow_comfy(
             pos=item.get("prompt", ""),
             neg=item.get("negative", "") or "",
             modelo=modelo,
+            lora=lora,
             ratio=ratio,
-            save_prefix=item.get("filename") or "G-Prompt-Studio",
+            save_prefix=prefijo,
             caption=item.get("caption", ""),
             con_detailer=True,  # FaceDetailer bypasseado para retocar caras/ojos
+            lora_peso=lora_peso,
         )
+        ajustar_nombres_comfy(wf, nombres)
         with open(os.path.join(dir_ind, f"{item['filename']}.json"),
                   "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
         todas.append({
             "pos": item.get("prompt", ""),
             "neg": item.get("negative", "") or "",
-            "save_prefix": item.get("filename") or "G-Prompt-Studio",
+            "save_prefix": prefijo,
             "caption": item.get("caption", ""),
             "ratio": ratio,
         })
@@ -385,7 +460,8 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     # cada toma con su tamaño). Un Queue genera el dataset entero.
     lotes = []
     if len(todas) >= 2:
-        wf = construir_workflow_comfy_todas(todas, modelo)
+        wf = ajustar_nombres_comfy(
+            construir_workflow_comfy_todas(todas, modelo, lora, lora_peso), nombres)
         with open(os.path.join(dir_wf, "DATASET_COMPLETO.json"),
                   "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
@@ -399,10 +475,21 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str) -> int:
     else:
         chuleta = "CLIP y VAE van integrados en el checkpoint (no hay loaders aparte).\n"
     lotes_txt = ("\n".join(f"  • {x}" for x in lotes)) if lotes else "  (ninguno)"
+    ronda = ""
+    if lora:
+        ronda = (
+            f"2ª RONDA — con el LoRA de la 1ª: {lora}.safetensors a {lora_peso}\n"
+            f"   Todos los workflows lo cargan (nodo LoraLoader) y guardan en\n"
+            f"   output/{subcarpeta.rstrip('/')}/, aparte de las de la 1ª ronda.\n"
+            f"   Las tomas salen con la cara que aprendió ese LoRA. ¿Se parecen\n"
+            f"   poco? Sube el peso a 1.0. ¿Salen rígidas o todas iguales? Bájalo\n"
+            f"   a 0.6. Con las mejores, «📦 Montar dataset» y entrena el LoRA\n"
+            f"   definitivo.\n\n")
     with open(os.path.join(dir_wf, "LEEME_WORKFLOWS.txt"), "w", encoding="utf-8") as f:
         f.write(
             f"WORKFLOWS ComfyUI DEL DATASET — modelo: {modelo}\n"
             f"{'=' * 60}\n\n"
+            f"{ronda}"
             f"Ajustes: {p['sampler']}/{p['scheduler']} · CFG {p['cfg']} · "
             f"{p['steps']} pasos · resolución según el ratio de cada toma.\n\n"
             f"DOS FORMAS DE USARLOS:\n\n"

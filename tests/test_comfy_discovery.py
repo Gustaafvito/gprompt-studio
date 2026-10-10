@@ -508,7 +508,8 @@ class TestInventarioAgo2026:
 
 class TestAltasSep2026:
     """Altas guiadas una a una por el usuario (sep-2026): HiDream (familia
-    propia), snofs Klein → Flux, Anima → Illustrious, FireRed/JoyAI → edición.
+    propia), snofs Klein → Flux, FireRed/JoyAI → edición. (Anima salió de
+    aquí el 09-oct-2026: ya tiene familia propia.)
     """
 
     def test_hidream_familia_propia(self):
@@ -525,15 +526,45 @@ class TestAltasSep2026:
         s = config.comfy_image_specs("snofs_klein_9b_distilled_fp8")
         assert s["_comfy_familia"] == "flux" and s["has_negative"] is True
 
-    def test_anima_es_illustrious_por_override(self):
-        # Va por override, NO por token: 'anima' colisionaría con anima_pencil-XL.
-        for n in ("anima-base-v1.0", "anima-preview3-base"):
-            assert config.detectar_familia_comfy(n) == "illustrious", n
+    def test_anima_tiene_familia_propia(self):
+        # Hasta el 09-oct-2026 iba como Illustrious. Por patrón y no por
+        # token: 'anima' colisionaría con anima_pencil-XL. Cubre también las
+        # versiones que aún no tiene el usuario (aesthetic, turbo).
+        for n in ("anima-base-v1.0", "anima-preview3-base",
+                  "anima-aesthetic-v1.1", "anima-turbo-v1.1"):
+            assert config.detectar_familia_comfy(n) == "anima", n
 
     def test_anima_no_rompe_anima_pencil_xl(self):
-        # El SDXL anima_pencil sigue siendo SDXL (no lo captura el override).
+        # El SDXL anima_pencil sigue siendo SDXL (no lo captura el patrón).
         assert config.detectar_familia_comfy("anima_pencil-XL") == "sdxl"
         assert config.detectar_familia_comfy("animaPencilXL_v500") == "sdxl"
+
+    def test_anima_no_se_confunde_con_wan_animate(self):
+        assert config.detectar_familia_comfy("Wan2.2-Animate-14B-Q5_K_M") != "anima"
+
+    def test_anima_workflow_no_es_un_checkpoint(self):
+        # Como Illustrious salía con CheckpointLoaderSimple y el workflow no
+        # cargaba: Anima es diffusion_models + encoder y VAE aparte.
+        p = config.comfy_workflow_params("anima-base-v1.0")
+        assert p["arch"] == "unet"
+        assert p["clip"] == "qwen_3_06b_base.safetensors"
+        assert p["vae"] == "qwen_image_vae.safetensors"
+        assert (p["sampler"], p["scheduler"]) == ("er_sde", "simple")
+        assert 4.0 <= p["cfg"] <= 6.0 and 30 <= p["steps"] <= 50
+
+    def test_anima_local_lleva_las_reglas_de_prompt_de_la_ficha(self):
+        # Las mismas que el Anima de SeaArt: tags, pesos altos y tags con
+        # espacios; los ajustes, de la Base y no de la Turbo.
+        s = config.comfy_image_specs("anima-base-v1.0")
+        nube = config.MODEL_SPECS_IMAGEN["Anima"]
+        assert s["is_natural"] is False and s["has_negative"] is True
+        for campo in ("peso_enfasis", "tags_con_espacios", "negative_sugerido"):
+            assert s[campo] == nube[campo], campo
+        assert "CFG 4-6" in s["sampler_recomendado"]
+        assert "Turbo" not in s["sampler_recomendado"]
+
+    def test_anima_sale_en_su_propio_grupo(self):
+        assert config._COMFY_FAMILIA_LABELS["anima"] == "Anima"
 
     def test_firered_y_joyai_son_edicion(self):
         for n in ("FireRed-Image-Edit-1.1-Q3_K_M",

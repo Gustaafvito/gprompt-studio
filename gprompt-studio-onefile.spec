@@ -85,6 +85,8 @@ hiddenimports = [
     'modules.avatar_prompts',
     'modules.avatar_generator',
     'modules.avatar_ui',
+    'modules.avatar_destinos',
+    'modules.avatar_montar',
     'keyring.backends.Windows',
     'keyring.backends.SecretService',
     'keyring.backends.macOS',

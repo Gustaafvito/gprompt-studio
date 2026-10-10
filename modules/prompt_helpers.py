@@ -238,6 +238,36 @@ def mover_trigger_al_inicio(texto: str, trigger: str) -> str:
         return texto
 
 
+# Tags «a lo Gelbooru»: Anima quiere «long hair», no «long_hair», y solo los
+# score_N llevan guion bajo. Un token es lo que va entre separadores de tag:
+# comas, espacios, paréntesis, corchetes, llaves, «|» y los dos puntos del
+# peso, así que «(long_hair:1.5)» se queda en «(long hair:1.5)».
+_RE_TOKEN_CON_GUION = re.compile(r"[^\s,()\[\]{}|:]*_[^\s,()\[\]{}|:]*")
+_RE_SCORE = re.compile(r"score_\d+(?:_up)?", re.IGNORECASE)
+
+
+def guiones_bajos_a_espacios(texto: str, conservar=()) -> str:
+    """Cambia «_» por espacio en los tags, salvo los score_N y `conservar`.
+
+    `conservar` son los triggers de los LoRA activos: van LITERALES aunque
+    lleven guion bajo («brass_ruin_steampunk»). Un trigger con varias partes
+    separadas por comas protege cada parte.
+    """
+    if not texto or "_" not in texto:
+        return texto
+    intocables = {parte.strip().lower()
+                  for c in conservar if c
+                  for parte in c.split(",") if parte.strip()}
+
+    def _cambiar(m):
+        tok = m.group(0)
+        if tok.lower() in intocables or _RE_SCORE.fullmatch(tok):
+            return tok
+        return re.sub(r" {2,}", " ", tok.replace("_", " ")).strip() or tok
+
+    return _RE_TOKEN_CON_GUION.sub(_cambiar, texto)
+
+
 def _recortar_prosa(texto: str, max_chars: int) -> str:
     """Recorta un texto en PROSA (sin etiqueta PROMPT:) a max_chars sin cortar
     palabras a la mitad. Prioriza: fin de frase completo > coma > último

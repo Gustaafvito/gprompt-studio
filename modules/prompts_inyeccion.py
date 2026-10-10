@@ -322,6 +322,14 @@ class PromptsInyeccionService:
             if es_comfyui_turbo:
                 extra += "• ⛔ PLATAFORMA ComfyUI + MODELO TURBO: NO USES PESOS NUMÉRICOS tipo (tag:1.2). Solo tags limpios separados por comas. El CFG bajo (~1.0) hace que los pesos sean IGNORADOS o produzcan ruido. Ejemplo CORRECTO: 'close-up portrait, silver hair, detailed skin' | INCORRECTO: '(close-up portrait:1.3), (silver hair:1.2)'.\n"
                 extra += "• ⛔ NO generes NEGATIVE PROMPT. En ComfyUI los modelos Turbo lo ignoran.\n"
+            elif specs.get("peso_enfasis"):
+                # Anima: un (tag:1.2) apenas actúa, y la regla general de abajo
+                # le ganaba a la ficha (el LLM ponía 1.2-1.4).
+                rango = str(specs["peso_enfasis"])
+                tope = rango.replace("–", "-").split("-")[-1].strip()
+                extra += (f"• Pesos: este modelo necesita pesos ALTOS para que se noten, "
+                          f"de {rango} (ej. (chibi:{tope})). Un (tag:1.2) apenas actúa: "
+                          f"no lo uses.\n")
             else:
                 extra += "• Puedes usar pesos (tag:1.2) cuando sea útil para enfatizar elementos clave.\n"
             if specs.get("trigger_words"):

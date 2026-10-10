@@ -1973,6 +1973,14 @@ class ToolsAnalysisService:
         modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else ""
         lora = self._lora_activo_para_workflow()
         workflow = self._construir_workflow_comfy(pos, neg, modelo, lora)
+        # Nombres exactos de los cargadores, como los lista el ComfyUI del
+        # usuario (subcarpetas, junctions): ver config.nombres_modelos_comfy.
+        try:
+            from config import nombres_modelos_comfy
+            from modules.comfy_export import ajustar_nombres_comfy
+            ajustar_nombres_comfy(workflow, nombres_modelos_comfy())
+        except Exception as e:
+            logger.debug(f"[silent] nombres de ComfyUI: {e}")
         json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo)
 

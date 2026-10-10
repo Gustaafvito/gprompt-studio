@@ -1,21 +1,36 @@
 ═══════════════════════════════════════════════════════════════════
-  G-Prompt Studio v1.1.1 — Listo para distribuir
+  G-Prompt Studio v1.1.2 — Listo para distribuir
 ═══════════════════════════════════════════════════════════════════
 
 Aquí tienes DOS opciones para usar la app o compartirla.
 Son ALTERNATIVAS, no acumulativas: elige una.
 
 
-QUÉ HAY DE NUEVO EN LA 1.1.1
+QUÉ HAY DE NUEVO EN LA 1.1.2
 ═══════════════════════════════════════════════════════════════════
 
-  - Cuatro modelos nuevos de SeaArt: Qwen Image 2.1 y Nano
-    Banana 2.1 en imagen, y Vidu Q4 Preview y SeaArt Opera 2.0
-    Preview en vídeo. El catálogo pasa a 276.
-  - Seguridad: urllib3 actualizado a la 2.8.0.
+  - Anima, el modelo de anime de CircleStone Labs y Comfy Org,
+    con sus reglas: tags de Danbooru, artistas con @ delante y
+    los ajustes de cada versión (Turbo, Aesthetic y Base). El
+    catálogo pasa a 277.
+  - Anima en ComfyUI, con grupo propio: sus reglas, sus ajustes y
+    un workflow que lo carga bien (antes salía como Illustrious).
+  - Generador de Dataset LoRA: eliges dónde vas a entrenar
+    (G-Entrena, SeaArt, Higgsfield o Magnific) y las descripciones
+    salen como las pide esa plataforma. Y en cada imagen cambian la
+    ropa, el escenario, la expresión y la luz, para que el LoRA
+    aprenda solo al personaje. «Montar dataset» junta después tus
+    imágenes con sus descripciones (000.png + 000.txt). Y si no se
+    parecen entre sí, una 2ª ronda: con un primer LoRA, los
+    workflows de ComfyUI lo cargan y salen todas con la misma cara.
+  - Gestor de LoRAs: cinco familias nuevas (Anima, Krea 2, LTX,
+    MiniMax H3 y Qwen Image), y la app ya las reconoce.
 
-  Y lo que trajo la 1.1.0:
+  Y lo que trajeron la 1.1.1 y la 1.1.0:
 
+  - Cuatro modelos de SeaArt: Qwen Image 2.1 y Nano Banana 2.1
+    en imagen, y Vidu Q4 Preview y SeaArt Opera 2.0 Preview en
+    vídeo. Y urllib3 actualizado a la 2.8.0.
   - Crear desde imágenes (botón junto a la idea o Ctrl+Shift+I):
     le das tus imágenes, las analiza y redacta el prompt; y de ahí,
     un guion de Cortometraje por escenas.
@@ -30,7 +45,7 @@ QUÉ HAY DE NUEVO EN LA 1.1.1
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.1.1.exe  (188 MB)
+Archivo: GPromptStudio-Setup-1.1.2.exe  (188 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -43,7 +58,7 @@ QUÉ HACE:
     aquella versión (unos 180 MB que ya no sirven).
 
 CÓMO USAR:
-  1. Doble-click en GPromptStudio-Setup-1.1.1.exe
+  1. Doble-click en GPromptStudio-Setup-1.1.2.exe
   2. Acepta la advertencia de Windows SmartScreen
      ("Más info" → "Ejecutar de todas formas")
      [Normal en programas sin certificado de firma. Ver más abajo.]
@@ -102,27 +117,28 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   es el original y no está manipulado, compara su hash SHA-256 con el
   publicado en la página de descarga. En PowerShell:
 
-    Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
+    Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
 
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    771bee4b26b9a33290a99bccad01bcb3
-    48d87f719c3bace16eaf986cd04f425c   GPromptStudio-Setup-1.1.1.exe
+    e18af11a2ffaf7389db52e7053c3a252
+    8895670cf86371179f6304755856d85d   GPromptStudio-Setup-1.1.2.exe
 
-    5c9d80f4fcff6175f8d4f1aa0d39dcfc
-    1c7304daafb3a4107a8f2204f211b8e9   GPromptStudio-Portable-Onefile.exe
+    ec1084ab1d1dd7a02d366311ee6d38f3
+    d266c2b7e1c0823065d4ef1cd2f160c6   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... 0 de 68: limpio.
-    - Opción 2, el onefile ........ 1 de 65: Bkav Pro.
+    - Opción 1, el instalador ..... 1 de 57: Arctic Wolf.
+    - Opción 2, el onefile ........ 1 de 62: Bkav Pro.
 
   Microsoft Defender no marca ninguno de los dos.
 
-  La única detección no encuentra código malicioso: Bkav Pro da una
-  etiqueta derivada del propio fichero, sin nombrar ningún malware.
-  Y el instalador lleva dentro el MISMO programa sin que nadie lo
-  marque: lo que puntúan es el envoltorio.
+  Ninguna de las dos detecciones encuentra código malicioso: Arctic
+  Wolf da «Unsafe», el veredicto de su modelo estadístico, y Bkav Pro
+  una etiqueta derivada del propio fichero; ninguno nombra un malware.
+  Y cada motor deja pasar la otra opción, que lleva dentro el MISMO
+  programa: lo que puntúan es el envoltorio.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el

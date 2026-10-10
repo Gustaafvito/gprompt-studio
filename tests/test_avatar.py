@@ -271,7 +271,7 @@ class TestSlugCarpeta:
 class TestEnsamblarDataset:
     def test_descripcion_identica_en_todos_los_prompts(self):
         # La identidad (cara/pelo/ojos, todo lo previo a la ropa) es idéntica
-        # en TODAS las tomas. La ropa solo se omite en los primeros planos.
+        # en TODAS las tomas. En los primeros planos solo va la ropa de arriba.
         ds = ensamblar_dataset("ohwx_ana", DESC, DEFAULT_ANGLE_SET,
                                "photorealistic", "gray background")
         assert len(ds) == 50
@@ -280,11 +280,12 @@ class TestEnsamblarDataset:
             assert core in item["prompt"]
             assert item["prompt"].startswith("ohwx_ana, ")
 
-    def test_primeros_planos_omiten_la_ropa(self):
+    def test_primeros_planos_solo_la_ropa_de_arriba(self):
         cara = ensamblar_dataset("t", DESC, ["face_front"], "", "")[0]["prompt"]
         full = ensamblar_dataset("t", DESC, ["full_front"], "", "")[0]["prompt"]
-        assert "wearing" not in cara                 # headshot: sin ropa
-        assert "wearing a white t-shirt" in full     # cuerpo: ropa completa
+        assert "wearing a white t-shirt" in cara     # headshot: la de arriba
+        assert "jeans" not in cara                   # ...y la de abajo no
+        assert "wearing a white t-shirt and jeans" in full  # cuerpo: completa
 
     def test_estructura_del_prompt(self):
         ds = ensamblar_dataset("trig", DESC, ["face_front"],
@@ -294,7 +295,7 @@ class TestEnsamblarDataset:
         # El encuadre va ANTES que la descripción: si la desc (con ropa de cuerpo
         # entero) fuese primero, el modelo se aleja a plano entero ignorando el
         # close-up. Liderar con el tipo de plano fuerza el recorte correcto.
-        core = DESC.split(", wearing")[0]  # en headshots la ropa se omite
+        core = DESC.split(", wearing")[0]  # en headshots la ropa se recorta
         assert p.index("trig") < p.index("close-up headshot") < p.index(core)
         assert "fondo_y" in p
         assert AVATAR_LIGHTING in p

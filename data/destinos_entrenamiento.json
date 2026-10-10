@@ -1,0 +1,442 @@
+{
+ "_comentario": "Destinos de entrenamiento del Generador de Dataset LoRA (09-oct-2026). Cada destino dice cómo se escriben las descripciones (.txt) que acompañan a cada imagen: 'etiquetas' (tags tipo Danbooru), 'frases' (trigger + trozos separados por comas, como el dataset del LoRA Lyra), 'natural' (una frase: «A photo of a woman named <trigger>…») o 'ninguna' (la plataforma no usa descripciones). 'familia' es la del gestor de LoRAs (ui_footer.familia_modelo_para_lora) y sirve para proponer el destino según el modelo elegido. 'imagenes' es el rango recomendado [mín, máx]; 'imagenes_por_tipo' lo afina por tipo de LoRA. LTX y MiniMax H3 son modelos de vídeo, pero G-Entrena entrena sus LoRA con imágenes (H3 admite también vídeos). Fuentes: el código de G-Entrena Studio, el entrenador de SeaArt (grabación del usuario, 09-oct-2026) y su guía docs.seaart.ai, la ayuda de Higgsfield y las páginas de Magnific. Una copia en ~/.arquitecto_prompts/data/ manda sobre esta.",
+ "destinos": [
+  {
+   "id": "g-entrena-anima",
+   "plataforma": "G-Entrena",
+   "base": "Anima",
+   "familia": "anima",
+   "descripciones": "frases",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "Entrena sobre Anima-Base-v1.0. G-Entrena lee cada imagen con su .txt del mismo nombre; si falta, la describe él con Qwen3-VL. El LoRA Lyra salió así, con 31 imágenes."
+  },
+  {
+   "id": "g-entrena-krea2",
+   "plataforma": "G-Entrena",
+   "base": "Krea 2",
+   "familia": "krea 2",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "Krea 2 lee el texto con Qwen3-VL: descripciones en frases completas. G-Entrena lee cada imagen con su .txt del mismo nombre."
+  },
+  {
+   "id": "g-entrena-qwen",
+   "plataforma": "G-Entrena",
+   "base": "Qwen Image 2.1",
+   "familia": "qwen image",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "Descripciones en frases completas. G-Entrena lee cada imagen con su .txt del mismo nombre."
+  },
+  {
+   "id": "g-entrena-zimage",
+   "plataforma": "G-Entrena",
+   "base": "Z-Image",
+   "familia": "z image",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "Descripciones en frases completas. G-Entrena lee cada imagen con su .txt del mismo nombre."
+  },
+  {
+   "id": "g-entrena-ltx",
+   "plataforma": "G-Entrena",
+   "base": "LTX 2.3",
+   "familia": "ltx",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "LoRA para el modelo de vídeo LTX, entrenado con imágenes: G-Entrena lee cada imagen con su .txt del mismo nombre. Para entrenar con vídeos, un proyecto H3."
+  },
+  {
+   "id": "g-entrena-h3",
+   "plataforma": "G-Entrena",
+   "base": "MiniMax H3",
+   "familia": "minimax h3",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "LoRA para el modelo de vídeo MiniMax H3, en un proyecto H3 de G-Entrena: admite imágenes y vídeos como referencias, y cada una necesita su .txt."
+  },
+  {
+   "id": "seaart-anima",
+   "plataforma": "SeaArt",
+   "base": "Anima",
+   "familia": "anima",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Versiones: aesthetic v1.0 y v1.1, preview 1-3 y base. SeaArt recomienda descripciones en lenguaje natural."
+  },
+  {
+   "id": "seaart-krea2",
+   "plataforma": "SeaArt",
+   "base": "Krea 2",
+   "familia": "krea 2",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Tarjeta «Krea2 Raw» (modelo Krea Image). SeaArt recomienda poner la palabra activadora."
+  },
+  {
+   "id": "seaart-flux2",
+   "plataforma": "SeaArt",
+   "base": "Flux.2 Klein 9B",
+   "familia": "flux",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Su ejemplo de descripción: «a photo of woman named Lisa»."
+  },
+  {
+   "id": "seaart-flux",
+   "plataforma": "SeaArt",
+   "base": "FLUX / FLUX Krea",
+   "familia": "flux",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "La guía de SeaArt pide lenguaje natural para Flux."
+  },
+  {
+   "id": "seaart-zimage",
+   "plataforma": "SeaArt",
+   "base": "Z Image",
+   "familia": "z image",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    9,
+    25
+   ],
+   "nota": "Base o Turbo. SeaArt: «una foto de una persona llamada <palabra activadora>», sin palabras inventadas. Su página pide de 9 a 25 imágenes."
+  },
+  {
+   "id": "seaart-qwen",
+   "plataforma": "SeaArt",
+   "base": "Qwen Image",
+   "familia": "qwen image",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Qwen Image o Qwen 2512. SeaArt: descripciones con palabras comunes, como «una foto de una persona llamada <palabra activadora>»."
+  },
+  {
+   "id": "seaart-qwen-estilo",
+   "plataforma": "SeaArt",
+   "base": "Qwen Image · I2L.Fast",
+   "familia": "qwen image",
+   "descripciones": "ninguna",
+   "tipos": [
+    "Estilo"
+   ],
+   "imagenes": [
+    20,
+    20
+   ],
+   "nota": "Solo entrena estilos y no necesita descripciones. SeaArt sugiere 20 imágenes con un estilo uniforme y contenido variado."
+  },
+  {
+   "id": "seaart-wan22",
+   "plataforma": "SeaArt",
+   "base": "Wan 2.2",
+   "familia": "wan",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "nota": "Modelo t2v-low para personaje o estilo. Descripciones en frases."
+  },
+  {
+   "id": "seaart-sdxl",
+   "plataforma": "SeaArt",
+   "base": "SDXL",
+   "familia": "sdxl",
+   "descripciones": "natural",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "La guía de SeaArt pide lenguaje natural para SDXL."
+  },
+  {
+   "id": "seaart-illustrious",
+   "plataforma": "SeaArt",
+   "base": "Illustrious",
+   "familia": "illustrious",
+   "descripciones": "etiquetas",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Illustrious v0.1 o v1.0, o cualquiera de la comunidad. Descripciones en tags."
+  },
+  {
+   "id": "seaart-pony",
+   "plataforma": "SeaArt",
+   "base": "Pony",
+   "familia": "pony",
+   "descripciones": "etiquetas",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Descripciones en tags."
+  },
+  {
+   "id": "seaart-sd15",
+   "plataforma": "SeaArt",
+   "base": "SD 1.5",
+   "familia": "sd15",
+   "descripciones": "etiquetas",
+   "tipos": [
+    "Personaje",
+    "Paisaje",
+    "Objeto",
+    "Estilo",
+    "NSFW"
+   ],
+   "imagenes": [
+    20,
+    40
+   ],
+   "imagenes_por_tipo": {
+    "Personaje": [
+     25,
+     40
+    ]
+   },
+   "nota": "Incluye las plantillas Retrato (ChilloutMix), Anime y Estilo (Anything). Descripciones en tags."
+  },
+  {
+   "id": "higgsfield-soul-id",
+   "plataforma": "Higgsfield",
+   "base": "Soul ID",
+   "familia": "",
+   "descripciones": "ninguna",
+   "tipos": [
+    "Personaje"
+   ],
+   "imagenes": [
+    20,
+    80
+   ],
+   "nota": "Solo personas reales y con su permiso. Varía la postura de la cabeza y la expresión, con luz limpia y al menos un plano de cuerpo entero; sin gafas de sol ni caras cortadas."
+  },
+  {
+   "id": "magnific-personaje",
+   "plataforma": "Magnific",
+   "base": "Personaje propio",
+   "familia": "",
+   "descripciones": "ninguna",
+   "tipos": [
+    "Personaje"
+   ],
+   "imagenes": [
+    12,
+    24
+   ],
+   "nota": "Varios ángulos y expresiones, con fondos y luces distintos."
+  },
+  {
+   "id": "magnific-estilo",
+   "plataforma": "Magnific",
+   "base": "Estilo propio",
+   "familia": "",
+   "descripciones": "ninguna",
+   "tipos": [
+    "Estilo"
+   ],
+   "imagenes": [
+    10,
+    50
+   ],
+   "nota": "Escenas, colores y objetos variados, con imágenes de al menos 2000 px."
+  }
+ ]
+}
