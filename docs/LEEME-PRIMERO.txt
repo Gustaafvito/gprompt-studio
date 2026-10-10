@@ -129,15 +129,16 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
     d266c2b7e1c0823065d4ef1cd2f160c6   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... PENDIENTE
-    - Opción 2, el onefile ........ PENDIENTE
+    - Opción 1, el instalador ..... 1 de 57: Arctic Wolf.
+    - Opción 2, el onefile ........ 1 de 62: Bkav Pro.
 
   Microsoft Defender no marca ninguno de los dos.
 
-  La única detección no encuentra código malicioso: Bkav Pro da una
-  etiqueta derivada del propio fichero, sin nombrar ningún malware.
-  Y el instalador lleva dentro el MISMO programa sin que nadie lo
-  marque: lo que puntúan es el envoltorio.
+  Ninguna de las dos detecciones encuentra código malicioso: Arctic
+  Wolf da «Unsafe», el veredicto de su modelo estadístico, y Bkav Pro
+  una etiqueta derivada del propio fichero; ninguno nombra un malware.
+  Y cada motor deja pasar la otra opción, que lleva dentro el MISMO
+  programa: lo que puntúan es el envoltorio.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el

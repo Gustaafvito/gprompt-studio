@@ -1,23 +1,18 @@
 <!--
-BORRADOR de la 1.1.2 (09-oct-2026). Nada publicado.
-
-Lo que todavía es de la 1.1.1 y se rehace con el build:
-- Los dos hashes del bloque de PowerShell. Se quedan los de la 1.1.1 porque
-  la web los sigue publicando y los candados exigen que cuadren con este
-  texto; build_release.py avisa mientras no se cambien.
-- Los tamaños (188 y 187 MB). build_release.py los compara con los ficheros.
-- VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
+Build definitivo del 10-oct-2026 (`py -3.10 build_release.py --yes` desde
+117225d, pip-audit limpio, 2032 tests): hashes, tamaños y VirusTotal ya son
+los de ESTOS dos ficheros (instalador 1/57 con Arctic Wolf, portable 1/62 con
+Bkav Pro; Microsoft, Undetected en los dos). Si se regeneran, todo eso
+cambia: hay que volver a analizarlos y rehacer los enlaces.
 
 Falta, en este orden:
-1. `py -3.10 build_release.py --yes` desde el último commit de esta rama.
-2. Hashes, tamaños y VirusTotal aquí, en docs/LEEME-PRIMERO.txt y en
-   docs/WEB-descarga.md / .en.md (los dos con los mismos hashes).
-3. Borrador de release en GitHub con la etiqueta `v1.1.2` («create on
+1. Push de la rama y PR a main.
+2. Borrador de release en GitHub con la etiqueta `v1.1.2` («create on
    publish»), el cuerpo de docs/RELEASE-CUERPO.md y los dos assets:
    `GPromptStudio-Setup-1.1.2.exe` y `GPromptStudio-Portable-Onefile.exe`.
-4. Fusionar el PR en main y publicar enseguida: el botón del README apunta
+3. Fusionar el PR en main y publicar enseguida: el botón del README apunta
    ya a v1.1.2 y da 404 hasta que la release exista.
-5. Web (gprompt-studio.html y datos/proyectos.json: 277 = 168 + 101 + 8),
+4. Web (gprompt-studio.html y datos/proyectos.json: 277 = 168 + 101 + 8),
    About del repo, perfil y el aviso «Versión antigua» en la 1.1.1 (y que
    los de la 1.1.0, 1.0.2, 1.0.1 y 1.0.0 apunten a la 1.1.2).
 -->
@@ -82,7 +77,16 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[1 de 57](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)** y el portable
+**[1 de 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+Cada uno lo marca un motor distinto, y ninguno encuentra código malicioso.
+En el instalador, Arctic Wolf da «Unsafe», el veredicto de su modelo
+estadístico, sin nombrar ningún malware. En el portable, Bkav Pro da
+`W32.Malware.5498E382`, una etiqueta derivada del propio fichero. Y cada
+motor deja pasar la otra opción, que lleva dentro el mismo programa: lo que
+puntúan es el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 

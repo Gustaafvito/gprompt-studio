@@ -84,18 +84,20 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)
-> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)
+> - **Installer:** [1 of 57 engines](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d) — Arctic Wolf
+> - **Single-file portable:** [1 of 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6) — Bkav Pro
 >
 > **Microsoft Defender flags neither of them.**
 >
-> **The only detection finds no malicious code**, which matters more than
-> the count. Bkav Pro gives a label derived from the file itself
-> (`W32.Malware.8616AD83`), without naming any known malware.
+> **Neither detection finds malicious code**, which matters more than the
+> count. Arctic Wolf says "Unsafe", the verdict of its statistical model,
+> and Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.5498E382`); neither names any known malware.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.1.1 itself: the installer carries the very same program
-> and nobody flags it. Same software, different wrapper, different verdict.
+> proof is inside 1.1.2 itself: each engine flags one option and lets the
+> other through, and both carry the very same program. Same software,
+> different wrapper, different verdict.
 >
 > **If your antivirus complains about one option, try the other** — it's the
 > same program. And check the hash either way.

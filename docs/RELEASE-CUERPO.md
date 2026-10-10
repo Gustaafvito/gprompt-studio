@@ -56,7 +56,16 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[1 de 57](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)** y el portable
+**[1 de 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+Cada uno lo marca un motor distinto, y ninguno encuentra código malicioso.
+En el instalador, Arctic Wolf da «Unsafe», el veredicto de su modelo
+estadístico, sin nombrar ningún malware. En el portable, Bkav Pro da
+`W32.Malware.5498E382`, una etiqueta derivada del propio fichero. Y cada
+motor deja pasar la otra opción, que lleva dentro el mismo programa: lo que
+puntúan es el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 

@@ -91,19 +91,20 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** [PENDIENTE](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)
-> - **Portable de un solo fichero:** [PENDIENTE](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)
+> - **Instalador:** [1 de 57 motores](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d) — Arctic Wolf
+> - **Portable de un solo fichero:** [1 de 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6) — Bkav Pro
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
-> **La única detección no encuentra código malicioso**, y eso importa más
-> que el número. Bkav Pro da una etiqueta derivada del propio fichero
-> (`W32.Malware.8616AD83`), sin nombrar ningún malware conocido.
+> **Ninguna de las dos detecciones encuentra código malicioso**, y eso
+> importa más que el número. Arctic Wolf da «Unsafe», el veredicto de su
+> modelo estadístico, y Bkav Pro una etiqueta derivada del propio fichero
+> (`W32.Malware.5498E382`); ninguno nombra un malware conocido.
 >
 > Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
-> prueba está en la propia 1.1.1: el instalador lleva dentro el mismo
-> programa y no lo marca nadie. Mismo software, distinto envoltorio,
-> distinto veredicto.
+> prueba está en la propia 1.1.2: cada motor marca una opción y deja pasar
+> la otra, que lleva dentro el mismo programa. Mismo software, distinto
+> envoltorio, distinto veredicto.
 >
 > **Si tu antivirus se queja de una opción, prueba la otra**: son el mismo
 > programa. Y compara el hash en cualquier caso.
