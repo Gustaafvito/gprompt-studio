@@ -1417,6 +1417,21 @@ def _ruta_comfy_configurada() -> str:
     return detectar_comfy_automatico()
 
 
+def carpeta_loras_comfy() -> str:
+    """La carpeta models/loras del ComfyUI configurado, o "" si no hay.
+
+    Es donde el Generador de Dataset LoRA busca (y ofrece copiar) el LoRA de
+    la 1ª ronda."""
+    ruta = _ruta_comfy_configurada()
+    if not ruta:
+        return ""
+    carpeta = Path(ruta) / "models" / "loras"
+    try:
+        return str(carpeta) if carpeta.is_dir() else ""
+    except OSError:
+        return ""
+
+
 def _rehacer_flat(grupos: list, flat: list) -> None:
     """Reconstruye la lista plana desde los grupos, IN PLACE (las listas se
     comparten con MODELOS_POR_PLATAFORMA_* y MOTORES_VIDEO)."""

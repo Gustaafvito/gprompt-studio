@@ -20,7 +20,9 @@ QUÉ HAY DE NUEVO EN LA 1.1.2
     salen como las pide esa plataforma. Y en cada imagen cambian la
     ropa, el escenario, la expresión y la luz, para que el LoRA
     aprenda solo al personaje. «Montar dataset» junta después tus
-    imágenes con sus descripciones (000.png + 000.txt).
+    imágenes con sus descripciones (000.png + 000.txt). Y si no se
+    parecen entre sí, una 2ª ronda: con un primer LoRA, los
+    workflows de ComfyUI lo cargan y salen todas con la misma cara.
   - Gestor de LoRAs: cinco familias nuevas (Anima, Krea 2, LTX,
     MiniMax H3 y Qwen Image), y la app ya las reconoce.
 

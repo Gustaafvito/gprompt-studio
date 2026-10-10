@@ -101,6 +101,9 @@ class AvatarFrame(ctk.CTkFrame):
         self._checks_variar = {}       # clave → (checkbox, valores a rotar)
         self._ultima_ruta = ""         # carpeta del último dataset exportado
         self._estilo_manual = False    # ¿eligió el usuario el estilo a mano?
+        # LoRA de la 1ª ronda (nombre ComfyUI, sin extensión): con él, los
+        # workflows de ComfyUI lo cargan y sale la 2ª ronda, con una sola cara.
+        self._lora_ronda = ""
         self._construir_ui()
 
     # ------------------------------------------------------------------ UI
@@ -360,6 +363,62 @@ class AvatarFrame(ctk.CTkFrame):
     def _on_estilo_manual(self, _valor: str) -> None:
         self._estilo_manual = True
 
+    # ------------------------------------------------- 2ª ronda (LoRA)
+    def _refrescar_lora_ronda(self) -> None:
+        etiqueta = getattr(self, "label_lora_ronda", None)
+        if etiqueta is None:
+            return
+        etiqueta.configure(text=(self._lora_ronda + ".safetensors" if self._lora_ronda
+                                 else tr("Ninguno: es la 1ª ronda")))
+
+    def _on_elegir_lora_ronda(self) -> None:
+        import os
+        import shutil
+
+        from config import carpeta_loras_comfy
+        from modules.comfy_export import nombre_lora_comfy
+        carpeta = carpeta_loras_comfy()
+        ruta = filedialog.askopenfilename(
+            title=tr("LoRA de la 1ª ronda"),
+            initialdir=carpeta or os.path.expanduser("~"),
+            filetypes=[("LoRA", "*.safetensors")])
+        if not ruta:
+            return
+        nombre, en_loras = nombre_lora_comfy(ruta)
+        aviso = ""
+        if not en_loras:
+            # ComfyUI solo ve los LoRAs de su carpeta models/loras: el de
+            # G-Entrena suele quedarse en la carpeta de su proyecto.
+            if carpeta and messagebox.askyesno(
+                    tr("Copiar a ComfyUI"),
+                    tr("ComfyUI solo ve los LoRAs de su carpeta models/loras, y "
+                       "este no está ahí.\n\n¿Lo copio a {0}?").format(carpeta)):
+                destino = os.path.join(carpeta, os.path.basename(ruta))
+                if (not os.path.exists(destino) or messagebox.askyesno(
+                        tr("Ya existe"),
+                        tr("Ya hay un {0} en esa carpeta. ¿Lo sustituyo?").format(
+                            os.path.basename(ruta)))):
+                    self.label_estado.configure(text=tr("Copiando el LoRA a ComfyUI…"))
+                    self.update_idletasks()
+                    try:
+                        shutil.copy2(ruta, destino)
+                    except OSError as e:
+                        messagebox.showerror(tr("No se pudo copiar"), str(e))
+                        self.label_estado.configure(text=tr("Listo."))
+                        return
+            else:
+                aviso = tr(" Cópialo a la carpeta models/loras de ComfyUI antes de "
+                           "lanzar el workflow, o no lo encontrará.")
+        self._lora_ronda = nombre
+        self._refrescar_lora_ronda()
+        self.label_estado.configure(text=tr(
+            "🔁 2ª ronda: los workflows de ComfyUI cargarán este LoRA. Usa el "
+            "mismo trigger con el que lo entrenaste.") + aviso)
+
+    def _on_quitar_lora_ronda(self) -> None:
+        self._lora_ronda = ""
+        self._refrescar_lora_ronda()
+
     def _poblar_form(self, form, cfg: dict) -> None:
         """Rellena el scrollable frame del formulario según el cfg del tipo."""
         fila = 0
@@ -463,6 +522,32 @@ class AvatarFrame(ctk.CTkFrame):
                     chk.select()
                 chk.grid(row=fila, column=0, sticky="w", padx=8, pady=(0, 6)); fila += 1
                 self._checks_variar[clave] = (chk, valores)
+
+        # 2ª ronda: sin referencia, cada imagen se dibuja desde cero y la
+        # cara varía. Con un LoRA entrenado con las mejores de la 1ª ronda,
+        # los workflows de ComfyUI lo cargan y salen todas con la misma.
+        ctk.CTkLabel(form, text=tr("🔁 LoRA de la 1ª ronda (opcional, ComfyUI)")).grid(
+            row=fila, column=0, sticky="w", padx=8, pady=(8, 0)); fila += 1
+        fila_lora = ctk.CTkFrame(form, fg_color="transparent")
+        fila_lora.grid(row=fila, column=0, sticky="ew", padx=8, pady=(0, 8)); fila += 1
+        fila_lora.grid_columnconfigure(1, weight=1)
+        self.boton_lora_ronda = ctk.CTkButton(
+            fila_lora, text=tr("Elegir LoRA…"), width=110,
+            **P.estilo_boton(P.BTN_SECUNDARIO), command=self._on_elegir_lora_ronda)
+        self.boton_lora_ronda.grid(row=0, column=0)
+        CTkToolTip(self.boton_lora_ronda, message=tr(
+            "Si las imágenes no se parecen entre sí: entrena un primer LoRA con "
+            "las mejores, elígelo aquí y vuelve a generar. Los workflows de "
+            "ComfyUI lo cargan y todas salen con la misma cara. Usa el mismo "
+            "trigger con el que lo entrenaste."))
+        self.label_lora_ronda = ctk.CTkLabel(
+            fila_lora, text="", anchor="w",
+            font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=P.TXT_MUTED)
+        self.label_lora_ronda.grid(row=0, column=1, sticky="ew", padx=(6, 0))
+        ctk.CTkButton(fila_lora, text="✕", width=28,
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
+                      command=self._on_quitar_lora_ronda).grid(row=0, column=2, padx=(4, 0))
+        self._refrescar_lora_ronda()
 
         self.check_negative = ctk.CTkCheckBox(form, text=tr("Incluir negative prompt"))
         self.check_negative.select()
@@ -702,22 +787,23 @@ class AvatarFrame(ctk.CTkFrame):
         variar = {clave: valores
                   for clave, (chk, valores) in self._checks_variar.items()
                   if chk.get()}
+        lora_ronda = self._lora_ronda
         if self._executor is not None:
             self._executor.submit(
                 self._worker_generar, form_data, trigger, seleccionados,
                 carpeta, modelo_sel, plataforma_sel, destino, estilo_visual,
-                variar
+                variar, lora_ronda
             ).add_done_callback(log_future_exc)
         else:
             threading.Thread(
                 target=self._worker_generar,
                 args=(form_data, trigger, seleccionados, carpeta, modelo_sel,
-                      plataforma_sel, destino, estilo_visual, variar),
+                      plataforma_sel, destino, estilo_visual, variar, lora_ronda),
                 daemon=True).start()
 
     def _worker_generar(self, form_data, trigger, seleccionados, carpeta,
                         modelo_sel="", plataforma_sel="", destino=None,
-                        estilo_visual="", variar=None):
+                        estilo_visual="", variar=None, lora_ronda=""):
         try:
             cfg = LORA_TYPES[self._tipo_lora]
             # Fondo: lista rotante si tiene fondos y "Variar fondos" marcado
@@ -779,16 +865,29 @@ class AvatarFrame(ctk.CTkFrame):
             # arrastrar a ComfyUI y Queue, sin montar nada a mano.
             if modelo_sel and plataforma_sel.startswith("ComfyUI"):
                 try:
-                    from modules.avatar_generator import exportar_workflows_comfy
-                    n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel)
+                    from modules.avatar_generator import (
+                        carpeta_ronda,
+                        exportar_workflows_comfy,
+                    )
+                    n_wf = exportar_workflows_comfy(resultado, ruta, modelo_sel,
+                                                    lora=lora_ronda)
                     avisos.append(tr(
                         "🔧 {0} tomas exportadas como workflows ComfyUI en "
                         "workflows/: DATASET_COMPLETO.json (un Queue genera "
                         "TODO) + individuales/ por toma.").format(n_wf))
+                    if lora_ronda:
+                        avisos.append(tr(
+                            "🔁 2ª ronda: los workflows cargan {0} y guardan en "
+                            "output/{1}/ de ComfyUI.").format(
+                                lora_ronda + ".safetensors", carpeta_ronda(trigger)))
                 except Exception as e:
                     avisos.append(tr(
                         "⚠️ No se pudieron exportar los workflows ComfyUI: {0}"
                     ).format(e))
+            elif lora_ronda:
+                avisos.append(tr(
+                    "ℹ️ El LoRA de la 1ª ronda solo va en los workflows de "
+                    "ComfyUI: con este modelo no se usa."))
             # Copiar la imagen de referencia al dataset: en SeaArt se sube
             # como "sujeto" para anclar la identidad en todos los ángulos.
             if self._imagen_referencia:

@@ -56,7 +56,25 @@ RESOLUCION_POR_RATIO = {
 }
 
 
-def _add_loaders(A, add, p, fichero, lora):  # noqa: N803
+def nombre_lora_comfy(ruta: str) -> tuple:
+    """(nombre, en_loras): cómo llama ComfyUI al LoRA de ese fichero.
+
+    ComfyUI nombra cada LoRA por su ruta dentro de la carpeta `loras`, con el
+    separador del sistema («Anima\\einar_v1.safetensors» en Windows: usa
+    os.path.relpath). Se devuelve sin la extensión, como el `lora` de
+    construir_workflow_comfy. Si el fichero no está dentro de ninguna
+    carpeta `loras`, ComfyUI no lo ve: nombre = el del fichero y
+    en_loras=False, para que quien llama ofrezca copiarlo allí.
+    """
+    import os
+    partes = os.path.normpath(ruta).split(os.sep)
+    for k in range(len(partes) - 2, -1, -1):
+        if partes[k].lower() == "loras":
+            return os.path.splitext(os.sep.join(partes[k + 1:]))[0], True
+    return os.path.splitext(os.path.basename(ruta))[0], False
+
+
+def _add_loaders(A, add, p, fichero, lora, lora_peso=1.0):  # noqa: N803
     """Añade los nodos de carga (por arquitectura + LoRA opcional) a `A`.
     Devuelve (model_src, clip_src, vae_src) como tuplas (idx_nodo, slot)."""
     if p["arch"] == "unet":
@@ -69,7 +87,7 @@ def _add_loaders(A, add, p, fichero, lora):  # noqa: N803
         model_src, clip_src, vae_src = (i_check, 0), (i_check, 1), (i_check, 2)
 
     if lora:
-        i_lora = add("LoraLoader", [lora + ".safetensors", 1.0, 1.0],
+        i_lora = add("LoraLoader", [lora + ".safetensors", lora_peso, lora_peso],
                      {"model": model_src, "clip": clip_src})
         model_src, clip_src = (i_lora, 0), (i_lora, 1)
     return model_src, clip_src, vae_src
@@ -86,10 +104,12 @@ def _detailer_widgets(p) -> list:
 def construir_workflow_comfy(pos: str, neg: str, modelo: str,
                              lora: str = "", ratio: str = "",
                              save_prefix: str = "G-Prompt-Studio",
-                             caption: str = "", con_detailer: bool = False) -> dict:
+                             caption: str = "", con_detailer: bool = False,
+                             lora_peso: float = 1.0) -> dict:
     """Workflow ComfyUI (formato UI) para `modelo` con el prompt dado.
 
-    `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler.
+    `lora`: si se pasa, inserta un LoraLoader entre el cargador y el sampler
+    (con `lora_peso` de fuerza).
     `ratio`: aspect ratio ("9:16", "3:2"…) → tamaño del latent
     (RESOLUCION_POR_RATIO); vacío o desconocido → 1024x1024.
     `save_prefix`: prefijo del fichero de salida (SaveImage) — con el nombre
@@ -113,7 +133,7 @@ def construir_workflow_comfy(pos: str, neg: str, modelo: str,
         A.append({"type": tipo, "widgets": widgets, "conns": conns or {}, "mode": mode})
         return len(A) - 1
 
-    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
+    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora, lora_peso)
 
     i_latent = add("EmptyLatentImage", [ancho, alto, 1])
     i_pos = add("CLIPTextEncode", [pos], {"clip": clip_src})
@@ -210,13 +230,16 @@ def construir_workflow_comfy_lote(items: list, modelo: str,
     return anadir_control_compartido(wf, p["steps"], p["cfg"])
 
 
-def construir_workflow_comfy_todas(items: list, modelo: str, lora: str = "") -> dict:
+def construir_workflow_comfy_todas(items: list, modelo: str, lora: str = "",
+                                   lora_peso: float = 1.0) -> dict:
     """UN ÚNICO workflow con TODAS las tomas del dataset en un solo canvas:
     LOADERS compartidos (modelo/CLIP/VAE cargados una vez) + seed/steps/cfg
     compartidos, pero cada toma con su PROPIO tamaño (EmptyLatentImage según
     su ratio). Un solo Queue genera el dataset entero.
 
     `items`: lista de dicts {"pos", "neg", "save_prefix", "caption", "ratio"}.
+    `lora`: el LoRA de la 1ª ronda del Generador de Dataset LoRA, si lo hay
+    (un LoraLoader compartido a `lora_peso`, con su nota en el canvas).
     OJO: la semilla compartida da la MISMA identidad solo entre tomas del
     MISMO tamaño; entre ratios distintos la cara varía (limitación de la
     difusión). Aun así todo va en un workflow por comodidad.
@@ -232,9 +255,17 @@ def construir_workflow_comfy_todas(items: list, modelo: str, lora: str = "") -> 
         A.append({"type": tipo, "widgets": widgets, "conns": conns or {}, "mode": mode})
         return len(A) - 1
 
-    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora)
+    model_src, clip_src, vae_src = _add_loaders(A, add, p, fichero, lora, lora_peso)
 
     notas = [(chuleta_texto(modelo), [40, -300])]
+    if lora:
+        notas.append((
+            f"🔁 2ª RONDA — LoRA de la 1ª: {lora}.safetensors a {lora_peso}.\n\n"
+            "Las tomas salen con la cara que aprendió ese LoRA. Si se parecen\n"
+            "poco, sube el peso del LoraLoader a 1.0; si salen rígidas o todas\n"
+            "con la misma pose o ropa, bájalo a 0.6. Con las mejores, entrena\n"
+            "el LoRA definitivo.",
+            [420, -300]))
     for j, it in enumerate(items):
         ancho, alto = RESOLUCION_POR_RATIO.get((it.get("ratio") or "").strip(),
                                                (1024, 1024))

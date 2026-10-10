@@ -189,6 +189,13 @@ ComfyUI se emparejan solas por el nombre de su toma; las que descargas de
 SeaArt, por el orden en que las bajaste. Copia sin tocar lo descargado y te
 dice qué falta o qué sobra.
 
+**Y una 2ª ronda para que todas se parezcan.** Sin una imagen de referencia,
+cada imagen se dibuja desde cero y la cara cambia de una a otra. Ahora puedes
+entrenar un primer LoRA con las mejores, elegirlo en «🔁 LoRA de la 1ª
+ronda» y volver a generar: los workflows de ComfyUI lo cargan (a 0.8) y
+guardan las imágenes aparte, en `output/<trigger>_ronda2/`. Si el LoRA no
+está en la carpeta de LoRAs de ComfyUI, se ofrece a copiarlo.
+
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
 un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre
