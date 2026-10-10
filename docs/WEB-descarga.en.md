@@ -66,12 +66,12 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
 > ```
 >
 > ```
-> 771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c  GPromptStudio-Setup-1.1.1.exe
-> 5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9  GPromptStudio-Portable-Onefile.exe
+> e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.2.exe
+> ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,8 +84,8 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [0 of 68 engines](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c) — clean
-> - **Single-file portable:** [1 of 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9) — Bkav Pro
+> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)
+> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)
 >
 > **Microsoft Defender flags neither of them.**
 >

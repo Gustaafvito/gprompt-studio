@@ -1,9 +1,9 @@
-## G-Prompt Studio v1.1.1
+## G-Prompt Studio v1.1.2
 
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **276 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **277 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -23,7 +23,7 @@ proveedores en la nube.
 
 | | |
 |---|---|
-| **[GPromptStudio-Setup-1.1.1.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Setup-1.1.2.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
 | **[GPromptStudio-Portable-Onefile.exe]** · 187 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
 
 Las dos opciones son el mismo ejecutable: el instalador se limita a
@@ -33,12 +33,12 @@ lo mismo en abrir, unos 4-5 segundos.
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
 ```powershell
-Get-FileHash .\GPromptStudio-Setup-1.1.1.exe -Algorithm SHA256
+Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
 ```
 
 ```
-771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c  GPromptStudio-Setup-1.1.1.exe
-5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9  GPromptStudio-Portable-Onefile.exe
+e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.2.exe
+ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -56,14 +56,7 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**[0 de 68](https://www.virustotal.com/gui/file/771bee4b26b9a33290a99bccad01bcb348d87f719c3bace16eaf986cd04f425c)**, limpio, y el portable
-**[1 de 65](https://www.virustotal.com/gui/file/5c9d80f4fcff6175f8d4f1aa0d39dcfc1c7304daafb3a4107a8f2204f211b8e9)**.
-**Microsoft Defender no marca ninguno de los dos.**
-
-La única detección, `W32.Malware.8616AD83` de Bkav Pro, es una etiqueta
-derivada del propio fichero: no nombra ningún malware conocido. Y el
-instalador lleva dentro el mismo programa sin que nadie lo marque: el motor
-puntúa el envoltorio, no el código.
+**PENDIENTE** y el portable **PENDIENTE**.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 
@@ -84,7 +77,7 @@ el código está entero en este repositorio para que lo mires.
 
 ### Qué trae
 
-- **276 modelos con ficha propia** — 167 de imagen, 101 de vídeo, 8 de
+- **277 modelos con ficha propia** — 168 de imagen, 101 de vídeo, 8 de
   audio, en 13 plataformas. Y encima de esos, los tuyos: si usas ComfyUI,
   los detecta y los clasifica solo
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
@@ -109,52 +102,99 @@ reales, buscando los prefijos de todos los proveedores.
 
 ### Notas de esta versión
 
-Cuatro modelos nuevos de SeaArt, con la ficha sacada de su esquema oficial.
-Lo que solo cuenta el anuncio y el esquema no confirma va marcado como
-«según SeaArt».
+**Anima**, el modelo de anime de CircleStone Labs y Comfy Org, que SeaArt
+ofrece como modelo oficial. Tiene 2.000 millones de parámetros, está hecho
+sobre NVIDIA Cosmos y se centra en el anime —personajes, series y estilos
+de artista—, aunque también hace otro arte que no sea foto. Fotorrealismo,
+no: es a propósito.
 
-**Nano Banana 2.1**, sobre Gemini 3.6 Flash: igual de rápido que Nano Banana
-2, con mejor diseño, edición más precisa y personajes más coherentes. Admite
-hasta 14 imágenes de referencia, saca 1K, 2K o 4K y acepta prompts de hasta
-5.000 caracteres. Según SeaArt, edita por máscara —solo la zona que marcas— y
-deja elegir cuánto razona antes de generar.
+La ficha sale del esquema oficial de SeaArt y de la guía del autor, no de
+suposiciones. La app escribe tags de Danbooru en minúsculas y con espacios,
+en el orden que él recomienda, con el prefijo de calidad y la etiqueta de
+seguridad; pone los artistas con `@` delante, porque sin ella apenas se
+notan; usa pesos más altos que en SDXL, como `(chibi:2)`; y parte de su
+negativo oficial. Hasta 2.000 caracteres, 11 formatos y hasta 8 imágenes
+por tanda.
 
-**Vidu Q4 Preview**, el nuevo modelo insignia de Vidu, pensado para que los
-personajes actúen: expresiones, emociones y gestos más finos, cámara con
-cortes y transiciones, y escenas de acción y efectos con menos deformaciones.
-De 3 a 16 segundos, de 540p a 4K. Arranca de un primer fotograma o de hasta
-15 imágenes de referencia, y en ese modo admite 3 audios: según SeaArt, el
-personaje habla con la voz que le subas. La app ya escribe los diálogos
-diciendo quién habla.
+En SeaArt tiene ocho versiones, y la que sale por defecto es la **Turbo**:
+va con CFG 1 y de 8 a 12 pasos, y con CFG 1 el negativo no hace nada. La
+**Base** y la **Aesthetic** piden de 30 a 50 pasos y un CFG de 3 a 6; con la
+Aesthetic, mejor sin los tags `score_`. La ficha lo cuenta para que no
+tengas que adivinarlo.
 
-**SeaArt Opera 2.0 Preview**, la nueva generación de SeaArt Opera, anunciada
-a la vez que Vidu Q4 y con su mismo panel: las mismas duraciones,
-resoluciones y referencias.
+Un aviso: la licencia de Anima, la del modelo, es **no comercial**.
 
-**Qwen Image 2.1**, que SeaArt añadió el 21 de septiembre, justo cuando se
-cerraba la 1.1.0. Es el Qwen ligero de Alibaba —7.000 millones de
-parámetros en la parte que genera— y hace dos cosas en un solo modelo:
-crear imágenes a partir de texto y editarlas por instrucciones, con hasta
-3 imágenes de referencia. Según SeaArt, además genera y edita con fondo
-transparente y recorta el sujeto de una foto.
+**Y si tienes Anima en ComfyUI**, ahora tiene su propio grupo. Antes se
+trataba como un Illustrious más: el prompt no seguía sus reglas, y el
+workflow del botón «🔧 Comfy» lo cargaba como un checkpoint de SDXL, así que
+no funcionaba. Ahora lleva sus mismas reglas de prompt, los ajustes de la
+versión Base (er_sde, 30 pasos, CFG 5) y un workflow con sus piezas: el
+modelo de difusión, el codificador `qwen_3_06b_base` y el VAE de Qwen-Image.
 
-La ficha sale del esquema oficial de SeaArt, no de suposiciones: hasta
-2.000 caracteres, prompt negativo, 9 formatos (del 21:9 al 9:21), modos
-Estándar y Calidad, hasta 8 imágenes por tanda y su muestreo por defecto
-(Euler, 25 pasos, CFG 1). Un detalle que conviene saber: con CFG 1, que es
-el valor por defecto, el negativo no hace nada. Si lo usas, sube el CFG a 2
-o 3 en SeaArt.
+**Generador de Dataset LoRA: dónde vas a entrenar.** Un desplegable nuevo,
+«Entrenar en», con los destinos reales: G-Entrena (Anima, Krea 2, Qwen Image
+2.1 y Z-Image, y también LTX 2.3 y MiniMax H3, que son de vídeo pero se
+entrenan con imágenes), el entrenador de SeaArt (Anima, Krea 2, Flux.2, FLUX, Z
+Image, Qwen Image, Wan 2.2, SDXL, Illustrious, Pony y SD 1.5), Higgsfield y
+Magnific. Las descripciones de cada imagen se escriben como las pide ese
+destino: tags, frases o una frase en lenguaje natural —«A photo of a woman
+named…», como recomienda SeaArt—, y ahora llevan la palabra de clase («a
+woman», «1girl»). Si el destino no usa descripciones, no se exportan. Y avisa
+cuando el número de imágenes se sale de lo que recomienda. Con un modelo de
+anime, como Anima o Illustrious, el estilo visual se pone solo en Anime: con
+«Fotorrealista», el dataset le pedía a Anima fotos, que no hace.
 
-**Seguridad.** La auditoría que pasa cada build encontró tres
-vulnerabilidades en `urllib3`, una librería que la app usa por debajo para
-parte de sus conexiones, publicadas después de la 1.1.0. Va actualizada a la
-2.8.0, que las corrige.
+**Y variedad en cada imagen.** Hasta ahora, un dataset de personaje repetía la
+misma ropa y la misma luz de estudio en todas las imágenes, con cuatro fondos
+lisos, y el LoRA acababa aprendiéndose la ropa y la luz como si fueran parte
+del personaje. Ahora, en cada imagen cambian la ropa, el escenario (lugares
+reales en vez de fondos de estudio), la expresión y la luz, y cada descripción
+lo nombra para que el LoRA aprenda solo la cara y el pelo. Si la ropa es
+parte del personaje, desmarcas «Variar ropa» y se queda la de la ficha. En
+los paisajes cambian la hora del día y el tiempo; en los objetos, la luz; en
+NSFW, la expresión y la luz. Los primeros planos llevan la ropa de arriba
+—la camiseta, no los vaqueros—: sin ninguna, Anima dibujaba al personaje sin
+camiseta, y el LoRA se lo habría aprendido.
+
+**Y un botón para montarlo.** Cuando ya tienes las imágenes, «📦 Montar
+dataset» las junta con sus descripciones como `000.png` + `000.txt`, que es
+lo que leen G-Entrena y el «Subir conjunto de datos» de SeaArt. Las de
+ComfyUI se emparejan solas por el nombre de su toma; las que descargas de
+SeaArt, por el orden en que las bajaste. Copia sin tocar lo descargado y te
+dice qué falta o qué sobra.
+
+**Y una 2ª ronda para que todas se parezcan.** Sin una imagen de referencia,
+cada imagen se dibuja desde cero y la cara cambia de una a otra. Ahora puedes
+entrenar un primer LoRA con las mejores, elegirlo en «🔁 LoRA de la 1ª
+ronda» y volver a generar: los workflows de ComfyUI lo cargan (a 0.8) y
+guardan las imágenes aparte, en `output/<trigger>_ronda2/`. Si el LoRA no
+está en la carpeta de LoRAs de ComfyUI, se ofrece a copiarlo, y si viene de
+G-Entrena (que llama igual a todos sus LoRA) le pone un nombre propio con tu
+trigger. Probado de principio a fin con un personaje real: la primera tanda
+salía con caras distintas; la segunda, con la misma.
+
+**Workflows de ComfyUI con el nombre exacto de cada modelo.** Si tienes los
+modelos en subcarpetas o en otro disco, ComfyUI los llama por su ruta
+(«LoraLab-D\anima-base-v1.0»), y el workflow exportado fallaba con «Value
+not in list» hasta que elegías cada cargador a mano. Ahora la app mira tus
+carpetas de modelos y pone el nombre tal cual lo ve ComfyUI, en el botón
+🔧 Comfy y en los workflows del Generador de Dataset LoRA. Y los prompts de
+edición ya no piden «fotorrealismo» cuando el estilo es anime o de dibujo.
+
+**Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
+Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
+un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre
+de «familia distinta» porque tampoco sabía reconocer un modelo Anima. Ahora
+lo reconoce, también en tus modelos de ComfyUI. Y los LoRA de vídeo (LTX y
+MiniMax H3) se comprueban también en el modo vídeo, que antes no miraba
+ninguno.
 
 **Lo demás no cambia** respecto a la
-[1.1.0](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.0):
-mismo programa, mismos proveedores y mismas funciones. Si vienes de la
-1.0.x, en sus notas tienes todo lo que trajo: «Crear desde imágenes»,
-MiniMax H3 con su formato oficial y la revisión de los ocho menús.
+[1.1.1](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.1):
+mismo programa, mismos proveedores y mismas funciones. Si vienes de antes,
+en sus notas tienes los cuatro modelos que trajo (Qwen Image 2.1, Nano
+Banana 2.1, Vidu Q4 Preview y SeaArt Opera 2.0 Preview), y en las de la
+1.1.0, «Crear desde imágenes» y la revisión de los ocho menús.
 
 Tus claves, tu historial y tus plantillas se conservan al instalar encima:
 viven fuera del programa, en `%USERPROFILE%\.arquitecto_prompts`.
