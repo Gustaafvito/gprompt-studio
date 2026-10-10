@@ -178,7 +178,9 @@ reales en vez de fondos de estudio), la expresión y la luz, y cada descripción
 lo nombra para que el LoRA aprenda solo la cara y el pelo. Si la ropa es
 parte del personaje, desmarcas «Variar ropa» y se queda la de la ficha. En
 los paisajes cambian la hora del día y el tiempo; en los objetos, la luz; en
-NSFW, la expresión y la luz.
+NSFW, la expresión y la luz. Los primeros planos llevan la ropa de arriba
+—la camiseta, no los vaqueros—: sin ninguna, Anima dibujaba al personaje sin
+camiseta, y el LoRA se lo habría aprendido.
 
 **Y un botón para montarlo.** Cuando ya tienes las imágenes, «📦 Montar
 dataset» las junta con sus descripciones como `000.png` + `000.txt`, que es

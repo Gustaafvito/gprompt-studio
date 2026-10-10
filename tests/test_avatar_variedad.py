@@ -23,6 +23,7 @@ from modules.avatar_prompts import (
     ensamblar_dataset,
     ensamblar_dataset_edicion,
     ensamblar_dataset_generico,
+    ropa_de_primer_plano,
     sin_ropa,
     valor_rotado,
 )
@@ -62,21 +63,52 @@ class TestRopaVariada:
     def test_fuera_la_de_la_ficha_y_dentro_la_rotada(self):
         datos = _personaje(_variar("Personaje", "ropa"))
         for it in datos:
-            assert "white t-shirt" not in it["prompt"], it["angle_key"]
-        # Los primeros planos (cara y expresiones) no llevan ropa: ver abajo.
-        cuerpo = [it for it in datos if not AVATAR_ANGLES[it["angle_key"]]
-                  ["prompt"].startswith("close-up headshot")]
-        assert len(cuerpo) == 6
-        assert all("wearing " in it["prompt"] for it in cuerpo)
-        assert len({it["partes_descripcion"]["ropa"] for it in cuerpo}) > 3
+            assert "plain white t-shirt" not in it["prompt"], it["angle_key"]
+            assert it["prompt"].count("wearing ") == 1, it["angle_key"]
+        assert len({it["partes_descripcion"]["ropa"] for it in datos}) > 3
 
-    def test_en_el_primer_plano_no_hay_ropa(self):
-        # Ahí no se ve y alejaría la cámara (la misma razón por la que el
-        # primer plano ya quitaba la ropa de la ficha).
+    def test_en_el_primer_plano_solo_la_de_arriba(self):
+        # La de abajo no se ve y alejaría la cámara; sin ninguna, Anima lo
+        # dibujaba sin camiseta (dataset de Einar, 09-oct-2026).
         it = _personaje(_variar("Personaje", "ropa"))[0]
         assert it["angle_key"] == "face_front"
-        assert "wearing" not in it["prompt"]
-        assert it["partes_descripcion"]["ropa"] == ""
+        assert AVATAR_ROPA_ROTACION[0] == "a white t-shirt and blue jeans"
+        assert "wearing a white t-shirt," in it["prompt"]
+        assert "jeans" not in it["prompt"]
+        assert it["partes_descripcion"]["ropa"] == "wearing a white t-shirt"
+
+    def test_en_la_edicion_tambien(self):
+        it = ensamblar_dataset_edicion("tw", ["face_front"], "",
+                                       variar=_variar("Personaje", "ropa"))[0]
+        assert "Change the outfit to a white t-shirt." in it["prompt"]
+        assert "jeans" not in it["prompt"]
+
+
+class TestRopaDePrimerPlano:
+
+    @pytest.mark.parametrize("ropa, arriba", [
+        ("a white t-shirt and blue jeans", "a white t-shirt"),
+        ("a black leather jacket", "a black leather jacket"),
+        ("a denim jacket over a white shirt", "a denim jacket over a white shirt"),
+        ("a black and white striped shirt and grey sweatpants",
+         "a black and white striped shirt"),
+        ("a dark brown linen tunic under a brown leather vest with metal "
+         "rivets, gray wool trousers, and leather bracers",
+         "a dark brown linen tunic under a brown leather vest with metal "
+         "rivets and leather bracers"),
+        ("a white crop top, a red pleated miniskirt, thigh-high stockings "
+         "and black boots", "a white crop top"),
+        ("blue jeans and sneakers", ""),
+        ("", ""),
+    ])
+    def test_quita_solo_la_de_abajo(self, ropa, arriba):
+        assert ropa_de_primer_plano(ropa) == arriba
+
+    def test_sin_variar_el_primer_plano_lleva_la_de_arriba_de_la_ficha(self):
+        it = _personaje()[0]
+        assert "wearing a plain white t-shirt," in it["prompt"]
+        assert "jeans" not in it["prompt"]
+        assert it["partes_descripcion"]["ropa"] == ""   # la caption, igual
 
     def test_la_ropa_va_en_la_descripcion(self):
         it = _personaje(_variar("Personaje", "ropa"))[1]

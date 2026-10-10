@@ -85,19 +85,56 @@ def requiere_rotacion(angulo: dict) -> bool:
 
 
 def desc_para_angulo(desc: str, angulo: dict) -> str:
-    """Para primeros planos, quita la ropa (', wearing ...') de la descripción.
+    """Para primeros planos, deja solo la ropa de arriba de la descripción.
 
     En un headshot la ropa de cuerpo (falda, botas) no se ve pero hace que el
     modelo se aleje para mostrarla. La identidad (cara, pelo, ojos, rasgos,
     complexión) se mantiene IDÉNTICA en todas las tomas; solo en los primeros
-    planos se omite la ropa. Las tomas de busto y cuerpo conservan la ropa
-    completa (ahí sí se ve y debe ser consistente)."""
-    if angulo.get("prompt", "").startswith("close-up headshot"):
+    planos se recorta la ropa a lo que se ve (ropa_de_primer_plano). Las
+    tomas de busto y cuerpo conservan la ropa completa (ahí sí se ve y debe
+    ser consistente)."""
+    if es_primer_plano(angulo):
         import re as _re
         m = _re.search(r",?\s+wearing\b", desc, _re.IGNORECASE)
         if m:
-            return desc[:m.start()].rstrip(" ,.")
+            arriba = ropa_de_primer_plano(desc[m.end():])
+            base = desc[:m.start()].rstrip(" ,.")
+            return f"{base}, wearing {arriba}" if arriba else base
     return desc
+
+
+def es_primer_plano(angulo: dict) -> bool:
+    """¿Es un primer plano de cara (cara, expresiones)?"""
+    return angulo.get("prompt", "").startswith("close-up headshot")
+
+
+# Prendas que en un primer plano no se ven (de cintura para abajo). Sin \b
+# delante para que cuenten «sweatpants» o «miniskirt».
+_RE_ROPA_DE_ABAJO = None
+
+
+def ropa_de_primer_plano(ropa: str) -> str:
+    """La parte de la ropa que se ve en un primer plano: la de arriba.
+
+    09-oct-2026: el dataset de Einar con Anima salió sin camiseta en 16 de los
+    50 primeros planos. Al primer plano se le quitaba TODA la ropa (para que
+    unos vaqueros o unas botas no alejaran la cámara) y, sin ropa en el
+    prompt, Anima lo dibujaba con el torso al aire; el LoRA habría aprendido
+    que el personaje va así. Ahora se quedan las prendas de arriba y solo se
+    quitan las de abajo:
+    «a white t-shirt and blue jeans» → «a white t-shirt».
+    """
+    import re as _re
+    global _RE_ROPA_DE_ABAJO
+    if _RE_ROPA_DE_ABAJO is None:
+        _RE_ROPA_DE_ABAJO = _re.compile(
+            r"(jeans|trousers|pants|skirt|shorts|boots|shoes|sneakers|heels|"
+            r"stockings|socks|leggings|tights|sandals|slippers|loafers|"
+            r"joggers|belt)\b", _re.IGNORECASE)
+    prendas = _re.split(r",\s*(?:and\s+)?|\s+and\s+", (ropa or "").strip(" ,."))
+    arriba = [p.strip() for p in prendas
+              if p.strip() and not _RE_ROPA_DE_ABAJO.search(p)]
+    return " and ".join(arriba)
 
 
 def fondo_para_indice(fondo, i: int) -> str:
@@ -407,14 +444,16 @@ def ensamblar_dataset(
         # Además, en primeros planos se omite la ropa de la descripción (ver
         # desc_para_angulo) para que el modelo recorte de verdad a la cara.
         desc_ang = desc_para_angulo(desc, angulo)
-        # Ropa variada: fuera la de la ficha y, salvo en primeros planos
-        # (ahí no se ve y alejaría la cámara), la de esta imagen.
+        # Ropa variada: fuera la de la ficha y dentro la de esta imagen (en
+        # los primeros planos, solo la de arriba: la de abajo no se ve y
+        # alejaría la cámara).
         ropa_i = ""
         ropa = valor_rotado(variar, "ropa", i)
+        if es_primer_plano(angulo):
+            ropa = ropa_de_primer_plano(ropa)
         if ropa:
             desc_ang = sin_ropa(desc_ang)
-            if not angulo.get("prompt", "").startswith("close-up headshot"):
-                ropa_i = f"wearing {ropa}"
+            ropa_i = f"wearing {ropa}"
         prompt_angulo = angulo["prompt"]
         if valor_rotado(variar, "escenario", i):
             prompt_angulo = sin_fondo_fijo(prompt_angulo)
@@ -836,6 +875,8 @@ def ensamblar_dataset_edicion(
         expresion_i = (valor_rotado(variar, "expresion", i)
                        if admite_expresion(angulo) else "")
         ropa = valor_rotado(variar, "ropa", i)
+        if es_primer_plano(angulo):
+            ropa = ropa_de_primer_plano(ropa)
         # Con ropa variada, la de la referencia NO se conserva.
         misma_ropa = "" if ropa else ", same clothing"
         prompt_angulo = (sin_fondo_fijo(angulo["prompt"])
@@ -867,7 +908,7 @@ def ensamblar_dataset_edicion(
             ]
 
         ropa_i = ""
-        if ropa and not angulo.get("prompt", "").startswith("close-up headshot"):
+        if ropa:
             ropa_i = f"wearing {ropa}"
             partes.append(f"Change the outfit to {ropa}")
         if expresion_i:
