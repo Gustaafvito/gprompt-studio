@@ -3146,7 +3146,7 @@ TRADUCCIONES = {
     '⚠️ Sobran {0} imágenes: no se han copiado.': '⚠️ {0} extra images: not copied.',
     '⚠️ {0} con formato no admitido (solo png, jpg o webp): no se han copiado.': '⚠️ {0} in an unsupported format (png, jpg or webp only): not copied.',
     'ℹ️ Este destino no usa descripciones: solo van las imágenes.': 'ℹ️ This target does not use captions: only the images are included.',
-    'Siguiente paso: en G-Entrena, usa esta carpeta como dataset del proyecto.': 'Next step: in G-Entrena, use this folder as the project dataset.',
+    'Siguiente paso: en el proyecto de G-Entrena, «Importar carpeta» con esta carpeta. Si subes las imágenes sueltas, llegan sin descripción.': 'Next step: in the G-Entrena project, “Importar carpeta” (import folder) with this folder. If you upload the images one by one, they arrive without captions.',
     'Siguiente paso: en el entrenador de SeaArt, «Subir conjunto de datos» con esta carpeta.': 'Next step: in the SeaArt trainer, “Upload dataset” with this folder.',
     'Imágenes recomendadas: {0}': 'Recommended images: {0}',
     'ℹ️ {0} no usa descripciones: sube solo las imágenes.': 'ℹ️ {0} does not use captions: upload just the images.',

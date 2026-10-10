@@ -160,7 +160,9 @@ def resumen_montaje(r: dict) -> str:
         lineas.append(tr("ℹ️ Este destino no usa descripciones: solo van las imágenes."))
     destino = r.get("destino") or {}
     if destino.get("plataforma") == "G-Entrena":
-        lineas.append(tr("Siguiente paso: en G-Entrena, usa esta carpeta como dataset del proyecto."))
+        lineas.append(tr(
+            "Siguiente paso: en el proyecto de G-Entrena, «Importar carpeta» con "
+            "esta carpeta. Si subes las imágenes sueltas, llegan sin descripción."))
     elif destino.get("plataforma") == "SeaArt":
         lineas.append(tr("Siguiente paso: en el entrenador de SeaArt, «Subir conjunto de datos» con esta carpeta."))
     return "\n\n".join(lineas)
