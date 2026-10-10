@@ -194,7 +194,18 @@ cada imagen se dibuja desde cero y la cara cambia de una a otra. Ahora puedes
 entrenar un primer LoRA con las mejores, elegirlo en «🔁 LoRA de la 1ª
 ronda» y volver a generar: los workflows de ComfyUI lo cargan (a 0.8) y
 guardan las imágenes aparte, en `output/<trigger>_ronda2/`. Si el LoRA no
-está en la carpeta de LoRAs de ComfyUI, se ofrece a copiarlo.
+está en la carpeta de LoRAs de ComfyUI, se ofrece a copiarlo, y si viene de
+G-Entrena (que llama igual a todos sus LoRA) le pone un nombre propio con tu
+trigger. Probado de principio a fin con un personaje real: la primera tanda
+salía con caras distintas; la segunda, con la misma.
+
+**Workflows de ComfyUI con el nombre exacto de cada modelo.** Si tienes los
+modelos en subcarpetas o en otro disco, ComfyUI los llama por su ruta
+(«LoraLab-D\anima-base-v1.0»), y el workflow exportado fallaba con «Value
+not in list» hasta que elegías cada cargador a mano. Ahora la app mira tus
+carpetas de modelos y pone el nombre tal cual lo ve ComfyUI, en el botón
+🔧 Comfy y en los workflows del Generador de Dataset LoRA. Y los prompts de
+edición ya no piden «fotorrealismo» cuando el estilo es anime o de dibujo.
 
 **Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
 Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,

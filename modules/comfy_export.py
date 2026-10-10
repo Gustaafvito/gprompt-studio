@@ -74,6 +74,45 @@ def nombre_lora_comfy(ruta: str) -> tuple:
     return os.path.splitext(os.path.basename(ruta))[0], False
 
 
+# Qué carpeta de models/ lee cada cargador (como folder_paths de ComfyUI).
+_CARPETAS_POR_CARGADOR = {
+    "CheckpointLoaderSimple": ("checkpoints",),
+    "UNETLoader": ("diffusion_models", "unet"),
+    "CLIPLoader": ("text_encoders", "clip"),
+    "VAELoader": ("vae",),
+    "LoraLoader": ("loras",),
+}
+
+
+def _base_nombre(nombre: str) -> str:
+    return nombre.replace("\\", "/").rsplit("/", 1)[-1].lower()
+
+
+def ajustar_nombres_comfy(wf: dict, nombres: dict) -> dict:
+    """Pone en cada cargador el nombre exacto con el que lo lista ComfyUI.
+
+    `nombres`: {carpeta: [nombres]} de config.nombres_modelos_comfy. Si el
+    nombre del workflow no está tal cual pero hay un fichero con el mismo
+    nombre en una subcarpeta («LoraLab-D\\anima-base-v1.0.safetensors»), se
+    usa ese; si hay varios, el menos anidado. Si no aparece en ningún sitio
+    (no está instalado), se deja como estaba. Modifica `wf` y lo devuelve.
+    """
+    for nodo in wf.get("nodes", []):
+        carpetas = _CARPETAS_POR_CARGADOR.get(nodo.get("type"))
+        valores = nodo.get("widgets_values")
+        if not carpetas or not valores or not isinstance(valores[0], str):
+            continue
+        disponibles = [n for c in carpetas for n in nombres.get(c, ())]
+        if valores[0] in disponibles:
+            continue
+        base = _base_nombre(valores[0])
+        candidatos = [n for n in disponibles if _base_nombre(n) == base]
+        if candidatos:
+            valores[0] = min(candidatos, key=lambda n: (
+                n.count("\\") + n.count("/"), n.lower()))
+    return wf
+
+
 def _add_loaders(A, add, p, fichero, lora, lora_peso=1.0):  # noqa: N803
     """Añade los nodos de carga (por arquitectura + LoRA opcional) a `A`.
     Devuelve (model_src, clip_src, vae_src) como tuplas (idx_nodo, slot)."""

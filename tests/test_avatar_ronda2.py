@@ -20,6 +20,7 @@ from modules.avatar_generator import (
     exportar_dataset,
     exportar_workflows_comfy,
     generar_dataset_avatar,
+    nombre_copia_lora,
 )
 from modules.avatar_montar import emparejar
 from modules.comfy_export import nombre_lora_comfy
@@ -118,6 +119,20 @@ class TestWorkflowsDeLaSegundaRonda:
         with open(os.path.join(wf_dir, "LEEME_WORKFLOWS.txt"), encoding="utf-8") as f:
             assert "2ª RONDA" not in f.read()
 
+    def test_los_lora_de_g_entrena_se_copian_con_nombre_propio(self):
+        # G-Entrena llama igual a todos sus LoRA: el de otro personaje
+        # pisaría a este en models/loras.
+        assert nombre_copia_lora(os.path.join("x", "G-Entrena_anima_FINAL_LoRA.safetensors"),
+                                 "ohwx_einar") == "ohwx_einar_anima_ronda1.safetensors"
+        assert nombre_copia_lora("G-Entrena_anima_step_000750.safetensors",
+                                 "ohwx_einar") == "ohwx_einar_anima_ronda1_paso750.safetensors"
+        assert nombre_copia_lora("G-Entrena_qwen-image-2.1_FINAL_LoRA.safetensors",
+                                 "lyr4") == "lyr4_qwen-image-2.1_ronda1.safetensors"
+        # Los demás conservan su nombre; sin trigger, también.
+        assert nombre_copia_lora("einar_v1.safetensors", "ohwx_einar") == "einar_v1.safetensors"
+        assert nombre_copia_lora("G-Entrena_anima_FINAL_LoRA.safetensors",
+                                 "") == "G-Entrena_anima_FINAL_LoRA.safetensors"
+
     def test_carpeta_de_la_ronda_sin_caracteres_raros(self):
         assert carpeta_ronda("ohwx_einar") == "ohwx_einar_ronda2"
         assert carpeta_ronda("lyr4 / v2") == "lyr4_v2_ronda2"
@@ -189,6 +204,29 @@ class TestEnLaVentana:
             assert (loras / "einar_v1.safetensors").read_bytes() == b"lora"
             assert fuera.exists()  # copia, no mueve
             assert f._lora_ronda == "einar_v1"
+        finally:
+            f.destroy()
+
+    def test_el_de_g_entrena_se_copia_con_el_trigger(self, tk_root, tmp_path, monkeypatch):
+        loras = tmp_path / "models" / "loras"
+        loras.mkdir(parents=True)
+        fuera = tmp_path / "proyecto" / "output" / "G-Entrena_anima_FINAL_LoRA.safetensors"
+        fuera.parent.mkdir(parents=True)
+        fuera.write_bytes(b"lora")
+        monkeypatch.setattr("config.carpeta_loras_comfy", lambda: str(loras))
+        monkeypatch.setattr(avatar_ui.filedialog, "askopenfilename",
+                            lambda **kw: str(fuera))
+        preguntas = []
+        monkeypatch.setattr(avatar_ui.messagebox, "askyesno",
+                            lambda titulo, texto: preguntas.append(texto) or True)
+        f = self._ventana(tk_root)
+        try:
+            f.entry_trigger.delete(0, "end")
+            f.entry_trigger.insert(0, "ohwx_einar")
+            f._on_elegir_lora_ronda()
+            assert "ohwx_einar_anima_ronda1.safetensors" in preguntas[0]
+            assert (loras / "ohwx_einar_anima_ronda1.safetensors").read_bytes() == b"lora"
+            assert f._lora_ronda == "ohwx_einar_anima_ronda1"
         finally:
             f.destroy()
 

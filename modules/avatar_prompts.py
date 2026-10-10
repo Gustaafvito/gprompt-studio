@@ -846,17 +846,36 @@ def ensamblar_dataset_generico(
     return dataset
 
 
+def conservar_acabado(estilo_sufijo: str = "") -> str:
+    """La última orden de los prompts de edición: qué acabado conservar.
+
+    Era siempre «Preserve photorealistic detail and natural skin texture»:
+    con el estilo en Anime (Anima, Illustrious) le pedía al editor una foto
+    de un personaje dibujado. Con un estilo de dibujo, ahora pide el mismo
+    estilo que la referencia; con uno fotográfico, o sin estilo, lo de
+    siempre.
+    """
+    import re as _re
+    estilo = (estilo_sufijo or "").strip()
+    if not estilo or _re.search(r"photo|realistic", estilo, _re.IGNORECASE):
+        return "Preserve photorealistic detail and natural skin texture"
+    return f"Keep the same art style as the reference image: {estilo}"
+
+
 def ensamblar_dataset_edicion(
     trigger_word: str,
     angulos_seleccionados: list,
     fondo,
     incluir_negative: bool = True,
     variar: dict | None = None,
+    estilo_sufijo: str = "",
 ) -> list:
     """Variante IMG2IMG del dataset: prompts de EDICIÓN por ángulo.
 
     `variar`: como en ensamblar_dataset. Con ropa variada ya no se pide «la
     misma ropa» que la referencia, sino cambiarla por la de esa imagen.
+    `estilo_sufijo`: el del estilo visual elegido; decide el acabado que se
+    pide conservar (conservar_acabado).
 
     Para modelos con imagen de sujeto/edición (MAI-Image-2.5, Nano
     Banana, Reve 2.0, SeaArt Film Edit): se sube la imagen de
@@ -916,7 +935,7 @@ def ensamblar_dataset_edicion(
         if fondo_i:
             partes.append(f"Background: {fondo_i}")
         partes.append(luz_i)
-        partes.append("Preserve photorealistic detail and natural skin texture")
+        partes.append(conservar_acabado(estilo_sufijo))
         prompt = ". ".join(partes) + "."
 
         # Negative: el base por encuadre + el anti-frontal SOLO en tomas de

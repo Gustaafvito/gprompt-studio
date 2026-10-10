@@ -1432,6 +1432,70 @@ def carpeta_loras_comfy() -> str:
         return ""
 
 
+# Carpetas de models/ que leen los cargadores de los workflows exportados.
+_COMFY_CARPETAS_NOMBRES = ("checkpoints", "diffusion_models", "unet",
+                           "text_encoders", "clip", "vae", "loras")
+_cache_nombres_comfy: dict = {}
+
+
+def nombres_modelos_comfy(ruta_comfyui: str = "") -> dict:
+    """{carpeta: [nombres]} tal como los ofrece ComfyUI en sus cargadores.
+
+    ComfyUI nombra cada fichero por su ruta dentro de la carpeta de su tipo,
+    con el separador del sistema (folder_paths usa os.path.relpath). El
+    10-oct-2026, en el equipo del autor, Anima estaba en
+    models/diffusion_models/LoraLab-D/ (un junction a D:) y ComfyUI lo
+    llamaba «LoraLab-D\\anima-base-v1.0.safetensors»: el workflow exportado,
+    con «anima-base-v1.0.safetensors», fallaba con «Value not in list» y había
+    que elegirlo a mano. Con esta lista, comfy_export.ajustar_nombres_comfy
+    pone el nombre exacto.
+
+    Recorre models/<carpeta> y las carpetas de extra_model_paths.yaml,
+    entrando en junctions y subcarpetas. Lo que no se pueda leer se salta.
+    Caché de 60 s: el botón 🔧 Comfy no vuelve a recorrer el disco en cada
+    clic. Devuelve {} si no hay ComfyUI configurado.
+    """
+    import time as _time
+    ruta = ruta_comfyui or _ruta_comfy_configurada()
+    if not ruta:
+        return {}
+    guardado = _cache_nombres_comfy.get(ruta)
+    if guardado and _time.monotonic() - guardado[0] < 60:
+        return guardado[1]
+
+    base = Path(ruta)
+    raices = {c: [base / "models" / c] for c in _COMFY_CARPETAS_NOMBRES}
+    try:
+        texto = (base / "extra_model_paths.yaml").read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        texto = ""
+    for seccion in _leer_extra_model_paths(texto):
+        raiz = Path(seccion["base_path"]) if seccion["base_path"] else base
+        if not raiz.is_absolute():
+            raiz = base / raiz
+        for clave in _COMFY_CARPETAS_NOMBRES:
+            for rel in seccion["claves"].get(clave, []):
+                carpeta = Path(rel)
+                raices[clave].append(carpeta if carpeta.is_absolute() else raiz / carpeta)
+
+    nombres = {}
+    for clave, carpetas in raices.items():
+        vistos = set()
+        for carpeta in carpetas:
+            try:
+                if not carpeta.is_dir():
+                    continue
+            except OSError:
+                continue
+            for actual, _dirs, ficheros in os.walk(carpeta, followlinks=True):
+                for f in ficheros:
+                    if os.path.splitext(f)[1].lower() in _COMFY_EXTS:
+                        vistos.add(os.path.relpath(os.path.join(actual, f), carpeta))
+        nombres[clave] = sorted(vistos, key=str.lower)
+    _cache_nombres_comfy[ruta] = (_time.monotonic(), nombres)
+    return nombres
+
+
 def _rehacer_flat(grupos: list, flat: list) -> None:
     """Reconstruye la lista plana desde los grupos, IN PLACE (las listas se
     comparten con MODELOS_POR_PLATAFORMA_* y MOTORES_VIDEO)."""

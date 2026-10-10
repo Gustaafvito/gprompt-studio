@@ -163,6 +163,20 @@ def borradores_en_temporal(tmp_path_factory, monkeypatch):
     monkeypatch.setattr(VisualHistory, "__init__", init)
 
 
+# ── Los workflows exportados NO leen el ComfyUI del equipo ─────────────
+# config.nombres_modelos_comfy() sin ruta busca el ComfyUI configurado y,
+# si no hay, lo autodetecta: en el equipo del autor encuentra C:\IA\ComfyUI
+# aunque la casa esté aislada, y los nombres de los workflows cambiarían
+# según lo que tenga instalado quien pase los tests. Quien la llame con una
+# ruta (los tests de la propia función) la usa de verdad.
+@pytest.fixture(autouse=True)
+def sin_comfyui_del_equipo(monkeypatch):
+    import config
+    real = config.nombres_modelos_comfy
+    monkeypatch.setattr(config, "nombres_modelos_comfy",
+                        lambda ruta_comfyui="": real(ruta_comfyui) if ruta_comfyui else {})
+
+
 # ── Tk: un solo root para toda la sesión ──────────────────────────────
 # Tk NO admite varios roots por proceso. Tres módulos creaban el suyo
 # (test_gprompt_window, test_panel_lateral, test_barrido_ui) y el segundo

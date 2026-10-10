@@ -9,6 +9,7 @@ foto vuelve al de siempre, y una elección a mano manda.
 """
 import pytest
 
+from modules.avatar_prompts import conservar_acabado, ensamblar_dataset_edicion
 from modules.avatar_ui import AvatarFrame
 from modules.i18n import tr
 
@@ -67,3 +68,24 @@ def test_otro_tipo_de_lora_vuelve_a_seguir_al_modelo(ventana):
     f._on_estilo_manual(tr("Fotorrealista"))
     f._on_tipo_change(tr("🏔 Paisaje"))
     assert f.menu_estilo.get() == tr("Anime")
+
+
+# Los prompts de edición (con imagen de referencia) acababan siempre en
+# «Preserve photorealistic detail and natural skin texture», también con el
+# estilo en Anime: le pedían al editor una foto de un personaje dibujado.
+ANIME = "anime style, clean lineart, cel shading, high quality anime illustration"
+FOTO = "photorealistic, professional studio photography, sharp focus"
+
+
+def test_la_edicion_en_anime_no_pide_fotos():
+    it = ensamblar_dataset_edicion("tw", ["face_front"], "", estilo_sufijo=ANIME)[0]
+    assert "photorealistic" not in it["prompt"]
+    assert it["prompt"].endswith(
+        f"Keep the same art style as the reference image: {ANIME}.")
+
+
+def test_con_estilo_de_foto_o_sin_estilo_lo_de_siempre():
+    siempre = "Preserve photorealistic detail and natural skin texture"
+    assert conservar_acabado(FOTO) == conservar_acabado("") == siempre
+    it = ensamblar_dataset_edicion("tw", ["face_front"], "")[0]
+    assert it["prompt"].endswith(siempre + ".")

@@ -3118,7 +3118,7 @@ TRADUCCIONES = {
     'Ninguno: es la 1ª ronda': 'None: this is the first round',
     'LoRA de la 1ª ronda': 'First-round LoRA',
     'Copiar a ComfyUI': 'Copy to ComfyUI',
-    'ComfyUI solo ve los LoRAs de su carpeta models/loras, y este no está ahí.\n\n¿Lo copio a {0}?': 'ComfyUI only sees the LoRAs in its models/loras folder, and this one is not there.\n\nCopy it to {0}?',
+    'ComfyUI solo ve los LoRAs de su carpeta models/loras, y este no está ahí.\n\n¿Lo copio a {0} como {1}?': 'ComfyUI only sees the LoRAs in its models/loras folder, and this one is not there.\n\nCopy it to {0} as {1}?',
     'Ya hay un {0} en esa carpeta. ¿Lo sustituyo?': 'There is already a {0} in that folder. Replace it?',
     'Copiando el LoRA a ComfyUI…': 'Copying the LoRA to ComfyUI…',
     'No se pudo copiar': 'Could not copy',

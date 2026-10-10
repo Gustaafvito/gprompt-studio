@@ -364,6 +364,26 @@ def carpeta_ronda(trigger: str) -> str:
     return f"{limpio or 'dataset'}_ronda2"
 
 
+def nombre_copia_lora(fichero: str, trigger: str) -> str:
+    """Con qué nombre se copia a ComfyUI el LoRA de la 1ª ronda.
+
+    G-Entrena llama igual a todos sus LoRA («G-Entrena_anima_FINAL_LoRA»,
+    «G-Entrena_anima_step_000750»): copiados tal cual a models/loras, el de
+    otro personaje pisaría a este (10-oct-2026, con Einar). Esos se renombran
+    con el trigger: «ohwx_einar_anima_ronda1.safetensors». Los demás
+    conservan su nombre.
+    """
+    import re
+    raiz, ext = os.path.splitext(os.path.basename(fichero))
+    m = re.fullmatch(r"G-Entrena_(?P<motor>.+?)_(?:FINAL_LoRA|step_0*(?P<paso>\d+))",
+                     raiz, re.IGNORECASE)
+    limpio = re.sub(r"[^\w-]+", "_", trigger or "").strip("_")
+    if not m or not limpio:
+        return os.path.basename(fichero)
+    paso = f"_paso{m['paso']}" if m["paso"] else ""
+    return f"{limpio}_{m['motor']}_ronda1{paso}{ext}"
+
+
 def exportar_workflows_comfy(resultado: dict, base: str, modelo: str,
                              lora: str = "",
                              lora_peso: float = LORA_RONDA_PESO) -> int:
@@ -387,11 +407,20 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str,
     Solo tiene sentido con modelos ComfyUI locales (el caller decide, según
     la plataforma destino elegida). Devuelve el nº de tomas exportadas.
     """
-    from config import comfy_workflow_params
+    from config import comfy_workflow_params, nombres_modelos_comfy
     from modules.comfy_export import (
+        ajustar_nombres_comfy,
         construir_workflow_comfy,
         construir_workflow_comfy_todas,
     )
+
+    # Los nombres exactos con que el ComfyUI del usuario lista sus modelos
+    # («LoraLab-D\anima-base-v1.0.safetensors»): sin ellos, el workflow falla
+    # con «Value not in list» y hay que elegir cada cargador a mano.
+    try:
+        nombres = nombres_modelos_comfy()
+    except Exception:
+        nombres = {}
 
     dir_wf = os.path.join(base, "workflows")
     dir_ind = os.path.join(dir_wf, "individuales")
@@ -414,6 +443,7 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str,
             con_detailer=True,  # FaceDetailer bypasseado para retocar caras/ojos
             lora_peso=lora_peso,
         )
+        ajustar_nombres_comfy(wf, nombres)
         with open(os.path.join(dir_ind, f"{item['filename']}.json"),
                   "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)
@@ -430,7 +460,8 @@ def exportar_workflows_comfy(resultado: dict, base: str, modelo: str,
     # cada toma con su tamaño). Un Queue genera el dataset entero.
     lotes = []
     if len(todas) >= 2:
-        wf = construir_workflow_comfy_todas(todas, modelo, lora, lora_peso)
+        wf = ajustar_nombres_comfy(
+            construir_workflow_comfy_todas(todas, modelo, lora, lora_peso), nombres)
         with open(os.path.join(dir_wf, "DATASET_COMPLETO.json"),
                   "w", encoding="utf-8") as f:
             json.dump(wf, f, ensure_ascii=False, indent=2)

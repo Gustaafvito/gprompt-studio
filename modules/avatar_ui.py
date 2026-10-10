@@ -376,6 +376,7 @@ class AvatarFrame(ctk.CTkFrame):
         import shutil
 
         from config import carpeta_loras_comfy
+        from modules.avatar_generator import nombre_copia_lora
         from modules.comfy_export import nombre_lora_comfy
         carpeta = carpeta_loras_comfy()
         ruta = filedialog.askopenfilename(
@@ -388,16 +389,20 @@ class AvatarFrame(ctk.CTkFrame):
         aviso = ""
         if not en_loras:
             # ComfyUI solo ve los LoRAs de su carpeta models/loras: el de
-            # G-Entrena suele quedarse en la carpeta de su proyecto.
+            # G-Entrena suele quedarse en la carpeta de su proyecto, y con un
+            # nombre que comparten todos sus LoRA (nombre_copia_lora).
+            trigger = self.entry_trigger.get() if getattr(self, "entry_trigger", None) else ""
+            fichero = nombre_copia_lora(ruta, trigger)
             if carpeta and messagebox.askyesno(
                     tr("Copiar a ComfyUI"),
                     tr("ComfyUI solo ve los LoRAs de su carpeta models/loras, y "
-                       "este no está ahí.\n\n¿Lo copio a {0}?").format(carpeta)):
-                destino = os.path.join(carpeta, os.path.basename(ruta))
+                       "este no está ahí.\n\n¿Lo copio a {0} como {1}?").format(
+                           carpeta, fichero)):
+                destino = os.path.join(carpeta, fichero)
                 if (not os.path.exists(destino) or messagebox.askyesno(
                         tr("Ya existe"),
                         tr("Ya hay un {0} en esa carpeta. ¿Lo sustituyo?").format(
-                            os.path.basename(ruta)))):
+                            fichero))):
                     self.label_estado.configure(text=tr("Copiando el LoRA a ComfyUI…"))
                     self.update_idletasks()
                     try:
@@ -406,6 +411,9 @@ class AvatarFrame(ctk.CTkFrame):
                         messagebox.showerror(tr("No se pudo copiar"), str(e))
                         self.label_estado.configure(text=tr("Listo."))
                         return
+                # El de la carpeta de ComfyUI, con su nombre (si no se
+                # sustituye, el que ya estaba allí).
+                nombre = os.path.splitext(fichero)[0]
             else:
                 aviso = tr(" Cópialo a la carpeta models/loras de ComfyUI antes de "
                            "lanzar el workflow, o no lo encontrará.")
@@ -851,6 +859,7 @@ class AvatarFrame(ctk.CTkFrame):
                     fondo=fondo,
                     incluir_negative=bool(self.check_negative.get()),
                     variar=variar,
+                    estilo_sufijo=estilo_sufijo,
                 )
             # Adaptación al modelo destino elegido (specs SeaArt) ANTES
             # de exportar
