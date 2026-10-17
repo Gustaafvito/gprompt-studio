@@ -1972,7 +1972,13 @@ class ToolsAnalysisService:
         neg = self.app.extraer_negative() or ""
         modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else ""
         lora = self._lora_activo_para_workflow()
-        workflow = self._construir_workflow_comfy(pos, neg, modelo, lora)
+        # El formato elegido en la app: sin él, el latent salía siempre de
+        # 1024x1024 aunque el prompt se hubiera compuesto para 9:16.
+        try:
+            ratio = self.app.footer.ratio_actual()
+        except Exception:
+            ratio = ""
+        workflow = self._construir_workflow_comfy(pos, neg, modelo, lora, ratio)
         # Nombres exactos de los cargadores, como los lista el ComfyUI del
         # usuario (subcarpetas, junctions): ver config.nombres_modelos_comfy.
         try:
@@ -2000,10 +2006,11 @@ class ToolsAnalysisService:
     _COMFY_NODE_SLOTS = COMFY_NODE_SLOTS
 
     @classmethod
-    def _construir_workflow_comfy(cls, pos: str, neg: str, modelo: str, lora: str = "") -> dict:
+    def _construir_workflow_comfy(cls, pos: str, neg: str, modelo: str, lora: str = "",
+                                  ratio: str = "") -> dict:
         """Delegador retrocompat — ver modules.comfy_export.construir_workflow_comfy."""
         from modules.comfy_export import construir_workflow_comfy
-        return construir_workflow_comfy(pos, neg, modelo, lora)
+        return construir_workflow_comfy(pos, neg, modelo, lora, ratio)
 
     @classmethod
     def _serializar_workflow_ui(cls, abstractos: list, modelo: str, familia: str) -> dict:

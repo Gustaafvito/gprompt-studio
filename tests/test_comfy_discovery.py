@@ -5,6 +5,8 @@ Casos basados en un inventario real del usuario (carpetas checkpoints +
 diffusion_models con modelos de imagen, vídeo y audio mezclados, más una
 subcarpeta FLUX2/).
 """
+import pytest
+
 import config
 
 
@@ -640,6 +642,47 @@ class TestConstruirWorkflowComfy:
         textos = [n["widgets_values"][0] for n in wf["nodes"]
                   if n["type"] == "CLIPTextEncode"]
         assert "a cat" in textos and "blurry" in textos
+
+
+class TestWorkflowConElFormatoElegido:
+    """17-oct-2026: con 9:16 elegido en la app, el botón 🔧 Comfy sacaba el
+    latent de 1024x1024. El prompt se compone para un formato y la imagen
+    salía en otro."""
+
+    @staticmethod
+    def _latent(wf):
+        return next(n["widgets_values"][:2] for n in wf["nodes"]
+                    if n["type"] == "EmptyLatentImage")
+
+    def _pulsar_boton(self, ratio):
+        import json
+        from types import SimpleNamespace
+
+        from modules.tools_analysis import ToolsAnalysisService
+        app = SimpleNamespace(
+            txt_salida=SimpleNamespace(get=lambda *a: "PROMPT: a cat"),
+            extraer_positive=lambda: "a cat", extraer_negative=lambda: "",
+            combo_modelo_imagen=SimpleNamespace(get=lambda: "flux3-image-klein-int8-convrot"),
+            footer=SimpleNamespace(ratio_actual=lambda: ratio),
+        )
+        svc = ToolsAnalysisService(app)
+        mostrado = []
+        svc._mostrar_ventana_comfyui = lambda js, modelo: mostrado.append(json.loads(js))
+        svc._copiar_comfyui_json()
+        return mostrado[0]
+
+    @pytest.mark.parametrize("ratio, tam", [
+        ("9:16", [768, 1344]), ("16:9", [1344, 768]), ("21:9", [1536, 640]),
+        ("", [1024, 1024]),  # «Libre»: ratio_actual devuelve ""
+    ])
+    def test_el_boton_usa_el_formato_de_la_app(self, ratio, tam):
+        assert self._latent(self._pulsar_boton(ratio)) == tam
+
+    def test_todos_los_tamanos_valen_para_flux2_y_flux3(self):
+        # Su VAE reduce 16 veces: los lados tienen que ser múltiplos de 16.
+        from modules.comfy_export import RESOLUCION_POR_RATIO
+        for ratio, (w, h) in RESOLUCION_POR_RATIO.items():
+            assert w % 16 == 0 and h % 16 == 0, ratio
 
 
 class TestWorkflowConLora:
