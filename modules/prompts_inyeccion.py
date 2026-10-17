@@ -32,7 +32,13 @@ from config import (
     get_prompt_template,
 )
 from modules.i18n import tr
-from prompts import REGLAS_APROVECHAR_BUDGET, REGLAS_MINIMAX_H3_BASE, REGLAS_MINIMAX_H3_REF
+from prompts import (
+    REGLAS_APROVECHAR_BUDGET,
+    REGLAS_FLUX3_I2I,
+    REGLAS_FLUX3_T2I,
+    REGLAS_MINIMAX_H3_BASE,
+    REGLAS_MINIMAX_H3_REF,
+)
 
 
 class PromptsInyeccionService:
@@ -260,6 +266,9 @@ class PromptsInyeccionService:
             palabras_obj, detalle = "80-150", "MUY DETALLADO"
         else:
             palabras_obj, detalle = "50-90", "DETALLADO"
+        # Algunos modelos piden otra longitud en su guía oficial (FLUX 3:
+        # 100-350 palabras); con 80-150 el LLM se quedaba corto.
+        palabras_obj = specs.get("palabras_objetivo") or palabras_obj
 
         extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         extra += f"REGLAS ESPECÍFICAS PARA {modelo.upper()}:\n"
@@ -306,6 +315,9 @@ class PromptsInyeccionService:
         # Formato especial Qwen Edit (ComfyUI): doble prompt T2I + img2img
         if specs.get("formato_bloques") == "qwen_edit":
             return self._inyectar_formato_qwen_edit(modelo, specs, extra)
+        # FLUX 3 Klein: el LLM hace de prompt upsampler oficial de BFL
+        if specs.get("formato_bloques") == "flux3":
+            return self._inyectar_formato_flux3(modelo, specs, extra)
 
         if specs.get("is_natural"):
             extra += "• TIPO: lenguaje natural descriptivo. NO uses tags sueltos separados por comas.\n"
@@ -893,6 +905,38 @@ class PromptsInyeccionService:
             "PROMPT IMG2IMG: [instrucción de edición: 'same [sujeto] but change "
             "[X] to [Y]...', mantén identidad y ajusta la iluminación]\n"
             f"NEGATIVE IMG2IMG: [tags a evitar; base sugerida: {neg}]\n"
+        )
+        return extra
+
+    def _inyectar_formato_flux3(self, modelo: str, specs: dict, extra: str) -> str:
+        """FLUX 3 Image Klein: el LLM hace de su «prompt upsampler» oficial.
+
+        BFL avisa de que el modelo no se use nunca sin él: con un prompt corto
+        la imagen sale genérica. Su upsampler es un Qwen3.5-9B afinado con un
+        system prompt para generar y otro para editar, que van aquí literales
+        (prompts.py). Funciona igual en SeaArt y en ComfyUI: el texto que
+        recibe el modelo es el mismo.
+        """
+        extra += (
+            "• TIPO: FLUX 3 Image Klein (Black Forest Labs). Aquí haces de su "
+            "«prompt upsampler» oficial: BFL pide no usar nunca el modelo sin "
+            "él, porque con un prompt corto la imagen sale genérica. Sigue AL "
+            "PIE DE LA LETRA sus instrucciones oficiales, que van abajo en "
+            "inglés; mandan sobre las reglas generales de formato, longitud y "
+            "estilo de este system prompt.\n"
+            "• Si la información del usuario trae un Ratio, ese es el «TARGET "
+            "CANVAS»: compón para ese lienzo y no lo menciones.\n"
+            "• Elige UNO de los dos modos: EDITAR solo si la idea pide cambiar "
+            "una imagen de referencia; si no, GENERAR.\n"
+            "\n━━━ GENERAR (texto a imagen): instrucciones oficiales del upsampler ━━━\n"
+            + REGLAS_FLUX3_T2I +
+            "\n━━━ EDITAR (con imagen de referencia): instrucciones oficiales del upsampler ━━━\n"
+            + REGLAS_FLUX3_I2I +
+            "\n⚠️ FORMATO DE SALIDA OBLIGATORIO ⚠️\n"
+            "Lo único que se añade a «Output only the caption»: la etiqueta "
+            "que la app necesita delante, así:\n"
+            "PROMPT: [el caption o la instrucción completa, un solo bloque de prosa en inglés]\n"
+            "(No generes NEGATIVE PROMPT: FLUX 3 no lo usa)\n"
         )
         return extra
 

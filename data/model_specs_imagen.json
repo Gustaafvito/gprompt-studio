@@ -2711,6 +2711,40 @@
   "limitaciones": "Calidad menor que Pro/Max pero muy rápido.",
   "vigente": true
  },
+ "Flux.3 Image Klein": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "formato_bloques": "flux3",
+  "max_chars": 2000,
+  "palabras_objetivo": "100-300",
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "9:21"
+  ],
+  "modos_gen": [
+   "Estándar",
+   "Calidad"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 3,
+  "pasos": 15,
+  "cfg": 1.0,
+  "sampler_recomendado": "euler / simple (15 pasos, CFG 1: es el Klein destilado)",
+  "best_for": "FLUX 3 Image Klein (Black Forest Labs, en SeaArt): el FLUX 3 abierto, de 5.6B, que crea y edita en un solo modelo. Genera desde texto, edita por instrucciones con hasta 3 imágenes y escribe texto dentro de la imagen, también en otros idiomas. Pide un caption largo y concreto: la app lo redacta con las instrucciones oficiales de su prompt upsampler, que BFL exige usar siempre. Admite LoRA de Flux.3 Klein.",
+  "best_for_en": "FLUX 3 Image Klein (Black Forest Labs, on SeaArt): the open 5.6B FLUX 3 that creates and edits in a single model. It generates from text, edits by instruction with up to 3 images and renders in-image text, in other languages too. It wants a long, concrete caption: the app writes it with the official instructions of its prompt upsampler, which BFL says to always use. Accepts Flux.3 Klein LoRAs.",
+  "prompt_formula": "Un solo bloque de prosa en inglés, de 100 a 300 palabras. Para GENERAR: medio y estilo primero (sin estilo pedido, una foto: «Full-color outdoor photograph, ...»), luego escena, luz y cámara, y después cada sujeto con colores, materiales y posición en el encuadre (frame-left, background...). Las personas, con edad, tono de piel, pelo y ropa. Texto de la imagen, literal y entre comillas. Sin valoraciones ni frases de ambiente; las negaciones, como lo que sí hay. Para EDITAR: instrucción en imperativo («Change the ... to ...») con el estado final concreto, y una frase al final con lo que no cambia. Sin negative. Máx 2000 chars.",
+  "prompt_ejemplo": "Full-color indoor photograph, eye-level medium shot of a small ceramics studio in soft overcast daylight from a tall window on the left. In the foreground, a middle-aged Black man with dark brown skin and a short grey beard, wearing a clay-stained navy apron over a white T-shirt, shapes a tall terracotta vase on a spinning wheel with both hands. On the right, wooden shelves hold rows of unglazed bowls. Behind him, a chalkboard reads \"KILN SATURDAY\" in white handwritten capitals.",
+  "limitaciones": "Sin negative: SeaArt muestra la casilla, pero el Klein destilado trabaja con CFG 1 y el negative no actúa; BFL escribe las negaciones como lo que sí hay. Máx 2000 chars. Hasta 3 imágenes para editar (el modelo admite 10; SeaArt deja 3) y hasta 8 por tanda. Pasos 4-40 (15 por defecto) y CFG 1-5 (1). La posición por cajas (bounding boxes) no está en el panel de SeaArt. Ficha MAPEADA el 17-oct-2026 desde el esquema oficial de SeaArt (modelo db8oko5e878c73b8dil0) y la ficha de BFL; la calidad frente a Flux.2, POR CONFIRMAR generando."
+ },
  "FLUX.2 [Klein]": {
   "nota": null,
   "vigente": true,
@@ -5114,6 +5148,37 @@
   "prompt_formula": "Descripción fluida y estética: sujeto + entorno + iluminación + look fotográfico (lente, grano, color grading). Sin tags sueltos por comas.",
   "prompt_ejemplo": "A candid portrait of a woman by a rain-streaked window at dusk, soft warm interior light, shallow depth of field, 50mm, natural skin texture, cinematic color grading.",
   "vigente": true
+ },
+ "Krea 3": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": false,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "4:5",
+   "5:4",
+   "9:21"
+  ],
+  "modos_gen": [
+   "Estándar",
+   "Calidad"
+  ],
+  "max_imagenes": 8,
+  "max_imagenes_referencia": 6,
+  "best_for": "Krea 3 (en SeaArt): modelo de producción para crear y editar con referencias. Genera desde texto, transforma una imagen o combina hasta 6 referencias en un solo resultado sin perder lo importante: caras, forma del producto, etiquetas, logotipos y materiales. Edita por instrucciones en lenguaje natural y por zonas. Producto, campañas, moda y personajes recurrentes. Según SeaArt, salida nativa 1K y 2K.",
+  "best_for_en": "Krea 3 (on SeaArt): a production model for creating and editing with references. It generates from text, transforms an image or combines up to 6 references into one result without losing what matters: faces, product shape, labels, logos and materials. It edits by natural-language instruction and by region. Products, campaigns, fashion and recurring characters. According to SeaArt, native 1K and 2K output.",
+  "prompt_formula": "Lenguaje natural en prosa. Para GENERAR: sujeto + escena + iluminación + estilo fotográfico. Para EDITAR: empieza por la acción («Replace the background with...», «Change only the jacket...»), nombra cada referencia por lo que contiene («the sneaker from the second reference image») y cierra con lo que no cambia («Keep the logo, label and product shape unchanged»). En ediciones complejas, primero el objetivo y después solo las restricciones importantes. Sin negative. Máx 2000 chars.",
+  "prompt_ejemplo": "Place the perfume bottle from the first reference image on a wet black slate slab beside a sprig of fresh rosemary, with a softly blurred greenhouse behind it. Use diffused morning light from the left and a natural commercial photography look. Keep the bottle shape, the gold cap and the printed label unchanged.",
+  "limitaciones": "Sin negative (el esquema de SeaArt no lo tiene). Máx 2000 chars. Hasta 6 imágenes de referencia y hasta 8 por tanda. Sin pasos, CFG ni sampler a la vista: los fija SeaArt. La salida 2K la anuncia SeaArt y el esquema no la expone (sus formatos llegan a 1024 px de lado). Ficha MAPEADA el 17-oct-2026 desde el esquema oficial de SeaArt (modelo db8u83le878c73cndd4g); la calidad frente a Krea-2, POR CONFIRMAR generando."
  },
  "Qwen Image 3.0": {
   "nota": null,
