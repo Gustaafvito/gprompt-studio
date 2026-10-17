@@ -53,6 +53,10 @@ class TestVideoRefuerzos:
         out = self._svc()._inyectar_specs_video("SYS")
         assert "PROMPT FINAL SIEMPRE en INGLÉS" in out
 
+    def test_el_texto_en_pantalla_no_se_traduce(self):
+        out = self._svc()._inyectar_specs_video("SYS")
+        assert "texto visible en pantalla" in out and "sin traducir" in out
+
     def test_sin_imagen_prohibe_referencias(self):
         out = self._svc(imagen_cargada=None)._inyectar_specs_video("SYS")
         assert "SIN REFERENCIAS" in out and "@Image" in out

@@ -154,7 +154,9 @@ class PromptsInyeccionService:
         extra += (
             "• ⚠️ IDIOMA DEL PROMPT: escribe el PROMPT FINAL SIEMPRE en INGLÉS, "
             "aunque estas instrucciones o los ejemplos estén en español. "
-            "(Solo los diálogos/voz-over pueden ir en el idioma que pida el usuario.)\n"
+            "(Solo los diálogos/voz-over pueden ir en el idioma que pida el usuario, "
+            "y el texto visible en pantalla —carteles, rótulos— va literal y entre "
+            "comillas, sin traducir.)\n"
         )
         # Refuerzo REFERENCIAS: si el usuario NO cargó imagen de referencia, no
         # inventes etiquetas @Image/@Video/@Audio (Seedance/Vidu las llevan en sus
@@ -292,10 +294,19 @@ class PromptsInyeccionService:
         # Refuerzo IDIOMA (espejo del modo vídeo): los best_for/prompt_formula
         # por familia están en español y arrastran al LLM a responder en
         # español. El PROMPT/NEGATIVE final SIEMPRE va en inglés.
+        # El texto que sale ESCRITO en la imagen es la excepción: el 17-oct-2026,
+        # «un cartel en la puerta que dice ABERTO» salió como "OPEN" con FLUX 3,
+        # aunque sus reglas oficiales piden el texto en su idioma original. Este
+        # refuerzo va el último y le ganaba.
         extra += (
             "• ⚠️ IDIOMA DEL PROMPT: escribe el PROMPT y el NEGATIVE PROMPT "
             "finales SIEMPRE en INGLÉS, aunque estas instrucciones o los "
             "ejemplos estén en español.\n"
+            "• EXCEPCIÓN: el texto que debe salir ESCRITO en la imagen "
+            "(carteles, rótulos, títulos, etiquetas) NO se traduce: va literal, "
+            "entre comillas dobles y en el idioma en que lo escribió el usuario. "
+            "Si pide un cartel que dice «ABIERTO», el prompt dice \"ABIERTO\", "
+            "no \"OPEN\".\n"
         )
 
         extra = self._inyectar_template(modelo, extra)

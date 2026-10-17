@@ -145,6 +145,17 @@ class TestElUpsamplerOficial:
         assert "OBJETIVO DE LONGITUD: 100-300 palabras" in _inyectar("Flux.3 Image Klein")
         assert "OBJETIVO DE LONGITUD: 100-350 palabras" in _inyectar(DESTILADO)
 
+    @pytest.mark.parametrize("modelo", ["Flux.3 Image Klein", "Krea 3", "Qwen Image 2.1"])
+    def test_el_texto_del_cartel_no_se_traduce(self, modelo):
+        # Primera prueba real (17-oct-2026): «un cartel en la puerta que dice
+        # ABERTO» salió como "OPEN". El refuerzo «SIEMPRE en INGLÉS» va el
+        # último y ganaba a la regla de BFL; ahora lleva la excepción.
+        out = _inyectar(modelo)
+        idioma = out.index("IDIOMA DEL PROMPT")
+        excepcion = out.index("EXCEPCIÓN: el texto que debe salir ESCRITO en la imagen")
+        assert excepcion > idioma
+        assert 'el prompt dice "ABIERTO", no "OPEN"' in out
+
     def test_otros_modelos_no_lo_reciben(self):
         assert prompts.REGLAS_FLUX3_T2I not in _inyectar("Krea 3")
         assert prompts.REGLAS_FLUX3_T2I not in _inyectar("Flux.2 Klein")
