@@ -408,6 +408,42 @@ class TestWorkerImagenAPrompt:
         assert "MODO B" in capturado["peticion"]
         assert "ANCLAJE VISUAL" in capturado["peticion"]
 
+    def _peticion_video(self, idea, specs=None):
+        capturado = {}
+        h = _host(modo="video", specs=specs, txt_idea=_txt(idea), txt_salida=_txt(""))
+        h.app.deepseek.generar = lambda p, **k: (
+            capturado.update({"peticion": p, **k}) or "PROMPT: anclado"
+        )
+        h._worker_imagen_a_prompt()
+        return capturado
+
+    def test_en_video_la_idea_es_lo_que_pasa(self):
+        # 18-oct-2026: con la idea como «adiciones», el ref2va de MiniMax
+        # salió con la guerrera quieta mirando a cámara.
+        p = self._peticion_video("desenvaina la espada y grita")["peticion"]
+        assert "Lo que pasa en el vídeo: desenvaina la espada y grita" in p
+        assert "La ACCIÓN la marca el usuario" in p
+        assert "Adiciones" not in p
+
+    def test_en_video_sin_idea_pide_inventar_una_accion(self):
+        p = self._peticion_video("")["peticion"]
+        assert "inventa una acción clara y visible" in p
+        assert "HACER algo" in p
+
+    def test_en_imagen_sigue_siendo_fiel(self):
+        capturado = {}
+        h = _host(modo="imagen", txt_idea=_txt("con sombrero"), txt_salida=_txt(""))
+        h.app.deepseek.generar = lambda p, **k: capturado.update({"peticion": p}) or "PROMPT: x"
+        h._worker_imagen_a_prompt()
+        assert "MÁS METICULOSO" in capturado["peticion"]
+        assert "Adiciones: con sombrero" in capturado["peticion"]
+
+    def test_el_prompt_largo_tiene_el_mismo_presupuesto_que_generar(self):
+        # Con 1500 tokens fijos, MiniMax H3 ref2va (6000 chars) salió
+        # cortado a media frase («…A faint»).
+        assert self._peticion_video("x", specs={"max_chars": 6000})["max_tokens"] == 4000
+        assert self._peticion_video("x", specs={"max_chars": 1500})["max_tokens"] == 1800
+
     def test_con_prompt_existente_usa_modo_mejorar(self):
         capturado = {}
         h = _host(txt_salida=_txt("POSITIVE PROMPT: prompt existente largo " * 5))

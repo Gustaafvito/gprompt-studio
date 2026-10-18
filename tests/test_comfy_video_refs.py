@@ -51,7 +51,7 @@ def _r2v():
               "pos": [0, -300], "mode": 0, "inputs": [{"name": "value", "widget": {"name": "value"},
                                                        "link": None}],
               "outputs": [{"name": "STRING", "type": "STRING", "links": [279]}],
-              "widgets_values": [LARGO]}
+              "widgets_values": [LARGO], "widgets_values_named": {"value": LARGO}}
     clip = {"id": 128, "type": "CLIPLoader", "pos": [0, 300], "mode": 0, "inputs": [],
             "outputs": [{"name": "CLIP", "type": "CLIP", "links": [272]}],
             "widgets_values": ["qwen3vl.safetensors", "minimax_h3", "default"]}
@@ -168,6 +168,23 @@ class TestRef2vaDeMiniMax:
         assert [(h["n"], h["fichero"], h["opcional"]) for h in r["huecos"]] == [(1, None, False)]
         nota = next(n for n in r["workflow"]["nodes"] if n["type"] == "Note")
         assert "red_superboy_on_city_roof.png" in nota["widgets_values"][0]
+
+    def test_los_valores_por_nombre_tambien_llevan_lo_nuestro(self, plantillas):
+        # El JSON del usuario enseñaba en widgets_values_named el prompt de
+        # ejemplo de la plantilla junto al nuestro (18-oct-2026).
+        prompt = "<Subject 1> is the woman in <Picture 1>."
+        wf = cv.construir_workflow_video(R2V, prompt, carpetas=plantillas)["workflow"]
+        nodo = next(n for n in wf["nodes"] if n["id"] == 138)
+        assert nodo["widgets_values"] == [prompt]
+        assert nodo["widgets_values_named"] == {"value": prompt}
+
+    def test_la_nota_avisa_de_refrescar_comfyui(self, plantillas):
+        con = cv.construir_workflow_video(R2V, "<Picture 1>", carpetas=plantillas,
+                                          refs={"imagen": ["mia.png"]})
+        sin = cv.construir_workflow_video(R2V, "<Picture 1>", carpetas=plantillas)
+        nota = lambda r: next(n for n in r["workflow"]["nodes"] if n["type"] == "Note")  # noqa: E731
+        assert "pulsa R" in nota(con)["widgets_values"][0]
+        assert "pulsa R" not in nota(sin)["widgets_values"][0]
 
     def test_avisa_si_el_prompt_nombra_un_video(self, plantillas):
         r = cv.construir_workflow_video(R2V, "<Picture 1> and the camera of <Video 1>.",
@@ -313,6 +330,8 @@ class TestEnLaApp:
         wf, chuleta = mostrado[0]
         assert [n["widgets_values"][0] for n in _cargas(wf)] == copiada
         assert "📎 1" in chuleta
+        # ComfyUI lee la lista de input/ al abrir la página.
+        assert "pulsa R" in chuleta
 
     def test_copia_el_fichero_original_de_la_imagen(self, tmp_path, monkeypatch):
         entrada = self._comfy(tmp_path, monkeypatch)

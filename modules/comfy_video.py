@@ -222,6 +222,12 @@ class _Campo:
                 i = widgets.index(self.widget)
                 if i < len(propios):
                     propios[i] = v
+        # Las plantillas nuevas repiten los valores por nombre. ComfyUI lee
+        # la lista, pero el JSON enseñaba ahí el prompt de ejemplo de la
+        # plantilla (el cómic del superhéroe) junto al nuestro.
+        nombrados = self.nodo.get("widgets_values_named")
+        if isinstance(nombrados, dict) and self.widget in nombrados:
+            nombrados[self.widget] = v
 
     @property
     def titulo(self) -> str:
@@ -479,6 +485,12 @@ def _cambiar_cargador(campo: _Campo, gguf: bool) -> None:
     nodo["type"] = tipo
     nodo.setdefault("properties", {})["Node name for S&R"] = tipo
     nodo["inputs"] = [i for i in nodo.get("inputs", []) if i.get("name") != "weight_dtype"]
+    nombrados = nodo.get("widgets_values_named")
+    if isinstance(nombrados, dict):
+        if gguf:
+            nombrados.pop("weight_dtype", None)
+        else:
+            nombrados.setdefault("weight_dtype", "default")
     valores = nodo.get("widgets_values")
     if isinstance(valores, list) and valores:
         nodo["widgets_values"] = [valores[0]] if gguf else [valores[0], "default"]
@@ -922,6 +934,9 @@ def _anadir_nota(wf: dict, modelo: str, plantilla: str, faltan: list, huecos: li
         elif not h["opcional"]:
             lineas.append(f"{nombre}: lleva el fichero de ejemplo ({h['ejemplo']}); "
                           f"pon el tuyo en su {_NODO_CARGA[h['tipo']]}.")
+    if any(h["fichero"] for h in huecos):
+        lineas.append("Si ComfyUI ya estaba abierto y marca «Falta entrada de medio», pulsa R "
+                      "(refrescar): el fichero ya está en tu carpeta input.")
     if faltan:
         lineas.append("No están en tu ComfyUI (te ofrecerá descargarlos):")
         lineas += [f"  • {f}" for f in faltan]

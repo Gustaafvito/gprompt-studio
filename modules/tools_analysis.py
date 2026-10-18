@@ -2072,6 +2072,11 @@ class ToolsAnalysisService:
             resumen += "   ·   " + tr("📎 {0} fichero(s) tuyo(s) dentro").format(tuyos)
         if sin_poner:
             resumen += "   ·   " + tr("⚠️ con el de ejemplo: {0}").format(", ".join(sin_poner))
+        if tuyos:
+            # ComfyUI lee la lista de input/ al abrir la página: lo copiado
+            # después le sale como «Falta entrada de medio» (18-oct-2026).
+            resumen += "\n" + tr("🔄 Si ComfyUI ya estaba abierto, pulsa R en él antes de pegar: "
+                                 "así ve tus ficheros nuevos.")
         json_str = json.dumps(res["workflow"], indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo, chuleta=resumen)
 

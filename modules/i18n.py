@@ -929,6 +929,8 @@ TRADUCCIONES = {
     'faltan {0} ficheros: ComfyUI te ofrecerá descargarlos': '{0} files missing: ComfyUI will offer to download them',
     # Tus ficheros en los Load Image / Video / Audio del workflow (18-oct-2026).
     '📎 {0} fichero(s) tuyo(s) dentro': '📎 {0} of your file(s) inside',
+    '🔄 Si ComfyUI ya estaba abierto, pulsa R en él antes de pegar: así ve tus ficheros nuevos.':
+        '🔄 If ComfyUI was already open, press R in it before pasting so it sees your new files.',
     '⚠️ con el de ejemplo: {0}': '⚠️ still the sample file: {0}',
     'imagen {0}': 'image {0}',
     'vídeo {0}': 'video {0}',
