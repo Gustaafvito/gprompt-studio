@@ -1472,6 +1472,12 @@ def _ruta_comfy_configurada() -> str:
     return detectar_comfy_automatico()
 
 
+def ruta_comfyui() -> str:
+    """La carpeta de ComfyUI configurada, o "" si no hay (el botón 🔧 Comfy
+    busca ahí las plantillas oficiales de vídeo)."""
+    return _ruta_comfy_configurada() or ""
+
+
 def carpeta_loras_comfy() -> str:
     """La carpeta models/loras del ComfyUI configurado, o "" si no hay.
 
@@ -1489,7 +1495,12 @@ def carpeta_loras_comfy() -> str:
 
 # Carpetas de models/ que leen los cargadores de los workflows exportados.
 _COMFY_CARPETAS_NOMBRES = ("checkpoints", "diffusion_models", "unet",
-                           "text_encoders", "clip", "vae", "loras")
+                           "text_encoders", "clip", "vae", "loras",
+                           # Las plantillas de vídeo cargan además estos
+                           # (reescalador latente de LTX, codificador de audio
+                           # de Wan S2V, visión de Wan i2v…).
+                           "latent_upscale_models", "upscale_models",
+                           "clip_vision", "audio_encoders", "model_patches")
 _cache_nombres_comfy: dict = {}
 
 

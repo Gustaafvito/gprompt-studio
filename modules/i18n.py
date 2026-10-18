@@ -918,8 +918,15 @@ TRADUCCIONES = {
     '⚠️ Genera un prompt primero para refinarlo.': '⚠️ Generate a prompt first to refine it.',
     '⚠️ Genera un prompt primero para scoring.': '⚠️ Generate a prompt first for scoring.',
     '⚠️ Genera un prompt primero.': '⚠️ Generate a prompt first.',
-    '🔧 Comfy prepara workflows de imagen. Para vídeo y audio, abre en ComfyUI la plantilla de tu modelo (Workflow → Plantillas) y pega allí el prompt.':
-        '🔧 Comfy builds image workflows. For video and audio, open your model\'s template in ComfyUI (Workflow → Templates) and paste the prompt there.',
+    '🔧 Comfy prepara workflows de imagen y vídeo. Para audio, abre en ComfyUI la plantilla de tu modelo (Workflow → Plantillas) y pega allí el prompt.':
+        '🔧 Comfy builds image and video workflows. For audio, open your model\'s template in ComfyUI (Workflow → Templates) and paste the prompt there.',
+    'No tengo plantilla de ComfyUI para «{0}».': 'I have no ComfyUI template for «{0}».',
+    'Tu ComfyUI no trae la plantilla «{0}». Actualiza ComfyUI y vuelve a probar.':
+        'Your ComfyUI does not include the «{0}» template. Update ComfyUI and try again.',
+    'No encuentro dónde va el prompt en la plantilla «{0}».': 'I cannot find where the prompt goes in the «{0}» template.',
+    '🎬 Plantilla oficial de ComfyUI: {0}': '🎬 Official ComfyUI template: {0}',
+    'modelo: {0}': 'model: {0}',
+    'faltan {0} ficheros: ComfyUI te ofrecerá descargarlos': '{0} files missing: ComfyUI will offer to download them',
     '🔧 Comfy prepara el workflow de un modelo que tengas en ComfyUI. Elige la plataforma «ComfyUI / Fooocus» y uno de tus modelos.':
         '🔧 Comfy builds the workflow for a model you have in ComfyUI. Pick the «ComfyUI / Fooocus» platform and one of your models.',
     '⚠️ La previsualización solo está disponible para Imágenes y Vídeos.': '⚠️ Preview is only available for Images and Videos.',

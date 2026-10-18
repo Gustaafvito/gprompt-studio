@@ -675,9 +675,10 @@ class TestWorkflowConElFormatoElegido:
 
     @pytest.mark.parametrize("modo, plataforma, pista", [
         # 17-oct-2026: con LTX 2.5 en modo vídeo salió un workflow de «Anima».
-        ("video", "ComfyUI / Fooocus", "vídeo y audio"),
-        ("audio", "ComfyUI / Fooocus", "vídeo y audio"),
+        # El vídeo ya tiene workflow propio (test_comfy_video); el audio, no.
+        ("audio", "ComfyUI / Fooocus", "Para audio"),
         ("imagen", "SeaArt / Tensor.Art", "ComfyUI / Fooocus"),
+        ("video", "SeaArt Video", "ComfyUI / Fooocus"),
     ])
     def test_sin_modelo_de_imagen_local_avisa_y_no_exporta(
             self, monkeypatch, modo, plataforma, pista):
@@ -694,6 +695,46 @@ class TestWorkflowConElFormatoElegido:
     ])
     def test_el_boton_usa_el_formato_de_la_app(self, ratio, tam):
         assert self._latent(self._pulsar_boton(ratio)) == tam
+
+    def test_en_video_monta_el_de_la_plantilla_del_modelo_de_video(self, monkeypatch):
+        # Lee el desplegable de VÍDEO, no el de imagen, y pasa duración,
+        # formato e imagen a comfy_video.
+        import json
+        from types import SimpleNamespace
+
+        import config
+        from modules import comfy_video
+        from modules.tools_analysis import ToolsAnalysisService
+        recibido = {}
+
+        def _construir(modelo, prompt, negativo, ratio, segundos, con_imagen, carpetas, nombres):
+            recibido.update(modelo=modelo, prompt=prompt, ratio=ratio, segundos=segundos,
+                            con_imagen=con_imagen)
+            return {"workflow": {"nodes": []}, "plantilla": "video_ltx2_5_t2v",
+                    "fichero": "LTX-2.5-Distilled-Q3_K_M.gguf", "faltan": ["x"], "avisos": []}
+        monkeypatch.setattr(comfy_video, "construir_workflow_video", _construir)
+        monkeypatch.setattr(config, "ruta_comfyui", lambda: "")
+        app = SimpleNamespace(
+            modo_var=SimpleNamespace(get=lambda: "video"),
+            plataforma_var=SimpleNamespace(get=lambda: "ComfyUI / Fooocus"),
+            txt_salida=SimpleNamespace(get=lambda *a: "POSITIVE PROMPT: a fox"),
+            extraer_positive=lambda: "a fox", extraer_negative=lambda: "blurry",
+            combo_modelo_imagen=SimpleNamespace(get=lambda: "Anima"),
+            combo_modelo_video=SimpleNamespace(get=lambda: "LTX 2.5"),
+            duracion_var=SimpleNamespace(get=lambda: "11s"),
+            imagen_cargada=None,
+            footer=SimpleNamespace(ratio_actual=lambda: "9:16"),
+        )
+        svc = ToolsAnalysisService(app)
+        mostrado = []
+        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None: mostrado.append(
+            (json.loads(js), modelo, chuleta))
+        svc._copiar_comfyui_json()
+        assert recibido == {"modelo": "LTX 2.5", "prompt": "a fox", "ratio": "9:16",
+                            "segundos": 11.0, "con_imagen": False}
+        _wf, modelo, chuleta = mostrado[0]
+        assert modelo == "LTX 2.5"
+        assert "video_ltx2_5_t2v" in chuleta and "faltan 1" in chuleta
 
     def test_todos_los_tamanos_valen_para_flux2_y_flux3(self):
         # Su VAE reduce 16 veces: los lados tienen que ser múltiplos de 16.

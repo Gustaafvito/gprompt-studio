@@ -1962,18 +1962,17 @@ class ToolsAnalysisService:
         familia + arquitectura de carga correcta (CheckpointLoaderSimple para
         SDXL/SD1.5/Pony/Illustrious; UNETLoader + CLIPLoader + VAELoader para
         diffusion_models Flux/Qwen/Z-Image/Ideogram)."""
-        # El botón solo monta workflows de IMAGEN, y lee el desplegable de
-        # imagen. En modo vídeo exportaba el modelo de imagen que se hubiera
-        # quedado elegido: con LTX 2.5 en pantalla salió un workflow de
-        # «Anima» de SeaArt (17-oct-2026). Y con un modelo de la nube el
-        # fichero no existe en ComfyUI.
+        # Cada modo, su desplegable: en vídeo, el botón exportaba el modelo de
+        # imagen que se hubiera quedado elegido (con LTX 2.5 en pantalla salió
+        # un workflow de «Anima» de SeaArt, 17-oct-2026). Y con un modelo de la
+        # nube el fichero no existe en ComfyUI.
         modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
         plataforma = (self.app.plataforma_var.get()
                       if hasattr(self.app, "plataforma_var") else "ComfyUI")
-        if modo != "imagen" or "ComfyUI" not in plataforma:
+        if modo not in ("imagen", "video") or "ComfyUI" not in plataforma:
             from tkinter import messagebox
-            if modo != "imagen":
-                mensaje = tr("🔧 Comfy prepara workflows de imagen. Para vídeo y audio, "
+            if modo not in ("imagen", "video"):
+                mensaje = tr("🔧 Comfy prepara workflows de imagen y vídeo. Para audio, "
                              "abre en ComfyUI la plantilla de tu modelo (Workflow → "
                              "Plantillas) y pega allí el prompt.")
             else:
@@ -1991,6 +1990,8 @@ class ToolsAnalysisService:
 
         pos = self.app.extraer_positive() or actual
         neg = self.app.extraer_negative() or ""
+        if modo == "video":
+            return self._copiar_comfyui_video(pos, neg)
         modelo = self.app.combo_modelo_imagen.get() if hasattr(self.app, 'combo_modelo_imagen') else ""
         lora = self._lora_activo_para_workflow()
         # El formato elegido en la app: sin él, el latent salía siempre de
@@ -2010,6 +2011,50 @@ class ToolsAnalysisService:
             logger.debug(f"[silent] nombres de ComfyUI: {e}")
         json_str = json.dumps(workflow, indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo)
+
+    def _copiar_comfyui_video(self, pos: str, neg: str) -> None:
+        """Workflow de vídeo: la plantilla oficial de ComfyUI para el modelo,
+        con el prompt, la duración, el formato y los ficheros del usuario
+        (modules/comfy_video)."""
+        import json
+        import re as _re
+        from tkinter import messagebox
+
+        import config
+        from modules import comfy_video
+
+        modelo = self.app.combo_modelo_video.get() if hasattr(self.app, "combo_modelo_video") else ""
+        try:
+            ratio = self.app.footer.ratio_actual()
+        except Exception:
+            ratio = ""
+        dur = _re.search(r"\d+(?:\.\d+)?",
+                         self.app.duracion_var.get() if hasattr(self.app, "duracion_var") else "")
+        res = comfy_video.construir_workflow_video(
+            modelo, pos, neg, ratio, float(dur.group()) if dur else 0,
+            bool(getattr(self.app, "imagen_cargada", None)),
+            comfy_video.carpetas_plantillas(config.ruta_comfyui()),
+            config.nombres_modelos_comfy())
+        error = res.get("error")
+        if error:
+            mensajes = {
+                "sin_plantilla": tr("No tengo plantilla de ComfyUI para «{0}».").format(modelo),
+                "plantilla_no_encontrada": tr(
+                    "Tu ComfyUI no trae la plantilla «{0}». Actualiza ComfyUI y "
+                    "vuelve a probar.").format(res.get("plantilla")),
+                "sin_prompt": tr("No encuentro dónde va el prompt en la plantilla "
+                                 "«{0}».").format(res.get("plantilla")),
+            }
+            messagebox.showinfo(tr("🔧 Workflow ComfyUI"), mensajes[error], parent=self.app)
+            return None
+        resumen = tr("🎬 Plantilla oficial de ComfyUI: {0}").format(res["plantilla"])
+        if res.get("fichero"):
+            resumen += "   ·   " + tr("modelo: {0}").format(res["fichero"])
+        if res.get("faltan"):
+            resumen += "   ·   " + tr("faltan {0} ficheros: ComfyUI te ofrecerá "
+                                      "descargarlos").format(len(res["faltan"]))
+        json_str = json.dumps(res["workflow"], indent=2, ensure_ascii=False)
+        self._mostrar_ventana_comfyui(json_str, modelo, chuleta=resumen)
 
     def _lora_activo_para_workflow(self) -> str:
         """Nombre del LoRA primario seleccionado, o '' si no hay ninguno."""
@@ -2039,8 +2084,12 @@ class ToolsAnalysisService:
         from modules.comfy_export import serializar_workflow_ui
         return serializar_workflow_ui(abstractos, modelo, familia)
 
-    def _mostrar_ventana_comfyui(self, json_str: str, modelo: str) -> None:
-        """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar."""
+    def _mostrar_ventana_comfyui(self, json_str: str, modelo: str,
+                                 chuleta: str | None = None) -> None:
+        """Muestra el JSON en una ventana con opciones: Copiar / Pegar en ComfyUI / Guardar.
+
+        `chuleta`: la línea de resumen; si no se pasa, la de los ajustes de
+        imagen del modelo (en vídeo la da la plantilla oficial)."""
         from config import get_theme_colors
         is_lt = ctk.get_appearance_mode().lower() == "light"
         c = get_theme_colors(is_lt)
@@ -2069,7 +2118,9 @@ class ToolsAnalysisService:
         try:
             from config import comfy_workflow_params
             wp = comfy_workflow_params(modelo)
-            if wp["arch"] == "unet":
+            if chuleta:
+                chuleta_txt = chuleta
+            elif wp["arch"] == "unet":
                 chuleta_txt = tr("🧩 CLIP: {0}   ·   VAE: {1}   ·   {2}/{3} · CFG {4} · {5} pasos").format(
                     wp.get("clip") or tr("(elígelo en ComfyUI)"),
                     wp.get("vae") or tr("(elígelo en ComfyUI)"),
