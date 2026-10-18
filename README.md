@@ -146,7 +146,8 @@ del catálogo de su proveedor, la app lo oculta sola.
 - En la 1.1.3: FLUX 3 Image Klein, el nuevo modelo abierto de Black Forest
   Labs, en SeaArt y en ComfyUI (con grupo propio), y la app le redacta el
   prompt con las instrucciones oficiales de su prompt upsampler. Y Krea 3
-  en SeaArt.
+  en SeaArt. El botón 🔧 Comfy monta también los workflows de vídeo, desde
+  las plantillas oficiales de tu ComfyUI y con tus imágenes dentro.
 - En la 1.1.2: Anima, el modelo de anime de CircleStone Labs y Comfy Org,
   con los ajustes de cada versión (Turbo, Aesthetic y Base), también en
   ComfyUI con grupo propio. Y el gestor de LoRAs suma Anima, Krea 2, LTX,

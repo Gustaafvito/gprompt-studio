@@ -227,9 +227,11 @@ class DataMgmtService:
     def _cargar_imagen(self) -> None:
         ruta = filedialog.askopenfilename(filetypes=[(tr("Imágenes"), "*.jpg *.jpeg *.png *.webp *.bmp")])
         if ruta:
-            self._cargar_imagen_desde_pil(Image.open(ruta).convert("RGB"), Path(ruta).name)
+            self._cargar_imagen_desde_pil(Image.open(ruta).convert("RGB"), Path(ruta).name, ruta)
 
-    def _cargar_imagen_desde_pil(self, img, nombre="imagen"):
+    def _cargar_imagen_desde_pil(self, img, nombre="imagen", ruta=None):
+        # Sin fichero (pegada o del historial), 🔧 Comfy guarda la de 1024 px.
+        self.app.imagen_cargada_ruta = ruta
         if max(img.size) > 1024:
             gem = img.copy()
             gem.thumbnail((1024, 1024), Image.LANCZOS)
@@ -251,6 +253,7 @@ class DataMgmtService:
 
     def _limpiar_imagen(self) -> None:
         self.app.imagen_cargada = None
+        self.app.imagen_cargada_ruta = None
         self.app._ultimo_anclaje_visual = None
         self.app.lbl_img_preview.configure(image=ctk.CTkImage(light_image=Image.new("RGB", (1, 1)), dark_image=Image.new("RGB", (1, 1)), size=(1, 1)), text="")
         self.app.lbl_img_nombre.configure(text=tr("Sin imagen"), text_color=P.TXT_MUTED_OSCURO)

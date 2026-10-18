@@ -2030,11 +2030,22 @@ class ToolsAnalysisService:
             ratio = ""
         dur = _re.search(r"\d+(?:\.\d+)?",
                          self.app.duracion_var.get() if hasattr(self.app, "duracion_var") else "")
+        segundos = float(dur.group()) if dur else 0
+        con_imagen = bool(getattr(self.app, "imagen_cargada", None))
+        carpetas = comfy_video.carpetas_plantillas(config.ruta_comfyui())
+        nombres = config.nombres_modelos_comfy()
         res = comfy_video.construir_workflow_video(
-            modelo, pos, neg, ratio, float(dur.group()) if dur else 0,
-            bool(getattr(self.app, "imagen_cargada", None)),
-            comfy_video.carpetas_plantillas(config.ruta_comfyui()),
-            config.nombres_modelos_comfy())
+            modelo, pos, neg, ratio, segundos, con_imagen, carpetas, nombres)
+        # Tus ficheros, en sus Load Image / Video / Audio: el 18-oct-2026 el
+        # ref2va de MiniMax salió con las imágenes de ejemplo de la plantilla.
+        if res.get("huecos"):
+            refs = self._ficheros_para_comfy(modelo, res["huecos"])
+            if refs is None:
+                return None
+            if refs:
+                res = comfy_video.construir_workflow_video(
+                    modelo, pos, neg, ratio, segundos, con_imagen, carpetas, nombres,
+                    refs=refs)
         error = res.get("error")
         if error:
             mensajes = {
@@ -2053,8 +2064,159 @@ class ToolsAnalysisService:
         if res.get("faltan"):
             resumen += "   ·   " + tr("faltan {0} ficheros: ComfyUI te ofrecerá "
                                       "descargarlos").format(len(res["faltan"]))
+        huecos = res.get("huecos") or []
+        tuyos = sum(1 for h in huecos if h["fichero"])
+        sin_poner = [self._nombre_hueco(h) for h in huecos
+                     if not h["fichero"] and not h["opcional"]]
+        if tuyos:
+            resumen += "   ·   " + tr("📎 {0} fichero(s) tuyo(s) dentro").format(tuyos)
+        if sin_poner:
+            resumen += "   ·   " + tr("⚠️ con el de ejemplo: {0}").format(", ".join(sin_poner))
         json_str = json.dumps(res["workflow"], indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo, chuleta=resumen)
+
+    @staticmethod
+    def _nombre_hueco(hueco: dict) -> str:
+        """«imagen 2», «vídeo 1»…, como se lee en la app."""
+        nombre = tr({"imagen": "imagen {0}", "video": "vídeo {0}", "audio": "audio {0}"}.get(
+            hueco["tipo"], "imagen {0}")).format(hueco["n"])
+        return nombre + (f" {hueco['etiqueta']}" if hueco.get("etiqueta") else "")
+
+    @staticmethod
+    def texto_referencias_comfy(modelo: str) -> str:
+        """Lo que un modelo de vídeo de ComfyUI necesita además del prompt,
+        para la ficha del modelo; "" si le basta el texto."""
+        from modules import comfy_video
+        necesita = comfy_video.referencias_necesarias(modelo)
+        if not necesita:
+            return ""
+        que = tr({
+            "video_minimax_h3_r2v": "imágenes de referencia de lo que debe salir (hasta 9)",
+            "video_wan_animate2": "una imagen del personaje y un vídeo con el movimiento",
+            "video_bernini_r_video_editing": "el vídeo que se edita y una imagen de referencia",
+            "video_wan2_2_5B_fun_control": "una imagen inicial y un vídeo de control",
+            "video_wan2_2_14B_fun_control": "una imagen inicial y un vídeo de control",
+            "video_wan2_2_14B_s2v": "una imagen del personaje y el audio de su voz",
+            "video_wan21_scail2_character_replacement_int8":
+                "un vídeo y una imagen del personaje que entra en él",
+        }.get(comfy_video.plantilla_para(modelo), "una imagen inicial"))
+        if set(necesita) == {"imagen"}:
+            return tr("📎 Necesita {0}: carga tu imagen en la app antes de generar "
+                      "(🔧 Comfy la mete en el workflow)").format(que)
+        return tr("📎 Necesita {0}: carga la imagen en la app antes de generar; el "
+                  "resto te lo pide 🔧 Comfy").format(que)
+
+    def _ficheros_para_comfy(self, modelo: str, huecos: list) -> dict | None:
+        """Copia a la carpeta input de ComfyUI la imagen cargada en la app y,
+        si el workflow necesita más (el vídeo de Animate, el audio de S2V, la
+        2.ª imagen del ref2va…), los pide.
+
+        Devuelve, por tipo, los nombres que verá Load Image; {} si no hay
+        nada que poner; None si se cancela."""
+        import os
+
+        import config
+        from modules import comfy_video
+
+        carpeta = comfy_video.carpeta_input(config.ruta_comfyui())
+        if carpeta is None:
+            self.app.dialogs.set_estado(
+                tr("⚠️ No encuentro la carpeta input de tu ComfyUI: pon tus ficheros "
+                   "en sus nodos Load."), P.TXT_AVISO)
+            return {}
+        imagen = getattr(self.app, "imagen_cargada", None)
+        usar_imagen = imagen is not None and any(h["tipo"] == "imagen" for h in huecos)
+        faltan = [h for h in huecos if not h["opcional"]
+                  and not (usar_imagen and h["tipo"] == "imagen" and h["n"] == 1)]
+        elegidos = self._pedir_ficheros_comfy(modelo, faltan) if faltan else {}
+        if elegidos is None:
+            return None
+        refs = {}
+        try:
+            if usar_imagen:
+                ruta = getattr(self.app, "imagen_cargada_ruta", None)
+                refs["imagen"] = [
+                    comfy_video.copiar_a_input(ruta, carpeta) if ruta and os.path.isfile(ruta)
+                    else comfy_video.guardar_imagen_en_input(imagen, carpeta)]
+            for (tipo, n), ruta in sorted(elegidos.items()):
+                lista = refs.setdefault(tipo, [])
+                lista += [None] * (n - len(lista))
+                lista[n - 1] = comfy_video.copiar_a_input(ruta, carpeta)
+        except OSError as e:
+            logger.warning(f"No se pudo copiar a la carpeta input de ComfyUI: {e}")
+            self.app.dialogs.set_estado(
+                tr("⚠️ No he podido copiar tus ficheros a ComfyUI: {0}").format(e), P.TXT_AVISO)
+        return refs
+
+    def _pedir_ficheros_comfy(self, modelo: str, faltan: list) -> dict | None:
+        """Ventana para elegir los ficheros que faltan. Devuelve
+        {(tipo, n): ruta} con los elegidos; None si se cancela."""
+        import os
+        from tkinter import filedialog
+
+        from config import get_theme_colors
+        is_lt = ctk.get_appearance_mode().lower() == "light"
+        c = get_theme_colors(is_lt)
+        tipos_fichero = {
+            "imagen": [(tr("Imágenes"), "*.png *.jpg *.jpeg *.webp *.bmp")],
+            "video": [(tr("Vídeo"), "*.mp4 *.mov *.webm *.mkv *.avi *.gif")],
+            "audio": [(tr("Audio"), "*.mp3 *.wav *.flac *.ogg *.m4a")],
+        }
+        resultado = {"v": None}
+        elegidos = {}
+
+        vent = GPromptWindow(self.app)
+        vent.title(tr("📎 Tus ficheros para ComfyUI"))
+        vent.geometry("560x" + str(150 + 44 * len(faltan)))
+        vent.transient(self.app)
+        vent.grab_set()
+        ctk.CTkLabel(vent, text=tr("📎 Tus ficheros para ComfyUI"),
+                     font=ctk.CTkFont(size=P.FUENTE_TITULO, weight="bold")).pack(pady=(14, 2))
+        ctk.CTkLabel(vent, text=tr("«{0}» parte de ficheros tuyos. Elige los que falten: se "
+                                   "copian a la carpeta input de ComfyUI y entran en sus nodos "
+                                   "Load. Los que dejes sin elegir llevan el de ejemplo de la "
+                                   "plantilla.").format(modelo),
+                     font=ctk.CTkFont(size=P.FUENTE_PEQUENA), text_color=c["muted_text"],
+                     wraplength=520, justify="left").pack(padx=16, pady=(0, 8), anchor="w")
+
+        filas = ctk.CTkFrame(vent, fg_color=c["fg_dark"], corner_radius=6)
+        filas.pack(fill="x", padx=16, pady=(0, 8))
+        for h in faltan:
+            fila = ctk.CTkFrame(filas, fg_color="transparent")
+            fila.pack(fill="x", padx=10, pady=4)
+            icono = {"imagen": "🖼", "video": "🎬", "audio": "🔊"}.get(h["tipo"], "📎")
+            nombre = self._nombre_hueco(h)
+            ctk.CTkLabel(fila, text=f"{icono} {nombre[:1].upper()}{nombre[1:]}", width=150,
+                         anchor="w", font=ctk.CTkFont(size=P.FUENTE_CUERPO, weight="bold")
+                         ).pack(side="left")
+            lbl = ctk.CTkLabel(fila, text=tr("(sin elegir)"), anchor="w",
+                               text_color=c["muted_text"], font=ctk.CTkFont(size=P.FUENTE_PEQUENA))
+
+            def _elegir(h=h, lbl=lbl):
+                ruta = filedialog.askopenfilename(parent=vent, filetypes=tipos_fichero[h["tipo"]])
+                if ruta:
+                    elegidos[(h["tipo"], h["n"])] = ruta
+                    lbl.configure(text=os.path.basename(ruta)[:38], text_color=P.TXT_OK)
+
+            ctk.CTkButton(fila, text=tr("📂 Elegir…"), width=90, height=28,
+                          command=_elegir).pack(side="right")
+            lbl.pack(side="left", fill="x", expand=True, padx=(6, 6))
+
+        def _aceptar():
+            resultado["v"] = dict(elegidos)
+            vent.destroy()
+
+        botones = ctk.CTkFrame(vent, fg_color="transparent")
+        botones.pack(pady=(4, 12))
+        ctk.CTkButton(botones, text=tr("✅ Crear workflow"), width=150, height=32,
+                      fg_color=P.BTN_EXITO, hover_color=P.BTN_EXITO_HOVER,
+                      command=_aceptar).pack(side="left", padx=4)
+        ctk.CTkButton(botones, text=tr("Cancelar"), width=100, height=32,
+                      fg_color=P.BTN_NEUTRO, hover_color=P.BTN_NEUTRO_HOVER,
+                      command=vent.destroy).pack(side="left", padx=4)
+        vent.bind("<Return>", lambda _e: _aceptar())
+        vent.wait_window()
+        return resultado["v"]
 
     def _lora_activo_para_workflow(self) -> str:
         """Nombre del LoRA primario seleccionado, o '' si no hay ninguno."""

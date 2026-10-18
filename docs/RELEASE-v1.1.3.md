@@ -172,6 +172,28 @@ acción, nombra cada referencia por lo que contiene y cierra con lo que no
 cambia. Sin negativo, hasta 2.000 caracteres, 11 formatos y hasta 8
 imágenes por tanda.
 
+**El botón «🔧 Comfy», también en vídeo.** Hasta ahora solo montaba
+workflows de imagen, y en vídeo exportaba el modelo de imagen que se
+hubiera quedado elegido. Ahora parte de la plantilla oficial que trae tu
+ComfyUI para cada modelo de vídeo —LTX 2.5 y 2.3, MiniMax H3, Wan 2.1 y 2.2
+(con Animate, S2V, Fun Control y Fun Camera), SCAIL, Bernini y Kandinsky 5—
+y le escribe el prompt, el negativo, la duración, el formato y tu fichero
+del modelo, con el cargador que le toca si es GGUF. El mejorador de prompt
+de la plantilla va apagado: el prompt ya llega escrito.
+
+Y los modelos que parten de ficheros tuyos lo dicen en su ficha: el ref2va
+de MiniMax H3 trabaja con imágenes de referencia; Animate, con la imagen
+del personaje y un vídeo con el movimiento; S2V, con el audio de la voz… La
+imagen que cargues en la app entra sola en su Load Image (se copia a la
+carpeta input de ComfyUI), y lo que falte te lo pide al pulsar el botón. En
+el ref2va, el workflow lleva tantas imágenes como nombre el prompt
+(`<Picture 1>`, `<Picture 2>`…), hasta 9.
+
+**Dos arreglos** que salieron probando FLUX 3: el texto que tiene que salir
+escrito en la imagen —un cartel que dice «ABIERTO»— ya no se traduce al
+inglés con el resto del prompt, y el workflow de imagen sale en el formato
+que eliges en la app, no siempre cuadrado.
+
 **Lo demás no cambia** respecto a la
 [1.1.2](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.2):
 mismo programa, mismos proveedores y mismas funciones. Si vienes de antes,

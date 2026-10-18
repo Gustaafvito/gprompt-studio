@@ -24,10 +24,13 @@ aquí, como «campos» (un nodo, un widget y dónde vive su valor):
     viven en los nodos de dentro.
 """
 import copy
+import hashlib
+import io
 import json
 import logging
 import os
 import re
+import shutil
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -54,6 +57,24 @@ PLANTILLAS_VIDEO = (
     (r"kandinsky[-_ ]?5.*i2v", "video_kandinsky5_i2v", "video_kandinsky5_i2v"),
     (r"kandinsky[-_ ]?5", "video_kandinsky5_t2v", "video_kandinsky5_i2v"),
 )
+
+# Lo que cada plantilla necesita además del prompt, para avisar en la app
+# antes de generar. Las de imagen a vídeo de un modelo de texto (LTX,
+# MiniMax fl2va, Kandinsky t2v) no están: ahí la imagen es opcional y solo
+# cambia de plantilla. El 18-oct-2026 el usuario generó para el ref2va de
+# MiniMax sin imágenes y el workflow salió con las de ejemplo.
+REFERENCIAS = {
+    "video_minimax_h3_r2v": ("imagen",),
+    "video_wan_animate2": ("imagen", "video"),
+    "video_bernini_r_video_editing": ("video", "imagen"),
+    "video_wan2_2_14B_fun_camera": ("imagen",),
+    "video_wan2_2_5B_fun_control": ("imagen", "video"),
+    "video_wan2_2_14B_fun_control": ("imagen", "video"),
+    "video_wan2_2_14B_s2v": ("imagen", "audio"),
+    "video_wan2_2_14B_i2v": ("imagen",),
+    "video_wan21_scail2_character_replacement_int8": ("video", "imagen"),
+    "video_kandinsky5_i2v": ("imagen",),
+}
 
 # Tipos de entrada de subgrafo que son un widget (los demás son conexiones).
 _TIPOS_WIDGET = {"STRING", "INT", "FLOAT", "BOOLEAN", "COMBO"}
@@ -128,6 +149,12 @@ def plantilla_para(modelo: str, con_imagen: bool = False) -> str | None:
         return None
     _patron, t2v, i2v = PLANTILLAS_VIDEO[i]
     return i2v if con_imagen else t2v
+
+
+def referencias_necesarias(modelo: str) -> tuple:
+    """Lo que el modelo necesita además del prompt ("imagen", "video",
+    "audio"), o () si le basta el texto."""
+    return REFERENCIAS.get(plantilla_para(modelo) or "", ())
 
 
 def carpetas_plantillas(ruta_comfy: str) -> list:
@@ -459,6 +486,255 @@ def _cambiar_cargador(campo: _Campo, gguf: bool) -> None:
             campo.almacen = nodo["widgets_values"]
 
 
+# ── Tus ficheros: Load Image / Load Video / Load Audio ───────────
+
+_CARGAS = {"LoadImage": "imagen", "LoadVideo": "video", "LoadAudio": "audio"}
+# Las referencias de imagen de MiniMax H3 ref2va: entradas que crecen (de 0
+# a 9) en el nodo MiniMaxH3ReferenceToVideo.
+_REF_IMAGEN = re.compile(r"^ref_images\.ref_image_(\d+)$")
+_MAX_REF_IMAGENES = 9
+
+
+class _Hueco:
+    """Un fichero tuyo en la plantilla, con todos los nodos que lo cargan.
+
+    Las plantillas repiten el mismo fichero en un grupo apagado (la versión
+    de 4 pasos de Wan, por ejemplo): un hueco por fichero, no por nodo.
+    `entrada`: dónde entra (ref_images.ref_image_0, start_image…).
+    """
+    __slots__ = ("tipo", "ejemplo", "nodos", "entrada")
+
+    def __init__(self, tipo, ejemplo):
+        self.tipo, self.ejemplo = tipo, ejemplo
+        self.nodos, self.entrada = [], ""
+
+    @property
+    def apagado(self) -> bool:
+        """Todos sus nodos apagados: es opcional (la imagen de Wan 2.2 ti2v)."""
+        return all(n.get("mode", 0) in (2, 4) for n, _c in self.nodos)
+
+    @property
+    def crece(self) -> bool:
+        return bool(_REF_IMAGEN.match(self.entrada))
+
+
+def _id_enlace(enlace):
+    return enlace.get("id") if isinstance(enlace, dict) else enlace[0]
+
+
+def _entrada_destino(nodo: dict, cont: dict) -> str:
+    enlaces, nodos = _enlaces(cont), _nodos_por_id(cont)
+    for salida in nodo.get("outputs", []) or []:
+        for lid in salida.get("links") or []:
+            destino = enlaces.get(lid)
+            ins = (nodos.get(destino[2]) or {}).get("inputs", []) if destino else []
+            if destino and destino[3] < len(ins):
+                return ins[destino[3]].get("name", "")
+    return ""
+
+
+def _orden_natural(texto: str) -> list:
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", texto)]
+
+
+def _huecos(wf: dict) -> list:
+    por_fichero = {}
+    for cont in [wf, *wf.get("definitions", {}).get("subgraphs", [])]:
+        for nodo in cont.get("nodes", []):
+            tipo = _CARGAS.get(nodo.get("type"))
+            valores = nodo.get("widgets_values")
+            if not tipo or not isinstance(valores, list) or not valores:
+                continue
+            clave = (tipo, str(valores[0]))
+            if clave not in por_fichero:
+                por_fichero[clave] = _Hueco(tipo, str(valores[0]))
+            por_fichero[clave].nodos.append((nodo, cont))
+    huecos = list(por_fichero.values())
+    for h in huecos:
+        nodo, cont = next(((n, c) for n, c in h.nodos if n.get("mode", 0) not in (2, 4)),
+                          h.nodos[0])
+        h.entrada = _entrada_destino(nodo, cont)
+    return sorted(huecos, key=lambda h: (h.apagado, _orden_natural(h.entrada),
+                                         min(n.get("id", 0) for n, _c in h.nodos)))
+
+
+def _poner_carga(hueco: _Hueco, nombre: str) -> None:
+    encender = hueco.apagado
+    for nodo, _cont in hueco.nodos:
+        viejo = nodo["widgets_values"][0]
+        nodo["widgets_values"][0] = nombre
+        # Las plantillas nuevas repiten los valores por nombre.
+        nombrados = nodo.get("widgets_values_named")
+        if isinstance(nombrados, dict):
+            for k, v in nombrados.items():
+                if v == viejo:
+                    nombrados[k] = nombre
+        if encender:
+            nodo["mode"] = 0
+
+
+def _quitar_hueco(hueco: _Hueco) -> None:
+    """Fuera sus nodos y sus conexiones (solo para entradas opcionales)."""
+    for nodo, cont in hueco.nodos:
+        nid = nodo.get("id")
+        quitar = {lid for lid, e in _enlaces(cont).items() if nid in (e[0], e[2])}
+        cont["nodes"] = [n for n in cont.get("nodes", []) if n is not nodo]
+        for n in cont["nodes"]:
+            for i in n.get("inputs", []) or []:
+                if i.get("link") in quitar:
+                    i["link"] = None
+            for o in n.get("outputs", []) or []:
+                if o.get("links"):
+                    o["links"] = [lid for lid in o["links"] if lid not in quitar]
+        cont["links"] = [lk for lk in cont.get("links", []) if _id_enlace(lk) not in quitar]
+
+
+def _nuevo_id(wf: dict, clave: str, usados) -> int:
+    return max([wf.get(clave) or 0, *(u for u in usados if isinstance(u, int))]) + 1
+
+
+def _clonar_hueco(hueco: _Hueco, wf: dict) -> "_Hueco | None":
+    """Una referencia de imagen más para MiniMax H3 ref2va: otro Load Image,
+    en la siguiente entrada libre de su nodo. None si ya van las 9."""
+    nodo, cont = hueco.nodos[0]
+    enlaces, nodos = _enlaces(cont), _nodos_por_id(cont)
+    lid = next((x for o in nodo.get("outputs", []) or [] for x in o.get("links") or []), None)
+    destino = nodos.get(enlaces[lid][2]) if lid in enlaces else None
+    if not destino:
+        return None
+    ins = destino.setdefault("inputs", [])
+    refs = [k for k, i in enumerate(ins) if _REF_IMAGEN.match(i.get("name", ""))]
+    slot = next((k for k in refs if ins[k].get("link") is None), None)
+    if slot is None:
+        if len(refs) >= _MAX_REF_IMAGENES:
+            return None
+        # La entrada aún no existe: va detrás de la última, y las conexiones
+        # a las entradas que quedan detrás se corren un puesto.
+        slot = refs[-1] + 1
+        n = int(_REF_IMAGEN.match(ins[refs[-1]]["name"]).group(1)) + 1
+        nueva = dict(ins[refs[-1]], name=f"ref_images.ref_image_{n}", link=None)
+        if "label" in nueva:
+            nueva["label"] = f"ref_image_{n}"
+        ins.insert(slot, nueva)
+        for lk in cont.get("links", []):
+            if isinstance(lk, dict):
+                if lk["target_id"] == destino["id"] and lk["target_slot"] >= slot:
+                    lk["target_slot"] += 1
+            elif lk[3] == destino["id"] and lk[4] >= slot:
+                lk[4] += 1
+    clon = copy.deepcopy(nodo)
+    clon["id"] = _nuevo_id(wf, "last_node_id", (n.get("id") for n in cont.get("nodes", [])))
+    wf["last_node_id"] = clon["id"]
+    nuevo_lid = _nuevo_id(wf, "last_link_id", (_id_enlace(lk) for lk in cont.get("links", [])))
+    wf["last_link_id"] = nuevo_lid
+    pos = clon.get("pos")
+    if isinstance(pos, list) and len(pos) == 2:
+        clon["pos"] = [pos[0] + 350, pos[1]]
+    for o in clon.get("outputs", []) or []:
+        o["links"] = [nuevo_lid] if o.get("type") == "IMAGE" else None
+    cont["nodes"].append(clon)
+    ins[slot]["link"] = nuevo_lid
+    if cont.get("links") and isinstance(cont["links"][0], dict):
+        cont["links"].append({"id": nuevo_lid, "origin_id": clon["id"], "origin_slot": 0,
+                              "target_id": destino["id"], "target_slot": slot, "type": "IMAGE"})
+    else:
+        cont.setdefault("links", []).append([nuevo_lid, clon["id"], 0, destino["id"], slot, "IMAGE"])
+    nuevo = _Hueco("imagen", hueco.ejemplo)
+    nuevo.nodos.append((clon, cont))
+    nuevo.entrada = ins[slot]["name"]
+    return nuevo
+
+
+def _etiquetas(prompt: str, clase: str) -> int:
+    """El número más alto de <Picture N> (o Video, Audio) del prompt."""
+    return max((int(n) for n in re.findall(rf"<{clase}\s*(\d+)>", prompt or "")), default=0)
+
+
+def carpeta_input(ruta_comfy: str) -> "Path | None":
+    """La carpeta input de ComfyUI, de donde lee Load Image, o None."""
+    if not ruta_comfy:
+        return None
+    base = Path(ruta_comfy)
+    for carpeta in (base / "input", base / "ComfyUI" / "input"):
+        if carpeta.is_dir():
+            return carpeta
+    return None
+
+
+def _nombre_en_input(huella: str, nombre: str, ext: str) -> str:
+    # Load Image solo lista lo que está suelto en input/, sin subcarpetas.
+    raiz = re.sub(r"[^A-Za-z0-9_-]+", "_", Path(nombre).stem).strip("_")[:40] or "ref"
+    return f"gprompt_{raiz}_{huella[:10]}{ext.lower()}"
+
+
+def copiar_a_input(origen, carpeta) -> str:
+    """Copia un fichero tuyo a la carpeta input de ComfyUI y devuelve el
+    nombre que verá Load Image. El nombre lleva su huella: la misma imagen no
+    se copia dos veces y otra que se llame igual no la pisa."""
+    origen = Path(origen)
+    sha = hashlib.sha256()
+    with open(origen, "rb") as f:
+        for bloque in iter(lambda: f.read(1 << 20), b""):
+            sha.update(bloque)
+    nombre = _nombre_en_input(sha.hexdigest(), origen.name, origen.suffix)
+    destino = Path(carpeta) / nombre
+    if not destino.exists():
+        shutil.copyfile(origen, destino)
+    return nombre
+
+
+def guardar_imagen_en_input(imagen, carpeta, nombre: str = "imagen") -> str:
+    """La imagen cargada en la app (PIL), como PNG en la carpeta input."""
+    buf = io.BytesIO()
+    imagen.save(buf, format="PNG")
+    datos = buf.getvalue()
+    final = _nombre_en_input(hashlib.sha256(datos).hexdigest(), nombre, ".png")
+    destino = Path(carpeta) / final
+    if not destino.exists():
+        destino.write_bytes(datos)
+    return final
+
+
+def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list) -> list:
+    """Pone tus ficheros en los Load de la plantilla. `refs`: por tipo, los
+    nombres en la carpeta input, en orden (None = sin fichero).
+
+    Devuelve los huecos como los ve la app: tipo, número, el de ejemplo,
+    el tuyo (o None) y si es opcional."""
+    huecos = _huecos(wf)
+    # MiniMax H3 ref2va: tantas imágenes como <Picture N> nombre el prompt.
+    # Las de ejemplo que sobran, fuera: meterían a sus personajes en tu vídeo.
+    crecen = [h for h in huecos if h.tipo == "imagen" and h.crece]
+    if crecen:
+        pedidas = max(_etiquetas(prompt, "Picture"),
+                      len([x for x in refs.get("imagen") or [] if x]), 1)
+        pedidas = min(pedidas, _MAX_REF_IMAGENES)
+        while len(crecen) < pedidas:
+            nuevo = _clonar_hueco(crecen[-1], wf)
+            if not nuevo:
+                break
+            crecen.append(nuevo)
+            huecos.append(nuevo)
+        for h in crecen[pedidas:]:
+            _quitar_hueco(h)
+            huecos.remove(h)
+        for clase, tipo in (("Video", "vídeo"), ("Audio", "audio")):
+            if _etiquetas(prompt, clase):
+                avisos.append(f"Tu prompt nombra un <{clase} 1>: la plantilla no trae dónde "
+                              f"cargarlo. Añade tu {tipo} en ComfyUI al nodo de referencias.")
+    salida = []
+    for tipo in ("imagen", "video", "audio"):
+        dados = list(refs.get(tipo) or [])
+        for i, h in enumerate([x for x in huecos if x.tipo == tipo]):
+            fichero = dados[i] if i < len(dados) else None
+            if fichero:
+                _poner_carga(h, fichero)
+            salida.append({"tipo": tipo, "n": i + 1, "ejemplo": h.ejemplo, "fichero": fichero,
+                           "opcional": h.apagado and not fichero,
+                           "etiqueta": f"<Picture {i + 1}>" if h.crece else ""})
+    return salida
+
+
 # ── Construcción ─────────────────────────────────────────────────
 
 def _tam(ratio: str, ancho: int, alto: int) -> tuple:
@@ -476,11 +752,16 @@ def _tam(ratio: str, ancho: int, alto: int) -> tuple:
 def construir_workflow_video(modelo: str, prompt: str, negativo: str = "",
                              ratio: str = "", segundos: float = 0,
                              con_imagen: bool = False, carpetas: list = (),
-                             nombres: dict | None = None) -> dict:
+                             nombres: dict | None = None, refs: dict | None = None) -> dict:
     """Workflow de vídeo desde la plantilla oficial, con lo nuestro dentro.
 
-    Devuelve {"workflow", "plantilla", "fichero", "faltan", "imagen"} o
-    {"error": texto} si no hay plantilla o no se encuentra dónde va el prompt.
+    `refs`: tus ficheros ya copiados a la carpeta input de ComfyUI, por tipo
+    ({"imagen": [...], "video": [...], "audio": [...]}), en el orden de los
+    huecos que devuelve la llamada sin ellos.
+
+    Devuelve {"workflow", "plantilla", "fichero", "faltan", "imagen",
+    "avisos", "huecos"} o {"error": texto} si no hay plantilla o no se
+    encuentra dónde va el prompt.
     """
     nombres = nombres or {}
     plantilla = plantilla_para(modelo, con_imagen)
@@ -616,22 +897,31 @@ def construir_workflow_video(modelo: str, prompt: str, negativo: str = "",
         elif nombres and c.valor not in faltan:
             faltan.append(c.valor)
 
-    imagen = any(n.get("type") in ("LoadImage", "LoadVideo", "LoadAudio")
-                 for cont in [wf, *wf.get("definitions", {}).get("subgraphs", [])]
-                 for n in cont.get("nodes", []))
-    _anadir_nota(wf, modelo, plantilla, faltan, imagen, avisos)
+    # 8. Tus ficheros, en sus Load Image / Load Video / Load Audio.
+    huecos = _meter_ficheros(wf, prompt, refs or {}, avisos)
+    imagen = bool(huecos)
+    _anadir_nota(wf, modelo, plantilla, faltan, huecos, avisos)
     return {"workflow": wf, "plantilla": plantilla, "fichero": fichero,
-            "faltan": faltan, "imagen": imagen, "avisos": avisos}
+            "faltan": faltan, "imagen": imagen, "avisos": avisos, "huecos": huecos}
 
 
-def _anadir_nota(wf: dict, modelo: str, plantilla: str, faltan: list, imagen: bool,
+_NODO_CARGA = {"imagen": "Load Image", "video": "Load Video", "audio": "Load Audio"}
+_NOMBRE_TIPO = {"imagen": "Imagen", "video": "Vídeo", "audio": "Audio"}
+
+
+def _anadir_nota(wf: dict, modelo: str, plantilla: str, faltan: list, huecos: list,
                  avisos: list = ()) -> None:
     lineas = [f"G-Prompt Studio · {modelo}",
               f"Plantilla oficial de ComfyUI: {plantilla}",
               "El prompt ya va escrito: el mejorador de prompt de la plantilla, apagado."]
     lineas += list(avisos)
-    if imagen:
-        lineas.append("Carga tus ficheros en los nodos Load Image / Load Video / Load Audio.")
+    for h in huecos:
+        nombre = f"{_NOMBRE_TIPO[h['tipo']]} {h['n']}" + (f" {h['etiqueta']}" if h["etiqueta"] else "")
+        if h["fichero"]:
+            lineas.append(f"{nombre}: {h['fichero']}, ya en su {_NODO_CARGA[h['tipo']]}.")
+        elif not h["opcional"]:
+            lineas.append(f"{nombre}: lleva el fichero de ejemplo ({h['ejemplo']}); "
+                          f"pon el tuyo en su {_NODO_CARGA[h['tipo']]}.")
     if faltan:
         lineas.append("No están en tu ComfyUI (te ofrecerá descargarlos):")
         lineas += [f"  • {f}" for f in faltan]

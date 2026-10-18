@@ -927,6 +927,32 @@ TRADUCCIONES = {
     '🎬 Plantilla oficial de ComfyUI: {0}': '🎬 Official ComfyUI template: {0}',
     'modelo: {0}': 'model: {0}',
     'faltan {0} ficheros: ComfyUI te ofrecerá descargarlos': '{0} files missing: ComfyUI will offer to download them',
+    # Tus ficheros en los Load Image / Video / Audio del workflow (18-oct-2026).
+    '📎 {0} fichero(s) tuyo(s) dentro': '📎 {0} of your file(s) inside',
+    '⚠️ con el de ejemplo: {0}': '⚠️ still the sample file: {0}',
+    'imagen {0}': 'image {0}',
+    'vídeo {0}': 'video {0}',
+    'audio {0}': 'audio {0}',
+    'imágenes de referencia de lo que debe salir (hasta 9)': 'reference images of what must appear (up to 9)',
+    'una imagen del personaje y un vídeo con el movimiento': 'an image of the character and a video with the motion',
+    'el vídeo que se edita y una imagen de referencia': 'the video to edit and a reference image',
+    'una imagen inicial y un vídeo de control': 'a start image and a control video',
+    'una imagen del personaje y el audio de su voz': 'an image of the character and the audio of their voice',
+    'un vídeo y una imagen del personaje que entra en él': 'a video and an image of the character to put into it',
+    'una imagen inicial': 'a start image',
+    '📎 Necesita {0}: carga tu imagen en la app antes de generar (🔧 Comfy la mete en el workflow)':
+        '📎 Needs {0}: load your image in the app before generating (🔧 Comfy puts it in the workflow)',
+    '📎 Necesita {0}: carga la imagen en la app antes de generar; el resto te lo pide 🔧 Comfy':
+        '📎 Needs {0}: load the image in the app before generating; 🔧 Comfy asks you for the rest',
+    '⚠️ No encuentro la carpeta input de tu ComfyUI: pon tus ficheros en sus nodos Load.':
+        "⚠️ I can't find your ComfyUI input folder: put your files in their Load nodes.",
+    '⚠️ No he podido copiar tus ficheros a ComfyUI: {0}': "⚠️ Couldn't copy your files to ComfyUI: {0}",
+    '📎 Tus ficheros para ComfyUI': '📎 Your files for ComfyUI',
+    '«{0}» parte de ficheros tuyos. Elige los que falten: se copian a la carpeta input de ComfyUI y entran en sus nodos Load. Los que dejes sin elegir llevan el de ejemplo de la plantilla.':
+        "«{0}» starts from your own files. Pick the missing ones: they are copied to the ComfyUI input folder and go into their Load nodes. Any you leave unpicked keep the template's sample file.",
+    '(sin elegir)': '(not picked)',
+    '📂 Elegir…': '📂 Choose…',
+    '✅ Crear workflow': '✅ Create workflow',
     '🔧 Comfy prepara el workflow de un modelo que tengas en ComfyUI. Elige la plataforma «ComfyUI / Fooocus» y uno de tus modelos.':
         '🔧 Comfy builds the workflow for a model you have in ComfyUI. Pick the «ComfyUI / Fooocus» platform and one of your models.',
     '⚠️ La previsualización solo está disponible para Imágenes y Vídeos.': '⚠️ Preview is only available for Images and Videos.',
