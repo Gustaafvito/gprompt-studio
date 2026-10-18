@@ -918,6 +918,10 @@ TRADUCCIONES = {
     '⚠️ Genera un prompt primero para refinarlo.': '⚠️ Generate a prompt first to refine it.',
     '⚠️ Genera un prompt primero para scoring.': '⚠️ Generate a prompt first for scoring.',
     '⚠️ Genera un prompt primero.': '⚠️ Generate a prompt first.',
+    '🔧 Comfy prepara workflows de imagen. Para vídeo y audio, abre en ComfyUI la plantilla de tu modelo (Workflow → Plantillas) y pega allí el prompt.':
+        '🔧 Comfy builds image workflows. For video and audio, open your model\'s template in ComfyUI (Workflow → Templates) and paste the prompt there.',
+    '🔧 Comfy prepara el workflow de un modelo que tengas en ComfyUI. Elige la plataforma «ComfyUI / Fooocus» y uno de tus modelos.':
+        '🔧 Comfy builds the workflow for a model you have in ComfyUI. Pick the «ComfyUI / Fooocus» platform and one of your models.',
     '⚠️ La previsualización solo está disponible para Imágenes y Vídeos.': '⚠️ Preview is only available for Images and Videos.',
     '⚠️ Marca al menos un elemento.': '⚠️ Check at least one item.',
     '⚠️ Marca elementos antes de guardar preset.': '⚠️ Check items before saving a preset.',

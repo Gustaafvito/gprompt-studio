@@ -654,12 +654,14 @@ class TestWorkflowConElFormatoElegido:
         return next(n["widgets_values"][:2] for n in wf["nodes"]
                     if n["type"] == "EmptyLatentImage")
 
-    def _pulsar_boton(self, ratio):
+    def _pulsar_boton(self, ratio, modo="imagen", plataforma="ComfyUI / Fooocus"):
         import json
         from types import SimpleNamespace
 
         from modules.tools_analysis import ToolsAnalysisService
         app = SimpleNamespace(
+            modo_var=SimpleNamespace(get=lambda: modo),
+            plataforma_var=SimpleNamespace(get=lambda: plataforma),
             txt_salida=SimpleNamespace(get=lambda *a: "PROMPT: a cat"),
             extraer_positive=lambda: "a cat", extraer_negative=lambda: "",
             combo_modelo_imagen=SimpleNamespace(get=lambda: "flux3-image-klein-int8-convrot"),
@@ -669,7 +671,22 @@ class TestWorkflowConElFormatoElegido:
         mostrado = []
         svc._mostrar_ventana_comfyui = lambda js, modelo: mostrado.append(json.loads(js))
         svc._copiar_comfyui_json()
-        return mostrado[0]
+        return mostrado[0] if mostrado else None
+
+    @pytest.mark.parametrize("modo, plataforma, pista", [
+        # 17-oct-2026: con LTX 2.5 en modo vídeo salió un workflow de «Anima».
+        ("video", "ComfyUI / Fooocus", "vídeo y audio"),
+        ("audio", "ComfyUI / Fooocus", "vídeo y audio"),
+        ("imagen", "SeaArt / Tensor.Art", "ComfyUI / Fooocus"),
+    ])
+    def test_sin_modelo_de_imagen_local_avisa_y_no_exporta(
+            self, monkeypatch, modo, plataforma, pista):
+        import tkinter.messagebox
+        avisos = []
+        monkeypatch.setattr(tkinter.messagebox, "showinfo",
+                            lambda titulo, msg, **k: avisos.append(msg))
+        assert self._pulsar_boton("1:1", modo, plataforma) is None
+        assert len(avisos) == 1 and pista in avisos[0]
 
     @pytest.mark.parametrize("ratio, tam", [
         ("9:16", [768, 1344]), ("16:9", [1344, 768]), ("21:9", [1536, 640]),

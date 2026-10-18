@@ -1962,6 +1962,27 @@ class ToolsAnalysisService:
         familia + arquitectura de carga correcta (CheckpointLoaderSimple para
         SDXL/SD1.5/Pony/Illustrious; UNETLoader + CLIPLoader + VAELoader para
         diffusion_models Flux/Qwen/Z-Image/Ideogram)."""
+        # El botón solo monta workflows de IMAGEN, y lee el desplegable de
+        # imagen. En modo vídeo exportaba el modelo de imagen que se hubiera
+        # quedado elegido: con LTX 2.5 en pantalla salió un workflow de
+        # «Anima» de SeaArt (17-oct-2026). Y con un modelo de la nube el
+        # fichero no existe en ComfyUI.
+        modo = self.app.modo_var.get() if hasattr(self.app, "modo_var") else "imagen"
+        plataforma = (self.app.plataforma_var.get()
+                      if hasattr(self.app, "plataforma_var") else "ComfyUI")
+        if modo != "imagen" or "ComfyUI" not in plataforma:
+            from tkinter import messagebox
+            if modo != "imagen":
+                mensaje = tr("🔧 Comfy prepara workflows de imagen. Para vídeo y audio, "
+                             "abre en ComfyUI la plantilla de tu modelo (Workflow → "
+                             "Plantillas) y pega allí el prompt.")
+            else:
+                mensaje = tr("🔧 Comfy prepara el workflow de un modelo que tengas en "
+                             "ComfyUI. Elige la plataforma «ComfyUI / Fooocus» y uno "
+                             "de tus modelos.")
+            messagebox.showinfo(tr("🔧 Workflow ComfyUI"), mensaje, parent=self.app)
+            return None
+
         actual = self.app.txt_salida.get("1.0", "end").strip()
         if not actual:
             return self.app.dialogs.set_estado(tr("⚠️ Genera un prompt primero."), P.TXT_AVISO)
