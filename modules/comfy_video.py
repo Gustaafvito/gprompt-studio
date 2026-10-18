@@ -1016,8 +1016,12 @@ def _anadir_nota(wf: dict, modelo: str, plantilla: str, faltan: list, huecos: li
             lineas.append(f"{nombre}: lleva el fichero de ejemplo ({h['ejemplo']}); "
                           f"pon el tuyo en su {_NODO_CARGA[h['tipo']]}.")
     if any(h["fichero"] for h in huecos):
-        lineas.append("Si ComfyUI ya estaba abierto y marca «Falta entrada de medio», pulsa R "
-                      "(refrescar): el fichero ya está en tu carpeta input.")
+        # ComfyUI comprueba los Load Image contra la lista de input/ que leyó al
+        # abrir la página, y solo al cargar el workflow: R después de pegar no
+        # lo arregla; recargar sí (el workflow sigue abierto). Probado el
+        # 18-oct-2026 en su ComfyUI.
+        lineas.append("Si ComfyUI ya estaba abierto y marca «Falta entrada de medio», recarga la "
+                      "página (F5): el workflow sigue abierto y el fichero ya está en tu carpeta input.")
     if faltan:
         lineas.append("No están en tu ComfyUI (te ofrecerá descargarlos):")
         lineas += [f"  • {f}" for f in faltan]

@@ -183,8 +183,9 @@ class TestRef2vaDeMiniMax:
                                           refs={"imagen": ["mia.png"]})
         sin = cv.construir_workflow_video(R2V, "<Picture 1>", carpetas=plantillas)
         nota = lambda r: next(n for n in r["workflow"]["nodes"] if n["type"] == "Note")  # noqa: E731
-        assert "pulsa R" in nota(con)["widgets_values"][0]
-        assert "pulsa R" not in nota(sin)["widgets_values"][0]
+        # R después de pegar no quita el aviso; recargar sí (18-oct-2026).
+        assert "(F5)" in nota(con)["widgets_values"][0]
+        assert "(F5)" not in nota(sin)["widgets_values"][0]
 
     def test_avisa_si_el_prompt_nombra_un_video(self, plantillas):
         r = cv.construir_workflow_video(R2V, "<Picture 1> and the camera of <Video 1>.",
@@ -333,7 +334,7 @@ class TestEnLaApp:
         assert [n["widgets_values"][0] for n in _cargas(wf)] == copiada
         assert "📎 1" in chuleta
         # ComfyUI lee la lista de input/ al abrir la página.
-        assert "pulsa R" in chuleta
+        assert "(F5)" in chuleta
 
     def test_copia_el_fichero_original_de_la_imagen(self, tmp_path, monkeypatch):
         entrada = self._comfy(tmp_path, monkeypatch)

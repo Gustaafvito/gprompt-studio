@@ -2092,10 +2092,13 @@ class ToolsAnalysisService:
         if sin_poner:
             resumen += "   ·   " + tr("⚠️ con el de ejemplo: {0}").format(", ".join(sin_poner))
         if tuyos:
-            # ComfyUI lee la lista de input/ al abrir la página: lo copiado
-            # después le sale como «Falta entrada de medio» (18-oct-2026).
-            resumen += "\n" + tr("🔄 Si ComfyUI ya estaba abierto, pulsa R en él antes de pegar: "
-                                 "así ve tus ficheros nuevos.")
+            # ComfyUI lee la lista de input/ al abrir la página, y solo la
+            # comprueba al cargar el workflow: lo copiado después le sale como
+            # «Falta entrada de medio» y R ya no lo quita. Recargar sí, y el
+            # workflow sigue abierto (probado el 18-oct-2026).
+            resumen += "\n" + tr("🔄 Si ComfyUI ya estaba abierto: pega el workflow y recarga la "
+                                 "página (F5). Si no, marca tus imágenes como «Falta entrada de "
+                                 "medio» aunque estén.")
         json_str = json.dumps(res["workflow"], indent=2, ensure_ascii=False)
         self._mostrar_ventana_comfyui(json_str, modelo, chuleta=resumen, parent=parent)
         return True

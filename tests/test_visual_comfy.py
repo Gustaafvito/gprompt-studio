@@ -277,7 +277,7 @@ class TestElPanel:
         assert modelo == R2V and segundos == 8.0 and prompt.startswith("<Picture 1>")
         assert [nombre for _img, _ruta, nombre in imagenes] == ["ref-0.png", "ref-1.png", "ref-2.png"]
         assert k == {"inicio_final": False, "parent": panel}
-        assert "pulsa R" in panel.status.get()
+        assert "(F5)" in panel.status.get()
 
     def test_sin_comfyui_lo_dice(self, panel):
         panel.platform.set("SeaArt Video")

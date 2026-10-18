@@ -953,10 +953,10 @@ TRADUCCIONES = {
         '«🔧 ComfyUI Workflow» is for video with a model from your ComfyUI: choose Video output and the «ComfyUI / Fooocus» platform.',
     'Genera el prompt primero: el workflow lo lleva dentro.': 'Generate the prompt first: the workflow carries it.',
     'El workflow de ComfyUI no está disponible desde esta ventana.': 'The ComfyUI workflow is not available from this window.',
-    'Workflow listo. Si ComfyUI ya estaba abierto, pulsa R en él antes de pegarlo.':
-        'Workflow ready. If ComfyUI was already open, press R in it before pasting.',
-    '🔄 Si ComfyUI ya estaba abierto, pulsa R en él antes de pegar: así ve tus ficheros nuevos.':
-        '🔄 If ComfyUI was already open, press R in it before pasting so it sees your new files.',
+    'Workflow listo. En ComfyUI, pégalo y recarga la página (F5) para que vea tus imágenes.':
+        'Workflow ready. In ComfyUI, paste it and reload the page (F5) so it sees your images.',
+    '🔄 Si ComfyUI ya estaba abierto: pega el workflow y recarga la página (F5). Si no, marca tus imágenes como «Falta entrada de medio» aunque estén.':
+        '🔄 If ComfyUI was already open: paste the workflow and reload the page (F5). Otherwise it flags your images as «Missing media input» even though they are there.',
     '⚠️ con el de ejemplo: {0}': '⚠️ still the sample file: {0}',
     'imagen {0}': 'image {0}',
     'vídeo {0}': 'video {0}',

@@ -1290,8 +1290,8 @@ class VisualStudio(ctk.CTkToplevel):
             self.aspect.get(), segundos, imagenes,
             inicio_final=self.mode.get() == MODES[2], parent=self)
         if hecho:
-            self.status.set(tr("Workflow listo. Si ComfyUI ya estaba abierto, pulsa R en él "
-                               "antes de pegarlo."))
+            self.status.set(tr("Workflow listo. En ComfyUI, pégalo y recarga la página (F5) "
+                               "para que vea tus imágenes."))
 
     def shortfilm(self):
         """Lleva las referencias, sus funciones y el análisis revisado al
