@@ -52,6 +52,12 @@ class TestHastaNueve:
         with pytest.raises(ValueError, match="cuatro"):
             validate(MODES[3], referencias(5))
 
+    def test_en_un_modo_de_una_imagen_dice_que_hacer_con_varias(self):
+        with pytest.raises(ValueError, match="Varias referencias"):
+            validate(MODES[1], referencias(2))
+        with pytest.raises(ValueError, match="exactamente una"):
+            validate(MODES[1], [])
+
     def test_con_el_ref2va_hasta_nueve(self):
         validate(MODES[3], referencias(9), MAX_REFS_AMPLIADO)
         with pytest.raises(ValueError, match="9"):
@@ -239,6 +245,20 @@ class TestElPanel:
         assert not panel.confirm_checkbox.winfo_manager()
         # Y el paso 3 está en la barra de abajo.
         assert panel.comfy_button.winfo_manager()
+
+    def test_con_dos_imagenes_en_animar_pasa_a_varias_referencias(self, panel):
+        # 18-oct-2026: la guerrera y el escenario en «Animar imagen» solo
+        # daban «Este modo necesita exactamente una imagen».
+        from modules.i18n import tr
+        panel.mode_menu.set(tr(MODES[1]))
+        panel.mode_changed(tr(MODES[1]))
+        panel.refs = []
+        panel.incorporar(referencias(1))
+        assert panel.mode.get() == MODES[1]
+        panel.incorporar(referencias(1))
+        assert panel.mode.get() == MODES[3] and panel.target.get() == "Vídeo"
+        assert panel.model.get() == R2V
+        assert "Varias referencias" in panel.status.get()
 
     def test_con_otro_modelo_vuelven_a_ser_cuatro(self, panel):
         panel.model.set(WAN_I2V)

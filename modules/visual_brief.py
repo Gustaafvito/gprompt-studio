@@ -236,6 +236,11 @@ def validate(mode, refs, maximo=MAX_REFS):
     if mode not in MODES:
         raise ValueError(tr("Selecciona un modo válido."))
     count = len(refs)
+    if mode in MODES[:2] and count > 1:
+        # 18-oct-2026: el usuario metió la guerrera y el escenario en «Animar
+        # imagen» y el aviso no decía qué hacer.
+        raise ValueError(tr("Este modo usa una sola imagen. Con varias, elige «Varias referencias» "
+                            "(o «Inicio → final» si son el principio y el final del vídeo)."))
     if mode in MODES[:2] and count != 1:
         raise ValueError(tr("Este modo necesita exactamente una imagen."))
     if mode == MODES[2] and count != 2:

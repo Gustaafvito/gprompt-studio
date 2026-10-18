@@ -932,6 +932,10 @@ TRADUCCIONES = {
     # «Crear desde imágenes» con modelos de vídeo de ComfyUI (18-oct-2026).
     'Máximo nueve referencias.': 'Nine references at most.',
     '3. 🔧 Workflow ComfyUI': '3. 🔧 ComfyUI Workflow',
+    'Este modo usa una sola imagen. Con varias, elige «Varias referencias» (o «Inicio → final» si son el principio y el final del vídeo).':
+        'This mode uses a single image. For several, choose «Multiple references» (or «Start → end» if they are the first and last frames of the video).',
+    'Con varias imágenes, el modo pasa a «Varias referencias». Si son el principio y el final de un vídeo, elige «Inicio → final».':
+        'With several images, the mode switches to «Multiple references». If they are the first and last frames of a video, choose «Start → end».',
     '📎 Necesita imágenes de referencia de lo que debe salir (hasta 9). Una: cárgala en la app y 🔧 Comfy la mete en el workflow. Varias: «Crear desde imágenes» (Ctrl+Shift+I)':
         '📎 Needs reference images of what must appear (up to 9). One: load it in the app and 🔧 Comfy puts it in the workflow. Several: «Create from images» (Ctrl+Shift+I)',
     'Añade entre dos y {0} referencias.': 'Add between two and {0} references.',

@@ -660,7 +660,20 @@ class VisualStudio(ctk.CTkToplevel):
             return
         if not self.checkpoint():
             return
-        self.refs.extend(additions)
+        self.incorporar(additions)
+
+    def incorporar(self, nuevas):
+        """Añade referencias. Con más de una en un modo de una sola imagen,
+        el panel pasa a «Varias referencias» y lo dice: el 18-oct-2026 el
+        usuario metió la guerrera y el escenario en «Animar imagen» y solo
+        recibió «Este modo necesita exactamente una imagen»."""
+        self.refs.extend(nuevas)
+        if self.mode.get() in MODES[:2] and len(self.refs) > 1:
+            self.mode_menu.set(tr(MODES[3]))
+            self.mode_changed(tr(MODES[3]))
+            self.status.set(tr("Con varias imágenes, el modo pasa a «Varias referencias». Si son "
+                               "el principio y el final de un vídeo, elige «Inicio → final»."))
+            return
         self.invalidate()
         self.render()
 
@@ -678,9 +691,7 @@ class VisualStudio(ctk.CTkToplevel):
         image.thumbnail((1600, 1600))
         if not self.checkpoint():
             return
-        self.refs.append(Reference(image, ROLES[0], "Imagen de la app"))
-        self.invalidate()
-        self.render()
+        self.incorporar([Reference(image, ROLES[0], "Imagen de la app")])
 
     def swap(self):
         if not self.busy and len(self.refs) >= 2 and self.checkpoint():
