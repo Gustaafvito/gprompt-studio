@@ -189,6 +189,15 @@ carpeta input de ComfyUI), y lo que falte te lo pide al pulsar el botón. En
 el ref2va, el workflow lleva tantas imágenes como nombre el prompt
 (`<Picture 1>`, `<Picture 2>`…), hasta 9.
 
+Para varias referencias, **«Crear desde imágenes»**: con el ref2va de
+destino admite hasta 9 imágenes, escribe el prompt en el formato oficial de
+MiniMax H3 con cada una numerada según su función (la A es `<Picture 1>`, la
+B `<Picture 2>`…) y su paso «3. 🔧 Workflow ComfyUI» las mete en orden en
+los Load Image. Con el fl2va, «Inicio → final» pone la segunda como último
+fotograma. Y en la ventana principal, Img→Prompt en vídeo ya cuenta lo que
+pasa —lo que escribas en la idea, o una acción que se inventa— en vez de
+dejar al personaje quieto, y no corta los prompts largos.
+
 **Dos arreglos** que salieron probando FLUX 3: el texto que tiene que salir
 escrito en la imagen —un cartel que dice «ABIERTO»— ya no se traduce al
 inglés con el resto del prompt, y el workflow de imagen sale en el formato

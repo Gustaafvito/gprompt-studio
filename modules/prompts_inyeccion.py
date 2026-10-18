@@ -41,6 +41,50 @@ from prompts import (
 )
 
 
+def planos_por_duracion(segundos: float) -> int:
+    """Planos orientativos de un vídeo: 4s→1, 5s→2, 10s→3, 15s→4 y, más
+    largo, uno cada ~4 s (máximo 6)."""
+    if segundos <= 4:
+        return 1
+    if segundos <= 5:
+        return 2
+    if segundos <= 10:
+        return 3
+    if segundos <= 15:
+        return 4
+    return min(6, max(1, round(segundos / 4)))
+
+
+def reglas_minimax_h3(motor: str, specs: dict, segundos: float, n_shots: int,
+                      manual: bool, pista: str) -> str:
+    """Las reglas del formato oficial de MiniMax H3 (base o modo referencia).
+
+    Función pura: la usan la ventana principal y «Crear desde imágenes».
+    `pista` dice qué imágenes recibirá el modelo y qué papel tiene cada una;
+    la escribe quien llama, que es quien lo sabe.
+    """
+    if manual:
+        planos = f"Usa EXACTAMENTE {n_shots} plano{'s' if n_shots != 1 else ''} (lo ha fijado el usuario)."
+    else:
+        planos = (f"Orientativo: unos {n_shots} plano{'s' if n_shots != 1 else ''} para {segundos:g} s "
+                  "(~3-5 s por plano); menos si la acción es continua, y UNO solo en FL2VA.")
+    idioma = ("Diálogo: si el usuario escribe las frases, cópialas literales en su idioma; si no, "
+              "escríbelas en castellano. La etiqueta de <d> nombra el idioma en inglés: "
+              "<d>[Spanish] …</d>, <d>[English] …</d>.")
+    extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
+    extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    extra += f"• Mejor para: {specs['best_for']}\n"
+    if specs["formato_bloques"] == "minimax_h3_ref":
+        return extra + REGLAS_MINIMAX_H3_REF.format(
+            duracion=f"{segundos:g}", palabras="350-500", pista_refs=pista,
+            pista_planos=planos, pista_idioma=idioma)
+    return extra + REGLAS_MINIMAX_H3_BASE.format(
+        dur_ss=f"{segundos:.2f}", duracion=f"{segundos:g}",
+        palabras=f"{int(segundos * 22)}-{int(segundos * 38)}",
+        pista_modo=pista, pista_planos=planos, pista_idioma=idioma)
+
+
 class PromptsInyeccionService:
     """Servicio aislado de inyección de specs (A1 fase 2).
 
@@ -79,16 +123,10 @@ class PromptsInyeccionService:
             except (ValueError, TypeError):
                 pass  # cae al cálculo automático
         # Auto
-        dur = self._duracion_a_segundos(
+        return planos_por_duracion(self._duracion_a_segundos(
             self.app.duracion_var.get()
             if hasattr(self.app, "duracion_var") else "10s"
-        )
-        if dur <= 4:   return 1
-        if dur <= 5:   return 2
-        if dur <= 10:  return 3
-        if dur <= 15:  return 4
-        # Para duraciones largas: ~1 shot cada 4s, máximo 6.
-        return min(6, max(1, round(dur / 4)))
+        ))
 
     def _inyectar_specs_modelo(self, system_prompt: str) -> str:
         modo = self.app.modo_var.get()
@@ -182,39 +220,20 @@ class PromptsInyeccionService:
         dur = self._duracion_a_segundos(dur_str)
         n_shots = self._calcular_n_shots()
         manual = hasattr(self.app, "shots_var") and self.app.shots_var.get() not in ("", "Auto")
-        if manual:
-            planos = f"Usa EXACTAMENTE {n_shots} plano{'s' if n_shots != 1 else ''} (lo ha fijado el usuario)."
-        else:
-            planos = (f"Orientativo: unos {n_shots} plano{'s' if n_shots != 1 else ''} para {dur:g} s "
-                      "(~3-5 s por plano); menos si la acción es continua, y UNO solo en FL2VA.")
         hay_imagen = bool(getattr(self.app, "imagen_cargada", None))
-        idioma = ("Diálogo: si el usuario escribe las frases, cópialas literales en su idioma; si no, "
-                  "escríbelas en castellano. La etiqueta de <d> nombra el idioma en inglés: "
-                  "<d>[Spanish] …</d>, <d>[English] …</d>.")
-        extra = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        extra += f"REGLAS ESPECÍFICAS PARA {motor.upper()}:\n"
-        extra += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        extra += f"• Mejor para: {specs['best_for']}\n"
         if specs["formato_bloques"] == "minimax_h3_ref":
-            refs = ("• El usuario ha cargado una imagen en la app: es <Picture 1>." if hay_imagen else
-                    "• Si la idea no dice qué referencias conectará en ComfyUI, asume UNA imagen del sujeto "
-                    "principal: <Subject 1> is the … in <Picture 1>.")
-            extra += REGLAS_MINIMAX_H3_REF.format(
-                duracion=f"{dur:g}", palabras="350-500", pista_refs=refs,
-                pista_planos=planos, pista_idioma=idioma)
+            pista = ("• El usuario ha cargado una imagen en la app: es <Picture 1>." if hay_imagen else
+                     "• Si la idea no dice qué referencias conectará en ComfyUI, asume UNA imagen del sujeto "
+                     "principal: <Subject 1> is the … in <Picture 1>.")
+        elif hay_imagen:
+            pista = ("• El usuario HA CARGADO una imagen: por defecto es I2VA (primer fotograma), salvo que la "
+                     "idea diga que es el ÚLTIMO fotograma (L2VA) o hable de imagen inicial y final (FL2VA).")
         else:
-            if hay_imagen:
-                modo = ("• El usuario HA CARGADO una imagen: por defecto es I2VA (primer fotograma), salvo que la "
-                        "idea diga que es el ÚLTIMO fotograma (L2VA) o hable de imagen inicial y final (FL2VA).")
-            else:
-                modo = ("• El usuario NO ha cargado imagen: T2VA, salvo que la idea diga que conectará en ComfyUI "
-                        "una imagen de inicio (I2VA), de final (L2VA) o las dos (FL2VA). FL2VA va en UN plano "
-                        "salvo que el usuario pida más.")
-            extra += REGLAS_MINIMAX_H3_BASE.format(
-                dur_ss=f"{dur:.2f}", duracion=f"{dur:g}",
-                palabras=f"{int(dur * 22)}-{int(dur * 38)}",
-                pista_modo=modo, pista_planos=planos, pista_idioma=idioma)
-        return self._inyectar_estilo_video(extra)
+            pista = ("• El usuario NO ha cargado imagen: T2VA, salvo que la idea diga que conectará en ComfyUI "
+                     "una imagen de inicio (I2VA), de final (L2VA) o las dos (FL2VA). FL2VA va en UN plano "
+                     "salvo que el usuario pida más.")
+        return self._inyectar_estilo_video(
+            reglas_minimax_h3(motor, specs, dur, n_shots, manual, pista))
 
     # Mapa estilo visual → orientación de look para el combo "Estilo" de vídeo.
     _VIDEO_ESTILO_HINT = {

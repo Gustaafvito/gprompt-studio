@@ -727,7 +727,7 @@ class TestWorkflowConElFormatoElegido:
         )
         svc = ToolsAnalysisService(app)
         mostrado = []
-        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None: mostrado.append(
+        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None, parent=None: mostrado.append(
             (json.loads(js), modelo, chuleta))
         svc._copiar_comfyui_json()
         assert recibido == {"modelo": "LTX 2.5", "prompt": "a fox", "ratio": "9:16",

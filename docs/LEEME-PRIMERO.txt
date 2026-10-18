@@ -20,7 +20,9 @@ QUÉ HAY DE NUEVO EN LA 1.1.3
   - 🔧 Comfy, también en vídeo: parte de la plantilla oficial de tu
     ComfyUI para cada modelo y le pone el prompt, la duración, el
     formato, tu modelo y tus imágenes. Los modelos que parten de
-    una imagen, un vídeo o un audio lo avisan en su ficha.
+    una imagen, un vídeo o un audio lo avisan en su ficha. Para
+    varias referencias (el ref2va de MiniMax H3, hasta 9), usa
+    «Crear desde imágenes» y su paso «3. 🔧 Workflow ComfyUI».
 
   Y lo que trajeron la 1.1.2, la 1.1.1 y la 1.1.0:
 

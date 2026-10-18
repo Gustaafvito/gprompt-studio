@@ -28,6 +28,7 @@ import hashlib
 import io
 import json
 import logging
+import math
 import os
 import re
 import shutil
@@ -126,6 +127,23 @@ _ASPECTOS = {
     "21:9": "21:9 (Ultrawide)",
 }
 
+
+def _aspecto(ratio: str) -> str | None:
+    """La opción del ResolutionSelector para `ratio`, o la más parecida si no
+    la tiene: con 4:5 se quedaba el 16:9 de la plantilla."""
+    if ratio in _ASPECTOS:
+        return _ASPECTOS[ratio]
+    try:
+        a, b = (float(x) for x in ratio.split(":"))
+        buscado = math.log(a / b)
+    except (AttributeError, ValueError, ZeroDivisionError):
+        return None
+
+    def distancia(clave):
+        x, y = (float(v) for v in clave.split(":"))
+        return abs(math.log(x / y) - buscado)
+    return _ASPECTOS[min(_ASPECTOS, key=distancia)]
+
 # Marcas de precisión o cuantización: el mismo fichero en otra precisión
 # (la plantilla pide gemma…-int8-convrot y el usuario tiene gemma…-nvfp4).
 _PRECISION = {"bf16", "fp16", "fp32", "fp8", "fp4", "int8", "int4", "nvfp4", "mxfp8",
@@ -155,6 +173,21 @@ def referencias_necesarias(modelo: str) -> tuple:
     """Lo que el modelo necesita además del prompt ("imagen", "video",
     "audio"), o () si le basta el texto."""
     return REFERENCIAS.get(plantilla_para(modelo) or "", ())
+
+
+def capacidades(modelo: str) -> dict | None:
+    """Qué imágenes admite el modelo en su plantilla, con las claves de
+    input_capabilities del catálogo (para «Crear desde imágenes»): todos
+    tienen plantilla con imagen; varias referencias, solo el ref2va de
+    MiniMax H3; inicio y final, MiniMax H3 (fl2va con last_frame, ref2va
+    como fotogramas clave). None si no es un modelo de vídeo de ComfyUI."""
+    i = _tipo_modelo(modelo)
+    if i is None:
+        return None
+    con_imagen = PLANTILLAS_VIDEO[i][2]
+    return {"image_reference": True,
+            "multi_reference": con_imagen == "video_minimax_h3_r2v",
+            "start_end": con_imagen in ("video_minimax_h3_i2v", "video_minimax_h3_r2v")}
 
 
 def carpetas_plantillas(ruta_comfy: str) -> list:
@@ -504,7 +537,7 @@ _CARGAS = {"LoadImage": "imagen", "LoadVideo": "video", "LoadAudio": "audio"}
 # Las referencias de imagen de MiniMax H3 ref2va: entradas que crecen (de 0
 # a 9) en el nodo MiniMaxH3ReferenceToVideo.
 _REF_IMAGEN = re.compile(r"^ref_images\.ref_image_(\d+)$")
-_MAX_REF_IMAGENES = 9
+MAX_REF_IMAGENES = 9
 
 
 class _Hueco:
@@ -605,20 +638,26 @@ def _nuevo_id(wf: dict, clave: str, usados) -> int:
     return max([wf.get(clave) or 0, *(u for u in usados if isinstance(u, int))]) + 1
 
 
-def _clonar_hueco(hueco: _Hueco, wf: dict) -> "_Hueco | None":
-    """Una referencia de imagen más para MiniMax H3 ref2va: otro Load Image,
-    en la siguiente entrada libre de su nodo. None si ya van las 9."""
+def _destino(hueco: _Hueco) -> "dict | None":
+    """El nodo al que va el Load del hueco."""
     nodo, cont = hueco.nodos[0]
     enlaces, nodos = _enlaces(cont), _nodos_por_id(cont)
     lid = next((x for o in nodo.get("outputs", []) or [] for x in o.get("links") or []), None)
-    destino = nodos.get(enlaces[lid][2]) if lid in enlaces else None
+    return nodos.get(enlaces[lid][2]) if lid in enlaces else None
+
+
+def _clonar_hueco(hueco: _Hueco, wf: dict) -> "_Hueco | None":
+    """Una referencia de imagen más para MiniMax H3 ref2va: otro Load Image,
+    en la siguiente entrada libre de su nodo. None si ya van las 9."""
+    cont = hueco.nodos[0][1]
+    destino = _destino(hueco)
     if not destino:
         return None
     ins = destino.setdefault("inputs", [])
     refs = [k for k, i in enumerate(ins) if _REF_IMAGEN.match(i.get("name", ""))]
     slot = next((k for k in refs if ins[k].get("link") is None), None)
     if slot is None:
-        if len(refs) >= _MAX_REF_IMAGENES:
+        if len(refs) >= MAX_REF_IMAGENES:
             return None
         # La entrada aún no existe: va detrás de la última, y las conexiones
         # a las entradas que quedan detrás se corren un puesto.
@@ -634,6 +673,24 @@ def _clonar_hueco(hueco: _Hueco, wf: dict) -> "_Hueco | None":
                     lk["target_slot"] += 1
             elif lk[3] == destino["id"] and lk[4] >= slot:
                 lk[4] += 1
+    return _conectar_clon(hueco, wf, destino, slot)
+
+
+def _hueco_final(hueco: _Hueco, wf: dict) -> "_Hueco | None":
+    """El último fotograma (FL2VA de MiniMax H3): otro Load Image a la
+    entrada last_frame, libre, del nodo que recibe el primero. None si la
+    plantilla no la tiene."""
+    destino = _destino(hueco)
+    ins = (destino or {}).get("inputs", [])
+    slot = next((k for k, i in enumerate(ins)
+                 if i.get("name") == "last_frame" and i.get("link") is None), None)
+    return None if slot is None else _conectar_clon(hueco, wf, destino, slot)
+
+
+def _conectar_clon(hueco: _Hueco, wf: dict, destino: dict, slot: int) -> _Hueco:
+    """Copia el Load Image del hueco y lo conecta a la entrada `slot`."""
+    nodo, cont = hueco.nodos[0]
+    ins = destino["inputs"]
     clon = copy.deepcopy(nodo)
     clon["id"] = _nuevo_id(wf, "last_node_id", (n.get("id") for n in cont.get("nodes", [])))
     wf["last_node_id"] = clon["id"]
@@ -707,9 +764,11 @@ def guardar_imagen_en_input(imagen, carpeta, nombre: str = "imagen") -> str:
     return final
 
 
-def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list) -> list:
+def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list,
+                    inicio_final: bool = False) -> list:
     """Pone tus ficheros en los Load de la plantilla. `refs`: por tipo, los
     nombres en la carpeta input, en orden (None = sin fichero).
+    `inicio_final`: la 2.ª imagen es el último fotograma (FL2VA de MiniMax H3).
 
     Devuelve los huecos como los ve la app: tipo, número, el de ejemplo,
     el tuyo (o None) y si es opcional."""
@@ -720,7 +779,7 @@ def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list) -> list:
     if crecen:
         pedidas = max(_etiquetas(prompt, "Picture"),
                       len([x for x in refs.get("imagen") or [] if x]), 1)
-        pedidas = min(pedidas, _MAX_REF_IMAGENES)
+        pedidas = min(pedidas, MAX_REF_IMAGENES)
         while len(crecen) < pedidas:
             nuevo = _clonar_hueco(crecen[-1], wf)
             if not nuevo:
@@ -734,6 +793,22 @@ def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list) -> list:
             if _etiquetas(prompt, clase):
                 avisos.append(f"Tu prompt nombra un <{clase} 1>: la plantilla no trae dónde "
                               f"cargarlo. Añade tu {tipo} en ComfyUI al nodo de referencias.")
+    # Inicio → final: la 2.ª imagen va al último fotograma, a su entrada
+    # last_frame (la plantilla i2v de MiniMax H3 la trae libre). En el ref2va
+    # las dos son referencias y el prompt dice cuál es cuál.
+    final = None
+    if inicio_final and not crecen:
+        imagenes = list(refs.get("imagen") or [])
+        if len(imagenes) >= 2 and imagenes[1]:
+            primero = next((h for h in huecos
+                            if h.tipo == "imagen" and h.entrada == "first_frame"), None)
+            final = _hueco_final(primero, wf) if primero else None
+            if final:
+                _poner_carga(final, imagenes[1])
+                refs = dict(refs, imagen=imagenes[:1] + imagenes[2:])
+            else:
+                avisos.append("Esta plantilla no tiene entrada para el último fotograma: "
+                              "va solo la imagen de inicio.")
     salida = []
     for tipo in ("imagen", "video", "audio"):
         dados = list(refs.get(tipo) or [])
@@ -744,6 +819,10 @@ def _meter_ficheros(wf: dict, prompt: str, refs: dict, avisos: list) -> list:
             salida.append({"tipo": tipo, "n": i + 1, "ejemplo": h.ejemplo, "fichero": fichero,
                            "opcional": h.apagado and not fichero,
                            "etiqueta": f"<Picture {i + 1}>" if h.crece else ""})
+    if final:
+        salida.append({"tipo": "imagen", "n": sum(h["tipo"] == "imagen" for h in salida) + 1,
+                       "ejemplo": final.ejemplo, "fichero": final.nodos[0][0]["widgets_values"][0],
+                       "opcional": False, "etiqueta": "(last_frame)"})
     return salida
 
 
@@ -764,7 +843,8 @@ def _tam(ratio: str, ancho: int, alto: int) -> tuple:
 def construir_workflow_video(modelo: str, prompt: str, negativo: str = "",
                              ratio: str = "", segundos: float = 0,
                              con_imagen: bool = False, carpetas: list = (),
-                             nombres: dict | None = None, refs: dict | None = None) -> dict:
+                             nombres: dict | None = None, refs: dict | None = None,
+                             inicio_final: bool = False) -> dict:
     """Workflow de vídeo desde la plantilla oficial, con lo nuestro dentro.
 
     `refs`: tus ficheros ya copiados a la carpeta input de ComfyUI, por tipo
@@ -837,8 +917,9 @@ def construir_workflow_video(modelo: str, prompt: str, negativo: str = "",
     if ratio:
         for c in campos:
             if c.nodo.get("type") == "ResolutionSelector" and c.widget == "aspect_ratio":
-                if ratio in _ASPECTOS:
-                    c.valor = _ASPECTOS[ratio]
+                aspecto = _aspecto(ratio)
+                if aspecto:
+                    c.valor = aspecto
         pares = {}
         for c in campos if not desde_video else []:
             if c.widget in ("width", "height") and isinstance(c.valor, int):
@@ -910,7 +991,7 @@ def construir_workflow_video(modelo: str, prompt: str, negativo: str = "",
             faltan.append(c.valor)
 
     # 8. Tus ficheros, en sus Load Image / Load Video / Load Audio.
-    huecos = _meter_ficheros(wf, prompt, refs or {}, avisos)
+    huecos = _meter_ficheros(wf, prompt, refs or {}, avisos, inicio_final)
     imagen = bool(huecos)
     _anadir_nota(wf, modelo, plantilla, faltan, huecos, avisos)
     return {"workflow": wf, "plantilla": plantilla, "fichero": fichero,

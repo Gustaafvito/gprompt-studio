@@ -15,6 +15,8 @@ from modules import paleta as P
 from modules.gprompt_window import GPromptWindow
 from modules.i18n import tr, tr_es
 from modules.visual_brief import (
+    MAX_REFS,
+    MAX_REFS_AMPLIADO,
     MODE_HELP,
     MODES,
     ROLES,
@@ -29,6 +31,7 @@ from modules.visual_brief import (
     load_project,
     output_kind,
     parse_visual_result,
+    pista_minimax,
     revision_request,
     save_project,
     shortfilm_context,
@@ -138,6 +141,13 @@ class VisualStudio(ctk.CTkToplevel):
         self.generate_button = ctk.CTkButton(self.action_bar, text=tr("2. Generar prompt"),
                                              command=self.generate, **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
         self.generate_button.pack(side="left", padx=6)
+        # Paso 3 solo con un modelo de vídeo de tu ComfyUI de destino: el
+        # workflow con ESTAS imágenes dentro, en su orden (18-oct-2026: el
+        # ref2va de MiniMax H3 pide varias y la ventana principal carga una).
+        # Lo enseña y lo esconde refresh_comfy_button().
+        self.comfy_button = ctk.CTkButton(self.action_bar, text=tr("3. 🔧 Workflow ComfyUI"),
+                                          command=self.comfy_workflow,
+                                          **P.estilo_boton(P.BTN_PRIMARIO, primario=True))
         ctk.CTkButton(self.action_bar, text=tr("Copiar resultado"), command=self.copy,
                       **P.estilo_boton(P.BTN_PRIMARIO)).pack(side="left", padx=6)
         ctk.CTkButton(self.action_bar, text=tr("Crear cortometraje con estas referencias"),
@@ -212,7 +222,7 @@ class VisualStudio(ctk.CTkToplevel):
         self.model_matches = ctk.CTkLabel(destination, text="", anchor="w")
         self.model_matches.pack(fill="x")
         self.model_menu = ctk.CTkOptionMenu(destination, variable=self.model, values=[""], width=500,
-                                           command=lambda _: self.reset_confirmation())
+                                           command=lambda _: self.model_changed())
         self.model_menu.pack(fill="x", pady=4)
         # Marco propio: reference_use_changed() empaqueta y quita la casilla
         # de confirmación al final de su padre, y tiene que quedar aquí,
@@ -386,7 +396,7 @@ class VisualStudio(ctk.CTkToplevel):
                 self.model_menu.configure(values=[self.model.get()] + models)
             else:
                 self.model.set(models[0] if models else "")
-        self.reset_confirmation()
+        self.model_changed()
         self.filter_model_menu()
 
     def filter_model_menu(self):
@@ -398,13 +408,80 @@ class VisualStudio(ctk.CTkToplevel):
     def reset_confirmation(self):
         self.attachment_confirmed.set(False)
 
+    def model_changed(self):
+        """Al elegir un modelo de vídeo de tu ComfyUI, las imágenes se
+        adjuntan: 🔧 Workflow ComfyUI las mete en sus Load Image. Se puede
+        volver a «Solo texto»; abrir un proyecto restaura lo guardado."""
+        self.reset_confirmation()
+        self.refresh_comfy_button()
+        if not hasattr(self, "reference_menu"):
+            return
+        if self.comfy_capacidades() and self.reference_use.get() == "Solo texto":
+            self.reference_use_changed(tr("Adjuntar imágenes"))
+        else:
+            self.refresh_reference_hint()
+
+    def refresh_comfy_button(self):
+        """«3. 🔧 Workflow ComfyUI», a la vista solo si el destino es un
+        modelo de vídeo de tu ComfyUI."""
+        boton = getattr(self, "comfy_button", None)
+        if boton is None:
+            return
+        if self.comfy_capacidades():
+            if not boton.winfo_manager():
+                boton.pack(side="left", padx=6, after=self.generate_button)
+        else:
+            boton.pack_forget()
+
+    def comfy_capacidades(self):
+        """Qué imágenes admite el destino si es un modelo de vídeo de tu
+        ComfyUI (comfy_video.capacidades); None si no lo es."""
+        if ("ComfyUI" not in self.platform.get()
+                or output_kind(self.mode.get(), self.target.get()) != "video"):
+            return None
+        from modules import comfy_video
+        return comfy_video.capacidades(self.model.get())
+
+    def comfy_confirma(self):
+        """True si la plantilla de ComfyUI del destino admite estas imágenes
+        en este modo: entonces no hace falta la casilla de confirmar."""
+        capacidades = self.comfy_capacidades() or {}
+        clave = ("start_end" if self.mode.get() == MODES[2]
+                 else "multi_reference" if len(self.refs) > 1 else "image_reference")
+        return capacidades.get(clave) is True
+
+    def max_refs(self):
+        """Cuatro, o nueve si el destino es el ref2va de MiniMax H3."""
+        capacidades = self.comfy_capacidades() or {}
+        return MAX_REFS_AMPLIADO if capacidades.get("multi_reference") else MAX_REFS
+
     def reference_use_changed(self, value):
         self.reference_use.set(tr_es(value))
         self.reference_menu.set(value)
         self.reset_confirmation()
+        self.refresh_reference_hint()
+
+    def refresh_reference_hint(self):
+        """Qué pasa con las imágenes, y la casilla de confirmar solo cuando
+        hace falta."""
         self.confirm_checkbox.pack_forget()
+        capacidades = self.comfy_capacidades()
         if self.reference_use.get() == "Solo texto":
             self.reference_hint.configure(text=tr("Las imágenes solo sirven para redactar. Copia el texto al generador; no necesita admitir imágenes de entrada."))
+        elif capacidades and self.comfy_confirma():
+            if capacidades["multi_reference"]:
+                orden = " · ".join(f"{chr(65 + i)} = <Picture {i + 1}>"
+                                   for i in range(max(1, len(self.refs))))
+                texto = tr("Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete estas imágenes en sus "
+                           "Load Image, en este orden: {0}. Admite hasta {1}.").format(
+                               orden, MAX_REFS_AMPLIADO)
+            elif self.mode.get() == MODES[2]:
+                texto = tr("Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete A como primer "
+                           "fotograma y B como último.")
+            else:
+                texto = tr("Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete la imagen A en su "
+                           "Load Image.")
+            self.reference_hint.configure(text=texto)
         else:
             self.reference_hint.configure(text=tr("La carga de referencias depende de la plataforma, modelo y modo. El catálogo no confirma todas esas combinaciones."))
             self.confirm_checkbox.pack(anchor="w", padx=5, pady=5)
@@ -569,8 +646,11 @@ class VisualStudio(ctk.CTkToplevel):
                                            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.webp *.bmp")])
         if not paths:
             return
-        if len(paths) + len(self.refs) > 4:
-            self.status.set(tr("Máximo cuatro imágenes. Quita alguna antes de añadir más."))
+        if len(paths) + len(self.refs) > self.max_refs():
+            self.status.set(tr("Máximo cuatro imágenes. Quita alguna antes de añadir más.")
+                            if self.max_refs() == MAX_REFS else
+                            tr("Máximo {0} imágenes. Quita alguna antes de añadir más.").format(
+                                self.max_refs()))
             return
         try:
             from pathlib import Path
@@ -588,8 +668,11 @@ class VisualStudio(ctk.CTkToplevel):
         if self.busy:
             return
         image = getattr(self.app, "imagen_cargada", None)
-        if image is None or len(self.refs) >= 4:
-            self.status.set(tr("Carga una imagen en la app o deja espacio entre las cuatro referencias."))
+        if image is None or len(self.refs) >= self.max_refs():
+            self.status.set(tr("Carga una imagen en la app o deja espacio entre las cuatro referencias.")
+                            if self.max_refs() == MAX_REFS else
+                            tr("Carga una imagen en la app o deja espacio entre las {0} referencias.").format(
+                                self.max_refs()))
             return
         image = image.convert("RGB").copy()
         image.thumbnail((1600, 1600))
@@ -631,10 +714,15 @@ class VisualStudio(ctk.CTkToplevel):
         for child in self.cards.winfo_children():
             child.destroy()
         try:
-            validate(self.mode.get(), self.refs)
+            validate(self.mode.get(), self.refs, self.max_refs())
             count_hint = tr("Referencias listas: {count}").format(count=len(self.refs))
         except ValueError as exc:
             count_hint = str(exc)
+        if self.max_refs() > MAX_REFS and self.mode.get() == MODES[3]:
+            count_hint += " · " + tr("este modelo admite hasta {0}").format(self.max_refs())
+        if hasattr(self, "reference_hint"):
+            # El orden A = <Picture 1>… y la casilla dependen de cuántas hay.
+            self.refresh_reference_hint()
         self.help_label.configure(text=tr(MODE_HELP[self.mode.get()]) + "\n" + count_hint)
         if not self.refs:
             # Estado vacío con contenido: un marco vacío mide 200 px en
@@ -885,7 +973,7 @@ class VisualStudio(ctk.CTkToplevel):
         if self.busy:
             return
         try:
-            board, request = analysis_input(self.mode.get(), self.refs)
+            board, request = analysis_input(self.mode.get(), self.refs, self.max_refs())
         except ValueError as exc:
             self.status.set(str(exc))
             return
@@ -940,6 +1028,7 @@ class VisualStudio(ctk.CTkToplevel):
                 self.idea.get("1.0", "end").strip(), self.preserve.get(), self.change.get(),
                 self.duration.get(), self.aspect.get(), self.language.get(),
                 context, (specs or {}).get("is_natural", True), self.target.get(), attach,
+                self.max_refs(), self.formato_modelo(specs),
             ) + self.direction()
         except ValueError as exc:
             self.status.set(str(exc))
@@ -962,11 +1051,39 @@ class VisualStudio(ctk.CTkToplevel):
             else:
                 self.status.set(tr("Prompt preparado. Revisa las limitaciones y el uso de las referencias."))
         self.submit(lambda: self.app.deepseek.generar_batch(
-            VISUAL_SYSTEM, request, temperature=0.4, max_tokens=3500), done)
+            VISUAL_SYSTEM, request, temperature=0.4, max_tokens=self.presupuesto(specs)), done)
+
+    @staticmethod
+    def presupuesto(specs):
+        """Tokens de respuesta: el formato de MiniMax H3 (6000 caracteres)
+        no cabe en 3500 con un modelo que piensa antes de escribir."""
+        return 6000 if ((specs or {}).get("max_chars") or 0) >= 4000 else 3500
+
+    def formato_modelo(self, specs):
+        """Las reglas del formato propio del modelo de destino, las mismas
+        que usa la ventana principal; "" si no tiene. Por ahora, MiniMax H3:
+        con la etiqueta <Picture N> de cada imagen en el ref2va."""
+        formato = (specs or {}).get("formato_bloques")
+        if formato not in ("minimax_h3", "minimax_h3_ref"):
+            return ""
+        from modules.prompts_inyeccion import planos_por_duracion, reglas_minimax_h3
+        try:
+            segundos = float(duration_seconds(self.duration.get()))
+        except ValueError:
+            segundos = 10.0  # generation_request ya avisa de la duración mala
+        pista = pista_minimax(self.mode.get(), self.refs,
+                              self.reference_use.get() == "Adjuntar imágenes",
+                              formato == "minimax_h3_ref")
+        return reglas_minimax_h3(self.model.get(), specs, segundos,
+                                 planos_por_duracion(segundos), False, pista)
 
     def revision_specs(self):
         video = output_kind(self.mode.get(), self.target.get()) == "video"
         specs = dict((get_model_specs(self.model.get()) if video else get_image_model_specs(self.model.get())) or {})
+        # Un modelo de vídeo de tu ComfyUI: lo que admite lo dice su plantilla.
+        capacidades = self.comfy_capacidades()
+        if capacidades and not isinstance(specs.get("input_capabilities"), dict):
+            specs["input_capabilities"] = capacidades
         raw = self.manual_limit.get().strip()
         if raw:
             if not raw.isdecimal() or not 1 <= int(raw) <= 100000:
@@ -1001,7 +1118,8 @@ class VisualStudio(ctk.CTkToplevel):
                 self.idea.get("1.0", "end").strip(), self.preserve.get(), self.change.get(),
                 self.duration.get(), self.aspect.get(), self.language.get(),
                 json.dumps({"platform": self.platform.get(), "model": self.model.get(), "specs": specs}, ensure_ascii=False),
-                specs.get("is_natural", True), self.target.get(), attach) + self.direction()
+                specs.get("is_natural", True), self.target.get(), attach,
+                self.max_refs(), self.formato_modelo(specs)) + self.direction()
             request = revision_request(brief, self.output.get("1.0", "end").strip(),
                 self.negative.get("1.0", "end").strip(), self.revision_instruction.get(), specs.get("max_chars"), shorten)
         except ValueError as exc:
@@ -1020,7 +1138,7 @@ class VisualStudio(ctk.CTkToplevel):
             if self.checkpoint():
                 self.status.set(tr("Prompt revisado. El original está en Recuperar versiones."))
         self.submit(lambda: self.app.deepseek.generar_batch(VISUAL_SYSTEM, request,
-                    temperature=0.2, max_tokens=3500), done)
+                    temperature=0.2, max_tokens=self.presupuesto(specs)), done)
 
     def fields(self):
         fields = {key: getattr(self, key).get() for key in
@@ -1127,6 +1245,42 @@ class VisualStudio(ctk.CTkToplevel):
         if text:
             self.app.dialogs.actualizar_salida(text)
             self.status.set(tr("Resultado enviado a la salida principal. Tu idea no se ha modificado."))
+
+    def comfy_workflow(self):
+        """El workflow de vídeo de tu ComfyUI con este prompt y ESTAS imágenes
+        dentro, en su orden: A en el primer Load Image (<Picture 1> en el
+        ref2va de MiniMax H3), B en el segundo… En «Inicio → final», B es el
+        último fotograma. Lo monta el mismo código que el botón 🔧 Comfy de la
+        ventana principal (ToolsAnalysisService.workflow_video_comfy)."""
+        if self.busy:
+            return
+        if (output_kind(self.mode.get(), self.target.get()) != "video"
+                or "ComfyUI" not in self.platform.get()):
+            self.status.set(tr("«🔧 Workflow ComfyUI» es para vídeo con un modelo de tu ComfyUI: "
+                               "elige salida Vídeo y la plataforma «ComfyUI / Fooocus»."))
+            return
+        prompt = self.output.get("1.0", "end").strip()
+        if not prompt:
+            self.status.set(tr("Genera el prompt primero: el workflow lo lleva dentro."))
+            return
+        try:
+            segundos = float(duration_seconds(self.duration.get()))
+        except ValueError as exc:
+            self.status.set(str(exc))
+            return
+        analysis = getattr(self.app, "analysis", None)
+        if analysis is None or not hasattr(analysis, "workflow_video_comfy"):
+            self.status.set(tr("El workflow de ComfyUI no está disponible desde esta ventana."))
+            return
+        adjuntar = self.reference_use.get() == "Adjuntar imágenes"
+        imagenes = [(ref.image, None, ref.name) for ref in self.refs] if adjuntar else []
+        hecho = analysis.workflow_video_comfy(
+            self.model.get(), prompt, self.negative.get("1.0", "end").strip(),
+            self.aspect.get(), segundos, imagenes,
+            inicio_final=self.mode.get() == MODES[2], parent=self)
+        if hecho:
+            self.status.set(tr("Workflow listo. Si ComfyUI ya estaba abierto, pulsa R en él "
+                               "antes de pegarlo."))
 
     def shortfilm(self):
         """Lleva las referencias, sus funciones y el análisis revisado al

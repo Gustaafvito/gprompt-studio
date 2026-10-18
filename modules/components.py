@@ -252,6 +252,10 @@ class AnalysisComponent(_Component):
     def copiar_comfyui_json(self) -> None:
         return self._service._copiar_comfyui_json()
 
+    def workflow_video_comfy(self, *args, **kwargs) -> bool | None:
+        """El workflow de vídeo con imágenes dadas (lo usa «Crear desde imágenes»)."""
+        return self._service.workflow_video_comfy(*args, **kwargs)
+
     def traducir_salida(self) -> None:
         return self._service._traducir_salida()
 

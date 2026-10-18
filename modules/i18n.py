@@ -929,6 +929,28 @@ TRADUCCIONES = {
     'faltan {0} ficheros: ComfyUI te ofrecerá descargarlos': '{0} files missing: ComfyUI will offer to download them',
     # Tus ficheros en los Load Image / Video / Audio del workflow (18-oct-2026).
     '📎 {0} fichero(s) tuyo(s) dentro': '📎 {0} of your file(s) inside',
+    # «Crear desde imágenes» con modelos de vídeo de ComfyUI (18-oct-2026).
+    'Máximo nueve referencias.': 'Nine references at most.',
+    '3. 🔧 Workflow ComfyUI': '3. 🔧 ComfyUI Workflow',
+    '📎 Necesita imágenes de referencia de lo que debe salir (hasta 9). Una: cárgala en la app y 🔧 Comfy la mete en el workflow. Varias: «Crear desde imágenes» (Ctrl+Shift+I)':
+        '📎 Needs reference images of what must appear (up to 9). One: load it in the app and 🔧 Comfy puts it in the workflow. Several: «Create from images» (Ctrl+Shift+I)',
+    'Añade entre dos y {0} referencias.': 'Add between two and {0} references.',
+    'Máximo {0} imágenes. Quita alguna antes de añadir más.': '{0} images at most. Remove some before adding more.',
+    'Carga una imagen en la app o deja espacio entre las {0} referencias.':
+        'Load an image in the app or leave room among the {0} references.',
+    'este modelo admite hasta {0}': 'this model takes up to {0}',
+    'Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete estas imágenes en sus Load Image, en este orden: {0}. Admite hasta {1}.':
+        'Model from your ComfyUI: «🔧 ComfyUI Workflow» puts these images in its Load Image nodes, in this order: {0}. It takes up to {1}.',
+    'Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete A como primer fotograma y B como último.':
+        'Model from your ComfyUI: «🔧 ComfyUI Workflow» uses A as the first frame and B as the last.',
+    'Modelo de tu ComfyUI: «🔧 Workflow ComfyUI» mete la imagen A en su Load Image.':
+        'Model from your ComfyUI: «🔧 ComfyUI Workflow» puts image A in its Load Image node.',
+    '«🔧 Workflow ComfyUI» es para vídeo con un modelo de tu ComfyUI: elige salida Vídeo y la plataforma «ComfyUI / Fooocus».':
+        '«🔧 ComfyUI Workflow» is for video with a model from your ComfyUI: choose Video output and the «ComfyUI / Fooocus» platform.',
+    'Genera el prompt primero: el workflow lo lleva dentro.': 'Generate the prompt first: the workflow carries it.',
+    'El workflow de ComfyUI no está disponible desde esta ventana.': 'The ComfyUI workflow is not available from this window.',
+    'Workflow listo. Si ComfyUI ya estaba abierto, pulsa R en él antes de pegarlo.':
+        'Workflow ready. If ComfyUI was already open, press R in it before pasting.',
     '🔄 Si ComfyUI ya estaba abierto, pulsa R en él antes de pegar: así ve tus ficheros nuevos.':
         '🔄 If ComfyUI was already open, press R in it before pasting so it sees your new files.',
     '⚠️ con el de ejemplo: {0}': '⚠️ still the sample file: {0}',

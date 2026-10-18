@@ -274,6 +274,8 @@ class TestEnLaApp:
         from modules.tools_analysis import ToolsAnalysisService as S
         assert "hasta 9" in S.texto_referencias_comfy(R2V)
         assert "🔧 Comfy" in S.texto_referencias_comfy(R2V)
+        # Varias imágenes, con su función y su orden: «Crear desde imágenes».
+        assert "Crear desde imágenes" in S.texto_referencias_comfy(R2V)
         assert "audio" in S.texto_referencias_comfy("wan2.2_s2v_14B_fp8_scaled")
         assert S.texto_referencias_comfy("wan2.2_t2v_low_noise_14B_fp8_scaled") == ""
 
@@ -311,11 +313,11 @@ class TestEnLaApp:
         svc = ToolsAnalysisService(app)
         pedidos, mostrado = [], []
 
-        def _pedir(modelo, faltan):
+        def _pedir(modelo, faltan, parent=None):
             pedidos.append([(h["tipo"], h["n"]) for h in faltan])
             return pedir
         svc._pedir_ficheros_comfy = _pedir
-        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None: mostrado.append(
+        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None, parent=None: mostrado.append(
             (json.loads(js), chuleta))
         svc._copiar_comfyui_json()
         return pedidos, mostrado
