@@ -84,18 +84,18 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007)
-> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac)
+> - **Installer:** [1 of 67 engines](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007) — DeepInstinct
+> - **Single-file portable:** [1 of 67](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac) — Bkav Pro
 >
 > **Microsoft Defender flags neither of them.**
 >
 > **Neither detection finds malicious code**, which matters more than the
-> count. Arctic Wolf says "Unsafe", the verdict of its statistical model,
-> and Bkav Pro gives a label derived from the file itself
-> (`W32.Malware.5498E382`); neither names any known malware.
+> count. DeepInstinct says "Malicious", the verdict of its deep-learning
+> model, and Bkav Pro gives a label derived from the file itself
+> (`W32.Malware.FA956205`); neither names any known malware.
 >
 > What antivirus engines score is the **packaging**, not the program. The
-> proof is inside 1.1.2 itself: each engine flags one option and lets the
+> proof is inside 1.1.3 itself: each engine flags one option and lets the
 > other through, and both carry the very same program. Same software,
 > different wrapper, different verdict.
 >

@@ -135,8 +135,10 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
     5e00f4b2852428f144a80ccfe98348ac   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
-    - Opción 1, el instalador ..... PENDIENTE
-    - Opción 2, el onefile ........ PENDIENTE
+    - Opción 1, el instalador ..... 1 de 67: DeepInstinct.
+    - Opción 2, el onefile ........ 1 de 67: Bkav Pro.
+
+  Microsoft Defender no marca ninguno de los dos.
 
   Lo que molesta es el EMPAQUETADO, no el programa. Estos ejecutables
   se construyen con PyInstaller, y su componente de arranque es el

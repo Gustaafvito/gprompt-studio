@@ -1,24 +1,19 @@
 <!--
-BORRADOR de la 1.1.3 (17-oct-2026). Nada publicado.
-
-Lo que todavía es de la 1.1.2 y se rehace con el build:
-- Los dos hashes del bloque de PowerShell. Se quedan los de la 1.1.2 porque
-  la web los sigue publicando y los candados exigen que cuadren con este
-  texto; build_release.py avisa mientras no se cambien.
-- Los tamaños (82 y 81 MB desde el build con Python 3.12; antes 188 y 187). build_release.py los compara con los ficheros.
-- VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
+Build definitivo del 24-oct-2026 (`.venv\Scripts\python.exe build_release.py
+--yes` desde d9a39fe, Python 3.12, pip-audit limpio, 2166 tests): hashes,
+tamaños y VirusTotal ya son los de ESTOS dos ficheros (instalador 1/67 con
+DeepInstinct, portable 1/67 con Bkav Pro; Microsoft, Undetected en los dos).
+Si se regeneran, todo eso cambia: hay que volver a analizarlos y rehacer los
+enlaces.
 
 Falta, en este orden:
-1. `.venv\Scripts\python.exe build_release.py --yes` desde el último commit
-   de esta rama (Python 3.12: Pillow 13 ya no admite el 3.10).
-2. Hashes, tamaños y VirusTotal aquí, en docs/LEEME-PRIMERO.txt y en
-   docs/WEB-descarga.md / .en.md (los dos con los mismos hashes).
-3. Borrador de release en GitHub con la etiqueta `v1.1.3` («create on
+1. Push de la rama y PR a main.
+2. Borrador de release en GitHub con la etiqueta `v1.1.3` («create on
    publish»), el cuerpo de docs/RELEASE-CUERPO.md y los dos assets:
    `GPromptStudio-Setup-1.1.3.exe` y `GPromptStudio-Portable-Onefile.exe`.
-4. Fusionar el PR en main y publicar enseguida: el botón del README apunta
+3. Fusionar el PR en main y publicar enseguida: el botón del README apunta
    ya a v1.1.3 y da 404 hasta que la release exista.
-5. Web (gprompt-studio.html y datos/proyectos.json: 281 = 171 + 102 + 8),
+4. Web (gprompt-studio.html y datos/proyectos.json: 281 = 171 + 102 + 8),
    About del repo, perfil y el aviso «Versión antigua» en la 1.1.2 (y que
    los de la 1.1.1, 1.1.0, 1.0.2, 1.0.1 y 1.0.0 apunten a la 1.1.3).
 -->
@@ -83,7 +78,16 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[1 de 67](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007)** y el portable
+**[1 de 67](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+Cada uno lo marca un motor distinto, y ninguno encuentra código malicioso.
+En el instalador, DeepInstinct da «Malicious», el veredicto de su modelo de
+aprendizaje profundo, sin nombrar ningún malware. En el portable, Bkav Pro
+da `W32.Malware.FA956205`, una etiqueta derivada del propio fichero. Y cada
+motor deja pasar la otra opción, que lleva dentro el mismo programa: lo que
+puntúan es el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 

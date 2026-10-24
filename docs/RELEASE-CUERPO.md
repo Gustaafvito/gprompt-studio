@@ -56,7 +56,16 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**PENDIENTE** y el portable **PENDIENTE**.
+**[1 de 67](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007)** y el portable
+**[1 de 67](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac)**.
+**Microsoft Defender no marca ninguno de los dos.**
+
+Cada uno lo marca un motor distinto, y ninguno encuentra código malicioso.
+En el instalador, DeepInstinct da «Malicious», el veredicto de su modelo de
+aprendizaje profundo, sin nombrar ningún malware. En el portable, Bkav Pro
+da `W32.Malware.FA956205`, una etiqueta derivada del propio fichero. Y cada
+motor deja pasar la otra opción, que lleva dentro el mismo programa: lo que
+puntúan es el envoltorio, no el código.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 
