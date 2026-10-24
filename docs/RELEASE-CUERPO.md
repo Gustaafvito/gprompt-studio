@@ -1,9 +1,9 @@
-## G-Prompt Studio v1.1.2
+## G-Prompt Studio v1.1.3
 
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **277 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **281 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -23,8 +23,8 @@ proveedores en la nube.
 
 | | |
 |---|---|
-| **[GPromptStudio-Setup-1.1.2.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
-| **[GPromptStudio-Portable-Onefile.exe]** · 187 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
+| **[GPromptStudio-Setup-1.1.3.exe]** · 82 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Portable-Onefile.exe]** · 81 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
 
 Las dos opciones son el mismo ejecutable: el instalador se limita a
 colocarlo, crear los accesos directos y registrar la desinstalación. Tardan
@@ -33,12 +33,12 @@ lo mismo en abrir, unos 4-5 segundos.
 Verifica el fichero antes de ejecutarlo si quieres (PowerShell):
 
 ```powershell
-Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
+Get-FileHash .\GPromptStudio-Setup-1.1.3.exe -Algorithm SHA256
 ```
 
 ```
-e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.2.exe
-ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
+6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007  GPromptStudio-Setup-1.1.3.exe
+e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)
@@ -56,16 +56,7 @@ el fichero es exactamente el que se publicó aquí.
 ### Sobre los avisos de los antivirus
 
 Te lo cuento yo antes de que lo encuentres tú: el instalador sale
-**[1 de 57](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d)** y el portable
-**[1 de 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6)**.
-**Microsoft Defender no marca ninguno de los dos.**
-
-Cada uno lo marca un motor distinto, y ninguno encuentra código malicioso.
-En el instalador, Arctic Wolf da «Unsafe», el veredicto de su modelo
-estadístico, sin nombrar ningún malware. En el portable, Bkav Pro da
-`W32.Malware.5498E382`, una etiqueta derivada del propio fichero. Y cada
-motor deja pasar la otra opción, que lleva dentro el mismo programa: lo que
-puntúan es el envoltorio, no el código.
+**PENDIENTE** y el portable **PENDIENTE**.
 
 Y sobre por qué pasa esto en general, que conviene saberlo:
 
@@ -86,14 +77,14 @@ el código está entero en este repositorio para que lo mires.
 
 ### Qué trae
 
-- **277 modelos con ficha propia** — 168 de imagen, 101 de vídeo, 8 de
+- **281 modelos con ficha propia** — 171 de imagen, 102 de vídeo, 8 de
   audio, en 13 plataformas. Y encima de esos, los tuyos: si usas ComfyUI,
   los detecta y los clasifica solo
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
   OpenAI, OpenRouter, Fireworks, xAI Grok, Perplexity y Together. Más
   **LM Studio y Ollama** si prefieres no salir de tu ordenador
 - **ComfyUI automático**: encuentra tu carpeta sola, detecta tus checkpoints
-  y los agrupa por familia (SDXL, Flux, SD 1.5, Pony, Illustrious, Qwen,
+  y los agrupa por familia (SDXL, Flux, FLUX 3, SD 1.5, Pony, Illustrious, Qwen,
   Z-Image…) para inyectar a cada uno sus reglas
 - Comparador de modelos, A/B testing, ADN visual, moodboards, dashboard,
   paleta de comandos (`Ctrl+K`), import/export JSON para Veo, Sora y Kling
@@ -111,99 +102,107 @@ reales, buscando los prefijos de todos los proveedores.
 
 ### Notas de esta versión
 
-**Anima**, el modelo de anime de CircleStone Labs y Comfy Org, que SeaArt
-ofrece como modelo oficial. Tiene 2.000 millones de parámetros, está hecho
-sobre NVIDIA Cosmos y se centra en el anime —personajes, series y estilos
-de artista—, aunque también hace otro arte que no sea foto. Fotorrealismo,
-no: es a propósito.
+**FLUX 3 Image Klein**, el nuevo modelo abierto de Black Forest Labs: 5.600
+millones de parámetros que crean y editan en un solo modelo, con hasta 10
+imágenes de referencia y texto dentro de la imagen. BFL avisa de que no se
+use nunca sin su *prompt upsampler*, otro modelo que convierte tu idea corta
+en el caption largo y concreto con el que se entrenó FLUX 3; sin él, la
+imagen sale genérica. La app no necesita ese modelo: redacta el prompt con
+sus mismas instrucciones, las oficiales, copiadas tal cual. Escribe un solo
+bloque de prosa en inglés —primero el tipo de imagen, luego la escena, la
+luz y la cámara, y después cada sujeto con sus colores, sus materiales y su
+sitio en el encuadre—, con el texto de la imagen entre comillas y sin
+valoraciones. Y si lo que quieres es editar una imagen, usa las de edición:
+qué cambia, cómo queda y qué se conserva.
 
-La ficha sale del esquema oficial de SeaArt y de la guía del autor, no de
-suposiciones. La app escribe tags de Danbooru en minúsculas y con espacios,
-en el orden que él recomienda, con el prefijo de calidad y la etiqueta de
-seguridad; pone los artistas con `@` delante, porque sin ella apenas se
-notan; usa pesos más altos que en SDXL, como `(chibi:2)`; y parte de su
-negativo oficial. Hasta 2.000 caracteres, 11 formatos y hasta 8 imágenes
-por tanda.
+Está en SeaArt, como «Flux.3 Image Klein», con la ficha de su esquema
+oficial: hasta 2.000 caracteres, 9 formatos, hasta 3 imágenes para editar y
+8 por tanda, 15 pasos y CFG 1. SeaArt muestra la casilla del negativo, pero
+con CFG 1 no hace nada, así que la app no lo escribe: como pide BFL, lo que
+no quieres se describe como lo que sí hay.
 
-En SeaArt tiene ocho versiones, y la que sale por defecto es la **Turbo**:
-va con CFG 1 y de 8 a 12 pasos, y con CFG 1 el negativo no hace nada. La
-**Base** y la **Aesthetic** piden de 30 a 50 pasos y un CFG de 3 a 6; con la
-Aesthetic, mejor sin los tags `score_`. La ficha lo cuenta para que no
-tengas que adivinarlo.
+**Y si lo tienes en ComfyUI**, tiene grupo propio. Antes caía con Flux 2, y
+el workflow del botón «🔧 Comfy» le ponía el codificador y el tipo de Flux 2,
+que no son los suyos. Ahora lleva sus piezas —el codificador `qwen3vl_4b`
+con el tipo `flux3` y el VAE `flux2-vae`— y el muestreo de las plantillas
+oficiales (er_sde y simple). Y distingue las dos versiones: el **Klein**
+destilado, con 16 pasos y sin CFG, y el **Klein Base**, con 50 pasos y CFG
+3.5, que es el que sirve para entrenar LoRA. Ojo con los nombres: en los
+primeros ficheros que publicó BFL, `flux3_image_klein_…`, con guion bajo,
+era la Base, y en los de ahora la Base lleva «base» en el nombre. La app
+reconoce los dos. El workflow no carga el upsampler de las plantillas (otro
+modelo de 9.000 millones de parámetros, de 7 a 19 GB): el prompt ya llega
+escrito.
 
-Un aviso: la licencia de Anima, la del modelo, es **no comercial**.
+Un aviso: la licencia de FLUX 3, la del modelo (FLUX Kommunity), permite el
+uso no comercial, y las imágenes comerciales solo si facturas menos de 5
+millones de dólares al año.
 
-**Y si tienes Anima en ComfyUI**, ahora tiene su propio grupo. Antes se
-trataba como un Illustrious más: el prompt no seguía sus reglas, y el
-workflow del botón «🔧 Comfy» lo cargaba como un checkpoint de SDXL, así que
-no funcionaba. Ahora lleva sus mismas reglas de prompt, los ajustes de la
-versión Base (er_sde, 30 pasos, CFG 5) y un workflow con sus piezas: el
-modelo de difusión, el codificador `qwen_3_06b_base` y el VAE de Qwen-Image.
+**Krea 3**, en SeaArt: un modelo pensado para producción, que genera desde
+texto, edita por instrucciones y combina hasta 6 imágenes de referencia sin
+perder lo importante —caras, la forma de un producto, sus etiquetas y sus
+logotipos—. La app le escribe en prosa y, para editar, empieza por la
+acción, nombra cada referencia por lo que contiene y cierra con lo que no
+cambia. Sin negativo, hasta 2.000 caracteres, 11 formatos y hasta 8
+imágenes por tanda.
 
-**Generador de Dataset LoRA: dónde vas a entrenar.** Un desplegable nuevo,
-«Entrenar en», con los destinos reales: G-Entrena (Anima, Krea 2, Qwen Image
-2.1 y Z-Image, y también LTX 2.3 y MiniMax H3, que son de vídeo pero se
-entrenan con imágenes), el entrenador de SeaArt (Anima, Krea 2, Flux.2, FLUX, Z
-Image, Qwen Image, Wan 2.2, SDXL, Illustrious, Pony y SD 1.5), Higgsfield y
-Magnific. Las descripciones de cada imagen se escriben como las pide ese
-destino: tags, frases o una frase en lenguaje natural —«A photo of a woman
-named…», como recomienda SeaArt—, y ahora llevan la palabra de clase («a
-woman», «1girl»). Si el destino no usa descripciones, no se exportan. Y avisa
-cuando el número de imágenes se sale de lo que recomienda. Con un modelo de
-anime, como Anima o Illustrious, el estilo visual se pone solo en Anime: con
-«Fotorrealista», el dataset le pedía a Anima fotos, que no hace.
+**SeaArt Ultra 4.0**, en SeaArt desde el 23 de octubre, sobre Kling 4.0:
+vídeos de 5 a 30 segundos en una sola generación, con audio estéreo nativo
+—diálogo, ambiente y efectos—, en 720p o 1080p y en cuatro formatos, 21:9
+incluido. Hace texto a vídeo, imagen a vídeo y Referencia, con hasta 10
+imágenes y 5 vídeos. La app le escribe como pide la guía de Kling 4.0: qué
+sale, los sujetos con sus rasgos, la acción por tramos con su tiempo («0–4s
+— …»), la cámara aparte y el sonido con quién habla y cómo. Admite prompts
+de hasta 11.000 caracteres y negativo.
 
-**Y variedad en cada imagen.** Hasta ahora, un dataset de personaje repetía la
-misma ropa y la misma luz de estudio en todas las imágenes, con cuatro fondos
-lisos, y el LoRA acababa aprendiéndose la ropa y la luz como si fueran parte
-del personaje. Ahora, en cada imagen cambian la ropa, el escenario (lugares
-reales en vez de fondos de estudio), la expresión y la luz, y cada descripción
-lo nombra para que el LoRA aprenda solo la cara y el pelo. Si la ropa es
-parte del personaje, desmarcas «Variar ropa» y se queda la de la ficha. En
-los paisajes cambian la hora del día y el tiempo; en los objetos, la luz; en
-NSFW, la expresión y la luz. Los primeros planos llevan la ropa de arriba
-—la camiseta, no los vaqueros—: sin ninguna, Anima dibujaba al personaje sin
-camiseta, y el LoRA se lo habría aprendido.
+**MOSS-Image**, en SeaArt: el modelo abierto de MOSI.AI (OpenMOSS), de 5.000
+millones de parámetros, hecho para que el texto se lea bien y cada cosa
+quede donde la pides: carteles, portadas e infografías con texto largo, en
+inglés o en chino, fotorrealismo y anime. La app le escribe en inglés, con
+la composición explícita y el texto entre comillas, y le pone su negativo
+oficial. Hasta 2.000 caracteres, 9 formatos y LoRA de MOSS Image.
 
-**Y un botón para montarlo.** Cuando ya tienes las imágenes, «📦 Montar
-dataset» las junta con sus descripciones como `000.png` + `000.txt`, que es
-lo que leen G-Entrena y el «Subir conjunto de datos» de SeaArt. Las de
-ComfyUI se emparejan solas por el nombre de su toma; las que descargas de
-SeaArt, por el orden en que las bajaste. Copia sin tocar lo descargado y te
-dice qué falta o qué sobra.
+**El botón «🔧 Comfy», también en vídeo.** Hasta ahora solo montaba
+workflows de imagen, y en vídeo exportaba el modelo de imagen que se
+hubiera quedado elegido. Ahora parte de la plantilla oficial que trae tu
+ComfyUI para cada modelo de vídeo —LTX 2.5 y 2.3, MiniMax H3, Wan 2.1 y 2.2
+(con Animate, S2V, Fun Control y Fun Camera), SCAIL, Bernini y Kandinsky 5—
+y le escribe el prompt, el negativo, la duración, el formato y tu fichero
+del modelo, con el cargador que le toca si es GGUF. El mejorador de prompt
+de la plantilla va apagado: el prompt ya llega escrito.
 
-**Y una 2ª ronda para que todas se parezcan.** Sin una imagen de referencia,
-cada imagen se dibuja desde cero y la cara cambia de una a otra. Ahora puedes
-entrenar un primer LoRA con las mejores, elegirlo en «🔁 LoRA de la 1ª
-ronda» y volver a generar: los workflows de ComfyUI lo cargan (a 0.8) y
-guardan las imágenes aparte, en `output/<trigger>_ronda2/`. Si el LoRA no
-está en la carpeta de LoRAs de ComfyUI, se ofrece a copiarlo, y si viene de
-G-Entrena (que llama igual a todos sus LoRA) le pone un nombre propio con tu
-trigger. Probado de principio a fin con un personaje real: la primera tanda
-salía con caras distintas; la segunda, con la misma.
+Y los modelos que parten de ficheros tuyos lo dicen en su ficha: el ref2va
+de MiniMax H3 trabaja con imágenes de referencia; Animate, con la imagen
+del personaje y un vídeo con el movimiento; S2V, con el audio de la voz… La
+imagen que cargues en la app entra sola en su Load Image (se copia a la
+carpeta input de ComfyUI), y lo que falte te lo pide al pulsar el botón. En
+el ref2va, el workflow lleva tantas imágenes como nombre el prompt
+(`<Picture 1>`, `<Picture 2>`…), hasta 9.
 
-**Workflows de ComfyUI con el nombre exacto de cada modelo.** Si tienes los
-modelos en subcarpetas o en otro disco, ComfyUI los llama por su ruta
-(«LoraLab-D\anima-base-v1.0»), y el workflow exportado fallaba con «Value
-not in list» hasta que elegías cada cargador a mano. Ahora la app mira tus
-carpetas de modelos y pone el nombre tal cual lo ve ComfyUI, en el botón
-🔧 Comfy y en los workflows del Generador de Dataset LoRA. Y los prompts de
-edición ya no piden «fotorrealismo» cuando el estilo es anime o de dibujo.
+Para varias referencias, **«Crear desde imágenes»**: con el ref2va de
+destino admite hasta 9 imágenes, escribe el prompt en el formato oficial de
+MiniMax H3 con cada una numerada según su función (la A es `<Picture 1>`, la
+B `<Picture 2>`…) y su paso «3. 🔧 Workflow ComfyUI» las mete en orden en
+los Load Image. Con el fl2va, «Inicio → final» pone la segunda como último
+fotograma. Y en la ventana principal, Img→Prompt en vídeo ya cuenta lo que
+pasa —lo que escribas en la idea, o una acción que se inventa— en vez de
+dejar al personaje quieto, y no corta los prompts largos.
 
-**Gestor de LoRAs: cinco familias nuevas.** Anima, Krea 2, LTX, MiniMax H3 y
-Qwen Image, junto a las de siempre, y todas en orden alfabético. Hasta ahora,
-un LoRA de Anima solo podía guardarse como «Otra», y la app avisaba siempre
-de «familia distinta» porque tampoco sabía reconocer un modelo Anima. Ahora
-lo reconoce, también en tus modelos de ComfyUI. Y los LoRA de vídeo (LTX y
-MiniMax H3) se comprueban también en el modo vídeo, que antes no miraba
-ninguno.
+**Dos arreglos** que salieron probando FLUX 3: el texto que tiene que salir
+escrito en la imagen —un cartel que dice «ABIERTO»— ya no se traduce al
+inglés con el resto del prompt, y el workflow de imagen sale en el formato
+que eliges en la app, no siempre cuadrado.
+
+**Por dentro**, la app se compila ahora con Python 3.12 y lleva Pillow 13,
+que corrige 37 fallos de seguridad conocidos de la librería de imágenes —el
+más serio, al abrir una imagen JPEG 2000 preparada a propósito—, y los
+certificados raíz al día.
 
 **Lo demás no cambia** respecto a la
-[1.1.1](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.1):
+[1.1.2](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.2):
 mismo programa, mismos proveedores y mismas funciones. Si vienes de antes,
-en sus notas tienes los cuatro modelos que trajo (Qwen Image 2.1, Nano
-Banana 2.1, Vidu Q4 Preview y SeaArt Opera 2.0 Preview), y en las de la
-1.1.0, «Crear desde imágenes» y la revisión de los ocho menús.
+en sus notas tienes Anima y el Generador de Dataset LoRA completo, con la
+2ª ronda para que todas las imágenes salgan con la misma cara.
 
 Tus claves, tu historial y tus plantillas se conservan al instalar encima:
 viven fuera del programa, en `%USERPROFILE%\.arquitecto_prompts`.

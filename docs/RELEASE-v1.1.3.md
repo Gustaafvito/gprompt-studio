@@ -5,7 +5,7 @@ Lo que todavía es de la 1.1.2 y se rehace con el build:
 - Los dos hashes del bloque de PowerShell. Se quedan los de la 1.1.2 porque
   la web los sigue publicando y los candados exigen que cuadren con este
   texto; build_release.py avisa mientras no se cambien.
-- Los tamaños (188 y 187 MB). build_release.py los compara con los ficheros.
+- Los tamaños (82 y 81 MB desde el build con Python 3.12; antes 188 y 187). build_release.py los compara con los ficheros.
 - VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
 
 Falta, en este orden:
@@ -50,8 +50,8 @@ proveedores en la nube.
 
 | | |
 |---|---|
-| **[GPromptStudio-Setup-1.1.3.exe]** · 188 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
-| **[GPromptStudio-Portable-Onefile.exe]** · 187 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
+| **[GPromptStudio-Setup-1.1.3.exe]** · 82 MB | **Recomendado.** Instalador, acceso directo y desinstalación limpia. No pide permisos de administrador |
+| **[GPromptStudio-Portable-Onefile.exe]** · 81 MB | El mismo programa sin instalar nada. Borras el fichero y desaparece |
 
 Las dos opciones son el mismo ejecutable: el instalador se limita a
 colocarlo, crear los accesos directos y registrar la desinstalación. Tardan
@@ -64,8 +64,8 @@ Get-FileHash .\GPromptStudio-Setup-1.1.3.exe -Algorithm SHA256
 ```
 
 ```
-e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.3.exe
-ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
+6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007  GPromptStudio-Setup-1.1.3.exe
+e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac  GPromptStudio-Portable-Onefile.exe
 ```
 
 ### ⚠️ Windows mostrará un aviso (SmartScreen)

@@ -27,10 +27,10 @@ nine days, which is the silliest way to waste the work.
 >
 > Windows 10 or 11 (64-bit). No Python, no dependencies.
 >
-> **[⬇ Download the installer (188 MB)]**
+> **[⬇ Download the installer (82 MB)]**
 > ← link to the GitHub release asset
 >
-> Would rather not install anything? [Single-file portable build (187 MB)]
+> Would rather not install anything? [Single-file portable build (81 MB)]
 >
 > To get started you only need a **free API key** from
 > [Gemini](https://aistudio.google.com/apikey) or
@@ -66,12 +66,12 @@ Put this right under the button, visible without expanding anything.
 > published, untampered:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.3.exe -Algorithm SHA256
 > ```
 >
 > ```
-> e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.2.exe
-> ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
+> 6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007  GPromptStudio-Setup-1.1.3.exe
+> e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > And if you like reading code, all of it is
@@ -84,8 +84,8 @@ Put this right under the button, visible without expanding anything.
 
 > **Scanned on VirusTotal — here's the whole result**
 >
-> - **Installer:** [1 of 57 engines](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d) — Arctic Wolf
-> - **Single-file portable:** [1 of 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6) — Bkav Pro
+> - **Installer:** [PENDING](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007)
+> - **Single-file portable:** [PENDING](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac)
 >
 > **Microsoft Defender flags neither of them.**
 >

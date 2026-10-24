@@ -51,7 +51,7 @@ QUÉ HAY DE NUEVO EN LA 1.1.3
 OPCIÓN 1 (RECOMENDADA): INSTALADOR
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Setup-1.1.3.exe  (188 MB)
+Archivo: GPromptStudio-Setup-1.1.3.exe  (82 MB)
 
 QUÉ HACE:
   - Asistente de instalación profesional.
@@ -91,7 +91,7 @@ CÓMO COMPARTIR:
 OPCIÓN 2: PORTABLE (un solo .exe, sin instalar)
 ═══════════════════════════════════════════════════════════════════
 
-Archivo: GPromptStudio-Portable-Onefile.exe  (187 MB)
+Archivo: GPromptStudio-Portable-Onefile.exe  (81 MB)
 
 QUÉ HACE:
   - TODO en un único .exe. Sin instalación ni carpetas.
@@ -128,11 +128,11 @@ SOBRE LA ADVERTENCIA DE WINDOWS (SmartScreen)
   Estos son los de esta versión (partidos en dos líneas por el
   ancho; al comprobar, júntalos):
 
-    e18af11a2ffaf7389db52e7053c3a252
-    8895670cf86371179f6304755856d85d   GPromptStudio-Setup-1.1.3.exe
+    6c8a667f2fce58481796f30ae14c6f51
+    868182afe66236860af954bc2a5ff007   GPromptStudio-Setup-1.1.3.exe
 
-    ec1084ab1d1dd7a02d366311ee6d38f3
-    d266c2b7e1c0823065d4ef1cd2f160c6   GPromptStudio-Portable-Onefile.exe
+    e80b54e493e8f27c4c40c61f2401b44b
+    5e00f4b2852428f144a80ccfe98348ac   GPromptStudio-Portable-Onefile.exe
 
   ANALIZADO EN VIRUSTOTAL, y el resultado entero:
     - Opción 1, el instalador ..... PENDIENTE
