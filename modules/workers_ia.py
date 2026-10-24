@@ -164,6 +164,17 @@ class WorkersIaService:
                 texto = mover_trigger_al_inicio(texto, trigger.strip())
         return texto
 
+    @staticmethod
+    def _presupuesto_tokens(specs) -> int:
+        """Tokens para la respuesta, según lo largo que es el prompt del modelo.
+
+        ≥4000 chars (Veo, MiniMax H3…): 4000 tokens. Los razonadores
+        (DeepSeek V4) gastan cientos pensando antes de escribir, y con 2500 el
+        prompt largo salía cortado. Solo se paga lo que se usa.
+        """
+        max_c = (specs.get("max_chars") or specs.get("max_chars_letra") or 0) if specs else 0
+        return 4000 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
+
     def _worker_ia(self, peticion, es_ideas=False, es_variaciones=False, n_variaciones=None,
                    es_refinamiento=False, texto_previo=None):
         try:
@@ -171,10 +182,7 @@ class WorkersIaService:
             specs = self.app.get_current_model_specs()
             max_c = specs.get("max_chars") or specs.get("max_chars_letra") or 0 if specs else 0
             max_c_neg = specs.get("max_chars_negative") if specs else None
-            # ≥4000 chars (Veo, MiniMax H3…): 4000 tokens. Los razonadores
-            # (DeepSeek V4) gastan cientos pensando antes de escribir, y con
-            # 2500 el prompt largo salía cortado. Solo se paga lo que se usa.
-            max_tok = 4000 if max_c >= 4000 else 2000 if max_c >= 2000 else 1800
+            max_tok = self._presupuesto_tokens(specs)
 
             cerebro_elegido = self.app.llm_var.get()
             texto = self.app.deepseek.generar(peticion, max_tokens=max_tok)
@@ -389,10 +397,15 @@ class WorkersIaService:
 
             # Detectar si hay un prompt existente para mejorar
             tiene_prompt = prompt_existente and ("PROMPT:" in limpiar_marcadores(prompt_existente) or len(prompt_existente) > 100)
+            # En vídeo, lo que escribe el usuario es lo que PASA: la imagen
+            # solo dice quién es y cómo es. Como «adiciones», el 18-oct-2026 el
+            # ref2va de MiniMax salió con la guerrera quieta mirando a cámara.
+            es_video = self.app.modo_var.get() == "video"
+            rotulo = "Lo que pasa en el vídeo" if es_video else "Adiciones"
 
             def _poner_desc():
                 self.app.txt_idea.delete("1.0", "end")
-                self.app.txt_idea.insert("1.0", f"{desc}\n\nAdiciones del usuario: {idea_manual}" if idea_manual else desc)
+                self.app.txt_idea.insert("1.0", f"{desc}\n\n{rotulo}: {idea_manual}" if idea_manual else desc)
                 if es_referencia:
                     self.app.dialogs.set_estado(tr('🖼 [{0}] → generando prompt con guía visual (estilo/paleta/personajes)...').format(motor), P.BTN_ACENTO)
                 elif tiene_prompt:
@@ -401,7 +414,7 @@ class WorkersIaService:
                     self.app.dialogs.set_estado(tr('👁 [{0}] → generando prompt con contexto visual anclado...').format(motor), P.TXT_ACENTO)
             self.app.after(0, _poner_desc)
 
-            idea_final = desc if not idea_manual else f"{desc}\n\nAdiciones: {idea_manual}"
+            idea_final = desc if not idea_manual else f"{desc}\n\n{rotulo}: {idea_manual}"
             if self.app.switch_traduccion_var.get() and self.app.footer.detectar_idioma(idea_final):
                 idea_final = self.app.deepseek.traducir(idea_final)
 
@@ -454,9 +467,25 @@ class WorkersIaService:
                 # MODO GENERAR: crear prompt nuevo desde imagen
                 formato = " FORMATO OBLIGATORIO: tags separados por comas con pesos (tag:1.2). NO prosa fluida." if es_tag_based else ""
                 regla_longitud = f" ⛔ REGLA ESTRICTA: El prompt FINAL no debe superar los {limite_chars} caracteres en total."
-                peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.app.footer.estilos_texto()}.{formato}{regla_longitud}" + self.app.prompts.construir_modelo_info()
+                if es_video:
+                    accion = (
+                        "La ACCIÓN la marca el usuario («Lo que pasa en el vídeo»): es lo principal del "
+                        "prompt, contada de principio a fin." if idea_manual else
+                        "El usuario no ha dicho qué pasa: inventa una acción clara y visible del sujeto, "
+                        "coherente con la imagen y que quepa en la duración. Mover la cámara, el pelo o las "
+                        "partículas no basta: el sujeto tiene que HACER algo.")
+                    peticion = (
+                        f"MODO B: prompt de VÍDEO a partir de una imagen. La imagen fija QUIÉN es y CÓMO es "
+                        f"(identidad, rasgos, vestuario, escenario, estilo): consérvalo. ANCLAJE VISUAL: "
+                        f"'{idea_final}'. {accion} Estilos: {self.app.footer.estilos_texto()}."
+                        f"{formato}{regla_longitud}") + self.app.prompts.construir_modelo_info()
+                else:
+                    peticion = f"MODO B: Genera el prompt MÁS METICULOSO POSIBLE dentro de los límites. ANCLAJE VISUAL definitivo: '{idea_final}'. Estilos: {self.app.footer.estilos_texto()}.{formato}{regla_longitud}" + self.app.prompts.construir_modelo_info()
 
-            texto = self.app.deepseek.generar(peticion, temperature=0.4, max_tokens=1500)
+            # El mismo presupuesto que «Generar»: con 1500 fijos, el formato
+            # largo de MiniMax H3 ref2va salió cortado a media frase.
+            texto = self.app.deepseek.generar(peticion, temperature=0.4,
+                                              max_tokens=self._presupuesto_tokens(specs))
             texto = limpiar_marcadores(texto)
             # guardar_en_historial lee variables Tk (modo_var, combos, footer)
             # → SIEMPRE en el hilo principal vía after (leerlas desde el

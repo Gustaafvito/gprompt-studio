@@ -132,6 +132,26 @@ def _con_reintentos(accion, descripcion, intentos=5, espera=3.0):
             time.sleep(espera)
 
 
+def comprobar_python_del_exe(exe: Path):
+    """Para el build si el .exe no lleva el Python que ha pasado los tests y
+    pip-audit.
+
+    24-oct-2026: tests y auditoría se hicieron con el 3.12 del .venv (Pillow
+    13), pero build.py llamaba a «pyinstaller» por nombre y el PATH daba el
+    del 3.10 global: el .exe salió con Pillow 12.3.0 y sus 37 CVE, y nada lo
+    avisó. Se vio arrancándolo. El instalador lleva este mismo .exe dentro.
+    """
+    from PyInstaller.archive.readers import CArchiveReader
+
+    esperado = f"python{sys.version_info.major}{sys.version_info.minor}.dll"
+    llevados = sorted(n for n in CArchiveReader(str(exe)).toc
+                      if re.fullmatch(r"python3\d+\.dll", n.lower()))
+    if llevados != [esperado]:
+        sys.exit(f"✗ {exe.name} lleva {llevados or 'ningún python3X.dll'} y el build "
+                 f"corre con {esperado}: no es el Python de los tests ni de pip-audit.")
+    print(f"✓ {exe.name} lleva {esperado}, el Python de los tests y de pip-audit")
+
+
 def copiar_artefactos(src_dist: Path):
     DEST.mkdir(parents=True, exist_ok=True)
     _con_reintentos(
@@ -344,6 +364,7 @@ def main():
     run([sys.executable, "build.py", "--clean", "--onefile", "--installer"],
         cwd=clean)
 
+    comprobar_python_del_exe(clean / "dist" / "GPromptStudio.exe")
     copiar_artefactos(clean / "dist")
 
     if not args.keep:

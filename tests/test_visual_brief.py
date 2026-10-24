@@ -286,7 +286,10 @@ def test_generation_uses_isolated_request_not_main_history(monkeypatch, invalid_
         app=SimpleNamespace(deepseek=SimpleNamespace(generar_batch=batch)),
         submit=lambda task, done: done(task()),
         # El panel baja hasta el resultado al terminar: aquí no hay nada que bajar.
-        mostrar=lambda widget: None)
+        mostrar=lambda widget: None,
+        # Tope de referencias y formato propio del destino (18-oct-2026).
+        max_refs=lambda: 4, formato_modelo=lambda specs: "",
+        presupuesto=lambda specs: 3500)
     monkeypatch.setattr(ui, "get_image_model_specs", lambda name: {"has_negative": False})
     if invalid_response:
         with pytest.raises(ValueError):
@@ -364,6 +367,7 @@ def test_missing_model_is_preserved_on_restore():
         platform=SimpleNamespace(get=lambda: "Platform"),
         model=SimpleNamespace(get=lambda: "Old model", set=changes.append),
         model_menu=SimpleNamespace(configure=lambda **kwargs: None), reset_confirmation=lambda: None,
+        model_changed=lambda: None,
         model_search=SimpleNamespace(set=lambda value: None), filter_model_menu=lambda: None)
     VisualStudio.refresh_models(fake, preserve_missing=True)
     assert changes == []
@@ -480,7 +484,10 @@ def test_revision_only_replaces_original_after_valid_response(answer, success):
         app=SimpleNamespace(deepseek=SimpleNamespace(generar_batch=batch)),
         submit=lambda task, done: done(task()),
         # El panel baja hasta el resultado al terminar: aquí no hay nada que bajar.
-        mostrar=lambda widget: None)
+        mostrar=lambda widget: None,
+        # Tope de referencias y formato propio del destino (18-oct-2026).
+        max_refs=lambda: 4, formato_modelo=lambda specs: "",
+        presupuesto=lambda specs: 3500)
     if success:
         VisualStudio.revise(fake, True)
         assert "short" in replaced and len(checkpoints) == 2

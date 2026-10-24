@@ -9,7 +9,7 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # Este modulo es logica pura y no toca Tk, pero sus ValueError SI los lee el
 # usuario: visual_studio los pinta tal cual en el panel de estado. Por eso
@@ -153,7 +153,8 @@ def save_project(path, refs, fields):
 def load_project(path):
     """Read bounded members without extracting archive paths to disk."""
     with zipfile.ZipFile(path) as archive:
-        if len(archive.infolist()) > 5 or sum(x.file_size for x in archive.infolist()) > 50_000_000:
+        if (len(archive.infolist()) > MAX_REFS_AMPLIADO + 1
+                or sum(x.file_size for x in archive.infolist()) > 50_000_000):
             raise ValueError(tr("Proyecto demasiado grande."))
         if archive.getinfo("project.json").file_size > 1_000_000:
             raise ValueError(tr("Texto del proyecto demasiado grande."))
@@ -173,8 +174,8 @@ def load_project(path):
             raise ValueError(tr("Tipo de salida no válido."))
         refs = []
         items = data["references"]
-        if not isinstance(items, list) or len(items) > 4:
-            raise ValueError(tr("Máximo cuatro referencias."))
+        if not isinstance(items, list) or len(items) > MAX_REFS_AMPLIADO:
+            raise ValueError(tr("Máximo nueve referencias."))
         for i, item in enumerate(items):
             if item["file"] != f"image-{i}.png" or item["role"] not in ROLES or not isinstance(item["name"], str):
                 raise ValueError(tr("Referencia no válida."))
@@ -224,16 +225,29 @@ def load_image(path):
         return Image.alpha_composite(background, image).convert("RGB")
 
 
-def validate(mode, refs):
+# Referencias por panel. Cuatro por defecto; el ref2va de MiniMax H3 en
+# ComfyUI admite nueve imágenes (18-oct-2026), y el panel sube su tope
+# cuando ese es el destino.
+MAX_REFS = 4
+MAX_REFS_AMPLIADO = 9
+
+
+def validate(mode, refs, maximo=MAX_REFS):
     if mode not in MODES:
         raise ValueError(tr("Selecciona un modo válido."))
     count = len(refs)
+    if mode in MODES[:2] and count > 1:
+        # 18-oct-2026: el usuario metió la guerrera y el escenario en «Animar
+        # imagen» y el aviso no decía qué hacer.
+        raise ValueError(tr("Este modo usa una sola imagen. Con varias, elige «Varias referencias» "
+                            "(o «Inicio → final» si son el principio y el final del vídeo)."))
     if mode in MODES[:2] and count != 1:
         raise ValueError(tr("Este modo necesita exactamente una imagen."))
     if mode == MODES[2] and count != 2:
         raise ValueError(tr("Añade dos imágenes: primero inicio y después final."))
-    if mode == MODES[3] and not 2 <= count <= 4:
-        raise ValueError(tr("Añade entre dos y cuatro referencias."))
+    if mode == MODES[3] and not 2 <= count <= maximo:
+        raise ValueError(tr("Añade entre dos y cuatro referencias.") if maximo == MAX_REFS
+                         else tr("Añade entre dos y {0} referencias.").format(maximo))
     if any(ref.role not in ROLES for ref in refs):
         raise ValueError(tr("Función de referencia no válida."))
 
@@ -244,24 +258,34 @@ def labels(mode, refs):
     ) for i, ref in enumerate(refs)]
 
 
-def analysis_input(mode, refs):
+def analysis_input(mode, refs, maximo=MAX_REFS):
     """One labelled visual board enables joint comparison on existing providers."""
-    validate(mode, refs)
+    validate(mode, refs, maximo)
     names = labels(mode, refs)
     if len(refs) == 1:
         board = refs[0].image.copy()
     else:
-        columns = 2
-        rows = (len(refs) + 1) // 2
-        board = Image.new("RGB", (1600, rows * 840), "white")
+        # Dos columnas hasta cuatro; tres a partir de cinco, para que nueve
+        # referencias quepan en un panel de 1600 px y no en uno de 4200.
+        columns = 2 if len(refs) <= 4 else 3
+        ancho = 1600 // columns
+        alto = ancho + 40
+        rows = (len(refs) + columns - 1) // columns
+        board = Image.new("RGB", (1600, rows * alto), "white")
         draw = ImageDraw.Draw(board)
+        # Letras legibles: la fuente por defecto mide 11 px y, con el panel
+        # reducido por el proveedor, la «H» y la «I» ya no se leían.
+        try:
+            letra = ImageFont.load_default(size=32)
+        except TypeError:  # Pillow < 10.1
+            letra = ImageFont.load_default()
         for i, ref in enumerate(refs):
-            x, y = (i % columns) * 800, (i // columns) * 840
+            x, y = (i % columns) * ancho, (i // columns) * alto
             thumb = ref.image.copy()
-            thumb.thumbnail((780, 790))
-            board.paste(thumb, (x + (800 - thumb.width) // 2,
-                               y + 40 + (790 - thumb.height) // 2))
-            draw.text((x + 16, y + 12), chr(65 + i), fill="black")
+            thumb.thumbnail((ancho - 20, ancho - 10))
+            board.paste(thumb, (x + (ancho - thumb.width) // 2,
+                               y + 40 + (ancho - 10 - thumb.height) // 2))
+            draw.text((x + 16, y + 4), chr(65 + i), fill="black", font=letra)
     prompt = (
         "Analiza las referencias visuales en español. Las letras identifican cada imagen; "
         "la cuadrícula es solo un contenedor, NO parte de la composición deseada.\n"
@@ -284,8 +308,13 @@ def analysis_input(mode, refs):
 
 
 def generation_request(mode, refs, analysis, idea, preserve, change, duration,
-                       aspect, language, model_context, natural=True, target="Imagen", attach=False):
-    validate(mode, refs)
+                       aspect, language, model_context, natural=True, target="Imagen", attach=False,
+                       maximo=MAX_REFS, formato_modelo=""):
+    """`formato_modelo`: las reglas del formato propio del modelo de destino
+    (MiniMax H3, por ahora), las mismas que usa la ventana principal. Sin
+    ellas el panel solo pasaba la ficha y el ref2va no recibía sus etiquetas
+    <Picture N> (18-oct-2026)."""
+    validate(mode, refs, maximo)
     video = output_kind(mode, target) == "video"
     if video:
         duration = duration_seconds(duration)
@@ -340,7 +369,53 @@ def generation_request(mode, refs, analysis, idea, preserve, change, duration,
         "\"notes\": \"notas breves en español, sin repetir el prompt\"}. "
         "El campo prompt es obligatorio y NO contiene advertencias ni encabezados. "
         "Respeta la fórmula y el límite de caracteres de DESTINO."
+        + (FORMATO_MODELO + formato_modelo if formato_modelo else "")
     )
+
+
+FORMATO_MODELO = (
+    "\n\nFORMATO PROPIO DEL MODELO DE DESTINO. Manda sobre las reglas de arriba en "
+    "cuanto a la FORMA del prompt; las de arriba siguen valiendo para el contenido "
+    "(idea, funciones de las referencias, conservar y cambiar). El valor de \"prompt\" "
+    "del JSON es el texto completo en este formato, con sus saltos de línea escritos "
+    "como \\n y SIN la etiqueta «PROMPT:» que piden estas reglas. Si el formato no usa "
+    "negativo, \"negative\" va vacío.\n"
+)
+
+
+def pista_minimax(mode, refs, attach, modo_referencia):
+    """Qué imágenes recibirá MiniMax H3 en ComfyUI y qué papel tiene cada
+    una, para sus reglas (prompts_inyeccion.reglas_minimax_h3).
+
+    En el ref2va la letra del panel es el número de la etiqueta: A es
+    <Picture 1>, B <Picture 2>… Es el orden en que 🔧 Comfy las mete en los
+    Load Image. El texto va al LLM: no se traduce.
+    """
+    if not attach:
+        return ("• El generador NO recibirá imágenes: " + (
+            "no uses etiquetas <Picture N>; describe en texto lo que aporta cada referencia."
+            if modo_referencia else "es T2VA; describe en texto lo que aportan las referencias."))
+    if not modo_referencia:
+        if mode == MODES[2]:
+            return ("• El usuario conectará A como PRIMER fotograma y B como ÚLTIMO: es FL2VA, en un "
+                    "solo plano salvo que la idea pida más.")
+        return "• El usuario conectará UNA imagen (A) como PRIMER fotograma: es I2VA."
+    if mode == MODES[1]:
+        return ("• El usuario conectará UNA imagen, <Picture 1> = A, y es el PRIMER fotograma: "
+                "<Picture 1> is the first frame of [Shot 1]. El vídeo arranca exactamente de ella "
+                "([keyframe completion]).")
+    if mode == MODES[2]:
+        return ("• El usuario conectará dos imágenes, en este orden: <Picture 1> = A, PRIMER "
+                "fotograma; <Picture 2> = B, ÚLTIMO fotograma. Es [keyframe completion]: "
+                "<Picture 1> is the first frame of [Shot 1] y <Picture 2> el último del último plano.")
+    lineas = [f"<Picture {i + 1}> = {chr(65 + i)} ({ref.role})" for i, ref in enumerate(refs)]
+    return ("• El usuario conectará en ComfyUI estas imágenes, EN ESTE ORDEN (la letra del "
+            "análisis es el número de la etiqueta): " + "; ".join(lineas) + ". Úsalas todas y "
+            "solo esas, con esos números. Según su función: Personaje y Producto son <Subject N> "
+            "que se conservan (cara, pelo y ropa; forma, colores y logotipos); Escenario, un "
+            "<Subject N> del lugar; Estilo, Iluminación y Composición aportan SOLO ese atributo "
+            "(attribute_transfer), nunca su contenido. No inventes <Video N> ni <Audio N>: no se "
+            "conectará ninguno.")
 
 
 # Que aporta cada funcion cuando el destino es un GUION y no una sola imagen.

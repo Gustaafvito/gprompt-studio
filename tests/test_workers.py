@@ -140,6 +140,24 @@ class TestDeepSeekWorker:
         w = self._worker_con_respuesta("a cat on the beach")
         assert w.traducir("un gato en la playa") == "a cat on the beach"
 
+    def test_traducir_no_traduce_el_texto_del_cartel(self):
+        # 17-oct-2026: «un cartel en la puerta que dice ABERTO» llegaba al
+        # LLM de FLUX 3 como "OPEN": el Auto-trad lo traducía antes de nada.
+        from types import SimpleNamespace
+
+        from workers import DeepSeekWorker
+        enviados = []
+        prov = SimpleNamespace(
+            disponible=lambda: True,
+            completar=lambda msgs, **k: enviados.append(msgs) or "ok",
+        )
+        w = DeepSeekWorker(clients=SimpleNamespace(get_active_provider=lambda: prov))
+        w.traducir("un cartel que dice ABERTO")
+        peticion = enviados[0][0]["content"]
+        assert "Do NOT translate text that must appear written" in peticion
+        assert "in their original language, inside double quotes" in peticion
+        assert peticion.endswith("un cartel que dice ABERTO")
+
     def test_traducir_a_espanol_vacia_devuelve_original(self):
         w = self._worker_con_respuesta("")
         assert w.traducir_a_espanol("a cat") == "a cat"

@@ -92,8 +92,8 @@ def __getattr__(name):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # ── Versión ───────────────────────────────────────────────────────
-VERSION = "1.1.2"
-PUBLIC_VERSION = "1.1.2"
+VERSION = "1.1.3"
+PUBLIC_VERSION = "1.1.3"
 APP_TITLE = f"G-Prompt Studio v{PUBLIC_VERSION}"
 
 # ── Persistencia ──────────────────────────────────────────────────
@@ -566,6 +566,10 @@ def escanear_modelos_comfyui(ruta_comfyui: str = None, preferencias: dict = None
 # en el JSON curado. Robusto a renombrados: detecta por substring del nombre.
 # (clave, tokens) — orden de específico → genérico; gana el primero que casa.
 _COMFY_FAMILIAS = (
+    # FLUX 3 (oct-2026) no es Flux 2: otro encoder (Qwen3-VL 4B, CLIPLoader de
+    # tipo flux3), sin guía en la versión destilada y con su propio formato de
+    # prompt. Va PRIMERO para que 'flux' no se lo quede.
+    ("flux3",       ("flux3", "flux-3", "flux_3", "flux.3")),
     # 'krea' (Flux.1/2 Krea de BFL+Krea) es arquitectura Flux, pero el usuario
     # lo quiere como grupo propio "Krea" (ago-2026). VA ANTES de flux porque
     # varios ficheros llevan AMBOS tokens ('flux1KreaDev…') y krea debe ganar.
@@ -596,7 +600,7 @@ _COMFY_FAMILIA_LABELS = {
     # desincronizado y el usuario veia tres cabeceras "Otros" seguidas.
     # test_comfy_familias_etiquetadas lo vigila.
     "edit": "Edición de imagen", "hidream": "HiDream",
-    "anima": "Anima",
+    "anima": "Anima", "flux3": "FLUX 3",
     "": "Otros",
 }
 _COMFY_FAMILIA_LABELS_VIDEO = {
@@ -698,6 +702,24 @@ _COMFY_SPECS_FAMILIA = {
         "best_for_en": "Flowing, detailed natural-language prose (almost a paragraph): subject → scene → lighting → camera. Qwen text encoder (multilingual). CFG ~3.5, ~20 steps, euler/simple. Flux 2 Klein DOES use negative.",
         "prompt_formula": "Frases completas en prosa, NO tags por comas. Empieza por el sujeto, sigue con el entorno, describe la iluminación exacta y cierra con los detalles de cámara/lente.",
         "prompt_ejemplo": "A weathered fisherman mending nets on a wooden dock at golden hour, warm rim light catching the salt in his beard, calm harbor water behind, shot on 50mm with shallow depth of field.",
+    },
+    "flux3": {
+        # FLUX 3 Image Klein (BFL, oct-2026), ficha de huggingface.co/black-
+        # forest-labs/flux-3-image-klein-comfy. BFL avisa de que no se use
+        # nunca sin su «prompt upsampler»: el formato 'flux3' hace que el LLM
+        # de la app haga ese papel con los system prompts oficiales. Sin
+        # negative: el destilado no usa guía y el upsampler escribe las
+        # negaciones como lo que sí hay. comfy_image_specs distingue la Base.
+        "is_natural": True, "has_negative": False,
+        "formato_bloques": "flux3",
+        "max_chars": 2500,
+        "palabras_objetivo": "100-350",
+        "sampler_recomendado": "er_sde / simple — Klein (destilado): 16 pasos, CFG 1 · Klein Base: 50 pasos, CFG 3.5",
+        "best_for": "FLUX 3 Image Klein (Black Forest Labs): 5.6B, crea y edita con hasta 10 imágenes de referencia en un solo modelo, y escribe texto dentro de la imagen. Quiere un caption largo y concreto (100-350 palabras): la app lo redacta con las instrucciones oficiales de su prompt upsampler. Encoder qwen3vl_4b (tipo flux3) y VAE flux2-vae.",
+        "best_for_en": "FLUX 3 Image Klein (Black Forest Labs): 5.6B, creates and edits with up to 10 reference images in a single model, and renders in-image text. It wants a long, concrete caption (100-350 words): the app writes it with the official instructions of its prompt upsampler. qwen3vl_4b encoder (flux3 type) and flux2-vae VAE.",
+        "prompt_formula": "Un solo bloque de prosa en inglés: medio y estilo primero (sin estilo pedido, «Full-color outdoor photograph, ...»), luego escena, luz y cámara, y después cada sujeto con colores, materiales y posición en el encuadre. Texto de la imagen, literal y entre comillas. Sin valoraciones ni frases de ambiente; las negaciones, como lo que sí hay.",
+        "prompt_ejemplo": "Full-color outdoor photograph, eye-level medium-wide shot in late afternoon sunlight on a narrow cobbled street in a hillside town. On the left, a young East Asian woman with light skin and shoulder-length black hair, wearing a mustard wool coat over a grey knit sweater, holds a paper cup of coffee and looks toward frame-right. Behind her, a bakery window with a hand-painted sign reading \"PANADERÍA\" in white serif letters.",
+        "limitaciones": "Sin el upsampler sale genérico: BFL lo pide siempre. Las cajas de posición (bounding boxes) guían, no son máscaras. Licencia FLUX Kommunity v1.0: uso no comercial y salidas comerciales solo si facturas menos de 5 M$ al año. Los LoRA se entrenan sobre Klein Base.",
     },
     "krea": {
         # Krea (Flux.1/2 Krea): arquitectura Flux → prosa natural, CFG real,
@@ -885,6 +907,23 @@ _COMFY_FAMILIA_OVERRIDE = {
 _RE_ANIMA_COMFY = re.compile(r"^anima[-_ ]?(base|preview|turbo|aesthetic)")
 
 
+def flux3_es_base(nombre: str) -> bool:
+    """True si el fichero de FLUX 3 Klein es la Base (sin destilar).
+
+    Los nombres actuales de BFL marcan la Base con «base»
+    (flux3-image-klein-base-int8-convrot) y el destilado no lleva marca. Los
+    primeros, con guion bajo, iban al revés: flux3_image_klein_int8_convrot
+    era la Base (pesa lo mismo, byte a byte, que la base de ahora) y el
+    destilado llevaba «sd». El autor tiene los dos esquemas en su equipo.
+    """
+    n = (nombre or "").lower()
+    if re.search(r"(?<![a-z])base(?![a-z])", n):
+        return True
+    if re.search(r"(?<![a-z])sd(?![a-z])", n):
+        return False
+    return n.startswith("flux3_image_klein")
+
+
 def detectar_familia_comfy(nombre: str) -> str:
     """Familia ComfyUI ('flux'|'sdxl'|'pony'…) por nombre, o '' si no se reconoce."""
     override = _COMFY_FAMILIA_OVERRIDE.get(_norm_nombre_comfy(nombre))
@@ -916,6 +955,13 @@ def comfy_image_specs(nombre: str) -> dict | None:
         # Los formatos especiales (z_image híbrido con negative dinámico)
         # no aplican a variantes destiladas: prompt directo natural.
         specs.pop("formato_bloques", None)
+    if fam == "flux3":
+        if flux3_es_base(nombre):
+            specs["best_for"] = "Klein Base, sin destilar: 50 pasos y CFG 3.5; la de entrenar LoRA · " + specs["best_for"]
+            specs["best_for_en"] = "Klein Base, undistilled: 50 steps and CFG 3.5; the one for LoRA training · " + specs["best_for_en"]
+        else:
+            specs["best_for"] = "Klein destilado: 16 pasos, sin CFG · " + specs["best_for"]
+            specs["best_for_en"] = "Distilled Klein: 16 steps, no CFG · " + specs["best_for_en"]
     specs.setdefault("max_chars", 1500 if specs["is_natural"] else 500)
     # La UI (combo de ratio) lee specs["ratios"] directamente: los modelos
     # locales aceptan cualquier resolución, así que exponemos los estándar
@@ -964,6 +1010,13 @@ _COMFY_WORKFLOW = {
     "anima":       {"arch": "unet", "cfg": 5.0, "steps": 30, "sampler": "er_sde", "scheduler": "simple",
                     "clip": "qwen_3_06b_base.safetensors", "vae": "qwen_image_vae.safetensors",
                     "clip_type": "stable_diffusion"},
+    # FLUX 3 Klein: los ficheros y el muestreo de las plantillas oficiales de
+    # ComfyUI (image_flux3_klein_*). Estos valores son los del destilado;
+    # comfy_workflow_params los cambia para la Base. El upsampler de las
+    # plantillas no va: el caption ya lo escribe la app.
+    "flux3":       {"arch": "unet", "cfg": 1.0, "steps": 16, "sampler": "er_sde", "scheduler": "simple",
+                    "clip": "qwen3vl_4b_int8_convrot.safetensors", "vae": "flux2-vae.safetensors",
+                    "clip_type": "flux3"},
     "sdxl":        {"arch": "checkpoint", "cfg": 6.5, "steps": 20, "sampler": "euler", "scheduler": "karras"},
     "sd15":        {"arch": "checkpoint", "cfg": 7.0, "steps": 25, "sampler": "dpmpp_2m", "scheduler": "karras"},
     "pony":        {"arch": "checkpoint", "cfg": 5.0, "steps": 25, "sampler": "euler", "scheduler": "karras"},
@@ -983,6 +1036,8 @@ def comfy_workflow_params(nombre: str) -> dict:
     if any(t in (nombre or "").lower() for t in COMFY_TURBO_TOKENS):
         params["steps"] = min(params.get("steps", 8), 8)
         params["cfg"] = 2.0
+    if fam == "flux3" and flux3_es_base(nombre):
+        params["steps"], params["cfg"] = 50, 3.5
     params["_comfy_familia"] = fam
     return params
 
@@ -1417,6 +1472,12 @@ def _ruta_comfy_configurada() -> str:
     return detectar_comfy_automatico()
 
 
+def ruta_comfyui() -> str:
+    """La carpeta de ComfyUI configurada, o "" si no hay (el botón 🔧 Comfy
+    busca ahí las plantillas oficiales de vídeo)."""
+    return _ruta_comfy_configurada() or ""
+
+
 def carpeta_loras_comfy() -> str:
     """La carpeta models/loras del ComfyUI configurado, o "" si no hay.
 
@@ -1434,7 +1495,12 @@ def carpeta_loras_comfy() -> str:
 
 # Carpetas de models/ que leen los cargadores de los workflows exportados.
 _COMFY_CARPETAS_NOMBRES = ("checkpoints", "diffusion_models", "unet",
-                           "text_encoders", "clip", "vae", "loras")
+                           "text_encoders", "clip", "vae", "loras",
+                           # Las plantillas de vídeo cargan además estos
+                           # (reescalador latente de LTX, codificador de audio
+                           # de Wan S2V, visión de Wan i2v…).
+                           "latent_upscale_models", "upscale_models",
+                           "clip_vision", "audio_encoders", "model_patches")
 _cache_nombres_comfy: dict = {}
 
 

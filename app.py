@@ -243,6 +243,9 @@ class ArquitectoApp(
     def _setup_state(self):
         """Variables de estado interno de la aplicación."""
         self.imagen_cargada         = None
+        # El fichero de esa imagen, si vino de uno: 🔧 Comfy copia el
+        # original a ComfyUI (la cargada se reduce a 1024 px).
+        self.imagen_cargada_ruta    = None
         self._progreso_activo       = False
         self._token_pending         = None
         self._ultimo_anclaje_visual = None

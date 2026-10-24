@@ -216,9 +216,17 @@ class DeepSeekWorker:
 
     def traducir(self, texto_es: str, **kwargs) -> str:
         """Traduce ES → EN para prompts de IA. Devuelve original si falla."""
+        # Lo que sale ESCRITO en la imagen o se DICE en el vídeo no se traduce:
+        # «un cartel que dice ABERTO» llegaba al LLM como "a sign that says
+        # OPEN" y no había regla posterior que lo arreglase (17-oct-2026).
         peticion_trad = (
             "Translate this to English for an AI image/video prompt. "
             "Keep it concise, preserve all descriptive details. "
+            "Do NOT translate text that must appear written in the image or "
+            "video (signs, labels, titles, logos) nor lines that someone says "
+            "or sings: keep them exactly as written, in their original "
+            "language, inside double quotes. Example: 'un cartel que dice "
+            "ABIERTO' becomes 'a sign that says \"ABIERTO\"'. "
             "Return ONLY the translation, no explanations: " + texto_es
         )
         msgs = [{"role": "user", "content": peticion_trad}]

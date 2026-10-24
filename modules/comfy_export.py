@@ -53,6 +53,10 @@ RESOLUCION_POR_RATIO = {
     "4:3":  (1152, 896),
     "9:16": (768, 1344),
     "16:9": (1344, 768),
+    # Los panorámicos que la app ofrece (21:9, y 9:21 en algunas fichas):
+    # antes caían en 1024x1024. Son los tamaños de SDXL para ese formato.
+    "21:9": (1536, 640),
+    "9:21": (640, 1536),
 }
 
 

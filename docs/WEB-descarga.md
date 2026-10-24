@@ -29,10 +29,10 @@ trabajo.
 >
 > Windows 10 u 11 (64 bits). No necesitas Python ni instalar nada más.
 >
-> **[⬇ Descargar el instalador (188 MB)]**
+> **[⬇ Descargar el instalador (82 MB)]**
 > ← enlazar al asset del release en GitHub
 >
-> ¿Prefieres no instalar nada? [Versión portable, un solo archivo (187 MB)]
+> ¿Prefieres no instalar nada? [Versión portable, un solo archivo (81 MB)]
 >
 > Para empezar solo necesitas una **API key gratuita** de
 > [Gemini](https://aistudio.google.com/apikey) o
@@ -71,12 +71,12 @@ un acordeón, que el título se vea siempre y el detalle se despliegue.
 > exactamente el que publiqué, sin manipular:
 >
 > ```powershell
-> Get-FileHash .\GPromptStudio-Setup-1.1.2.exe -Algorithm SHA256
+> Get-FileHash .\GPromptStudio-Setup-1.1.3.exe -Algorithm SHA256
 > ```
 >
 > ```
-> e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d  GPromptStudio-Setup-1.1.2.exe
-> ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6  GPromptStudio-Portable-Onefile.exe
+> 6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007  GPromptStudio-Setup-1.1.3.exe
+> e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac  GPromptStudio-Portable-Onefile.exe
 > ```
 >
 > Y si te gusta mirar el código, está entero
@@ -91,18 +91,19 @@ Solo si te lo reportan. Tenerlo escrito de antemano ahorra discusiones.
 
 > **Analizado en VirusTotal, y te cuento el resultado entero**
 >
-> - **Instalador:** [1 de 57 motores](https://www.virustotal.com/gui/file/e18af11a2ffaf7389db52e7053c3a2528895670cf86371179f6304755856d85d) — Arctic Wolf
-> - **Portable de un solo fichero:** [1 de 62](https://www.virustotal.com/gui/file/ec1084ab1d1dd7a02d366311ee6d38f3d266c2b7e1c0823065d4ef1cd2f160c6) — Bkav Pro
+> - **Instalador:** [1 de 67 motores](https://www.virustotal.com/gui/file/6c8a667f2fce58481796f30ae14c6f51868182afe66236860af954bc2a5ff007) — DeepInstinct
+> - **Portable de un solo fichero:** [1 de 67](https://www.virustotal.com/gui/file/e80b54e493e8f27c4c40c61f2401b44b5e00f4b2852428f144a80ccfe98348ac) — Bkav Pro
 >
 > **Microsoft Defender no marca ninguno de los dos.**
 >
 > **Ninguna de las dos detecciones encuentra código malicioso**, y eso
-> importa más que el número. Arctic Wolf da «Unsafe», el veredicto de su
-> modelo estadístico, y Bkav Pro una etiqueta derivada del propio fichero
-> (`W32.Malware.5498E382`); ninguno nombra un malware conocido.
+> importa más que el número. DeepInstinct da «Malicious», el veredicto de
+> su modelo de aprendizaje profundo, y Bkav Pro una etiqueta derivada del
+> propio fichero (`W32.Malware.FA956205`); ninguno nombra un malware
+> conocido.
 >
 > Lo que puntúan los antivirus es el **empaquetado**, no el programa. La
-> prueba está en la propia 1.1.2: cada motor marca una opción y deja pasar
+> prueba está en la propia 1.1.3: cada motor marca una opción y deja pasar
 > la otra, que lleva dentro el mismo programa. Mismo software, distinto
 > envoltorio, distinto veredicto.
 >

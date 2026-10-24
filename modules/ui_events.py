@@ -275,8 +275,18 @@ class UiEventsService:
             except Exception as _e:
                 logger.debug(f"[silent estilo video familia] {_e}")
             nota_txt = specs.get('nota') or 's/n'
+            # Lo que el modelo local necesita además del prompt (imagen, vídeo,
+            # audio), delante: la ficha se recorta a dos líneas.
+            pide = ""
+            try:
+                if "ComfyUI" in self.app.plataforma_var.get():
+                    from modules.tools_analysis import ToolsAnalysisService
+                    pide = ToolsAnalysisService.texto_referencias_comfy(motor_name)
+            except Exception as _e:
+                logger.debug(f"[silent referencias] {_e}")
             self.app.lbl_img_model_info.configure(text_color="#8bb4d4")
-            self.app.pintar_info_modelo(f"⭐ {nota_txt} | 🎬 {best_for_display(specs)}")
+            self.app.pintar_info_modelo(
+                f"⭐ {nota_txt} | " + (f"{pide} | " if pide else "") + f"🎬 {best_for_display(specs)}")
             self.app._safe_pack(self.app.lbl_img_model_info, fill="x", padx=30, pady=(0, 2), before=self.app._tabview_container)
             self.app.dialogs.set_estado(tr('🎬 {0}').format(motor_name), P.TXT_INFO)
 

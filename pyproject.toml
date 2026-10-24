@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gprompt-studio"
-version = "1.1.2"
+version = "1.1.3"
 description = "Suite profesional de ingeniería de prompts para IA generativa (imagen, vídeo, audio)"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
     { name = "Gustaafvito", email = "209388097+Gustaafvito@users.noreply.github.com" },
@@ -22,15 +22,17 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "customtkinter>=5.2.0",
-    "Pillow>=10.0.0",
+    # 13.0.0: arregla 37 fallos conocidos (el peor, al abrir un JPEG 2000)
+    # y es la primera que ya no admite Python 3.10.
+    "Pillow>=13.0.0",
     "requests>=2.31.0",
     "python-dotenv>=1.0.0",
     "pyperclip>=1.8.0",
@@ -90,14 +92,14 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 extend-exclude = [
     "build",
     "dist",

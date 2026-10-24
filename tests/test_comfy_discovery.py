@@ -5,6 +5,8 @@ Casos basados en un inventario real del usuario (carpetas checkpoints +
 diffusion_models con modelos de imagen, vídeo y audio mezclados, más una
 subcarpeta FLUX2/).
 """
+import pytest
+
 import config
 
 
@@ -640,6 +642,105 @@ class TestConstruirWorkflowComfy:
         textos = [n["widgets_values"][0] for n in wf["nodes"]
                   if n["type"] == "CLIPTextEncode"]
         assert "a cat" in textos and "blurry" in textos
+
+
+class TestWorkflowConElFormatoElegido:
+    """17-oct-2026: con 9:16 elegido en la app, el botón 🔧 Comfy sacaba el
+    latent de 1024x1024. El prompt se compone para un formato y la imagen
+    salía en otro."""
+
+    @staticmethod
+    def _latent(wf):
+        return next(n["widgets_values"][:2] for n in wf["nodes"]
+                    if n["type"] == "EmptyLatentImage")
+
+    def _pulsar_boton(self, ratio, modo="imagen", plataforma="ComfyUI / Fooocus"):
+        import json
+        from types import SimpleNamespace
+
+        from modules.tools_analysis import ToolsAnalysisService
+        app = SimpleNamespace(
+            modo_var=SimpleNamespace(get=lambda: modo),
+            plataforma_var=SimpleNamespace(get=lambda: plataforma),
+            txt_salida=SimpleNamespace(get=lambda *a: "PROMPT: a cat"),
+            extraer_positive=lambda: "a cat", extraer_negative=lambda: "",
+            combo_modelo_imagen=SimpleNamespace(get=lambda: "flux3-image-klein-int8-convrot"),
+            footer=SimpleNamespace(ratio_actual=lambda: ratio),
+        )
+        svc = ToolsAnalysisService(app)
+        mostrado = []
+        svc._mostrar_ventana_comfyui = lambda js, modelo: mostrado.append(json.loads(js))
+        svc._copiar_comfyui_json()
+        return mostrado[0] if mostrado else None
+
+    @pytest.mark.parametrize("modo, plataforma, pista", [
+        # 17-oct-2026: con LTX 2.5 en modo vídeo salió un workflow de «Anima».
+        # El vídeo ya tiene workflow propio (test_comfy_video); el audio, no.
+        ("audio", "ComfyUI / Fooocus", "Para audio"),
+        ("imagen", "SeaArt / Tensor.Art", "ComfyUI / Fooocus"),
+        ("video", "SeaArt Video", "ComfyUI / Fooocus"),
+    ])
+    def test_sin_modelo_de_imagen_local_avisa_y_no_exporta(
+            self, monkeypatch, modo, plataforma, pista):
+        import tkinter.messagebox
+        avisos = []
+        monkeypatch.setattr(tkinter.messagebox, "showinfo",
+                            lambda titulo, msg, **k: avisos.append(msg))
+        assert self._pulsar_boton("1:1", modo, plataforma) is None
+        assert len(avisos) == 1 and pista in avisos[0]
+
+    @pytest.mark.parametrize("ratio, tam", [
+        ("9:16", [768, 1344]), ("16:9", [1344, 768]), ("21:9", [1536, 640]),
+        ("", [1024, 1024]),  # «Libre»: ratio_actual devuelve ""
+    ])
+    def test_el_boton_usa_el_formato_de_la_app(self, ratio, tam):
+        assert self._latent(self._pulsar_boton(ratio)) == tam
+
+    def test_en_video_monta_el_de_la_plantilla_del_modelo_de_video(self, monkeypatch):
+        # Lee el desplegable de VÍDEO, no el de imagen, y pasa duración,
+        # formato e imagen a comfy_video.
+        import json
+        from types import SimpleNamespace
+
+        import config
+        from modules import comfy_video
+        from modules.tools_analysis import ToolsAnalysisService
+        recibido = {}
+
+        def _construir(modelo, prompt, negativo, ratio, segundos, con_imagen, carpetas, nombres):
+            recibido.update(modelo=modelo, prompt=prompt, ratio=ratio, segundos=segundos,
+                            con_imagen=con_imagen)
+            return {"workflow": {"nodes": []}, "plantilla": "video_ltx2_5_t2v",
+                    "fichero": "LTX-2.5-Distilled-Q3_K_M.gguf", "faltan": ["x"], "avisos": []}
+        monkeypatch.setattr(comfy_video, "construir_workflow_video", _construir)
+        monkeypatch.setattr(config, "ruta_comfyui", lambda: "")
+        app = SimpleNamespace(
+            modo_var=SimpleNamespace(get=lambda: "video"),
+            plataforma_var=SimpleNamespace(get=lambda: "ComfyUI / Fooocus"),
+            txt_salida=SimpleNamespace(get=lambda *a: "POSITIVE PROMPT: a fox"),
+            extraer_positive=lambda: "a fox", extraer_negative=lambda: "blurry",
+            combo_modelo_imagen=SimpleNamespace(get=lambda: "Anima"),
+            combo_modelo_video=SimpleNamespace(get=lambda: "LTX 2.5"),
+            duracion_var=SimpleNamespace(get=lambda: "11s"),
+            imagen_cargada=None,
+            footer=SimpleNamespace(ratio_actual=lambda: "9:16"),
+        )
+        svc = ToolsAnalysisService(app)
+        mostrado = []
+        svc._mostrar_ventana_comfyui = lambda js, modelo, chuleta=None, parent=None: mostrado.append(
+            (json.loads(js), modelo, chuleta))
+        svc._copiar_comfyui_json()
+        assert recibido == {"modelo": "LTX 2.5", "prompt": "a fox", "ratio": "9:16",
+                            "segundos": 11.0, "con_imagen": False}
+        _wf, modelo, chuleta = mostrado[0]
+        assert modelo == "LTX 2.5"
+        assert "video_ltx2_5_t2v" in chuleta and "faltan 1" in chuleta
+
+    def test_todos_los_tamanos_valen_para_flux2_y_flux3(self):
+        # Su VAE reduce 16 veces: los lados tienen que ser múltiplos de 16.
+        from modules.comfy_export import RESOLUCION_POR_RATIO
+        for ratio, (w, h) in RESOLUCION_POR_RATIO.items():
+            assert w % 16 == 0 and h % 16 == 0, ratio
 
 
 class TestWorkflowConLora:

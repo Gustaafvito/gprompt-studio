@@ -24,6 +24,20 @@ dejar constancia de los cambios que hagas (secciones 4.b y 4.c).
 
 ---
 
+INSTRUCCIONES DE FLUX 3 (prompts.py)
+
+REGLAS_FLUX3_T2I y REGLAS_FLUX3_I2I reproducen, sin cambios, dos de los
+system prompts del «prompt upsampler» de FLUX 3 Image Klein (claves t2i e
+i2i de system_prompts.json):
+
+    https://huggingface.co/black-forest-labs/flux-3-image-klein-pup
+
+Copyright 2026 Black Forest Labs. Distribuidos bajo la Licencia Apache,
+Versión 2.0. La app los envuelve con sus propias indicaciones (la etiqueta
+PROMPT: y la elección entre generar y editar), que no forman parte de ellos.
+
+---
+
 DEPENDENCIAS DE TERCEROS
 
 Este software se distribuye empaquetado con bibliotecas de terceros, cada
