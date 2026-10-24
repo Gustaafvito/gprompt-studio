@@ -9,7 +9,8 @@ Lo que todavía es de la 1.1.2 y se rehace con el build:
 - VirusTotal: marcado PENDIENTE; build_release.py avisa mientras quede alguno.
 
 Falta, en este orden:
-1. `py -3.10 build_release.py --yes` desde el último commit de esta rama.
+1. `.venv\Scripts\python.exe build_release.py --yes` desde el último commit
+   de esta rama (Python 3.12: Pillow 13 ya no admite el 3.10).
 2. Hashes, tamaños y VirusTotal aquí, en docs/LEEME-PRIMERO.txt y en
    docs/WEB-descarga.md / .en.md (los dos con los mismos hashes).
 3. Borrador de release en GitHub con la etiqueta `v1.1.3` («create on
@@ -218,6 +219,11 @@ dejar al personaje quieto, y no corta los prompts largos.
 escrito en la imagen —un cartel que dice «ABIERTO»— ya no se traduce al
 inglés con el resto del prompt, y el workflow de imagen sale en el formato
 que eliges en la app, no siempre cuadrado.
+
+**Por dentro**, la app se compila ahora con Python 3.12 y lleva Pillow 13,
+que corrige 37 fallos de seguridad conocidos de la librería de imágenes —el
+más serio, al abrir una imagen JPEG 2000 preparada a propósito—, y los
+certificados raíz al día.
 
 **Lo demás no cambia** respecto a la
 [1.1.2](https://github.com/Gustaafvito/gprompt-studio/releases/tag/v1.1.2):

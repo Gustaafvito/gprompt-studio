@@ -278,8 +278,12 @@ def build_pyinstaller(onefile=False):
     # --log-level=WARN silencia los INFO de PyInstaller que imprimen paths
     # absolutos. PYTHONWARNINGS=ignore silencia los DeprecationWarnings de
     # pydantic/darkdetect (que también muestran paths de site-packages).
-    cmd = ["pyinstaller", "--noconfirm", "--log-level=WARN", spec_name]
-    log(f"  $ pyinstaller --noconfirm --log-level=WARN {spec_name}", "blue")
+    # Con el MISMO Python que lanza el build: «pyinstaller» a secas lo
+    # resolvía el PATH al del Python 3.10 global, y el 24-oct-2026 el .exe
+    # salió con Pillow 12.3.0 (37 CVE) mientras los tests y pip-audit
+    # habían pasado con el 3.12 del .venv.
+    cmd = [sys.executable, "-m", "PyInstaller", "--noconfirm", "--log-level=WARN", spec_name]
+    log(f"  $ python -m PyInstaller --noconfirm --log-level=WARN {spec_name}", "blue")
     env = os.environ.copy()
     env["PYTHONWARNINGS"] = "ignore"
     # Capturamos stdout/stderr para reescribir paths absolutos a relativos

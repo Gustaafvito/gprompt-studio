@@ -174,7 +174,7 @@ There is also a **single-file portable build** if you'd rather not install.
 ### From source (development)
 
 Only if you want to work on the code or run it on macOS/Linux. Requires
-**Python 3.10 or newer**:
+**Python 3.11 or newer**:
 
 ```bash
 git clone https://github.com/Gustaafvito/gprompt-studio.git

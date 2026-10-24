@@ -216,7 +216,7 @@ También hay una **versión portable** de un solo fichero, sin instalar.
 ### Desde el código (desarrollo)
 
 Solo si quieres tocar el código o correrlo en macOS/Linux. Necesitas
-**Python 3.10 o superior**:
+**Python 3.11 o superior**:
 
 ```bash
 git clone https://github.com/Gustaafvito/gprompt-studio.git
