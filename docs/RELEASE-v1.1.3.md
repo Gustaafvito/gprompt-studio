@@ -17,7 +17,7 @@ Falta, en este orden:
    `GPromptStudio-Setup-1.1.3.exe` y `GPromptStudio-Portable-Onefile.exe`.
 4. Fusionar el PR en main y publicar enseguida: el botón del README apunta
    ya a v1.1.3 y da 404 hasta que la release exista.
-5. Web (gprompt-studio.html y datos/proyectos.json: 279 = 170 + 101 + 8),
+5. Web (gprompt-studio.html y datos/proyectos.json: 281 = 171 + 102 + 8),
    About del repo, perfil y el aviso «Versión antigua» en la 1.1.2 (y que
    los de la 1.1.1, 1.1.0, 1.0.2, 1.0.1 y 1.0.0 apunten a la 1.1.3).
 -->
@@ -29,7 +29,7 @@ Falta, en este orden:
 Suite de escritorio para escribir prompts de IA generativa —imagen, vídeo y
 audio— adaptados al modelo concreto que vas a usar.
 
-No es un chat con plantillas. Cada uno de los **279 modelos** del catálogo
+No es un chat con plantillas. Cada uno de los **281 modelos** del catálogo
 tiene su ficha: si escribe en prosa o en tags, cuántos caracteres acepta, si
 usa prompt negativo, qué sampler le va bien y con qué CFG. La app redacta
 respetando esas reglas, así que el prompt que sale funciona en el modelo que
@@ -103,7 +103,7 @@ el código está entero en este repositorio para que lo mires.
 
 ### Qué trae
 
-- **279 modelos con ficha propia** — 170 de imagen, 101 de vídeo, 8 de
+- **281 modelos con ficha propia** — 171 de imagen, 102 de vídeo, 8 de
   audio, en 13 plataformas. Y encima de esos, los tuyos: si usas ComfyUI,
   los detecta y los clasifica solo
 - **Once cerebros** para redactar: DeepSeek, Claude, Gemini, Groq, Mistral,
@@ -171,6 +171,22 @@ logotipos—. La app le escribe en prosa y, para editar, empieza por la
 acción, nombra cada referencia por lo que contiene y cierra con lo que no
 cambia. Sin negativo, hasta 2.000 caracteres, 11 formatos y hasta 8
 imágenes por tanda.
+
+**SeaArt Ultra 4.0**, en SeaArt desde el 23 de octubre, sobre Kling 4.0:
+vídeos de 5 a 30 segundos en una sola generación, con audio estéreo nativo
+—diálogo, ambiente y efectos—, en 720p o 1080p y en cuatro formatos, 21:9
+incluido. Hace texto a vídeo, imagen a vídeo y Referencia, con hasta 10
+imágenes y 5 vídeos. La app le escribe como pide la guía de Kling 4.0: qué
+sale, los sujetos con sus rasgos, la acción por tramos con su tiempo («0–4s
+— …»), la cámara aparte y el sonido con quién habla y cómo. Admite prompts
+de hasta 11.000 caracteres y negativo.
+
+**MOSS-Image**, en SeaArt: el modelo abierto de MOSI.AI (OpenMOSS), de 5.000
+millones de parámetros, hecho para que el texto se lea bien y cada cosa
+quede donde la pides: carteles, portadas e infografías con texto largo, en
+inglés o en chino, fotorrealismo y anime. La app le escribe en inglés, con
+la composición explícita y el texto entre comillas, y le pone su negativo
+oficial. Hasta 2.000 caracteres, 9 formatos y LoRA de MOSS Image.
 
 **El botón «🔧 Comfy», también en vídeo.** Hasta ahora solo montaba
 workflows de imagen, y en vídeo exportaba el modelo de imagen que se

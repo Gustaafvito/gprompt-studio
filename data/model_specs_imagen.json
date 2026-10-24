@@ -126,6 +126,38 @@
   "vigente": true,
   "best_for_en": "Luma multimodal model. Create vs Modify modes. Up to 9 references with assigned roles (style, character, composition, color, lighting). Seeds for reproducibility."
  },
+ "MOSS-Image": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": true,
+  "is_natural": true,
+  "max_chars": 2000,
+  "ratios": [
+   "1:1",
+   "2:3",
+   "3:2",
+   "3:4",
+   "4:3",
+   "9:16",
+   "16:9",
+   "21:9",
+   "9:21"
+  ],
+  "modos_gen": [
+   "Estándar",
+   "Calidad"
+  ],
+  "max_imagenes": 8,
+  "pasos": 25,
+  "cfg": 2.5,
+  "sampler_recomendado": "euler / simple (25 pasos, CFG 2.5 por defecto en SeaArt)",
+  "negative_sugerido": "worst quality, bad anatomy, watermark, jpeg artifact",
+  "best_for": "MOSS-Image (MOSI.AI / OpenMOSS, en SeaArt): modelo abierto de 5B pensado para que el texto se lea bien y cada cosa quede donde la pides. Texto largo dentro de la imagen, en inglés y en chino, y composiciones con muchos elementos: carteles, portadas, infografías, páginas de cómic. Fotorrealismo y anime. Entiende prosa y también tags de anime. Admite LoRA de MOSS Image.",
+  "best_for_en": "MOSS-Image (MOSI.AI / OpenMOSS, on SeaArt): an open 5B model built so text reads right and every element lands where you ask. Long in-image text, in English and Chinese, and layouts with many elements: posters, covers, infographics, comic pages. Photorealism and anime. It understands prose and anime tags too. Accepts MOSS Image LoRAs.",
+  "prompt_formula": "En inglés (es lo que más ha visto; también entiende chino). Prosa: tipo de imagen + sujeto + escena + COMPOSICIÓN (qué va arriba, abajo, a la izquierda, al fondo) + luz + estilo. El texto que debe salir, literal y entre comillas, con saltos de línea donde los quieras: si no, los pone él. En anime también valen tags, en este orden: calidad → personaje → serie → artista → generales (best quality, highres, 1girl, blue hair…). Negativo oficial: worst quality, bad anatomy, watermark, jpeg artifact (y nsfw si no es para adultos). Máx 2000 chars.",
+  "prompt_ejemplo": "A vintage travel poster for a seaside town. At the top, large cream serif letters read \"SAN SEBASTIÁN\", and just below, a smaller line reads \"Summer Festival 2026\". In the center, a striped beach umbrella and two swimmers on golden sand, a turquoise sea and a white lighthouse on the right. Flat screen-print style with a limited palette of coral, teal and cream, subtle paper grain.",
+  "limitaciones": "Solo texto a imagen: sin edición ni imágenes de referencia. Máx 2000 chars en SeaArt (el modelo abierto admite hasta 4K tokens). El texto no siempre sale exacto, sobre todo los saltos de línea que pone él. La maquetación por JSON con coordenadas del modelo abierto es experimental y no está en el panel. Pasos 15-40 y CFG 1-5 en SeaArt (OpenMOSS recomienda 50 pasos y CFG 3-6 en local). Ficha MAPEADA el 24-oct-2026 desde el esquema oficial de SeaArt (modelo dbaokele878c73dtvtd0); calidad POR CONFIRMAR generando."
+ },
  "Z Image Turbo": {
   "nota": 4.3,
   "has_negative": true,

@@ -16,7 +16,10 @@ QUÉ HAY DE NUEVO EN LA 1.1.3
     grupo propio y distingue el Klein destilado (16 pasos) del
     Klein Base (50 pasos, el de entrenar LoRA).
   - Krea 3 en SeaArt: genera, edita y combina hasta 6 referencias.
-    El catálogo pasa a 279.
+  - SeaArt Ultra 4.0, sobre Kling 4.0: vídeos de 5 a 30 s con
+    audio estéreo, y hasta 10 imágenes y 5 vídeos de referencia.
+  - MOSS-Image en SeaArt: texto largo dentro de la imagen y
+    composiciones con muchos elementos. El catálogo pasa a 281.
   - 🔧 Comfy, también en vídeo: parte de la plantilla oficial de tu
     ComfyUI para cada modelo y le pone el prompt, la duración, el
     formato, tu modelo y tus imágenes. Los modelos que parten de

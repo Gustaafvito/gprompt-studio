@@ -1719,6 +1719,65 @@
   "vigente": true,
   "best_for_en": "Turbo version of Ultra 3.0: high-quality video creation with cinematic motion, stable characters and synced audio. Image-to-Video and Text-to-Video. Negative prompt."
  },
+ "SeaArt Ultra 4.0": {
+  "nota": null,
+  "vigente": true,
+  "has_negative": true,
+  "has_audio": true,
+  "audio_desc": "Audio estéreo nativo de Kling 4.0, generado con la imagen: diálogos, ambiente y efectos. Si no los quieres, dilo en el prompt: puede añadir subtítulos o música de fondo por su cuenta",
+  "duraciones": [
+   "5s",
+   "6s",
+   "7s",
+   "8s",
+   "9s",
+   "10s",
+   "11s",
+   "12s",
+   "13s",
+   "14s",
+   "15s",
+   "16s",
+   "17s",
+   "18s",
+   "19s",
+   "20s",
+   "21s",
+   "22s",
+   "23s",
+   "24s",
+   "25s",
+   "26s",
+   "27s",
+   "28s",
+   "29s",
+   "30s"
+  ],
+  "ratios": [
+   "1:1",
+   "9:16",
+   "16:9",
+   "21:9"
+  ],
+  "max_chars": 11000,
+  "modos_gen": [
+   "720p",
+   "1080p"
+  ],
+  "max_imagenes_referencia": 10,
+  "best_for": "SeaArt Ultra 4.0 (en SeaArt desde el 23-oct-2026, sobre Kling 4.0): vídeos largos de 5 a 30 s en una sola generación, con audio estéreo nativo (diálogo, ambiente y efectos). Tres entradas: texto a vídeo, imagen a vídeo con fotogramas clave y Referencia, con hasta 10 imágenes y 5 vídeos para mantener personajes, objetos, escenarios y movimientos. 720p y 1080p, formatos 16:9, 9:16, 1:1 y 21:9 de cine. Prompts muy largos (hasta 11.000 caracteres) y prompt negativo.",
+  "best_for_en": "SeaArt Ultra 4.0 (on SeaArt since Oct 23, 2026, built on Kling 4.0): long videos of 5 to 30 s in a single generation, with native stereo audio (dialogue, ambience and effects). Three inputs: text to video, image to video with keyframes, and Reference, with up to 10 images and 5 videos to keep characters, objects, settings and motion consistent. 720p and 1080p, 16:9, 9:16, 1:1 and cinematic 21:9. Very long prompts (up to 11,000 characters) and a negative prompt.",
+  "prompt_formula": "Por capas, como pide la guía de Kling 4.0: (1) qué sale: duración, formato y si es una toma o varias; (2) los sujetos con rasgos visibles estables (y, con referencias, qué controla cada una: la cara, el producto, el escenario, el movimiento); (3) dónde está todo y de dónde viene la luz; (4) la acción EN TIEMPO, por tramos «0–4s — …», con una acción principal por tramo y la cámara aparte del sujeto (5 s: un tramo; 8-10 s: dos o tres; 15 s o más: tres o cuatro); (5) gestos y física (peso, contacto, reacción); (6) el sonido: quién habla, en qué idioma y con qué tono, la frase entre comillas, un solo hablante a la vez, y el ambiente y los efectos ligados a lo que se ve; (7) pocas restricciones, las que más importan. Si no quieres subtítulos ni música de fondo, dilo. Máx 11.000 chars.",
+  "prompt_ejemplo": "10 seconds, 16:9, one continuous take, natural cinematic realism. Mara, an adult woman with cropped silver hair and a rust-colored utility coat, stands at the edge of a rain-soaked rooftop at night, city lights behind her, a single red neon sign lighting her face from the left. 0–4s — Medium profile tracking shot as Mara walks left to right toward the ledge. 4–8s — Slow push-in as she stops, looks down at a cracked phone and exhales. 8–10s — Close-up: she looks up. Mara (English, quiet, breath catching): \"You kept it.\" Rain hiss and distant traffic throughout, footsteps on wet gravel. No subtitles, no background music.",
+  "prompt_tips": [
+   "Escribe la acción por tramos con tiempo: «0–4s — …»",
+   "Una acción principal por tramo; la cámara, aparte",
+   "Con referencias, di qué controla cada una",
+   "Diálogo: quién habla (idioma, tono): \"frase\"",
+   "Añade «no subtitles» / «no background music» si sobran"
+  ],
+  "limitaciones": "Ficha MAPEADA el 24-oct-2026 desde el esquema oficial de SeaArt (modelo dbdqdsde878c73ce6910, base Kling 4.0). Texto e imagen a vídeo: 5-30 s, 720p/1080p, 4 formatos, prompt de hasta 11.000 caracteres y negativo de hasta 2.500. Referencia: hasta 10 imágenes y 5 vídeos, sin negativo. Kling 4.0 anuncia 4K y HDR; SeaArt solo ofrece 720p y 1080p. El audio estéreo sale de Kling 4.0: el esquema no muestra interruptor de Sonido, POR CONFIRMAR generando. Sin nota todavía."
+ },
  "SeaArt Ultra Frame Video": {
   "nota": 3.7,
   "has_negative": true,

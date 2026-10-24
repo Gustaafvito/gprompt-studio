@@ -64,12 +64,12 @@ es lo que la herramienta escribe cuando le dices que el destino es Wan 3.0.
 
 G-Prompt Studio toma una idea simple ("una chica con pelo plateado en un bosque mágico") y la convierte en un prompt profesional optimizado para el modelo concreto que vas a usar — con sus reglas, sus tags, sus límites, su sampler recomendado y, si aplica, su prompt negativo.
 
-**279 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
+**281 modelos repartidos en 13 plataformas**, cada uno con sus reglas propias:
 
 | Modo | Modelos | Plataformas |
 |------|---------|-------------|
-| 🖼 **Imagen** | **170** | SeaArt/Tensor.Art (133) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
-| 🎬 **Vídeo** | **101** | SeaArt Video (93) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
+| 🖼 **Imagen** | **171** | SeaArt/Tensor.Art (134) · Magnific (31) · GPT Image (4) · Higgsfield (4) · Grok (3) |
+| 🎬 **Vídeo** | **102** | SeaArt Video (94) · Pollo AI (7) · Kling AI (5) · Grok (2) · Veo/Gemini (2) · Higgsfield (1) |
 | 🎵 **Audio** | **8** | Suno (5) · SeaArt Audio (4) · Udio (2) — con letras, estilo, emoción, voz e idioma |
 
 Y **encima de esos, los tuyos**: si usas ComfyUI no cuentan aquí porque son
@@ -145,8 +145,9 @@ del catálogo de su proveedor, la app lo oculta sola.
 **Modelos y plataformas**
 - En la 1.1.3: FLUX 3 Image Klein, el nuevo modelo abierto de Black Forest
   Labs, en SeaArt y en ComfyUI (con grupo propio), y la app le redacta el
-  prompt con las instrucciones oficiales de su prompt upsampler. Y Krea 3
-  en SeaArt. El botón 🔧 Comfy monta también los workflows de vídeo, desde
+  prompt con las instrucciones oficiales de su prompt upsampler. Y en
+  SeaArt, Krea 3, MOSS-Image y SeaArt Ultra 4.0 (Kling 4.0, vídeos de hasta
+  30 s con audio). El botón 🔧 Comfy monta también los workflows de vídeo, desde
   las plantillas oficiales de tu ComfyUI y con tus imágenes dentro.
 - En la 1.1.2: Anima, el modelo de anime de CircleStone Labs y Comfy Org,
   con los ajustes de cada versión (Turbo, Aesthetic y Base), también en
@@ -341,7 +342,7 @@ Si algo no funciona, revisa el log en:
 
 ![El catálogo de modelos con su buscador, agrupado por familias](docs/capturas/02-catalogo-modelos.png)
 
-**279 modelos con ficha propia**, agrupados por familia y con buscador. Si
+**281 modelos con ficha propia**, agrupados por familia y con buscador. Si
 usas ComfyUI, los tuyos aparecen solos.
 
 </td>
